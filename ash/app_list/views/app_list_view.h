@@ -212,7 +212,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
                                  bool triggered_by_contents_change);
 
   // Updates y position and opacity of app list during dragging.
-  void UpdateYPositionAndOpacity(int y_position_in_screen,
+  void UpdateYPositionAndOpacity(float y_position_in_screen,
                                  float background_opacity);
 
   // Offsets the y position of the app list (above the screen)
@@ -398,15 +398,15 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   void HandleClickOrTap(ui::LocatedEvent* event);
 
   // Initializes |initial_drag_point_|.
-  void StartDrag(const gfx::Point& location);
+  void StartDrag(const gfx::PointF& location_in_root);
 
   // Updates the bounds of the widget while maintaining the relative position
   // of the top of the widget and the gesture.
-  void UpdateDrag(const gfx::Point& location);
+  void UpdateDrag(const gfx::PointF& location_in_root);
 
   // Handles app list state transfers. If the drag was fast enough, ignore the
   // release position and snap to the next state.
-  void EndDrag(const gfx::Point& location);
+  void EndDrag(const gfx::PointF& location_in_root);
 
   // Set child views for |target_state|.
   void SetChildViewsForStateTransition(AppListViewState target_state);
@@ -492,6 +492,10 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // |state| and |is_in_drag_|.
   void UpdateAppListBackgroundYPosition(AppListViewState state);
 
+  // Reset the subpixel position offset of the |layer| so that it's DP origin
+  // is snapped.
+  void ResetSubpixelPositionOffset(ui::Layer* layer);
+
   AppListViewDelegate* delegate_;    // Weak. Owned by AppListService.
   AppListModel* const model_;        // Not Owned.
   SearchModel* const search_model_;  // Not Owned.
@@ -524,22 +528,19 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // Whether the view is being built.
   bool is_building_ = false;
 
-  // Y position of the app list in screen space coordinate during dragging.
-  int app_list_y_position_in_screen_ = 0;
-
   // The opacity of app list background during dragging. This ensures a gradual
   // opacity shift from the shelf opacity while dragging to show the AppListView
   // from the shelf.
   float background_opacity_in_drag_ = 0.f;
 
-  // The location of initial gesture event in screen coordinates.
-  gfx::Point initial_drag_point_;
+  // The location of initial gesture event in root window coordinates.
+  gfx::PointF initial_drag_point_;
 
-  // The rectangle of initial widget's window in screen coordinates.
-  gfx::Rect initial_window_bounds_;
+  // The offset to the widget from dragging location.
+  float drag_offset_;
 
-  // The location of the initial mouse event in view coordinates.
-  gfx::Point initial_mouse_drag_point_;
+  // The location of the initial mouse event in root window coordinates.
+  gfx::PointF initial_mouse_drag_point_;
 
   // The velocity of the gesture event.
   float last_fling_velocity_ = 0;

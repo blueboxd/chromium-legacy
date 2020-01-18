@@ -23,6 +23,7 @@
 #include "url/origin.h"
 
 using download::DownloadSource;
+using MixedContentStatus = download::DownloadItem::MixedContentStatus;
 
 namespace {
 
@@ -135,9 +136,9 @@ InsecureDownloadSecurityStatus GetDownloadBlockingEnum(
 }
 
 }  // namespace
-
-bool ShouldBlockFileAsMixedContent(const base::FilePath& path,
-                                   const download::DownloadItem& item) {
+MixedContentStatus GetMixedContentStatusForDownload(
+    const base::FilePath& path,
+    const download::DownloadItem& item) {
   // Extensions must be in lower case! Extensions are compared against save path
   // determined by Chrome prior to the user seeing a file picker.
   const std::vector<std::string> kDefaultUnsafeExtensions = {
@@ -180,7 +181,7 @@ bool ShouldBlockFileAsMixedContent(const base::FilePath& path,
     base::UmaHistogramEnumeration(
         kInsecureDownloadHistogramName,
         InsecureDownloadSecurityStatus::kDownloadIgnored);
-    return false;
+    return MixedContentStatus::SAFE;
   }
 
   // Evaluate download security
@@ -249,7 +250,7 @@ bool ShouldBlockFileAsMixedContent(const base::FilePath& path,
         !is_download_secure && found_blocked_extension &&
         base::FeatureList::IsEnabled(
             features::kTreatUnsafeDownloadsAsActive))) {
-    return false;
+    return MixedContentStatus::SAFE;
   }
 
   content::WebContents* web_contents =
@@ -265,5 +266,5 @@ bool ShouldBlockFileAsMixedContent(const base::FilePath& path,
             (is_redirect_chain_secure ? "loaded over" : "redirected through")));
   }
 
-  return true;
+  return MixedContentStatus::SILENT_BLOCK;
 }

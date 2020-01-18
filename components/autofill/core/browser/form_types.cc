@@ -10,6 +10,15 @@ namespace autofill {
 // static
 FormType FormTypes::FieldTypeGroupToFormType(FieldTypeGroup field_type_group) {
   switch (field_type_group) {
+    case NAME:
+    case NAME_BILLING:
+    case EMAIL:
+    case COMPANY:
+    case ADDRESS_HOME:
+    case ADDRESS_BILLING:
+    case PHONE_HOME:
+    case PHONE_BILLING:
+      return ADDRESS_FORM;
     case CREDIT_CARD:
       return CREDIT_CARD_FORM;
     case USERNAME_FIELD:
@@ -17,10 +26,8 @@ FormType FormTypes::FieldTypeGroupToFormType(FieldTypeGroup field_type_group) {
       return PASSWORD_FORM;
     case NO_GROUP:
     case TRANSACTION:
+    case UNFILLABLE:
       return UNKNOWN_FORM_TYPE;
-    default:
-      // Assuming it's an address form by process of elimination.
-      return ADDRESS_FORM;
   }
 }
 }  // namespace autofill

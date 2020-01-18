@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
+<translation id="1337778609052285767">Current password doesn't meet password complexity requirements. Please contact your administrator.</translation>
 <translation id="1337821341856692531">Continuing without entering your current Windows password might cause irreversible loss of information.</translation>
 <translation id="1383286653814676580">Used to run Google Credential Provider sign-in page.</translation>
 <translation id="1894475569413661128">Sign in using your work account.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">You entered an incorrect Windows password. Please try again.</translation>
 <translation id="2831078752570172210">Your account has been locked out. Please contact your system administrator.</translation>
 <translation id="2844349213149998955">Signing in with a personal account on this device is not allowed. Please log in with a work account.</translation>
+<translation id="2995851317559936311">Password change only allowed on domain controller. Please contact your administrator.</translation>
 <translation id="3306357053520292004">A user on this computer was already added using this account. Please sign in with a different account.</translation>
 <translation id="3926852373333893095">Only G Suite Enterprise users are allowed to login.</translation>
 <translation id="4057329986137569701">An internal error occurred.</translation>
 <translation id="4267670563222825190">No domain user could be found for your account. Please contact your administrator.</translation>
 <translation id="4300229033992784001">Your account password has changed. Please enter your current Windows password in order to sync your Windows account with your work account.</translation>
+<translation id="4669462973597624151">Attempt to change password failed. Please contact your administrator.</translation>
 <translation id="4706454071748629324">Failed to add a new user. This computer only allows one user to be created using a work account.</translation>
+<translation id="5186761973554910131">Invalid computer name provided during password change attempt. Please contact your administrator.</translation>
 <translation id="6033715878377252112">Google Credential Provider for Windows helper</translation>
 <translation id="6149399665202317746">Google Credential Provider for Windows</translation>
 <translation id="6239180560789153226">Your device is missing recovery info. Sign in using your Google work account.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Add work account</translation>
 <translation id="7811865856574012727">Your administrator has restricted device sign-in to the following domains: <ph name="EMAIL_DOMAINS" />. Try again using a valid work account.</translation>
 <translation id="7856245195110636219">Unable to continue without entering the current Windows password. Please contact a system administrator.</translation>
+<translation id="8109730953933509335">Password change attempted on invalid user. Please contact your administrator.</translation>
 <translation id="8639729688781680518">Forgot Windows Password</translation>
 <translation id="866458870819756755">A user could not be created.</translation>
 <translation id="8875753657315897487">Sign in using your work account</translation>

@@ -43,10 +43,6 @@ base::string16 NativeFileSystemRestrictedDirectoryDialogView::GetWindowTitle()
                     : IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_TITLE);
 }
 
-int NativeFileSystemRestrictedDirectoryDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
 bool NativeFileSystemRestrictedDirectoryDialogView::ShouldShowCloseButton()
     const {
   return false;

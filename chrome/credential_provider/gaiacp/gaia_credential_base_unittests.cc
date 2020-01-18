@@ -2706,5 +2706,89 @@ TEST_F(GcpGaiaCredentialBaseTest, FullNameUpdated) {
   ASSERT_EQ(updated_full_name, base::UTF8ToUTF16(new_full_name));
 }
 
+// Test event logs upload to GEM service with different failure scenarios.
+// Parameters are:
+// 1. int - 0: HTTP call to upload logs succeeds.
+//          1: Fails the upload call due to invalid response from the GEM
+//             http server.
+// 2. int - The number of fake events to seed the fake event log with.
+class GcpGaiaCredentialBaseUploadEventLogsTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<std::tuple<bool, int>> {};
+
+TEST_P(GcpGaiaCredentialBaseUploadEventLogsTest, UploadEventViewerLogs) {
+  bool fail_upload_event_logs_invalid_response = std::get<0>(GetParam());
+  uint64_t num_events_in_log = std::get<1>(GetParam());
+
+  // The number of events in the fake log that we consider too many to upload
+  // in a single request. The fake log events are all 1KB so this would be about
+  // 2.5MB of payload.
+  const uint64_t max_number_of_events_handled_per_invocation = 2500;
+
+  GoogleMdmEnrolledStatusForTesting force_success(true);
+
+  // Create some fake logs.
+  std::vector<FakeEventLogsUploadManager::EventLogEntry> logs;
+  for (size_t i = 0; i < num_events_in_log; i++) {
+    base::string16 data(1024, '0');  // 1KB payload.
+    logs.push_back({i + 1, {1000 + i, 200 + i}, data, 1 + i % 4});
+  }
+
+  FakeEventLogsUploadManager fake_event_logs_upload_manager(logs);
+
+  // Create a fake user associated to a gaia id.
+  CComBSTR sid;
+  ASSERT_EQ(S_OK,
+            fake_os_user_manager()->CreateTestOSUser(
+                kDefaultUsername, L"password", L"Full Name", L"comment",
+                base::UTF8ToUTF16(kDefaultGaiaId), base::string16(), &sid));
+
+  // Change token response to an invalid one.
+  SetDefaultTokenHandleResponse(kDefaultValidTokenHandleResponse);
+
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      fake_event_logs_upload_manager.GetGcpwServiceUploadEventViewerLogsUrl(),
+      FakeWinHttpUrlFetcher::Headers(),
+      fail_upload_event_logs_invalid_response ? "Invalid json response" : "{}");
+
+  // Create provider and start logon.
+  Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
+
+  ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
+
+  ASSERT_EQ(S_OK, StartLogonProcessAndWait());
+
+  // Finish logon successfully.
+  ASSERT_EQ(S_OK, FinishLogonProcess(true, true, 0));
+
+  // Verify that the upload call returned an appropriate status code.
+  // Upload should fail if the server didn't respond appropriately
+  // unless there were no event logs to upload at all.
+  HRESULT hr = fake_event_logs_upload_manager.GetUploadStatus();
+  ASSERT_TRUE((fail_upload_event_logs_invalid_response && num_events_in_log > 0)
+                  ? FAILED(hr)
+                  : SUCCEEDED(hr));
+
+  if (!fail_upload_event_logs_invalid_response) {
+    if (num_events_in_log > max_number_of_events_handled_per_invocation) {
+      // In this case we don't expect that all the events are uploaded.
+      ASSERT_TRUE(fake_event_logs_upload_manager.GetNumLogsUploaded() > 0);
+      ASSERT_TRUE(fake_event_logs_upload_manager.GetNumLogsUploaded() <=
+                  num_events_in_log);
+    } else {
+      ASSERT_EQ(num_events_in_log,
+                fake_event_logs_upload_manager.GetNumLogsUploaded());
+    }
+  }
+
+  ASSERT_EQ(S_OK, ReleaseProvider());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    GcpGaiaCredentialBaseUploadEventLogsTest,
+    ::testing::Combine(::testing::Values(true, false),
+                       ::testing::Values(0, 2, 1000, 3000)));
+
 }  // namespace testing
 }  // namespace credential_provider

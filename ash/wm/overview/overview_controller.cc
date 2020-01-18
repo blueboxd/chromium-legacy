@@ -423,16 +423,15 @@ void OverviewController::ToggleOverview(
       // those widgets will be slid out of overview. Otherwise,
       // HomeLauncherGestureHandler will handle sliding the windows out and when
       // this function is called, we do not need to create minimized widgets.
-      std::vector<aura::Window*> windows_to_hide_minimize(windows.size());
-      auto it = std::copy_if(windows.begin(), windows.end(),
-                             windows_to_hide_minimize.begin(),
-                             [](aura::Window* window) {
-                               return !WindowState::Get(window)->IsMinimized();
-                             });
-      windows_to_hide_minimize.resize(
-          std::distance(windows_to_hide_minimize.begin(), it));
-      window_util::HideAndMaybeMinimizeWithoutAnimation(
-          windows_to_hide_minimize, true);
+      std::vector<aura::Window*> windows_to_minimize(windows.size());
+      auto it =
+          std::copy_if(windows.begin(), windows.end(),
+                       windows_to_minimize.begin(), [](aura::Window* window) {
+                         return !WindowState::Get(window)->IsMinimized();
+                       });
+      windows_to_minimize.resize(
+          std::distance(windows_to_minimize.begin(), it));
+      window_util::MinimizeAndHideWithoutAnimation(windows_to_minimize);
     }
 
     // Do not show mask and show during overview shutdown.

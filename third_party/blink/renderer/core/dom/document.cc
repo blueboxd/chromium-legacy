@@ -806,8 +806,7 @@ Document::Document(const DocumentInit& initializer,
   }
 
   InitSecurityContext(initializer, security_initializer);
-  FeaturePolicyInitialized(initializer, security_initializer);
-
+  PoliciesInitialized(initializer, security_initializer);
   InitDNSPrefetch();
 
   InstanceCounters::IncrementCounter(InstanceCounters::kDocumentCounter);
@@ -2710,15 +2709,6 @@ void Document::LayoutUpdated() {
   }
 
   Markers().InvalidateRectsForAllTextMatchMarkers();
-
-  // TODO(esprehn): This doesn't really make sense, why not track the first
-  // beginFrame? This will catch the first layout in a page that does lots
-  // of layout thrashing even though that layout might not be followed by
-  // a paint for many seconds.
-  if (HaveRenderBlockingResourcesLoaded()) {
-    if (document_timing_.FirstLayout().is_null())
-      document_timing_.MarkFirstLayout();
-  }
 }
 
 void Document::ClearFocusedElementSoon() {
@@ -6506,7 +6496,7 @@ HTMLLinkElement* Document::LinkCanonical() const {
   });
 }
 
-void Document::FeaturePolicyInitialized(
+void Document::PoliciesInitialized(
     const DocumentInit& document_initializer,
     const SecurityContextInit& security_initializer) {
   // Processing of the feature policy header is done before the SecurityContext
@@ -6521,7 +6511,8 @@ void Document::FeaturePolicyInitialized(
                                "Error with Feature-Policy header: " + message));
   }
   if (frame_) {
-    pending_parsed_headers_ = security_initializer.ParsedHeader();
+    pending_fp_headers_ = security_initializer.FeaturePolicyHeader();
+    pending_dp_headers_ = document_initializer.GetDocumentPolicy();
   }
 
   // At this point, the document will not have been installed in the frame's
@@ -6551,12 +6542,13 @@ const FeaturePolicy* Document::GetParentFeaturePolicy() const {
   return nullptr;
 }
 
-void Document::ApplyPendingFeaturePolicyHeaders() {
+void Document::ApplyPendingFramePolicyHeaders() {
   if (frame_) {
-    frame_->Client()->DidSetFramePolicyHeaders(GetSandboxFlags(),
-                                               pending_parsed_headers_);
+    frame_->Client()->DidSetFramePolicyHeaders(
+        GetSandboxFlags(), pending_fp_headers_, pending_dp_headers_);
   }
-  pending_parsed_headers_.clear();
+  pending_fp_headers_.clear();
+  pending_dp_headers_.clear();
 }
 
 void Document::ApplyReportOnlyFeaturePolicyFromHeader(
@@ -7138,9 +7130,12 @@ SnapCoordinator& Document::GetSnapCoordinator() {
 
 void Document::PerformScrollSnappingTasks() {
   SnapCoordinator& snap_coordinator = GetSnapCoordinator();
+  if (!snap_coordinator.SnapContainerDataNeedsUpdate())
+    return;
   snap_coordinator.UpdateAllSnapContainerDataIfNeeded();
   if (RuntimeEnabledFeatures::ScrollSnapAfterLayoutEnabled())
     snap_coordinator.ResnapAllContainersIfNeeded();
+  snap_coordinator.SetSnapContainerDataNeedsUpdate(false);
 }
 
 void Document::SetContextFeatures(ContextFeatures& features) {

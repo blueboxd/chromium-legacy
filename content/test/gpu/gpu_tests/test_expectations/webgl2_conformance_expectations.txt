@@ -108,7 +108,6 @@ crbug.com/792210 [ nvidia ] conformance/glsl/bugs/in-parameter-passed-as-inout-a
 
 # Intel flaky issues
 crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-bounds-index-buffers-after-copying.html [ RetryOnFailure ]
-crbug.com/1033662 [ opengl win passthrough intel ] deqp/functional/gles3/sync.html [ RetryOnFailure ]
 
 # Intel failed issues
 crbug.com/795030 [ opengl win passthrough intel ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]

@@ -35,7 +35,7 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
   SharingFCMHandler(gcm::GCMDriver* gcm_driver,
                     SharingFCMSender* sharing_fcm_sender,
                     SharingSyncPreference* sync_preference,
-                    std::unique_ptr<SharingHandlerRegistry> handler_registry);
+                    SharingHandlerRegistry* handler_registry);
   ~SharingFCMHandler() override;
 
   // Registers itself as app handler for sharing messages.
@@ -85,7 +85,7 @@ class SharingFCMHandler : public gcm::GCMAppHandler {
   gcm::GCMDriver* const gcm_driver_;
   SharingFCMSender* sharing_fcm_sender_;
   SharingSyncPreference* sync_preference_;
-  std::unique_ptr<SharingHandlerRegistry> handler_registry_;
+  SharingHandlerRegistry* handler_registry_;
 
   bool is_listening_ = false;
 

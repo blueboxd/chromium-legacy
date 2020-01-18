@@ -30,9 +30,7 @@ source_set("internal") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "download_driver_impl_unittest.cc",
-  ]
+  sources = [ "download_driver_impl_unittest.cc" ]
 
   deps = [
     ":internal",

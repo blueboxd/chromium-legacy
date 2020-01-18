@@ -16,9 +16,6 @@ struct DocumentTiming {
 
   // Time immediately before the load event is fired.
   mojo_base.mojom.TimeDelta? load_event_start;
-
-  // Time when the first layout is completed.
-  mojo_base.mojom.TimeDelta? first_layout;
 };
 
 // TimeDeltas below relative to navigation start.

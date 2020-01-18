@@ -48,7 +48,8 @@ TestOptionsProvider::TestOptionsProvider()
       deserialize_options_(this,
                            &service_paint_cache_,
                            &strike_client_,
-                           &scratch_buffer_) {}
+                           &scratch_buffer_,
+                           true) {}
 
 TestOptionsProvider::~TestOptionsProvider() = default;
 

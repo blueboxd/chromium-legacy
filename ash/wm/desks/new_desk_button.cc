@@ -11,13 +11,13 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
-#include "ash/wm/desks/desks_bar_item_border.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/wm_highlight_item_border.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -69,7 +69,7 @@ NewDeskButton::NewDeskButton(views::ButtonListener* listener)
   set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
   SetFocusPainter(nullptr);
 
-  auto border = std::make_unique<DesksBarItemBorder>(kCornerRadius);
+  auto border = std::make_unique<WmHighlightItemBorder>(kCornerRadius);
   border_ptr_ = border.get();
   SetBorder(std::move(border));
 
@@ -187,14 +187,6 @@ views::View* NewDeskButton::GetView() {
   return this;
 }
 
-gfx::Rect NewDeskButton::GetHighlightBoundsInScreen() {
-  return GetBoundsInScreen();
-}
-
-gfx::RoundedCornersF NewDeskButton::GetRoundedCornersRadii() const {
-  return gfx::RoundedCornersF(kCornerRadius);
-}
-
 void NewDeskButton::MaybeActivateHighlightedView() {
   if (!GetEnabled())
     return;
@@ -204,9 +196,8 @@ void NewDeskButton::MaybeActivateHighlightedView() {
 
 void NewDeskButton::MaybeCloseHighlightedView() {}
 
-bool NewDeskButton::OnViewHighlighted() {
+void NewDeskButton::OnViewHighlighted() {
   UpdateBorderState();
-  return true;
 }
 
 void NewDeskButton::OnViewUnhighlighted() {

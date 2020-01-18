@@ -8,15 +8,14 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.support.v7.content.res.AppCompatResources;
-import android.view.View.OnClickListener;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
 import org.chromium.chrome.browser.share.qrcode.QrCodeCoordinator;
+import org.chromium.chrome.browser.share.screenshot.ScreenshotCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
@@ -35,6 +34,7 @@ public class ShareSheetCoordinator {
     private final BottomSheetController mBottomSheetController;
     private final ActivityTabProvider mActivityTabProvider;
     private final TabCreatorManager.TabCreator mTabCreator;
+    private final ShareSheetPropertyModelBuilder mPropertyModelBuilder;
 
     /**
      * Constructs a new ShareSheetCoordinator.
@@ -47,6 +47,7 @@ public class ShareSheetCoordinator {
         mBottomSheetController = controller;
         mActivityTabProvider = provider;
         mTabCreator = tabCreator;
+        mPropertyModelBuilder = new ShareSheetPropertyModelBuilder(mBottomSheetController);
     }
 
     protected void showShareSheet(ShareParams params) {
@@ -70,21 +71,21 @@ public class ShareSheetCoordinator {
             ShareSheetBottomSheetContent bottomSheet, Activity activity) {
         ArrayList<PropertyModel> models = new ArrayList<>();
         // QR Codes
-        PropertyModel qrcodePropertyModel =
-                createPropertyModel(AppCompatResources.getDrawable(activity, R.drawable.qr_code),
-                        activity.getResources().getString(R.string.qr_code_share_icon_label),
-                        (currentActivity) -> {
-                            mBottomSheetController.hideContent(bottomSheet, true);
-                            QrCodeCoordinator qrCodeCoordinator =
-                                    new QrCodeCoordinator(activity, this::createNewTab);
-                            qrCodeCoordinator.show();
-                        });
+        PropertyModel qrcodePropertyModel = mPropertyModelBuilder.createPropertyModel(
+                AppCompatResources.getDrawable(activity, R.drawable.qr_code),
+                activity.getResources().getString(R.string.qr_code_share_icon_label),
+                (currentActivity) -> {
+                    mBottomSheetController.hideContent(bottomSheet, true);
+                    QrCodeCoordinator qrCodeCoordinator =
+                            new QrCodeCoordinator(activity, this::createNewTab);
+                    qrCodeCoordinator.show();
+                });
         models.add(qrcodePropertyModel);
 
         // Send Tab To Self
-        PropertyModel
-                sttsPropertyModel =
-                        createPropertyModel(
+        PropertyModel sttsPropertyModel =
+                mPropertyModelBuilder
+                        .createPropertyModel(
                                 AppCompatResources.getDrawable(activity, R.drawable.send_tab),
                                 activity.getResources().getString(
                                         R.string.send_tab_to_self_share_activity_title),
@@ -100,7 +101,7 @@ public class ShareSheetCoordinator {
         models.add(sttsPropertyModel);
 
         // Copy URL
-        PropertyModel copyPropertyModel = createPropertyModel(
+        PropertyModel copyPropertyModel = mPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(activity, R.drawable.ic_content_copy_black),
                 activity.getResources().getString(R.string.sharing_copy_url), (params) -> {
                     mBottomSheetController.hideContent(bottomSheet, true);
@@ -127,11 +128,12 @@ public class ShareSheetCoordinator {
                             .with(ShareSheetItemViewProperties.LABEL,
                                     activity.getResources().getString(R.string.sharing_screenshot))
                             .with(ShareSheetItemViewProperties.CLICK_LISTENER,
-                                    (shareParams)
-                                            -> {
-                                                    // TODO (crbug.1024586) initiate screenshot
-                                                    // fragment.
-                                            })
+                                    (shareParams) -> {
+                                        mBottomSheetController.hideContent(bottomSheet, true);
+                                        ScreenshotCoordinator screenshotCoordinator =
+                                                new ScreenshotCoordinator(activity);
+                                        screenshotCoordinator.takeScreenshot();
+                                    })
                             .build();
             models.add(screenshotPropertyModel);
         }
@@ -141,9 +143,10 @@ public class ShareSheetCoordinator {
 
     private ArrayList<PropertyModel> createBottomRowPropertyModels(
             ShareSheetBottomSheetContent bottomSheet, Activity activity, ShareParams params) {
-        ArrayList<PropertyModel> models = new ArrayList<>();
+        ArrayList<PropertyModel> models =
+                mPropertyModelBuilder.selectThirdPartyApps(activity, bottomSheet, params);
         // More...
-        PropertyModel morePropertyModel = createPropertyModel(
+        PropertyModel morePropertyModel = mPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(activity, R.drawable.sharing_more),
                 activity.getResources().getString(R.string.sharing_more_icon_label),
                 (shareParams) -> {
@@ -153,17 +156,6 @@ public class ShareSheetCoordinator {
         models.add(morePropertyModel);
 
         return models;
-    }
-
-    private PropertyModel createPropertyModel(
-            Drawable icon, String label, OnClickListener listener) {
-        PropertyModel propertyModel =
-                new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
-                        .with(ShareSheetItemViewProperties.ICON, icon)
-                        .with(ShareSheetItemViewProperties.LABEL, label)
-                        .with(ShareSheetItemViewProperties.CLICK_LISTENER, listener)
-                        .build();
-        return propertyModel;
     }
 
     private void createNewTab(String url) {

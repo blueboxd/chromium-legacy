@@ -342,7 +342,8 @@
   /* RepostFormCoordinator is created and started by a delegate method */
 
   self.storeKitCoordinator = [[StoreKitCoordinator alloc]
-      initWithBaseViewController:self.viewController];
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
 
   self.addCreditCardCoordinator = [[AutofillAddCreditCardCoordinator alloc]
       initWithBaseViewController:self.viewController

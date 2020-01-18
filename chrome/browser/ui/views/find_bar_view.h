@@ -17,7 +17,10 @@
 #include "ui/views/view.h"
 
 class FindBarHost;
+
+namespace find_in_page {
 class FindNotificationDetails;
+}
 
 namespace gfx {
 class Range;
@@ -58,7 +61,7 @@ class FindBarView : public views::View,
 
   // Updates the label inside the Find text box that shows the ordinal of the
   // active item and how many matches were found.
-  void UpdateForResult(const FindNotificationDetails& result,
+  void UpdateForResult(const find_in_page::FindNotificationDetails& result,
                        const base::string16& find_text);
 
   // Clears the current Match Count value in the Find text box.

@@ -56,8 +56,7 @@ bool MinimizeAllWindows(const aura::Window::Windows& windows,
     }
   }
 
-  window_util::HideAndMaybeMinimizeWithoutAnimation(windows_to_minimize,
-                                                    /*minimize=*/true);
+  window_util::MinimizeAndHideWithoutAnimation(windows_to_minimize);
   return !windows_to_minimize.empty();
 }
 

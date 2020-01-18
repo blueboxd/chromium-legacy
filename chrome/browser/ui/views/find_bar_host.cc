@@ -8,12 +8,13 @@
 
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/find_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "components/find_in_page/find_tab_helper.h"
+#include "components/find_in_page/find_types.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -141,7 +142,8 @@ void FindBarHost::SetFocusAndSelection() {
   DropdownBarHost::SetFocusAndSelection();
 }
 
-void FindBarHost::ClearResults(const FindNotificationDetails& results) {
+void FindBarHost::ClearResults(
+    const find_in_page::FindNotificationDetails& results) {
   find_bar_view()->UpdateForResult(results, base::string16());
 }
 
@@ -167,8 +169,9 @@ gfx::Range FindBarHost::GetSelectedRange() const {
   return find_bar_view()->GetSelectedRange();
 }
 
-void FindBarHost::UpdateUIForFindResult(const FindNotificationDetails& result,
-                                        const base::string16& find_text) {
+void FindBarHost::UpdateUIForFindResult(
+    const find_in_page::FindNotificationDetails& result,
+    const base::string16& find_text) {
   if (!find_text.empty())
     find_bar_view()->UpdateForResult(result, find_text);
   else
@@ -225,15 +228,16 @@ bool FindBarHost::AcceleratorPressed(const ui::Accelerator& accelerator) {
   ui::KeyboardCode key = accelerator.key_code();
   if (key == ui::VKEY_RETURN && accelerator.IsCtrlDown()) {
     // Ctrl+Enter closes the Find session and navigates any link that is active.
-    find_bar_controller_->EndFindSession(FindOnPageSelectionAction::kActivate,
-                                         FindBoxResultAction::kClear);
+    find_bar_controller_->EndFindSession(
+        find_in_page::SelectionAction::kActivate,
+        find_in_page::ResultAction::kClear);
     return true;
   } else if (key == ui::VKEY_ESCAPE) {
     // This will end the Find session and hide the window, causing it to loose
     // focus and in the process unregister us as the handler for the Escape
     // accelerator through the OnWillChangeFocus event.
-    find_bar_controller_->EndFindSession(FindOnPageSelectionAction::kKeep,
-                                         FindBoxResultAction::kKeep);
+    find_bar_controller_->EndFindSession(find_in_page::SelectionAction::kKeep,
+                                         find_in_page::ResultAction::kKeep);
     return true;
   } else {
     NOTREACHED() << "Unknown accelerator";
@@ -348,7 +352,7 @@ void FindBarHost::SetDialogPosition(const gfx::Rect& new_pos) {
   browser_view()->immersive_mode_controller()->OnFindBarVisibleBoundsChanged(
       host()->GetWindowBoundsInScreen());
 
-  find_bar_controller_->FindBarVisibilityChanged();
+  browser_view()->browser()->OnFindBarVisibilityChanged();
 }
 
 void FindBarHost::GetWidgetBounds(gfx::Rect* bounds) {
@@ -385,7 +389,7 @@ void FindBarHost::OnVisibilityChanged() {
   browser_view()->immersive_mode_controller()->OnFindBarVisibleBoundsChanged(
       visible_bounds);
 
-  find_bar_controller_->FindBarVisibilityChanged();
+  browser_view()->browser()->OnFindBarVisibilityChanged();
 }
 
 ax::mojom::Role FindBarHost::GetAccessibleWindowRole() {
@@ -401,7 +405,7 @@ base::string16 FindBarHost::GetAccessibleWindowTitle() const {
     return base::string16();
   return l10n_util::GetStringFUTF16(
       IDS_FIND_IN_PAGE_ACCESSIBLE_TITLE,
-      controller->browser()->GetWindowTitleForCurrentTab(false));
+      browser_view()->browser()->GetWindowTitleForCurrentTab(false));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -423,7 +427,8 @@ void FindBarHost::MoveWindowIfNecessaryWithRect(
   if (!web_contents)
     return;
 
-  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(web_contents);
+  find_in_page::FindTabHelper* find_tab_helper =
+      find_in_page::FindTabHelper::FromWebContents(web_contents);
   if (!find_tab_helper || !find_tab_helper->find_ui_active())
     return;
 

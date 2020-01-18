@@ -199,8 +199,6 @@ PageLoadMetricsTestWaiter::GetMatchedBits(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::mojom::PageLoadMetadata& metadata) {
   PageLoadMetricsTestWaiter::TimingFieldBitSet matched_bits;
-  if (timing.document_timing->first_layout)
-    matched_bits.Set(TimingField::kFirstLayout);
   if (timing.document_timing->load_event_start)
     matched_bits.Set(TimingField::kLoadEvent);
   if (timing.paint_timing->first_paint)

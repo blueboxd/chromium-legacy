@@ -73,8 +73,6 @@ class OfflinePagePreviewsPageLoadMetricsObserverTest
     ValidateTimingHistogramsFor(
         internal::kHistogramOfflinePreviewsDOMContentLoadedEventFired,
         timing_.document_timing->dom_content_loaded_event_start);
-    ValidateTimingHistogramsFor(internal::kHistogramOfflinePreviewsFirstLayout,
-                                timing_.document_timing->first_layout);
     ValidateTimingHistogramsFor(
         internal::kHistogramOfflinePreviewsLoadEventFired,
         timing_.document_timing->load_event_start);

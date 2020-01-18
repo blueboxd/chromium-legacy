@@ -25,9 +25,7 @@ source_set("common") {
     "//url",
   ]
 
-  public_deps = [
-    ":features",
-  ]
+  public_deps = [ ":features" ]
 
   libs = [ "UIKit.framework" ]
 
@@ -35,9 +33,7 @@ source_set("common") {
 }
 
 source_set("features") {
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   sources = [
     "features.h",
     "features.mm",

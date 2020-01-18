@@ -88,6 +88,8 @@ class SkiaOutputDevice {
   virtual void PostSubBuffer(const gfx::Rect& rect,
                              BufferPresentedCallback feedback,
                              std::vector<ui::LatencyInfo> latency_info);
+  virtual void CommitOverlayPlanes(BufferPresentedCallback feedback,
+                                   std::vector<ui::LatencyInfo> latency_info);
 
   // Set the rectangle that will be drawn into on the surface.
   virtual void SetDrawRectangle(const gfx::Rect& draw_rectangle);

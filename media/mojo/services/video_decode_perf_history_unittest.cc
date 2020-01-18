@@ -38,9 +38,14 @@ const bool kIsSmooth = true;
 const bool kIsNotSmooth = false;
 const bool kIsPowerEfficient = true;
 const bool kIsNotPowerEfficient = false;
-const url::Origin kOrigin = url::Origin::Create(GURL("http://example.com"));
 const bool kIsTopFrame = true;
 const uint64_t kPlayerId = 1234u;
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+url::Origin Origin() {
+  return url::Origin::Create(GURL("http://example.com"));
+}
 
 }  // namespace
 
@@ -228,7 +233,7 @@ class VideoDecodePerfHistoryTest : public testing::Test {
     EXPECT_CALL(*this, UkmVerifyDoneCb());
 
     perf_history_->GetSaveCallback().Run(
-        source_id, learning::FeatureValue(kOrigin.host()), is_top_frame,
+        source_id, learning::FeatureValue(Origin().host()), is_top_frame,
         features, targets, player_id, std::move(save_done_cb));
   }
 
@@ -389,13 +394,13 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_Smooth) {
       kFramesDecoded * GetMaxSmoothDroppedFramesPercent() + 1;
 
   // Add the entries.
-  SavePerfRecord(UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
+  SavePerfRecord(UkmVerifcation::kSaveTriggersUkm, Origin(), kIsTopFrame,
                  MakeFeatures(kKnownProfile, kKownSize, kSmoothFrameRate,
                               params.key_system, params.use_hw_secure_codecs),
                  MakeTargets(kFramesDecoded, kSmoothFramesDropped,
                              kNotPowerEfficientFramesDecoded),
                  kPlayerId);
-  SavePerfRecord(UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
+  SavePerfRecord(UkmVerifcation::kSaveTriggersUkm, Origin(), kIsTopFrame,
                  MakeFeatures(kKnownProfile, kKownSize, kNotSmoothFrameRate,
                               params.key_system, params.use_hw_secure_codecs),
                  MakeTargets(kFramesDecoded, kNotSmoothFramesDropped,
@@ -470,21 +475,21 @@ TEST_P(VideoDecodePerfHistoryParamTest, GetPerfInfo_PowerEfficient) {
 
   // Add the entries.
   SavePerfRecord(
-      UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
+      UkmVerifcation::kSaveTriggersUkm, Origin(), kIsTopFrame,
       MakeFeatures(kPowerEfficientProfile, kKownSize, kSmoothFrameRate,
                    params.key_system, params.use_hw_secure_codecs),
       MakeTargets(kFramesDecoded, kSmoothFramesDropped,
                   kPowerEfficientFramesDecoded),
       kPlayerId);
   SavePerfRecord(
-      UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
+      UkmVerifcation::kSaveTriggersUkm, Origin(), kIsTopFrame,
       MakeFeatures(kNotPowerEfficientProfile, kKownSize, kSmoothFrameRate,
                    params.key_system, params.use_hw_secure_codecs),
       MakeTargets(kFramesDecoded, kSmoothFramesDropped,
                   kNotPowerEfficientFramesDecoded),
       kPlayerId);
   SavePerfRecord(
-      UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
+      UkmVerifcation::kSaveTriggersUkm, Origin(), kIsTopFrame,
       MakeFeatures(kPowerEfficientProfile, kKownSize, kNotSmoothFrameRate,
                    params.key_system, params.use_hw_secure_codecs),
       MakeTargets(kFramesDecoded, kNotSmoothFramesDropped,
@@ -582,7 +587,7 @@ TEST_P(VideoDecodePerfHistoryParamTest, AppendAndDestroyStats) {
   const int kManyFramesDropped = kFramesDecoded / 2;
   const int kFramesPowerEfficient = kFramesDecoded;
   SavePerfRecord(
-      UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
+      UkmVerifcation::kSaveTriggersUkm, Origin(), kIsTopFrame,
       MakeFeatures(kProfile, kSize, kFrameRate, params.key_system,
                    params.use_hw_secure_codecs),
       MakeTargets(kFramesDecoded, kManyFramesDropped, kFramesPowerEfficient),
@@ -714,7 +719,7 @@ TEST_P(VideoDecodePerfHistoryParamTest, FailedDatabaseGetForAppend) {
   // Attempt (and fail) the save. UKM report depends on successful retrieval
   // of stats from the DB, so no UKM reporting should occur here.
   SavePerfRecord(
-      UkmVerifcation::kNoUkmsAdded, kOrigin, kIsTopFrame,
+      UkmVerifcation::kNoUkmsAdded, Origin(), kIsTopFrame,
       MakeFeatures(kProfile, kSize, kFrameRate, params.key_system,
                    params.use_hw_secure_codecs),
       MakeTargets(kFramesDecoded, kFramesDropped, kFramesPowerEfficient),
@@ -766,7 +771,7 @@ TEST_P(VideoDecodePerfHistoryParamTest, FailedDatabaseAppend) {
   // because we successfully retrieved stats from the DB, we just fail to append
   // the new stats. UKM reporting occurs between retrieval and appending.
   SavePerfRecord(
-      UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
+      UkmVerifcation::kSaveTriggersUkm, Origin(), kIsTopFrame,
       MakeFeatures(kProfile, kSize, kFrameRate, params.key_system,
                    params.use_hw_secure_codecs),
       MakeTargets(kFramesDecoded, kFramesDropped, kFramesPowerEfficient),
@@ -864,14 +869,14 @@ TEST_P(VideoDecodePerfHistoryParamTest,
 
   // Add the entry.
   SavePerfRecord(
-      UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
+      UkmVerifcation::kSaveTriggersUkm, Origin(), kIsTopFrame,
       MakeFeatures(kKnownProfile, kKownSize, kSmoothFrameRatePrevious,
                    params.key_system, params.use_hw_secure_codecs),
       MakeTargets(kFramesDecoded, kSmoothFramesDroppedPrevious,
                   kNotPowerEfficientFramesDecoded),
       kPlayerId);
 
-  SavePerfRecord(UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
+  SavePerfRecord(UkmVerifcation::kSaveTriggersUkm, Origin(), kIsTopFrame,
                  MakeFeatures(kKnownProfile, kKownSize, kSmoothFrameRateNew,
                               params.key_system, params.use_hw_secure_codecs),
                  MakeTargets(kFramesDecoded, kSmoothFramesDroppedNew,
@@ -984,14 +989,14 @@ TEST_P(VideoDecodePerfHistoryParamTest,
 
   // Add the entry.
   SavePerfRecord(
-      UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
+      UkmVerifcation::kSaveTriggersUkm, Origin(), kIsTopFrame,
       MakeFeatures(kKnownProfile, kKownSize, kSmoothFrameRatePrevious,
                    params.key_system, params.use_hw_secure_codecs),
       MakeTargets(kFramesDecoded, kSmoothFramesDroppedPrevious,
                   kNotPowerEfficientFramesDecoded),
       kPlayerId);
 
-  SavePerfRecord(UkmVerifcation::kSaveTriggersUkm, kOrigin, kIsTopFrame,
+  SavePerfRecord(UkmVerifcation::kSaveTriggersUkm, Origin(), kIsTopFrame,
                  MakeFeatures(kKnownProfile, kKownSize, kSmoothFrameRateNew,
                               params.key_system, params.use_hw_secure_codecs),
                  MakeTargets(kFramesDecoded, kSmoothFramesDroppedNew,

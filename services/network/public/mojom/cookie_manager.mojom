@@ -120,20 +120,13 @@ struct CanonicalCookie {
   CookieSourceScheme source_scheme = kUnset;
 };
 
-// Keep values here in sync with
-// net::CanonicalCookie::CookieInclusionStatus::WarningReason.
-enum CookieInclusionStatusWarningReason {
-  DO_NOT_WARN = 0,
-  WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
-  WARN_SAMESITE_NONE_INSECURE,
-  WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE
-};
-
-// Exclusion reasons can be found in
-// net::CanonicalCookie::CookieInclusionStatus::ExclusionReason.
 struct CookieInclusionStatus {
+  // Bitfield. Is defined in
+  // net::CanonicalCookie::CookieInclusionStatus::ExclusionReason.
   uint32 exclusion_reasons;
-  CookieInclusionStatusWarningReason warning;
+  // Bitfield. Is defined in
+  // net::CanonicalCookie::CookieInclusionStatus::WarningReason.
+  uint32 warning_reasons;
 };
 
 struct CookieWithStatus {

@@ -1330,7 +1330,7 @@ CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
     // them so we have precursor information. Remove this logic once that has
     // been completed.
     if (url_origin.opaque() &&
-        url_origin.GetTupleOrPrecursorTupleIfOpaque().IsInvalid()) {
+        !url_origin.GetTupleOrPrecursorTupleIfOpaque().IsValid()) {
       return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
     }
 
@@ -1352,7 +1352,7 @@ CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
     // them so we have precursor information. Remove this logic once that has
     // been completed.
     if (origin.opaque() &&
-        origin.GetTupleOrPrecursorTupleIfOpaque().IsInvalid()) {
+        !origin.GetTupleOrPrecursorTupleIfOpaque().IsValid()) {
       return CanCommitStatus::CAN_COMMIT_ORIGIN_AND_URL;
     }
     return CanCommitStatus::CANNOT_COMMIT_ORIGIN;
@@ -1366,8 +1366,8 @@ CanCommitStatus ChildProcessSecurityPolicyImpl::CanCommitOriginAndUrl(
   const auto origin_tuple_or_precursor_tuple =
       origin.GetTupleOrPrecursorTupleIfOpaque();
 
-  if (!url_tuple_or_precursor_tuple.IsInvalid() &&
-      !origin_tuple_or_precursor_tuple.IsInvalid() &&
+  if (url_tuple_or_precursor_tuple.IsValid() &&
+      origin_tuple_or_precursor_tuple.IsValid() &&
       origin_tuple_or_precursor_tuple != url_tuple_or_precursor_tuple) {
     // Allow a WebView specific exception for origins that have a data scheme.
     // WebView converts data: URLs into non-opaque data:// origins which is
@@ -1404,7 +1404,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
   GURL url_to_check;
   if (origin.opaque()) {
     auto precursor_tuple = origin.GetTupleOrPrecursorTupleIfOpaque();
-    if (precursor_tuple.IsInvalid()) {
+    if (!precursor_tuple.IsValid()) {
       // We don't have precursor information so we only allow access if
       // the process lock isn't set yet.
       base::AutoLock lock(lock_);

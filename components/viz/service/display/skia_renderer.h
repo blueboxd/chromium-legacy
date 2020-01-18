@@ -55,6 +55,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   ~SkiaRenderer() override;
 
   void SwapBuffers(SwapFrameData swap_frame_data) override;
+  void SwapBuffersSkipped() override;
   void SwapBuffersComplete() override;
 
   void SetDisablePictureQuadImageFiltering(bool disable) {

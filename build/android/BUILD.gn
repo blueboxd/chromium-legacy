@@ -122,3 +122,15 @@ python_library("bundle_wrapper_script_py") {
     "//third_party/android_build_tools/bundletool/bundletool-all-0.11.0.jar",
   ]
 }
+
+# Tools necessary for symbolizing tombstones or stack traces that are output to
+# logcat.
+group("stack_tools") {
+  data = [
+    "tombstones.py",
+    "pylib/symbols/",
+    "stacktrace/",
+  ]
+
+  data_deps = [ "//third_party/android_platform/development/scripts:stack_py" ]
+}

@@ -69,6 +69,7 @@ source_set("util") {
     "//ios/web/web_state:web_state_impl_header",
     "//ios/web/web_state/ui:ui",
     "//ios/web/web_view:util",
+    "//net",
     "//testing/gtest",
   ]
 

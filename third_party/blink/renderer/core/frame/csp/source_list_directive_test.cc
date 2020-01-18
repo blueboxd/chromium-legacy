@@ -827,14 +827,104 @@ TEST_F(SourceListDirectiveTest, IsNone) {
   };
 
   for (const auto& test : cases) {
+    SCOPED_TRACE(test.sources);
     SourceListDirective script_src("script-src", test.sources, csp.Get());
     EXPECT_EQ(script_src.IsNone(), test.expected);
 
-    SourceListDirective style_src("form-action", test.sources, csp.Get());
-    EXPECT_EQ(style_src.IsNone(), test.expected);
+    SourceListDirective form_action("form-action", test.sources, csp.Get());
+    EXPECT_EQ(form_action.IsNone(), test.expected);
 
-    SourceListDirective img_src("frame-src", test.sources, csp.Get());
-    EXPECT_EQ(style_src.IsNone(), test.expected);
+    SourceListDirective frame_src("frame-src", test.sources, csp.Get());
+    EXPECT_EQ(frame_src.IsNone(), test.expected);
+  }
+}
+
+TEST_F(SourceListDirectiveTest, IsSelf) {
+  struct TestCase {
+    String sources;
+    bool expected;
+  } cases[] = {
+      // Source list is 'self'.
+      {"'self'", true},
+      {"'self' 'none'", true},
+
+      // Source list is not 'self'.
+      {"'none'", false},
+      {"http://example1.com/foo/", false},
+      {"'sha512-321cba'", false},
+      {"'nonce-yay'", false},
+      {"'strict-dynamic'", false},
+      {"'sha512-321cba' http://example1.com/foo/", false},
+      {"http://example1.com/foo/ 'sha512-321cba'", false},
+      {"http://example1.com/foo/ 'nonce-yay'", false},
+      {"'self' 'sha512-321cba' http://example1.com/foo/", false},
+      {"'self' http://example1.com/foo/ 'sha512-321cba'", false},
+      {"'self' http://example1.com/foo/ 'nonce-yay'", false},
+      {"'sha512-321cba' 'nonce-yay'", false},
+      {"http://example1.com/foo/ 'sha512-321cba' 'nonce-yay'", false},
+      {"http://example1.com/foo/ 'sha512-321cba' 'nonce-yay'", false},
+      {" 'sha512-321cba' 'nonce-yay' 'strict-dynamic'", false},
+  };
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(test.sources);
+    SourceListDirective script_src("script-src", test.sources, csp.Get());
+    EXPECT_EQ(script_src.IsSelf(), test.expected);
+
+    SourceListDirective form_action("form-action", test.sources, csp.Get());
+    EXPECT_EQ(form_action.IsSelf(), test.expected);
+
+    SourceListDirective frame_src("frame-src", test.sources, csp.Get());
+    EXPECT_EQ(frame_src.IsSelf(), test.expected);
+  }
+}
+
+TEST_F(SourceListDirectiveTest, AllowsURLBasedMatching) {
+  struct TestCase {
+    String sources;
+    bool expected;
+  } cases[] = {
+      // No URL-based matching.
+      {"'none'", false},
+      {"'sha256-abcdefg'", false},
+      {"'nonce-abc'", false},
+      {"'nonce-abce' 'sha256-abcdefg'", false},
+
+      // Strict-dynamic.
+      {"'sha256-abcdefg' 'strict-dynamic'", false},
+      {"'nonce-abce' 'strict-dynamic'", false},
+      {"'nonce-abce' 'sha256-abcdefg' 'strict-dynamic'", false},
+      {"'sha256-abcdefg' 'strict-dynamic' https:", false},
+      {"'nonce-abce' 'strict-dynamic' http://example.test", false},
+      {"'nonce-abce' 'sha256-abcdefg' 'strict-dynamic' *://example.test",
+       false},
+
+      // URL-based.
+      {"*", true},
+      {"'self'", true},
+      {"http:", true},
+      {"http: https:", true},
+      {"http: 'none'", true},
+      {"http: https: 'none'", true},
+      {"'sha256-abcdefg' https://example.test", true},
+      {"'nonce-abc' https://example.test", true},
+      {"'nonce-abce' 'sha256-abcdefg' https://example.test", true},
+      {"'sha256-abcdefg' https://example.test 'none'", true},
+      {"'nonce-abc' https://example.test 'none'", true},
+      {"'nonce-abce' 'sha256-abcdefg' https://example.test 'none'", true},
+
+  };
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(test.sources);
+    SourceListDirective script_src("script-src", test.sources, csp.Get());
+    EXPECT_EQ(script_src.AllowsURLBasedMatching(), test.expected);
+
+    SourceListDirective form_action("form-action", test.sources, csp.Get());
+    EXPECT_EQ(form_action.AllowsURLBasedMatching(), test.expected);
+
+    SourceListDirective frame_src("frame-src", test.sources, csp.Get());
+    EXPECT_EQ(frame_src.AllowsURLBasedMatching(), test.expected);
   }
 }
 

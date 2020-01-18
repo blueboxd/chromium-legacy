@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 3 Dec 2019 14:01:40 -0800
-Subject: [PATCH 11/22] Avoid zero offset of nullptr
+Subject: [PATCH 11/25] Avoid zero offset of nullptr
 
 Backports https://www.sqlite.org/src/info/85d95abec4a596eb
 
@@ -34,5 +34,5 @@ index 8d48f22fec24..26aee1788429 100644
      *pbEof = 1;
    }else{
 -- 
-2.24.1.735.g03f4e72817-goog
+2.25.0.rc1.283.g88dfdc4193-goog
 

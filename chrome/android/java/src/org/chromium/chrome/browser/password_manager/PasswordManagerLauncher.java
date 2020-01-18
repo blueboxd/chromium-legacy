@@ -61,7 +61,7 @@ public class PasswordManagerLauncher {
             }
         }
 
-        SettingsLauncher.launchSettingsPage(activity, SavePasswordsPreferences.class);
+        SettingsLauncher.getInstance().launchSettingsPage(activity, SavePasswordsPreferences.class);
     }
 
     @CalledByNative

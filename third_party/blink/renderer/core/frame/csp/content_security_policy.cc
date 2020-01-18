@@ -224,6 +224,44 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
                           kWillNotThrowException, g_empty_string)) {
       Count(WebFeature::kCSPWithUnsafeEval);
     }
+
+    // We consider a policy to be "reasonably secure" if it:
+    //
+    // 1.  Asserts `object-src 'none'`.
+    // 2.  Asserts `base-uri 'none'` or `base-uri 'self'`.
+    // 3.  Avoids URL-based matching, in favor of hashes and nonces.
+    //
+    // https://chromium.googlesource.com/chromium/src/+/master/docs/security/web-mitigation-metrics.md
+    // has more detail.
+    if (policy->IsObjectRestrictionReasonable()) {
+      Count(policy->HeaderType() == ContentSecurityPolicyType::kEnforce
+                ? WebFeature::kCSPWithReasonableObjectRestrictions
+                : WebFeature::kCSPROWithReasonableObjectRestrictions);
+    }
+    if (policy->IsBaseRestrictionReasonable()) {
+      Count(policy->HeaderType() == ContentSecurityPolicyType::kEnforce
+                ? WebFeature::kCSPWithReasonableBaseRestrictions
+                : WebFeature::kCSPROWithReasonableBaseRestrictions);
+    }
+    if (policy->IsScriptRestrictionReasonable()) {
+      Count(policy->HeaderType() == ContentSecurityPolicyType::kEnforce
+                ? WebFeature::kCSPWithReasonableScriptRestrictions
+                : WebFeature::kCSPROWithReasonableScriptRestrictions);
+    }
+    if (policy->IsObjectRestrictionReasonable() &&
+        policy->IsBaseRestrictionReasonable() &&
+        policy->IsScriptRestrictionReasonable()) {
+      Count(policy->HeaderType() == ContentSecurityPolicyType::kEnforce
+                ? WebFeature::kCSPWithReasonableRestrictions
+                : WebFeature::kCSPROWithReasonableRestrictions);
+
+      if (!policy->AllowDynamic(
+              ContentSecurityPolicy::DirectiveType::kScriptSrcElem)) {
+        Count(policy->HeaderType() == ContentSecurityPolicyType::kEnforce
+                  ? WebFeature::kCSPWithBetterThanReasonableRestrictions
+                  : WebFeature::kCSPROWithBetterThanReasonableRestrictions);
+      }
+    }
   }
 
   // We disable 'eval()' even in the case of report-only policies, and rely on

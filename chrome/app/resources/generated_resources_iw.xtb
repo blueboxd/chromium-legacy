@@ -945,7 +945,6 @@
 <translation id="2317842250900878657">%<ph name="PROGRESS_PERCENT" />הושלמו</translation>
 <translation id="2318143611928805047">גודל נייר</translation>
 <translation id="2318817390901984578">‏כדי להשתמש באפליקציות Android עליך לטעון את ה-<ph name="DEVICE_TYPE" /> ולעדכן אותו.</translation>
-<translation id="2318923050469484167">הפעלה נוכחית במצב גלישה בסתר (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">כותרות עליונות ותחתונות</translation>
 <translation id="2322318151094136999">תוצג שאלה כשאתר רוצה לגשת אל יציאות טוריות (מומלץ)</translation>
 <translation id="2325002827435400643">השבתת האפשרות באתר הזה</translation>
@@ -1788,6 +1787,7 @@
 <translation id="3511307672085573050">העתק כתוב&amp;ת קישור</translation>
 <translation id="351152300840026870">גופן ברוחב קבוע</translation>
 <translation id="3511528412952710609">קצרה</translation>
+<translation id="3513704683820682405">מציאות רבודה</translation>
 <translation id="3514373592552233661">כשיש יותר מרשת זמינה אחת, הרשתות המועדפות יקבלו עדיפות על פני רשתות מוכרות אחרות</translation>
 <translation id="3515983984924808886">יש לגעת במפתח האבטחה פעם נוספת כדי לאשר את האיפוס. כל המידע שמאוחסן במפתח האבטחה יימחק, כולל קוד האימות.</translation>
 <translation id="3518985090088779359">בסדר, מקובל עליי</translation>
@@ -2244,7 +2244,6 @@
 <translation id="4099874310852108874">התרחשה שגיאת רשת.</translation>
 <translation id="4100733287846229632">שטח האחסון במכשיר כמעט נגמר</translation>
 <translation id="4100853287411968461">מגבלה חדשה לזמן מסך</translation>
-<translation id="4103091233824664032">צריך להזין את הסיסמה כדי להגדיר את נעילת המסך ואת הכניסה</translation>
 <translation id="4104163789986725820">יי&amp;צא...</translation>
 <translation id="4107048419833779140">לזהות ולהוציא התקני אחסון</translation>
 <translation id="4109135793348361820">העבר חלון אל <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
@@ -2783,6 +2782,7 @@
 <translation id="494286511941020793">‏עזרה של תצורת שרת Proxy</translation>
 <translation id="4943368462779413526">פוטבול</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" רוצה להתחבר אל יציאה טורית</translation>
+<translation id="4943703118917034429">מציאות מדומה</translation>
 <translation id="4944310289250773232">שירות האימות הזה מתארח בדומיין <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">פעולות</translation>
 <translation id="4952981627953231344">‏השימוש ב-Plugin VM אסור במכשיר הזה. יש לפנות למנהל המכשיר בארגון.</translation>
@@ -3132,7 +3132,6 @@
 <translation id="5468173180030470402">מתבצע איתור של התקני רשת לשיתוף קבצים</translation>
 <translation id="5470735824776589490">‏כדי לבצע איפוס באמצעות Powerwash, יש להפעיל תחילה את המכשיר מחדש. <ph name="LINK_BEGIN" />מידע נוסף<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">שלום. זהו הקול של המרת טקסט לדיבור.</translation>
-<translation id="5472133193607270166">כשהאפשרות מופעלת, אתרים לא יכולים להשתמש בפעילות הגלישה שלך באתרים שונים כדי להציג מודעות בהתאמה אישית. ייתכן שאתרים מסוימים לא יפעלו באופן תקין.</translation>
 <translation id="5473333559083690127">‏הזן שוב את מספר ה-PIN החדש</translation>
 <translation id="5481941284378890518">הוסף מדפסות קרובות</translation>
 <translation id="5483785310822538350">בטל גישה לקבצים ולמכשירים</translation>
@@ -3303,7 +3302,6 @@
 <translation id="5701381305118179107">מרכז</translation>
 <translation id="5701441174893770082">‏השדרוג של Linux עשוי לרוקן את הסוללה בצורה משמעותית. יש לחבר את המכשיר למטען ולנסות שוב.</translation>
 <translation id="5702898740348134351">&amp;ערוך מנועי חיפוש...</translation>
-<translation id="570302979952009979">יש לבחור שם בשביל טביעת האצבע הזו</translation>
 <translation id="5704875434923668958">מסנכרן עם</translation>
 <translation id="5707185214361380026">כשל בטעינת תוסף מ:</translation>
 <translation id="5708171344853220004">‏שם ראשי של Microsoft</translation>
@@ -3395,7 +3393,6 @@
 <translation id="5833726373896279253">רק הבעלים יכול לשנות הגדרות אלה:</translation>
 <translation id="5834581999798853053">נותרו בערך <ph name="TIME" /> דקות</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - הקלטה במצלמה או במיקרופון</translation>
-<translation id="5838456317242088717">הפעלה נוכחית במצב גלישה בסתר</translation>
 <translation id="5842497610951477805">‏הפעלה של Bluetooth</translation>
 <translation id="5843250171025351504">המכשיר כבר לא תואם לדרישה של גירסת הלקוח המינימלית שצוינה על-ידי מנהל המערכת שלך. יש לעדכן כדי להתחבר.</translation>
 <translation id="5846200638699387931">שגיאה בתחביר המציין את הקשר: <ph name="ERROR_LINE" /></translation>
@@ -3651,7 +3648,6 @@
 <translation id="6181431612547969857">ההורדה נחסמה</translation>
 <translation id="6185132558746749656">מיקום מכשיר</translation>
 <translation id="6195693561221576702">אי אפשר להגדיר את המכשיר הזה במצב הדגמה לא מקוון.</translation>
-<translation id="6196640612572343990">‏חסום קובצי Cookie של צד שלישי</translation>
 <translation id="6196854373336333322">‏התוסף "<ph name="EXTENSION_NAME" />" השתלט על הגדרות שרת ה-Proxy. פירוש הדבר שהוא יכול לשנות ולקטוע לכל פעולה שתבצע באינטרנט או לצותת לה. אם אינך יודע בוודאות מדוע שינוי זה התרחש, סביר להניח שזהו שינוי לא רצוי.</translation>
 <translation id="6198102561359457428">צא והיכנס שוב...</translation>
 <translation id="6198252989419008588">‏שנה PIN</translation>
@@ -4357,7 +4353,6 @@
 <translation id="7225179976675429563">חסר סוג רשת</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (ספק: <ph name="VENDOR_ID" />, מוצר: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">שינוי הגדרות שמציינות אם אתרים יכולים להשתמש בתכונות כגון מיקום גיאוגרפי, מיקרופון, מצלמה ועוד</translation>
-<translation id="7228523857728654909">נעילת מסך וכניסה</translation>
 <translation id="7229570126336867161">‏יש צורך ב-EVDO</translation>
 <translation id="7230787553283372882">התאם אישית את גודל הטקסט</translation>
 <translation id="7232750842195536390">המערכת לא הצליחה לשנות את השם</translation>
@@ -5275,7 +5270,6 @@
 <translation id="850875081535031620">לא נמצאו תוכנות מזיקות</translation>
 <translation id="8509177919508253835">איפוס מפתחות האבטחה ויצירת קודי אימות</translation>
 <translation id="8509646642152301857">הורדת המילון לבדיקת איות נכשלה.</translation>
-<translation id="8510617356402557055">האם האתר נחסם באופן בלתי צפוי? <ph name="BEGIN_LINK" />שליחת משוב<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">סיים תהליך</translation>
 <translation id="851263357009351303">אפשר ל-<ph name="HOST" /> להציג תמונות תמיד</translation>
 <translation id="8513108775083588393">סיבוב אוטומטי</translation>

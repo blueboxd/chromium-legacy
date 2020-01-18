@@ -66,7 +66,8 @@ class RenderFrameHostFeaturePolicyTest
     RenderFrameHost* current = *rfh;
     SimulateNavigation(&current, current->GetLastCommittedURL());
     static_cast<TestRenderFrameHost*>(current)->DidSetFramePolicyHeaders(
-        blink::WebSandboxFlags::kNone, CreateFPHeader(feature, values));
+        blink::WebSandboxFlags::kNone, CreateFPHeader(feature, values),
+        {} /* document_policy_header */);
     *rfh = current;
   }
 

@@ -301,7 +301,7 @@
 <translation id="3282568296779691940">Најави се на Chrome</translation>
 <translation id="3288003805934695103">Повторно да ја вчитате страницата</translation>
 <translation id="32895400574683172">Известувањата се дозволени</translation>
-<translation id="3290926146403723641">За да изврши задачи на интернет преку „Помошникот на Google“, Chrome ги испраќа URL на сајтот, содржините на сајтот и важните лични податоци до Google</translation>
+<translation id="3290926146403723641">За да извршува задачи на интернет преку „Помошникот на Google“, Chrome ги испраќа URL на сајтот, содржините на сајтот и соодветните лични податоци до Google</translation>
 <translation id="3295530008794733555">Прелистувајте побрзо. Користете помалку мобилен интернет.</translation>
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Продолжете со преземање на содржината?</translation>
@@ -668,6 +668,7 @@
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6064125863973209585">Преземањата завршија</translation>
 <translation id="6075798973483050474">Измени ја почетната страница</translation>
+<translation id="6092062101542170135">За да продолжите, вклучете ја NFC во поставките за Android</translation>
 <translation id="60923314841986378">Останаа <ph name="HOURS" /> часа</translation>
 <translation id="6108923351542677676">Поставувањето е во тек…</translation>
 <translation id="6111020039983847643">искористен сообраќај</translation>

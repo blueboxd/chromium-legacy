@@ -32,9 +32,6 @@ class GURL;
 @property(nonatomic, readonly) DeviceSharingManager* deviceSharingManager;
 @property(nonatomic, retain) id<TabSwitcher> tabSwitcher;
 
-// The top presented view controller that is not currently being dismissed.
-@property(nonatomic, readonly) UIViewController* topPresentedViewController;
-
 // Tab switcher state.
 @property(nonatomic, getter=isTabSwitcherActive) BOOL tabSwitcherActive;
 

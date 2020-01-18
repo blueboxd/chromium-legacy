@@ -70,6 +70,10 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/safe_browsing/android/password_reuse_controller_android.h"
+#endif
+
 using content::BrowserThread;
 using sync_pb::GaiaPasswordReuse;
 using sync_pb::UserEventSpecifics;
@@ -379,15 +383,22 @@ void ChromePasswordProtectionService::ShowModalWarning(
   if (web_contents->IsFullscreenForCurrentTab())
     web_contents->ExitFullscreen(true);
 
-// TODO(crbug.com/1036042): Enable password reuse warning on Android.
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  (new PasswordReuseControllerAndroid(
+       web_contents, this, password_type,
+       base::BindOnce(&ChromePasswordProtectionService::OnUserAction,
+                      base::Unretained(this), web_contents, password_type,
+                      outcome, verdict_type, verdict_token,
+                      WarningUIType::MODAL_DIALOG)))
+      ->ShowDialog();
+#else   // !defined(OS_ANDROID)
   ShowPasswordReuseModalWarningDialog(
       web_contents, this, password_type,
       base::BindOnce(&ChromePasswordProtectionService::OnUserAction,
                      base::Unretained(this), web_contents, password_type,
                      outcome, verdict_type, verdict_token,
                      WarningUIType::MODAL_DIALOG));
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID)
 
   LogWarningAction(WarningUIType::MODAL_DIALOG, WarningAction::SHOWN,
                    password_type);

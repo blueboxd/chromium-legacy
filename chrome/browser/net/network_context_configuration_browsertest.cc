@@ -1137,22 +1137,10 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   EXPECT_EQ(kAddress,
             result.resolved_addresses.value()[0].ToStringWithoutPort());
 
-  // Make a cache-only request for the same hostname, for each other network
-  // context, and make sure no result is returned.
-  ForEachOtherContext(
-      base::BindLambdaForTesting([&](NetworkContextType network_context_type) {
-        network::mojom::ResolveHostParametersPtr params =
-            network::mojom::ResolveHostParameters::New();
-        // Cache only lookup.
-        params->source = net::HostResolverSource::LOCAL_ONLY;
-        network::DnsLookupResult result = network::BlockingDnsLookup(
-            GetNetworkContextForContextType(network_context_type),
-            host_port_pair, std::move(params), network_isolation_key);
-        EXPECT_EQ(net::ERR_DNS_CACHE_MISS, result.error);
-      }));
-
   // Do a cache-only lookup using the original network context, which should
-  // return the same result it initially did.
+  // return the same result it initially did. This is done immediately after the
+  // lookup, as a race mitigation to minimize the chance of the cache entry
+  // expiring before this check.
   network::mojom::ResolveHostParametersPtr params =
       network::mojom::ResolveHostParameters::New();
   // Cache only lookup.
@@ -1164,6 +1152,22 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
   ASSERT_EQ(1u, result.resolved_addresses->size());
   EXPECT_EQ(kAddress,
             result.resolved_addresses.value()[0].ToStringWithoutPort());
+
+  // Make a cache-only request for the same hostname, for each other network
+  // context, and make sure no result is returned. It's possible for the entry
+  // to expire during this test run, so on regression, this step may flakily
+  // pass.
+  ForEachOtherContext(
+      base::BindLambdaForTesting([&](NetworkContextType network_context_type) {
+        network::mojom::ResolveHostParametersPtr params =
+            network::mojom::ResolveHostParameters::New();
+        // Cache only lookup.
+        params->source = net::HostResolverSource::LOCAL_ONLY;
+        network::DnsLookupResult result = network::BlockingDnsLookup(
+            GetNetworkContextForContextType(network_context_type),
+            host_port_pair, std::move(params), network_isolation_key);
+        EXPECT_EQ(net::ERR_DNS_CACHE_MISS, result.error);
+      }));
 }
 
 // Visits a URL with an HSTS header, and makes sure it is respected.

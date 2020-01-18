@@ -3125,7 +3125,9 @@ TEST_F(RenderFrameHostManagerTest, ReceivedFramePolicyAfterNavigationStarted) {
   navigation_to_kUrl2->ReadyToCommit();
 
   // Now send the frame policy for the initial page.
-  initial_rfh->SendFramePolicy(blink::WebSandboxFlags::kAll, {});
+  initial_rfh->SendFramePolicy(blink::WebSandboxFlags::kAll,
+                               {} /* feature_policy_header */,
+                               {} /* document_policy_header */);
   // Verify that the policy landed in the frame tree.
   EXPECT_EQ(blink::WebSandboxFlags::kAll,
             initial_rfh->frame_tree_node()->active_sandbox_flags());

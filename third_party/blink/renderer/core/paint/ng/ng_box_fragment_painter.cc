@@ -1505,7 +1505,8 @@ BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(
       fragment.HasOverflowClip(), color, bg_layer, bleed_avoidance,
       LayoutObject::ShouldRespectImageOrientation(fragment.GetLayoutObject()),
       border_edges.line_left, border_edges.line_right,
-      fragment.GetLayoutObject()->IsInline(), is_painting_scrolling_background);
+      fragment.GetLayoutObject()->IsLayoutInline(),
+      is_painting_scrolling_background);
 }
 
 bool NGBoxFragmentPainter::IsInSelfHitTestingPhase(HitTestAction action) const {

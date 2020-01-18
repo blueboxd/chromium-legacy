@@ -101,7 +101,6 @@ def RunMetric(trace_processor_path, trace_file, metric_name):
       trace_processor_path,
       '--run-metrics', metric_files.sql,
       '--metrics-output', 'json',
-      '--extra-metrics', METRICS_PATH,
       trace_file,
   )
   measurements = json.loads(output)

@@ -14,16 +14,14 @@ See trigger_multiple_dimensions.py for an example of how to use this base class.
 
 """
 
-import argparse
 import copy
 import json
 import os
-import random
 import subprocess
 import sys
 import tempfile
 import urllib
-
+import logging
 
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
   __file__))))
@@ -162,11 +160,13 @@ class BaseTestTriggerer(object):
       self._bot_statuses.append({'total': count, 'available': available})
       if verbose:
         idx = len(self._bot_statuses) - 1
-        print 'Bot config %d: %s' % (idx, str(self._bot_statuses[idx]))
+        logging.info(
+            'Bot config %d: %s' % (idx, str(self._bot_statuses[idx])))
     # Sum up the total count of all bots.
     self._total_bots = sum(x['total'] for x in self._bot_statuses)
     if verbose:
-      print 'Total bots: %d' % (self._total_bots)
+      logging.info(
+          'Total bots: %d' % (self._total_bots))
 
   def remove_swarming_dimension(self, args, dimension):
     for i in xrange(len(args)):
@@ -197,8 +197,7 @@ class BaseTestTriggerer(object):
 
   def run_swarming(self, args, verbose):
     if verbose:
-      print 'Running Swarming with args:'
-      print str(args)
+      logging.info('Running Swarming with args: %s' % args)
     return subprocess.call([sys.executable, SWARMING_PY] + args)
 
   def prune_test_specific_configs(self, args, verbose):

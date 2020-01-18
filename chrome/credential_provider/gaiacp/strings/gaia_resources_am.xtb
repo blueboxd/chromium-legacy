@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
+<translation id="1337778609052285767">የአሁኑ ይለፍ ቃል የይለፍ ቃል ውስብስብነት መስፈርቶችን አያሟላም። እባክዎ አስተዳዳሪዎን ያነጋግሩ።</translation>
 <translation id="1337821341856692531">የእርስዎን አሁን ያለውን የ Windows የይለፍ ቃል ሳያስገቡ መቀጠል መልሶ ሊገኝ የማይችል የመረጃ መጥፋትን ሊያስከትል ይችል ይሆናል።</translation>
 <translation id="1383286653814676580">የGoogle ምስክርነት አቅራቢ መግቢያ ገጽን ለማሄድ ስራ ላይ ይውላል።</translation>
 <translation id="1894475569413661128">የስራ መለያዎን በመጠቀም በመለያ ይግቡ።</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">ትክክል ያልሆነ የ Windows ይለፍ ቃልን አስገብተዋል። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="2831078752570172210">የእርስዎ መለያ ተቆልፎ ወጥቷል። እባክዎ የእርስዎን የሥርዓት አስተዳዳሪ ያነጋግሩ።</translation>
 <translation id="2844349213149998955">በዚህ መሣሪያ ላይ የግል መለያ ጋር በመለያ መግባት አይፈቀድም። እባክዎ በሥራ መለያ ይግቡ።</translation>
+<translation id="2995851317559936311">የይለፍ ቃል ለውጥ የሚፈቀደው በጎራ መቆጣጠሪያው ላይ ብቻ ነው። እባክዎ አስተዳዳሪዎን ያነጋግሩ።</translation>
 <translation id="3306357053520292004">በዚህ ኮምፒውተር ላይ ያለ ተጠቃሚ አስቀድሞ ይህን መለያ በመጠቀም ታክሏል። እባክዎ በተለየ መለያ ይግቡ።</translation>
 <translation id="3926852373333893095">GSuite Enterprise ተጠቃሚዎች ብቻ በመለያ እንዲገቡ ይፈቀድላቸዋል።</translation>
 <translation id="4057329986137569701">አንድ ውስጣዊ ስህተት ተከስቷል።</translation>
 <translation id="4267670563222825190">ምንም የጎራ ተጠቃሚ ለእርስዎ መለያ ሊገኝ አልተቻለም። እባክዎ አስተዳዳሪዎን ያነጋግሩ።</translation>
 <translation id="4300229033992784001">የመለያዎ ይለፍ ቅቃል ተቀይሯል። የWindows መለያዎን ከስራ መለያዎ ጋር ለማሳመር እባክዎ የአሁኑ የWindows ይለፍ ቃልዎን ያስገቡ።</translation>
+<translation id="4669462973597624151">የይለፍ ቃልን የመለወጥ ሙከራ አልተሳካም። እባክዎ አስተዳዳሪዎን ያነጋግሩ።</translation>
 <translation id="4706454071748629324">አዲስ ተጠቃሚን ማከል አልተቻለም። ይህ ኮምፒውተር የስራ መለያን በመጠቀም አንድ ተጠቃሚ ብቻ እንዲፈጠር ነው የሚፈቅደው።</translation>
+<translation id="5186761973554910131">በይለፍ ቃል መቀየር ሙከራ ጊዜ ልክ ያልሆነ የኮምፒውተር ስም ቀርቧል እባክዎ አስተዳዳሪዎን ያነጋግሩ።</translation>
 <translation id="6033715878377252112">Google ምስክርነት አቅራቢ ለ Windows አጋዥ</translation>
 <translation id="6149399665202317746">Google ምስክርነት አቅራቢ ለ Windows</translation>
 <translation id="6239180560789153226">መሣሪያዎ የመልሶ ማግኛ መረጃ ይጎድለዋል። የGoogle ሥራ መለያዎን በመጠቀም በመለያ ይግቡ።</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">የስራ መለያን አክል</translation>
 <translation id="7811865856574012727">የእርስዎ አስተዳዳሪ ወደ የሚከተሉት ጎራዎች የመሥሪያ በመለያ መግባትን ገድቧል፦ <ph name="EMAIL_DOMAINS" />። የሚሠራ የሥራ መለያን ለመጠቀም እንደገና ይሞክሩ።</translation>
 <translation id="7856245195110636219">አሁን ያለውን የ Windows የይለፍ ቃል ሳያስገቡ መቀጠል አይቻልም። እባክዎ የሥርዓት አስተዳዳሪን ያነጋግሩ።</translation>
+<translation id="8109730953933509335">ልክ ባልሆነ ተጠቃሚ ላይ የይለፍ ቃል ለውጥ ተሞክሯል። እባክዎ አስተዳዳሪዎን ያነጋግሩ።</translation>
 <translation id="8639729688781680518">የ Windows ይለፍ ቃል ረስቼያለሁ</translation>
 <translation id="866458870819756755">ተጠቃሚ ሊፈጠር አልቻለም።</translation>
 <translation id="8875753657315897487">የስራ መለያዎን በመጠቀም በመለያ ይግቡ</translation>

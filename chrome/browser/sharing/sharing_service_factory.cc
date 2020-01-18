@@ -132,13 +132,13 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
       profile, sharing_device_registration.get(), sharing_message_sender.get(),
       device_source.get(), sms_fetcher);
   auto fcm_handler = std::make_unique<SharingFCMHandler>(
-      gcm_driver, fcm_sender_ptr, sync_prefs.get(),
-      std::move(handler_registry));
+      gcm_driver, fcm_sender_ptr, sync_prefs.get(), handler_registry.get());
 
   return new SharingService(
       std::move(sync_prefs), std::move(vapid_key_manager),
       std::move(sharing_device_registration), std::move(sharing_message_sender),
-      std::move(device_source), std::move(fcm_handler), sync_service);
+      std::move(device_source), std::move(handler_registry),
+      std::move(fcm_handler), sync_service);
 }
 
 content::BrowserContext* SharingServiceFactory::GetBrowserContextToUse(

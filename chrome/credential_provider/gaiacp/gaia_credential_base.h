@@ -50,8 +50,9 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   static HRESULT OnDllRegisterServer();
   static HRESULT OnDllUnregisterServer();
 
-  // Saves gaia information in the OS account that was just created.
-  static HRESULT SaveAccountInfo(const base::Value& properties);
+  // Perform non-critical post-sign operations after everything is setup here.
+  static HRESULT PerformPostSigninActions(const base::Value& properties,
+                                          bool com_initialized);
 
   // Allocates a BSTR from a DLL string resource given by |id|.
   static BSTR AllocErrorString(UINT id);
@@ -95,6 +96,9 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   const base::Optional<base::Value>& get_authentication_results() const {
     return authentication_results_;
   }
+
+  // Saves gaia information in the OS account that was just created.
+  static HRESULT SaveAccountInfo(const base::Value& properties);
 
   // Returns true if the current credentials stored in |username_| and
   // |password_| are valid and should succeed a local Windows logon. This
@@ -155,9 +159,9 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // Display error message to the user.  Virtual so that tests can override.
   virtual void DisplayErrorInUI(LONG status, LONG substatus, BSTR status_text);
 
-  // Forks a stub process to save account information for a user.
-  virtual HRESULT ForkSaveAccountInfoStub(const base::Value& dict,
-                                          BSTR* status_text);
+  // Forks a stub process to perform all post sign-in actions for a user.
+  virtual HRESULT ForkPerformPostSigninActionsStub(const base::Value& dict,
+                                                   BSTR* status_text);
 
   // Forks the logon stub process and waits for it to start.
   virtual HRESULT ForkGaiaLogonStub(OSProcessManager* process_manager,

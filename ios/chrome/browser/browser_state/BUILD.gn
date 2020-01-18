@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("forward") {
+  sources = [ "chrome_browser_state_forward.h" ]
+}
+
 source_set("browser_state") {
   sources = [
     "browser_state_otr_helper.cc",
@@ -12,6 +16,7 @@ source_set("browser_state") {
   ]
 
   public_deps = [
+    ":forward",
     "//ios/web",
     "//net",
   ]

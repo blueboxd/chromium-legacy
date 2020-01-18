@@ -14,7 +14,7 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.StrictMode;
 
-import org.chromium.android_webview.common.CommandLineUtil;
+import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.android_webview.common.services.ICrashReceiverService;
 import org.chromium.android_webview.common.services.ServiceNames;
@@ -213,7 +213,7 @@ public final class AwBrowserProcess {
         try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped(
                      "AwBrowserProcess.handleMinidumpsAndSetMetricsConsent")) {
             final boolean enableMinidumpUploadingForTesting = CommandLine.getInstance().hasSwitch(
-                    CommandLineUtil.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
+                    AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH);
             if (enableMinidumpUploadingForTesting) {
                 handleMinidumps(true /* enabled */);
             }

@@ -293,9 +293,6 @@ void PasswordFormManager::OnUpdateUsernameFromPrompt(
   // uploaded.
   votes_uploader_.set_has_username_edited_vote(false);
   if (!new_username.empty()) {
-    // |all_possible_usernames| has all possible usernames.
-    // TODO(crbug.com/831123): rename to |all_possible_usernames| when the old
-    // parser is gone.
     for (const auto& possible_username :
          parsed_submitted_form_->all_possible_usernames) {
       if (possible_username.first == new_username) {
@@ -586,6 +583,16 @@ void PasswordFormManager::OnFetchCompleted() {
   }
 }
 
+void PasswordFormManager::CreatePendingCredentials() {
+  DCHECK(is_submitted_);
+  if (!parsed_submitted_form_)
+    return;
+
+  password_save_manager_->CreatePendingCredentials(
+      *parsed_submitted_form_, observed_form_, submitted_form_, IsHttpAuth(),
+      IsCredentialAPISave());
+}
+
 bool PasswordFormManager::ProvisionallySave(
     const FormData& submitted_form,
     const PasswordManagerDriver* driver,
@@ -810,20 +817,6 @@ void PasswordFormManager::ReportTimeBetweenStoreAndServerUMA() {
     UMA_HISTOGRAM_TIMES("PasswordManager.TimeBetweenStoreAndServer",
                         TimeTicks::Now() - received_stored_credentials_time_);
   }
-}
-
-// TODO(https://crbug.com/831123): move this function to the proper place
-// corresponding to its place in the header.
-void PasswordFormManager::CreatePendingCredentials() {
-  DCHECK(is_submitted_);
-  // TODO(https://crbug.com/831123): Process correctly the case when saved
-  // credentials are not received from the store yet.
-  if (!parsed_submitted_form_)
-    return;
-
-  password_save_manager_->CreatePendingCredentials(
-      *parsed_submitted_form_, observed_form_, submitted_form_, IsHttpAuth(),
-      IsCredentialAPISave());
 }
 
 void PasswordFormManager::FillHttpAuth() {

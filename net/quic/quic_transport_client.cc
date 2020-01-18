@@ -316,8 +316,9 @@ void QuicTransportClient::OnIncomingUnidirectionalStreamAvailable() {
   visitor_->OnIncomingUnidirectionalStreamAvailable();
 }
 
-void QuicTransportClient::OnIncomingDatagramAvailable() {
-  visitor_->OnIncomingDatagramAvailable();
+void QuicTransportClient::OnDatagramReceived(
+    quiche::QuicheStringPiece datagram) {
+  visitor_->OnDatagramReceived(datagram);
 }
 
 void QuicTransportClient::OnCanCreateNewOutgoingBidirectionalStream() {

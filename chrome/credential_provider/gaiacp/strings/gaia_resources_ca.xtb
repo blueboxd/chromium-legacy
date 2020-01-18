@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
+<translation id="1337778609052285767">La contrasenya actual no compleix els requisits de complexitat. Contacta amb l'administrador.</translation>
 <translation id="1337821341856692531">Si continues sense introduir la contrasenya actual de Windows, pot ser que es perdi informació de forma irreversible.</translation>
 <translation id="1383286653814676580">S'utilitza per executar la pàgina d'inici de sessió del proveïdor de credencials de Google.</translation>
 <translation id="1894475569413661128">Inicia la sessió amb el compte de la feina.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Has introduït una contrasenya de Windows incorrecta. Torna-ho a provar.</translation>
 <translation id="2831078752570172210">El teu compte s'ha bloquejat. Contacta amb l'administrador del sistema.</translation>
 <translation id="2844349213149998955">No es permet iniciar la sessió amb un compte personal en aquest dispositiu. Utilitza un compte de la feina.</translation>
+<translation id="2995851317559936311">El canvi de contrasenya només es permet al controlador del domini. Contacta amb l'administrador.</translation>
 <translation id="3306357053520292004">Ja s'ha afegit un usuari a l'ordinador amb aquest compte. Inicia la sessió amb un altre compte.</translation>
 <translation id="3926852373333893095">Només poden iniciar la sessió els usuaris de G Suite Enterprise.</translation>
 <translation id="4057329986137569701">S'ha produït un error intern.</translation>
 <translation id="4267670563222825190">No s'ha trobat cap usuari del domini per al teu compte. Contacta amb l'administrador.</translation>
 <translation id="4300229033992784001">La contrasenya del compte ha canviat. Introdueix la contrasenya actual de Windows per sincronitzar el compte de Windows amb el de la feina.</translation>
+<translation id="4669462973597624151">L'intent de canviar la contrasenya ha fallat. Contacta amb l'administrador.</translation>
 <translation id="4706454071748629324">No s'ha pogut afegir un usuari nou. En aquest ordinador només es pot crear un usuari amb un compte de la feina.</translation>
+<translation id="5186761973554910131">S'ha proporcionat un nom de l'ordinador que no és vàlid en provar de canviar la contrasenya. Contacta amb l'administrador.</translation>
 <translation id="6033715878377252112">Aplicació d'ajuda del proveïdor de credencials de Google per a Windows</translation>
 <translation id="6149399665202317746">Proveïdor de credencials de Google per a Windows</translation>
 <translation id="6239180560789153226">Falta informació de recuperació al dispositiu. Inicia la sessió amb el teu compte de la feina de Google.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Afegeix el compte de la feina</translation>
 <translation id="7811865856574012727">L'administrador ha restringit l'inici de sessió del dispositiu en els dominis següents: <ph name="EMAIL_DOMAINS" />. Torna-ho a provar utilitzant un compte de la feina vàlid.</translation>
 <translation id="7856245195110636219">No es pot continuar sense introduir la contrasenya actual de Windows. Contacta amb un administrador del sistema.</translation>
+<translation id="8109730953933509335">S'ha provat de canviar la contrasenya d'un usuari no vàlid. Contacta amb l'administrador.</translation>
 <translation id="8639729688781680518">He oblidat la contrasenya de Windows</translation>
 <translation id="866458870819756755">No s'ha pogut crear cap usuari.</translation>
 <translation id="8875753657315897487">Inicia la sessió amb el compte de la feina</translation>

@@ -119,9 +119,7 @@
             $i18n{siteSettingsSiteGroupResetDialogTitle}
           </div>
           <div slot="body">
-            [[getFormatString_(
-                '$i18nPolymer{siteSettingsSiteGroupResetConfirmation}',
-                actionMenuModel_.item.etldPlus1)]]
+            [[getResetPermissionsLabel_(actionMenuModel_)]]
           </div>
           <div slot="button-container">
             <cr-button class="cancel-button" on-click="onCloseDialog_">
@@ -143,9 +141,8 @@
             $i18n{siteSettingsSiteGroupDeleteDialogTitle}
           </div>
           <div slot="body">
-            [[getFormatString_(
-                '$i18nPolymer{siteSettingsSiteGroupDeleteConfirmation}',
-                actionMenuModel_.item.etldPlus1)]]
+            [[getClearDataLabel_(
+                actionMenuModel_, storagePressureFlagEnabled_)]]
           </div>
           <div slot="button-container">
             <cr-button class="cancel-button" on-click="onCloseDialog_">
@@ -169,9 +166,8 @@
             $i18n{siteSettingsSiteGroupDeleteDialogTitle}
           </div>
           <div slot="body">
-            [[getFormatString_(
-                '$i18nPolymer{siteSettingsSiteGroupDeleteConfirmationNew}',
-                actionMenuModel_.item.etldPlus1)]]
+            [[getClearDataLabel_(
+                actionMenuModel_, storagePressureFlagEnabled_)]]
             <div class="detail-list">
               <div class="detail">
                 <iron-icon icon="all-sites:logout"></iron-icon>

@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">плъзгач</translation>
 <translation id="1211441953136645838">бележка в края</translation>
 <translation id="1281252709823657822">диалогов прозорец</translation>
+<translation id="1306460908038601864">Изключване</translation>
 <translation id="1335095011850992622">признания за източника</translation>
 <translation id="1342835525016946179">статия</translation>
 <translation id="1359897965706325498">банер</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="5307600278924710095">Моля, въведете текст преди „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ е непълно.</translation>
 <translation id="5334352251556557839">Мултимедийното съдържание не може да бъде възпроизведено.</translation>
+<translation id="537648784377940524">Най-ранната дата (<ph name="MIN_DATE_OR_TIME" />) трябва да е преди най-късната (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">фигура</translation>
 <translation id="5453733299334684579">елемент от дърво</translation>
 <translation id="5466621249238537318">Моля, изберете един или повече файлове.</translation>

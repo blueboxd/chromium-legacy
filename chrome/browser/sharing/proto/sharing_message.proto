@@ -32,10 +32,12 @@ enum MessageType {
   REMOTE_COPY_MESSAGE = 6;
   SIGNALLING_MESSAGE = 7;
   ICE_CANDIDATE_MESSAGE = 8;
+  DISCOVERY_REQUEST = 9;
+  WEB_RTC_SIGNALING_FRAME = 10;
 }
 
 // Message for sending between devices in Sharing.
-// Next tag: 13
+// Next tag: 15
 message SharingMessage {
   // Identifier of sender. required except for AckMessage.
   string sender_guid = 1;
@@ -50,6 +52,8 @@ message SharingMessage {
     RemoteCopyMessage remote_copy_message = 9;
     SignallingMessage signalling_message = 10;
     IceCandidateMessage ice_candidate_message = 11;
+    DiscoveryRequest discovery_request = 13;
+    WebRtcSignalingMessage web_rtc_signaling_frame = 14;
   }
 
   oneof ack_channel_configuration {
@@ -89,6 +93,7 @@ message ResponseMessage {
   oneof payload {
     SmsFetchResponse sms_fetch_response = 1;
     SignallingMessage signalling_message_response = 2;
+    DiscoveryResponse discovery_response = 3;
   }
 }
 
@@ -112,4 +117,28 @@ message ServerChannelConfiguration {
 
   // Optional cookie set on the original request. optional.
   bytes session_cookie = 2;
+}
+
+// Request for Sharing Discovery.
+message DiscoveryRequest {
+  // required
+  string service_id = 1;
+}
+
+// Response for Sharing Discovery.
+message DiscoveryResponse {
+  // required
+  string service_id = 1;
+
+  // required
+  string endpoint_id = 2;
+
+  // required
+  bytes endpoint_info = 3;
+}
+
+// Request for WebRTC signalling for Discovery.
+message WebRtcSignalingMessage {
+  // required
+  bytes web_rtc_signaling_frame = 1;
 }

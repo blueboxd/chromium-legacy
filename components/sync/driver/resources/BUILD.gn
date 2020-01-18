@@ -87,15 +87,11 @@ js_library("sync_search") {
 }
 
 js_library("traffic_log") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("types") {
-  deps = [
-    "//ui/webui/resources/js:cr",
-  ]
+  deps = [ "//ui/webui/resources/js:cr" ]
 }
 
 js_library("user_events") {

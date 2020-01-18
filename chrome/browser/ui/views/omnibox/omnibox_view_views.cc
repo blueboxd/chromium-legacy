@@ -681,11 +681,7 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
       return true;
   }
 
-  // If suggestion removal buttons are enabled, make Tab and Shift+Tab less
-  // exotic and allow it to traverse the focus out of the popup. We do this
-  // because removal buttons dramatically increase the number of child buttons.
-  if (base::FeatureList::IsEnabled(
-          omnibox::kOmniboxSuggestionTransparencyOptions)) {
+  if (base::FeatureList::IsEnabled(omnibox::kTabKeyCanEscapeOmniboxPopup)) {
     // Close the popup if tab traversal exits the list.
     size_t selected_line = model()->popup_model()->selected_line();
     bool close_popup = event.IsShiftDown()

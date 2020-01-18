@@ -11,6 +11,7 @@ class SwitchAccess {
     window.switchAccess = new SwitchAccess();
   }
 
+  /** @return {!SwitchAccess} */
   static get() {
     return window.switchAccess;
   }
@@ -294,7 +295,7 @@ class SwitchAccess {
     if (!this.backButtonAutomationNode_) {
       this.findBackButtonNode_();
       if (!this.backButtonAutomationNode_) {
-        console.log('Error: unable to find back button');
+        console.error('Error: unable to find back button');
         return null;
       }
     }
@@ -342,10 +343,36 @@ class SwitchAccess {
     }
   }
 
+  /**
+   * Updates the focus ring locations in response to an automation event.
+   */
   static refreshFocusRings() {
     const switchAccess = SwitchAccess.get();
     if (switchAccess.navigationManager_) {
       switchAccess.navigationManager_.refreshFocusRings();
+    }
+  }
+
+  /**
+   * Moves to a valid node when the current node has been invalidated.
+   */
+  static moveToValidNode() {
+    const switchAccess = SwitchAccess.get();
+    if (switchAccess.navigationManager_) {
+      switchAccess.navigationManager_.moveToValidNode();
+    }
+  }
+
+  /**
+   * Roces Switch Access focus onto the given node.
+   * Should only be done by subclasses of SARootNode and only when they are
+   * focused.
+   * @param {!SAChildNode} node
+   */
+  static forceFocusedNode(node) {
+    const switchAccess = SwitchAccess.get();
+    if (switchAccess.navigationManager_) {
+      switchAccess.navigationManager_.setNode(node);
     }
   }
 }

@@ -24,9 +24,6 @@ namespace internal {
 const char kHistogramOfflinePreviewsDOMContentLoadedEventFired[] =
     "PageLoad.Clients.Previews.OfflinePages.DocumentTiming."
     "NavigationToDOMContentLoadedEventFired";
-const char kHistogramOfflinePreviewsFirstLayout[] =
-    "PageLoad.Clients.Previews.OfflinePages.DocumentTiming."
-    "NavigationToFirstLayout";
 const char kHistogramOfflinePreviewsLoadEventFired[] =
     "PageLoad.Clients.Previews.OfflinePages.DocumentTiming."
     "NavigationToLoadEventFired";
@@ -99,16 +96,6 @@ void OfflinePagePreviewsPageLoadMetricsObserver::OnLoadEventStart(
   }
   PAGE_LOAD_HISTOGRAM(internal::kHistogramOfflinePreviewsLoadEventFired,
                       timing.document_timing->load_event_start.value());
-}
-
-void OfflinePagePreviewsPageLoadMetricsObserver::OnFirstLayout(
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
-  if (!page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing->first_layout, GetDelegate())) {
-    return;
-  }
-  PAGE_LOAD_HISTOGRAM(internal::kHistogramOfflinePreviewsFirstLayout,
-                      timing.document_timing->first_layout.value());
 }
 
 void OfflinePagePreviewsPageLoadMetricsObserver::OnFirstContentfulPaintInPage(

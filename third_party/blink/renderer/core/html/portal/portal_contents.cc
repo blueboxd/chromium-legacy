@@ -33,7 +33,7 @@ PortalContents::PortalContents(
       remote_portal_(std::move(remote_portal)),
       portal_client_receiver_(this, std::move(portal_client_receiver)) {
   remote_portal_.set_disconnect_handler(
-      WTF::Bind(&PortalContents::Destroy, WrapWeakPersistent(this)));
+      WTF::Bind(&PortalContents::DisconnectHandler, WrapWeakPersistent(this)));
   DocumentPortals::From(GetDocument()).RegisterPortalContents(this);
 }
 
@@ -100,6 +100,11 @@ void PortalContents::OnActivateResponse(
       }
       break;
     }
+    case mojom::blink::PortalActivateResult::kDisconnected:
+      // Only called when |remote_portal_| is disconnected. This usually happens
+      // when the browser/test runner is being shut down.
+      activate_resolver_->Detach();
+      break;
     case mojom::blink::PortalActivateResult::kAbortedDueToBug:
       // This should never happen. Ignore this and wait for the frame to be
       // discarded by the browser, if it hasn't already.
@@ -170,6 +175,12 @@ void PortalContents::Destroy() {
   remote_portal_.reset();
   portal_client_receiver_.reset();
   DocumentPortals::From(GetDocument()).DeregisterPortalContents(this);
+}
+
+void PortalContents::DisconnectHandler() {
+  if (IsActivating())
+    OnActivateResponse(mojom::blink::PortalActivateResult::kDisconnected);
+  Destroy();
 }
 
 void PortalContents::ForwardMessageFromGuest(

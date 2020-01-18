@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="1337778609052285767">A jelenlegi jelszó nem felel meg a bonyolultságra vonatkozó követelményeknek. Forduljon az adminisztrátorhoz.</translation>
 <translation id="1337821341856692531">A jelenlegi Windows-jelszó megadása nélküli továbblépés visszafordíthatatlan adatvesztéshez vezethet.</translation>
 <translation id="1383286653814676580">A Google Credential Provider bejelentkezési oldalának megnyitására szolgál.</translation>
 <translation id="1894475569413661128">Bejelentkezés munkahelyi fiókkal.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Helytelen Windows-jelszót adott meg. Próbálja újra.</translation>
 <translation id="2831078752570172210">Fiókja ki lett zárva a rendszerből. Kérjük, forduljon a rendszergazdához.</translation>
 <translation id="2844349213149998955">Ezen az eszközön nem engedélyezett a személyes fiókkal való bejelentkezés. Jelentkezzen be munkahelyi fiókkal.</translation>
+<translation id="2995851317559936311">A jelszómódosítás csak domainvezérlőn engedélyezett. Forduljon az adminisztrátorhoz.</translation>
 <translation id="3306357053520292004">A számítógép egyik felhasználója már hozzá lett adva ezzel a fiókkal. Jelentkezzen be másik fiókkal.</translation>
 <translation id="3926852373333893095">Csak G Suite Enterprise-felhasználók jelentkezhetnek be.</translation>
 <translation id="4057329986137569701">Belső hiba történt.</translation>
 <translation id="4267670563222825190">Nem található domainfelhasználó a fiókjához. Forduljon az adminisztrátorhoz.</translation>
 <translation id="4300229033992784001">A fiók jelszava megváltozott. Adja meg jelenlegi Windows-jelszavát Windows-fiókjának és munkahelyi fiókjának a szinkronizálásához.</translation>
+<translation id="4669462973597624151">Sikertelen jelszómódosítási kísérlet. Forduljon az adminisztrátorhoz.</translation>
 <translation id="4706454071748629324">Nem sikerült az új felhasználó hozzáadása. Ez a számítógép csak egy felhasználó létrehozását engedélyezi munkahelyi fiók használatával.</translation>
+<translation id="5186761973554910131">A jelszómódosítási kísérlet során megadott számítógépnév érvénytelen. Forduljon az adminisztrátorhoz.</translation>
 <translation id="6033715878377252112">A Windows rendszerhez készült Google Credential Provider segítője</translation>
 <translation id="6149399665202317746">Google Credential Provider Windows rendszerhez</translation>
 <translation id="6239180560789153226">Eszközéről hiányoznak a helyreállítási adatok. Jelentkezzen be munkahelyi Google-fiókjával.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Munkahelyi fiók hozzáadása</translation>
 <translation id="7811865856574012727">Az adminisztrátor a következő domainekre korlátozta a bejelentkezést az eszközön: <ph name="EMAIL_DOMAINS" />. Próbálja újra érvényes munkahelyi fiókkal.</translation>
 <translation id="7856245195110636219">A jelenlegi Windows-jelszó megadása nélkül nem lehet továbblépni. Forduljon a rendszergazdához.</translation>
+<translation id="8109730953933509335">Érvénytelen felhasználón megkísérelt jelszómódosítás. Forduljon az adminisztrátorhoz.</translation>
 <translation id="8639729688781680518">Elfelejtett Windows-jelszó</translation>
 <translation id="866458870819756755">Nem sikerült létrehozni a felhasználót.</translation>
 <translation id="8875753657315897487">Bejelentkezés munkahelyi fiókkal</translation>

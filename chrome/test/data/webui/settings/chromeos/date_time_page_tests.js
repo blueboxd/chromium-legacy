@@ -117,7 +117,7 @@ function initializeDateTime(prefs, hasPolicy, opt_autoDetectPolicyValue) {
   const data = {
     timeZoneID: timeZone[0],
     timeZoneName: timeZone[1],
-    controlledSettingPolicy: 'This setting is enforced by your administrator',
+    controlledSettingPolicy: 'This setting is managed by your administrator',
     setTimeZoneAutomaticallyDisabled: 'Automatic time zone detection disabled.',
     setTimeZoneAutomaticallyIpOnlyDefault:
         'Automatic time zone detection IP-only.',

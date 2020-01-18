@@ -18,7 +18,7 @@ public class SiteSettingsTestUtils {
     public static SettingsActivity startSiteSettingsMenu(String category) {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putString(SingleCategorySettings.EXTRA_CATEGORY, category);
-        Intent intent = SettingsLauncher.createIntentForSettingsPage(
+        Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
                 InstrumentationRegistry.getTargetContext(), SiteSettings.class.getName(),
                 fragmentArgs);
         return (SettingsActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
@@ -29,7 +29,7 @@ public class SiteSettingsTestUtils {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putString(
                 SingleCategorySettings.EXTRA_CATEGORY, SiteSettingsCategory.preferenceKey(type));
-        Intent intent = SettingsLauncher.createIntentForSettingsPage(
+        Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
                 InstrumentationRegistry.getTargetContext(), SingleCategorySettings.class.getName(),
                 fragmentArgs);
         return (SettingsActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(
@@ -39,7 +39,7 @@ public class SiteSettingsTestUtils {
     public static SettingsActivity startSingleWebsitePreferences(Website site) {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putSerializable(SingleWebsiteSettings.EXTRA_SITE, site);
-        Intent intent = SettingsLauncher.createIntentForSettingsPage(
+        Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
                 InstrumentationRegistry.getTargetContext(), SingleWebsiteSettings.class.getName(),
                 fragmentArgs);
         return (SettingsActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(

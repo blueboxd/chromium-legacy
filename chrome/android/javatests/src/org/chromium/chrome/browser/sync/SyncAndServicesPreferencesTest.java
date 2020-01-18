@@ -380,8 +380,8 @@ public class SyncAndServicesPreferencesTest {
         Context context = InstrumentationRegistry.getTargetContext();
         String fragmentName = SyncAndServicesPreferences.class.getName();
         final Bundle arguments = SyncAndServicesPreferences.createArguments(true);
-        Intent intent =
-                SettingsLauncher.createIntentForSettingsPage(context, fragmentName, arguments);
+        Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
+                context, fragmentName, arguments);
         Activity activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
         Assert.assertTrue(activity instanceof SettingsActivity);
         ApplicationTestUtils.finishActivity(activity);

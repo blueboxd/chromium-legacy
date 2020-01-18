@@ -36,8 +36,9 @@ public class PasswordManagerDialogCoordinator {
     private final PasswordManagerDialogMediator mMediator;
     private PropertyModel mModel;
 
-    PasswordManagerDialogCoordinator(ModalDialogManager modalDialogManager, View androidContentView,
-            ChromeFullscreenManager fullscreenManager, int containerHeightResource) {
+    public PasswordManagerDialogCoordinator(ModalDialogManager modalDialogManager,
+            View androidContentView, ChromeFullscreenManager fullscreenManager,
+            int containerHeightResource) {
         mMediator = new PasswordManagerDialogMediator(
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS), modalDialogManager,
                 androidContentView, fullscreenManager, containerHeightResource);

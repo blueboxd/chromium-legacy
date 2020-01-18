@@ -978,6 +978,11 @@ DownloadDangerType DownloadItemImpl::GetDangerType() const {
   return danger_type_;
 }
 
+DownloadItem::MixedContentStatus DownloadItemImpl::GetMixedContentStatus()
+    const {
+  return mixed_content_status_;
+}
+
 bool DownloadItemImpl::TimeRemaining(base::TimeDelta* remaining) const {
   if (total_bytes_ <= 0)
     return false;  // We never received the content_length for this download.
@@ -1616,6 +1621,7 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
     const base::FilePath& target_path,
     TargetDisposition disposition,
     DownloadDangerType danger_type,
+    MixedContentStatus mixed_content_status,
     const base::FilePath& intermediate_path,
     DownloadInterruptReason interrupt_reason) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -1655,6 +1661,7 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
   destination_info_.target_path = target_path;
   destination_info_.target_disposition = disposition;
   SetDangerType(danger_type);
+  mixed_content_status_ = mixed_content_status;
 
   // This was an interrupted download that was looking for a filename. Resolve
   // early without performing the intermediate rename. If there is a

@@ -22,6 +22,7 @@
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
 #include "chrome/browser/sharing/sharing_handler_registry.h"
+#include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
@@ -54,6 +55,24 @@ class MockInstanceIDDriver : public instance_id::InstanceIDDriver {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInstanceIDDriver);
+};
+
+class MockSharingHandlerRegistry : public SharingHandlerRegistry {
+ public:
+  MockSharingHandlerRegistry() = default;
+  ~MockSharingHandlerRegistry() override = default;
+
+  MOCK_METHOD1(
+      GetSharingHandler,
+      SharingMessageHandler*(
+          chrome_browser_sharing::SharingMessage::PayloadCase payload_case));
+  MOCK_METHOD2(
+      RegisterSharingHandler,
+      void(std::unique_ptr<SharingMessageHandler> handler,
+           chrome_browser_sharing::SharingMessage::PayloadCase payload_case));
+  MOCK_METHOD1(
+      UnregisterSharingHandler,
+      void(chrome_browser_sharing::SharingMessage::PayloadCase payload_case));
 };
 
 class MockSharingFCMHandler : public SharingFCMHandler {
@@ -153,6 +172,7 @@ class SharingServiceTest : public testing::Test {
         /* pref_service= */ nullptr, sync_prefs_, &mock_instance_id_driver_,
         vapid_key_manager_,
         fake_device_info_sync_service.GetLocalDeviceInfoProvider());
+    handler_registry_ = new testing::NiceMock<MockSharingHandlerRegistry>();
     fcm_handler_ = new testing::NiceMock<MockSharingFCMHandler>();
     device_source_ = new testing::NiceMock<MockSharingDeviceSource>();
     sharing_message_sender_ = new testing::NiceMock<MockSharingMessageSender>();
@@ -200,8 +220,8 @@ class SharingServiceTest : public testing::Test {
           base::WrapUnique(sync_prefs_), base::WrapUnique(vapid_key_manager_),
           base::WrapUnique(sharing_device_registration_),
           base::WrapUnique(sharing_message_sender_),
-          base::WrapUnique(device_source_), base::WrapUnique(fcm_handler_),
-          &test_sync_service_);
+          base::WrapUnique(device_source_), base::WrapUnique(handler_registry_),
+          base::WrapUnique(fcm_handler_), &test_sync_service_);
     }
     task_environment_.RunUntilIdle();
     return sharing_service_.get();
@@ -216,6 +236,7 @@ class SharingServiceTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable prefs_;
 
   testing::NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;
+  testing::NiceMock<MockSharingHandlerRegistry>* handler_registry_;
   testing::NiceMock<MockSharingFCMHandler>* fcm_handler_;
   testing::NiceMock<MockSharingDeviceSource>* device_source_;
 
@@ -589,4 +610,19 @@ TEST_F(SharingServiceTest, GetDeviceByGuid) {
   std::unique_ptr<syncer::DeviceInfo> device_info =
       GetSharingService()->GetDeviceByGuid(guid);
   EXPECT_EQ("Dell Computer sno one", device_info->client_name());
+}
+
+TEST_F(SharingServiceTest, AddSharingHandler) {
+  EXPECT_CALL(*handler_registry_,
+              RegisterSharingHandler(testing::_, testing::_))
+      .Times(1);
+  GetSharingService()->RegisterSharingHandler(
+      nullptr, chrome_browser_sharing::SharingMessage::kSharedClipboardMessage);
+}
+
+TEST_F(SharingServiceTest, RemoveSharingHandler) {
+  EXPECT_CALL(*handler_registry_, UnregisterSharingHandler(testing::_))
+      .Times(1);
+  GetSharingService()->UnregisterSharingHandler(
+      chrome_browser_sharing::SharingMessage::kSharedClipboardMessage);
 }

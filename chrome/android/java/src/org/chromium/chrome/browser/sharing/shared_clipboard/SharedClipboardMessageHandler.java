@@ -32,6 +32,7 @@ public class SharedClipboardMessageHandler {
             "SharedClipboard.EXTRA_DEVICE_CLIENT_NAME";
     private static final String EXTRA_DEVICE_LAST_UPDATED_TIMESTAMP_MILLIS =
             "SharedClipboard.EXTRA_DEVICE_LAST_UPDATED_TIMESTAMP_MILLIS";
+    private static final String EXTRA_RETRIES = "SharedClipboard.EXTRA_RETRIES";
 
     /**
      * Handles the tapping of an incoming notification when text is shared with current device.
@@ -57,8 +58,9 @@ public class SharedClipboardMessageHandler {
             long lastUpdatedTimestampMillis = IntentUtils.safeGetLongExtra(
                     intent, EXTRA_DEVICE_LAST_UPDATED_TIMESTAMP_MILLIS, /*defaultValue=*/0);
             String text = IntentUtils.safeGetStringExtra(intent, Intent.EXTRA_TEXT);
+            int retries = IntentUtils.safeGetIntExtra(intent, EXTRA_RETRIES, /*defaultValue=*/1);
 
-            showSendingNotification(guid, name, lastUpdatedTimestampMillis, text);
+            showSendingNotification(guid, name, lastUpdatedTimestampMillis, text, retries);
         }
     }
 
@@ -71,9 +73,10 @@ public class SharedClipboardMessageHandler {
      * @param lastUpdatedTimestampMillis The last updated timestamp in milliseconds of the receiver
      *         device.
      * @param text The text shared from the sender device.
+     * @param retries The number of retries so far.
      */
     public static void showSendingNotification(
-            String guid, String name, long lastUpdatedTimestampMillis, String text) {
+            String guid, String name, long lastUpdatedTimestampMillis, String text, int retries) {
         if (TextUtils.isEmpty(guid) || TextUtils.isEmpty(name) || TextUtils.isEmpty(text)) {
             return;
         }
@@ -92,7 +95,7 @@ public class SharedClipboardMessageHandler {
         // TODO(crbug.com/1015411): Wait for device info in a more central place.
         SharingServiceProxy.getInstance().addDeviceCandidatesInitializedObserver(() -> {
             SharingServiceProxy.getInstance().sendSharedClipboardMessage(
-                    guid, lastUpdatedTimestampMillis, text, result -> {
+                    guid, lastUpdatedTimestampMillis, text, retries, result -> {
                 if (result == SharingSendMessageResult.SUCCESSFUL) {
                     SharingNotificationUtil.dismissNotification(
                             NotificationConstants.GROUP_SHARED_CLIPBOARD,
@@ -112,7 +115,8 @@ public class SharedClipboardMessageHandler {
                                         .putExtra(EXTRA_DEVICE_GUID, guid)
                                         .putExtra(EXTRA_DEVICE_CLIENT_NAME, name)
                                         .putExtra(EXTRA_DEVICE_LAST_UPDATED_TIMESTAMP_MILLIS,
-                                                lastUpdatedTimestampMillis),
+                                                lastUpdatedTimestampMillis)
+                                        .putExtra(EXTRA_RETRIES, retries + 1),
                                 PendingIntent.FLAG_UPDATE_CURRENT);
                     }
 

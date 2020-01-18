@@ -721,7 +721,8 @@ blink::WebLocalFrame* TestRunnerForSpecificView::GetLocalMainFrame() {
 }
 
 WebWidgetTestProxy* TestRunnerForSpecificView::main_frame_render_widget() {
-  return static_cast<WebWidgetTestProxy*>(web_view_test_proxy_->GetWidget());
+  return static_cast<WebWidgetTestProxy*>(
+      web_view_test_proxy_->GetMainRenderFrame()->GetLocalRootRenderWidget());
 }
 
 blink::WebView* TestRunnerForSpecificView::web_view() {

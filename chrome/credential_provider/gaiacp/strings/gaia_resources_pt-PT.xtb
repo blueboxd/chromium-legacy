@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
+<translation id="1337778609052285767">A palavra-passe atual não cumpre os requisitos de complexidade de palavras-passe. Contacte o seu administrador.</translation>
 <translation id="1337821341856692531">Continuar sem introduzir a palavra-passe atual do Windows pode provocar a perda irreversível de informações.</translation>
 <translation id="1383286653814676580">Utilizado para executar a página de início de sessão do Google Credential Provider.</translation>
 <translation id="1894475569413661128">Inicie sessão com a sua conta profissional.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Introduziu uma palavra-passe do Windows incorreta. Tente novamente.</translation>
 <translation id="2831078752570172210">Perdeu o acesso à sua conta. Contacte o administrador do sistema.</translation>
 <translation id="2844349213149998955">Não é permitido iniciar sessão com uma conta pessoal neste dispositivo. Inicie sessão com uma conta profissional.</translation>
+<translation id="2995851317559936311">A alteração da palavra-passe apenas é permitida no controlador do domínio. Contacte o seu administrador.</translation>
 <translation id="3306357053520292004">Já foi adicionado um utilizador neste computador com esta conta. Inicie sessão com uma conta diferente.</translation>
 <translation id="3926852373333893095">Apenas os utilizadores do G Suite Enterprise têm autorização para iniciar sessão.</translation>
 <translation id="4057329986137569701">Ocorreu um erro interno.</translation>
 <translation id="4267670563222825190">Não foi possível encontrar qualquer utilizador do domínio para a sua conta. Contacte o seu administrador.</translation>
 <translation id="4300229033992784001">A palavra-passe da sua conta foi alterada. Introduza a sua palavra-passe do Windows atual para sincronizar a conta do Windows com a sua conta profissional.</translation>
+<translation id="4669462973597624151">Falha ao tentar alterar a palavra-passe. Contacte o seu administrador.</translation>
 <translation id="4706454071748629324">Falha ao adicionar um novo utilizador. Este computador apenas permite a criação de um utilizador através de uma conta profissional.</translation>
+<translation id="5186761973554910131">Nome de computador inválido fornecido durante a tentativa de alteração da palavra-passe. Contacte o seu administrador.</translation>
 <translation id="6033715878377252112">Assistente do Google Credential Provider para Windows</translation>
 <translation id="6149399665202317746">Google Credential Provider para Windows</translation>
 <translation id="6239180560789153226">Faltam informações de recuperação no dispositivo. Inicie sessão com a sua conta profissional Google.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Adicionar conta profissional</translation>
 <translation id="7811865856574012727">O seu administrador restringiu o início de sessão do dispositivo aos seguintes domínios: <ph name="EMAIL_DOMAINS" />. Tente novamente através de uma conta profissional válida.</translation>
 <translation id="7856245195110636219">Não é possível continuar sem introduzir a palavra-passe atual do Windows. Contacte um administrador do sistema.</translation>
+<translation id="8109730953933509335">Tentativa de alteração da palavra-passe para um utilizador inválido. Contacte o seu administrador.</translation>
 <translation id="8639729688781680518">Esqueci-me da palavra-passe do Windows</translation>
 <translation id="866458870819756755">Não foi possível criar um utilizador.</translation>
 <translation id="8875753657315897487">Iniciar sessão com a sua conta profissional</translation>

@@ -25,9 +25,7 @@ source_set("public") {
     "service_config.h",
   ]
 
-  deps = [
-    "//components/keyed_service/core",
-  ]
+  deps = [ "//components/keyed_service/core" ]
 
   # TODO(xingliu): Create blob target that doesn't need to depend on blink.
   # Currently gn header check will fail even if the code is not built into any targets.

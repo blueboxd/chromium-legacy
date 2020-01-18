@@ -5,41 +5,47 @@
 package org.chromium.chrome.browser.settings.accessibility;
 
 import android.content.Context;
+import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceViewHolder;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.accessibility.FontSizePrefs;
-import org.chromium.chrome.browser.accessibility.FontSizePrefs.FontSizePrefsObserver;
-import org.chromium.chrome.browser.settings.SeekBarPreference;
+
+import java.text.NumberFormat;
 
 /**
  * Preference that allows the user to change the scaling factor that's applied to web page text.
  * This also shows a preview of how large a typical web page's text will appear.
  */
-public class TextScalePreference extends SeekBarPreference {
+public class TextScalePreference extends Preference implements SeekBar.OnSeekBarChangeListener {
+    private static final float MIN = 0.5f;
+    private static final float MAX = 2.0f;
+    private static final float STEP = 0.05f;
+
+    /**
+     * Online body text tends to be around 13-16px. We ask the user to adjust the text scale until
+     * 12px text is legible, that way all body text will be legible (and since font boosting
+     * approximately preserves relative font size differences, other text will be bigger/smaller as
+     * appropriate).
+     */
+    private static final float SMALLEST_STANDARD_FONT_SIZE_PX = 12.0f;
+
+    private float mUserFontScaleFactor = MIN;
+    private float mFontScaleFactor;
+
+    private TextView mAmount;
     private TextView mPreview;
-    private final FontSizePrefs mFontSizePrefs;
 
-    private final FontSizePrefsObserver mFontSizePrefsObserver = new FontSizePrefsObserver() {
-        @Override
-        public void onFontScaleFactorChanged(float fontScaleFactor, float userFontScaleFactor) {
-            updatePreview();
-        }
-
-        @Override
-        public void onForceEnableZoomChanged(boolean enabled) {}
-    };
+    private NumberFormat mFormat = NumberFormat.getPercentInstance();
 
     /**
      * Constructor for inflating from XML.
      */
     public TextScalePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-
-        mFontSizePrefs = FontSizePrefs.getInstance();
 
         setLayoutResource(R.layout.custom_preference);
         setWidgetLayoutResource(R.layout.preference_text_scale);
@@ -48,37 +54,67 @@ public class TextScalePreference extends SeekBarPreference {
     @Override
     public void onBindViewHolder(PreferenceViewHolder holder) {
         super.onBindViewHolder(holder);
-        if (mPreview == null) {
-            mPreview = (TextView) holder.findViewById(R.id.preview);
-            updatePreview();
-        }
+
+        SeekBar seekBar = (SeekBar) holder.findViewById(R.id.seekbar);
+        seekBar.setOnSeekBarChangeListener(this);
+        seekBar.setMax(userFontScaleFactorToProgress(MAX));
+        seekBar.setProgress(userFontScaleFactorToProgress(mUserFontScaleFactor));
+
+        mAmount = (TextView) holder.findViewById(R.id.seekbar_amount);
+        mPreview = (TextView) holder.findViewById(R.id.preview);
+
+        updateViews();
+    }
+
+    void updateFontScaleFactors(
+            float fontScaleFactor, float userFontScaleFactor, boolean updateViews) {
+        mFontScaleFactor = fontScaleFactor;
+        mUserFontScaleFactor = userFontScaleFactor;
+
+        if (updateViews) updateViews();
+    }
+
+    private void updateViews() {
+        mAmount.setText(mFormat.format(mUserFontScaleFactor));
+        mPreview.setTextSize(
+                TypedValue.COMPLEX_UNIT_DIP, SMALLEST_STANDARD_FONT_SIZE_PX * mFontScaleFactor);
     }
 
     /**
-     * Listens for changes to the text scale and updates the preview text as needed. This must be
-     * matched with a call to stopObservingFontPrefs().
+     * {@link SeekBar} only supports integer steps, and starts from 0, so the following methods are
+     * necessary to scale floating point pref values to/from integer progress amounts.
+     *
+     * @param progress {@link SeekBar} progress amount.
+     * @return User font scale factor preference value.
      */
-    public void startObservingFontPrefs() {
-        mFontSizePrefs.addObserver(mFontSizePrefsObserver);
-        updatePreview();
+    private float progressToUserFontScaleFactor(int progress) {
+        return MIN + progress * STEP;
+    }
+
+    private int userFontScaleFactorToProgress(float userFontScaleFactor) {
+        return Math.round((userFontScaleFactor - MIN) / STEP);
     }
 
     /**
-     * Stops listening for changes to the text scale.
+     * Notifies {@link Preference.OnPreferenceChangeListener}s of updated value.
      */
-    public void stopObservingFontPrefs() {
-        mFontSizePrefs.removeObserver(mFontSizePrefsObserver);
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        if (!fromUser) return;
+
+        float userFontScaleFactor = progressToUserFontScaleFactor(progress);
+        if (userFontScaleFactor == mUserFontScaleFactor) return;
+
+        callChangeListener(userFontScaleFactor);
     }
 
-    private void updatePreview() {
-        if (mPreview != null) {
-            // Online body text tends to be around 13-16px. We ask the user to adjust the text scale
-            // until 12px text is legible, that way all body text will be legible (and since font
-            // boosting approximately preserves relative font size differences, other text will be
-            // bigger/smaller as appropriate).
-            final float smallestStandardWebPageFontSize = 12.0f; // CSS px
-            mPreview.setTextSize(TypedValue.COMPLEX_UNIT_DIP,
-                    smallestStandardWebPageFontSize * mFontSizePrefs.getFontScaleFactor());
-        }
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {}
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {}
+
+    CharSequence getAmountForTesting() {
+        return mAmount.getText();
     }
 }

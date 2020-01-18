@@ -56,9 +56,7 @@ source_set("web_state_impl_header") {
     "//ios/web/public/js_messaging",
   ]
 
-  sources = [
-    "web_state_impl.h",
-  ]
+  sources = [ "web_state_impl.h" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

@@ -21,14 +21,13 @@ class PageLoadMetricsTestWaiter
  public:
   // A bitvector to express which timing fields to match on.
   enum class TimingField : int {
-    kFirstLayout = 1 << 0,
-    kFirstPaint = 1 << 1,
-    kFirstContentfulPaint = 1 << 2,
-    kFirstMeaningfulPaint = 1 << 3,
-    kDocumentWriteBlockReload = 1 << 4,
-    kLoadEvent = 1 << 5,
+    kFirstPaint = 1 << 0,
+    kFirstContentfulPaint = 1 << 1,
+    kFirstMeaningfulPaint = 1 << 2,
+    kDocumentWriteBlockReload = 1 << 3,
+    kLoadEvent = 1 << 4,
     // kLoadTimingInfo waits for main frame timing info only.
-    kLoadTimingInfo = 1 << 6,
+    kLoadTimingInfo = 1 << 5,
   };
   using FrameTreeNodeId =
       page_load_metrics::PageLoadMetricsObserver::FrameTreeNodeId;

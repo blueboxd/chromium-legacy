@@ -44,9 +44,7 @@ source_set("web_state_observer") {
     "//ios/web/public/navigation",
     "//url",
   ]
-  sources = [
-    "web_state_observer.h",
-  ]
+  sources = [ "web_state_observer.h" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

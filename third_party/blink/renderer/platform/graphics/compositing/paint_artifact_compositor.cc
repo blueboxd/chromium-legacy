@@ -1565,7 +1565,11 @@ Vector<cc::Layer*> PaintArtifactCompositor::SynthesizedClipLayersForTesting()
 }
 
 void LayerListBuilder::Add(scoped_refptr<cc::Layer> layer) {
+#if DCHECK_IS_ON()
   DCHECK(list_valid_);
+  DCHECK(!layer_ids_.Contains(layer->id()));
+  layer_ids_.insert(layer->id());
+#endif
   list_.push_back(layer);
 }
 

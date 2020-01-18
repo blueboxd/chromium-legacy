@@ -1,0 +1,6 @@
+include_rules = [
+  "+jingle/glue",
+  "+services/network/public/mojom",
+  "+third_party/webrtc",
+  "+third_party/webrtc_overrides",
+]

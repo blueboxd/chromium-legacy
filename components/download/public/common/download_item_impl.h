@@ -281,6 +281,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   DownloadFile* GetDownloadFile() override;
   bool IsDangerous() const override;
   DownloadDangerType GetDangerType() const override;
+  MixedContentStatus GetMixedContentStatus() const override;
   bool TimeRemaining(base::TimeDelta* remaining) const override;
   int64_t CurrentSpeed() const override;
   int PercentComplete() const override;
@@ -563,6 +564,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
       const base::FilePath& target_path,
       TargetDisposition disposition,
       DownloadDangerType danger_type,
+      MixedContentStatus mixed_content_status,
       const base::FilePath& intermediate_path,
       DownloadInterruptReason interrupt_reason);
 
@@ -843,6 +845,9 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
 
   // Whether download has been resumed.
   bool has_resumed_ = false;
+
+  // The MixedContentStatus if determined.
+  MixedContentStatus mixed_content_status_ = MixedContentStatus::UNKNOWN;
 
   THREAD_CHECKER(thread_checker_);
 

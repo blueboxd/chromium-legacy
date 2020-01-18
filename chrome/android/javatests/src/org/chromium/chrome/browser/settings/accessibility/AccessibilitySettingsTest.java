@@ -24,7 +24,6 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.accessibility.FontSizePrefs;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
-import org.chromium.chrome.browser.settings.SeekBarPreference;
 import org.chromium.chrome.browser.settings.SettingsActivityTest;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
@@ -55,8 +54,9 @@ public class AccessibilitySettingsTest {
                         .startSettingsActivity(InstrumentationRegistry.getInstrumentation(),
                                 accessibilitySettingsClassname)
                         .getMainFragment();
-        SeekBarPreference textScalePref = (SeekBarPreference) accessibilitySettings.findPreference(
-                AccessibilitySettings.PREF_TEXT_SCALE);
+        TextScalePreference textScalePref =
+                (TextScalePreference) accessibilitySettings.findPreference(
+                        AccessibilitySettings.PREF_TEXT_SCALE);
         ChromeBaseCheckBoxPreference forceEnableZoomPref =
                 (ChromeBaseCheckBoxPreference) accessibilitySettings.findPreference(
                         AccessibilitySettings.PREF_FORCE_ENABLE_ZOOM);
@@ -71,7 +71,7 @@ public class AccessibilitySettingsTest {
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
         // Since above the threshold, this will check the force enable zoom button.
         Assert.assertEquals(
-                percentFormat.format(fontBiggerThanThreshold), textScalePref.getSummary());
+                percentFormat.format(fontBiggerThanThreshold), textScalePref.getAmountForTesting());
         Assert.assertTrue(forceEnableZoomPref.isChecked());
         assertFontSizePrefs(true, fontBiggerThanThreshold);
 
@@ -80,8 +80,8 @@ public class AccessibilitySettingsTest {
         UiUtils.settleDownUI(InstrumentationRegistry.getInstrumentation());
         // Since below the threshold and userSetForceEnableZoom is false, this will uncheck
         // the force enable zoom button.
-        Assert.assertEquals(
-                percentFormat.format(fontSmallerThanThreshold), textScalePref.getSummary());
+        Assert.assertEquals(percentFormat.format(fontSmallerThanThreshold),
+                textScalePref.getAmountForTesting());
         Assert.assertFalse(forceEnableZoomPref.isChecked());
         assertFontSizePrefs(false, fontSmallerThanThreshold);
 
@@ -132,7 +132,7 @@ public class AccessibilitySettingsTest {
     }
 
     private static void userSetTextScale(final AccessibilitySettings accessibilitySettings,
-            final SeekBarPreference textScalePref, final float textScale) {
+            final TextScalePreference textScalePref, final float textScale) {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                 () -> accessibilitySettings.onPreferenceChange(textScalePref, textScale));
     }

@@ -1236,11 +1236,6 @@
     "expiry_milestone": 79
   },
   {
-    "name": "enable-dbus-and-x11-status-icons",
-    "owners": [ "thestig", "thomasanderson" ],
-    "expiry_milestone": 80
-  },
-  {
     "name": "enable-de-jelly",
     "owners": [ "ericrk", "//components/viz/OWNERS" ],
     "expiry_milestone": 94
@@ -3398,11 +3393,6 @@
     "name": "sms-receiver-cross-device",
     "owners": [ "goto", "fugu-dev" ],
     "expiry_milestone": 85
-  },
-  {
-    "name": "split-settings",
-    "owners": [ "jamescook", "cros-system-services@google.com" ],
-    "expiry_milestone": 80
   },
   {
     "name": "split-settings-sync",

@@ -101,12 +101,6 @@
     <color name="omnibox_focused_fading_background_color_light">@color/white_alpha_65</color>
 
     <!-- Find in Page colors -->
-    <color name="find_result_bar_background_color">#BFFFFFFF</color>
-    <color name="find_result_bar_background_border_color">#BF666666</color>
-    <color name="find_result_bar_result_color">#FFDE43</color>
-    <color name="find_result_bar_result_border_color">#C9AF35</color>
-    <color name="find_result_bar_active_color">#FF9632</color>
-    <color name="find_result_bar_active_border_color">#C37E3B</color>
     <color name="find_in_page_query_white_color">@android:color/white</color>
     <color name="find_in_page_query_incognito_hint_color">@color/white_alpha_70</color>
     <color name="find_in_page_failed_results_status_color">@color/default_red</color>

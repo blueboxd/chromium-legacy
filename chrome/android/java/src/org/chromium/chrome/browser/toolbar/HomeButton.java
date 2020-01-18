@@ -15,6 +15,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -24,10 +26,13 @@ import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
+import org.chromium.chrome.browser.settings.SettingsLauncher;
+import org.chromium.chrome.browser.settings.homepage.HomepageSettings;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.widget.ChromeImageButton;
 
@@ -37,7 +42,10 @@ import org.chromium.ui.widget.ChromeImageButton;
 public class HomeButton extends ChromeImageButton
         implements TintObserver, OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener,
                    HomepageManager.HomepageStateListener {
-    private static final int ID_REMOVE = 0;
+    @VisibleForTesting
+    public static final int ID_REMOVE = 0;
+    @VisibleForTesting
+    public static final int ID_SETTINGS = 1;
 
     /** A provider that notifies components when the theme color changes.*/
     private ThemeColorProvider mThemeColorProvider;
@@ -53,6 +61,10 @@ public class HomeButton extends ChromeImageButton
 
     /** The {@link OvervieModeObserver} observing the OverviewModeBehavior  */
     private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
+
+    // Test related members
+    private static boolean sSaveContextMenuForTests;
+    private ContextMenu mMenuForTests;
 
     public HomeButton(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -112,14 +124,31 @@ public class HomeButton extends ChromeImageButton
 
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-        menu.add(Menu.NONE, ID_REMOVE, Menu.NONE, R.string.remove).setOnMenuItemClickListener(this);
+        // Disable long click before native initialized.
+        if (!ChromeFeatureList.isInitialized()) return;
+
+        if (isHomepageSettingsUIConversionEnabled()) {
+            menu.add(Menu.NONE, ID_SETTINGS, Menu.NONE, R.string.homebutton_context_menu_settings)
+                    .setOnMenuItemClickListener(this);
+        } else {
+            menu.add(Menu.NONE, ID_REMOVE, Menu.NONE, R.string.remove)
+                    .setOnMenuItemClickListener(this);
+        }
+
+        if (sSaveContextMenuForTests) mMenuForTests = menu;
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
-        assert item.getItemId() == ID_REMOVE;
         assert !isManagedByPolicy();
-        HomepageManager.getInstance().setPrefHomepageEnabled(false);
+        if (isHomepageSettingsUIConversionEnabled()) {
+            assert item.getItemId() == ID_SETTINGS;
+            SettingsLauncher.getInstance().launchSettingsPage(getContext(), HomepageSettings.class);
+        } else {
+            assert item.getItemId() == ID_REMOVE;
+            HomepageManager.getInstance().setPrefHomepageEnabled(false);
+        }
+
         return true;
     }
 
@@ -204,5 +233,26 @@ public class HomeButton extends ChromeImageButton
             setOnCreateContextMenuListener(null);
             setLongClickable(false);
         }
+    }
+
+    private boolean isHomepageSettingsUIConversionEnabled() {
+        assert ChromeFeatureList.isInitialized();
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.HOMEPAGE_SETTINGS_UI_CONVERSION);
+    }
+
+    /**
+     * @param saveContextMenuForTests Whether we want to store the context menu for testing
+     */
+    @VisibleForTesting
+    public static void setSaveContextMenuForTests(boolean saveContextMenuForTests) {
+        sSaveContextMenuForTests = saveContextMenuForTests;
+    }
+
+    /**
+     * @return Latest context menu created.
+     */
+    @VisibleForTesting
+    public ContextMenu getMenuForTests() {
+        return mMenuForTests;
     }
 }

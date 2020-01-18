@@ -27,10 +27,11 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   explicit MockDownloadItemImpl(DownloadItemImplDelegate* delegate);
   ~MockDownloadItemImpl() override;
 
-  MOCK_METHOD5(OnDownloadTargetDetermined,
+  MOCK_METHOD6(OnDownloadTargetDetermined,
                void(const base::FilePath&,
                     TargetDisposition,
                     DownloadDangerType,
+                    MixedContentStatus,
                     const base::FilePath&,
                     DownloadInterruptReason));
   MOCK_METHOD1(AddObserver, void(DownloadItem::Observer*));
@@ -102,6 +103,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD1(SetOpenWhenComplete, void(bool));
   MOCK_CONST_METHOD0(GetFileExternallyRemoved, bool());
   MOCK_CONST_METHOD0(GetDangerType, DownloadDangerType());
+  MOCK_CONST_METHOD0(GetMixedContentStatus, MixedContentStatus());
   MOCK_CONST_METHOD0(IsDangerous, bool());
   MOCK_METHOD0(GetAutoOpened, bool());
   MOCK_CONST_METHOD0(GetForcedFilePath, const base::FilePath&());

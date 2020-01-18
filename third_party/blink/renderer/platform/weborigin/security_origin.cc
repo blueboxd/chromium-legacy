@@ -237,7 +237,7 @@ scoped_refptr<SecurityOrigin> SecurityOrigin::CreateFromUrlOrigin(
   DCHECK(String::FromUTF8(tuple.host()).ContainsOnlyASCIIOrEmpty());
 
   scoped_refptr<SecurityOrigin> tuple_origin;
-  if (!tuple.IsInvalid()) {
+  if (tuple.IsValid()) {
     String scheme = String::FromUTF8(tuple.scheme());
     String host = String::FromUTF8(tuple.host());
     uint16_t port = tuple.port();

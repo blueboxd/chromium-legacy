@@ -250,6 +250,10 @@ class CONTENT_EXPORT WebContentsAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  base::android::ScopedJavaLocalRef<jobjectArray> GetInnerWebContents(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 
   class DestructionObserver : public base::CheckedObserver {

@@ -472,7 +472,8 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 - (void)presentStoreKitForGoogleDriveApp {
   if (!_storeKitCoordinator) {
     _storeKitCoordinator = [[StoreKitCoordinator alloc]
-        initWithBaseViewController:self.baseViewController];
+        initWithBaseViewController:self.baseViewController
+                           browser:self.browser];
     _storeKitCoordinator.iTunesProductParameters = @{
       SKStoreProductParameterITunesItemIdentifier :
           kGoogleDriveITunesItemIdentifier

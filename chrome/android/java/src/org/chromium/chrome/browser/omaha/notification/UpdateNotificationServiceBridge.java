@@ -16,6 +16,8 @@ import android.content.SharedPreferences;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -44,6 +46,7 @@ public class UpdateNotificationServiceBridge implements UpdateNotificationContro
 
     private ChromeActivity mActivity;
     private @Nullable UpdateStatusProvider.UpdateStatus mUpdateStatus;
+    private static final String TAG = "cr_UpdateNotif";
 
     /**
      * @param activity A {@link ChromeActivity} instance the notification will be shown in.
@@ -146,5 +149,16 @@ public class UpdateNotificationServiceBridge implements UpdateNotificationContro
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt(PREF_UPDATE_NOTIFICATION_USER_DISMISS_COUNT_KEY, count);
         editor.apply();
+    }
+
+    @CalledByNative
+    private static void launchChromeActivity() {
+        // TODO(hesen): Record metrics.
+        try {
+            // TODO(hesen): Handle the INLINE_UPDATE_AVAILABLE state.
+            UpdateUtils.onUpdateAvailable(ContextUtils.getApplicationContext(), UPDATE_AVAILABLE);
+        } catch (IllegalArgumentException e) {
+            Log.e(TAG, "Failed to start activity in background.", e);
+        }
     }
 }

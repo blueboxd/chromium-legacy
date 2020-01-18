@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.image_editor;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 
 /**
  * Upstream implementation for ImageEditorDialogCoordinator. Does nothing. Actual implementation
@@ -12,5 +12,5 @@ import android.support.v7.app.AppCompatActivity;
  */
 public class ImageEditorDialogCoordinatorImpl implements ImageEditorDialogCoordinator {
     @Override
-    public void launchEditor(AppCompatActivity activity) {}
+    public void launchEditor(Activity activity) {}
 }

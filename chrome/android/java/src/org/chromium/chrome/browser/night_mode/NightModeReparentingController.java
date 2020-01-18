@@ -62,10 +62,17 @@ public class NightModeReparentingController
             final ReparentingTask reparentingTask =
                     ReparentingTask.get(reparentingParams.getTabToReparent());
             if (reparentingTask == null) continue;
+
+            final TabModel tabModel = mDelegate.getTabModelSelector().getModel(
+                    reparentingParams.getTabToReparent().isIncognito());
+            if (tabModel == null) {
+                AsyncTabParamsManager.remove(tabId);
+                return;
+            }
+
             reparentingTask.finish(mReparentingDelegate, () -> {
-                mDelegate.getTabModelSelector().getCurrentModel().addTab(
-                        reparentingParams.getTabToReparent(), reparentingParams.getTabIndex(),
-                        TabLaunchType.FROM_REPARENTING);
+                tabModel.addTab(reparentingParams.getTabToReparent(),
+                        reparentingParams.getTabIndex(), TabLaunchType.FROM_REPARENTING);
                 AsyncTabParamsManager.remove(tabId);
             });
         }
@@ -80,6 +87,7 @@ public class NightModeReparentingController
         Tab tabToDetach = mDelegate.getActivityTabProvider().get();
         if (tabToDetach == null) return;
         TabModel currentTabModel = mDelegate.getTabModelSelector().getCurrentModel();
+        if (currentTabModel == null) return;
 
         TabReparentingParams params = new TabReparentingParams(tabToDetach, null, null);
         params.setTabIndex(currentTabModel.indexOf(tabToDetach));

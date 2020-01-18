@@ -19,7 +19,7 @@ class ChromeBrowserState;
 @protocol AppNavigation<NSObject>
 
 // Navigation View controller for the settings.
-@property(nonatomic, retain)
+@property(nonatomic, strong)
     SettingsNavigationController* settingsNavigationController;
 
 // Presents a SignedInAccountsViewController for |browserState| on the top view

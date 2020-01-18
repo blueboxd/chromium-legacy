@@ -311,14 +311,6 @@ uint64_t PerformanceTiming::loadEventEnd() const {
   return MonotonicTimeToIntegerMilliseconds(timing->LoadEventEnd());
 }
 
-uint64_t PerformanceTiming::FirstLayout() const {
-  const DocumentTiming* timing = GetDocumentTiming();
-  if (!timing)
-    return 0;
-
-  return MonotonicTimeToIntegerMilliseconds(timing->FirstLayout());
-}
-
 uint64_t PerformanceTiming::FirstPaint() const {
   const PaintTiming* timing = GetPaintTiming();
   if (!timing)

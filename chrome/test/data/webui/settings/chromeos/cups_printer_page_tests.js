@@ -1255,6 +1255,9 @@ suite('PrintServerTests', function() {
   let page = null;
   let dialog = null;
 
+  /** @type {?settings.printing.CupsPrintersEntryManager} */
+  let entryManager = null;
+
   /** @type {?settings.TestCupsPrintersBrowserProxy} */
   let cupsPrintersBrowserProxy = null;
 
@@ -1268,6 +1271,11 @@ suite('PrintServerTests', function() {
 
   setup(function() {
     const mojom = chromeos.networkConfig.mojom;
+    entryManager = settings.printing.CupsPrintersEntryManager.getInstance();
+    setEntryManagerPrinters(
+        /*savedPrinters=*/[], /*automaticPrinters=*/[],
+        /*discoveredPrinters=*/[], /*printServerPrinters=*/[]);
+
     cupsPrintersBrowserProxy =
         new printerBrowserProxy.TestCupsPrintersBrowserProxy;
 
@@ -1299,6 +1307,20 @@ suite('PrintServerTests', function() {
     dialog = null;
     page = null;
   });
+
+  /**
+   * @param {!Array<!PrinterListEntry>} savedPrinters
+   * @param {!Array<!CupsPrinterInfo>} automaticPrinters
+   * @param {!Array<!CupsPrinterInfo>} discoveredPrinters
+   * @param {!Array<!PrinterListEntry>} printerServerPrinters
+   */
+  function setEntryManagerPrinters(
+      savedPrinters, automaticPrinters, discoveredPrinters,
+      printerServerPrinters) {
+    entryManager.setSavedPrintersList(savedPrinters);
+    entryManager.setNearbyPrintersList(automaticPrinters, discoveredPrinters);
+    entryManager.printServerPrinters = printerServerPrinters;
+  }
 
   /**
    * @param {!HTMLElement} page
@@ -1366,34 +1388,140 @@ suite('PrintServerTests', function() {
     assertEquals(loadTimeData.getString(expectedError), dialogError.errorText);
   }
 
+  /**
+   * @param {string} expectedMessage
+   * @param {number} numPrinters
+   * @private
+   */
+  function verifyToastMessage(expectedMessage, numPrinters) {
+    // We always display the total number of printers found from a print
+    // server.
+    const toast = page.$$('#printServerErrorToast');
+    assertTrue(toast.open);
+    assertEquals(
+        loadTimeData.getStringF(expectedMessage, numPrinters),
+        toast.textContent.trim());
+  }
+
   test('AddPrintServerIsSuccessful', function() {
+    // Initialize the return result from adding a print server.
+    cupsPrintersBrowserProxy.printServerPrinters =
+        /** @type{!CupsPrintServerPrintersInfo} */ ({
+          printerList: [
+            cups_printer_test_util.createCupsPrinterInfo(
+                'nameA', 'serverAddress', 'idA'),
+            cups_printer_test_util.createCupsPrinterInfo(
+                'nameB', 'serverAddress', 'idB')
+          ]
+        });
+    return addPrintServer('serverAddress', PrintServerResult.NO_ERRORS)
+        .then(() => {
+          Polymer.dom.flush();
+          verifyToastMessage(
+              'printServerFoundManyPrinters', /*numPrinters=*/ 2);
+          assertEquals(2, entryManager.printServerPrinters.length);
+        });
+  });
+
+  test('HandleDuplicateQueries', function() {
+    // Initialize the return result from adding a print server.
+    cupsPrintersBrowserProxy.printServerPrinters =
+        /** @type{!CupsPrintServerPrintersInfo} */ ({
+          printerList: [
+            cups_printer_test_util.createCupsPrinterInfo(
+                'nameA', 'serverAddress', 'idA'),
+            cups_printer_test_util.createCupsPrinterInfo(
+                'nameB', 'serverAddress', 'idB')
+          ]
+        });
+
+    return test_util.flushTasks()
+        .then(() => {
+          // Simulate that a print server was queried previously.
+          setEntryManagerPrinters(
+              /*savedPrinters=*/[], /*nearbyPrinters=*/[],
+              /*discoveredPrinters=*/[], [
+                cups_printer_test_util.createPrinterListEntry(
+                    'nameA', 'serverAddress', 'idA', PrinterType.PRINTSERVER),
+                cups_printer_test_util.createPrinterListEntry(
+                    'nameB', 'serverAddress', 'idB', PrinterType.PRINTSERVER)
+              ]);
+          Polymer.dom.flush();
+          assertEquals(2, entryManager.printServerPrinters.length);
+
+          // This will attempt to add duplicate print server printers.
+          // Matching printerId's are considered duplicates.
+          return addPrintServer('serverAddress', PrintServerResult.NO_ERRORS);
+        })
+        .then(() => {
+          Polymer.dom.flush();
+
+          verifyToastMessage(
+              'printServerFoundManyPrinters', /*numPrinters=*/ 2);
+          // Assert that adding the same print server results in no new printers
+          // added to the entry manager.
+          assertEquals(2, entryManager.printServerPrinters.length);
+          const nearbyPrintersElement =
+              page.$$('settings-cups-nearby-printers');
+          assertEquals(2, nearbyPrintersElement.nearbyPrinters.length);
+        });
+  });
+
+  test('HandleDuplicateSavedPrinters', function() {
     // Initialize the return result from adding a print server.
     cupsPrintersBrowserProxy.printServerPrinters =
         /** @type{} CupsPrintServerPrintersInfo*/ ({
           printerList: [
             cups_printer_test_util.createCupsPrinterInfo(
-                'nameA', 'addressA', 'idA'),
+                'nameA', 'serverAddress', 'idA'),
             cups_printer_test_util.createCupsPrinterInfo(
-                'nameB', 'addressB', 'idB')
+                'nameB', 'serverAddress', 'idB')
           ]
         });
-    return addPrintServer('serverAddressA', PrintServerResult.NO_ERRORS)
-        .then(() => {
-          Polymer.dom.flush();
-          const toast = page.$$('#printServerErrorToast');
-          assertTrue(toast.open);
-          assertEquals(
-              loadTimeData.getStringF(
-                  'printServerFoundManyPrinters',
-                  /*expectedPrintersLength=*/ 2),
-              toast.textContent.trim());
-        });
+
+    return test_util.flushTasks().then(() => {
+      // Simulate that a print server was queried previously.
+      setEntryManagerPrinters(
+          /*savedPrinters=*/[], /*nearbyPrinters=*/[],
+          /*discoveredPrinters=*/[], [
+            cups_printer_test_util.createPrinterListEntry(
+                'nameA', 'serverAddress', 'idA', PrinterType.PRINTSERVER),
+            cups_printer_test_util.createPrinterListEntry(
+                'nameB', 'serverAddress', 'idB', PrinterType.PRINTSERVER)
+          ]);
+      Polymer.dom.flush();
+      assertEquals(2, entryManager.printServerPrinters.length);
+
+      // Simulate adding a saved printer.
+      entryManager.setSavedPrintersList(
+          [cups_printer_test_util.createPrinterListEntry(
+              'nameA', 'serverAddress', 'idA', PrinterType.SAVED)]);
+      Polymer.dom.flush();
+
+      // Simulate the underlying model changes. Nearby printers are also
+      // updated after changes to saved printers.
+      cr.webUIListenerCallback(
+          'on-nearby-printers-changed', /*automaticPrinter=*/[],
+          /*discoveredPrinters=*/[]);
+      Polymer.dom.flush();
+
+      // Verify that we now only have 1 printer in print server printers
+      // list.
+      assertEquals(1, entryManager.printServerPrinters.length);
+      const nearbyPrintersElement = page.$$('settings-cups-nearby-printers');
+      assertEquals(1, nearbyPrintersElement.nearbyPrinters.length);
+      // Verify we correctly removed the duplicate printer, 'idA', since
+      // it exists in the saved printer list. Expect only 'idB' in
+      // the print server printers list.
+      assertEquals(
+          'idB', entryManager.printServerPrinters[0].printerInfo.printerId);
+    });
   });
 
   test('AddPrintServerAddressError', function() {
     cupsPrintersBrowserProxy.printServerPrinters =
         /** @type{} CupsPrintServerPrintersInfo*/ ({printerList: []});
-    return addPrintServer('serverAddressA', PrintServerResult.INCORRECT_URL)
+    return addPrintServer('serverAddress', PrintServerResult.INCORRECT_URL)
         .then(() => {
           Polymer.dom.flush();
           const printServerDialog = getPrintServerDialog(page);
@@ -1407,7 +1535,7 @@ suite('PrintServerTests', function() {
   test('AddPrintServerConnectionError', function() {
     cupsPrintersBrowserProxy.printServerPrinters =
         /** @type{} CupsPrintServerPrintersInfo*/ ({printerList: []});
-    return addPrintServer('serverAddressA', PrintServerResult.CONNECTION_ERROR)
+    return addPrintServer('serverAddress', PrintServerResult.CONNECTION_ERROR)
         .then(() => {
           Polymer.dom.flush();
           verifyErrorMessage('printServerConnectionError');
@@ -1418,7 +1546,7 @@ suite('PrintServerTests', function() {
     cupsPrintersBrowserProxy.printServerPrinters =
         /** @type{} CupsPrintServerPrintersInfo*/ ({printerList: []});
     return addPrintServer(
-               'serverAddressA', PrintServerResult.CANNOT_PARSE_IPP_RESPONSE)
+               'serverAddress', PrintServerResult.CANNOT_PARSE_IPP_RESPONSE)
         .then(() => {
           Polymer.dom.flush();
           verifyErrorMessage('printServerConfigurationErrorMessage');
@@ -1428,7 +1556,7 @@ suite('PrintServerTests', function() {
   test('AddPrintServerReachableServerButHttpResponseError', function() {
     cupsPrintersBrowserProxy.printServerPrinters =
         /** @type{} CupsPrintServerPrintersInfo*/ ({printerList: []});
-    return addPrintServer('serverAddressA', PrintServerResult.HTTP_ERROR)
+    return addPrintServer('serverAddress', PrintServerResult.HTTP_ERROR)
         .then(() => {
           Polymer.dom.flush();
           verifyErrorMessage('printServerConfigurationErrorMessage');

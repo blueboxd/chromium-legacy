@@ -2282,7 +2282,7 @@ public class PaymentRequestImpl
             return;
         }
 
-        SettingsLauncher.launchSettingsPage(context, MainPreferences.class);
+        SettingsLauncher.getInstance().launchSettingsPage(context, MainPreferences.class);
     }
 
     @Override

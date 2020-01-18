@@ -53,6 +53,16 @@
 namespace content {
 namespace appcache_update_job_unittest {
 
+namespace {
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL RetryUrl() {
+  return GURL("http://retry");
+}
+
+}  // namespace
+
 class AppCacheUpdateJobTest;
 
 // Values should match values used in appcache_update_job.cc.
@@ -458,8 +468,6 @@ class RetryRequestTestJob {
     RETRY_AFTER_0,
   };
 
-  static const GURL kRetryUrl;
-
   // Call this at the start of each retry test.
   static void Initialize(int num_retry_responses,
                          RetryHeader header,
@@ -481,7 +489,7 @@ class RetryRequestTestJob {
                                 std::string* headers,
                                 std::string* data) {
     ++num_requests_;
-    if (num_retries_ > 0 && url == kRetryUrl) {
+    if (num_retries_ > 0 && url == RetryUrl()) {
       --num_retries_;
       *headers = RetryRequestTestJob::retry_headers();
     } else {
@@ -527,7 +535,7 @@ class RetryRequestTestJob {
   static std::string data() {
     return std::string(
         "CACHE MANIFEST\r"
-        "http://retry\r");  // must be same as kRetryUrl
+        "http://retry\r");  // must be same as RetryUrl()
   }
 
   static int num_requests_;
@@ -536,8 +544,6 @@ class RetryRequestTestJob {
   static int expected_requests_;
 };
 
-// static
-const GURL RetryRequestTestJob::kRetryUrl("http://retry");
 int RetryRequestTestJob::num_requests_ = 0;
 int RetryRequestTestJob::num_retries_;
 RetryRequestTestJob::RetryHeader RetryRequestTestJob::retry_after_;
@@ -649,7 +655,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     std::string headers;
     std::string body;
-    if (url_request.url == RetryRequestTestJob::kRetryUrl) {
+    if (url_request.url == RetryUrl()) {
       RetryRequestTestJob::GetResponseForURL(url_request.url, &headers, &body);
     } else {
       MockHttpServer::GetMockResponse(url_request.url.path(), &headers, &body);
@@ -2204,8 +2210,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     MakeService();
     group_ = base::MakeRefCounted<AppCacheGroup>(
-        service_->storage(), RetryRequestTestJob::kRetryUrl,
-        service_->storage()->NewGroupId());
+        service_->storage(), RetryUrl(), service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2231,8 +2236,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     MakeService();
     group_ = base::MakeRefCounted<AppCacheGroup>(
-        service_->storage(), RetryRequestTestJob::kRetryUrl,
-        service_->storage()->NewGroupId());
+        service_->storage(), RetryUrl(), service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2259,8 +2263,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     MakeService();
     group_ = base::MakeRefCounted<AppCacheGroup>(
-        service_->storage(), RetryRequestTestJob::kRetryUrl,
-        service_->storage()->NewGroupId());
+        service_->storage(), RetryUrl(), service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2286,8 +2289,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     MakeService();
     group_ = base::MakeRefCounted<AppCacheGroup>(
-        service_->storage(), RetryRequestTestJob::kRetryUrl,
-        service_->storage()->NewGroupId());
+        service_->storage(), RetryUrl(), service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;
@@ -2313,8 +2315,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     MakeService();
     group_ = base::MakeRefCounted<AppCacheGroup>(
-        service_->storage(), RetryRequestTestJob::kRetryUrl,
-        service_->storage()->NewGroupId());
+        service_->storage(), RetryUrl(), service_->storage()->NewGroupId());
     AppCacheUpdateJob* update =
         new AppCacheUpdateJob(service_.get(), group_.get());
     group_->update_job_ = update;

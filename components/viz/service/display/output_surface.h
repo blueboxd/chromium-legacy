@@ -64,6 +64,8 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     bool supports_stencil = false;
     // Whether this OutputSurface supports post sub buffer or not.
     bool supports_post_sub_buffer = false;
+    // Whether this OutputSurface supports commit overlay planes.
+    bool supports_commit_overlay_planes = false;
     // Whether this OutputSurface supports gpu vsync callbacks.
     bool supports_gpu_vsync = false;
     // Whether this OutputSurface supports pre transform. If it is supported,

@@ -19,7 +19,5 @@ jumbo_static_library("browser") {
     "//ui/touch_selection",
   ]
 
-  public_deps = [
-    "//ipc",
-  ]
+  public_deps = [ "//ipc" ]
 }

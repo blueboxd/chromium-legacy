@@ -210,6 +210,12 @@
       nguồn gốc không an toàn không được áp dụng</translation>
 <translation id="1312799700549720683">Kiểm soát các tùy chọn cài đặt hiển thị.</translation>
 <translation id="131353325527891113">Hiển thị tên người dùng trên màn hình đăng nhập</translation>
+<translation id="1327351219049180837">Chính sách này kiểm soát xem có báo cáo dữ liệu chính sách và thời gian tìm nạp chính sách hay không.
+
+      Khi bạn không đặt hoặc đặt chính sách này thành True, thì dữ liệu chính sách và thời gian tìm nạp chính sách sẽ được thu thập.
+      Khi bạn đặt chính sách này thành False, thì dữ liệu chính sách và thời gian tìm nạp chính sách sẽ không được thu thập.
+
+      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1327466551276625742">Bật lời nhắc về cấu hình mạng khi ngoại tuyến</translation>
 <translation id="1330145147221172764">Bật bàn phím ảo</translation>
 <translation id="13356285923490863">Tên chính sách</translation>
@@ -358,6 +364,7 @@
 <translation id="152657506688053119">Danh sách các URL thay thế cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="1530812829012954197">Luôn hiển thị các mẫu URL sau đây trong trình duyệt chính</translation>
 <translation id="1541170838458414064">Giới hạn kích thước trang in</translation>
+<translation id="1553532014072799546">Danh sách cho phép về giới hạn thời gian cho mỗi ứng dụng</translation>
 <translation id="1553684822621013552">Khi chính sách này được đặt thành true, ARC sẽ được bật cho người dùng
       (theo kiểm tra cài đặt chính sách bổ sung - ARC sẽ vẫn không khả
       dụng nếu chế độ tạm thời hoặc đăng nhập nhiều tài khoản được bật trong
@@ -456,6 +463,14 @@
       </translation>
 <translation id="1700811900332333712">Cho phép thiết bị yêu cầu chức năng Powerwash</translation>
 <translation id="1708496595873025510">Đặt giới hạn cho quá trình tìm nạp khởi đầu Biến thể</translation>
+<translation id="1713533749396963716">Chính sách này chỉ định những ứng dụng và URL sẽ được đưa vào danh sách cho phép theo các giới hạn sử dụng của mỗi ứng dụng.
+        Danh sách cho phép đã định cấu hình được áp dụng cho các ứng dụng cài đặt trên <ph name="PRODUCT_OS_NAME" /> đối với người dùng cụ thể có giới hạn thời gian cho mỗi ứng dụng.
+        Bạn chỉ có thể áp dụng danh sách cho phép đã định cấu hình cho các tài khoản của người dùng trẻ em và danh sách này chỉ có hiệu lực khi đặt chính sách <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" />.
+        Danh sách cho phép đã định cấu hình sẽ được áp dụng cho các ứng dụng và URL sao cho các ứng dụng và URL sẽ không bị chặn theo giới hạn thời gian cho mỗi ứng dụng.
+        Thời gian truy cập vào các URL nằm trong danh sách cho phép sẽ không tính vào giới hạn thời gian trên Chrome.
+        Thêm biểu thức chính quy của URL vào |url_list| để đưa các URL khớp với bất kỳ biểu thức chính quy nào trong danh sách vào danh sách cho phép.
+        Thêm một ứng dụng cùng với |app_id| và |app_type| tương ứng vào |app_list| để đưa ứng dụng đó vào danh sách cho phép.
+       </translation>
 <translation id="1715151459541210849">Bật tính năng hỗ trợ tiếp cận về đọc chính tả</translation>
 <translation id="1717817358640580294">Nếu bạn không đặt chính sách này và tính năng Làm sạch Chrome phát hiện phần mềm không mong muốn, thì tính năng này có thể báo cáo siêu dữ liệu về lần quét đó cho Google theo chính sách do SafeBrowsingExtendedReportingEnabled đặt. Sau đó, tính năng Làm sạch Chrome sẽ hỏi người dùng xem họ có muốn xóa phần mềm không mong muốn hay không. Người dùng có thể chọn chia sẻ kết quả của quá trình làm sạch với Google để hỗ trợ việc phát hiện phần mềm không mong muốn trong tương lai. Những kết quả này chứa siêu dữ liệu tệp, tiện ích tự động cài đặt và khóa sổ đăng ký như mô tả trong Báo cáo chính thức về quyền riêng tư của Chrome.
 
@@ -987,6 +1002,12 @@
 
           Trên Windows, chính sách này chỉ có trên các phiên bản liên kết với một miền <ph name="MS_AD_NAME" /> hoặc các phiên bản Windows 10 Pro hoặc Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="247658312644322296">Đích 'Lưu dưới dạng PDF'</translation>
+<translation id="2478649170422995190">Chính sách này kiểm soát xem có báo cáo thông tin phiên bản, chẳng hạn như phiên bản hệ điều hành, nền tảng hệ điều hành, cấu trúc hệ điều hành, phiên bản <ph name="PRODUCT_NAME" /> và kênh <ph name="PRODUCT_NAME" /> hay không.
+
+      Khi bạn không đặt hoặc đặt chính sách này thành True, thì thông tin phiên bản sẽ được thu thập.
+      Khi bạn đặt chính sách này thành False, thì thông tin phiên bản sẽ không được thu thập.
+
+      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2480971699591919564">Bật tính năng Nhấp để gọi. Tính năng này cho phép người dùng gửi số điện thoại từ Máy tính đang mở Chrome sang thiết bị Android khi người dùng đã đăng nhập. Để biết thêm thông tin, hãy xem bài viết trong trung tâm trợ giúp: https://support.google.com/chrome/answer/9430554?hl=vi.
 
       Nếu bạn đặt chính sách này thành bật, thì người dùng Chrome có thể gửi số điện thoại tới thiết bị Android.
@@ -2854,6 +2875,12 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu không, bạn có thể đặt chính sách thành một trong các giá trị sau: "tls1.2" hoặc "tls1.3". Khi được đặt, <ph name="PRODUCT_NAME" /> sẽ không sử dụng các phiên bản SSL/TLS cao hơn phiên bản đã chỉ định. Giá trị không nhận dạng được sẽ bị bỏ qua.</translation>
 <translation id="5330684698007383292">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung sau</translation>
+<translation id="5331081760098249172">
+      Khi bạn đặt chính sách này thành True, thì <ph name="PRODUCT_NAME" /> sẽ được phép thu thập nhật ký sự kiện WebRTC từ các dịch vụ của Google, chẳng hạn như Hangouts Meet, và tải các nhật ký đó lên Google. Các nhật ký này có chứa thông tin chẩn đoán để khắc phục các sự cố với cuộc họp video hoặc cuộc họp thoại trên <ph name="PRODUCT_NAME" />, chẳng hạn như kích thước và tần suất nhận gói RTP, phản hồi về tình trạng nghẽn mạng cũng như siêu dữ liệu về chất lượng và tần suất nhận khung video và âm thanh. Các nhật ký này không bao gồm nội dung là âm thanh hoặc video của cuộc họp. Thông qua mã phiên, Google có thể liên kết những nhật ký này với các nhật ký khác do dịch vụ của Google tự thu thập, giúp dễ dàng gỡ lỗi hơn.
+
+      Khi bạn đặt chính sách này thành False, thì các nhật ký này sẽ không được thu thập hoặc tải lên.
+
+      Nếu bạn không đặt chính sách này trên các phiên bản M76 trở xuống, thì <ph name="PRODUCT_NAME" /> sẽ không thể thu thập và tải các nhật ký này lên theo mặc định. Kể từ phiên bản M77, theo mặc định, <ph name="PRODUCT_NAME" /> sẽ có thể thu thập và tải các nhật ký này lên từ hầu hết các hồ sơ chịu ảnh hưởng bởi chính sách doanh nghiệp dựa trên đám mây ở cấp người dùng. Kể từ phiên bản M77 đến M80, theo mặc định, <ph name="PRODUCT_NAME" /> cũng có thể thu thập và tải các nhật ký này lên từ các hồ sơ chịu ảnh hưởng bởi tính năng quản lý tại chỗ của <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5331746669335642668">Chính sách đám mây <ph name="PRODUCT_NAME" /> ghi đè chính sách Nền tảng.</translation>
 <translation id="5362531528507578966">Ghi đè chế độ in đồ họa nền mặc định.</translation>
 <translation id="5365476955714838841">Các tham số dòng lệnh cho trình duyệt thay thế.</translation>
@@ -3487,6 +3514,12 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này được đặt thành sai, người dùng sẽ không được báo cáo.</translation>
 <translation id="638668187106406971">Kiểm tra tệp đã tải lên để xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không</translation>
 <translation id="6394350458541421998">Chính sách này đã chấm dứt kể từ phiên bản <ph name="PRODUCT_OS_NAME" /> 29. Vui lòng sử dụng chính sách PresentationScreenDimDelayScale thay vào đó.</translation>
+<translation id="6399242659768117666">Chính sách này kiểm soát xem có báo cáo thông tin về tiện ích và plugin hay không.
+
+      Khi bạn không đặt hoặc đặt chính sách này thành True, thì dữ liệu về tiện ích và plugin sẽ được thu thập.
+      Khi bạn đặt chính sách này thành False, thì dữ liệu về tiện ích và plugin sẽ không được thu thập.
+
+      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6401669939808766804">Đăng xuất người dùng</translation>
 <translation id="6406448383934634215">Nếu chọn 'Mở một danh sách URL' làm thao tác khởi động, thì bạn có thể chỉ định danh sách URL sẽ được mở. Nếu bạn không đặt chính sách, thì sẽ không có URL nào mở khi khởi động.
 
@@ -3570,6 +3603,12 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Bạn có thể đặt chính sách này thành một đường dẫn tệp thực thi hoặc <ph name="PRODUCT_NAME_PLACEHOLDER" /> để tự động phát hiện vị trí cài đặt của Chrome.</translation>
 <translation id="6536600139108165863">Tự động khởi động lại khi tắt thiết bị</translation>
+<translation id="6537062468544950724">Chính sách này kiểm soát xem có báo cáo thông tin dùng để nhận dạng máy, chẳng hạn như tên máy và địa chỉ mạng, hay không.
+
+      Khi bạn không đặt hoặc đặt chính sách này thành True, thì thông tin dùng để nhận dạng máy sẽ được thu thập.
+      Khi bạn đặt chính sách này thành False, thì thông tin dùng để nhận dạng máy sẽ không được thu thập.
+
+      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6539246272469751178">Chính sách này không ảnh hưởng đến ứng dụng Android. Ứng dụng Android luôn sử dụng thư mục nội dung tải xuống mặc định và không thể truy cập bất kỳ tệp nào do <ph name="PRODUCT_OS_NAME" /> tải xuống thư mục nội dung tải xuống không phải mặc định.</translation>
 <translation id="654303922206238013">Chiến lược di chuyển cho ecryptfs</translation>
 <translation id="6544897973797372144">Nếu chính sách này được đặt thành Đúng và chính sách ChromeOsReleaseChannel không được chỉ định thì người dùng của miền đăng ký sẽ được phép thay đổi kênh phát hành của thiết bị. Nếu chính sách này được đặt thành sai, thiết bị sẽ bị khóa bất kể kênh mà thiết bị được đặt lần cuối.
@@ -3793,6 +3832,12 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu bạn đặt chính sách này là True hoặc không đặt, thì mô hình giảm độ sáng thông minh sẽ bật và được phép kéo dài thời gian cho đến khi màn hình tối đi. Nếu bạn đặt chính sách này là False, thì mô hình giảm độ sáng thông minh sẽ không ảnh hưởng tới quá trình giảm độ sáng màn hình.</translation>
 <translation id="6972540544240464302">Chọn cấu hình trình lập lịch biểu việc cần làm</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6991078864332103177">Chính sách này kiểm soát xem có báo cáo thông tin dùng để nhận dạng người dùng, chẳng hạn như thông tin đăng nhập trên hệ điều hành, thông tin đăng nhập hồ sơ trên <ph name="PRODUCT_NAME" />, tên hồ sơ trên <ph name="PRODUCT_NAME" />, đường dẫn hồ sơ trên <ph name="PRODUCT_NAME" /> và đường dẫn thực thi trên <ph name="PRODUCT_NAME" /> hay không.
+
+      Khi bạn không đặt hoặc đặt chính sách này thành True, thì thông tin có thể dùng để nhận dạng người dùng sẽ được thu thập.
+      Khi bạn đặt chính sách này thành False, thì thông tin có thể dùng để nhận dạng người dùng sẽ không được thu thập.
+
+      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6994082778848658360">Chỉ định cách bạn có thể sử dụng phần cứng tích hợp phần tử bảo mật để cung cấp xác thực hai yếu tố nếu tương thích với tính năng này. Nút nguồn của máy dùng để phát hiện sự hiện diện của người dùng.
 
       Nếu bạn chọn 'Đã tắt' thì sẽ không nhận được hai yếu tố.
@@ -4306,11 +4351,20 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
           Nếu cài đặt này bị tắt hoặc không được đặt thì tính năng xác thực hai bước sẽ không được bật và hành vi mặc định là có mã PIN do người dùng xác định sẽ được sử dụng.</translation>
 <translation id="7750991880413385988">Mở trang Tab mới</translation>
 <translation id="7754704193130578113">Hỏi vị trí lưu từng tệp trước khi tải xuống</translation>
+<translation id="7755495228644343508">Định cấu hình các chính sách liên quan đến Chrome Reporting Extension (Tiện ích báo cáo của Chrome).
+
+      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Bật quy trình Xác thực môi trường xung quanh cho các loại hồ sơ.</translation>
 <translation id="7761446981238915769">Định cấu hình danh sách ứng dụng đã cài đặt trên màn hình đăng nhập</translation>
 <translation id="7763614521440615342">Hiển thị các đề xuất nội dung trên trang Tab mới</translation>
 <translation id="7765879851993224640">Cho phép sử dụng tính năng Đăng nhập bằng Smart Lock.</translation>
 <translation id="7774768074957326919">Sử dụng cài đặt proxy hệ thống</translation>
+<translation id="7775902646576367944">Chính sách này kiểm soát xem có báo cáo thông tin Duyệt web an toàn, bao gồm cả số lần cảnh báo Duyệt web an toàn và số lần nhấp qua cảnh báo duyệt web an toàn, hay không.
+
+      Khi bạn không đặt hoặc đặt chính sách này thành True, thì dữ liệu Duyệt web an toàn sẽ được thu thập.
+      Khi bạn đặt chính sách này thành False thì dữ liệu Duyệt web an toàn sẽ không được thu thập.
+
+      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7777535871204167559">Coi thiết bị lưu trữ bên ngoài là thiết bị chỉ đọc</translation>
 <translation id="7788511847830146438">Cho mỗi hồ sơ</translation>
 <translation id="7792973482799545782">Không cho phép bất kỳ trang web nào tải nội dung hỗn hợp có thể chặn</translation>
@@ -4876,6 +4930,15 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8757552286070680084">Cấu hình bộ điều khiển chẩn đoán và đo từ xa (DTC) wilco</translation>
 <translation id="8758831693895931466">Bật đăng ký quản lý đám mây bắt buộc</translation>
 <translation id="8759829385824155666">Các loại mã hóa Kerberos được cho phép</translation>
+<translation id="87635449713742708">Chính sách này buộc mã nối mạng chạy trong quá trình chạy trình duyệt.
+
+      Chính sách này được tắt theo mặc định. Nếu bạn bật chính sách này, thì người dùng sẽ dễ gặp phải các sự cố bảo mật sau khi quá trình nối mạng được chạy trong hộp cát.
+
+      Chính sách này nhằm mang đến cho doanh nghiệp cơ hội di chuyển sang phần mềm của bên thứ 3 không phụ thuộc vào việc kết nối các API nối mạng. Thay vì vá API Win32 và LSP, bạn nên sử dụng máy chủ proxy.
+
+      Nếu bạn không đặt chính sách này, thì mã nối mạng sẽ chạy ngoài quá trình chạy trình duyệt theo mặc định.
+
+      Chính sách này sẽ bị xóa trong phiên bản <ph name="PRODUCT_NAME" /> 82.</translation>
 <translation id="8764119899999036911">Chỉ định Kerberos SPN được tạo sẽ dựa trên tên DNS chuẩn hay tên gốc đã nhập.
 
           Nếu bạn bật cài đặt này, tra cứu CNAME sẽ được bỏ qua và tên máy chủ sẽ giống như tên đã nhập.

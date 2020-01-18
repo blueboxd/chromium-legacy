@@ -434,7 +434,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
     if (net_error != OK) {
       // Update the error code if there was an issue resolving the secure
       // server hostname.
-      if (IsDnsError(net_error))
+      if (IsHostnameResolutionError(net_error))
         net_error = ERR_DNS_SECURE_RESOLVER_HOSTNAME_RESOLUTION_FAILED;
       ResponseCompleted(net_error);
       return;

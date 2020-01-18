@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Wed, 18 Dec 2019 16:38:02 -0800
-Subject: [PATCH 16/22] Avoid infinite recursion in ALTER TABLE code
+Subject: [PATCH 16/25] Avoid infinite recursion in ALTER TABLE code
 
 Backports https://www.sqlite.org/src/info/1d2e53a39b87e364685e21de137655b6eee725e4c6d27fc90865072d7c5892b5
 
@@ -133,5 +133,5 @@ index 77c57d48a694..8f28d898f4f1 100644
  reset_db
  do_execsql_test 17.1 {
 --
-2.24.1.735.g03f4e72817-goog
+2.25.0.rc1.283.g88dfdc4193-goog
 

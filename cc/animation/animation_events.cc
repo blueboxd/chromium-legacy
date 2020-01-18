@@ -63,12 +63,12 @@ AnimationEvent& AnimationEvent::operator=(const AnimationEvent& other) {
 
 AnimationEvent::~AnimationEvent() = default;
 
-AnimationEvents::AnimationEvents() = default;
+AnimationEvents::AnimationEvents() : needs_time_updated_events_(false) {}
 
 AnimationEvents::~AnimationEvents() = default;
 
 bool AnimationEvents::IsEmpty() const {
-  return events_.empty();
+  return events_.empty() && !needs_time_updated_events_;
 }
 
 bool AnimationEvent::ShouldDispatchToKeyframeEffectAndModel() const {

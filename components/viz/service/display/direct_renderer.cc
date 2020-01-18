@@ -141,6 +141,9 @@ void DirectRenderer::Initialize() {
             .disable_non_empty_post_sub_buffers) {
       use_partial_swap_ = false;
     }
+  } else {
+    allow_empty_swap_ |=
+        output_surface_->capabilities().supports_commit_overlay_planes;
   }
 
   initialized_ = true;

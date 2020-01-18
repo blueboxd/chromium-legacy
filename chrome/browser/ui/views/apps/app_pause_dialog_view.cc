@@ -42,6 +42,7 @@ AppPauseDialogView::AppPauseDialogView(
     apps::AppServiceProxy::OnPauseDialogClosedCallback closed_callback)
     : BubbleDialogDelegateView(nullptr, views::BubbleBorder::NONE),
       closed_callback_(std::move(closed_callback)) {
+  DialogDelegate::set_buttons(ui::DIALOG_BUTTON_OK);
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal,
@@ -77,10 +78,6 @@ gfx::Size AppPauseDialogView::CalculatePreferredSize() const {
                                 DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
                             margins().width();
   return gfx::Size(default_width, GetHeightForWidth(default_width));
-}
-
-int AppPauseDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
 }
 
 ui::ModalType AppPauseDialogView::GetModalType() const {

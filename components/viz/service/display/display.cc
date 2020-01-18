@@ -47,6 +47,9 @@ namespace viz {
 
 namespace {
 
+constexpr base::TimeDelta kAllowedDeltaFromFuture =
+    base::TimeDelta::FromMilliseconds(16);
+
 // Assign each Display instance a starting value for the the display-trace id,
 // so that multiple Displays all don't start at 0, because that makes it
 // difficult to associate the trace-events with the particular displays.
@@ -70,7 +73,15 @@ gfx::PresentationFeedback SanitizePresentationFeedback(
   // the future (or from the past) the timestamps are.
   // https://crbug.com/894440
   const auto now = base::TimeTicks::Now();
-  if (feedback.timestamp > now) {
+  // The timestamp for the presentation feedback may have a different source and
+  // therefore the timestamp can be slightly in the future in comparison with
+  // base::TimeTicks::Now(). Such presentation feedbacks should not be rejected.
+  // See https://crbug.com/1040178
+  const auto allowed_delta_from_future =
+      ((feedback.flags & gfx::PresentationFeedback::kHWClock) != 0)
+          ? kAllowedDeltaFromFuture
+          : base::TimeDelta();
+  if (feedback.timestamp > now + allowed_delta_from_future) {
     const auto diff = feedback.timestamp - now;
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "Graphics.PresentationTimestamp.InvalidFromFuture", diff);

@@ -315,7 +315,8 @@ ScopedJavaLocalRef<jobject> WriteSerializedNavigationsAsByteBuffer(
     // Write each SerializedNavigationEntry as a separate pickle to avoid
     // optional reads of one tab bleeding into the next tab's data.
     base::Pickle tab_navigation_pickle;
-    // Max size taken from BaseSessionService::CreateUpdateTabNavigationCommand.
+    // Max size taken from
+    // CommandStorageManager::CreateUpdateTabNavigationCommand.
     static const size_t max_state_size =
         std::numeric_limits<sessions::SessionCommand::size_type>::max() - 1024;
     navigation.WriteToPickle(max_state_size, &tab_navigation_pickle);

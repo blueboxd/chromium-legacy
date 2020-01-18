@@ -7,6 +7,7 @@
 
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/content_security_policy/csp_context.h"
+#include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 
 namespace content {
@@ -14,14 +15,14 @@ namespace content {
 // Convert a WebContentSecurityPolicy into a ContentSecurityPolicy. These two
 // classes represent the exact same thing, but one is in content, the other is
 // in blink.
-ContentSecurityPolicy BuildContentSecurityPolicy(
+network::mojom::ContentSecurityPolicyPtr BuildContentSecurityPolicy(
     const blink::WebContentSecurityPolicy&);
 
 // Convert a WebContentSecurityPolicyList into a list of ContentSecurityPolicy.
-std::vector<ContentSecurityPolicy> BuildContentSecurityPolicyList(
-    const blink::WebContentSecurityPolicyList&);
+std::vector<network::mojom::ContentSecurityPolicyPtr>
+BuildContentSecurityPolicyList(const blink::WebContentSecurityPolicyList&);
 
-CSPSource BuildCSPSource(
+network::mojom::CSPSourcePtr BuildCSPSource(
     const blink::WebContentSecurityPolicySourceExpression&);
 
 // Convert a CSPViolationParams into a WebContentSecurityPolicyViolation. These

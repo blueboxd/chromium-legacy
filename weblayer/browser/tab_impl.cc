@@ -20,6 +20,7 @@
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/base/window_open_disposition.h"
 #include "weblayer/browser/autofill_client_impl.h"
+#include "weblayer/browser/browser_impl.h"
 #include "weblayer/browser/file_select_helper.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/isolated_world_ids.h"
@@ -150,6 +151,9 @@ TabImpl::TabImpl(ProfileImpl* profile,
 }
 
 TabImpl::~TabImpl() {
+  if (browser_)
+    browser_->RemoveTab(this);
+
   // Destruct WebContents now to avoid it calling back when this object is
   // partially destructed. DidFinishNavigation can be called while destroying
   // WebContents, so stop observing first.

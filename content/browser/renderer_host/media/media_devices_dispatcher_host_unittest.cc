@@ -85,11 +85,12 @@ class MockMediaDevicesListener : public blink::mojom::MediaDevicesListener {
 
 }  // namespace
 
-class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
+class MediaDevicesDispatcherHostTest
+    : public testing::TestWithParam<std::string> {
  public:
   MediaDevicesDispatcherHostTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
-        origin_(url::Origin::Create(GetParam())) {
+        origin_(url::Origin::Create(GURL(GetParam()))) {
     // Make sure we use fake devices to avoid long delays.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kUseFakeDeviceForMediaStream,
@@ -517,5 +518,5 @@ TEST_P(MediaDevicesDispatcherHostTest, GetAvailableVideoInputDeviceFormats) {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          MediaDevicesDispatcherHostTest,
-                         testing::Values(GURL(), GURL("https://test.com")));
+                         testing::Values("", "https://test.com"));
 }  // namespace content

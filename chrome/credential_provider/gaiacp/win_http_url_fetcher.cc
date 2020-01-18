@@ -347,23 +347,11 @@ HRESULT WinHttpUrlFetcher::Close() {
   return S_OK;
 }
 
-// Builds the required json request to be sent to the http service and fetches
-// the json response from the service (if any). Returns S_OK if
-// |needed_outputs| can be filled correctly with the requested data, otherwise
-// returns an error code and clears |needed_outputs|.
-// |request_url| is the full query url from which to fetch a response.
-// |headers| are all the header key value pairs to be sent with the request.
-// |parameters| are all the json parameters to be sent with the request. This
-// argument will be converted to a json string and sent as part of the body of
-// the request.
-// |request_timeout| is the maximum time to wait for a response.
-// |needed_outputs| is the mapping of the desired result key to an address where
-// the result can be stored.
 HRESULT WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
     const GURL& request_url,
     std::string access_token,
     const std::vector<std::pair<std::string, std::string>>& headers,
-    const std::vector<std::pair<std::string, std::string>>& parameters,
+    const base::Value& request_dict,
     const std::vector<std::pair<std::string, std::string*>>& needed_outputs,
     const base::TimeDelta& request_timeout) {
   auto url_fetcher = WinHttpUrlFetcher::Create(request_url);
@@ -381,19 +369,14 @@ HRESULT WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
 
   HRESULT hr = S_OK;
 
-  if (!parameters.empty()) {
-    base::Value request_dict(base::Value::Type::DICTIONARY);
-
-    for (auto& parameter : parameters)
-      request_dict.SetStringKey(parameter.first, parameter.second);
-
-    std::string json;
-    if (!base::JSONWriter::Write(request_dict, &json)) {
+  if (request_dict.is_dict()) {
+    std::string body;
+    if (!base::JSONWriter::Write(request_dict, &body)) {
       LOGFN(ERROR) << "base::JSONWriter::Write failed";
       return E_FAIL;
     }
 
-    hr = url_fetcher->SetRequestBody(json.c_str());
+    hr = url_fetcher->SetRequestBody(body.c_str());
     if (FAILED(hr)) {
       LOGFN(ERROR) << "fetcher.SetRequestBody hr=" << putHR(hr);
       return E_FAIL;

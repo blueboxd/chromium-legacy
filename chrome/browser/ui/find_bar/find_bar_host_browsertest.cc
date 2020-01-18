@@ -23,14 +23,14 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_host_unittest_util.h"
-#include "chrome/browser/ui/find_bar/find_notification_details.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/find_result_waiter.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/find_in_page/find_notification_details.h"
+#include "components/find_in_page/find_tab_helper.h"
+#include "components/find_in_page/find_types.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
@@ -150,8 +150,8 @@ class FindInPageControllerTest : public InProcessBrowserTest {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
     browser->GetFindBarController()->find_bar()->SetFindTextAndSelectedRange(
         search_str, gfx::Range());
-    return ui_test_utils::FindInPage(
-        web_contents, search_str, forward, case_sensitive, ordinal, NULL);
+    return ui_test_utils::FindInPage(web_contents, search_str, forward,
+                                     case_sensitive, ordinal, nullptr);
   }
 
   int FindInPageASCII(WebContents* web_contents,
@@ -303,10 +303,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageFormsTextAreas) {
 
   for (size_t i = 0; i < urls.size(); ++i) {
     ui_test_utils::NavigateToURL(browser(), urls[i]);
-    EXPECT_EQ(1, FindInPageASCII(web_contents, "cat",
-                                 kFwd, kIgnoreCase, NULL));
-    EXPECT_EQ(0, FindInPageASCII(web_contents, "bat",
-                                 kFwd, kIgnoreCase, NULL));
+    EXPECT_EQ(1,
+              FindInPageASCII(web_contents, "cat", kFwd, kIgnoreCase, nullptr));
+    EXPECT_EQ(0,
+              FindInPageASCII(web_contents, "bat", kFwd, kIgnoreCase, nullptr));
   }
 }
 
@@ -373,10 +373,10 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageSpecialURLs) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(), GetURL("specialchar.html"));
-  ui_test_utils::FindInPage(web_contents, WideToUTF16(search_string),
-                            kFwd, kIgnoreCase, NULL, &first);
-  ui_test_utils::FindInPage(web_contents, WideToUTF16(search_string),
-                            kFwd, kIgnoreCase, NULL, &second);
+  ui_test_utils::FindInPage(web_contents, WideToUTF16(search_string), kFwd,
+                            kIgnoreCase, nullptr, &first);
+  ui_test_utils::FindInPage(web_contents, WideToUTF16(search_string), kFwd,
+                            kIgnoreCase, nullptr, &second);
 
   // We have search occurrence in the same row, so top-bottom coordinates should
   // be the same even for second search.
@@ -385,9 +385,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPageSpecialURLs) {
   ASSERT_LT(first.x(), second.x());
   ASSERT_LT(first.right(), second.right());
 
-  ui_test_utils::FindInPage(
-      web_contents, WideToUTF16(search_string), kBack, kIgnoreCase, NULL,
-      &first_reverse);
+  ui_test_utils::FindInPage(web_contents, WideToUTF16(search_string), kBack,
+                            kIgnoreCase, nullptr, &first_reverse);
   // We find next and we go back so find coordinates should be the same as
   // previous ones.
   ASSERT_EQ(first, first_reverse);
@@ -402,8 +401,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
   const std::wstring search_string =
       L"\u4e2d\u65b0\u793e\u8bb0\u8005\u5b8b\u5409\u6cb3\u6444\u4e2d\u65b0\u7f51";
-  EXPECT_EQ(0, ui_test_utils::FindInPage(
-      web_contents, WideToUTF16(search_string), kFwd, kIgnoreCase, NULL, NULL));
+  EXPECT_EQ(0,
+            ui_test_utils::FindInPage(web_contents, WideToUTF16(search_string),
+                                      kFwd, kIgnoreCase, nullptr, nullptr));
 }
 
 // Verifies that span are searchable.
@@ -415,7 +415,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SpanSearchable) {
   std::string search_string = "has light blue eyes and my father has dark";
   EXPECT_EQ(1,
             ui_test_utils::FindInPage(web_contents, ASCIIToUTF16(search_string),
-                                      kFwd, kIgnoreCase, NULL, NULL));
+                                      kFwd, kIgnoreCase, nullptr, nullptr));
 }
 
 // Find in a very large page.
@@ -424,8 +424,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, LargePage) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(), GetURL("largepage.html"));
 
-  EXPECT_EQ(373, FindInPageASCII(web_contents, "daughter of Prince",
-                                 kFwd, kIgnoreCase, NULL));
+  EXPECT_EQ(373, FindInPageASCII(web_contents, "daughter of Prince", kFwd,
+                                 kIgnoreCase, nullptr));
 }
 
 // Find a very long string in a large page.
@@ -442,8 +442,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindLongString) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::ReadFileToString(path, &query);
   }
-  EXPECT_EQ(1, FindInPage16(web_contents, base::UTF8ToUTF16(query),
-                            kFwd, kIgnoreCase, NULL));
+  EXPECT_EQ(1, FindInPage16(web_contents, base::UTF8ToUTF16(query), kFwd,
+                            kIgnoreCase, nullptr));
 }
 
 // Find a big font string in a page.
@@ -451,8 +451,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, BigString) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(), GetURL("BigText.html"));
-  EXPECT_EQ(1, FindInPageASCII(web_contents, "SomeLargeString",
-                               kFwd, kIgnoreCase, NULL));
+  EXPECT_EQ(1, FindInPageASCII(web_contents, "SomeLargeString", kFwd,
+                               kIgnoreCase, nullptr));
 }
 
 // Search Back and Forward on a single occurrence.
@@ -462,31 +462,27 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SingleOccurrence) {
   ui_test_utils::NavigateToURL(browser(), GetURL("FindRandomTests.html"));
 
   gfx::Rect first_rect;
-  EXPECT_EQ(1,
-            ui_test_utils::FindInPage(web_contents,
-                                      ASCIIToUTF16("2010 Pro Bowl"), kFwd,
-                                      kIgnoreCase, NULL, &first_rect));
+  EXPECT_EQ(
+      1, ui_test_utils::FindInPage(web_contents, ASCIIToUTF16("2010 Pro Bowl"),
+                                   kFwd, kIgnoreCase, nullptr, &first_rect));
 
   gfx::Rect second_rect;
-  EXPECT_EQ(1,
-            ui_test_utils::FindInPage(web_contents,
-                                      ASCIIToUTF16("2010 Pro Bowl"), kFwd,
-                                      kIgnoreCase, NULL, &second_rect));
+  EXPECT_EQ(
+      1, ui_test_utils::FindInPage(web_contents, ASCIIToUTF16("2010 Pro Bowl"),
+                                   kFwd, kIgnoreCase, nullptr, &second_rect));
 
   // Doing a fake find so we have no previous search.
   ui_test_utils::FindInPage(web_contents, ASCIIToUTF16("ghgfjgfh201232rere"),
-                            kFwd, kIgnoreCase, NULL, NULL);
+                            kFwd, kIgnoreCase, nullptr, nullptr);
 
   ASSERT_EQ(first_rect, second_rect);
 
-  EXPECT_EQ(1,
-            ui_test_utils::FindInPage(web_contents,
-                                      ASCIIToUTF16("2010 Pro Bowl"), kFwd,
-                                      kIgnoreCase, NULL, &first_rect));
-  EXPECT_EQ(1,
-            ui_test_utils::FindInPage(web_contents,
-                                      ASCIIToUTF16("2010 Pro Bowl"), kBack,
-                                      kIgnoreCase, NULL, &second_rect));
+  EXPECT_EQ(
+      1, ui_test_utils::FindInPage(web_contents, ASCIIToUTF16("2010 Pro Bowl"),
+                                   kFwd, kIgnoreCase, nullptr, &first_rect));
+  EXPECT_EQ(
+      1, ui_test_utils::FindInPage(web_contents, ASCIIToUTF16("2010 Pro Bowl"),
+                                   kBack, kIgnoreCase, nullptr, &second_rect));
   ASSERT_EQ(first_rect, second_rect);
 }
 
@@ -506,7 +502,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindWholeFileContent) {
     base::ReadFileToString(path, &query);
   }
   EXPECT_EQ(1, FindInPage16(web_contents, base::UTF8ToUTF16(query), false,
-                            false, NULL));
+                            false, nullptr));
 }
 
 // This test loads a single-frame page and makes sure the ordinal returned makes
@@ -557,9 +553,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   // Search for a text that exists within a link on the page.
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(NULL != web_contents);
-  FindTabHelper* find_tab_helper =
-      FindTabHelper::FromWebContents(web_contents);
+  ASSERT_TRUE(web_contents);
+  find_in_page::FindTabHelper* find_tab_helper =
+      find_in_page::FindTabHelper::FromWebContents(web_contents);
 
   int ordinal = 0;
   EXPECT_EQ(4, FindInPageASCII(web_contents, "google",
@@ -580,7 +576,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_EQ(3, ordinal);
 
   // End the find session.
-  find_tab_helper->StopFinding(FindOnPageSelectionAction::kKeep);
+  find_tab_helper->StopFinding(find_in_page::SelectionAction::kKeep);
 }
 
 // This tests that we start searching after selected text.
@@ -591,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents != NULL);
+  ASSERT_TRUE(web_contents != nullptr);
   int ordinal = 0;
 
   // Move the selection to the text span.
@@ -716,7 +712,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, NavigateClearsOrdinal) {
   // Search for a text that exists within a link on the page.
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(NULL != web_contents);
+  ASSERT_TRUE(web_contents);
   int ordinal = 0;
   EXPECT_EQ(8, FindInPageASCII(web_contents, "e",
                                kFwd, kIgnoreCase, &ordinal));
@@ -840,7 +836,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindInPagePrematureEnd) {
 
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(NULL != web_contents);
+  ASSERT_TRUE(web_contents);
 
   // Search for a text that exists within a link on the page.
   int ordinal = 0;
@@ -1029,8 +1025,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
   // Simulate what happens when you press F3 for FindNext. We should get a
   // response here (a hang means search was aborted).
-  EXPECT_EQ(0, ui_test_utils::FindInPage(web_contents, base::string16(),
-                                         kFwd, kIgnoreCase, &ordinal, NULL));
+  EXPECT_EQ(0, ui_test_utils::FindInPage(web_contents, base::string16(), kFwd,
+                                         kIgnoreCase, &ordinal, nullptr));
   EXPECT_EQ(0, ordinal);
 
   // Open another tab (tab C).
@@ -1039,8 +1035,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
   // Simulate what happens when you press F3 for FindNext. We should get a
   // response here (a hang means search was aborted).
-  EXPECT_EQ(0, ui_test_utils::FindInPage(web_contents, base::string16(),
-                                         kFwd, kIgnoreCase, &ordinal, NULL));
+  EXPECT_EQ(0, ui_test_utils::FindInPage(web_contents, base::string16(), kFwd,
+                                         kIgnoreCase, &ordinal, nullptr));
   EXPECT_EQ(0, ordinal);
 }
 
@@ -1057,11 +1053,12 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
   // simulating keypresses here for searching for something and pressing
   // backspace, but that's been proven flaky in the past, so we go straight to
   // web_contents.
-  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents());
+  find_in_page::FindTabHelper* find_tab_helper =
+      find_in_page::FindTabHelper::FromWebContents(
+          browser()->tab_strip_model()->GetActiveWebContents());
   // Stop the (non-existing) find operation, and clear the selection (which
   // signals the UI is still active).
-  find_tab_helper->StopFinding(FindOnPageSelectionAction::kClear);
+  find_tab_helper->StopFinding(find_in_page::SelectionAction::kClear);
   // Make sure the Find UI flag hasn't been cleared, it must be so that the UI
   // still responds to browser window resizing.
   ASSERT_TRUE(find_tab_helper->find_ui_active());
@@ -1084,13 +1081,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
 
   // Simulate what happens when you press F3 for FindNext. Still should show
   // one match. This cleared the pre-populate string at one point (see bug).
-  EXPECT_EQ(1, ui_test_utils::FindInPage(web_contents, base::string16(),
-                                         kFwd, kIgnoreCase, &ordinal, NULL));
+  EXPECT_EQ(1, ui_test_utils::FindInPage(web_contents, base::string16(), kFwd,
+                                         kIgnoreCase, &ordinal, nullptr));
   EXPECT_EQ(1, ordinal);
 
   // End the Find session, thereby making the next F3 start afresh.
   browser()->GetFindBarController()->EndFindSession(
-      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
+      find_in_page::SelectionAction::kKeep, find_in_page::ResultAction::kKeep);
 
   // Simulate F3 while Find box is closed. Should have 1 match.
   EXPECT_EQ(1, FindInPageASCII(web_contents, "", kFwd, kIgnoreCase, &ordinal));
@@ -1135,16 +1132,18 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_PreferPreviousSearch) {
   // Switch back to first tab.
   browser()->tab_strip_model()->ActivateTabAt(0);
   browser()->GetFindBarController()->EndFindSession(
-      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
+      find_in_page::SelectionAction::kKeep, find_in_page::ResultAction::kKeep);
   // Simulate F3.
-  ui_test_utils::FindInPage(web_contents_1, base::string16(),
-                            kFwd, kIgnoreCase, &ordinal, NULL);
+  ui_test_utils::FindInPage(web_contents_1, base::string16(), kFwd, kIgnoreCase,
+                            &ordinal, nullptr);
   FindBar* find_bar = browser()->GetFindBarController()->find_bar();
   if (find_bar->HasGlobalFindPasteboard()) {
-    EXPECT_EQ(FindTabHelper::FromWebContents(web_contents_1)->find_text(),
+    EXPECT_EQ(find_in_page::FindTabHelper::FromWebContents(web_contents_1)
+                  ->find_text(),
               ASCIIToUTF16("given"));
   } else {
-    EXPECT_EQ(FindTabHelper::FromWebContents(web_contents_1)->find_text(),
+    EXPECT_EQ(find_in_page::FindTabHelper::FromWebContents(web_contents_1)
+                  ->find_text(),
               ASCIIToUTF16("text"));
   }
 }
@@ -1171,7 +1170,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulateSameTab) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
+      find_in_page::SelectionAction::kKeep, find_in_page::ResultAction::kKeep);
 
   // Open the Find box again.
   EnsureFindBoxOpen();
@@ -1240,7 +1239,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
+      find_in_page::SelectionAction::kKeep, find_in_page::ResultAction::kKeep);
 
   // Now create a second tab and load the same page.
   chrome::AddTabAt(browser(), GURL(), -1, true);
@@ -1265,7 +1264,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PrepopulatePreserveLast) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
+      find_in_page::SelectionAction::kKeep, find_in_page::ResultAction::kKeep);
 
   // Re-open the Find box.
   // This is a special case: previous search in WebContents used to get cleared
@@ -1302,7 +1301,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, NoIncognitoPrepopulate) {
 
   // Close the Find box.
   browser()->GetFindBarController()->EndFindSession(
-      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
+      find_in_page::SelectionAction::kKeep, find_in_page::ResultAction::kKeep);
 
   // Open a new incognito window and navigate to the same page.
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
@@ -1329,7 +1328,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, NoIncognitoPrepopulate) {
 
   // Close the Find box.
   incognito_browser->GetFindBarController()->EndFindSession(
-      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
+      find_in_page::SelectionAction::kKeep, find_in_page::ResultAction::kKeep);
 
   // Now open a new tab in the original (non-incognito) browser.
   chrome::AddSelectedTabWithURL(browser(), url, ui::PAGE_TRANSITION_TYPED);
@@ -1351,8 +1350,8 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
 
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  FindTabHelper* find_tab_helper =
-      FindTabHelper::FromWebContents(web_contents);
+  find_in_page::FindTabHelper* find_tab_helper =
+      find_in_page::FindTabHelper::FromWebContents(web_contents);
 
   int ordinal = 0;
   FindInPageASCII(web_contents, "link", kFwd, kIgnoreCase, &ordinal);
@@ -1362,7 +1361,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, ActivateLinkNavigatesPage) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(&web_contents->GetController()));
-  find_tab_helper->StopFinding(FindOnPageSelectionAction::kActivate);
+  find_tab_helper->StopFinding(find_in_page::SelectionAction::kActivate);
   observer.Wait();
 }
 
@@ -1397,7 +1396,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   content::RunAllPendingInMessageLoop();  // Needed on Linux.
 
   gfx::Point position;
-  EXPECT_TRUE(GetFindBarWindowInfo(&position, NULL));
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, nullptr));
 
   // Open another tab.
   GURL url = GetURL(kSimple);
@@ -1410,7 +1409,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
   // See if the Find window has moved.
   gfx::Point position2;
-  EXPECT_TRUE(GetFindBarWindowInfo(&position2, NULL));
+  EXPECT_TRUE(GetFindBarWindowInfo(&position2, nullptr));
   EXPECT_EQ(position, position2);
 
   // Toggle the bookmark bar state. Note that this starts an animation, and
@@ -1425,13 +1424,13 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
   EnsureFindBoxOpen();
   content::RunAllPendingInMessageLoop();  // Needed on Linux.
-  EXPECT_TRUE(GetFindBarWindowInfo(&position, NULL));
+  EXPECT_TRUE(GetFindBarWindowInfo(&position, nullptr));
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   chrome::CloseTab(browser());
-  EXPECT_TRUE(GetFindBarWindowInfo(&position2, NULL));
+  EXPECT_TRUE(GetFindBarWindowInfo(&position2, nullptr));
   EXPECT_EQ(position, position2);
 }
 
@@ -1483,11 +1482,11 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, GlobalPasteboardIncognito) {
   Browser* browser_incognito = CreateIncognitoBrowser();
   WebContents* web_contents_1 =
       browser()->tab_strip_model()->GetActiveWebContents();
-  FindInPageASCII(web_contents_1, "page", kFwd, kIgnoreCase, NULL);
+  FindInPageASCII(web_contents_1, "page", kFwd, kIgnoreCase, nullptr);
   EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
   WebContents* web_contents_2 =
       browser_incognito->tab_strip_model()->GetActiveWebContents();
-  FindInPageASCII(web_contents_2, "Incognito", kFwd, kIgnoreCase, NULL);
+  FindInPageASCII(web_contents_2, "Incognito", kFwd, kIgnoreCase, nullptr);
   EXPECT_EQ(ASCIIToUTF16("Incognito"),
       GetFindBarTextForBrowser(browser_incognito));
   EXPECT_EQ(ASCIIToUTF16("page"), GetFindBarText());
@@ -1499,23 +1498,23 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextSecret) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   // On Mac this updates the find pboard.
-  FindInPageASCII(web_contents, "bar", kFwd, kIgnoreCase, NULL);
+  FindInPageASCII(web_contents, "bar", kFwd, kIgnoreCase, nullptr);
 
   Browser* browser_incognito = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(browser_incognito,
                                GURL("data:text/plain,barfoofoo"));
   WebContents* web_contents_incognito =
         browser_incognito->tab_strip_model()->GetActiveWebContents();
-  FindInPageASCII(web_contents_incognito, "foo", true, kIgnoreCase, NULL);
+  FindInPageASCII(web_contents_incognito, "foo", true, kIgnoreCase, nullptr);
   EXPECT_EQ(ASCIIToUTF16("foo"),
       GetFindBarTextForBrowser(browser_incognito));
   EXPECT_EQ(ASCIIToUTF16("1/2"),
             GetFindBarMatchCountTextForBrowser(browser_incognito));
 
   // Close the find bar.
-  FindTabHelper* find_tab_helper =
-      FindTabHelper::FromWebContents(web_contents_incognito);
-  find_tab_helper->StopFinding(FindOnPageSelectionAction::kActivate);
+  find_in_page::FindTabHelper* find_tab_helper =
+      find_in_page::FindTabHelper::FromWebContents(web_contents_incognito);
+  find_tab_helper->StopFinding(find_in_page::SelectionAction::kActivate);
 
   // Cmd + G triggers IDC_FIND_NEXT command. Thus we test FindInPage()
   // method from browser_commands.cc. FindInPage16() bypasses it.
@@ -1539,7 +1538,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   // On Mac this updates the find pboard.
-  FindInPageASCII(web_contents, "bar", kFwd, kIgnoreCase, NULL);
+  FindInPageASCII(web_contents, "bar", kFwd, kIgnoreCase, nullptr);
 
   Browser* browser_incognito = CreateIncognitoBrowser();
   ui_test_utils::NavigateToURL(browser_incognito,

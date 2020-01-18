@@ -42,9 +42,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
 
   void SwapBuffers(BufferPresentedCallback feedback,
                    std::vector<ui::LatencyInfo> latency_info) override;
-  void PostSubBuffer(const gfx::Rect& rect,
-                     BufferPresentedCallback feedback,
-                     std::vector<ui::LatencyInfo> latency_info) override;
+  void CommitOverlayPlanes(BufferPresentedCallback feedback,
+                           std::vector<ui::LatencyInfo> latency_info) override;
   bool Reshape(const gfx::Size& size,
                float device_scale_factor,
                const gfx::ColorSpace& color_space,
@@ -70,33 +69,37 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
       base::CancelableOnceCallback<void(gfx::SwapResult,
                                         std::unique_ptr<gfx::GpuFence>)>;
 
-  Image* GetCurrentImage();
-  std::unique_ptr<Image> GetNextImage();
-  void PageFlipComplete(std::unique_ptr<Image> image);
+  Image* GetNextImage();
+  void PageFlipComplete(Image* image);
   void FreeAllSurfaces();
-  // Used as callback for SwapBuffersAsync and PostSubBufferAsync to finish
+  // Used as callback for SwapBuff ersAsync and PostSubBufferAsync to finish
   // operation
   void DoFinishSwapBuffers(const gfx::Size& size,
                            std::vector<ui::LatencyInfo> latency_info,
-                           std::unique_ptr<Image> image,
+                           Image* image,
                            std::vector<OverlayData> overlays,
                            gfx::SwapResult result,
                            std::unique_ptr<gfx::GpuFence> gpu_fence);
 
   SkiaOutputSurfaceDependency* const dependency_;
   scoped_refptr<gl::GLSurface> gl_surface_;
+  const bool supports_async_swap_;
   // Format of images
   gfx::ColorSpace color_space_;
   gfx::Size image_size_;
   ResourceFormat image_format_;
 
+  // All allocated images.
+  std::vector<std::unique_ptr<Image>> images_;
   // This image is currently used by Skia as RenderTarget. This may be nullptr
-  // if no drawing in progress or if allocation failed at bind.
-  std::unique_ptr<Image> current_image_;
+  // if there is no drawing for the current frame or if allocation failed.
+  Image* current_image_ = nullptr;
+  // The last image submitted for presenting.
+  Image* submitted_image_ = nullptr;
   // The image currently on the screen, if any.
-  std::unique_ptr<Image> displayed_image_;
+  Image* displayed_image_ = nullptr;
   // These are free for use, and are not nullptr.
-  std::vector<std::unique_ptr<Image>> available_images_;
+  std::vector<Image*> available_images_;
   // These cancelable callbacks bind images that have been scheduled to display
   // but are not displayed yet. This deque will be cleared when represented
   // frames are destroyed. Use CancelableOnceCallback to prevent resources

@@ -40,10 +40,6 @@ base::string16 DeepScanningModalDialog::GetLinkText() const {
   return base::string16();
 }
 
-int DeepScanningModalDialog::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-}
-
 void DeepScanningModalDialog::OnLinkClicked(WindowOpenDisposition disposition) {
   // TODO(drubery): Once we have an FAQ page for download deep scanning, link it
   // here;

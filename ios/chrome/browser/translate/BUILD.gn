@@ -111,9 +111,7 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "translate_egtest.mm",
-  ]
+  sources = [ "translate_egtest.mm" ]
   deps = [
     ":test_support",
     ":translate",
@@ -152,9 +150,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "translate_egtest.mm",
-  ]
+  sources = [ "translate_egtest.mm" ]
   deps = [
     ":eg_test_support+eg2",
     "//base/test:test_support",

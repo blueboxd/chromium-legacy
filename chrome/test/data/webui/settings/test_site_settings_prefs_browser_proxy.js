@@ -48,6 +48,7 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
       'setProtocolDefault',
       'updateIncognitoStatus',
       'clearEtldPlus1DataAndCookies',
+      'clearOriginDataAndCookies',
       'recordAction',
     ]);
 
@@ -466,6 +467,11 @@ class TestSiteSettingsPrefsBrowserProxy extends TestBrowserProxy {
   /** @override */
   clearEtldPlus1DataAndCookies() {
     this.methodCalled('clearEtldPlus1DataAndCookies');
+  }
+
+  /** @override */
+  clearOriginDataAndCookies() {
+    this.methodCalled('clearOriginDataAndCookies');
   }
 
   /** @override */

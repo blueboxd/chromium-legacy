@@ -72,6 +72,15 @@ enum PanelOrientation {
   kLast = kRightUp
 };
 
+// Defines the float values closest to repeating decimal scale factors.
+constexpr float kDsf_1_777 = 1.77777779102325439453125f;
+constexpr float kDsf_2_252 = 2.2522523403167724609375f;
+constexpr float kDsf_2_666 = 2.6666667461395263671875f;
+
+constexpr char kDsfStr_1_777[] = "1.77777779102325439453125";
+constexpr char kDsfStr_2_252[] = "2.2522523403167724609375";
+constexpr char kDsfStr_2_666[] = "2.6666667461395263671875";
+
 }  // namespace display
 
 #endif  // UI_DISPLAY_TYPES_DISPLAY_CONSTANTS_H_

@@ -944,7 +944,6 @@
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% થઈ ગયું</translation>
 <translation id="2318143611928805047">કાગળનું કદ</translation>
 <translation id="2318817390901984578">Android ઍપ્લિકેશનોનો ઉપયોગ કરવા માટે, તમારા ઉપકરણ <ph name="DEVICE_TYPE" />ને ચાર્જ અને અપડેટ કરો.</translation>
-<translation id="2318923050469484167">વર્તમાન છૂપું સત્ર (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">હેડર્સ અને ફૂટર્સ</translation>
 <translation id="2322318151094136999">જ્યારે કોઈ સાઇટ સીરિયલ પોર્ટને ઍક્સેસ કરવા માગે ત્યારે પૂછો (સુઝાવ આપેલ)</translation>
 <translation id="2325002827435400643">આ સાઇટ માટે બંધ કરો</translation>
@@ -1787,6 +1786,7 @@
 <translation id="3511307672085573050">લિંક સર&amp;નામાંની કૉપિ કરો</translation>
 <translation id="351152300840026870">નિશ્ચિત-પહોળાઇ ફૉન્ટ</translation>
 <translation id="3511528412952710609">ટૂંકુ</translation>
+<translation id="3513704683820682405">ઑગ્મેન્ટેડ રિયાલિટી</translation>
 <translation id="3514373592552233661">એક કરતાં વધુ જાણીતા નેટવર્ક ઉપલબ્ધ હોવા પર પસંદગીના નેટવર્કને અન્ય જાણીતા નેટવર્ક પર પ્રાથમિકતા આપવામાં આવશે</translation>
 <translation id="3515983984924808886">રીસેટ કન્ફર્મ કરવા માટે તમારી સિક્યુરિટી કીને સ્પર્શ કરો. સિક્યુરિટી કી પરની, તેના પિન સહિતની તેમાં સ્ટોર કરેલી બધી માહિતી ડિલીટ કરવામાં આવશે.</translation>
 <translation id="3518985090088779359">સ્વીકારો અને ચાલુ રાખો</translation>
@@ -2243,7 +2243,6 @@
 <translation id="4099874310852108874">નેટવર્ક ભૂલ આવી.</translation>
 <translation id="4100733287846229632">ઉપકરણ સ્થાન અત્યંત ઓછું છે</translation>
 <translation id="4100853287411968461">સ્ક્રીન સમયની નવી મર્યાદા</translation>
-<translation id="4103091233824664032">સ્ક્રીન લૉક ગોઠવવા અને સાઇન ઇન કરવા માટે, તમારો પાસવર્ડ દાખલ કરો</translation>
 <translation id="4104163789986725820">નિ&amp;કાસ કરો...</translation>
 <translation id="4107048419833779140">સ્ટોરેજ ઉપકરણોને ઓળખો અને તેને બહાર કાઢો</translation>
 <translation id="4109135793348361820"><ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) પર વિંડો ખસેડો</translation>
@@ -2782,6 +2781,7 @@
 <translation id="494286511941020793">પ્રૉક્સી ગોઠવણી સહાય</translation>
 <translation id="4943368462779413526">ફૂટબૉલ</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" સિરીઅલ પોર્ટ સાથે કનેક્ટ કરવા માગે છે</translation>
+<translation id="4943703118917034429">વર્ચ્યુઅલ રિયાલિટી</translation>
 <translation id="4944310289250773232">આ પ્રમાણીકરણ સેવા <ph name="SAML_DOMAIN" /> દ્વારા હોસ્ટ કરવામાં આવે છે</translation>
 <translation id="495170559598752135">ક્રિયાઓ</translation>
 <translation id="4952981627953231344">આ ડિવાઇસ પર Plugin VMને મંજૂરી નથી. તમારી સંસ્થાના ડિવાઇસ વ્યવસ્થાપકનો સંપર્ક કરો.</translation>
@@ -3131,7 +3131,6 @@
 <translation id="5468173180030470402">શેર કરેલી ફાઇલ માટે શોધી રહ્યાં છીએ</translation>
 <translation id="5470735824776589490">તમારું ડિવાઇસ Powerwash સાથે રીસેટ થઈ શકે તે પહેલાં એકવાર ફરી શરૂ કરવું આવશ્યક છે. <ph name="LINK_BEGIN" />વધુ જાણો<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">કેમ છો! હું તમારો ટેક્સ્ટ-ટુ-સ્પીચ વૉઇસ છું.</translation>
-<translation id="5472133193607270166">જ્યારે ચાલુ હોય, ત્યારે સાઇટ જાહેરાતોને વ્યક્તિગત બનાવવા માટે બધી અલગ-અલગ સાઇટ પરની તમારી બ્રાઉઝિંગ પ્રવૃત્તિનો ઉપયોગ કરી શકતી નથી. અમુક સાઇટ કદાચ યોગ્ય રીતે કાર્ય કરશે નહીં.</translation>
 <translation id="5473333559083690127">નવો PIN ફરીથી દાખલ કરો</translation>
 <translation id="5481941284378890518">નજીકના પ્રિન્ટર્સ ઉમેરો</translation>
 <translation id="5483785310822538350">ફાઇલ અને ઉપકરણ ઍક્સેસને રદબાતલ કરો</translation>
@@ -3303,7 +3302,6 @@
 <translation id="5701381305118179107">મધ્યમાં</translation>
 <translation id="5701441174893770082">Linux અપગ્રેડ કરવાથી તમારી બૅટરી નોંધપાત્ર રીતે વપરાઈ શકે છે. કૃપા કરીને તમારા ડિવાઇસને ચાર્જર સાથે કનેક્ટ કરો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="5702898740348134351">&amp;શોધ એન્જિન્સ સંપાદિત કરો...</translation>
-<translation id="570302979952009979">આ ફિંગરપ્રિન્ટને કોઈ નામ આપો</translation>
 <translation id="5704875434923668958">આની સાથે સિંક કરી રહ્યાં છીએ</translation>
 <translation id="5707185214361380026">અહીંથી એક્સ્ટેન્શનને લોડ કરવામાં નિષ્ફળ:</translation>
 <translation id="5708171344853220004">Microsoft Principal Name</translation>
@@ -3395,7 +3393,6 @@
 <translation id="5833726373896279253">આ સેટિંગ્સ ફક્ત માલિક દ્વારા જ સંશોધિત થઈ શકે છે:</translation>
 <translation id="5834581999798853053">લગભગ <ph name="TIME" /> મિનિટ બાકી</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - કૅમેરા અથવા માઇક્રોફોન રેકોર્ડિંગ</translation>
-<translation id="5838456317242088717">વર્તમાન છૂપું સત્ર</translation>
 <translation id="5842497610951477805">બ્લૂટૂથ ચાલુ</translation>
 <translation id="5843250171025351504">તમારું ડિવાઇસ હવે તમારા એડમિન દ્વારા ઉલ્લેખિત ન્યૂનતમ ગ્રાહક વર્ઝન સાથે બંધબેસતું નથી. કૃપા કરીને લૉગ ઇન કરવા માટે અપડેટ કરો.</translation>
 <translation id="5846200638699387931">રિલેશન સિન્ટેક્સ ભૂલ: <ph name="ERROR_LINE" /></translation>
@@ -3652,7 +3649,6 @@ USB ડિવાઇસ</translation>
 <translation id="6181431612547969857">ડાઉનલોડ અવરોધિત કર્યું</translation>
 <translation id="6185132558746749656">ઉપકરણનું સ્થાન</translation>
 <translation id="6195693561221576702">આ ડિવાઇસ ઇન્ટરનેટ વગર ડેમો મોડમાં સેટઅપ કરી શકાતું નથી.</translation>
-<translation id="6196640612572343990">તૃતીય પક્ષની કુકીઝ અવરોધિત કરો</translation>
 <translation id="6196854373336333322">"<ph name="EXTENSION_NAME" />" એક્સ્ટેન્શને તમારા પ્રૉક્સી સેટિંગનું નિયંત્રણ લઈ લીધું છે, એનો અર્થ છે કે તમે જે કંઈ પણ ઓનલાઇન કરો છો એને એ બદલી, ભંગ કરી કે છુપાઈને પારકી વાતો સાંભળી શકે છે. આ ફેરફાર કેમ થયો એ અંગે જો તમને ખાતરી નથી, તો સંભવિત રૂપે એ તમને જોઈતું નહિ હોય.</translation>
 <translation id="6198102561359457428">સાઇન આઉટ કરો પછી ફરી સાઇન કરો...</translation>
 <translation id="6198252989419008588">PIN બદલો</translation>
@@ -4358,7 +4354,6 @@ USB ડિવાઇસ</translation>
 <translation id="7225179976675429563">નેટવર્ક પ્રકાર ખૂટે છે</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (વિક્રેતા: <ph name="VENDOR_ID" />, પ્રોડક્ટ: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">વેબસાઇટ્સ ભૌગોલિક સ્થાન, માઇક્રોફોન, કૅમેરા, વગેરે જેવી સુવિધાઓને ઉપયોગમાં લઈ શકે છે કે કેમ તેનો ઉલ્લેખ કરતી સેટિંગ્સમાં ફેરફારો કરો.</translation>
-<translation id="7228523857728654909">સ્ક્રીન લૉક અને સાઇન ઇન</translation>
 <translation id="7229570126336867161">EVDO ની જરૂર છે</translation>
 <translation id="7230787553283372882">તમારી ટેક્સ્ટના કદને કસ્ટમાઇઝ કરો</translation>
 <translation id="7232750842195536390">નામ બદલવામાં નિષ્ફળ થયાં</translation>
@@ -5269,7 +5264,6 @@ USB ડિવાઇસ</translation>
 <translation id="850875081535031620">કોઈ નુકસાનકારક સૉફ્ટવેર મળ્યું નથી</translation>
 <translation id="8509177919508253835">સુરક્ષા કોડ રીસેટ કરો અને પિન બનાવો</translation>
 <translation id="8509646642152301857">જોડણીની તપાસ ડાઉનલોડ કરવામાં નિષ્ફળ.</translation>
-<translation id="8510617356402557055">શું આ અનપેક્ષિત હતું? <ph name="BEGIN_LINK" />પ્રતિસાદ મોકલો<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">પ્રક્રિયાનો અંત કરો</translation>
 <translation id="851263357009351303"><ph name="HOST" /> ને હંમેશા છબી બતાવવાની મંજૂરી આપો</translation>
 <translation id="8513108775083588393">ઑટો રોટેટ</translation>

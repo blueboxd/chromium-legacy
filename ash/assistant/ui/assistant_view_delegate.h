@@ -26,7 +26,6 @@
 #include "base/observer_list_types.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "ui/wm/core/cursor_manager.h"
 
 namespace ash {
@@ -129,12 +128,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantViewDelegate {
 
   // Returns the cursor_manager.
   virtual ::wm::CursorManager* GetCursorManager() = 0;
-
-  // Acquires a NavigableContentsFactory from the Content Service to allow
-  // Assistant to display embedded web contents.
-  virtual void GetNavigableContentsFactoryForView(
-      mojo::PendingReceiver<content::mojom::NavigableContentsFactory>
-          receiver) = 0;
 
   // Returns the root window for the specified |display_id|.
   virtual aura::Window* GetRootWindowForDisplayId(int64_t display_id) = 0;

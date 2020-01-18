@@ -228,6 +228,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstMeaningfulPaint) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(10);
   timing.paint_timing->first_meaningful_paint =
       base::TimeDelta::FromMilliseconds(600);
   PopulateRequiredTimingFields(&timing);
@@ -873,6 +874,7 @@ TEST_F(UkmPageLoadMetricsObserverTest,
 TEST_F(UkmPageLoadMetricsObserverTest, PageInteractive) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(10);
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.interactive_timing->interactive =
       base::TimeDelta::FromMilliseconds(600);
@@ -999,6 +1001,7 @@ TEST_F(UkmPageLoadMetricsObserverTest, LongestInputDelayAndTimestamp) {
 TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
   page_load_metrics::mojom::PageLoadTiming timing1;
   page_load_metrics::InitPageLoadTimingForTest(&timing1);
+  timing1.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(10);
   timing1.navigation_start = base::Time::FromDoubleT(1);
   timing1.paint_timing->first_contentful_paint =
       base::TimeDelta::FromMilliseconds(200);

@@ -115,6 +115,7 @@
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_throttle.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
@@ -158,6 +159,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -308,6 +310,7 @@
 #include "net/http/http_util.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "ppapi/host/ppapi_host.h"
 #include "printing/buildflags/buildflags.h"
@@ -5478,7 +5481,8 @@ void ChromeContentBrowserClient::IsClipboardPasteAllowed(
               std::move(callback).Run(
                   ClipboardPasteAllowed(result.text_results[0]));
             },
-            std::move(callback)));
+            std::move(callback)),
+        safe_browsing::DeepScanAccessPoint::PASTE);
   } else {
     std::move(callback).Run(ClipboardPasteAllowed(true));
   }
@@ -5486,3 +5490,32 @@ void ChromeContentBrowserClient::IsClipboardPasteAllowed(
   std::move(callback).Run(ClipboardPasteAllowed(true));
 #endif  // BUILDFLAG(FULL_SAFE_BROWSING)
 }
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+bool ChromeContentBrowserClient::ShouldAllowPluginCreation(
+    const url::Origin& embedder_origin,
+    const content::PepperPluginInfo& plugin_info) {
+#if BUILDFLAG(ENABLE_PDF)
+  if (plugin_info.name == ChromeContentClient::kPDFInternalPluginName) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+    // Allow embedding the internal PDF plugin in the built-in PDF extension.
+    if (embedder_origin.scheme() == extensions::kExtensionScheme &&
+        embedder_origin.host() == extension_misc::kPdfExtensionId) {
+      return true;
+    }
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
+    // Allow embedding the internal PDF plugin in chrome://print.
+    if (embedder_origin == url::Origin::Create(GURL(chrome::kChromeUIPrintURL)))
+      return true;
+
+    // Only allow the PDF plugin in the known, trustworthy origins that are
+    // allowlisted above.  See also https://crbug.com/520422 and
+    // https://crbug.com/1027173.
+    return false;
+  }
+#endif  // BUILDFLAG(ENABLE_PDF)
+
+  return true;
+}
+#endif  // BUILDFLAG(ENABLE_PLUGINS)

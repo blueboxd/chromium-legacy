@@ -5,9 +5,9 @@
 #include "chrome/browser/sessions/session_service_test_helper.h"
 
 #include "chrome/browser/sessions/session_service.h"
-#include "components/sessions/core/base_session_service_test_helper.h"
+#include "components/sessions/core/command_storage_backend.h"
+#include "components/sessions/core/command_storage_manager_test_helper.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
-#include "components/sessions/core/session_backend.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/session_types.h"
 #include "content/public/browser/browser_thread.h"
@@ -58,8 +58,8 @@ void SessionServiceTestHelper::ReadWindows(
     std::vector<std::unique_ptr<sessions::SessionWindow>>* windows,
     SessionID* active_window_id) {
   std::vector<std::unique_ptr<sessions::SessionCommand>> read_commands;
-  sessions::BaseSessionServiceTestHelper test_helper(
-      service_->GetBaseSessionServiceForTest());
+  sessions::CommandStorageManagerTestHelper test_helper(
+      service_->GetCommandStorageManagerForTest());
   test_helper.ReadLastSessionCommands(&read_commands);
   RestoreSessionFromCommands(read_commands, windows, active_window_id);
   service()->RemoveUnusedRestoreWindows(windows);
@@ -117,8 +117,8 @@ SessionService* SessionServiceTestHelper::ReleaseService() {
 void SessionServiceTestHelper::RunTaskOnBackendThread(
     const base::Location& from_here,
     const base::Closure& task) {
-  sessions::BaseSessionServiceTestHelper test_helper(
-      service_->GetBaseSessionServiceForTest());
+  sessions::CommandStorageManagerTestHelper test_helper(
+      service_->GetCommandStorageManagerForTest());
   test_helper.RunTaskOnBackendThread(from_here, task);
 }
 

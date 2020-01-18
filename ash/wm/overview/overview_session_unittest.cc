@@ -1683,7 +1683,7 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPosition) {
 // Tests that toggling overview on removes any resize shadows that may have been
 // present.
 TEST_P(OverviewSessionTest, DragMinimizedWindowHasStableSize) {
-  UpdateDisplay("1920x1200*1.7777777");
+  UpdateDisplay(base::StringPrintf("1920x1200*%s", display::kDsfStr_1_777));
   EnterTabletMode();
   std::unique_ptr<aura::Window> window(CreateTestWindow());
 

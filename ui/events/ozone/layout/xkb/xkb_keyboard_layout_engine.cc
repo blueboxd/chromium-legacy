@@ -747,7 +747,13 @@ bool XkbKeyboardLayoutEngine::Lookup(DomCode dom_code,
     // If we do not have matching legacy Xkb keycode for the Dom code,
     // we could be dealing with a newer application launcher or similar
     // key. Let's see if we have a basic mapping for it.
-    return DomCodeToNonPrintableDomKey(dom_code, dom_key, key_code);
+    if (!DomCodeToNonPrintableDomKey(dom_code, dom_key, key_code)) {
+      // If no Dom Key was found see if there is a matching Dom Code to keycode
+      // mapping for it.
+      *dom_key = DomKey::UNIDENTIFIED;
+      *key_code = DomCodeToUsLayoutNonLocatedKeyboardCode(dom_code);
+    }
+    return true;
   }
 
   // Classify the keysym and convert to DOM and VKEY representations.

@@ -316,6 +316,11 @@ const base::Feature kHistoryQuickProviderAllowMidwordContinuations{
 const base::Feature kConfirmOmniboxSuggestionRemovals{
     "ConfirmOmniboxSuggestionRemovals", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, allows Tab and Shift+Tab to escape the focus out of the omnibox
+// popup. Otherwise, Tab infinitely loops between suggestions in the popup.
+const base::Feature kTabKeyCanEscapeOmniboxPopup{
+    "TabKeyCanEscapeOmniboxPopup", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature that enables not counting submatches towards the maximum
 // suggestion limit.
 const base::Feature kOmniboxLooseMaxLimitOnDedicatedRows{

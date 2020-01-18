@@ -45,9 +45,6 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
       const GURL& url,
       AssistantImageDownloader::DownloadCallback callback) override;
   ::wm::CursorManager* GetCursorManager() override;
-  void GetNavigableContentsFactoryForView(
-      mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
-      override;
   aura::Window* GetRootWindowForDisplayId(int64_t display_id) override;
   aura::Window* GetRootWindowForNewWindows() override;
   bool IsTabletMode() const override;

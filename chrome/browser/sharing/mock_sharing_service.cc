@@ -22,6 +22,7 @@ MockSharingService::MockSharingService()
               /*vapid_key_manager=*/nullptr),
           /*message_sender=*/nullptr,
           /*device_source=*/nullptr,
+          /*handler_registry=*/nullptr,
           std::make_unique<SharingFCMHandler>(/*gcm_driver=*/nullptr,
                                               /*sharing_fcm_sender=*/nullptr,
                                               /*sync_preference=*/nullptr,

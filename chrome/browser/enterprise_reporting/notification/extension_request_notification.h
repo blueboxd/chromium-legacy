@@ -15,9 +15,12 @@ class Profile;
 
 namespace enterprise_reporting {
 
-class ExtensionRequestNotification {
+class ExtensionRequestNotification
+    : public message_center::NotificationObserver {
  public:
   using ExtensionIds = std::vector<std::string>;
+  // Callback when the notification is closed.
+  using NotificationCloseCallback = base::OnceCallback<void(bool by_user)>;
   enum NotifyType { kApproved = 0, kRejected = 1, kForceInstalled = 2 };
 
   ExtensionRequestNotification();
@@ -29,17 +32,21 @@ class ExtensionRequestNotification {
       delete;
   virtual ~ExtensionRequestNotification();
 
-  void Show();
-  void Close();
+  void Show(NotificationCloseCallback callback);
+  void CloseNotification();
 
  private:
-  void OnClick(const base::Optional<int> button_index);
+  // message_center::NotificationObserver
+  void Click(const base::Optional<int>& button_index,
+             const base::Optional<base::string16>& reply) override;
+  void Close(bool by_user) override;
 
   std::unique_ptr<message_center::Notification> notification_;
 
   Profile* profile_;
   const NotifyType notify_type_ = kApproved;
   const ExtensionIds extension_ids_;
+  NotificationCloseCallback callback_;
 
   base::WeakPtrFactory<ExtensionRequestNotification> weak_factory_{this};
 };

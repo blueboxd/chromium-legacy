@@ -32,7 +32,6 @@ class DeepScanningModalDialog : public TabModalConfirmDialogDelegate {
   base::string16 GetDialogMessage() override;
   base::string16 GetAcceptButtonTitle() override;
   base::string16 GetLinkText() const override;
-  int GetDialogButtons() const override;
   void OnLinkClicked(WindowOpenDisposition disposition) override;
   void OnAccepted() override;
 

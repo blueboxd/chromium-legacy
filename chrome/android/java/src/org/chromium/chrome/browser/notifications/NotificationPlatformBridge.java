@@ -281,7 +281,8 @@ public class NotificationPlatformBridge {
         Class<? extends PreferenceFragmentCompat> fragment = launchSingleWebsitePreferences
                 ? SingleWebsiteSettings.class
                 : SingleCategorySettings.class;
-        SettingsLauncher.launchSettingsPage(applicationContext, fragment, fragmentArguments);
+        SettingsLauncher.getInstance().launchSettingsPage(
+                applicationContext, fragment, fragmentArguments);
     }
 
     /**
@@ -664,7 +665,7 @@ public class NotificationPlatformBridge {
                     SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.NOTIFICATIONS));
         }
         // Set up a pending intent for going to the settings screen for |origin|.
-        Intent settingsIntent = SettingsLauncher.createIntentForSettingsPage(
+        Intent settingsIntent = SettingsLauncher.getInstance().createIntentForSettingsPage(
                 context, fragmentName, fragmentArguments);
         settingsIntent.setData(makeIntentData(notificationId, origin, -1 /* actionIndex */));
         PendingIntent pendingSettingsIntent = PendingIntent.getActivity(context,

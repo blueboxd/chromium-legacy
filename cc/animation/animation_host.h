@@ -119,6 +119,7 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   void TickWorkletAnimations() override;
   bool UpdateAnimationState(bool start_ready_animations,
                             MutatorEvents* events) override;
+  void TakeTimeUpdatedEvents(MutatorEvents* events) override;
   void PromoteScrollTimelinesPendingToActive() override;
 
   std::unique_ptr<MutatorEvents> CreateEvents() override;

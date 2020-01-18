@@ -1767,6 +1767,10 @@ bool PaintLayerScrollableArea::SnapContainerDataNeedsUpdate() const {
 void PaintLayerScrollableArea::SetSnapContainerDataNeedsUpdate(
     bool needs_update) {
   EnsureRareData().snap_container_data_needs_update_ = needs_update;
+  GetLayoutBox()
+      ->GetDocument()
+      .GetSnapCoordinator()
+      .SetSnapContainerDataNeedsUpdate(needs_update);
 }
 
 bool PaintLayerScrollableArea::NeedsResnap() const {

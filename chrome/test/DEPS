@@ -17,6 +17,7 @@ include_rules = [
   "+components/domain_reliability",
   "+components/download/public/common",
   "+components/favicon/core",
+  "+components/find_in_page",
   "+components/gcm_driver/instance_id",
   "+components/google/core/common",
   "+components/guest_view/browser",

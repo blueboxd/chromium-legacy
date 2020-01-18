@@ -23,6 +23,10 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
+#if DCHECK_IS_ON()
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#endif
+
 namespace gfx {
 class Vector2dF;
 }
@@ -46,6 +50,9 @@ class LayerListBuilder {
   // The list becomes invalid once |Finalize| is called.
   bool list_valid_ = true;
   cc::LayerList list_;
+#if DCHECK_IS_ON()
+  HashSet<int> layer_ids_;
+#endif
 };
 
 // This class maintains unique stable cc effect IDs (and optionally a persistent

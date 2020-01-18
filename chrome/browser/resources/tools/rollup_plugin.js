@@ -12,7 +12,7 @@ const polymerUrl = 'chrome://resources/polymer/v3_0/';
 
 // TODO: Determine whether it is worth maintaining this list vs always checking
 // both directories for the existence of a file.
-const nonGeneratedFiles = ['cr.m.js', 'action_link.js'];
+const nonGeneratedFiles = ['cr.m.js', 'cr_splitter.js', 'action_link.js'];
 
 function normalizeSlashes(filepath) {
   return filepath.replace(/\\/gi, '/');

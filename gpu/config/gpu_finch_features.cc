@@ -109,6 +109,11 @@ const base::Feature kVaapiWebPImageDecodeAcceleration{
 // --use-vulkan will be followed.
 const base::Feature kVulkan{"Vulkan", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Used to enable shared image mailbox and disable legacy texture mailbox on
+// webview.
+const base::Feature kEnableSharedImageForWebview{
+    "EnableSharedImageForWebview", base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 bool IsAndroidSurfaceControlEnabled() {
   if (base::FeatureList::IsEnabled(kDisableSurfaceControlForWebview))

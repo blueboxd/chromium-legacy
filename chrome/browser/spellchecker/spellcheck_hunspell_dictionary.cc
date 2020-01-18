@@ -145,7 +145,7 @@ void SpellcheckHunspellDictionary::Load() {
         language_,
         base::BindOnce(
             &SpellcheckHunspellDictionary::PlatformSupportsLanguageComplete,
-            base::Unretained(this)));
+            weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 #endif  // USE_BROWSER_SPELLCHECKER
@@ -447,7 +447,7 @@ void SpellcheckHunspellDictionary::PlatformSupportsLanguageComplete(
       spellcheck_platform::SetLanguage(
           language_, base::BindOnce(&SpellcheckHunspellDictionary::
                                         SpellCheckPlatformSetLanguageComplete,
-                                    base::Unretained(this)));
+                                    weak_ptr_factory_.GetWeakPtr()));
       return;
     }
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)

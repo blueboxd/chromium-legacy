@@ -58,7 +58,10 @@ blink::WebView* WebViewTestProxy::CreateView(
 }
 
 void WebViewTestProxy::PrintPage(blink::WebLocalFrame* frame) {
-  blink::WebSize page_size_in_pixels = GetWidget()->GetWebWidget()->Size();
+  // This is using the main frame for the size, but maybe it should be using the
+  // frame's size.
+  blink::WebSize page_size_in_pixels =
+      GetMainRenderFrame()->GetLocalRootRenderWidget()->GetWebWidget()->Size();
   if (page_size_in_pixels.IsEmpty())
     return;
   blink::WebPrintParams print_params(page_size_in_pixels);
@@ -76,15 +79,14 @@ void WebViewTestProxy::DidFocus(blink::WebLocalFrame* calling_frame) {
 }
 
 void WebViewTestProxy::Reset() {
-  // TODO(https://crbug.com/961499): There is a race condition where Reset()
-  // can be called after GetWidget() has been nulled, but before this is
-  // destructed.
-  if (!GetWidget())
-    return;
   accessibility_controller_.Reset();
-  // text_input_controller_ doesn't have any state to reset.
+  // |text_input_controller_| doesn't have any state to reset.
   view_test_runner_.Reset();
-  static_cast<WebWidgetTestProxy*>(GetWidget())->Reset();
+  if (GetMainRenderFrame()) {
+    auto* widget_proxy = static_cast<WebWidgetTestProxy*>(
+        GetMainRenderFrame()->GetLocalRootRenderWidget());
+    widget_proxy->Reset();
+  }
 
   for (blink::WebFrame* frame = webview()->MainFrame(); frame;
        frame = frame->TraverseNext()) {

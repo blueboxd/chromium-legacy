@@ -839,6 +839,10 @@ void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
   swap_buffer_rect_ = gfx::Rect();
 }
 
+void SkiaRenderer::SwapBuffersSkipped() {
+  skia_output_surface_->SwapBuffersSkipped();
+}
+
 void SkiaRenderer::SwapBuffersComplete() {
   committed_overlay_locks_.clear();
   std::swap(committed_overlay_locks_, pending_overlay_locks_.front());

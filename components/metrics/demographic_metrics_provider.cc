@@ -7,15 +7,25 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/sync_service.h"
 #include "third_party/metrics_proto/ukm/report.pb.h"
 
 namespace metrics {
 
+// Enable UMA Demogrpahics by default for desktop platforms but NOT mobile.
+namespace {
+#if defined(OS_IOS) || defined(OS_ANDROID)
+constexpr auto default_feature_state = base::FEATURE_DISABLED_BY_DEFAULT;
+#else
+constexpr auto default_feature_state = base::FEATURE_ENABLED_BY_DEFAULT;
+#endif
+}  // namespace
+
 // static
 const base::Feature DemographicMetricsProvider::kDemographicMetricsReporting = {
-    "DemographicMetricsReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DemographicMetricsReporting", default_feature_state};
 
 DemographicMetricsProvider::DemographicMetricsProvider(
     std::unique_ptr<ProfileClient> profile_client,

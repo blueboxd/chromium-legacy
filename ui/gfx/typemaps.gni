@@ -9,6 +9,7 @@ typemaps = [
   "//ui/gfx/mojom/buffer_types.typemap",
   "//ui/gfx/mojom/ca_layer_params.typemap",
   "//ui/gfx/mojom/color_space.typemap",
+  "//ui/gfx/mojom/display_color_spaces.typemap",
   "//ui/gfx/mojom/font_render_params.typemap",
   "//ui/gfx/mojom/gpu_fence_handle.typemap",
   "//ui/gfx/mojom/overlay_transform.typemap",

@@ -342,6 +342,12 @@ void HTMLPortalElement::RemovedFrom(ContainerNode& node) {
   HTMLFrameOwnerElement::RemovedFrom(node);
 }
 
+void HTMLPortalElement::DefaultEventHandler(Event& event) {
+  if (HandleKeyboardActivation(event))
+    return;
+  HTMLFrameOwnerElement::DefaultEventHandler(event);
+}
+
 bool HTMLPortalElement::IsURLAttribute(const Attribute& attribute) const {
   return attribute.GetName() == html_names::kSrcAttr ||
          HTMLFrameOwnerElement::IsURLAttribute(attribute);
@@ -386,6 +392,10 @@ void HTMLPortalElement::ParseAttribute(
 LayoutObject* HTMLPortalElement::CreateLayoutObject(const ComputedStyle& style,
                                                     LegacyLayout) {
   return new LayoutIFrame(this);
+}
+
+bool HTMLPortalElement::SupportsFocus() const {
+  return true;
 }
 
 void HTMLPortalElement::DisconnectContentFrame() {

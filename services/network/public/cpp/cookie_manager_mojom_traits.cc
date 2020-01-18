@@ -150,61 +150,6 @@ bool EnumTraits<network::mojom::CookieAccessSemantics,
   return false;
 }
 
-network::mojom::CookieInclusionStatusWarningReason
-EnumTraits<network::mojom::CookieInclusionStatusWarningReason,
-           net::CanonicalCookie::CookieInclusionStatus::WarningReason>::
-    ToMojom(net::CanonicalCookie::CookieInclusionStatus::WarningReason input) {
-  switch (input) {
-    case net::CanonicalCookie::CookieInclusionStatus::WarningReason::
-        DO_NOT_WARN:
-      return network::mojom::CookieInclusionStatusWarningReason::DO_NOT_WARN;
-    case net::CanonicalCookie::CookieInclusionStatus::WarningReason::
-        WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT:
-      return network::mojom::CookieInclusionStatusWarningReason::
-          WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT;
-    case net::CanonicalCookie::CookieInclusionStatus::WarningReason::
-        WARN_SAMESITE_NONE_INSECURE:
-      return network::mojom::CookieInclusionStatusWarningReason::
-          WARN_SAMESITE_NONE_INSECURE;
-    case net::CanonicalCookie::CookieInclusionStatus::WarningReason::
-        WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE:
-      return network::mojom::CookieInclusionStatusWarningReason::
-          WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE;
-  }
-  NOTREACHED();
-  return network::mojom::CookieInclusionStatusWarningReason::DO_NOT_WARN;
-}
-
-bool EnumTraits<network::mojom::CookieInclusionStatusWarningReason,
-                net::CanonicalCookie::CookieInclusionStatus::WarningReason>::
-    FromMojom(
-        network::mojom::CookieInclusionStatusWarningReason input,
-        net::CanonicalCookie::CookieInclusionStatus::WarningReason* output) {
-  switch (input) {
-    case network::mojom::CookieInclusionStatusWarningReason::DO_NOT_WARN:
-      *output = net::CanonicalCookie::CookieInclusionStatus::WarningReason::
-          DO_NOT_WARN;
-      return true;
-    case network::mojom::CookieInclusionStatusWarningReason::
-        WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT:
-      *output = net::CanonicalCookie::CookieInclusionStatus::WarningReason::
-          WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT;
-      return true;
-    case network::mojom::CookieInclusionStatusWarningReason::
-        WARN_SAMESITE_NONE_INSECURE:
-      *output = net::CanonicalCookie::CookieInclusionStatus::WarningReason::
-          WARN_SAMESITE_NONE_INSECURE;
-      return true;
-    case network::mojom::CookieInclusionStatusWarningReason::
-        WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE:
-      *output = net::CanonicalCookie::CookieInclusionStatus::WarningReason::
-          WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE;
-      return true;
-  }
-  NOTREACHED();
-  return false;
-}
-
 network::mojom::CookieSameSiteContext
 EnumTraits<network::mojom::CookieSameSiteContext,
            net::CookieOptions::SameSiteCookieContext>::
@@ -439,11 +384,7 @@ bool StructTraits<network::mojom::CookieInclusionStatusDataView,
          net::CanonicalCookie::CookieInclusionStatus* out) {
   *out = net::CanonicalCookie::CookieInclusionStatus();
   out->set_exclusion_reasons(status.exclusion_reasons());
-
-  net::CanonicalCookie::CookieInclusionStatus::WarningReason warning;
-  if (!status.ReadWarning(&warning))
-    return false;
-  out->set_warning(warning);
+  out->set_warning_reasons(status.warning_reasons());
 
   return out->IsValid();
 }

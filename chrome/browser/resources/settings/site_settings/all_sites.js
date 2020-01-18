@@ -474,63 +474,135 @@ Polymer({
   },
 
   /**
-   * Formats the |label| string with |name|, using $<num> as markers.
-   * @param {string} label
-   * @param {string} name
+   * Get the appropriate label string for the clear data dialog based on whether
+   * user is clearing data for an origin or siteGroup, and whether or not the
+   * origin/siteGroup has an associated installed app.
    * @return {string}
    * @private
    */
-  getFormatString_(label, name) {
-    return loadTimeData.substituteString(label, name);
+  getConfirmClearDataLabel_: function() {
+    // actionMenuModel_ will be null when dialog closes
+    if (this.actionMenuModel_ === null) {
+      return '';
+    }
+
+    if (this.storagePressureFlagEnabled_) {
+      const {index, origin} = this.actionMenuModel_;
+
+      const {origins, hasInstalledPWA} = this.filteredList_[index];
+
+      if (origin) {
+        const {isInstalled = false} =
+            origins.find(o => o.origin === origin) || {};
+        const messageId = isInstalled ?
+            'siteSettingsOriginDeleteConfirmationInstalled' :
+            'siteSettingsOriginDeleteConfirmation';
+        return loadTimeData.substituteString(this.i18n(messageId), origin);
+      } else {
+        // Clear SiteGroup
+        const messageId = hasInstalledPWA ?
+            'siteSettingsSiteGroupDeleteConfirmationInstalled' :
+            'siteSettingsSiteGroupDeleteConfirmationNew';
+        return loadTimeData.substituteString(
+            this.i18n(messageId), this.actionMenuModel_.item.etldPlus1);
+      }
+    } else {
+      // Storage Pressure UI disabled
+      return loadTimeData.substituteString(
+          this.i18n('siteSettingsSiteGroupDeleteConfirmation'),
+          this.actionMenuModel_.item.etldPlus1);
+    }
   },
 
   /**
-   * Resets all permissions for all origins listed in |siteGroup.origins|.
+   * Get the appropriate label for the reset permissions confirmation
+   * dialog, dependent on whether user is resetting permissions for an
+   * origin or an entire SiteGroup.
+   * @return {string}
+   * @private
+   */
+  getResetPermissionsLabel_: function() {
+    if (this.actionMenuModel_ === null) {
+      return '';
+    }
+
+    if (this.actionMenuModel_.actionScope === 'origin') {
+      return loadTimeData.substituteString(
+          this.i18n('siteSettingsSiteResetConfirmation'),
+          this.actionMenuModel_.origin);
+    }
+    return loadTimeData.substituteString(
+        this.i18n('siteSettingsSiteGroupResetConfirmation'),
+        this.actionMenuModel_.item.etldPlus1);
+  },
+
+  /**
+   * Resets permission settings for a single origin.
+   * @param {string} origin
+   * @private
+   */
+  resetPermissionsForOrigin_: function(origin) {
+    const contentSettingsTypes = this.getCategoryList();
+    this.browserProxy.setOriginPermissions(
+        origin, contentSettingsTypes, settings.ContentSetting.DEFAULT);
+    if (contentSettingsTypes.includes(settings.ContentSettingsTypes.PLUGINS)) {
+      this.browserProxy.clearFlashPref(origin);
+    }
+  },
+
+  /**
+   * Resets all permissions for a single origin or all origins listed in
+   * |siteGroup.origins|.
    * @param {!Event} e
    * @private
    */
-  onResetSettings_(e) {
-    const contentSettingsTypes = this.getCategoryList();
-    const index = this.actionMenuModel_.index;
-    this.browserProxy.recordAction(settings.AllSitesAction.RESET_PERMISSIONS);
-    if (this.actionMenuModel_.item.etldPlus1 !=
-        this.filteredList_[index].etldPlus1) {
-      return;
-    }
-    for (let i = 0; i < this.filteredList_[index].origins.length; ++i) {
-      const origin = this.filteredList_[index].origins[i].origin;
-      this.browserProxy.setOriginPermissions(
-          origin, contentSettingsTypes, settings.ContentSetting.DEFAULT);
-      if (contentSettingsTypes.includes(
-              settings.ContentSettingsTypes.PLUGINS)) {
-        this.browserProxy.clearFlashPref(origin);
-      }
-      this.filteredList_[index].origins[i].hasPermissionSettings = false;
-    }
+  onResetSettings_: function(e) {
+    const {actionScope, index, origin} = this.actionMenuModel_;
+    const siteGroupToUpdate = this.filteredList_[index];
+
     const updatedSiteGroup = {
-      etldPlus1: this.filteredList_[index].etldPlus1,
-      numCookies: this.filteredList_[index].numCookies,
+      etldPlus1: siteGroupToUpdate.etldPlus1,
+      numCookies: siteGroupToUpdate.numCookies,
       origins: []
     };
-    for (let i = 0; i < this.filteredList_[index].origins.length; ++i) {
+
+    if (actionScope === 'origin') {
+      this.resetPermissionsForOrigin_(origin);
+      updatedSiteGroup.origins = siteGroupToUpdate.origins;
       const updatedOrigin =
-          Object.assign({}, this.filteredList_[index].origins[i]);
-      if (updatedOrigin.numCookies > 0 || updatedOrigin.usage > 0) {
-        updatedOrigin.hasPermissionSettings = false;
-        updatedSiteGroup.origins.push(updatedOrigin);
+          updatedSiteGroup.origins.find(o => o.origin === origin);
+      updatedOrigin.hasPermissionSettings = false;
+      if (updatedOrigin.numCookies <= 0 || updatedOrigin.usage <= 0) {
+        updatedSiteGroup.origins =
+            updatedSiteGroup.origins.filter(o => o.origin !== origin);
       }
+    } else {
+      // Reset permissions for entire site group
+      this.browserProxy.recordAction(settings.AllSitesAction.RESET_PERMISSIONS);
+      if (this.actionMenuModel_.item.etldPlus1 !==
+          siteGroupToUpdate.etldPlus1) {
+        return;
+      }
+      siteGroupToUpdate.origins.forEach(originEntry => {
+        this.resetPermissionsForOrigin_(originEntry.origin);
+        if (originEntry.numCookies > 0 || originEntry.usage > 0) {
+          originEntry.hasPermissionSettings = false;
+          updatedSiteGroup.origins.push(originEntry);
+        }
+      });
     }
+
     if (updatedSiteGroup.origins.length > 0) {
       this.set('filteredList_.' + index, updatedSiteGroup);
-    } else if (this.filteredList_[index].numCookies > 0) {
+    } else if (siteGroupToUpdate.numCookies > 0) {
       // If there is no origin for this site group that has any data,
       // but the ETLD+1 has cookies in use, create a origin placeholder
       // for display purposes.
       const originPlaceHolder = {
-        origin: 'http://' + this.filteredList_[index].etldPlus1 + '/',
+        origin: `http://${siteGroupToUpdate.etldPlus1}/`,
         engagement: 0,
         usage: 0,
-        numCookies: this.filteredList_[index].numCookies,
+        numCookies: siteGroupToUpdate.numCookies,
         hasPermissionSettings: false
       };
       updatedSiteGroup.origins.push(originPlaceHolder);
@@ -538,6 +610,7 @@ Polymer({
     } else {
       this.splice('filteredList_', index, 1);
     }
+
     this.$.allSitesList.fire('iron-resize');
     this.onCloseDialog_(e);
   },
@@ -548,23 +621,71 @@ Polymer({
    *                        that should be cleared.
    * @private
    */
-  clearDataForSiteGroupIndex_(index) {
-    this.browserProxy.clearEtldPlus1DataAndCookies(
-        this.filteredList_[index].etldPlus1);
+  clearDataForSiteGroupIndex_: function(index) {
+    const siteGroupToUpdate = this.filteredList_[index];
     const updatedSiteGroup = {
-      etldPlus1: this.filteredList_[index].etldPlus1,
+      etldPlus1: siteGroupToUpdate.etldPlus1,
+      hasInstalledPWA: siteGroupToUpdate.hasInstalledPWA,
       numCookies: 0,
       origins: []
     };
-    for (let i = 0; i < this.filteredList_[index].origins.length; ++i) {
-      const updatedOrigin =
-          Object.assign({}, this.filteredList_[index].origins[i]);
+
+    this.browserProxy.clearEtldPlus1DataAndCookies(siteGroupToUpdate.etldPlus1);
+
+    for (let i = 0; i < siteGroupToUpdate.origins.length; ++i) {
+      const updatedOrigin = Object.assign({}, siteGroupToUpdate.origins[i]);
       if (updatedOrigin.hasPermissionSettings) {
         updatedOrigin.numCookies = 0;
         updatedOrigin.usage = 0;
         updatedSiteGroup.origins.push(updatedOrigin);
       }
     }
+    this.updateSiteGroup_(index, updatedSiteGroup);
+  },
+
+  /**
+   * Helper to remove data and cookies for an origin.
+   * @param {number} index The index of the target siteGroup in filteredList_
+   *                        that should be cleared.
+   * @param {string} origin The origin of the target origin
+   *                         that should be cleared.
+   * @private
+   */
+  clearDataForOrigin_: function(index, origin) {
+    this.browserProxy.clearOriginDataAndCookies(this.toUrl(origin).href);
+
+    const siteGroupToUpdate = this.filteredList_[index];
+    const updatedSiteGroup = {
+      etldPlus1: siteGroupToUpdate.etldPlus1,
+      numCookies: 0,
+      origins: []
+    };
+
+    const updatedOrigin =
+        siteGroupToUpdate.origins.find(o => o.origin === origin);
+    if (updatedOrigin.hasPermissionSettings) {
+      updatedOrigin.numCookies = 0;
+      updatedOrigin.usage = 0;
+      updatedSiteGroup.origins = siteGroupToUpdate.origins;
+    } else {
+      updatedSiteGroup.origins =
+          siteGroupToUpdate.origins.filter(o => o.origin !== origin);
+    }
+
+    updatedSiteGroup.hasInstalledPWA =
+        updatedSiteGroup.origins.some(o => o.isInstalled);
+    this.updateSiteGroup_(index, updatedSiteGroup);
+  },
+
+  /**
+   * Updates the UI after permissions have been reset or data/cookies
+   * have been cleared
+   * @param {number} index The index of the target siteGroup in filteredList_
+   *                        that should be updated.
+   * @param {!SiteGroup} updatedSiteGroup The SiteGroup object that represents
+   *                                      the new state.
+   */
+  updateSiteGroup_: function(index, updatedSiteGroup) {
     if (updatedSiteGroup.origins.length > 0) {
       this.set('filteredList_.' + index, updatedSiteGroup);
     } else {
@@ -578,8 +699,14 @@ Polymer({
    * @param {!Event} e
    * @private
    */
-  onClearData_(e) {
-    this.clearDataForSiteGroupIndex_(this.actionMenuModel_.index);
+  onClearData_: function(e) {
+    const {index, actionScope, origin} = this.actionMenuModel_;
+    if (actionScope === 'origin') {
+      this.clearDataForOrigin_(index, origin);
+    } else {
+      this.clearDataForSiteGroupIndex_(index);
+    }
+
     this.$.allSitesList.fire('iron-resize');
     this.updateTotalUsage_();
     this.onCloseDialog_(e);

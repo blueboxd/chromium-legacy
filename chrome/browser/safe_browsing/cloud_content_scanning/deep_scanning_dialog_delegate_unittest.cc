@@ -32,7 +32,7 @@ namespace safe_browsing {
 namespace {
 
 constexpr char kDmToken[] = "dm_token";
-constexpr char kTestUrl[] = "http://example.com";
+constexpr char kTestUrl[] = "http://example.com/";
 
 constexpr char kTestHttpsSchemePatternUrl[] = "https://*";
 constexpr char kTestChromeSchemePatternUrl[] = "chrome://*";
@@ -246,6 +246,20 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpEnabled2) {
   EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), GURL(), &data));
   EXPECT_TRUE(data.do_dlp_scan);
   EXPECT_FALSE(data.do_malware_scan);
+}
+
+TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpEnabledWithUrl) {
+  EnableFeatures({kContentComplianceEnabled, kMalwareScanEnabled});
+  ScopedSetDMToken scoped_dm_token(
+      policy::DMToken::CreateValidTokenForTesting(kDmToken));
+  SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
+  GURL url(kTestUrl);
+
+  DeepScanningDialogDelegate::Data data;
+  EXPECT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
+  EXPECT_TRUE(data.do_dlp_scan);
+  EXPECT_FALSE(data.do_malware_scan);
+  EXPECT_EQ(kTestUrl, data.url);
 }
 
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, DlpDisabledByList) {

@@ -197,6 +197,12 @@
 <translation id="1307454923744766368">Güvenli olmayan başlangıç noktalarında kısıtlamaların uygulanmayacağı başlangıç noktaları ve ana makine adı kalıpları</translation>
 <translation id="1312799700549720683">Ekran ayarlarını kontrol eder.</translation>
 <translation id="131353325527891113">Kullanıcı adlarını giriş ekranında göster</translation>
+<translation id="1327351219049180837">Bu politika; politika verilerinin ve politika getirme zamanının bildirilip bildirilmeyeceğini kontrol eder.
+
+      Bu politika ayarlanmadan bırakılır veya True (Doğru) değerine ayarlanırsa politika verileri ve politika getirme zamanı toplanır.
+      Bu politika False (Yanlış) değerine ayarlanırsa politika verileri ve politika getirme zamanı toplanmaz.
+
+      Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
 <translation id="1327466551276625742">Çevrimdışı iken ağ yapılandırma istemini etkinleştir</translation>
 <translation id="1330145147221172764">Ekran klavyesini etkinleştir</translation>
 <translation id="13356285923490863">Politika Adı</translation>
@@ -346,6 +352,7 @@
 <translation id="152657506688053119">Varsayılan arama sağlayıcısına ilişkin alternatif URL'lerin listesi</translation>
 <translation id="1530812829012954197">Aşağıdaki URL kalıplarını her zaman ana makine tarayıcısında oluştur</translation>
 <translation id="1541170838458414064">Yazdırma sayfası boyutunu kısıtla</translation>
+<translation id="1553532014072799546">Uygulama Başına Süre Sınırları Beyaz Listesi</translation>
 <translation id="1553684822621013552">Bu politika doğru değerine ayarlandığında, ARC kullanıcı için
       etkinleştirilir (ek politika ayarı kontrollerine tabidir; geçerli
       kullanıcı oturumunda geçici mod veya çoklu oturum açma
@@ -445,6 +452,14 @@
       </translation>
 <translation id="1700811900332333712">Cihaza Powerwash isteme izni verme</translation>
 <translation id="1708496595873025510">Varyasyon temelini alma sınırlamasını ayarla</translation>
+<translation id="1713533749396963716">Bu politika, uygulama başına kullanım kısıtlamaları için hangi uygulamaların ve URL'lerin izin verilenler listesine eklenmesi gerektiğini belirtir.
+        Yapılandırılmış beyaz liste, uygulama başına süre sınırlamalarına sahip belirtilen kullanıcı için <ph name="PRODUCT_OS_NAME" /> üzerinde yüklü uygulamalara uygulanır.
+        Yapılandırılmış beyaz liste yalnızca alt kullanıcı hesaplarına uygulanabilir ve <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> politikası ayarlandığında geçerli olur.
+        Yapılandırılmış beyaz liste, uygulama başına zaman sınırlamaları tarafından engellenmemesi için uygulamalara ve URL'lere uygulanır.
+        İzin verilenler listesine eklenen URL'lere erişmek Chrome zaman sınırına dahil edilmez.
+        Listedeki normal ifadelerden herhangi biriyle eşleşen URL'leri izin verilenler listesine eklemek için |url_list|'e URL normal ifadelerini ekleyin.
+        Bir uygulamayı izin verilenler listesine dahil etmek için uygulamayı |app_id| ve |app_type| ile |app_list|'e ekleyin.
+       </translation>
 <translation id="1715151459541210849">Dikte erişilebilirlik özelliğini etkinleştir</translation>
 <translation id="1717817358640580294">Ayarlanmadan bırakılırsa, Chrome Temizleme Aracı istenmeyen yazılımlar tespit ettiğinde, SafeBrowsingExtendedReportingEnabled tarafından ayarlanan politikaya uygun şekilde taramayla ilgili meta verileri Google'a raporlayabilir. Chrome Temizleme Aracı, daha sonra kullanıcıya istenmeyen yazılımın temizlenmesini isteyip istemediğini sorar. Kullanıcı, ileride istenmeyen yazılımların tespiti konusunda yardımcı olması için temizleme işlemi sonuçlarının Google ile paylaşılmasını seçebilir. Bu sonuçlar, Chrome Gizlilik Raporu'nda açıklandığı gibi dosya meta verilerini, otomatik olarak yüklenen uzantıları ve kayıt defteri anahtarlarını içerir.
 
@@ -982,6 +997,12 @@
 
           Windows'da bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış örneklerde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
 <translation id="247658312644322296">"PDF olarak kaydet" hedefi</translation>
+<translation id="2478649170422995190">Bu politika OS sürümü, OS platformu, OS mimarisi, <ph name="PRODUCT_NAME" /> sürümü ve <ph name="PRODUCT_NAME" /> kanalı gibi sürüm bilgilerinin bildirilip bildirilmeyeceğini kontrol eder.
+
+      Bu politika ayarlanmadan bırakılır veya True (Doğru) değerine ayarlanırsa sürüm bilgileri toplanır.
+      Bu politika False (Yanlış) değerine ayarlanırsa sürüm bilgileri toplanmaz.
+
+      Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
 <translation id="2480971699591919564">Kullanıcı Oturum açmışken, kullanıcıların Chrome Masaüstü cihazlardan bir Android cihaza telefon numaraları göndermesine olanak tanıyan Tıkla ve Ara özelliğini etkinleştirin. Daha fazla bilgi edinmek için https://support.google.com/chrome/answer/9430554?hl=tr adresindeki yardım merkezi makalesine bakın.
 
       Bu politika etkin olarak ayarlanırsa Chrome kullanıcısı için Android cihazlara telefon numaraları gönderme özelliği etkinleştirilir.
@@ -2843,6 +2864,12 @@ politikayı geçersiz kılamaz.
 
       Aksi halde, şu değerlerin birine ayarlanabilir: "tls1.2" veya "tls1.3". Ayarlandığında, <ph name="PRODUCT_NAME" />, belirtilen sürümden yüksek olan SSL/TLS sürümlerini kullanmaz. Tanınmayan değerler yoksayılır.</translation>
 <translation id="5330684698007383292"><ph name="PRODUCT_FRAME_NAME" /> için aşağıdaki içerik türlerini işlemeye izin ver</translation>
+<translation id="5331081760098249172">
+      Politika True (Doğru) değerine ayarlanırsa <ph name="PRODUCT_NAME" /> ürününün Hangouts Meet gibi Google hizmetlerinden WebRTC olay günlüklerini toplamasına ve bu günlükleri Google’a yüklemesine izin verilir. Bu günlükler, <ph name="PRODUCT_NAME" /> ürünündeki sesli veya görüntülü toplantılarla ilgili sorunlarda hata ayıklamada kullanılacak teşhis bilgileri içerir. Bunlar, RTP paketlerinin saati ve boyutu, ağdaki tıkanmayla ilgili geri bildirim, ses ve video karelerinin zamanı ve kalitesiyle ilgili meta veriler gibi bilgilerdir. Bu günlükler toplantıya ait ses veya video içeriği barındırmaz. Hata ayıklamayı kolaylaştırmak için Google bu günlükleri bir oturum kimliği aracılığıyla Google hizmetinin kendisi tarafından toplanan diğer günlüklerle ilişkilendirebilir.
+
+      Bu politika False (Yanlış) değerine ayarlanırsa bu tür günlükler toplanıp yüklenmez.
+
+      Bu politika ayarlanmadan bırakılırsa M76 ve önceki sürümlerde <ph name="PRODUCT_NAME" /> bu günlükleri toplayıp yükleyemez. M77'den başlayarak <ph name="PRODUCT_NAME" /> varsayılan olarak, bu günlükleri bulut tabanlı kullanıcı düzeyi kurumsal politikalardan etkilenen profillerin çoğundan toplayıp yükleyebilir. M77Yden M80'e (dahil) kadar, <ph name="PRODUCT_NAME" /> bu günlükleri varsayılan olarak <ph name="PRODUCT_NAME" /> şirket içi yönetiminden etkilenen profillerden toplayıp yükleyebilir.</translation>
 <translation id="5331746669335642668"><ph name="PRODUCT_NAME" /> bulut politikası, Platform politikasını geçersiz kılar.</translation>
 <translation id="5362531528507578966">Varsayılan arka plan grafikleri yazdırma modunu geçersiz kılar.</translation>
 <translation id="5365476955714838841">Alternatif tarayıcı için komut satırı parametreleri.</translation>
@@ -3460,6 +3487,12 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
       Politika yanlış değerine ayarlanırsa kullanıcılar bildirilmez.</translation>
 <translation id="638668187106406971">Yüklemeler için hassas verileri koruma kuralı ihlallerini denetle</translation>
 <translation id="6394350458541421998">Bu politika, <ph name="PRODUCT_OS_NAME" /> Sürüm 29 itibariyle kullanımdan kaldırılmıştır. Lütfen bunun yerine PresentationScreenDimDelayScale politikasını kullanın.</translation>
+<translation id="6399242659768117666">Bu politika; uzantı ve eklenti bilgilerinin bildirilip bildirilmeyeceğini kontrol eder.
+
+      Bu politika ayarlanmadan bırakılır veya True (Doğru) değerine ayarlanırsa uzantı ve eklenti verileri toplanır.
+      Bu politika False (Yanlış) değerine ayarlanırsa uzantı ve eklenti verileri toplanmaz.
+
+      Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
 <translation id="6401669939808766804">Kullanıcının oturumunu kapat</translation>
 <translation id="6406448383934634215">Başlangıç işlemi olarak "Bir URL listesi aç" seçildiyse, bu politika, açılan URL listesini belirtmenize olanak tanır. Ayarlanmadan bırakılırsa, başlangıçta herhangi bir URL açılmaz.
 
@@ -3543,6 +3576,12 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Bu politika, yürütülebilir dosya yolu olarak ya da Chrome'un yükleme konumunu otomatik olarak algılamak için <ph name="PRODUCT_NAME_PLACEHOLDER" /> değerine ayarlanabilir.</translation>
 <translation id="6536600139108165863">Cihaz kapandığında otomatik olarak yenide başlat</translation>
+<translation id="6537062468544950724">Bu politika, makine adı ve ağ adresleri gibi makineleri tanımlamak için kullanılabilecek bilgilerin bildirilip bildirilmeyeceğini kontrol eder.
+
+      Bu politika ayarlanmadan bırakıldığında veya True (Doğru) değerine ayarlandığında, makineleri tanımlamak için kullanılabilecek bilgiler toplanır.
+      Bu politika False (Yanlış) değerine ayarlandığında makineleri tanımlamak için kullanılabilecek bilgiler toplanmaz.
+
+      Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
 <translation id="6539246272469751178">Bu politikanın Android uygulamaları üzerinde hiçbir etkisi yoktur. Android uygulamaları daima varsayılan indirme dizinini kullanır ve <ph name="PRODUCT_OS_NAME" /> tarafından, varsayılan olmayan indirme dizinine indirilen dosyalara erişemez.</translation>
 <translation id="654303922206238013">ecryptfs için taşıma stratejisi</translation>
 <translation id="6544897973797372144">Bu politika True değerine ayarlanırsa ve ChromeOsReleaseChannel politikası belirtilmediyse, kaydedilmekte olan alan adı kullanıcılarının cihazın yayın kanalını değiştirmelerine izin verilir. Bu politika false değerine ayarlanırsa, cihaz son olarak ayarlandığı kanalda kilitlenir.
@@ -3766,6 +3805,12 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Bu politika True (Doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa akıllı karartma modeli etkinleşir ve ekranı karartma süresini uzatmasına izin verilir. Bu politika False (Yanlış) değerine ayarlanırsa akıllı karartma modeli, ekran karartmayı etkilemez.</translation>
 <translation id="6972540544240464302">Görev planlayıcı yapılandırması seç</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6991078864332103177">Bu politika; OS giriş bilgileri, <ph name="PRODUCT_NAME" /> Profili giriş bilgileri, <ph name="PRODUCT_NAME" /> Profili adı, <ph name="PRODUCT_NAME" /> Profili yolu ve <ph name="PRODUCT_NAME" /> yürütülebilir dosya yolu gibi kullanıcıları tanımlamak için kullanılabilecek bilgilerin bildirilip bildirilmeyeceğini kontrol eder.
+
+      Bu politika ayarlanmadan bırakılır veya True (Doğru) değerine ayarlanırsa kullanıcıları tanımlamak için kullanılabilecek bilgiler toplanır.
+      Bu politika False (Yanlış) değerine ayarlanırsa kullanıcıları tanımlamak için kullanılabilecek bilgiler toplanmaz.
+
+      Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
 <translation id="6994082778848658360">Yerleşik güvenli öğe donanımının bu özellikle uyumlu olması halinde iki etmenli kimlik doğrulama sunmak için nasıl kullanılabileceğini belirtir. Kullanıcının fiziksel varlığını algılamak için makinenin güç düğmesi kullanılır.
 
       "Devre dışı" seçilirse ikinci etmen sunulmaz.
@@ -4287,11 +4332,20 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
           Bu ayar devre dışı bırakılır veya ayarlanmazsa, iki öğeli kimlik doğrulama etkinleştirilmez ve varsayılan davranış olan kullanıcı tanımlı bir PIN kullanılır.</translation>
 <translation id="7750991880413385988">Yeni Sekme Sayfasını aç</translation>
 <translation id="7754704193130578113">İndirmeden önce her dosyanın nereye kaydedileceğini sor</translation>
+<translation id="7755495228644343508">Chrome Raporlama Uzantısı ile ilişkili politikaları yapılandırır.
+
+      Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
 <translation id="7758378441185523981">Ambiyans Kimlik Doğrulamasını profil türlerine göre etkinleştir.</translation>
 <translation id="7761446981238915769">Giriş ekranında, yüklü uygulamaların listesini yapılandır</translation>
 <translation id="7763614521440615342">Yeni Sekme sayfasında içerik önerileri göster</translation>
 <translation id="7765879851993224640">Smart Lock oturum açmanın kullanılmasına izin ver</translation>
 <translation id="7774768074957326919">Sistem proxy ayarlarını kullan</translation>
+<translation id="7775902646576367944">Bu politika, Güvenli Tarama uyarılarının sayısı ve güvenli tarama uyarılarının tıklama sayısı gibi Güvenli Tarama bilgilerinin bildirilip bildirilmeyeceğini kontrol eder.
+
+      Bu politika ayarlanmadan bırakılır veya True (Doğru) değerine ayarlanırsa Güvenli Tarama verileri toplanır.
+      Bu politika False (Yanlış) değerine ayarlanırsa Güvenli Tarama verileri toplanmaz.
+
+      Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
 <translation id="7777535871204167559">Harici depolama cihazlarını salt okunur olarak ele al</translation>
 <translation id="7788511847830146438">Her Profil İçin Ayrı</translation>
 <translation id="7792973482799545782">Hiçbir sitenin engellenebilir karma içerik yüklemesine izin verme</translation>
@@ -4845,6 +4899,15 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="8757552286070680084">Wilco DTC yapılandırması</translation>
 <translation id="8758831693895931466">Zorunlu bulut yönetimi kaydını etkinleştir</translation>
 <translation id="8759829385824155666">İzin verilen Kerberos şifreleme türleri</translation>
+<translation id="87635449713742708">Bu politika, ağ iletişimi kodunu tarayıcı işleminde çalışmaya zorlar.
+
+      Bu politika varsayılan olarak devre dışıdır ve etkinleştirilmesi halinde, ağ iletişimi işlemi korumalı alan içine alındıktan sonra kullanıcıları güvenlik sorunlarına karşı savunmasız hale getirir.
+
+      Bu politikanın amacı, işletmelere ağ iletişimi API'lerinin tutulmasına bel bağlamayan üçüncü taraf yazılımlarına geçme fırsatı vermektir. LSP'lerden ve Win32 API yamalarından ziyade proxy sunucuları önerilir.
+
+      Bu politika ayarlanmazsa varsayılan olarak ağ iletişimi kodunun tarayıcı işlemi kalmaz.
+
+      Bu politika, <ph name="PRODUCT_NAME" /> 82 sürümünde kaldırılacaktır.</translation>
 <translation id="8764119899999036911">Kerberos SPN'sinin standart DNS adına mı, yoksa girilen orijinal ada mı dayalı olduğunu belirtir.
 
           Bu ayarı etkinleştirirseniz, CNAME araması atlanır ve sunucu adı girildiği gibi kullanılır.

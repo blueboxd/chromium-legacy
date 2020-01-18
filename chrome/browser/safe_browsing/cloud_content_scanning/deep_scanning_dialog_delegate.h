@@ -77,6 +77,9 @@ class DeepScanningDialogDelegate {
     bool do_dlp_scan = false;
     bool do_malware_scan = false;
 
+    // URL of the page that is to receive sensitive data.
+    std::string url;
+
     // Text data to scan, such as plain text, URLs, HTML content, etc.
     std::vector<base::string16> text;
 

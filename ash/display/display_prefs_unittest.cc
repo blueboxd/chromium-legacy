@@ -341,7 +341,7 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   display_manager()->SetDisplayRotation(id1, display::Display::ROTATE_90,
                                         display::Display::RotationSource::USER);
 
-  constexpr float zoom_factor_1 = 1.f / 2.25f;
+  constexpr float zoom_factor_1 = 1.f / display::kDsf_2_252;
   constexpr float zoom_factor_2 = 1.60f;
 
   display_manager()->UpdateZoomFactor(id1, zoom_factor_1);

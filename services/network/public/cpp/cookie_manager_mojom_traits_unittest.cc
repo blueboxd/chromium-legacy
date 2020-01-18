@@ -64,8 +64,12 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieInclusionStatus) {
           {net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX,
            net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX,
            net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY},
-          net::CanonicalCookie::CookieInclusionStatus::
-              WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT);
+          {net::CanonicalCookie::CookieInclusionStatus::
+               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
+           net::CanonicalCookie::CookieInclusionStatus::
+               WARN_SAMESITE_NONE_INSECURE,
+           net::CanonicalCookie::CookieInclusionStatus::
+               WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE});
 
   net::CanonicalCookie::CookieInclusionStatus copied;
 
@@ -75,9 +79,12 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieInclusionStatus) {
       {net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX,
        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX,
        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY}));
-  EXPECT_EQ(net::CanonicalCookie::CookieInclusionStatus::
-                WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
-            copied.warning());
+  EXPECT_TRUE(copied.HasExactlyWarningReasonsForTesting(
+      {net::CanonicalCookie::CookieInclusionStatus::
+           WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
+       net::CanonicalCookie::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE,
+       net::CanonicalCookie::CookieInclusionStatus::
+           WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE}));
 
   net::CanonicalCookie::CookieInclusionStatus invalid;
   invalid.set_exclusion_reasons(~0u);
@@ -174,23 +181,6 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieSameSiteContext) {
     ASSERT_TRUE(SerializeAndDeserializeEnum<mojom::CookieSameSiteContext>(
         context_state, &roundtrip));
     EXPECT_EQ(context_state, roundtrip);
-  }
-}
-
-TEST(CookieManagerTraitsTest, Roundtrips_CookieInclusionStatusWarningReason) {
-  for (net::CanonicalCookie::CookieInclusionStatus::WarningReason warning :
-       {net::CanonicalCookie::CookieInclusionStatus::WarningReason::DO_NOT_WARN,
-        net::CanonicalCookie::CookieInclusionStatus::WarningReason::
-            WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
-        net::CanonicalCookie::CookieInclusionStatus::WarningReason::
-            WARN_SAMESITE_NONE_INSECURE,
-        net::CanonicalCookie::CookieInclusionStatus::WarningReason::
-            WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE}) {
-    net::CanonicalCookie::CookieInclusionStatus::WarningReason roundtrip;
-    ASSERT_TRUE(
-        SerializeAndDeserializeEnum<mojom::CookieInclusionStatusWarningReason>(
-            warning, &roundtrip));
-    EXPECT_EQ(warning, roundtrip);
   }
 }
 

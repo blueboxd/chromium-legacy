@@ -948,7 +948,6 @@
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% ਹੋ ਗਿਆ</translation>
 <translation id="2318143611928805047">ਪੇਪਰ ਦਾ ਆਕਾਰ</translation>
 <translation id="2318817390901984578">Android ਐਪਾਂ ਦੀ ਵਰਤੋਂ ਕਰਨ ਲਈ, ਆਪਣੀ <ph name="DEVICE_TYPE" /> ਨੂੰ ਚਾਰਜ ਅਤੇ ਅੱਪਡੇਟ ਕਰੋ।</translation>
-<translation id="2318923050469484167">ਵਰਤਮਾਨ ਇਨਕੋਗਨਿਟੋ ਸੈਸ਼ਨ (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">ਹੈਡਰ ਅਤੇ ਫੂਟਰਸ</translation>
 <translation id="2322318151094136999">ਕਿਸੇ ਸਾਈਟ ਵੱਲੋਂ ਸੀਰੀਅਲ ਪੋਰਟਾਂ ਤੱਕ ਪਹੁੰਚ ਕਰਨ ਵੇਲੇ ਪੁੱਛੋ (ਸਿਫ਼ਾਰਸ਼ੀ)</translation>
 <translation id="2325002827435400643">ਇਸ ਸਾਈਟ ਲਈ ਬੰਦ ਕਰੋ</translation>
@@ -1789,6 +1788,7 @@
 <translation id="3511307672085573050">ਲਿੰਕ ਪ&amp;ਤਾ ਕਾਪੀ ਕਰੋ</translation>
 <translation id="351152300840026870">ਫਿਕਸਡ-ਚੁੜਾਈ ਫੌਂਟ</translation>
 <translation id="3511528412952710609">ਛੋਟਾ</translation>
+<translation id="3513704683820682405">ਆਗਮੈਂਟਿਡ ਰਿਐਲਿਟੀ</translation>
 <translation id="3514373592552233661">ਇੱਕ ਤੋਂ ਜ਼ਿਆਦਾ ਨੈੱਟਵਰਕ ਉਪਲਬਧ ਹੋਣ 'ਤੇ ਤਰਜੀਹੀ ਨੈੱਟਵਰਕਾਂ ਨੂੰ ਹੋਰ ਗਿਆਤ ਨੈੱਟਵਰਕਾਂ ਨਾਲੋਂ ਤਰਜੀਹ ਦਿੱਤੀ ਜਾਵੇਗੀ</translation>
 <translation id="3515983984924808886">ਰੀਸੈੱਟ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ ਆਪਣੀ ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਨੂੰ ਦੁਬਾਰਾ ਸਪਰਸ਼ ਕਰੋ। ਸੁਰੱਖਿਆ ਕੁੰਜੀ ਦੇ ਪਿੰਨ ਸਮੇਤ ਉਸ 'ਤੇ ਸਟੋਰ ਕੀਤੀ ਸਾਰੀ ਜਾਣਕਾਰੀ ਨੂੰ ਮਿਟਾਇਆ ਜਾਵੇਗਾ।</translation>
 <translation id="3518985090088779359">ਸਵੀਕਾਰ ਕਰੋ &amp; ਜਾਰੀ ਰੱਖੋ</translation>
@@ -2245,7 +2245,6 @@
 <translation id="4099874310852108874">ਨੈੱਟਵਰਕ ਗੜਬੜ ਹੋ ਗਈ।</translation>
 <translation id="4100733287846229632">ਡੀਵਾਈਸ ਵਿੱਚ ਜਗ੍ਹਾ ਬਹੁਤ ਘੱਟ ਹੈ</translation>
 <translation id="4100853287411968461">ਸਕ੍ਰੀਨ ਸਮੇਂ ਦੀ ਨਵੀਂ ਸੀਮਾ</translation>
-<translation id="4103091233824664032">ਸਕ੍ਰੀਨ ਲਾਕ ਦਾ ਸੰਰੂਪਣ ਕਰਕੇ ਸਾਈਨ-ਇਨ ਕਰਨ ਲਈ ਆਪਣਾ ਪਾਸਵਰਡ ਦਾਖਲ ਕਰੋ</translation>
 <translation id="4104163789986725820">ਨਿ&amp;ਰਯਾਤ ਕਰੋ..</translation>
 <translation id="4107048419833779140">ਸਟੋਰੇਜ ਡੀਵਾਈਸਾਂ ਪਛਾਣੋ ਅਤੇ ਬਾਹਰ ਕੱਢੋ</translation>
 <translation id="4109135793348361820">window ਨੂੰ <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) ਵਿੱਚ ਮੂਵ ਕਰੋ</translation>
@@ -2784,6 +2783,7 @@
 <translation id="494286511941020793">ਪ੍ਰੌਕਸੀ ਸੰਰੂਪਿਤ ਸਹਾਇਤਾ</translation>
 <translation id="4943368462779413526">ਫੁੱਟਬਾਲ</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" ਸੀਰੀਅਲ ਪੋਰਟ ਨਾਲ ਕਨੈਕਟ ਹੋਣਾ ਚਾਹੁੰਦੀ ਹੈ</translation>
+<translation id="4943703118917034429">ਆਭਾਸੀ ਵਾਸਤਵਿਕਤਾ</translation>
 <translation id="4944310289250773232">ਇਹ ਪ੍ਰਮਾਣੀਕਰਨ ਸੇਵਾ <ph name="SAML_DOMAIN" /> ਵੱਲੋਂ ਹੋਸਟ ਕੀਤੀ ਜਾਂਦੀ ਹੈ</translation>
 <translation id="495170559598752135">ਕਿਰਿਆਵਾਂ</translation>
 <translation id="4952981627953231344">ਇਸ ਡੀਵਾਈਸ 'ਤੇ Plugin VM ਦੀ ਇਜਾਜ਼ਤ ਨਹੀਂ ਹੈ। ਆਪਣੀ ਸੰਸਥਾ ਦੇ ਡੀਵਾਈਸ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਸੰਪਰਕ ਕਰੋ।</translation>
@@ -3133,7 +3133,6 @@
 <translation id="5468173180030470402">ਫ਼ਾਈਲ ਸਾਂਝਾਕਰਨਾਂ ਨੂੰ ਲੱਭਿਆ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="5470735824776589490">ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਨੂੰ ਪਾਵਰਵਾਸ਼ ਨਾਲ ਰੀਸੈੱਟ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਮੁੜ-ਸ਼ੁਰੂ ਕਰਨ ਦੀ ਲੋੜ ਹੈ। <ph name="LINK_BEGIN" />ਹੋਰ ਜਾਣੋ<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! ਮੈਂ ਤੁਹਾਡੀ ਲਿਖਤ ਤੋਂ ਬੋਲੀ ਵਿੱਚ ਬਦਲੀ ਹੋਈ ਅਵਾਜ਼ ਹਾਂ।</translation>
-<translation id="5472133193607270166">ਚਾਲੂ ਹੋਣ 'ਤੇ, ਸਾਈਟਾਂ ਵੱਖ-ਵੱਖ ਸਾਈਟਾਂ ਵਿਚਲੀ ਤੁਹਾਡੀ ਬ੍ਰਾਊਜ਼ਿੰਗ ਸਰਗਰਮੀ ਦੀ ਵਰਤੋਂ ਵਿਗਿਆਪਨਾਂ ਨੂੰ ਵਿਅਕਤੀਗਤ ਬਣਾਉਣ ਲਈ ਨਹੀਂ ਕਰ ਸਕਦੀਆਂ। ਸ਼ਾਇਦ ਕੁਝ ਸਾਈਟਾਂ ਸਹੀ ਢੰਗ ਨਾਲ ਕੰਮ ਨਾ ਕਰਨ।</translation>
 <translation id="5473333559083690127">ਨਵਾਂ PIN ਮੁੜ-ਦਾਖਲ ਕਰੋ</translation>
 <translation id="5481941284378890518">ਨੇੜਲੇ ਪ੍ਰਿੰਟਰ ਸ਼ਾਮਲ ਕਰੋ</translation>
 <translation id="5483785310822538350">ਫ਼ਾਈਲ ਅਤੇ ਡੀਵਾਈਸ-ਪਹੁੰਚ ਰੱਦ ਕਰੋ</translation>
@@ -3304,7 +3303,6 @@
 <translation id="5701381305118179107">ਕੇਂਦਰ</translation>
 <translation id="5701441174893770082">Linux ਨੂੰ ਅੱਪਗ੍ਰੇਡ ਕਰਨ ਦੌਰਾਨ ਤੁਹਾਡੀ ਬੈਟਰੀ ਬਹੁਤ ਛੇਤੀ ਖਤਮ ਹੋ ਸਕਦੀ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਡੀਵਾਈਸ ਨੂੰ ਚਾਰਜਰ ਨਾਲ ਕਨੈਕਟ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
 <translation id="5702898740348134351">&amp;ਖੋਜ ਇੰਜਣਾਂ ਦਾ ਸੰਪਾਦਨ ਕਰੋ...</translation>
-<translation id="570302979952009979">ਇਸ ਫਿੰਗਰਪ੍ਰਿੰਟ ਲਈ ਕੋਈ ਨਾਮ ਚੁਣੋ</translation>
 <translation id="5704875434923668958">ਇਸ ਨਾਲ ਸਮਕਾਲੀਕਰਨ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="5707185214361380026">ਇਸ ਤੋਂ ਐਕਸਟੈਂਸ਼ਨ ਲੋਡ ਕਰਨ ਵਿੱਚ ਅਸਫਲ:</translation>
 <translation id="5708171344853220004">Microsoft ਪ੍ਰਿੰਸੀਪਲ ਨਾਮ</translation>
@@ -3396,7 +3394,6 @@
 <translation id="5833726373896279253">ਇਹ ਸੈਟਿੰਗਾਂ ਕੇਵਲ ਮਾਲਕ ਵੱਲੋਂ ਸੰਸ਼ੋਧਿਤ ਕੀਤੀਆਂ ਜਾ ਸਕਦੀਆਂ ਹਨ।</translation>
 <translation id="5834581999798853053">ਲਗਭਗ <ph name="TIME" /> ਮਿੰਟ ਬਾਕੀ</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - ਕੈਮਰਾ ਜਾਂ ਮਾਈਕ੍ਰੋਫੋਨ ਰਿਕਾਰਡਿੰਗ</translation>
-<translation id="5838456317242088717">ਵਰਤਮਾਨ ਇਨਕੋਗਨਿਟੋ ਸੈਸ਼ਨ</translation>
 <translation id="5842497610951477805">ਬਲੂਟੁੱਥ ਚਾਲੂ</translation>
 <translation id="5843250171025351504">ਤੁਹਾਡਾ ਡੀਵਾਈਸ ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਨਿਰਧਾਰਤ ਕੀਤੇ ਗਏ ਘੱਟੋਂ-ਘੱਟ ਕਲਾਇੰਟ ਵਰਜਨ ਨਾਲ ਹੁਣ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਲੌਗ-ਇਨ ਕਰੋ।</translation>
 <translation id="5846200638699387931">ਰਿਲੇਸ਼ਨ ਦੇ ਸਿਨਟੈਕਸ ਵਿੱਚ ਗੜਬੜ: <ph name="ERROR_LINE" /></translation>
@@ -3652,7 +3649,6 @@
 <translation id="6181431612547969857">ਡਾਊਨਲੋਡ ਬਲਾਕ ਕੀਤੀ</translation>
 <translation id="6185132558746749656">ਡੀਵਾਈਸ ਨਿਰਧਾਰਿਤ ਸਥਾਨ</translation>
 <translation id="6195693561221576702">ਇਹ ਡੀਵਾਈਸ ਆਫ਼ਲਾਈਨ ਡੈਮੋ ਮੋਡ ਵਿੱਚ ਸੈੱਟਅੱਪ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ।</translation>
-<translation id="6196640612572343990">ਤੀਜੀ-ਧਿਰ ਵਾਲੀਆਂ ਕੁੱਕੀਜ਼ ਨੂੰ ਬਲੌਕ ਕਰੋ</translation>
 <translation id="6196854373336333322">ਐਕਸਟੈਂਸ਼ਨ "<ph name="EXTENSION_NAME" />" ਨੇ ਤੁਹਾਡੀਆਂ ਪ੍ਰੌਕਸੀ ਸੈਟਿੰਗਾਂ 'ਤੇ ਕੰਟਰੋਲ ਹਾਸਲ ਕਰ ਲਿਆ ਹੈ, ਜਿਸਦਾ ਮਤਲਬ ਹੈ ਕਿ ਇਹ ਤੁਹਾਡੇ ਵੱਲੋਂ ਆਨਲਾਈਨ ਕੀਤੀ ਜਾਣ ਵਾਲੀ ਕਿਸੇ ਵੀ ਕਿਰਿਆ ਨੂੰ ਬਦਲ ਸਕਦੀ ਹੈ, ਖੰਡਿਤ ਕਰ ਸਕਦੀ ਹੈ ਜਾਂ ਗੁਪਤ ਢੰਗ ਨਾਲ ਵਾਰਤਾਲਾਪ ਨੂੰ ਸੁਣ ਸਕਦੀ ਹੈ। ਜੇਕਰ ਤੁਸੀਂ ਪੱਕੇ ਨਹੀਂ ਹੋ ਕਿ ਇਹ ਬਦਲਾਵ ਕਿਉਂ ਵਾਪਰਿਆ ਹੈ, ਤਾਂ ਸੰਭਾਵਨਾ ਹੈ ਕਿ ਤੁਸੀਂ ਵੀ ਇਹ ਨਹੀਂ ਚਾਹੁੰਦੇ।</translation>
 <translation id="6198102561359457428">ਸਾਈਨ-ਆਊਟ ਹੋ ਕੇ ਫਿਰ ਦੁਬਾਰਾ ਸਾਈਨ-ਇਨ ਕਰੋ…</translation>
 <translation id="6198252989419008588">PIN ਬਦਲੋ</translation>
@@ -4358,7 +4354,6 @@
 <translation id="7225179976675429563">ਨੈੱਟਵਰਕ ਪ੍ਰਕਾਰ ਲੁਪਤ</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (ਵਿਕਰੇਤਾ: <ph name="VENDOR_ID" />, ਉਤਪਾਦ: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">ਉਹਨਾਂ ਸੈਟਿੰਗਾਂ ਨੂੰ ਸੋਧੋ ਜੋ ਇਹ ਨਿਰਧਾਰਿਤ ਕਰਦੀਆਂ ਹਨ ਕਿ ਕੀ ਵੈੱਬਸਾਈਟਾਂ ਭੂਗੋਲਿਕ ਟਿਕਾਣੇ, ਮਾਈਕ੍ਰੋਫ਼ੋਨ, ਕੈਮਰਾ, ਆਦਿ ਵਰਗੀਆਂ ਵਿਸ਼ੇਸ਼ਤਾਵਾਂ ਦੀ ਵਰਤੋਂ ਕਰ ਸਕਦੀਆਂ ਹਨ ਜਾਂ ਨਹੀਂ।</translation>
-<translation id="7228523857728654909">ਸਕ੍ਰੀਨ ਲਾਕ ਅਤੇ ਸਾਈਨ-ਇਨ</translation>
 <translation id="7229570126336867161">EVDO ਦੀ ਲੋੜ ਹੈ</translation>
 <translation id="7230787553283372882">ਆਪਣੀ ਲਿਖਤ ਦੇ ਆਕਾਰ ਨੂੰ ਵਿਸ਼ੇਸ਼-ਵਿਉਂਤਬੱਧ ਕਰੋ</translation>
 <translation id="7232750842195536390">ਨਾਮ ਬਦਲਣਾ ਅਸਫਲ ਰਿਹਾ</translation>
@@ -5272,7 +5267,6 @@
 <translation id="850875081535031620">ਕੋਈ ਹਾਨੀਕਾਰਕ ਸਾਫਟਵੇਅਰ ਨਹੀਂ ਮਿਲਿਆ</translation>
 <translation id="8509177919508253835">ਸੁਰੱਖਿਆ ਕੁੰਜੀਆਂ ਨੂੰ ਰੀਸੈੱਟ ਕਰਕੇ ਪਿੰਨ ਬਣਾਓ</translation>
 <translation id="8509646642152301857">ਸ਼ਬਦ-ਜੋੜ ਜਾਂਚ ਸ਼ਬਦਕੋਸ਼ ਡਾਊਨਲੋਡ ਅਸਫਲ ਰਿਹਾ।</translation>
-<translation id="8510617356402557055">ਕੀ ਇਹ ਅਣਕਿਆਸਿਆ ਸੀ? <ph name="BEGIN_LINK" />ਵਿਚਾਰ ਭੇਜੋ<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">ਪ੍ਰਕਿਰਿਆ ਖ਼ਤਮ ਕਰੋ</translation>
 <translation id="851263357009351303"><ph name="HOST" /> ਨੂੰ ਹਮੇਸ਼ਾਂ ਚਿੱਤਰ ਦਿਖਾਉਣ ਦੀ ਆਗਿਆ ਦਿਓ</translation>
 <translation id="8513108775083588393">ਸਵੈ-ਘੁੰਮਾਓ</translation>

@@ -235,6 +235,7 @@
 /webdriver/python/selenium
 /webgl
 /webgl/src
+/webgpu-cts/src
 /webpagereplay/
 /webrtc
 /widevine/cdm/chromeos

@@ -97,6 +97,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) override;
   void SkiaSwapBuffers(OutputSurfaceFrame frame) override;
+  void SwapBuffersSkipped() override;
   void ScheduleOutputSurfaceAsOverlay(
       OverlayProcessorInterface::OutputSurfaceOverlayPlane output_surface_plane)
       override;

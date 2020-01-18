@@ -11,7 +11,7 @@ import android.content.pm.PackageManager;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
-import org.chromium.android_webview.AwSwitches;
+import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.PlatformServiceBridge;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;

@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
-<translation id="5372829067651257087">S'ha copiat l'URL.</translation>
 <translation id="6315516427814392808">No es pot completar l'operació anterior perquè hi ha poca memòria.</translation>
 <translation id="6555463879959038093">No s'ha pogut copiar el contingut al porta-retalls.</translation>
+<translation id="6757101664402245801">S'ha copiat l'URL</translation>
 <translation id="793640675459356075">No s'ha pogut obrir fitxer sel.</translation>
 </translationbundle>

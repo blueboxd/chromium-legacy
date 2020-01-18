@@ -471,9 +471,7 @@ jumbo_static_library("test_support") {
     "webdata/mock_autofill_webdata_backend.h",
   ]
 
-  public_deps = [
-    ":browser",
-  ]
+  public_deps = [ ":browser" ]
 
   deps = [
     ":autofill_address_rewriter_resources",
@@ -530,10 +528,8 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/autofill/merge/output/singlemerge.out",
     "//components/test/data/autofill/merge/output/validation.out",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 source_set("unit_tests") {
@@ -699,9 +695,7 @@ source_set("unit_tests") {
 }
 
 fuzzer_test("form_structure_fuzzer") {
-  sources = [
-    "form_structure_fuzzer.cc",
-  ]
+  sources = [ "form_structure_fuzzer.cc" ]
   deps = [
     # TODO(crbug.com/896313): Reduce the dependency on "browser".
     ":browser",
@@ -714,9 +708,7 @@ fuzzer_test("form_structure_fuzzer") {
 
 if (use_libfuzzer) {
   fuzzer_test("form_structure_process_query_response_fuzzer") {
-    sources = [
-      "form_structure_process_query_response_fuzzer.cc",
-    ]
+    sources = [ "form_structure_process_query_response_fuzzer.cc" ]
     deps = [
       # TODO(crbug.com/896313): Reduce the dependency on "browser".
       ":browser",
@@ -729,9 +721,7 @@ if (use_libfuzzer) {
 }
 
 fuzzer_test("autofill_phone_number_i18n_fuzzer") {
-  sources = [
-    "geo/phone_number_i18n_fuzzer.cc",
-  ]
+  sources = [ "geo/phone_number_i18n_fuzzer.cc" ]
 
   deps = [
     # TODO(crbug.com/896313): Reduce the dependency on "browser".

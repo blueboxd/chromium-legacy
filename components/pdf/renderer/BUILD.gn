@@ -39,9 +39,7 @@ jumbo_static_library("renderer") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "pdf_accessibility_tree_unittest.cc",
-  ]
+  sources = [ "pdf_accessibility_tree_unittest.cc" ]
 
   deps = [
     ":renderer",

@@ -183,7 +183,7 @@ void CastDialogSinkButton::OnEnabledChanged() {
     return;
 
   SkColor background_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_ProminentButtonColor);
+      ui::NativeTheme::kColorId_DialogBackground);
   if (GetEnabled()) {
     SetTitleTextStyle(views::style::STYLE_PRIMARY, background_color);
     if (saved_status_text_)

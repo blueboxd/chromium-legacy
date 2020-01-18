@@ -320,12 +320,24 @@ void RenderFrameMessageFilter::OnGetPluginInfo(
 }
 
 void RenderFrameMessageFilter::OnOpenChannelToPepperPlugin(
+    const url::Origin& embedder_origin,
     const base::FilePath& path,
     const base::Optional<url::Origin>& origin_lock,
     IPC::Message* reply_msg) {
+  // Enforce that the sender of the IPC (i.e. |render_process_id_|) is actually
+  // able/allowed to host a frame with |embedder_origin|.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  if (!embedder_origin.opaque() &&
+      !policy->CanAccessDataForOrigin(render_process_id_, embedder_origin)) {
+    NOTREACHED() << embedder_origin;
+    bad_message::ReceivedBadMessage(
+        this, bad_message::RFMF_INVALID_PLUGIN_EMBEDDER_ORIGIN);
+    return;
+  }
+
   plugin_service_->OpenChannelToPpapiPlugin(
-      render_process_id_, path, profile_data_directory_, origin_lock,
-      new OpenChannelToPpapiPluginCallback(this, reply_msg));
+      render_process_id_, embedder_origin, path, profile_data_directory_,
+      origin_lock, new OpenChannelToPpapiPluginCallback(this, reply_msg));
 }
 
 void RenderFrameMessageFilter::OnDidCreateOutOfProcessPepperInstance(

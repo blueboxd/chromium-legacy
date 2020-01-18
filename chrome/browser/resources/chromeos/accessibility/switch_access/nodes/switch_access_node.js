@@ -14,11 +14,14 @@
  */
 class SAChildNode {
   constructor() {
-    /** @private {?SAChildNode} */
-    this.previous_ = null;
+    /** @private {boolean} */
+    this.isFocused_ = false;
 
     /** @private {?SAChildNode} */
     this.next_ = null;
+
+    /** @private {?SAChildNode} */
+    this.previous_ = null;
   }
 
   // ================= Getters and setters =================
@@ -111,11 +114,19 @@ class SAChildNode {
   }
 
   /**
-   * @param {!chrome.automation.AutomationNode|!SAChildNode|!SARootNode} node
+   * @param {?chrome.automation.AutomationNode|!SAChildNode|!SARootNode} node
    * @return {boolean}
    * @abstract
    */
   isEquivalentTo(node) {}
+
+  /**
+   * Returns whether the node is currently focused by Switch Access
+   * @return {boolean}
+   */
+  isFocused() {
+    return this.isFocused_;
+  }
 
   /**
    * Returns whether this node should be displayed as a group.
@@ -135,12 +146,16 @@ class SAChildNode {
   /**
    * Called when this node becomes the primary highlighted node.
    */
-  onFocus() {}
+  onFocus() {
+    this.isFocused_ = true;
+  }
 
   /**
    * Called when this node stops being the primary highlighted node.
    */
-  onUnfocus() {}
+  onUnfocus() {
+    this.isFocused_ = false;
+  }
 
   /**
    * Performs the specified action on the node, if it is available.
@@ -267,7 +282,7 @@ class SARootNode {
   }
 
   /**
-   * @param {chrome.automation.AutomationNode|!SARootNode|!SAChildNode} node
+   * @param {?chrome.automation.AutomationNode|!SARootNode|!SAChildNode} node
    * @return {boolean}
    */
   isEquivalentTo(node) {

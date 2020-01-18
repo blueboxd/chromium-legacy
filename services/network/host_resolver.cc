@@ -54,12 +54,16 @@ HostResolver::HostResolver(
     ConnectionShutdownCallback connection_shutdown_callback,
     net::HostResolver* internal_resolver,
     net::NetLog* net_log)
-    : receiver_(this, std::move(resolver_receiver)),
+    : receiver_(this),
+      pending_receiver_(std::move(resolver_receiver)),
       connection_shutdown_callback_(std::move(connection_shutdown_callback)),
       internal_resolver_(internal_resolver),
       net_log_(net_log) {
-  receiver_.set_disconnect_handler(
-      base::BindOnce(&HostResolver::OnConnectionError, base::Unretained(this)));
+  // Bind the pending receiver asynchronously to give the resolver a chance
+  // to set up (some resolvers need to obtain the system config asynchronously).
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&HostResolver::AsyncSetUp, weak_factory_.GetWeakPtr()));
 }
 
 HostResolver::HostResolver(net::HostResolver* internal_resolver,
@@ -138,6 +142,12 @@ size_t HostResolver::GetNumOutstandingRequestsForTesting() const {
 void HostResolver::SetResolveHostCallbackForTesting(
     ResolveHostCallback callback) {
   resolve_host_callback.Get() = std::move(callback);
+}
+
+void HostResolver::AsyncSetUp() {
+  receiver_.Bind(std::move(pending_receiver_));
+  receiver_.set_disconnect_handler(
+      base::BindOnce(&HostResolver::OnConnectionError, base::Unretained(this)));
 }
 
 void HostResolver::OnResolveHostComplete(ResolveHostRequest* request,

@@ -34,6 +34,10 @@ const char* const kNotificationTitleKeywords[] = {"approved", "rejected",
 const char* const kNotificationBodyKeywords[] = {"to install", "to view",
                                                  "to view"};
 
+void OnNotificationClosed(bool expected_by_user, bool by_user) {
+  EXPECT_EQ(expected_by_user, by_user);
+}
+
 class ExtensionRequestNotificationTest
     : public BrowserWithTestWindowTest,
       public testing::WithParamInterface<
@@ -71,22 +75,24 @@ TEST_P(ExtensionRequestNotificationTest, NoExtension) {
   ExtensionRequestNotification request_notification(
       profile(), GetNotifyType(), ExtensionRequestNotification::ExtensionIds());
 #if DCHECK_IS_ON()
-  EXPECT_DEATH_IF_SUPPORTED(request_notification.Show(), "");
+  EXPECT_DEATH_IF_SUPPORTED(
+      request_notification.Show(base::BindOnce(&OnNotificationClosed, false)),
+      "");
 #else
-  request_notification.Show();
+  request_notification.Show(base::BindOnce(&OnNotificationClosed, false));
 #endif
   task_environment()->RunUntilIdle();
   EXPECT_FALSE(GetNotification().has_value());
 }
 
-TEST_P(ExtensionRequestNotificationTest, HasExtension) {
+TEST_P(ExtensionRequestNotificationTest, HasExtensionAndClickedByUser) {
   ExtensionRequestNotification request_notification(
       profile(), GetNotifyType(),
       ExtensionRequestNotification::ExtensionIds({kFakeExtensionId}));
   base::RunLoop show_run_loop;
   display_service_tester_->SetNotificationAddedClosure(
       show_run_loop.QuitClosure());
-  request_notification.Show();
+  request_notification.Show(base::BindOnce(&OnNotificationClosed, true));
   show_run_loop.Run();
 
   base::Optional<message_center::Notification> notification = GetNotification();
@@ -110,6 +116,28 @@ TEST_P(ExtensionRequestNotificationTest, HasExtension) {
       std::string(kChromeWebstoreUrl) + std::string(kFakeExtensionId);
   EXPECT_EQ(GURL(expected_url),
             browser()->tab_strip_model()->GetWebContentsAt(0)->GetURL());
+}
+
+TEST_P(ExtensionRequestNotificationTest, HasExtensionAndClosedByBrowser) {
+  ExtensionRequestNotification request_notification(
+      profile(), GetNotifyType(),
+      ExtensionRequestNotification::ExtensionIds({kFakeExtensionId}));
+  base::RunLoop show_run_loop;
+  display_service_tester_->SetNotificationAddedClosure(
+      show_run_loop.QuitClosure());
+  request_notification.Show(base::BindOnce(&OnNotificationClosed, false));
+  show_run_loop.Run();
+
+  base::Optional<message_center::Notification> notification = GetNotification();
+  ASSERT_TRUE(notification.has_value());
+
+  base::RunLoop close_run_loop;
+  display_service_tester_->SetNotificationClosedClosure(
+      close_run_loop.QuitClosure());
+  request_notification.CloseNotification();
+  close_run_loop.Run();
+
+  EXPECT_FALSE(GetNotification().has_value());
 }
 
 }  // namespace enterprise_reporting

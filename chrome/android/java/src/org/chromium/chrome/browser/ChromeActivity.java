@@ -275,7 +275,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private EphemeralTabCoordinator mEphemeralTabCoordinator;
     private UpdateNotificationController mUpdateNotificationController;
     private StatusBarColorController mStatusBarColorController;
-    private ShareDelegate mShareDelegate;
 
     // Timestamp in ms when initial layout inflation begins
     private long mInflateInitialLayoutBeginMs;
@@ -463,10 +462,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                             mManualFillingComponent.getKeyboardExtensionViewResizer());
 
             // Should be called after TabModels are initialized.
-            mShareDelegate = new ShareDelegateImpl(mRootUiCoordinator.getBottomSheetController(),
-                    getActivityTabProvider(), new ShareDelegateImpl.ShareSheetDelegate(),
-                    getCurrentTabCreator());
-            mShareDelegateSupplier.set(mShareDelegate);
+            ShareDelegate shareDelegate = new ShareDelegateImpl(
+                    mRootUiCoordinator.getBottomSheetController(), getActivityTabProvider(),
+                    new ShareDelegateImpl.ShareSheetDelegate(), getCurrentTabCreator());
+            mShareDelegateSupplier.set(shareDelegate);
 
             // If onStart was called before postLayoutInflation (because inflation was done in a
             // background thread) then make sure to call the relevant methods belatedly.
@@ -1795,7 +1794,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return An {@link ObservableSupplier} that will supply the {@link ShareDelegate} when
      *         it is ready.
      */
-    protected ObservableSupplier<ShareDelegate> getShareDelegateSupplier() {
+    public ObservableSupplier<ShareDelegate> getShareDelegateSupplier() {
         return mShareDelegateSupplier;
     }
 
@@ -2001,7 +2000,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         if (id == R.id.preferences_id) {
-            SettingsLauncher.launchSettingsPage(this, null);
+            SettingsLauncher.getInstance().launchSettingsPage(this, null);
             RecordUserAction.record("MobileMenuSettings");
         }
 
@@ -2409,13 +2408,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public BottomSheetController getBottomSheetController() {
         return mRootUiCoordinator.getBottomSheetController();
-    }
-
-    /**
-     * @return A {@link ShareDelegate}.
-     */
-    public ShareDelegate getShareDelegate() {
-        return mShareDelegate;
     }
 
     @VisibleForTesting

@@ -10,9 +10,12 @@ blink_core_sources("resize_observer") {
     "resize_observation.h",
     "resize_observer.cc",
     "resize_observer.h",
+    "resize_observer_box_options.h",
     "resize_observer_controller.cc",
     "resize_observer_controller.h",
     "resize_observer_entry.cc",
     "resize_observer_entry.h",
+    "resize_observer_size.cc",
+    "resize_observer_size.h",
   ]
 }

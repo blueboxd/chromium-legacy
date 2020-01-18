@@ -213,14 +213,6 @@ void DataReductionProxyMetricsObserver::OnLoadEventStart(
       ::internal::kHistogramLoadEventFiredSuffix);
 }
 
-void DataReductionProxyMetricsObserver::OnFirstLayout(
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RECORD_FOREGROUND_HISTOGRAMS_FOR_SUFFIX(
-      GetDelegate(), data(), timing.document_timing->first_layout,
-      ::internal::kHistogramFirstLayoutSuffix);
-}
-
 void DataReductionProxyMetricsObserver::OnFirstPaintInPage(
     const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

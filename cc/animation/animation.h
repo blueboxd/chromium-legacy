@@ -96,6 +96,9 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
 
   virtual void UpdateState(bool start_ready_keyframe_models,
                            AnimationEvents* events);
+  // Adds TIME_UPDATED event generated in the current frame to the given
+  // animation events.
+  virtual void TakeTimeUpdatedEvent(AnimationEvents* events) {}
   virtual void Tick(base::TimeTicks monotonic_time);
 
   void AddToTicking();

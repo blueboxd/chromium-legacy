@@ -47,7 +47,6 @@ import org.chromium.chrome.browser.password_manager.GooglePasswordManagerUIProvi
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.services.AndroidEduOwnerCheckCallback;
-import org.chromium.chrome.browser.settings.LocationSettings;
 import org.chromium.chrome.browser.signin.GoogleActivityController;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
@@ -207,16 +206,6 @@ public abstract class AppHooks {
      */
     public GooglePasswordManagerUIProvider createGooglePasswordManagerUIProvider() {
         return null;
-    }
-
-    /**
-     * Returns an instance of LocationSettings to be installed as a singleton.
-     */
-    public LocationSettings createLocationSettings() {
-        // Using an anonymous subclass as the constructor is protected.
-        // This is done to deter instantiation of LocationSettings elsewhere without using the
-        // getInstance() helper method.
-        return new LocationSettings() {};
     }
 
     /**

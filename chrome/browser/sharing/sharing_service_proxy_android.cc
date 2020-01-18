@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_device_source.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_send_message_result.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_service_factory.h"
@@ -44,6 +45,7 @@ void SharingServiceProxyAndroid::SendSharedClipboardMessage(
     const base::android::JavaParamRef<jstring>& j_guid,
     const jlong j_last_updated_timestamp_millis,
     const base::android::JavaParamRef<jstring>& j_text,
+    const jint j_retries,
     const base::android::JavaParamRef<jobject>& j_runnable) {
   std::string guid = base::android::ConvertJavaStringToUTF8(env, j_guid);
   DCHECK(!guid.empty());
@@ -68,13 +70,14 @@ void SharingServiceProxyAndroid::SendSharedClipboardMessage(
       device, base::TimeDelta::FromSeconds(kSharingMessageTTLSeconds.Get()),
       std::move(sharing_message),
       base::BindOnce(
-          [](base::OnceCallback<void(int)> callback,
+          [](int retries, base::OnceCallback<void(int)> callback,
              SharingSendMessageResult result,
              std::unique_ptr<chrome_browser_sharing::ResponseMessage>
                  response) {
+            LogSharedClipboardRetries(retries, result);
             std::move(callback).Run(static_cast<int>(result));
           },
-          std::move(callback)));
+          j_retries, std::move(callback)));
 }
 
 void SharingServiceProxyAndroid::GetDeviceCandidates(

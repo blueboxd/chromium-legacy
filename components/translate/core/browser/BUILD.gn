@@ -72,9 +72,7 @@ static_library("browser") {
     "//url",
   ]
 
-  public_deps = [
-    ":translate_pref_names",
-  ]
+  public_deps = [ ":translate_pref_names" ]
 
   if (is_ios || is_android) {
     sources += [

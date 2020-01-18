@@ -15,7 +15,5 @@ source_set("intent_util") {
     "intent_util.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

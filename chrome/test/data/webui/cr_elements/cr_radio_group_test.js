@@ -94,7 +94,7 @@ suite('cr-radio-group', () => {
    * @param {number} name
    */
   function checkSelected(name) {
-    assertEquals(`${name}`, radioGroup.selected);
+    assertEquals(`${name}`, `${radioGroup.selected}`);
 
     const selectedRows = Array.from(radioGroup.querySelectorAll(
         `cr-radio-button[name="${name}"][checked]`));
@@ -160,7 +160,8 @@ suite('cr-radio-group', () => {
   });
 
   test('disabled makes radios not focusable', () => {
-    radioGroup.selected = '1';
+    // Explicitly use 1 instead of '1' to check that type coercion works.
+    radioGroup.selected = 1;
     checkSelected(1);
     radioGroup.disabled = true;
     checkNoneFocusable();

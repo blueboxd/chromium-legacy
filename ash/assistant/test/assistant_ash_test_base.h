@@ -14,9 +14,14 @@
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 
+namespace aura {
+class Window;
+}  // namespace aura
+
 namespace views {
 class Textfield;
 class View;
+class Widget;
 }  // namespace views
 
 namespace ash {
@@ -107,11 +112,15 @@ class AssistantAshTestBase : public AshTestBase {
   base::Optional<chromeos::assistant::mojom::AssistantInteractionMetadata>
   current_interaction();
 
-  // Create a new App window, and activate it. This will take the focus away
-  // from the Assistant UI (and force it to close).
+  // Creates a new App window, and activate it.
   // Returns a pointer to the newly created window.
-  // The window will be destroyed when the test if finished.
+  // The window will be destroyed when the test is finished.
   aura::Window* SwitchToNewAppWindow();
+
+  // Creates a new Widget, and activate it.
+  // Returns a pointer to the newly created widget.
+  // The widget will be destroyed when the test is finished.
+  views::Widget* SwitchToNewWidget();
 
   // Return the window containing the Assistant UI.
   // Note that this window is shared for all components of the |AppList|.
@@ -151,6 +160,7 @@ class AssistantAshTestBase : public AshTestBase {
   AssistantController* controller_ = nullptr;
 
   std::vector<std::unique_ptr<aura::Window>> windows_;
+  std::vector<std::unique_ptr<views::Widget>> widgets_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantAshTestBase);
 };

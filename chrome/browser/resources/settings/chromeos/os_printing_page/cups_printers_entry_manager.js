@@ -23,8 +23,9 @@ let PrintersListCallback;
 
 cr.define('settings.printing', function() {
   /**
-   * Class for managing printer entries. Holds both Saved and Nearby printers
-   * and notifies observers of any applicable changes to either printer lists.
+   * Class for managing printer entries. Holds both Saved, Nearby, Print Server
+   * printers and notifies observers of any applicable changes to either printer
+   * lists.
    */
   class CupsPrintersEntryManager {
     constructor() {
@@ -36,6 +37,9 @@ cr.define('settings.printing', function() {
 
       /** @private {!Array<PrintersListWithDeltasCallback>} */
       this.onSavedPrintersChangedListeners_ = [];
+
+      /** @type {!Array<!PrinterListEntry>} */
+      this.printServerPrinters = [];
 
       /** @type {!Array<PrintersListCallback>} */
       this.onNearbyPrintersChangedListeners_ = [];
@@ -52,6 +56,7 @@ cr.define('settings.printing', function() {
 
     removeWebUIListeners() {
       cr.removeWebUIListener('on-nearby-printers-changed');
+      cr.removeWebUIListener('on-print-server-added');
     }
 
     /** @return {!Array<!PrinterListEntry>} */
@@ -139,6 +144,29 @@ cr.define('settings.printing', function() {
             {printerInfo: printer, printerType: PrinterType.DISCOVERED});
       }
 
+      this.notifyOnNearbyPrintersChangedListeners_();
+    }
+
+    /**
+     * Adds the found print server printers to |printServerPrinters|.
+     * |foundPrinters| consist of print server printers that have not been saved
+     * and will appear in the nearby printers list.
+     * @param {!CupsPrintersList} foundPrinters
+     */
+    addPrintServerPrinters(foundPrinters) {
+      // Get only new printers from |foundPrinters|. We ignore previously
+      // found printers.
+      const newPrinters = foundPrinters.printerList.filter(p1 => {
+        return !this.printServerPrinters.some(
+            p2 => p2.printerInfo.printerId == p1.printerId);
+      });
+
+      for (const printer of newPrinters) {
+        this.printServerPrinters.push(
+            {printerInfo: printer, printerType: PrinterType.PRINTSERVER});
+      }
+
+      // All printers from print servers are treated as nearby printers.
       this.notifyOnNearbyPrintersChangedListeners_();
     }
 

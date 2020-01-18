@@ -126,7 +126,6 @@
     &lt;p&gt;Muammoni hal qilish uchun ochilishi kerak bo‘lgan sahifadagi &lt;strong&gt;Ulanish&lt;/strong&gt; tugmasini bosing.&lt;/p&gt;</translation>
 <translation id="1513706915089223971">Tarix yozuvlari roʻyxati</translation>
 <translation id="1517433312004943670">Telefon raqami kiritilishi shart</translation>
-<translation id="1517500485252541695">Qabul qilinadigan kredit va debet kartalar</translation>
 <translation id="1519264250979466059">Nashr sanasi</translation>
 <translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1527263332363067270">Aloqa kutilmoqda…</translation>
@@ -202,7 +201,6 @@
 <translation id="1842969606798536927">To‘lash</translation>
 <translation id="1871208020102129563">Proksi-serverlar PAC fayli manzil orqali emas, o‘zgarmas manzil orqali sozlangan.</translation>
 <translation id="1871284979644508959">Kiritilishi shart</translation>
-<translation id="1874765382782611674">Qabul qilinadigan debet kartalar</translation>
 <translation id="1875512691959384712">Google Forms</translation>
 <translation id="187918866476621466">Ishga tushirilganda ko‘rsatiladigan sahifalarni ochish</translation>
 <translation id="1883255238294161206">Ro‘yxatni yig‘ish</translation>
@@ -215,11 +213,9 @@
 <translation id="1919345977826869612">Reklamalar</translation>
 <translation id="1919367280705858090">Maxsus turdagi xato xabarlari asosida yordam olish</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Yo‘q}=1{1 ta sayt}other{# ta sayt}}</translation>
-<translation id="1927235823738766038">Qabul qilinadigan kredit va debet kartalar</translation>
 <translation id="194030505837763158"><ph name="LINK" /> sahifasiga o‘tish</translation>
 <translation id="1945968466830820669">Tashkilot hisobingiz xavf ostida va o‘g‘irlanishi mumkin. Chromium parolingizni hoziroq o‘zgartirishni tavsiya etadi.</translation>
 <translation id="1947454675006758438">Yuqori oʻngdan steplerlash</translation>
-<translation id="1948773908305951926">Qabul qilinadigan prepaid-kartalar</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> xatcho‘plari</translation>
 <translation id="1973335181906896915">Seriyalashtirish amali bajarilmadi</translation>
 <translation id="1974060860693918893">Qo‘shimcha</translation>
@@ -296,7 +292,6 @@
 <translation id="2315864634253056100">Sayt nomi mana bunga oʻxshash ekan: <ph name="LOOKALIKE_DOMAIN" />. Odatda shubhali kimsalar sayt manzilida kichik oʻzgarishlar kiritib, saytlarga soxta nusxalar yasaydi.</translation>
 <translation id="2316887270356262533">Xotiradan 1 MB tozalanadi. Bundan keyin ba’zi veb-saytlar sekinroq yuklanishi mumkin.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> domeniga kirish uchun login va parolni kiritish zarur.</translation>
-<translation id="2317583587496011522">Debet kartalar qabul qilinadi.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, muddati: <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Sozlamani administrator boshqaradi</translation>
 <translation id="2346319942568447007">Nusxalangan rasm</translation>
@@ -336,7 +331,6 @@
 <translation id="2495093607237746763">Chromium shakllarni tezroq to‘ldirish uchun karta ma’lumotlarini ushbu qurilmaga saqlaydi.</translation>
 <translation id="2498091847651709837">Yangi kartani skanerlash</translation>
 <translation id="2501278716633472235">Ortga qaytish</translation>
-<translation id="2503184589641749290">Qabul qilinadigan debet va prepaid-kartalar</translation>
 <translation id="2505268675989099013">Hisobni himoyalash</translation>
 <translation id="2515629240566999685">Mobil aloqa signalini tekshirish</translation>
 <translation id="2521385132275182522">Quyi oʻngdan steplerlash</translation>
@@ -402,7 +396,6 @@
 <translation id="277499241957683684">Qurilma ro‘yhatdan o‘tkazilmagan</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Aloqa qayta o‘rnatildi.</translation>
-<translation id="2788784517760473862">Qabul qilinadigan kredit kartalar</translation>
 <translation id="2792012897584536778">Qurilmaga administratorlar tomonidan xavfsizlik sertifikatlari oʻrnatilgan va ular ochiladigan saytlardagi kontentni koʻrishi mumkin.</translation>
 <translation id="2799020568854403057">Ehtiyot bo‘ling! Saytda zararli ilovalar bor!</translation>
 <translation id="2799223571221894425">Qaytadan ishga tushirish</translation>
@@ -546,7 +539,6 @@
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> saytidagi amalni tasdiqlang</translation>
 <translation id="3581089476000296252">Sahifa tayyor boʻlganda Chrome buni xabar qiladi. &lt;a&gt;Bekor qilish&lt;/a&gt;</translation>
-<translation id="358285529439630156">Kredit va prepaid-kartalar qabul qilinadi.</translation>
 <translation id="3582930987043644930">Nom qo‘shish</translation>
 <translation id="3583757800736429874">&amp;Ko‘chirib o‘tkazishni qayta bajarish</translation>
 <translation id="3584299510153766161">Quyidan ikkita teshik ochish</translation>
@@ -611,7 +603,6 @@
 <translation id="3828924085048779000">Parol jumlasini bo‘sh qoldirib bo‘lmaydi.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> tomonidan qoʻshimcha funksiyali kengaytmalar oʻrnatildi. Kengaytmalarda ayrim maʼlumotlaringizga ruxsat bor.</translation>
 <translation id="3832522519263485449">Chapdan bir nechta teshik ochish</translation>
-<translation id="3838154488026099170">Hozirgina shubhali saytda parol kiritdingiz. Chromium hoziroq <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> va boshqa saytlardagi shu parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="385051799172605136">Orqaga</translation>
 <translation id="3858027520442213535">Sana va vaqtni yangilash</translation>
 <translation id="3884278016824448484">Ziddiyatli qurilma identifikatori</translation>
@@ -649,7 +640,6 @@
 <translation id="4072486802667267160">To‘lovni amalga oshirishda xatolik yuz berdi. Qayta urinib ko‘ring.</translation>
 <translation id="4075732493274867456">Mijoz va server turli xil SSL protokoli versiyasi yoki shifrlar to‘plamidan foydalanmoqda.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
-<translation id="4077092919748553596">Hozirgina shubhali saytda parol kiritdingiz. Chrome hoziroq <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> va boshqa saytlardagi shu parolingizni yangilashni tavsiya qiladi.</translation>
 <translation id="4079302484614802869">Proksi-serverlar o‘zgarmas manzil orqali emas, PAC-fayli manzil orqali sozlangan.</translation>
 <translation id="4082393374666368382">Sozlamalar – Boshqaruv</translation>
 <translation id="4098354747657067197">Ehtiyot bo‘ling, qalbaki sayt!</translation>
@@ -746,7 +736,6 @@
 <translation id="4434045419905280838">Qalquvchi oyna va yo‘naltirishlar</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Proksi-server o‘chiq, lekin uning sozlamalari aniq belgilangan.</translation>
-<translation id="445100540951337728">Qabul qilinadigan debet kartalar</translation>
 <translation id="4466881336512663640">Toʻldirilgan shakl tozalanadi. Davom ettirilsinmi?</translation>
 <translation id="4477350412780666475">Keyingi trek</translation>
 <translation id="4482953324121162758">Bu sayt tarjima qilinmaydi</translation>
@@ -952,6 +941,7 @@
 <translation id="5457113250005438886">Yaroqsiz</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> va yana <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ta}other{<ph name="CONTACT_PREVIEW" /> va yana <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> ta}}</translation>
 <translation id="5470861586879999274">O‘zgarishlarni &amp;qaytarish</translation>
+<translation id="5472133193607270166">Agar yoqilsa, saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzata olmaydi. Ayrim saytlar nosoz ishlashi mumkin.</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">Bu kontent zararli dastur o‘rnatishga yoki shaxsiy ma’lumotlaringizni o‘g‘irlashga urinishi mumkin. <ph name="BEGIN_LINK" />Baribir ko‘rsatilsin<ph name="END_LINK" />.</translation>
 <translation id="54817484435770891">To‘g‘ri manzilni kiriting</translation>
@@ -1005,7 +995,6 @@
 <translation id="570530837424789914">Boshqarish...</translation>
 <translation id="57094364128775171">Ishonchli parol yaratish…</translation>
 <translation id="5710435578057952990">Bu saytning identifikatsiya ma’lumotlari tekshirilmadi.</translation>
-<translation id="5719499550583120431">Prepaid-kartalar qabul qilinadi.</translation>
 <translation id="5720705177508910913">Joriy foydalanuvchi</translation>
 <translation id="5728056243719941842">C5 (Envelope)</translation>
 <translation id="5730040223043577876">Parolingizni tashkilot domenidan tashqaridagi saytda kiritgan bo‘lsangiz, uni zudlik bilan o‘zgartirishingizni tavsiya etamiz.</translation>
@@ -1040,7 +1029,6 @@
 <translation id="5869405914158311789">Bu saytga ulana olmadik</translation>
 <translation id="5869522115854928033">Saqlab olingan parollar</translation>
 <translation id="5887400589839399685">Karta saqlandi</translation>
-<translation id="5893752035575986141">Kredit kartalab qabul qilinadi.</translation>
 <translation id="5895138241574237353">Qayta ishga tushirish</translation>
 <translation id="5901630391730855834">Sariq</translation>
 <translation id="5905445707201418379"><ph name="ORIGIN" /> manba siyosati asosida bloklandi.</translation>
@@ -1092,7 +1080,6 @@
 <translation id="6106989379647458772"><ph name="PAGE" /> veb-sahifasi vaqtincha ishlamayotgan yoki yangi veb-manzilga o‘tkazilgan bo‘lishi mumkin.</translation>
 <translation id="610911394827799129">Google hisobingiz orqali bajargan internetdagi faoliyatingizni <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> orqali ko‘rishingiz mumkin.</translation>
 <translation id="6120179357481664955">UPI identifikatori eslab qolinsinmi?</translation>
-<translation id="6132597952260690497">Oʻrnatilgan kengaytma va plaginlar axboroti</translation>
 <translation id="6146055958333702838">Kabel ulanishlarini tekshiring, router, modem yoki boshqa tarmoq qurilmalarini o‘chirib yoqing.</translation>
 <translation id="614940544461990577">Quyidagilarni bajaring:</translation>
 <translation id="6150036310511284407">Chapdan 3 ta teshik ochish</translation>
@@ -1100,6 +1087,7 @@
 <translation id="6157877588268064908">Yetkazib berish usuli va talablari bilan tanishish uchun manzilni tanlang</translation>
 <translation id="6165508094623778733">Batafsil</translation>
 <translation id="6177128806592000436">Bu sayt bilan o‘rnatilgan aloqa himoyalanmagan.</translation>
+<translation id="6196640612572343990">Tashqi cookie-fayllarni bloklash.</translation>
 <translation id="6203231073485539293">Internet aloqasini tekshiring</translation>
 <translation id="6218753634732582820">Ushbu manzilni brauzer unutsinmi?</translation>
 <translation id="622039917539443112">Eniga taxlash</translation>
@@ -1172,7 +1160,6 @@
 <translation id="6476284679642588870">Toʻlov usullarini boshqarish</translation>
 <translation id="6489534406876378309">Nosozliklar haqidagi ma’lumotlarni yuklashni boshlash</translation>
 <translation id="6499038740797743453">Parolni o‘zgartirish</translation>
-<translation id="6507833130742554667">Kredit va debet kartalar qabul qilinadi.</translation>
 <translation id="6508722015517270189">Chrome’ni qaytadan ishga tushiring</translation>
 <translation id="6517596291481585650">Diqqat: Bu parametr roʻyxat emasligi uchun belgilangan parametrga birlashtirilmadi.</translation>
 <translation id="6518133107902771759">Tasdiqlash</translation>
@@ -1312,7 +1299,6 @@ Batafsil axborot:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> domeni bilan tizimdagi sana va vaqt sozlamalari (<ph name="DATE_AND_TIME" />) noto‘g‘ri bo‘lganligi uchun havfsiz aloqa o‘rnatib bo'lmadi.</translation>
 <translation id="7260504762447901703">Kirishni taqiqlash</translation>
-<translation id="7271803869921933038">Qabul qilinadigan prepaid-kartalar</translation>
 <translation id="7275334191706090484">Boshqariladigan xatcho‘plar</translation>
 <translation id="7298195798382681320">Tavsiya etiladi</translation>
 <translation id="7300012071106347854">Koʻk kobalt</translation>
@@ -1450,7 +1436,6 @@ Batafsil axborot:
 <translation id="785549533363645510">Inkognito oynasidagi bajargan ishlaringiz va tashrif buyurgan saytlaringiz tizim administratori va internet-provayderingizga ko‘rinadi.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Sayt tark etilsinmi?</translation>
-<translation id="7878176543348854470">Debet va prepaid-kartalar qabul qilinadi.</translation>
 <translation id="7878562273885520351">Parolingiz o‘g‘irlangan bo‘lishi mumkin</translation>
 <translation id="7882421473871500483">Jigarrang</translation>
 <translation id="7887683347370398519">CVC-kodni tekshiring va qayta urinib ko‘ring.</translation>
@@ -1612,7 +1597,6 @@ Batafsil axborot:
 <translation id="8730621377337864115">Tayyor</translation>
 <translation id="8738058698779197622">Tezkor havfsiz aloqa o‘rnatish uchun tizim soati to‘g‘ri sozlangan bo‘lishi kerak. Chunki sertifikatlar saytlarda haqiqiylik tekshiruvi uchun muddat cheklamalariga ega. Agar qurilmadagi vaqt noto‘g‘ri bo‘lsa, Chromium sertifikatlardan hali ham foydalanish mumkinligini tekshira olmaydi.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> saytining &lt;abbr id="dnsDefinition"&gt;DNS manzili&lt;/abbr&gt; topilmadi. Muammo o‘rganilmoqda.</translation>
-<translation id="874846938927089722">Qabul qilinadigan kredit va prepaid-kartalar</translation>
 <translation id="874918643257405732">Bu varaqni bukmarklash</translation>
 <translation id="8751426954251315517">Keyingi safar qayta urining</translation>
 <translation id="8759274551635299824">Kredit kartaning amal qilish muddati tugagan</translation>
@@ -1646,7 +1630,6 @@ Batafsil axborot:
 <translation id="8931333241327730545">Ushbu karta Google hisobingizda saqlansinmi?</translation>
 <translation id="8932102934695377596">Soatingiz orqada</translation>
 <translation id="893332455753468063">Ism qo‘shing</translation>
-<translation id="8938939909778640821">Qabul qilinadigan kredit va prepaid-kartalar</translation>
 <translation id="8943282376843390568">Laym</translation>
 <translation id="8957210676456822347">Tegishli portalga kirish</translation>
 <translation id="8962950042226115166">Shubhali sayt</translation>
@@ -1716,7 +1699,6 @@ Batafsil axborot:
 <translation id="939736085109172342">Yangi jild</translation>
 <translation id="945855313015696284">Quyidagi axborotni tekshiring va yaroqsiz kartalarni olib tashlang</translation>
 <translation id="950736567201356821">Yuqoridan 3 ta teshik ochish</translation>
-<translation id="951104842009476243">Qabul qilinadigan debet va prepaid-kartalar</translation>
 <translation id="961663415146723894">Quyi chekkasini belgilash</translation>
 <translation id="962484866189421427">Bu kontent soxta ilovalarni o‘rnatishga urinishi mumkin. Shuningdek, sizni kuzatishi yoki axborot yig‘ishi mumkin. <ph name="BEGIN_LINK" />Baribir ko‘rsatilsin<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Rasmiy versiya</translation>

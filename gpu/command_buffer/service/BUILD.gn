@@ -171,6 +171,8 @@ target(link_target_type, "gles2_sources") {
     "indexed_buffer_binding_host.h",
     "logger.cc",
     "logger.h",
+    "mailbox_manager_dummy.cc",
+    "mailbox_manager_dummy.h",
     "mailbox_manager_factory.cc",
     "mailbox_manager_factory.h",
     "mailbox_manager_impl.cc",

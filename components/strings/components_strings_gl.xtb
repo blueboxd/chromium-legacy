@@ -4,11 +4,13 @@
 <translation id="1008557486741366299">Agora non</translation>
 <translation id="1010200102790553230">Cargar páxina máis tarde</translation>
 <translation id="1015730422737071372">Proporcionar información adicional</translation>
+<translation id="1019413721762100891">Desactivado</translation>
 <translation id="1021110881106174305">Tarxetas aceptadas</translation>
 <translation id="1021753677514347426">Este problema prodúcese por causa dun certificado instalado por ti ou por outra persoa no teu dispositivo. Sábese que este certificado se utiliza para supervisar e interceptar redes, e Chromium non confía nel. Aínda que existen algunhas situacións lexítimas para a supervisión, como no caso de redes de empresas ou de centros educativos, Chromium quere asegurarse de que sexas consciente do que acontece, inda que non poidas facer nada ao respecto. A supervisión pode levarse a cabo en calquera navegador ou aplicación que acceda á Web.</translation>
 <translation id="1032854598605920125">Xirar  á dereita</translation>
 <translation id="1036348656032585052">Desactivar</translation>
 <translation id="1038842779957582377">nome descoñecido</translation>
+<translation id="1041998700806130099">Mensaxe da folla do traballo</translation>
 <translation id="1050038467049342496">Pecha outras aplicacións</translation>
 <translation id="1055184225775184556">&amp;Desfacer adición</translation>
 <translation id="1056898198331236512">Advertencia</translation>
@@ -16,6 +18,7 @@
 <translation id="10614374240317010">Contrasinais que non se gardan nunca</translation>
 <translation id="1062160989074299343">Prc10 (sobre)</translation>
 <translation id="106701514854093668">Marcadores do escritorio</translation>
+<translation id="1070901266639972381">Noite</translation>
 <translation id="1074497978438210769">Non seguro</translation>
 <translation id="1080116354587839789">Axustar ao ancho</translation>
 <translation id="1086953900555227778">Index-5x8</translation>
@@ -23,6 +26,7 @@
 <translation id="1089439967362294234">Cambiar de contrasinal</translation>
 <translation id="1096545575934602868">Este campo non debe ter máis de <ph name="MAX_ITEMS_LIMIT" /> entradas. Descartaranse todas as restantes.</translation>
 <translation id="109743633954054152">Xestiona os contrasinais na configuración de Chrome</translation>
+<translation id="1101672080107056897">Acción incorrecta</translation>
 <translation id="1103523840287552314">Traducir sempre o <ph name="LANGUAGE" /></translation>
 <translation id="1107591249535594099">Se se comproba, Chrome almacenará unha copia da túa tarxeta neste dispositivo para completar os formularios máis rápido.</translation>
 <translation id="1110994991967754504">Seleccionar permiso para <ph name="PERMISSION_NAME" /></translation>
@@ -67,6 +71,7 @@
 <translation id="1263231323834454256">Lista de lectura</translation>
 <translation id="1264126396475825575">Informe de fallos capturado o <ph name="CRASH_TIME" /> (aínda non se cargou nin se ignorou)</translation>
 <translation id="1270502636509132238">Método de recollida</translation>
+<translation id="1281476433249504884">Amontoador 1</translation>
 <translation id="1285320974508926690">Non traducir nunca este sitio</translation>
 <translation id="1285400217480592994">Analiza o contido dos ficheiros que descargas ou cargas en Chrome.</translation>
 <translation id="1292701964462482250">"Hai software no teu ordenador que está evitando que Chrome se conecte de forma segura á web" (só para ordenadores con Windows)</translation>
@@ -108,6 +113,7 @@
 <translation id="1408787208417187241">Tres grampas na parte superior</translation>
 <translation id="1413809658975081374">Erro de privacidade</translation>
 <translation id="1426410128494586442">Si</translation>
+<translation id="1428146450423315676">Amontoador 7</translation>
 <translation id="1430915738399379752">Imprimir</translation>
 <translation id="1442386063175183758">Dobrez en ventá na parte dereita</translation>
 <translation id="1442987760062738829">Perforación</translation>
@@ -126,11 +132,11 @@
     &lt;p&gt;Para solucionar o erro, fai clic en &lt;strong&gt;Conectar&lt;/strong&gt; na páxina que tentas abrir.&lt;/p&gt;</translation>
 <translation id="1513706915089223971">Lista de entradas do historial</translation>
 <translation id="1517433312004943670">O número de teléfono é obrigatorio</translation>
-<translation id="1517500485252541695">Tarxetas de crédito e de débito aceptadas</translation>
 <translation id="1519264250979466059">Data de compilación</translation>
 <translation id="1521655867290435174">Follas de cálculo de Google</translation>
 <translation id="1527263332363067270">Agardando pola conexión…</translation>
 <translation id="1529521330346880926">10x15 (sobre)</translation>
+<translation id="1529789484829130889">Bandexa 8</translation>
 <translation id="1530707389502320859">O sitio que acabas de tentar visitar parece falso. Ás veces, os atacantes crean copias de sitios introducindo nos URL cambios pequenos e difíciles de ver.</translation>
 <translation id="1531205177818805254">Exec</translation>
 <translation id="1532118530259321453">Esta páxina di</translation>
@@ -157,6 +163,7 @@
 <translation id="1639239467298939599">Cargando</translation>
 <translation id="1640180200866533862">Políticas de usuario</translation>
 <translation id="1640244768702815859">Proba a <ph name="BEGIN_LINK" />visitar a páxina de inicio do sitio<ph name="END_LINK" />.</translation>
+<translation id="1641976391427233992">Atrasar saída ata</translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="1645368109819982629">Protocolo non compatible</translation>
 <translation id="1652415888492971589">JIS B8</translation>
@@ -165,12 +172,15 @@
 <translation id="1663943134801823270">As tarxetas e enderezos proceden de Chrome. Podes xestionalos en <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="1671391448414634642">As páxinas en <ph name="SOURCE_LANGUAGE" /> traduciranse ao <ph name="TARGET_LANGUAGE" /> a partir de agora.</translation>
 <translation id="1676269943528358898">Normalmente, <ph name="SITE" /> encripta a túa información para protexela. Nesta ocasión, cando Google Chrome tentou conectar con <ph name="SITE" />, o sitio web devolveu credenciais estrañas e incorrectas. É posible que un atacante tentase facerse pasar por <ph name="SITE" /> ou que a pantalla de inicio de sesión de wifi interrompese a conexión. Non obstante, a túa información segue a salvo porque Google Chrome detivo a conexión antes de intercambiar datos.</translation>
+<translation id="1682696192498422849">Co bordo curto primeiro</translation>
 <translation id="168841957122794586">O certificado do servidor contén unha clave criptográfica non segura.</translation>
 <translation id="1697532407822776718">Listo!</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706954506755087368">{1,plural, =1{Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque o seu certificado de seguranza supostamente é válido a partir de mañá. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.}other{Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque o seu certificado de seguranza supostamente é válido dentro de # días. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.}}</translation>
 <translation id="1710259589646384581">Sistema operativo</translation>
+<translation id="1713628304598226412">Bandexa 2</translation>
 <translation id="1715874602234207">F</translation>
+<translation id="1717494416764505390">Caixa de correo 3</translation>
 <translation id="1718029547804390981">O documento é demasiado grande para anotalo</translation>
 <translation id="1721424275792716183">* O campo é obrigatorio</translation>
 <translation id="1727741090716970331">Engade un número de tarxeta válido</translation>
@@ -184,7 +194,9 @@
 <translation id="1743520634839655729">Para pagar máis rápido a próxima vez, garda a túa tarxeta, o nome e o enderezo de facturación na túa Conta de Google e neste dispositivo.</translation>
 <translation id="1743570585616704562">Non se recoñece</translation>
 <translation id="1745880797583122200">O teu navegador está xestionado</translation>
+<translation id="1746113442205726301">Cambio Y da imaxe</translation>
 <translation id="17513872634828108">Pestanas abertas</translation>
+<translation id="1752021286346845558">Caixa de correo 8</translation>
 <translation id="1753706481035618306">Número de páxina</translation>
 <translation id="1763864636252898013">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque o sistema operativo do teu dispositivo non confía no seu certificado de seguranza. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Proba a executar Diagnósticos da rede de Windows<ph name="END_LINK" />.</translation>
@@ -194,6 +206,7 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">Nome do titular da tarxeta</translation>
+<translation id="1807528111851433570">Folla de inicio</translation>
 <translation id="1821930232296380041">Solicitude ou parámetros de solicitude non válidos</translation>
 <translation id="1822540298136254167">Sitios web que visitas e tempo que pasas neles</translation>
 <translation id="1826516787628120939">Comprobando</translation>
@@ -203,7 +216,6 @@
 <translation id="1842969606798536927">Pagar</translation>
 <translation id="1871208020102129563">O proxy está configurado para utilizar servidores proxy fixos, non un URL de script .pac.</translation>
 <translation id="1871284979644508959">O campo é obrigatorio</translation>
-<translation id="1874765382782611674">Acéptanse tarxetas de débito</translation>
 <translation id="1875512691959384712">Formularios de Google</translation>
 <translation id="187918866476621466">Abrir páxinas de inicio</translation>
 <translation id="1883255238294161206">Contraer lista</translation>
@@ -216,15 +228,14 @@
 <translation id="1919345977826869612">Anuncios</translation>
 <translation id="1919367280705858090">Obter axuda cando aparece unha mensaxe de erro concreta</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Ningún}=1{1 sitio}other{# sitios}}</translation>
-<translation id="1927235823738766038">Acéptanse tarxetas de crédito e de débito</translation>
 <translation id="194030505837763158">Ir a <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Poderías perder o acceso á conta da túa organización ou alguén podería roubarche a identidade. Chromium recoméndache que cambies de contrasinal agora.</translation>
 <translation id="1947454675006758438">Grampa na parte superior dereita</translation>
-<translation id="1948773908305951926">Tarxetas de prepago aceptadas</translation>
 <translation id="1962204205936693436">Marcadores de <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Erro de serialización</translation>
 <translation id="1974060860693918893">Configuración avanzada</translation>
 <translation id="1974883374937189061">Envíalle a Google os <ph name="BEGIN_WHITEPAPER_LINK" />URL dalgunhas páxinas que visites, información limitada do sistema e contido da páxina<ph name="END_WHITEPAPER_LINK" /> para axudar a mellorar a seguranza de Chrome. <ph name="PRIVACY_PAGE_LINK" /></translation>
+<translation id="1975584088563498795">Caixa de correo 10</translation>
 <translation id="1978555033938440688">Versión do firmware</translation>
 <translation id="1981206234434200693">Borra os datos do historial de navegación de Chrome</translation>
 <translation id="1992331125980284532">JIS B3</translation>
@@ -234,6 +245,7 @@
 <translation id="2025186561304664664">O proxy está establecido como configurado automaticamente.</translation>
 <translation id="2030481566774242610">Quizais querías dicir <ph name="LINK" />?</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Comprobar o proxy e o firewall<ph name="END_LINK" /></translation>
+<translation id="2042213636306070719">Bandexa 7</translation>
 <translation id="2053111141626950936">Non se traducirán as páxinas en <ph name="LANGUAGE" />.</translation>
 <translation id="2053553514270667976">Código postal</translation>
 <translation id="2064691555167957331">{COUNT,plural, =1{1 suxestión}other{# suxestións}}</translation>
@@ -246,6 +258,7 @@
 <translation id="2096368010154057602">Departamento</translation>
 <translation id="2099652385553570808">Tres grampas na parte esquerda</translation>
 <translation id="2102134110707549001">Suxerir contrasinal seguro…</translation>
+<translation id="2107021941795971877">Soportes de impresión</translation>
 <translation id="2108755909498034140">Reinicia o ordenador</translation>
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Tarxeta</translation>
@@ -270,6 +283,7 @@
 <translation id="2187317261103489799">Detectar (predeterminado)</translation>
 <translation id="2188375229972301266">Varias perforacións na parte inferior</translation>
 <translation id="2202020181578195191">Introduce un ano de caducidade válido</translation>
+<translation id="22081806969704220">Bandexa 3</translation>
 <translation id="2212735316055980242">Política non atopada</translation>
 <translation id="2213606439339815911">Obtendo entradas...</translation>
 <translation id="2215727959747642672">Modificación de ficheiros</translation>
@@ -287,6 +301,7 @@
 <translation id="2263079731045660823">Actualiza a información de autocompletar da tarxeta de crédito na configuración de Chrome</translation>
 <translation id="2267047181501709434">Verificando a túa identidade…</translation>
 <translation id="2270484714375784793">Número de teléfono</translation>
+<translation id="2276057643614339130">Base de impresión</translation>
 <translation id="2277103315734023688">Avanzar</translation>
 <translation id="2283340219607151381">Gardar e autocompletar enderezos</translation>
 <translation id="2288422996159078444">Estase vixiando todo o que escribes, as páxinas que visitas e calquera outra actividade que realices na Web. Ademais, pode que se modifique o contido dos sitios sen que o saibas.</translation>
@@ -297,7 +312,6 @@
 <translation id="2315864634253056100">O nome deste sitio é similar ao de <ph name="LOOKALIKE_DOMAIN" />. Ás veces, os atacantes crean copias de sitios introducindo cambios difíciles de ver no enderezo web.</translation>
 <translation id="2316887270356262533">Libera menos de 1 MB. É posible que algúns sitios carguen de forma máis lenta a próxima vez que os visites.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> require un nome de usuario e un contrasinal.</translation>
-<translation id="2317583587496011522">Acéptanse tarxetas de débito.</translation>
 <translation id="2330137317877982892">A tarxeta <ph name="CREDIT_CARD" /> caduca o <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Opción de configuración controlada polo administrador</translation>
 <translation id="2346319942568447007">Imaxe que copiaches</translation>
@@ -327,6 +341,7 @@
 <translation id="2465655957518002998">Escoller método de entrega</translation>
 <translation id="2465688316154986572">Grampa</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Executar diagnósticos da rede<ph name="END_LINK" /></translation>
+<translation id="2469153820345007638">Orde de 1 a N</translation>
 <translation id="2473195200299095979">Traducir esta páxina</translation>
 <translation id="2479410451996844060">URL de busca non válido.</translation>
 <translation id="2482878487686419369">Notificacións</translation>
@@ -337,7 +352,6 @@
 <translation id="2495093607237746763">Se se marca esta opción, Chromium almacenará unha copia da túa tarxeta neste dispositivo para completar os formularios máis rápido.</translation>
 <translation id="2498091847651709837">Dixitalizar nova tarxeta</translation>
 <translation id="2501278716633472235">Ir atrás</translation>
-<translation id="2503184589641749290">Acéptanse tarxetas de débito e de prepago</translation>
 <translation id="2505268675989099013">Protexer conta</translation>
 <translation id="2515629240566999685">Comprobar o sinal da túa zona</translation>
 <translation id="2521385132275182522">Grampa na parte inferior dereita</translation>
@@ -346,6 +360,7 @@
 <translation id="2535659140340599600">{COUNT,plural, =1{e 1 máis}other{e # máis}}</translation>
 <translation id="2536110899380797252">Engadir enderezo</translation>
 <translation id="2539524384386349900">Detectar</translation>
+<translation id="2544644783021658368">Documento individual</translation>
 <translation id="254947805923345898">O valor da política non é válido.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> enviou unha resposta non válida.</translation>
 <translation id="2556876185419854533">&amp;Desfacer modificación</translation>
@@ -380,8 +395,10 @@
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Saír</translation>
 <translation id="2684561033061424857">11x12</translation>
+<translation id="2687555958734450033">Tamaño predeterminado</translation>
 <translation id="2691924980723297736">Advertencia de seguranza</translation>
 <translation id="2699302886720511147">Acéptanse tarxetas</translation>
+<translation id="2701514975700770343">Cara abaixo</translation>
 <translation id="2702801445560668637">Lista de lectura</translation>
 <translation id="2704283930420550640">O valor non se corresponde co formato.</translation>
 <translation id="2705137772291741111">A copia deste sitio gardada (almacenada na memoria caché) era ilexible.</translation>
@@ -399,13 +416,15 @@
 <translation id="2742870351467570537">Eliminar elementos seleccionados</translation>
 <translation id="277133753123645258">Método de envío</translation>
 <translation id="277499241957683684">Non se atopa o rexistro do dispositivo</translation>
+<translation id="2775884851269838147">Primeira páxina de impresión</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Restableceuse a conexión.</translation>
-<translation id="2788784517760473862">Acéptanse tarxetas de crédito</translation>
 <translation id="2792012897584536778">Os administradores deste dispositivo configuraron certificados de seguranza que poden permitirlles ver o contido dos sitios web que visitas.</translation>
 <translation id="2799020568854403057">O sitio que se indica a continuación contén aplicacións prexudiciais</translation>
 <translation id="2799223571221894425">Iniciar de novo</translation>
 <translation id="2803306138276472711">A navegación segura de Google <ph name="BEGIN_LINK" />detectou software malicioso<ph name="END_LINK" /> en <ph name="SITE" /> recentemente. Ás veces, os sitios web que adoitan ser seguros inféctanse con software malicioso.</translation>
+<translation id="2807052079800581569">Posición Y de imaxe</translation>
+<translation id="2809804249696361569">As dúas follas</translation>
 <translation id="2824775600643448204">Barra de enderezos e de busca</translation>
 <translation id="2826760142808435982">A conexión cífrase e autentícase con <ph name="CIPHER" /> e utiliza <ph name="KX" /> como mecanismo de intercambio de claves.</translation>
 <translation id="2835170189407361413">Borrar formulario</translation>
@@ -420,6 +439,7 @@
 <translation id="290376772003165898">A páxina non está en <ph name="LANGUAGE" />?</translation>
 <translation id="2909946352844186028">Detectouse un cambio de rede.</translation>
 <translation id="2910133103376701357"><ph name="ENROLLMENT_DOMAIN" /> xestiona o teu dispositivo e a conta.</translation>
+<translation id="2911973620368911614">ID de usuario de contabilidade de traballos</translation>
 <translation id="2916038427272391327">Pecha outros programas</translation>
 <translation id="2922350208395188000">Non se pode comprobar o certificado do servidor.</translation>
 <translation id="2925673989565098301">Método de entrega</translation>
@@ -429,6 +449,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque o seu certificado de seguranza é de <ph name="DOMAIN2" />. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
 <translation id="2948083400971632585">Podes desactivar os proxies configurados para unha conexión desde a páxina de configuración.</translation>
+<translation id="2951588413176968965">A miña caixa de correo</translation>
 <translation id="295526156371527179">Advertencia: Esta política non se combinou como un dicionario do xeito especificado na política porque non é un dicionario.</translation>
 <translation id="2955913368246107853">Pecha a barra de busca</translation>
 <translation id="2969319727213777354">Para establecer unha conexión segura, é necesario que o reloxo estea correctamente axustado. Isto débese a que os certificados utilizados polos sitios web para identificarse só son válidos durante períodos de tempo específicos. Debido a que o reloxo do dispositivo está incorrectamente axustado, Chrome non pode verificar estes certificados.</translation>
@@ -443,6 +464,7 @@
 <translation id="2991174974383378012">Compartindo con sitios web</translation>
 <translation id="2991571918955627853">Non podes visitar <ph name="SITE" /> neste momento porque o sitio web utiliza HSTS. Normalmente, os erros de rede e os ataques son temporais, polo que é posible que esta páxina funcione máis tarde.</translation>
 <translation id="2996674880327704673">Suxestións de Google</translation>
+<translation id="3002501248619246229">Comproba o soporte da bandexa de entrada</translation>
 <translation id="3005723025932146533">Mostrar copia gardada</translation>
 <translation id="3008447029300691911">Introduce o código CVC da tarxeta <ph name="CREDIT_CARD" />. Unha vez que confirmes os datos, os detalles da tarxeta compartiranse con este sitio.</translation>
 <translation id="3010559122411665027">Entrada da lista "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
@@ -455,12 +477,14 @@
 <translation id="3060227939791841287">C9 (sobre)</translation>
 <translation id="3061707000357573562">Servizo de parche</translation>
 <translation id="3064966200440839136">Sairás do modo de incógnito para pagar a través dunha aplicación externa. Queres continuar?</translation>
+<translation id="3080254622891793721">Libro gráfico</translation>
 <translation id="3086579638707268289">Estase supervisando a túa actividade na Web</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
 <translation id="3095940652251934233">Statement</translation>
 <translation id="3096100844101284527">Engadir enderezo de recollida</translation>
 <translation id="3105172416063519923">Código de identificación do recurso:</translation>
 <translation id="3109728660330352905">Non tes autorización para ver esta páxina.</translation>
+<translation id="3113284927548439113">Terceira quenda</translation>
 <translation id="3116158981186517402">Laminación</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />Proba a executar diagnósticos de conectividade<ph name="END_LINK" />.</translation>
@@ -485,6 +509,7 @@
 <translation id="3209034400446768650">Nesta páxina pódense aplicar cargos</translation>
 <translation id="3212581601480735796">Estase supervisando a túa actividade en <ph name="HOSTNAME" /></translation>
 <translation id="3215092763954878852">Non se puido utilizar WebAuthn</translation>
+<translation id="3218181027817787318">Relativo</translation>
 <translation id="3225919329040284222">O servidor presentou un certificado que non coincide coas expectativas integradas. Estas expectativas inclúense para determinados sitios web de alta seguranza co fin de protexerte.</translation>
 <translation id="3226128629678568754">Preme o botón Volver cargar para volver enviar os datos necesarios para cargar a páxina.</translation>
 <translation id="3227137524299004712">Micrófono</translation>
@@ -519,6 +544,7 @@
 <translation id="3399952811970034796">Enderezo de entrega</translation>
 <translation id="3422248202833853650">Proba a saír doutros programas para liberar memoria.</translation>
 <translation id="3422472998109090673">Actualmente non se pode acceder a <ph name="HOST_NAME" />.</translation>
+<translation id="3423742043356668186">Especificado polo sistema</translation>
 <translation id="3427092606871434483">Permitir (predeterminado)</translation>
 <translation id="3427342743765426898">&amp;Refacer modificación</translation>
 <translation id="342781501876943858">Chromium recoméndache que restablezas o contrasinal se o reutilizaches noutros sitios.</translation>
@@ -528,6 +554,7 @@
 <translation id="3447661539832366887">O propietario deste dispositivo desactivou o xogo do dinosauro.</translation>
 <translation id="3447884698081792621">Mostrar certificado (emitido por <ph name="ISSUER" />)</translation>
 <translation id="3452404311384756672">Intervalo de recuperación:</translation>
+<translation id="3453962258458347894">Número de reintentos</translation>
 <translation id="3456231139987291353">Number-11 (sobre)</translation>
 <translation id="3461824795358126837">Marcador</translation>
 <translation id="3462200631372590220">Ocultar detalles</translation>
@@ -535,26 +562,32 @@
 <translation id="3468054117417088249">A pestana <ph name="TAB_SWITCH_SUFFIX" /> está aberta actualmente, preme o tabulador e despois Intro para cambiar á pestana aberta</translation>
 <translation id="3479552764303398839">Agora non</translation>
 <translation id="3484560055331845446">Poderías perder o acceso á túa Conta de Google. Chrome recoméndache que cambies de contrasinal agora. Deberás iniciar sesión.</translation>
+<translation id="3487845404393360112">Bandexa 4</translation>
 <translation id="3495081129428749620">Buscar na páxina
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Esta política ignórase porque hai outra política do mesmo grupo con máis prioridade.</translation>
 <translation id="3513704683820682405">Realidade aumentada</translation>
+<translation id="3518941727116570328">Control de varios obxectos</translation>
 <translation id="3528171143076753409">O certificado do servidor non é de confianza.</translation>
 <translation id="3528485271872257980">Marrón escuro</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Polo menos 1 elemento nos dispositivos sincronizados}=1{1 elemento (e máis nos dispositivos sincronizados)}other{# elementos (e máis nos dispositivos sincronizados)}}</translation>
+<translation id="3531780078352352885">Follas do traballo</translation>
+<translation id="3533328374079021623">Caixa de correo 5</translation>
 <translation id="3539171420378717834">Manter unha copia desta tarxeta neste dispositivo</translation>
 <translation id="3553513561058684206">Para ti</translation>
+<translation id="3558573058928565255">Hora do día</translation>
 <translation id="3566021033012934673">A túa conexión non é privada</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Unha páxina inserida en <ph name="SITE" /> di</translation>
 <translation id="3581089476000296252">Chrome permitirache saber cando está lista esta páxina. &lt;a&gt;Cancelar&lt;/a&gt;</translation>
-<translation id="358285529439630156">Acéptanse tarxetas de crédito e de prepago.</translation>
 <translation id="3582930987043644930">Engadir nome</translation>
 <translation id="3583757800736429874">&amp;Refacer movemento</translation>
 <translation id="3584299510153766161">Dúas perforacións na parte inferior</translation>
 <translation id="3586931643579894722">Ocultar detalles</translation>
+<translation id="3587738293690942763">Medio</translation>
 <translation id="3592413004129370115">Italian (sobre)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
+<translation id="3608932978122581043">Orientación da alimentación</translation>
 <translation id="3614103345592970299">Tamaño 2</translation>
 <translation id="361438452008624280">Entrada da lista "<ph name="LANGUAGE_ID" />": idioma descoñecido ou non compatible.</translation>
 <translation id="3615877443314183785">Introduce unha data de caducidade válida</translation>
@@ -563,6 +596,7 @@
 <translation id="3630155396527302611">Se xa está incluído como programa autorizado para acceder á rede, proba
        a eliminalo da lista e volver engadilo.</translation>
 <translation id="3631244953324577188">Biométrica</translation>
+<translation id="3634530185120165534">Bandexa 5</translation>
 <translation id="3640766068866876100">Index-4x6-Ext</translation>
 <translation id="3650584904733503804">Validación realizada correctamente</translation>
 <translation id="3655670868607891010">Se esta mensaxe aparece con frecuencia, proba a solucionalo con estas <ph name="HELP_LINK" />.</translation>
@@ -601,25 +635,30 @@
 <translation id="3760561303380396507">Queres usar Windows Hello en lugar do CVC?</translation>
 <translation id="3761718714832595332">Ocultar estado</translation>
 <translation id="3765032636089507299">A páxina de navegación segura está en construción.</translation>
+<translation id="3765588406864124894">Caixa de correo 9</translation>
 <translation id="3778403066972421603">Queres gardar esta tarxeta na túa conta de Google e neste dispositivo?</translation>
+<translation id="3780694243617746492">Bandexa de saída</translation>
 <translation id="3781428340399460090">Rosa fucsia</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Caduca o <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Tamaño 16</translation>
 <translation id="3797522431967816232">Prc3 (sobre)</translation>
+<translation id="3799805948399000906">Solicitouse a fonte</translation>
+<translation id="3807366285948165054">Cambio X da imaxe</translation>
 <translation id="3807873520724684969">Bloqueouse o contido daniño.</translation>
 <translation id="3808375843007691220">Advertencia: Detectáronse funcións experimentais.</translation>
 <translation id="3810973564298564668">Xestionar</translation>
 <translation id="382518646247711829">Se utilizas un servidor proxy...</translation>
+<translation id="3827112369919217609">Absoluto</translation>
 <translation id="3828924085048779000">A frase de acceso non pode estar baleira.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> instalou extensións para poder utilizar funcións adicionais. As extensións teñen acceso a algúns dos teus datos.</translation>
 <translation id="3832522519263485449">Varias perforacións na parte esquerda</translation>
-<translation id="3838154488026099170">Acabas de escribir o teu contrasinal nun sitio enganoso. Chromium recoméndache que vaias a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e outros sitios nos que utilices este contrasinal para cambialo agora.</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3858027520442213535">Actualizar data e hora</translation>
 <translation id="3884278016824448484">Identificador de dispositivos en conflito</translation>
 <translation id="3885155851504623709">Parroquia</translation>
 <translation id="388632593194507180">Detectouse a supervisión</translation>
+<translation id="3886948180919384617">Amontoador 3</translation>
 <translation id="3890664840433101773">Engadir correo electrónico</translation>
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3901925938762663762">A tarxeta caducou</translation>
@@ -652,10 +691,11 @@
 <translation id="4072486802667267160">Produciuse un erro ao procesar a túa solicitude. Téntao de novo.</translation>
 <translation id="4075732493274867456">O cliente e o servidor non admiten unha versión do protocolo SSL ou o conxunto de cifrado comúns.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
-<translation id="4077092919748553596">Acabas de escribir o teu contrasinal nun sitio enganoso. Chrome recoméndache que vaias a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e outros sitios nos que utilices este contrasinal para cambialo agora.</translation>
 <translation id="4079302484614802869">A configuración do proxy está establecida para utilizar un URL de script .pac, non servidores proxy fixos.</translation>
 <translation id="4082393374666368382">Configuración - Xestión</translation>
+<translation id="4088981014127559358">Cambio Y da imaxe do lado 1</translation>
 <translation id="4098354747657067197">O sitio ao que te dirixes é enganoso</translation>
+<translation id="4101413244023615925">Texto e gráficos</translation>
 <translation id="4103249731201008433">O número de serie do dispositivo non é válido</translation>
 <translation id="4103763322291513355">Visita &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver a lista dos URL incluídos na lista negra e outras políticas aplicadas polo administrador do teu sistema.</translation>
 <translation id="4108231218301530806">Utilizar impresión dixital para verificar esta tarxeta a próxima vez.</translation>
@@ -668,6 +708,7 @@
 <translation id="4129401438321186435">{COUNT,plural, =1{1 máis}other{# máis}}</translation>
 <translation id="4130226655945681476">Comproba os cables de rede, o módem e o router</translation>
 <translation id="413544239732274901">Máis información</translation>
+<translation id="4142935452406587478">Bandexa 10</translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4151403195736952345">Usar configuración predeterminada global: detectar</translation>
 <translation id="4159784952369912983">Púrpura</translation>
@@ -710,6 +751,7 @@
 <translation id="4258748452823770588">Sinatura incorrecta</translation>
 <translation id="4261046003697461417">Non se poden anotar os documentos protexidos</translation>
 <translation id="4265872034478892965">Permitido polo administrador</translation>
+<translation id="4270541775497538019">Amontoador 6</translation>
 <translation id="4275830172053184480">Reinicia o dispositivo</translation>
 <translation id="4277028893293644418">Restablecer contrasinal</translation>
 <translation id="4279811152705618813"><ph name="ENROLLMENT_DOMAIN" /> xestiona o teu <ph name="DEVICE_TYPE" /></translation>
@@ -725,6 +767,7 @@
 <translation id="4318566738941496689">O nome e o enderezo de rede do teu dispositivo</translation>
 <translation id="4325863107915753736">Non se puido atopar o artigo</translation>
 <translation id="4326324639298822553">Comproba a data de caducidade e téntao de novo</translation>
+<translation id="4331519897422864041">Amontoador 5</translation>
 <translation id="4331708818696583467">Non seguro</translation>
 <translation id="4340982228985273705">Non se detectou que unha empresa xestione este ordenador, polo que a política só pode instalar automaticamente extensións aloxadas en Chrome Webstore. O URL de actualización de Chrome Webstore é <ph name="CWS_UPDATE_URL" />.</translation>
 <translation id="4346197816712207223">Acéptanse tarxetas de crédito</translation>
@@ -740,6 +783,7 @@
 <translation id="4372948949327679948">Valor <ph name="VALUE_TYPE" /> esperado.</translation>
 <translation id="4377125064752653719">Tentaches acceder a <ph name="DOMAIN" />, pero este emisor revogou o certificado presentado polo servidor. Isto significa que as credenciais de seguranza presentadas polo servidor non son de confianza. É posible que te esteas comunicando cun hacker.</translation>
 <translation id="4378154925671717803">Teléfono</translation>
+<translation id="4390472908992056574">Bordo</translation>
 <translation id="4406896451731180161">Resultados da busca</translation>
 <translation id="4408413947728134509">Cookies: <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Enderezo de recollida</translation>
@@ -749,7 +793,6 @@
 <translation id="4434045419905280838">Ventás emerxentes e redireccións</translation>
 <translation id="4435702339979719576">Postal)</translation>
 <translation id="443673843213245140">O uso dun proxy está desactivado, pero especifícase unha configuración de proxy explícita.</translation>
-<translation id="445100540951337728">Acéptanse tarxetas de débito</translation>
 <translation id="4466881336512663640">Perderanse os cambios que realizases no formulario. Seguro que queres continuar?</translation>
 <translation id="4477350412780666475">Pista seguinte</translation>
 <translation id="4482953324121162758">Non se traducirá este sitio.</translation>
@@ -767,6 +810,7 @@
 <translation id="4522570452068850558">Detalles</translation>
 <translation id="4524138615196389145">A partir de agora, confirma as tarxetas máis rápido con WebAuthn</translation>
 <translation id="4524805452350978254">Xestionar tarxetas</translation>
+<translation id="4542971377163063093">Bandexa 6</translation>
 <translation id="455113658016510503">A9</translation>
 <translation id="4552089082226364758">Flash</translation>
 <translation id="4558551763791394412">Proba a desactivar as extensións.</translation>
@@ -783,6 +827,7 @@
 <translation id="4635654612248442824">O sitio <ph name="ORIGIN" /> solicitou que se aplicase unha política de orixe
     a toda a súa solicitude, pero actualmente non se pode aplicar esta política.</translation>
 <translation id="464342062220857295">Busca funcións</translation>
+<translation id="4644670975240021822">Orde inversa cara abaixo</translation>
 <translation id="4646534391647090355">Visitar agora</translation>
 <translation id="4658638640878098064">Grampa na parte superior esquerda</translation>
 <translation id="4668929960204016307">,</translation>
@@ -791,6 +836,7 @@
 <translation id="4690462567478992370">Deter o uso dun certificado non válido</translation>
 <translation id="4691835149146451662">Architecture-A (sobre)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
+<translation id="4702504834785592287">Lado</translation>
 <translation id="4708268264240856090">Interrompeuse a túa conexión</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Executar Diagnósticos da rede de Windows<ph name="END_LINK" /></translation>
@@ -808,9 +854,11 @@
 <translation id="4764776831041365478">É posible que a páxina web de <ph name="URL" /> estea temporalmente inactiva ou que se trasladase definitivamente a outro enderezo web.</translation>
 <translation id="4766713847338118463">Dúas grampas na parte inferior</translation>
 <translation id="4771973620359291008">Produciuse un erro descoñecido.</translation>
+<translation id="4780366598804516005">Caixa de correo 1</translation>
 <translation id="4780900888022378816"><ph name="ENROLLMENT_DOMAIN" /> xestiona o teu dispositivo e <ph name="ACCOUNT_DOMAIN" /> xestiona a túa conta.</translation>
 <translation id="4785689107224900852">Cambia a esta pestana</translation>
 <translation id="4791134497475588553">Aplicacións Linux instaladas e último uso</translation>
+<translation id="4796594887379589189">Código da conta do traballo</translation>
 <translation id="4798078619018708837">Introduce a data de caducidade e o código CVC da tarxeta <ph name="CREDIT_CARD" /> para actualizar os datos. Unha vez confirmados, os detalles da tarxeta da túa Conta de Google compartiranse con este sitio.</translation>
 <translation id="4800132727771399293">Comproba a túa data de caducidade e o CVC e téntao de novo</translation>
 <translation id="480334179571489655">Produciuse un erro relacionado coa política de orixe</translation>
@@ -818,6 +866,7 @@
 <translation id="4807049035289105102">Non podes visitar <ph name="SITE" /> agora mesmo porque o sitio web enviou credenciais cifradas que Google Chrome non pode procesar. Normalmente, os erros de rede e os ataques son temporais, polo que é posible que esta páxina funcione máis tarde.</translation>
 <translation id="4813512666221746211">Erro de rede</translation>
 <translation id="4816492930507672669">Axustar á páxina</translation>
+<translation id="484462545196658690">Automático</translation>
 <translation id="4850886885716139402">Vista</translation>
 <translation id="4854362297993841467">Este método de entrega non está dispoñible. Proba cun diferente.</translation>
 <translation id="4876188919622883022">Vista simplificada</translation>
@@ -827,6 +876,7 @@
 <translation id="4879491255372875719">Automático (opción predeterminada)</translation>
 <translation id="4880827082731008257">Historial de busca</translation>
 <translation id="4881695831933465202">Abrir</translation>
+<translation id="4892518386797173871">Traseira</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
 <translation id="4901778704868714008">Gardar…</translation>
 <translation id="4913987521957242411">Perforación na parte superior esquerda</translation>
@@ -836,6 +886,7 @@
 <translation id="4926049483395192435">Debe especificarse.</translation>
 <translation id="4926159001844873046"><ph name="SITE" /> di</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
+<translation id="4930153903256238152">Gran capacidade</translation>
 <translation id="4943703118917034429">Realidade virtual</translation>
 <translation id="4943872375798546930">Non hai resultados</translation>
 <translation id="4950898438188848926">Botón de cambio de pestana, preme Intro para cambiar á pestana aberta, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
@@ -868,8 +919,10 @@
 <translation id="5068524481479508725">A10</translation>
 <translation id="5068778127327928576">{NUM_COOKIES,plural, =1{(1 en uso)}other{(# en uso)}}</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Comprobar o enderezo do proxy<ph name="END_LINK" /></translation>
+<translation id="507130231501693183">Caixa de correo 4</translation>
 <translation id="5087286274860437796">O certificado do servidor non é válido neste momento.</translation>
 <translation id="5087580092889165836">Engadir tarxeta</translation>
+<translation id="5088142053160410913">Mensaxe para o operador</translation>
 <translation id="5089810972385038852">Estado</translation>
 <translation id="5093232627742069661">Dobrez en Z</translation>
 <translation id="5094747076828555589">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque Chromium non confía no seu certificado de seguranza. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
@@ -880,15 +933,18 @@
 <translation id="5115216390227830982">European-Edp</translation>
 <translation id="5115563688576182185">(64 bits)</translation>
 <translation id="5121469660360593280">Comparte co teu administrador datos sobre os eventos de seguranza detectados pola protección para usuarios de Chrome Enterprise. Pódense incluír os URL de páxinas que visitas, os nomes de ficheiros ou os metadatos e o nome de usuario que utilizas para iniciar sesión no teu dispositivo e en Chrome.</translation>
+<translation id="5123063207673082822">Fin de semana</translation>
 <translation id="5125394840236832993">B-Plus</translation>
 <translation id="5126510351761255129">Verificar a túa tarxeta</translation>
 <translation id="5135404736266831032">Xestiona os enderezos…</translation>
 <translation id="5138227688689900538">Mostrar menos</translation>
 <translation id="5141240743006678641">Cifrar contrasinais sincronizados coas túas credenciais de Google</translation>
 <translation id="5145883236150621069">Código de erro presente na resposta da política</translation>
+<translation id="5148809049217731050">Cara arriba</translation>
 <translation id="515292512908731282">C4 (sobre)</translation>
 <translation id="5158275234811857234">Portada</translation>
 <translation id="5159010409087891077">Abre a páxina nunha nova ventá do modo de incógnito (⇧⌘N)</translation>
+<translation id="5161506081086828129">Amontoador 9</translation>
 <translation id="516920405563544094">Introduce o código CVC da tarxeta <ph name="CREDIT_CARD" />. Unha vez que confirmes os datos, os detalles da tarxeta da túa Conta de Google compartiranse con este sitio.</translation>
 <translation id="5169827969064885044">Poderías perder o acceso á conta da túa organización ou alguén podería roubarche a identidade. Chrome recoméndache que cambies de contrasinal agora.</translation>
 <translation id="5170017743895942767">Protección para usuarios de Chrome Enterprise</translation>
@@ -909,6 +965,7 @@
 <translation id="5250209940322997802">"Conectarse á rede"</translation>
 <translation id="5251803541071282808">Nube</translation>
 <translation id="5252000469029418751">C7 (sobre)</translation>
+<translation id="5254043433801397071">Optimizar contido da impresión</translation>
 <translation id="5254958791078852567">E1</translation>
 <translation id="5261548214279761072">Completouse o pago</translation>
 <translation id="5266128565379329178">Encadernación na parte superior</translation>
@@ -922,6 +979,7 @@
 <translation id="5287240709317226393">Mostrar cookies</translation>
 <translation id="5287456746628258573">Este sitio utiliza unha configuración de seguranza obsoleta que pode poñer en risco a túa información (por exemplo, contrasinais ou números de tarxetas de crédito) cando se lle envía.</translation>
 <translation id="5288108484102287882">A validación dos valores da política xerou advertencias</translation>
+<translation id="5289384342738547352">Manipulación de varios documentos</translation>
 <translation id="5295292838686006428">O teu contrasinal está en risco debido a unha violación da seguranza dos datos dun sitio ou aplicación. Chrome recoméndache que comprobes agora os teus contrasinais gardados.</translation>
 <translation id="5299298092464848405">Erro ao analizar a política</translation>
 <translation id="5300589172476337783">Mostrar</translation>
@@ -946,15 +1004,18 @@
 <translation id="5396631636586785122">Grampa no bordo dereito</translation>
 <translation id="5400836586163650660">Gris</translation>
 <translation id="540969355065856584">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque o seu certificado de seguranza non é válido neste momento. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
+<translation id="541416427766103491">Amontoador 4</translation>
 <translation id="5421136146218899937">Borrar datos de navegación...</translation>
 <translation id="5430298929874300616">Eliminar marcador</translation>
 <translation id="5431657950005405462">Non se atopou o teu ficheiro</translation>
 <translation id="5439770059721715174">Erro de validación de esquema en "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
+<translation id="5443468954631487277">Orde inversa cara arriba</translation>
 <translation id="5452270690849572955">Non se pode atopar esta páxina de <ph name="HOST_NAME" /></translation>
 <translation id="5455374756549232013">Marca de tempo da política incorrecta</translation>
 <translation id="5457113250005438886">Non válidos</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> máis}other{<ph name="CONTACT_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> máis}}</translation>
 <translation id="5470861586879999274">&amp;Refacer modificación</translation>
+<translation id="5472133193607270166">Con esta opción activada, os sitios web non poden utilizar a túa actividade de navegación a través de distintos sitios para personalizar os anuncios. É posible que algúns sitios non funcionen correctamente.</translation>
 <translation id="5478437291406423475">B6/C4 (sobre)</translation>
 <translation id="5481076368049295676">É posible que con este contido se pretenda instalar software perigoso no teu dispositivo que che roube ou elimine información. <ph name="BEGIN_LINK" />Mostrar igualmente<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Engade un enderezo válido</translation>
@@ -970,7 +1031,9 @@
 <translation id="552553974213252141">Extraeuse o texto correctamente?</translation>
 <translation id="55293785478302737">Grampa no bordo</translation>
 <translation id="553484882784876924">Prc6 (sobre)</translation>
+<translation id="5539243836947087108">Balsa</translation>
 <translation id="5540224163453853">Non se puido atopar o artigo solicitado.</translation>
+<translation id="5541086400771735334">Caixa de correo 7</translation>
 <translation id="5541546772353173584">Engade un correo electrónico</translation>
 <translation id="5545756402275714221">Artigos personalizados</translation>
 <translation id="5552137475244467770">Chrome comproba periodicamente se os teus contrasinais aparecen nas listas que se publican en liña. Cando o fai, os teus contrasinais e os teus nomes de usuario están encriptados, polo que ninguén pode lelos, nin sequera Google.</translation>
@@ -995,10 +1058,13 @@
 <translation id="5632627355679805402">Os datos encriptáronse co teu <ph name="BEGIN_LINK" />contrasinal de Google<ph name="END_LINK" /> a partir do <ph name="TIME" />. Introdúceo para iniciar a sincronización.</translation>
 <translation id="5633066919399395251">Os piratas informáticos do sitio <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> poderían tentar instalar programas perigosos no ordenador que rouben ou eliminen a túa información (por exemplo, fotos, contrasinais, mensaxes e tarxetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Máis información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Bloqueouse contido enganoso.</translation>
+<translation id="5644090287519800334">Cambio X da imaxe do lado 1</translation>
+<translation id="5645854190134202180">Segunda quenda</translation>
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5663614846592581799">9x11 (sobre)</translation>
 <translation id="5663955426505430495">O administrador deste dispositivo instalou extensións para poder utilizar funcións adicionais. As extensións teñen acceso a algúns dos teus datos.</translation>
 <translation id="5675650730144413517">Esta páxina non funciona</translation>
+<translation id="568292603005599551">Posición X da imaxe</translation>
 <translation id="5684874026226664614">Non se puido traducir esta páxina.</translation>
 <translation id="5685654322157854305">Engadir enderezo de envío</translation>
 <translation id="5689199277474810259">Exportar a JSON</translation>
@@ -1008,7 +1074,6 @@
 <translation id="570530837424789914">Xestiona o contido...</translation>
 <translation id="57094364128775171">Suxerir contrasinal seguro…</translation>
 <translation id="5710435578057952990">Non se verificou a identidade deste sitio web.</translation>
-<translation id="5719499550583120431">Acéptanse tarxetas de prepago.</translation>
 <translation id="5720705177508910913">Usuario actual</translation>
 <translation id="5728056243719941842">C5 (sobre)</translation>
 <translation id="5730040223043577876">Chrome recoméndache que restablezas o contrasinal se o reutilizaches noutros sitios.</translation>
@@ -1017,6 +1082,7 @@
 <translation id="5763042198335101085">Introduce un enderezo de correo electrónico válido</translation>
 <translation id="5763703224595565476">O teu administrador activou a protección para usuarios de Chrome Enterprise no navegador. Esta función ten acceso a algúns dos teus datos.</translation>
 <translation id="5765072501007116331">Para consultar os requisitos e métodos de entrega, selecciona un enderezo</translation>
+<translation id="5776313857861697733">Prioridade</translation>
 <translation id="5778550464785688721">Control total de dispositivos MIDI</translation>
 <translation id="5781136890105823427">O experimento está activado</translation>
 <translation id="578305955206182703">Ámbar</translation>
@@ -1037,19 +1103,20 @@
 <translation id="5855253129151731373">O nome do host deste sitio é similar ao de <ph name="LOOKALIKE_DOMAIN" />. Ás veces, os atacantes crean copias de sitios introducindo nos nomes de dominio cambios pequenos e difíciles de ver.
 
     Se cres que se trata dun erro, visita https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals.</translation>
+<translation id="5862579898803147654">Amontoador 8</translation>
 <translation id="5863847714970149516">A páxina á que vas acceder pode tentar aplicar cargos</translation>
 <translation id="5866257070973731571">Engade un número de teléfono</translation>
 <translation id="5866898949289125849">Estás vendo unha páxina de ferramentas de programador</translation>
 <translation id="5869405914158311789">Non se pode acceder a este sitio</translation>
 <translation id="5869522115854928033">Contrasinais gardados</translation>
 <translation id="5887400589839399685">Gardouse a tarxeta</translation>
-<translation id="5893752035575986141">Acéptanse tarxetas de crédito.</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="5901630391730855834">Amarelo</translation>
 <translation id="5905445707201418379">Bloqueouse debido á política de orixe de <ph name="ORIGIN" />.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizado)</translation>
 <translation id="59174027418879706">Activado</translation>
 <translation id="5919090499915321845">B10</translation>
+<translation id="5921185718311485855">Activado</translation>
 <translation id="5921639886840618607">Queres gardar a tarxeta na Conta de Google?</translation>
 <translation id="5922853866070715753">Case está listo</translation>
 <translation id="5932224571077948991">O sitio mostra anuncios enganosos ou intrusivos</translation>
@@ -1060,11 +1127,13 @@
 <translation id="5975083100439434680">Afastar</translation>
 <translation id="5979084224081478209">Comprobar contrasinais</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
+<translation id="5984570616552610254">Humidade da cámara</translation>
 <translation id="598637245381783098">Non se pode abrir a aplicación de pago</translation>
 <translation id="5989320800837274978">Non se especificaron nin servidores proxy fixos nin un URL de script .pac.</translation>
 <translation id="5990559369517809815">Unha extensión bloqueou as solicitudes ao servidor.</translation>
 <translation id="5992691462791905444">Dobrez en Z para enxeñaría</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultados para "<ph name="SEARCH_TEXT" />"</translation>
+<translation id="6008122969617370890">Orde de N a 1</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Comproba os teus contrasinais</translation>
 <translation id="6015796118275082299">Ano</translation>
@@ -1074,15 +1143,19 @@
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" /> e <ph name="TYPE_3" /> (sincronizado)</translation>
 <translation id="6027201098523975773">Introduce un nome</translation>
 <translation id="603068602130820122">Dúas grampas na parte dereita</translation>
+<translation id="6032524144326295339">Caixa de correo 2</translation>
 <translation id="6032955021262906325">Encadernación na parte esquerda</translation>
 <translation id="6034000775414344507">Gris claro</translation>
 <translation id="6034283069659657473">10x14 (sobre)</translation>
 <translation id="6034514109191629503">Dobrez en acordeón</translation>
 <translation id="6039846035001940113">Se o problema continúa, contacta co propietario do sitio.</translation>
 <translation id="6040143037577758943">Pechar</translation>
+<translation id="6041777658117377052">Temperatura da cámara</translation>
 <translation id="6044573915096792553">Tamaño 12</translation>
+<translation id="6045164183059402045">Modelo de imposición</translation>
 <translation id="6047233362582046994">Se aceptas os riscos para a túa seguranza, podes <ph name="BEGIN_LINK" />acceder a este sitio<ph name="END_LINK" /> antes de que se eliminen as aplicacións prexudiciais.</translation>
 <translation id="6047927260846328439">É posible que con este contido se pretenda enganarte para instalar software ou revelar información persoal. <ph name="BEGIN_LINK" />Mostrar igualmente<ph name="END_LINK" /></translation>
+<translation id="6049488691372270142">Entrega da páxina</translation>
 <translation id="6051221802930200923">Non podes acceder a <ph name="SITE" /> agora momento porque o sitio web usa a fixación de certificados. Normalmente, os erros de rede e os ataques son temporais, polo que é posible que esta páxina funcione máis tarde.</translation>
 <translation id="6052284303005792909">•</translation>
 <translation id="6058977677006700226">Queres utilizar as túas tarxetas en todos os teus dispositivos?</translation>
@@ -1095,7 +1168,6 @@
 <translation id="6106989379647458772">É posible que a páxina web de <ph name="PAGE" /> estea temporalmente inactiva ou que se trasladase definitivamente a un enderezo web novo.</translation>
 <translation id="610911394827799129">É posible que a túa conta de Google teña outras formas do historial de navegación en <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="6120179357481664955">Queres lembrar o teu código da UPI?</translation>
-<translation id="6132597952260690497">Información sobre as extensións e os complementos instalados</translation>
 <translation id="6146055958333702838">Comproba os cables e reinicia os routers, módems e demais dispositivos
     de rede que utilices.</translation>
 <translation id="614940544461990577">Proba a facer o seguinte:</translation>
@@ -1104,6 +1176,8 @@
 <translation id="6157877588268064908">Para consultar os requisitos e métodos de envío, selecciona un enderezo</translation>
 <translation id="6165508094623778733">Máis información</translation>
 <translation id="6177128806592000436">A túa conexión a este sitio non é segura</translation>
+<translation id="6180316780098470077">Intervalo de reintentos</translation>
+<translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
 <translation id="6203231073485539293">Comproba a túa conexión a Internet</translation>
 <translation id="6218753634732582820">Queres eliminar o enderezo de Chromium?</translation>
 <translation id="622039917539443112">Dobrez en paralelo</translation>
@@ -1111,6 +1185,7 @@
 <translation id="6234122620015464377">Recorte despois de cada documento</translation>
 <translation id="6240447795304464094">Logotipo de Google Pay</translation>
 <translation id="6241121617266208201">Ocultar suxestións</translation>
+<translation id="624499991300733384">Servizo de composición de impresión</translation>
 <translation id="6251924700383757765">Política de privacidade</translation>
 <translation id="6254436959401408446">Non hai memoria suficiente para abrir esta páxina</translation>
 <translation id="625755898061068298">Decidiches desactivar as advertencias de seguranza para este sitio.</translation>
@@ -1176,7 +1251,6 @@
 <translation id="6476284679642588870">Xestionar métodos de pago</translation>
 <translation id="6489534406876378309">Comezar a cargar erros</translation>
 <translation id="6499038740797743453">Queres restablecer o contrasinal?</translation>
-<translation id="6507833130742554667">Acéptanse tarxetas de crédito e débito.</translation>
 <translation id="6508722015517270189">Reinicia Chrome</translation>
 <translation id="6517596291481585650">Advertencia: Esta política non se combinou como unha lista do xeito especificado na política porque non é unha lista.</translation>
 <translation id="6518133107902771759">Verificar</translation>
@@ -1198,6 +1272,7 @@
 <translation id="6604181099783169992">Sensores de movemento ou de luz</translation>
 <translation id="6609880536175561541">Prc7 (sobre)</translation>
 <translation id="6612358246767739896">Contido protexido</translation>
+<translation id="6615297766614333076">Amontoador 2</translation>
 <translation id="6624427990725312378">Información de contacto</translation>
 <translation id="6626291197371920147">Engade un número da tarxeta válido</translation>
 <translation id="6628463337424475685">Busca de <ph name="ENGINE" /></translation>
@@ -1213,6 +1288,8 @@
 <translation id="6670613747977017428">Volver para estar a salvo.</translation>
 <translation id="6671697161687535275">Queres eliminar a túa suxestión de formulario de Chromium?</translation>
 <translation id="6685834062052613830">Pecha sesión e finaliza o proceso de configuración</translation>
+<translation id="6687335167692595844">Tamaño do tipo de letra solicitado</translation>
+<translation id="6689249931105087298">Relativo con compresión de puntos negros</translation>
 <translation id="6689271823431384964">Chrome permíteche gardar as túas tarxetas na túa Conta de Google porque tes a sesión iniciada. Podes cambiar esta opción na configuración cando queiras. O nome do titular da tarxeta procede da túa conta.</translation>
 <translation id="6704582573942289642">Este sitio é correcto?</translation>
 <translation id="6710213216561001401">Anterior</translation>
@@ -1258,6 +1335,7 @@
 <translation id="6964255747740675745">Non se puido analizar a configuración da rede (ficheiro JSON non válido).</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="6965978654500191972">Dispositivo</translation>
+<translation id="696703987787944103">Percepción</translation>
 <translation id="6970216967273061347">Distrito</translation>
 <translation id="6973656660372572881">Especifícanse tanto servidores proxy fixos como un URL de script .pac.</translation>
 <translation id="6973932557599545801">Síntoo, non podo axudar. Continúa sen asistencia.</translation>
@@ -1279,6 +1357,7 @@
 <translation id="7075452647191940183">A solicitude é demasiado grande</translation>
 <translation id="7079718277001814089">Este sitio contén software malicioso</translation>
 <translation id="7081308185095828845">Esta función non está dispoñible no teu dispositivo</translation>
+<translation id="7083258188081898530">Bandexa 9</translation>
 <translation id="7087282848513945231">Condado</translation>
 <translation id="7090678807593890770">Busca <ph name="LINK" /> en Google</translation>
 <translation id="7108338896283013870">Ocultar</translation>
@@ -1290,6 +1369,7 @@
 <translation id="7135130955892390533">Mostrar estado</translation>
 <translation id="7138472120740807366">Método de entrega</translation>
 <translation id="7139724024395191329">Emirato</translation>
+<translation id="714064300541049402">Cambio X da imaxe do lado 2</translation>
 <translation id="7152423860607593928">Number-14 (sobre)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> máis}other{<ph name="PAYMENT_METHOD_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> máis}}</translation>
 <translation id="7153618581592392745">Lavanda</translation>
@@ -1308,6 +1388,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /> acerca deste problema.</translation>
 <translation id="7219179957768738017">A conexión utiliza <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Procesando</translation>
+<translation id="7233592378249864828">Folla de confirmación da impresión</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">O sitio ao que te dirixes contén software malicioso</translation>
 <translation id="724975217298816891">Introduce a data de caducidade e o código CVC da tarxeta <ph name="CREDIT_CARD" /> para actualizar os datos. Unha vez confirmados, os detalles da tarxeta compartiranse con este sitio.</translation>
@@ -1316,8 +1397,8 @@ Detalles adicionais:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">Non se pode establecer unha conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque a data e a hora do ordenador (<ph name="DATE_AND_TIME" />) non son correctas.</translation>
 <translation id="7260504762447901703">Revogar acceso</translation>
-<translation id="7271803869921933038">Acéptanse tarxetas de prepago</translation>
 <translation id="7275334191706090484">Marcadores xestionados</translation>
+<translation id="7292031607255951991">Nome do destinatario</translation>
 <translation id="7298195798382681320">Recomendada</translation>
 <translation id="7300012071106347854">Azul cobalto</translation>
 <translation id="7302712225291570345">"<ph name="TEXT" />"</translation>
@@ -1395,6 +1476,7 @@ Detalles adicionais:
 <translation id="7569983096843329377">Negro</translation>
 <translation id="7575207903026901870">Botón Quitar suxestión, preme Intro para quitala</translation>
 <translation id="7578104083680115302">Paga rapidamente en sitios e aplicacións en diferentes dispositivos usando as tarxetas que gardaches con Google.</translation>
+<translation id="7581199239021537589">Cambio Y da imaxe do lado 2</translation>
 <translation id="7592362899630581445">O certificado do servidor inclúe un nome que está fóra do teu alcance.</translation>
 <translation id="7598391785903975535">Menos de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187">Actualmente <ph name="HOST_NAME" /> non pode procesar esta solicitude.</translation>
@@ -1402,10 +1484,13 @@ Detalles adicionais:
 <translation id="7610193165460212391">O valor está fóra do rango de <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Caducidade: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Anteriormente, utilizaches outra versión do contrasinal da túa conta de Google para o cifrado de datos. Introdúcea a continuación.</translation>
+<translation id="7619838219691048931">Folla final</translation>
+<translation id="762844065391966283">Un de cada vez</translation>
 <translation id="7633909222644580952">Datos de rendemento e informes de fallos</translation>
 <translation id="7637571805876720304">Queres eliminar a túa tarxeta de crédito de Chromium?</translation>
 <translation id="7638605456503525968">Portos de serie</translation>
 <translation id="7639968568612851608">Gris escuro</translation>
+<translation id="7647206758853451655">Calidade de impresión</translation>
 <translation id="7653957176542370971">A folla do controlador de pagos está pechada</translation>
 <translation id="765676359832457558">Ocultar configuración avanzada...</translation>
 <translation id="7658239707568436148">Cancelar</translation>
@@ -1414,10 +1499,13 @@ Detalles adicionais:
 <translation id="7667346355482952095">O token de política obtido está baleiro ou non coincide co token actual</translation>
 <translation id="7668654391829183341">Dispositivo descoñecido</translation>
 <translation id="7669271284792375604">Os atacantes deste sitio poden tentar enganarte para que instales programas que afectan negativamente á túa experiencia de navegación (por exemplo, cambiando a páxina de inicio ou mostrando anuncios adicionais nos sitios que visitas).</translation>
+<translation id="7673278391011283842">Caixa de correo 6</translation>
 <translation id="7676643023259824263">Buscar texto do portapapeis, <ph name="TEXT" /></translation>
 <translation id="7681101578153515023">Cambiar motor de busca</translation>
 <translation id="7682287625158474539">Envío</translation>
 <translation id="7687186412095877299">Cubre os formularios de pago cos teus métodos de pago gardados</translation>
+<translation id="7687305263118037187">Tempo de espera dos reintentos</translation>
+<translation id="7693583928066320343">Recibiuse a orde das páxinas</translation>
 <translation id="7697066736081121494">Prc8 (sobre)</translation>
 <translation id="769721561045429135">Neste momento, tes tarxetas que só se poden utilizar neste dispositivo. Fai clic en Continuar para revisar as tarxetas.</translation>
 <translation id="7699293099605015246">Os artigos non están dispoñibles neste momento</translation>
@@ -1436,7 +1524,9 @@ Detalles adicionais:
 <translation id="7761701407923456692">O certificado do servidor non coincide co URL.</translation>
 <translation id="7763386264682878361">Analizador de manifestos de pago</translation>
 <translation id="7764225426217299476">Engadir enderezo</translation>
+<translation id="7766518757692125295">Saia</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
+<translation id="7773005668374414287">A mesma orde cara arriba</translation>
 <translation id="777702478322588152">Prefectura</translation>
 <translation id="7791196057686275387">Bala</translation>
 <translation id="7791543448312431591">Engadir</translation>
@@ -1454,10 +1544,11 @@ Detalles adicionais:
 <translation id="785549533363645510">Con todo, non es invisible. O modo de incógnito non impide que o teu xefe, o teu fornecedor de servizos de Internet nin os sitios web que visitas obteñan información sobre como navegas.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">Queres saír do sitio?</translation>
-<translation id="7878176543348854470">Acéptanse tarxetas de débito e prepago.</translation>
+<translation id="7865448901209910068">A mellor velocidade</translation>
 <translation id="7878562273885520351">Pode que o teu contrasinal estea en perigo</translation>
 <translation id="7882421473871500483">Marrón</translation>
 <translation id="7887683347370398519">Comproba o CVC e téntao de novo</translation>
+<translation id="7888575728750733395">Intención da renderización da impresión</translation>
 <translation id="7904208859782148177">C3 (sobre)</translation>
 <translation id="7932579305932748336">Recubrimento</translation>
 <translation id="79338296614623784">Introduce un número de teléfono válido</translation>
@@ -1472,6 +1563,8 @@ Detalles adicionais:
 <translation id="7953569069500808819">Grampa no bordo superior</translation>
 <translation id="7956713633345437162">Marcadores para móbiles</translation>
 <translation id="7961015016161918242">Nunca</translation>
+<translation id="7966803981046576691">Tipo de conta do traballo</translation>
+<translation id="7977538094055660992">Dispositivo de saída</translation>
 <translation id="7977894662897852582">Edp</translation>
 <translation id="799149739215780103">Encadernación</translation>
 <translation id="7995512525968007366">Non especificado</translation>
@@ -1529,6 +1622,7 @@ Detalles adicionais:
 <translation id="8221250263817408492">Acabas de escribir o teu contrasinal nun sitio enganoso. Chromium recoméndache que vaias a <ph name="WEBSITE_1" /> e outros sitios nos que utilices este contrasinal para cambialo agora.</translation>
 <translation id="8225771182978767009">A persoa que configurou este ordenador optou por bloquear este sitio.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
+<translation id="8232343881378637145">Temperatura da plataforma</translation>
 <translation id="8238581221633243064">Abre a páxina nunha nova pestana do modo de incógnito</translation>
 <translation id="8241707690549784388">A páxina que estás buscando utilizou información que inseriches ti. Se volves a esa páxina é posible que se repita algunha das accións que levaches a cabo. Queres continuar?</translation>
 <translation id="8241712895048303527">Bloquear neste sitio</translation>
@@ -1540,6 +1634,7 @@ Detalles adicionais:
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8262952874573525464">Grampa no bordo inferior</translation>
 <translation id="8267698848189296333">Iniciando sesión como <ph name="USERNAME" /></translation>
+<translation id="8269242089528251720">Documentos independentes/copias intercaladas</translation>
 <translation id="8269981117540303696">Agora podes navegar de forma privada sen que os outros usuarios deste dispositivo vexan a túa actividade. Non obstante, gardaranse as descargas e os marcadores.</translation>
 <translation id="8277900682056760511">A folla do controlador de pagos está aberta</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
@@ -1553,6 +1648,7 @@ Detalles adicionais:
 <translation id="8307358339886459768">Small-Photo</translation>
 <translation id="8308427013383895095">Non se puido realizar a tradución debido a un problema coa conexión de rede.</translation>
 <translation id="831207732689920588">Esta páxina é sospeitosa (foi detectada por Chrome).</translation>
+<translation id="831997045666694187">Serán</translation>
 <translation id="8332188693563227489">Denegouse o acceso a <ph name="HOST_NAME" /></translation>
 <translation id="833262891116910667">Destacar</translation>
 <translation id="8340095855084055290"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -1575,12 +1671,14 @@ Detalles adicionais:
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8433057134996913067">Ao realizar esta acción, pecharase sesión na maioría dos sitios web</translation>
 <translation id="8437238597147034694">&amp;Desfacer movemento</translation>
+<translation id="8457125768502047971">Indefinido</translation>
 <translation id="8461694314515752532">Encriptar os datos sincronizados coa túa propia frase de acceso de sincronización</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 tarxeta de crédito}other{# tarxetas de crédito}}</translation>
 <translation id="8473863474539038330">Enderezos e moito máis</translation>
 <translation id="8479754468255770962">Grampa na parte inferior esquerda</translation>
 <translation id="8483780878231876732">Para usar tarxetas da túa conta de Google, inicia sesión en Chrome</translation>
 <translation id="8488350697529856933">Aplícase a</translation>
+<translation id="8490137692873530638">Amontoador 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> tardou demasiado en responder.</translation>
 <translation id="8503559462189395349">Contrasinais de Chrome</translation>
 <translation id="8503813439785031346">Nome de usuario</translation>
@@ -1591,10 +1689,12 @@ Detalles adicionais:
 <translation id="8553075262323480129">Non se puido efectuar a tradución porque non se puido determinar o idioma da páxina.</translation>
 <translation id="8557066899867184262">O código CVC atópase na parte traseira da tarxeta</translation>
 <translation id="8559762987265718583">Non se pode establecer unha conexión privada con <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> porque a data e a hora do dispositivo (<ph name="DATE_AND_TIME" />) son incorrectas.</translation>
+<translation id="8564182942834072828">Documentos independentes/copias non intercaladas</translation>
 <translation id="8564985650692024650">Chromium recoméndache que restablezas o contrasinal de <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> se o reutilizaches noutros sitios.</translation>
 <translation id="8571890674111243710">Traducindo páxina ao <ph name="LANGUAGE" />...</translation>
 <translation id="8574899947864779331">Usar Touch ID para confirmar as tarxetas máis rápido</translation>
 <translation id="858637041960032120">Engadir número de teléfono</translation>
+<translation id="8589998999637048520">Calidade máxima</translation>
 <translation id="860043288473659153">Nome do titular da tarxeta</translation>
 <translation id="8616822740383114808"><ph name="ENFORCING_SETTING" />: opción de configuración aplicada en "<ph name="SETTINGS_PAGE" />"</translation>
 <translation id="861775596732816396">Tamaño 4</translation>
@@ -1602,10 +1702,13 @@ Detalles adicionais:
 <translation id="8625384913736129811">Gardar esta tarxeta neste dispositivo</translation>
 <translation id="8647750283161643317">Restablecer todas as configuracións predeterminadas</translation>
 <translation id="8663226718884576429">Resumo do pedido, <ph name="TOTAL_LABEL" />, máis detalles</translation>
+<translation id="867224526087042813">Sinatura</translation>
+<translation id="8676424191133491403">Sen retardo</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, resposta: <ph name="ANSWER" /></translation>
 <translation id="8681531050781943054">A páxina web de <ph name="PAGE" /> non se puido cargar porque:</translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Dispoñible</translation>
+<translation id="868922510921656628">Páxinas por xogo</translation>
 <translation id="869891660844655955">Data de vencemento</translation>
 <translation id="8703575177326907206">A túa conexión con <ph name="DOMAIN" /> non está cifrada.</translation>
 <translation id="8718314106902482036">Non se completou o pago</translation>
@@ -1616,7 +1719,6 @@ Detalles adicionais:
 <translation id="8730621377337864115">Feito</translation>
 <translation id="8738058698779197622">Para establecer unha conexión segura, é necesario axustar o reloxo correctamente. Isto débese a que os certificados que utilizan os sitios web para identificarse só son válidos durante períodos de tempo específicos. Debido a que o reloxo do dispositivo non está correctamente axustado, Chromium non pode verificar estes certificados.</translation>
 <translation id="8740359287975076522">Non se puido atopar o &lt;abbr id="dnsDefinition"&gt;enderezo DNS&lt;/abbr&gt; de <ph name="HOST_NAME" />. Estase diagnosticando o problema.</translation>
-<translation id="874846938927089722">Acéptanse tarxetas de crédito e de prepago</translation>
 <translation id="874918643257405732">Engadir esta pestana aos marcadores</translation>
 <translation id="8751426954251315517">Téntao de novo a próxima vez</translation>
 <translation id="8759274551635299824">Esta tarxeta caducou</translation>
@@ -1638,8 +1740,10 @@ Detalles adicionais:
 <translation id="8866928039507595380">Dobrez</translation>
 <translation id="886872106311861689">B3</translation>
 <translation id="8870413625673593573">Pechados recentemente</translation>
+<translation id="8870494189203302833">A mesma orde cara abaixo</translation>
 <translation id="8874824191258364635">Introduce un número de tarxeta válido</translation>
 <translation id="8891727572606052622">Modo de proxy non válido.</translation>
+<translation id="8894794286471754040">Co bordo longo primeiro</translation>
 <translation id="8903921497873541725">Achegar</translation>
 <translation id="890485472659500557">Engineering-C</translation>
 <translation id="890493561996401738">Botón Quitar suxestión, preme Intro para quitala, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
@@ -1650,7 +1754,6 @@ Detalles adicionais:
 <translation id="8931333241327730545">Queres gardar esta tarxeta na túa conta de Google?</translation>
 <translation id="8932102934695377596">O reloxo está atrasado</translation>
 <translation id="893332455753468063">Engade un nome</translation>
-<translation id="8938939909778640821">Acéptanse tarxetas de crédito e prepago</translation>
 <translation id="8943282376843390568">Verde lima</translation>
 <translation id="8957210676456822347">Autorización de portal cautivo</translation>
 <translation id="8962950042226115166">Sitio sospeitoso</translation>
@@ -1689,6 +1792,7 @@ Detalles adicionais:
 <translation id="9080712759204168376">Resumo do pedido</translation>
 <translation id="9089260154716455634">Política fóra do horario:</translation>
 <translation id="9095388113577226029">Máis idiomas…</translation>
+<translation id="9101630580131696064">Bandexa 1</translation>
 <translation id="9103872766612412690">Normalmente, <ph name="SITE" /> encripta a túa información para protexela. Nesta ocasión, cando Chromium tentou conectar con <ph name="SITE" />, o sitio web devolveu credenciais estrañas e incorrectas. É posible que un atacante tentase facerse pasar por <ph name="SITE" /> ou que a pantalla de inicio de sesión de wifi interrompese a conexión. Non obstante, a túa información segue a salvo porque Chromium detivo a conexión antes de intercambiar datos.</translation>
 <translation id="9106062320799175032">Engade un enderezo de facturación</translation>
 <translation id="9114524666733003316">Confirmando tarxeta…</translation>
@@ -1704,6 +1808,7 @@ Detalles adicionais:
 <translation id="9169664750068251925">Bloquear sempre neste sitio</translation>
 <translation id="9170848237812810038">&amp;Desfacer</translation>
 <translation id="9171296965991013597">Queres saír da aplicación?</translation>
+<translation id="9173282814238175921">Documento único/folla nova</translation>
 <translation id="917450738466192189">O certificado do servidor non é válido.</translation>
 <translation id="9174917557437862841">Botón de cambio de pestana; preme Intro para cambiar a esta pestana</translation>
 <translation id="9183302530794969518">Documentos de Google</translation>
@@ -1720,7 +1825,6 @@ Detalles adicionais:
 <translation id="939736085109172342">Cartafol novo</translation>
 <translation id="945855313015696284">Comproba a información que aparece a continuación e elimina as tarxetas non válidas</translation>
 <translation id="950736567201356821">Tres perforacións na parte superior</translation>
-<translation id="951104842009476243">Acéptanse tarxetas de débito e de prepago</translation>
 <translation id="961663415146723894">Encadernación na parte inferior</translation>
 <translation id="962484866189421427">Este contido pode tentar instalar aplicacións enganosas que pretenden pasar por algo que non son ou recompilar datos que se poden utilizar para facer un seguimento das túas accións. <ph name="BEGIN_LINK" />Mostrar igualmente<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Compilación oficial</translation>

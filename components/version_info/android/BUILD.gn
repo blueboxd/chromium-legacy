@@ -37,18 +37,14 @@ static_library("channel_getter") {
 }
 
 java_cpp_enum("channel_enum_srcjar") {
-  sources = [
-    "../channel.h",
-  ]
+  sources = [ "../channel.h" ]
 }
 
 process_version("generate_version_constants") {
   process_only = true
   template_file = "java/VersionConstants.java.version"
   output = _version_constants_java_file
-  sources = [
-    "//chrome/VERSION",
-  ]
+  sources = [ "//chrome/VERSION" ]
   extra_args = [
     "-e",
     "CHANNEL=str.upper('$android_channel')",

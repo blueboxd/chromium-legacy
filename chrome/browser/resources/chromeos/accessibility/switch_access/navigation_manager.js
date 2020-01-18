@@ -104,7 +104,7 @@ class NavigationManager {
       return;
     }
 
-    this.setNode_(this.node_.previous);
+    this.setNode(this.node_.previous);
   }
 
   /**
@@ -117,8 +117,47 @@ class NavigationManager {
       return;
     }
 
-    this.setNode_(this.node_.next);
+    this.setNode(this.node_.next);
   }
+
+  /**
+   * Moves to the Switch Access focus up the group stack closest to the ancestor
+   * that hasn't been invalidated.
+   */
+  moveToValidNode() {
+    if (this.node_.isValidAndVisible() && this.group_.isValidGroup()) {
+      return;
+    }
+
+    if (this.node_.isValidAndVisible()) {
+      // Our group has been invalidated. Move to this node to repair the group
+      // stack.
+      const node = this.node_.automationNode;
+      if (node) {
+        this.moveTo_(node);
+        return;
+      }
+    }
+
+    if (this.group_.isValidGroup()) {
+      this.setNode(this.group_.firstChild);
+      return;
+    }
+
+    let group = this.groupStack_.pop();
+    while (group) {
+      if (group.isValidGroup()) {
+        this.setGroup_(group);
+        return;
+      }
+      group = this.groupStack_.pop();
+    }
+
+    // If there is no valid node in the group stack, go to the desktop.
+    this.setGroup_(RootNodeWrapper.buildDesktopTree(this.desktop_));
+    this.groupStack_ = [];
+  }
+
 
   /**
    * Updates the focus ring locations in response to an automation event.
@@ -154,6 +193,18 @@ class NavigationManager {
       SwitchAccessMetrics.recordMenuAction(SAConstants.MenuAction.SELECT);
       this.node_.performAction(SAConstants.MenuAction.SELECT);
     }
+  }
+
+  /**
+   * Set |this.node_| to |node|, and update what is displayed onscreen.
+   * @param {!SAChildNode} node
+   */
+  setNode(node) {
+    this.node_.onUnfocus();
+    this.node_ = node;
+    this.node_.onFocus();
+    this.focusRingManager_.setFocusNodes(this.node_, this.group_);
+    SwitchAccess.get().restartAutoScan();
   }
 
   // -------------------------------------------------------
@@ -213,7 +264,7 @@ class NavigationManager {
     if (treeChange.type === chrome.automation.TreeChangeType.TEXT_CHANGED) {
       return;
     }
-    this.moveToValidNode_();
+    this.moveToValidNode();
   }
 
   // -------------------------------------------------------
@@ -328,50 +379,7 @@ class NavigationManager {
     }
 
     this.menuManager_.exit();
-    this.setNode_(node);
-  }
-
-  /**
-   * Moves the Switch Access focus up the group stack to the closest ancestor
-   *     that hasn't been invalidated.
-   * @private
-   */
-  moveToValidNode_() {
-    if (this.node_.isValidAndVisible() && this.group_.isValidGroup()) {
-      return;
-    }
-
-    if (this.node_.isValidAndVisible()) {
-      // Our group has been invalidated. Move to this node to repair the group
-      // stack.
-      const node = this.node_.automationNode;
-      if (node) {
-        this.moveTo_(node);
-        return;
-      }
-    }
-
-    if (this.group_.isValidGroup()) {
-      const group = this.group_.automationNode;
-      if (group) {
-        this.moveTo_(group);
-        return;
-      }
-    }
-
-    for (let group of this.groupStack_) {
-      if (group.isValidGroup()) {
-        group = group.automationNode;
-        if (group) {
-          this.moveTo_(group);
-          return;
-        }
-      }
-    }
-
-    // If there is no valid node in the group stack, go to the desktop.
-    this.setGroup_(RootNodeWrapper.buildDesktopTree(this.desktop_));
-    this.groupStack_ = [];
+    this.setNode(node);
   }
 
   /**
@@ -385,20 +393,7 @@ class NavigationManager {
     this.group_.onFocus();
 
     if (shouldSetNode) {
-      this.setNode_(this.group_.firstChild);
+      this.setNode(this.group_.firstChild);
     }
-  }
-
-  /**
-   * Set |this.node_| to |node|, and update what is displayed onscreen.
-   * @param {!SAChildNode} node
-   * @private
-   */
-  setNode_(node) {
-    this.node_.onUnfocus();
-    this.node_ = node;
-    this.node_.onFocus();
-    this.focusRingManager_.setFocusNodes(this.node_, this.group_);
-    SwitchAccess.get().restartAutoScan();
   }
 }

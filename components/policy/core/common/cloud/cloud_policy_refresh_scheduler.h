@@ -36,6 +36,7 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   static const int64_t kUnmanagedRefreshDelayMs;
   static const int64_t kWithInvalidationsRefreshDelayMs;
   static const int64_t kInitialErrorRetryDelayMs;
+  static const int64_t kRandomSaltDelayMaxValueMs;
 
   // Refresh delay bounds.
   static const int64_t kRefreshDelayMinMs;
@@ -61,6 +62,9 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   // Returns the current fixed refresh delay (can vary depending on whether
   // invalidations are available or not).
   int64_t GetActualRefreshDelay() const;
+
+  // For testing: get the value randomly assigned to refresh_delay_salt_ms_.
+  int64_t GetSaltDelayForTesting() const { return refresh_delay_salt_ms_; }
 
   // Schedules a refresh to be performed immediately.
   void RefreshSoon();
@@ -106,8 +110,9 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
   // Triggers a policy refresh.
   void PerformRefresh();
 
-  // Schedules a policy refresh to happen no later than |delta_ms| msecs after
-  // |last_refresh_| or |last_refresh_ticks_| whichever is sooner.
+  // Schedules a policy refresh to happen no later than |delta_ms| +
+  // |refresh_delay_salt_ms_| msecs after |last_refresh_| or
+  // |last_refresh_ticks_| whichever is sooner.
   void RefreshAfter(int delta_ms);
 
   // Cancels the scheduled policy refresh.
@@ -152,6 +157,10 @@ class POLICY_EXPORT CloudPolicyRefreshScheduler
 
   // The refresh delay.
   int64_t refresh_delay_ms_;
+
+  // A randomly-generated (between 0 and |kRandomSaltDelayMaxValueMs|) delay
+  // added to all non-immediately scheduled refresh requests.
+  const int64_t refresh_delay_salt_ms_;
 
   // Whether the invalidations service is available and receiving notifications
   // of policy updates.

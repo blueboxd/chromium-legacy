@@ -28,6 +28,8 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
@@ -35,6 +37,37 @@
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
+
+namespace {
+
+constexpr int kEmptyChipSize = 14;
+
+int GetChipCornerRadius() {
+  return TabStyle::GetCornerRadius() - TabGroupUnderline::kStrokeThickness;
+}
+
+class TabGroupHighlightPathGenerator : public views::HighlightPathGenerator {
+ public:
+  TabGroupHighlightPathGenerator(const views::View* chip,
+                                 const views::View* title)
+      : chip_(chip), title_(title) {}
+
+  // views::HighlightPathGenerator:
+  SkPath GetHighlightPath(const views::View* view) override {
+    SkScalar corner_radius =
+        title_->GetVisible() ? GetChipCornerRadius() : kEmptyChipSize / 2;
+    return SkPath().addRoundRect(gfx::RectToSkRect(chip_->bounds()),
+                                 corner_radius, corner_radius);
+  }
+
+ private:
+  const views::View* const chip_;
+  const views::View* const title_;
+
+  DISALLOW_COPY_AND_ASSIGN(TabGroupHighlightPathGenerator);
+};
+
+}  // namespace
 
 TabGroupHeader::TabGroupHeader(TabStrip* tab_strip,
                                const tab_groups::TabGroupId& group)
@@ -54,6 +87,29 @@ TabGroupHeader::TabGroupHeader(TabStrip* tab_strip,
   title_->SetElideBehavior(gfx::FADE_TAIL);
 
   VisualsChanged();
+
+  // Enable keyboard focus.
+  SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
+  focus_ring_ = views::FocusRing::Install(this);
+  views::HighlightPathGenerator::Install(
+      this,
+      std::make_unique<TabGroupHighlightPathGenerator>(title_chip_, title_));
+}
+
+TabGroupHeader::~TabGroupHeader() = default;
+
+bool TabGroupHeader::OnKeyPressed(const ui::KeyEvent& event) {
+  if ((event.key_code() == ui::VKEY_SPACE ||
+       event.key_code() == ui::VKEY_RETURN) &&
+      !editor_bubble_tracker_.is_open()) {
+    editor_bubble_tracker_.Opened(
+        TabGroupEditorBubbleView::Show(this, tab_strip_, group().value()));
+    return true;
+  }
+
+  // TODO(connily): Handle moving the entire group left/right, similar to tabs.
+
+  return false;
 }
 
 bool TabGroupHeader::OnMousePressed(const ui::MouseEvent& event) {
@@ -126,6 +182,18 @@ void TabGroupHeader::OnGestureEvent(ui::GestureEvent* event) {
   event->SetHandled();
 }
 
+void TabGroupHeader::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kTabList;
+  node_data->AddState(ax::mojom::State::kEditable);
+
+  base::string16 name = tab_strip_->GetGroupTitle(group().value());
+  if (name.empty()) {
+    node_data->SetNameExplicitlyEmpty();
+  } else {
+    node_data->SetName(name);
+  }
+}
+
 TabSlotView::ViewType TabGroupHeader::GetTabSlotViewType() const {
   return TabSlotView::ViewType::kTabGroupHeader;
 }
@@ -171,7 +239,6 @@ void TabGroupHeader::VisualsChanged() {
     // If the title is empty, the chip is just a circle.
     title_->SetVisible(false);
 
-    constexpr int kEmptyChipSize = 14;
     const int y = (GetLayoutConstant(TAB_HEIGHT) - kEmptyChipSize) / 2;
 
     title_chip_->SetBounds(TabGroupUnderline::GetStrokeInset(), y,
@@ -187,8 +254,7 @@ void TabGroupHeader::VisualsChanged() {
 
     // Set the radius such that the chip nestles snugly against the tab corner
     // radius, taking into account the group underline stroke.
-    const int corner_radius =
-        TabStyle::GetCornerRadius() - TabGroupUnderline::kStrokeThickness;
+    const int corner_radius = GetChipCornerRadius();
 
     // Clamp the width to a maximum of half the standard tab width (not counting
     // overlap).
@@ -212,6 +278,9 @@ void TabGroupHeader::VisualsChanged() {
     title_->SetBounds(text_horizontal_inset, text_vertical_inset, text_width,
                       text_height);
   }
+
+  if (focus_ring_)
+    focus_ring_->Layout();
 }
 
 void TabGroupHeader::RemoveObserverFromWidget(views::Widget* widget) {

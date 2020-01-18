@@ -159,9 +159,7 @@ source_set("unit_tests") {
 source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
-  sources = [
-    "fullscreen_egtest.mm",
-  ]
+  sources = [ "fullscreen_egtest.mm" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 
@@ -192,9 +190,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "fullscreen_egtest.mm",
-  ]
+  sources = [ "fullscreen_egtest.mm" ]
   deps = [
     "//base",
     "//base/test:test_support",

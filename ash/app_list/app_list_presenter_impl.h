@@ -93,7 +93,7 @@ class APP_LIST_EXPORT AppListPresenterImpl
   bool GetTargetVisibility() const;
 
   // Updates y position and opacity of app list.
-  void UpdateYPositionAndOpacity(int y_position_in_screen,
+  void UpdateYPositionAndOpacity(float y_position_in_screen,
                                  float background_opacity);
 
   // Ends the drag of app list from shelf.
@@ -110,7 +110,7 @@ class APP_LIST_EXPORT AppListPresenterImpl
   // |callback| is non-null. If not set, the animation smoothness metrics will
   // not be reported.
   void UpdateYPositionAndOpacityForHomeLauncher(
-      int y_position_in_screen,
+      float y_position_in_screen,
       float opacity,
       base::Optional<TabletModeAnimationTransition> transition,
       UpdateHomeLauncherAnimationSettingsCallback callback);

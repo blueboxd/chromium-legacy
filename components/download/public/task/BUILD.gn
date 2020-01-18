@@ -19,9 +19,7 @@ source_set("public") {
     "task_scheduler.h",
   ]
 
-  public_deps = [
-    "//base",
-  ]
+  public_deps = [ "//base" ]
 }
 
 if (is_android) {
@@ -37,9 +35,7 @@ if (is_android) {
   java_cpp_enum("jni_enums") {
     visibility = [ "*" ]
 
-    sources = [
-      "download_task_types.h",
-    ]
+    sources = [ "download_task_types.h" ]
   }
 }
 
@@ -60,9 +56,7 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "task_manager_unittest.cc",
-  ]
+  sources = [ "task_manager_unittest.cc" ]
 
   deps = [
     ":public",

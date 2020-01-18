@@ -6,7 +6,7 @@ import 'chrome://resources/cr_components/managed_footnote/managed_footnote.m.js'
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
-import 'chrome://resources/cr_elements/cr_splitter/cr_splitter.m.js';
+import 'chrome://resources/cr_elements/cr_splitter/cr_splitter.js';
 import './folder_node.js';
 import './list.js';
 import './router.js';

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
+<translation id="1337778609052285767">La contraseña actual no cumple con los requisitos de complejidad. Comunícate con tu administrador.</translation>
 <translation id="1337821341856692531">Si continúas sin ingresar tu contraseña de Windows actual, es posible que se pierda información de forma irreversible.</translation>
 <translation id="1383286653814676580">Se usa para ejecutar la página de acceso del proveedor de credenciales de Google.</translation>
 <translation id="1894475569413661128">Accede con tu cuenta de trabajo.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Ingresaste una contraseña de Windows incorrecta. Vuelve a intentarlo.</translation>
 <translation id="2831078752570172210">Se bloqueó tu cuenta. Comunícate con tu administrador del sistema.</translation>
 <translation id="2844349213149998955">No se permite el acceso con una cuenta personal en este dispositivo. Usa una cuenta de trabajo para acceder.</translation>
+<translation id="2995851317559936311">Solo el controlador del dominio puede cambiar la contraseña. Comunícate con tu administrador.</translation>
 <translation id="3306357053520292004">Ya se agregó un usuario en esta computadora que usa esta cuenta. Accede con una diferente.</translation>
 <translation id="3926852373333893095">Solo pueden acceder los usuarios de G Suite Enterprise.</translation>
 <translation id="4057329986137569701">Ocurrió un error interno.</translation>
 <translation id="4267670563222825190">No se encontró ningún usuario de dominio para tu cuenta. Ponte en contacto con el administrador.</translation>
 <translation id="4300229033992784001">Se cambió la contraseña de tu cuenta. Ingresa tu contraseña de Windows actual para sincronizar tu cuenta de Windows con tu cuenta de trabajo.</translation>
+<translation id="4669462973597624151">No se pudo cambiar la contraseña. Comunícate con tu administrador.</translation>
 <translation id="4706454071748629324">No se pudo agregar un usuario nuevo. Esta computadora solo permite crear un usuario con una cuenta de trabajo.</translation>
+<translation id="5186761973554910131">En el intento para cambiar la contraseña, se proporcionó un nombre de computadora no válido. Comunícate con tu administrador.</translation>
 <translation id="6033715878377252112">Proveedor de credenciales de Google para el asistente de Windows</translation>
 <translation id="6149399665202317746">Proveedor de credenciales de Google para Windows</translation>
 <translation id="6239180560789153226">Falta información de recuperación en el dispositivo. Accede con tu Cuenta de Google de trabajo.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Agregar cuenta de trabajo</translation>
 <translation id="7811865856574012727">El administrador restringió el acceso en el dispositivo a los siguientes dominios: <ph name="EMAIL_DOMAINS" />. Vuelve a intentarlo con una cuenta de trabajo válida.</translation>
 <translation id="7856245195110636219">Para continuar, deberás ingresar la contraseña actual de Windows. Comunícate con un administrador del sistema.</translation>
+<translation id="8109730953933509335">Se intentó cambiar la contraseña para un usuario no válido. Comunícate con tu administrador.</translation>
 <translation id="8639729688781680518">Olvidé la contraseña de Windows</translation>
 <translation id="866458870819756755">No se pudo crear el usuario.</translation>
 <translation id="8875753657315897487">Acceder con tu cuenta de trabajo</translation>

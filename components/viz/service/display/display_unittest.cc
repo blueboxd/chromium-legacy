@@ -39,6 +39,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/overlay_transform.h"
+#include "ui/gfx/presentation_feedback.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -3771,6 +3772,52 @@ TEST_F(DisplayTest, InvalidPresentationTimestamps) {
     ASSERT_EQ(buckets.size(), 1u);
     EXPECT_GT(buckets[0].min, 0);
     EXPECT_LE(buckets[0].min, 1000);
+    EXPECT_EQ(buckets[0].count, 1);
+  }
+
+  {
+    // A presentation-timestamp that is in the near-future with hwclock: this
+    // should be valid.
+    base::HistogramTester histograms;
+    CompositorFrame frame =
+        CompositorFrameBuilder()
+            .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
+            .Build();
+    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DidReceiveSwapBuffersAck(GetTestSwapTimings());
+    display_->DidReceivePresentationFeedback(
+        {base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(1),
+         {},
+         gfx::PresentationFeedback::kHWClock});
+    EXPECT_THAT(histograms.GetAllSamples(
+                    "Graphics.PresentationTimestamp.InvalidBeforeSwap"),
+                testing::IsEmpty());
+    EXPECT_THAT(histograms.GetAllSamples(
+                    "Graphics.PresentationTimestamp.InvalidFromFuture"),
+                testing::IsEmpty());
+  }
+
+  {
+    // A presentation-timestamp that is in the near-future.
+    base::HistogramTester histograms;
+    CompositorFrame frame =
+        CompositorFrameBuilder()
+            .AddRenderPass(gfx::Rect(25, 25), gfx::Rect(25, 25))
+            .Build();
+    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+    display_->DrawAndSwap(base::TimeTicks::Now());
+    display_->DidReceiveSwapBuffersAck(GetTestSwapTimings());
+    display_->DidReceivePresentationFeedback(
+        {base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(1), {}, 0});
+    EXPECT_THAT(histograms.GetAllSamples(
+                    "Graphics.PresentationTimestamp.InvalidBeforeSwap"),
+                testing::IsEmpty());
+    auto buckets = histograms.GetAllSamples(
+        "Graphics.PresentationTimestamp.InvalidFromFuture");
+    ASSERT_EQ(buckets.size(), 1u);
+    EXPECT_GE(buckets[0].min, 0);
+    EXPECT_LE(buckets[0].min, 1);
     EXPECT_EQ(buckets[0].count, 1);
   }
 

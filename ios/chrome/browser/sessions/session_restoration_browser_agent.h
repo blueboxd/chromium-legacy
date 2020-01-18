@@ -49,6 +49,11 @@ class SessionRestorationBrowserAgent
   // based on the value of |immediately|.
   void SaveSession(const bool immediately);
 
+  // Returns true if there is a session restoration in progress, otherwise it
+  // returns false. Note that this method can be called from the UI Thread.
+  // This method exists as a work around for crbug.com/763964.
+  bool IsRestoringSession();
+
  private:
   SessionRestorationBrowserAgent(Browser* browser,
                                  SessionServiceIOS* session_service);
@@ -71,6 +76,9 @@ class SessionRestorationBrowserAgent
 
   // Session Factory used to create session data for saving.
   SessionIOSFactory* session_ios_factory_;
+
+  // true when session restoration is in progress.
+  bool restoring_session_ = false;
 };
 
 #endif  // IOS_CHROME_BROWSER_SESSIONS_SESSION_RESTORATION_BROWSER_AGENT_H_

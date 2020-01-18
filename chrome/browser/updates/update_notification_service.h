@@ -27,6 +27,9 @@ class UpdateNotificationService : public KeyedService {
   // Called when the notification is dismissed by user.
   virtual void OnUserDismiss() = 0;
 
+  // Called when the notification is clicked by user.
+  virtual void OnUserClick() = 0;
+
   ~UpdateNotificationService() override = default;
 
  protected:

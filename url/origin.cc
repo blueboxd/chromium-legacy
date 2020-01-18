@@ -42,12 +42,12 @@ Origin Origin::Create(const GURL& url) {
 
     // It's SchemeHostPort's responsibility to filter out unrecognized schemes;
     // sanity check that this is happening.
-    DCHECK(tuple.IsInvalid() || url.IsStandard() ||
+    DCHECK(!tuple.IsValid() || url.IsStandard() ||
            base::Contains(GetLocalSchemes(), url.scheme_piece()) ||
            AllowNonStandardSchemesForAndroidWebView());
   }
 
-  if (tuple.IsInvalid())
+  if (!tuple.IsValid())
     return Origin();
   return Origin(std::move(tuple));
 }
@@ -74,7 +74,7 @@ base::Optional<Origin> Origin::UnsafelyCreateTupleOriginWithoutNormalization(
     uint16_t port) {
   SchemeHostPort tuple(scheme.as_string(), host.as_string(), port,
                        SchemeHostPort::CHECK_CANONICALIZATION);
-  if (tuple.IsInvalid())
+  if (!tuple.IsValid())
     return base::nullopt;
   return Origin(std::move(tuple));
 }
@@ -91,7 +91,7 @@ base::Optional<Origin> Origin::UnsafelyCreateOpaqueOriginWithoutNormalization(
   // For opaque origins, it is okay for the SchemeHostPort to be invalid;
   // however, this should only arise when the arguments indicate the
   // canonical representation of the invalid SchemeHostPort.
-  if (precursor.IsInvalid() &&
+  if (!precursor.IsValid() &&
       !(precursor_scheme.empty() && precursor_host.empty() &&
         precursor_port == 0)) {
     return base::nullopt;
@@ -105,7 +105,7 @@ Origin Origin::CreateFromNormalizedTuple(std::string scheme,
                                          uint16_t port) {
   SchemeHostPort tuple(std::move(scheme), std::move(host), port,
                        SchemeHostPort::ALREADY_CANONICALIZED);
-  if (tuple.IsInvalid())
+  if (!tuple.IsValid())
     return Origin();
   return Origin(std::move(tuple));
 }
@@ -171,7 +171,7 @@ bool Origin::CanBeDerivedFrom(const GURL& url) const {
 
     // And if it is unique opaque origin, it definitely is fine. But if there
     // is a precursor stored, we should fall through to compare the tuples.
-    if (tuple_.IsInvalid())
+    if (!tuple_.IsValid())
       return true;
   }
 
@@ -198,7 +198,7 @@ bool Origin::CanBeDerivedFrom(const GURL& url) const {
     // opaque origin. It is valid case, as any browser-initiated navigation
     // to about:blank or data: URL will result in a document with such
     // origin and it is valid for it to create blob: URLs.
-    if (tuple_.IsInvalid())
+    if (!tuple_.IsValid())
       return true;
 
     url_tuple = SchemeHostPort(GURL(url.GetContent()));
@@ -221,7 +221,7 @@ bool Origin::CanBeDerivedFrom(const GURL& url) const {
 
   // If |this| does not have valid precursor tuple, it is unique opaque origin,
   // which is what we expect non-standard schemes to get.
-  if (tuple_.IsInvalid())
+  if (!tuple_.IsValid())
     return true;
 
   // However, when there is precursor present, the schemes must match.
@@ -257,7 +257,7 @@ std::string Origin::GetDebugString() const {
                           : nonce_->raw_token().ToString();
 
   std::string out = base::StrCat({Serialize(), " [internally: (", nonce, ")"});
-  if (tuple_.IsInvalid())
+  if (!tuple_.IsValid())
     base::StrAppend(&out, {" anonymous]"});
   else
     base::StrAppend(&out, {" derived from ", tuple_.Serialize(), "]"});
@@ -266,7 +266,7 @@ std::string Origin::GetDebugString() const {
 
 Origin::Origin(SchemeHostPort tuple) : tuple_(std::move(tuple)) {
   DCHECK(!opaque());
-  DCHECK(!tuple_.IsInvalid());
+  DCHECK(tuple_.IsValid());
 }
 
 // Constructs an opaque origin derived from |precursor|.

@@ -996,21 +996,37 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
     output_surface_plane_.reset();
   }
 
-  if (frame.sub_buffer_rect && frame.sub_buffer_rect->IsEmpty()) {
-    // Call SwapBuffers() to present overlays.
-    output_device_->SwapBuffers(buffer_presented_callback_,
-                                std::move(frame.latency_info));
-  } else if (capabilities().supports_post_sub_buffer && frame.sub_buffer_rect) {
-    if (!capabilities().flipped_output_surface)
-      frame.sub_buffer_rect->set_y(size_.height() - frame.sub_buffer_rect->y() -
-                                   frame.sub_buffer_rect->height());
-    output_device_->PostSubBuffer(*frame.sub_buffer_rect,
-                                  buffer_presented_callback_,
-                                  std::move(frame.latency_info));
+  if (frame.sub_buffer_rect) {
+    if (capabilities().supports_post_sub_buffer) {
+      if (!capabilities().flipped_output_surface)
+        frame.sub_buffer_rect->set_y(size_.height() -
+                                     frame.sub_buffer_rect->y() -
+                                     frame.sub_buffer_rect->height());
+      output_device_->PostSubBuffer(*frame.sub_buffer_rect,
+                                    buffer_presented_callback_,
+                                    std::move(frame.latency_info));
+
+    } else if (capabilities().supports_commit_overlay_planes) {
+      DCHECK(frame.sub_buffer_rect->IsEmpty());
+      output_device_->CommitOverlayPlanes(buffer_presented_callback_,
+                                          std::move(frame.latency_info));
+    } else {
+      NOTREACHED();
+    }
   } else {
     output_device_->SwapBuffers(buffer_presented_callback_,
                                 std::move(frame.latency_info));
   }
+  context_state_->UpdateSkiaOwnedMemorySize();
+  destroy_after_swap_.clear();
+}
+
+void SkiaOutputSurfaceImplOnGpu::SwapBuffersSkipped(
+    base::OnceCallback<bool()> deferred_framebuffer_draw_closure) {
+  std::move(deferred_framebuffer_draw_closure).Run();
+
+  // Perform cleanup that would have otherwise happened in SwapBuffers().
+  scoped_output_device_paint_.reset();
   context_state_->UpdateSkiaOwnedMemorySize();
   destroy_after_swap_.clear();
 }

@@ -47,12 +47,8 @@ struct DeviceScaleFactorDPIThreshold {
 // Update the list of zoom levels whenever a new device scale factor is added
 // here. See zoom level list in /ui/display/manager/display_util.cc
 const DeviceScaleFactorDPIThreshold kThresholdTableForInternal[] = {
-    {300.f, 2.6666667461395263671875f},
-    {270.0f, 2.25f},
-    {230.0f, 2.0f},
-    {220.0f, 1.77777779102325439453125f},
-    {180.0f, 1.6f},
-    {150.0f, 1.25f},
+    {300.f, kDsf_2_666},  {270.0f, kDsf_2_252}, {230.0f, 2.0f},
+    {220.0f, kDsf_1_777}, {180.0f, 1.6f},       {150.0f, 1.25f},
     {0.0f, 1.0f},
 };
 
@@ -320,7 +316,7 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
     // This is a stopgap hack to deal with b/74845106. Unfortunately, some old
     // devices (like evt) does not have a firmware fix, so we need to keep this.
     if (mode_info->size() == k225DisplaySizeHack)
-      device_scale_factor = 2.25f;
+      device_scale_factor = kDsf_2_252;
     else if (dpi)
       device_scale_factor = FindDeviceScaleFactor(dpi);
   } else {

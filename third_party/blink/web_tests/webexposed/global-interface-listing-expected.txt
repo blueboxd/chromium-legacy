@@ -6627,6 +6627,11 @@ interface ResizeObserverEntry
     getter contentRect
     getter target
     method constructor
+interface ResizeObserverSize
+    attribute @@toStringTag
+    getter blockSize
+    getter inlineSize
+    method constructor
 interface Response
     static method error
     static method redirect

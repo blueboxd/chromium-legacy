@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 7 Jan 2020 13:34:37 -0800
-Subject: [PATCH 19/22] Fix fts3 UB uint64
+Subject: [PATCH 19/25] Fix fts3 UB uint64
 
 Backports https://sqlite.org/src/info/e1f12978b53683114ab0
 
@@ -48,5 +48,5 @@ index ce565127b5a3..9ee37dc6263f 100644
  set sqlite_fts3_enable_parentheses 0
  finish_test
 -- 
-2.24.1.735.g03f4e72817-goog
+2.25.0.rc1.283.g88dfdc4193-goog
 

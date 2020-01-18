@@ -1042,6 +1042,7 @@ void UiControllerAndroid::OnUserDataChanged(
     return;
   }
   DCHECK(ui_delegate_ != nullptr);
+  DCHECK(client_->GetWebContents() != nullptr);
   const CollectUserDataOptions* collect_user_data_options =
       ui_delegate_->GetCollectUserDataOptions();
   if (collect_user_data_options == nullptr) {
@@ -1053,6 +1054,7 @@ void UiControllerAndroid::OnUserDataChanged(
 
   auto jcontext =
       Java_AutofillAssistantUiController_getContext(env, java_object_);
+  auto web_contents = client_->GetWebContents()->GetJavaWebContents();
 
   if (field_change == UserData::FieldChange::ALL ||
       field_change == UserData::FieldChange::TERMS_AND_CONDITIONS) {
@@ -1156,7 +1158,7 @@ void UiControllerAndroid::OnUserDataChanged(
     for (int index : sorted_payment_instrument_indices) {
       const auto& instrument = state->available_payment_instruments[index];
       Java_AssistantCollectUserDataModel_addAutofillPaymentInstrument(
-          env, jmodel, jlist,
+          env, jlist, web_contents,
           instrument->card == nullptr
               ? nullptr
               : autofill::PersonalDataManagerAndroid::
@@ -1175,7 +1177,7 @@ void UiControllerAndroid::OnUserDataChanged(
     autofill::CreditCard* card = state->card.get();
     autofill::AutofillProfile* billing_address = state->billing_address.get();
     Java_AssistantCollectUserDataModel_setSelectedPaymentInstrument(
-        env, jmodel,
+        env, jmodel, web_contents,
         card == nullptr ? nullptr
                         : autofill::PersonalDataManagerAndroid::
                               CreateJavaCreditCardFromNative(env, *card),

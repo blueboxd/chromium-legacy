@@ -18,6 +18,7 @@
 #include "base/callback.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "ui/aura/window.h"
+#include "ui/base/window_open_disposition.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"

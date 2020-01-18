@@ -81,6 +81,16 @@ class GroupNode extends SAChildNode {
 
   /** @override */
   isEquivalentTo(node) {
+    if (node instanceof GroupNode) {
+      return this.equals(node);
+    }
+
+    for (const child of this.children_) {
+      if (child.isEquivalentTo(node)) {
+        return true;
+      }
+    }
+
     return false;
   }
 

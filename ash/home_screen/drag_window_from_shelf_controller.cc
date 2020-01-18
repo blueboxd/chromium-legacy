@@ -28,6 +28,7 @@
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
+#include "ash/wm/window_util.h"
 #include "base/numerics/ranges.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -85,14 +86,9 @@ class DragWindowFromShelfController::WindowsHider
         continue;
 
       hidden_windows_.push_back(window);
-      {
-        ScopedAnimationDisabler disabler(window);
-        // Minimize so that they can show up correctly in overview.
-        WindowState::Get(window)->Minimize();
-        window->Hide();
-      }
       window->AddObserver(this);
     }
+    window_util::MinimizeAndHideWithoutAnimation(hidden_windows_);
   }
 
   ~WindowsHider() override {
@@ -108,6 +104,16 @@ class DragWindowFromShelfController::WindowsHider
       window->Show();
     }
     hidden_windows_.clear();
+  }
+
+  // Even though we explicitly minimize the windows, some (i.e. ARC apps)
+  // minimize asynchronously so they may not be truly minimized after |this| is
+  // constructed.
+  bool WindowsMinimized() {
+    return std::all_of(hidden_windows_.begin(), hidden_windows_.end(),
+                       [](const aura::Window* w) {
+                         return WindowState::Get(w)->IsMinimized();
+                       });
   }
 
   // aura::WindowObserver:
@@ -159,10 +165,13 @@ void DragWindowFromShelfController::Drag(const gfx::PointF& location_in_screen,
   UpdateDraggedWindow(location_in_screen);
 
   // Open overview if the window has been dragged far enough and the scroll
-  // delta has decreased to kOpenOverviewThreshold or less.
+  // delta has decreased to kOpenOverviewThreshold. Wait until all windows are
+  // minimized or they will not show up in overview.
+  DCHECK(windows_hider_);
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   if (std::abs(scroll_y) <= kOpenOverviewThreshold &&
-      !overview_controller->InOverviewSession()) {
+      !overview_controller->InOverviewSession() &&
+      windows_hider_->WindowsMinimized()) {
     overview_controller->StartOverview(
         OverviewSession::EnterExitOverviewType::kImmediateEnter);
     OnWindowDragStartedInOverview();
@@ -539,7 +548,8 @@ SplitViewController::SnapPosition
 DragWindowFromShelfController::GetSnapPositionOnDragEnd(
     const gfx::PointF& location_in_screen,
     base::Optional<float> velocity_y) const {
-  if (ShouldRestoreToOriginalBounds(location_in_screen) ||
+  if (!Shell::Get()->overview_controller()->InOverviewSession() ||
+      ShouldRestoreToOriginalBounds(location_in_screen) ||
       ShouldGoToHomeScreen(location_in_screen, velocity_y)) {
     return SplitViewController::NONE;
   }

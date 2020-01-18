@@ -280,10 +280,6 @@ const base::Feature kRevokeMediaSourceObjectURLOnAttach{
 const base::Feature kChromeosVideoDecoder{"ChromeosVideoDecoder",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Don't allow use of 11.1 devices, even if supported. They might be more crashy
-const base::Feature kD3D11LimitTo11_0{"D3D11VideoDecoderLimitTo11_0",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable saving playback information in a crash trace, to see if some codecs
 // are crashier than others.
 const base::Feature kD3D11PrintCodecOnCrash{"D3D11PrintCodecOnCrash",

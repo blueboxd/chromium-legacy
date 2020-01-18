@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
+<translation id="1337778609052285767">A senha atual não atende aos requisitos de complexidade necessários. Entre em contato com seu administrador.</translation>
 <translation id="1337821341856692531">Se continuar sem inserir sua senha atual do Windows, pode haver uma perda irreversível de informações.</translation>
 <translation id="1383286653814676580">Usado para executar a página de login do Provedor de credenciais do Google.</translation>
 <translation id="1894475569413661128">Faça login usando sua conta de trabalho.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Você digitou uma senha incorreta para o Windows. Tente novamente.</translation>
 <translation id="2831078752570172210">Sua conta foi bloqueada. Fale com o administrador do sistema.</translation>
 <translation id="2844349213149998955">Não é permitido fazer login com uma conta pessoal neste dispositivo. Faça login com uma conta de trabalho.</translation>
+<translation id="2995851317559936311">Só é permitido mudar a senha no controlador de domínio. Entre em contato com seu administrador.</translation>
 <translation id="3306357053520292004">Um usuário neste computador já foi registrado com essa conta. Faça login com uma conta diferente.</translation>
 <translation id="3926852373333893095">Login permitido apenas para os usuários do G Suite Enterprise.</translation>
 <translation id="4057329986137569701">Ocorreu um erro interno.</translation>
 <translation id="4267670563222825190">Nenhum usuário de domínio encontrado para sua conta. Entre em contato com seu administrador.</translation>
 <translation id="4300229033992784001">A senha da sua conta foi alterada. Informe sua senha atual do Windows para sincronizar sua conta do Windows com sua conta de trabalho.</translation>
+<translation id="4669462973597624151">Falha na tentativa de mudança de senha. Entre em contato com seu administrador.</translation>
 <translation id="4706454071748629324">Falha ao adicionar um novo usuário. Este computador só permite que um único usuário seja criado com uma conta de trabalho.</translation>
+<translation id="5186761973554910131">Nome de computador inválido inserido durante a tentativa de mudança de senha. Entre em contato com seu administrador.</translation>
 <translation id="6033715878377252112">Assistente do Provedor de credenciais do Google para Windows</translation>
 <translation id="6149399665202317746">Provedor de credenciais do Google para Windows</translation>
 <translation id="6239180560789153226">Não há informações de recuperação no seu dispositivo. Faça login usando sua Conta do Google de trabalho.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Adicionar conta de trabalho</translation>
 <translation id="7811865856574012727">O administrador restringiu o login no dispositivo aos seguintes domínios: <ph name="EMAIL_DOMAINS" />. Tente novamente usando uma conta de trabalho válida.</translation>
 <translation id="7856245195110636219">Não é possível continuar sem inserir a senha atual do Windows. Entre em contato com um administrador do sistema.</translation>
+<translation id="8109730953933509335">Tentativa de mudança de senha em usuário inválido. Entre em contato com seu administrador.</translation>
 <translation id="8639729688781680518">Esqueci minha senha do Windows</translation>
 <translation id="866458870819756755">Não foi possível criar um usuário.</translation>
 <translation id="8875753657315897487">Faça login usando sua conta de trabalho</translation>

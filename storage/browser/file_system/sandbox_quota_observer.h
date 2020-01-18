@@ -22,8 +22,8 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace storage {
-class QuotaManagerProxy;
+namespace url {
+class Origin;
 }
 
 namespace storage {
@@ -31,6 +31,7 @@ namespace storage {
 class FileSystemUsageCache;
 class FileSystemURL;
 class ObfuscatedFileUtil;
+class QuotaManagerProxy;
 
 class SandboxQuotaObserver : public FileUpdateObserver,
                              public FileAccessObserver {
@@ -49,7 +50,7 @@ class SandboxQuotaObserver : public FileUpdateObserver,
   // FileAccessObserver overrides.
   void OnAccess(const FileSystemURL& url) override;
 
-  void SetUsageCacheEnabled(const GURL& origin,
+  void SetUsageCacheEnabled(const url::Origin& origin,
                             FileSystemType type,
                             bool enabled);
 

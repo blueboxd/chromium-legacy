@@ -3487,7 +3487,7 @@ TEST(PaintOpBufferTest, RecordShadersCached) {
   std::vector<uint8_t> scratch_buffer;
   PaintOp::DeserializeOptions deserialize_options(
       transfer_cache, options_provider.service_paint_cache(),
-      options_provider.strike_client(), &scratch_buffer);
+      options_provider.strike_client(), &scratch_buffer, true);
 
   // Several deserialization test cases:
   // (0) deserialize once, verify cached is the same as deserialized version
@@ -3575,7 +3575,7 @@ TEST(PaintOpBufferTest, RecordShadersCachedSize) {
   std::vector<uint8_t> scratch_buffer;
   PaintOp::DeserializeOptions deserialize_options(
       transfer_cache, options_provider.service_paint_cache(),
-      options_provider.strike_client(), &scratch_buffer);
+      options_provider.strike_client(), &scratch_buffer, true);
   auto record = PaintOpBuffer::MakeFromMemory(
       memory.get(), serializer.written(), deserialize_options);
   auto* shader_entry =

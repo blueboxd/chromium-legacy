@@ -123,20 +123,7 @@ int ChromeTestLauncherDelegate::RunTestSuite(int argc, char** argv) {
 bool ChromeTestLauncherDelegate::AdjustChildProcessCommandLine(
     base::CommandLine* command_line,
     const base::FilePath& temp_data_dir) {
-  base::CommandLine new_command_line(command_line->GetProgram());
-  base::CommandLine::SwitchMap switches = command_line->GetSwitches();
-
-  // Strip out user-data-dir if present.  We will add it back in again later.
-  switches.erase(switches::kUserDataDir);
-
-  for (base::CommandLine::SwitchMap::const_iterator iter = switches.begin();
-       iter != switches.end(); ++iter) {
-    new_command_line.AppendSwitchNative((*iter).first, (*iter).second);
-  }
-
-  new_command_line.AppendSwitchPath(switches::kUserDataDir, temp_data_dir);
-
-  *command_line = new_command_line;
+  command_line->AppendSwitchPath(switches::kUserDataDir, temp_data_dir);
   return true;
 }
 

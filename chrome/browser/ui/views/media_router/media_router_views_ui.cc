@@ -568,10 +568,10 @@ void MediaRouterViewsUI::OnDefaultPresentationRemoved() {
 void MediaRouterViewsUI::UpdateSinks() {
   std::vector<UIMediaSink> media_sinks;
   for (const MediaSinkWithCastModes& sink : GetEnabledSinks()) {
-    auto route_it = std::find_if(
-        routes().begin(), routes().end(), [&sink](const MediaRoute& route) {
-          return route.media_sink_id() == sink.sink.id();
-        });
+    auto pred = [&sink](const MediaRoute& route) {
+      return route.media_sink_id() == sink.sink.id();
+    };
+    auto route_it = std::find_if(routes().begin(), routes().end(), pred);
     const MediaRoute* route = route_it == routes().end() ? nullptr : &*route_it;
     media_sinks.push_back(ConvertToUISink(sink, route, issue_));
   }

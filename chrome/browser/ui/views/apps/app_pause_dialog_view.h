@@ -28,7 +28,6 @@ class AppPauseDialogView : public views::BubbleDialogDelegateView {
   // views::BubbleDialogDelegateView:
   bool Accept() override;
   gfx::Size CalculatePreferredSize() const override;
-  int GetDialogButtons() const override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;

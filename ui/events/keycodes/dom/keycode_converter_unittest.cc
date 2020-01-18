@@ -24,8 +24,8 @@ namespace {
 // These are in the same order as the columns in dom_code_data.inc
 // as reflected in the DOM_CODE() macro below.
 const size_t expected_mapped_key_count[] = {
-  212,  // evdev
-  212,  // xkb
+  213,  // evdev
+  213,  // xkb
   157,  // windows
   118,  // mac
 };

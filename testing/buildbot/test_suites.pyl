@@ -1248,9 +1248,6 @@
       'cronet_tests': {},
       'cronet_unittests': {},
       'crypto_unittests': {},
-      # TODO(https://bugs.fuchsia.dev/44191): Fix the build and re-instate this
-      # target.
-      #'fidlgen_js_unittests': {},
       'gfx_unittests': {},
       'gpu_unittests': {},
       'http_service_tests': {},

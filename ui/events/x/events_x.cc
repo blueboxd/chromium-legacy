@@ -89,10 +89,6 @@ void ReleaseCopiedNativeEvent(const PlatformEvent& native_event) {
   delete native_event;
 }
 
-int GetTouchId(const PlatformEvent& native_event) {
-  return GetTouchIdFromXEvent(*native_event);
-}
-
 PointerDetails GetTouchPointerDetailsFromNative(
     const PlatformEvent& native_event) {
   return GetTouchPointerDetailsFromXEvent(*native_event);

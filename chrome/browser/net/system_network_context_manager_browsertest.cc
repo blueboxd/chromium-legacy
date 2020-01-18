@@ -48,8 +48,9 @@ void GetStubResolverConfig(
         dns_over_https_servers) {
   dns_over_https_servers->reset();
 
-  SystemNetworkContextManager::GetStubResolverConfigForTesting(
-      insecure_stub_resolver_enabled, secure_dns_mode, dns_over_https_servers);
+  SystemNetworkContextManager::GetStubResolverConfig(
+      g_browser_process->local_state(), insecure_stub_resolver_enabled,
+      secure_dns_mode, dns_over_https_servers);
 }
 
 // Checks that the values returned by GetStubResolverConfigForTesting() match

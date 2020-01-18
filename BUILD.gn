@@ -237,10 +237,6 @@ group("gn_all") {
   } else if (is_fuchsia) {
     deps += [
       ":d8_fuchsia",
-
-      # TODO(https://bugs.fuchsia.dev/44191): Fix the build and re-instate this
-      # target.
-      # "//build/fuchsia/fidlgen_js:fidlgen_js_unittests",
       "//fuchsia:gn_all",
       "//headless:headless_non_renderer",
     ]

@@ -26,6 +26,9 @@ import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Mock class for {@link WebContents}.
  */
@@ -89,6 +92,11 @@ public class MockWebContents implements WebContents {
     @Nullable
     public RenderWidgetHostView getRenderWidgetHostView() {
         return null;
+    }
+
+    @Override
+    public List<? extends WebContents> getInnerWebContents() {
+        return Collections.emptyList();
     }
 
     @Override

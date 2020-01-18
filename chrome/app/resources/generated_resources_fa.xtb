@@ -945,7 +945,6 @@
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% کامل شد</translation>
 <translation id="2318143611928805047">اندازه کاغذ</translation>
 <translation id="2318817390901984578">‏برای استفاده از برنامه‌های Android، ‏<ph name="DEVICE_TYPE" /> خود را شارژ و به‌روزرسانی کنید.</translation>
-<translation id="2318923050469484167">جلسه ناشناس کنونی (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">سرصفحه‌ها و پانویس‌ها</translation>
 <translation id="2322318151094136999">اگر سایتی بخواهد به درگاه‌های سریال دسترسی یابد، سؤال شود (توصیه می‌شود)</translation>
 <translation id="2325002827435400643">خاموش کردن برای این سایت</translation>
@@ -1788,6 +1787,7 @@
 <translation id="3511307672085573050">کپی آدر&amp;س پیوند</translation>
 <translation id="351152300840026870">قلم با عرض ثابت</translation>
 <translation id="3511528412952710609">کوتاه</translation>
+<translation id="3513704683820682405">واقعیت افزوده</translation>
 <translation id="3514373592552233661">درصورت در دسترس بودن بیش از یک شبکه، شبکه‌های برگزیده بر سایر شبکه‌های شناخته‌شده ارجحیت خواهد داشت.</translation>
 <translation id="3515983984924808886">برای تأیید بازنشانی، کلید امنیتی‌تان را لمس کنید. همه اطلاعات ذخیره‌شده در کلید امنیتی (ازجمله پین) پاک می‌شود.</translation>
 <translation id="3518985090088779359">پذیرش و ادامه</translation>
@@ -2244,7 +2244,6 @@
 <translation id="4099874310852108874">خطای شبکه رخ داد.</translation>
 <translation id="4100733287846229632">فضای دستگاه خیلی کم است</translation>
 <translation id="4100853287411968461">محدودیت جدید مدت تماشای صفحه</translation>
-<translation id="4103091233824664032">برای پیکربندی قفل صفحه و ورود به سیستم، گذرواژه‌تان را وارد کنید</translation>
 <translation id="4104163789986725820">&amp;صادر کردن...</translation>
 <translation id="4107048419833779140">شناسایی و خارج کردن دستگاه‌های ذخیره‌سازی</translation>
 <translation id="4109135793348361820">انتقال پنجره به <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
@@ -2783,6 +2782,7 @@
 <translation id="494286511941020793">راهنمای پیکربندی پراکسی</translation>
 <translation id="4943368462779413526">فوتبال</translation>
 <translation id="4943691134276646401">«<ph name="CHROME_EXTENSION_NAME" />» می‌خواهد به یک درگاه سریالی متصل شود</translation>
+<translation id="4943703118917034429">واقعیت مجازی</translation>
 <translation id="4944310289250773232">این خدمات احراز هویت توسط <ph name="SAML_DOMAIN" /> میزبانی می‌شود</translation>
 <translation id="495170559598752135">کنش‌ها</translation>
 <translation id="4952981627953231344">‏Plugin VM در این دستگاه مجاز نیست. با سرپرست دستگاه سازمانتان تماس بگیرید.</translation>
@@ -3132,7 +3132,6 @@
 <translation id="5468173180030470402">درحال یافتن دستگاه ذخیره‌سازی متصل به شبکه</translation>
 <translation id="5470735824776589490">‏قبل از اینکه دستگاه شما با Powerwash بازنشانی شود، راه‌اندازی مجدد لازم است. <ph name="LINK_BEGIN" />بیشتر بدانید<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">سلام! من صدای نوشتار به گفتار شما هستم.</translation>
-<translation id="5472133193607270166">وقتی روشن باشد، سایت‌ها نمی‌توانند از فعالیت مرور شما در سایت‌های مختلف برای شخصی‌سازی آگهی استفاده کنند. ممکن است برخی سایت‌ها به‌درستی کار نکنند.</translation>
 <translation id="5473333559083690127">پین جدید را دوباره وارد کنید</translation>
 <translation id="5481941284378890518">افزودن چاپگرهای اطراف</translation>
 <translation id="5483785310822538350">لغو دسترسی به فایل و دستگاه</translation>
@@ -3303,7 +3302,6 @@
 <translation id="5701381305118179107">مرکز</translation>
 <translation id="5701441174893770082">‏ارتقای Linux می‌تواند شارژ باتری را به‌میزان قابل‌توجهی تخلیه کند. لطفاً دستگاه را به شارژر متصل کنید و دوباره امتحان کنید.</translation>
 <translation id="5702898740348134351">&amp;ویرایش موتورهای جستجو...</translation>
-<translation id="570302979952009979">نامی برای این اثر انگشت انتخاب کنید</translation>
 <translation id="5704875434923668958">درحال همگام‌سازی در</translation>
 <translation id="5707185214361380026">بارگیری برنامه افزودنی از اینجا ناموفق بود:</translation>
 <translation id="5708171344853220004">‏نام اصلی Microsoft</translation>
@@ -3395,7 +3393,6 @@
 <translation id="5833726373896279253">این تنظیمات فقط توسط مالک قابل تغییر هستند:</translation>
 <translation id="5834581999798853053">حدود <ph name="TIME" /> دقیقه باقی مانده است</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - دوربین یا میکروفون درحال ضبط کردن است</translation>
-<translation id="5838456317242088717">جلسه ناشناس کنونی</translation>
 <translation id="5842497610951477805">فعال کردن بلوتوث</translation>
 <translation id="5843250171025351504">دستگاه شما دیگر با پایین‌‌ترین نسخه کارخواه مشخص‌شده توسط سرپرستتان سازگاری ندارد. لطفاً برای ورود به سیستم، آن را به‌روزرسانی کنید.</translation>
 <translation id="5846200638699387931">خطای دستوری رابطه: <ph name="ERROR_LINE" /></translation>
@@ -3651,7 +3648,6 @@
 <translation id="6181431612547969857">بارگیری مسدود شد</translation>
 <translation id="6185132558746749656">مکان دستگاه</translation>
 <translation id="6195693561221576702">این دستگاه روی حالت نمایشی آفلاین تنظیم نمی‌شود.</translation>
-<translation id="6196640612572343990">مسدود کردن کوکی‌های شخص ثالث</translation>
 <translation id="6196854373336333322">افزونه «<ph name="EXTENSION_NAME" />»، کنترل تنظیمات پروکسی شما را در اختیار گرفته است یعنی می‌تواند هر چیزی که در حالت آنلاین انجام می‌دهید تغییر دهد، خراب کند یا استراق سمع کند. اگر مطمئن نیستید چرا این تغییر انجام شده است، احتمالاً این افزونه را نمی‌خواهید.</translation>
 <translation id="6198102561359457428">خارج شده و دوباره وارد سیستم شوید...</translation>
 <translation id="6198252989419008588">تغییر دادن پین</translation>
@@ -4357,7 +4353,6 @@
 <translation id="7225179976675429563">نوع شبکه موجود نیست</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (فروشنده: <ph name="VENDOR_ID" />، محصول: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">دستکاری در تنظیماتی که مشخص می‌کند آیا وب‌سایت‌ها می‌توانند از قابلیت‌هایی مثل موقعیت جغرافیایی، میکروفون، دوربین و غیره استفاده کنند.</translation>
-<translation id="7228523857728654909">قفل صفحه و ورود به سیستم</translation>
 <translation id="7229570126336867161">‏EVDO مورد نیاز است</translation>
 <translation id="7230787553283372882">سفارشی کردن اندازه نوشتار</translation>
 <translation id="7232750842195536390">تغییر نام انجام نشد</translation>
@@ -5274,7 +5269,6 @@
 <translation id="850875081535031620">نرم‌افزار مضری پیدا نشد</translation>
 <translation id="8509177919508253835">بازنشانی کلیدهای امنیتی و ایجاد پین</translation>
 <translation id="8509646642152301857">بارگیری واژه‌نامه بررسی املا انجام نشد.</translation>
-<translation id="8510617356402557055">این اقدام غیرمنتظره است؟ <ph name="BEGIN_LINK" />ارسال بازخورد<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">پایان دادن به فرآیند</translation>
 <translation id="851263357009351303">همیشه <ph name="HOST" /> مجاز باشد تصاویر را نشان دهد</translation>
 <translation id="8513108775083588393">چرخش خودکار</translation>

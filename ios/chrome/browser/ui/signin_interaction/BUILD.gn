@@ -77,9 +77,7 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "signin_interaction_controller_egtest.mm",
-  ]
+  sources = [ "signin_interaction_controller_egtest.mm" ]
   deps = [
     ":eg_test_support",
     "//base",
@@ -135,9 +133,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "signin_interaction_controller_egtest.mm",
-  ]
+  sources = [ "signin_interaction_controller_egtest.mm" ]
   deps = [
     ":eg_test_support+eg2",
     "//base",

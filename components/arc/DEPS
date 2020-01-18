@@ -23,6 +23,7 @@ include_rules = [
   "+third_party/re2",
   "+third_party/skia",
   "+ui/base",
+  "+ui/display",
   "+ui/gfx/geometry",
   "+ui/gfx/range/range.h",
 ]

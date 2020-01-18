@@ -92,7 +92,7 @@
 <translation id="2050339315714019657">Hochformat</translation>
 <translation id="2067602449040652523">Tastaturhelligkeit</translation>
 <translation id="209965399369889474">Keine Netzwerkverbindung</translation>
-<translation id="2126242104232412123">Neuer Arbeitsbereich</translation>
+<translation id="2126242104232412123">Neuer Desktop</translation>
 <translation id="2127372758936585790">Schwaches Ladegerät</translation>
 <translation id="2135456203358955318">Angedockte Lupe</translation>
 <translation id="2144487987174258011">Neu starten, um den Adobe Flash Player zu aktualisieren</translation>
@@ -175,7 +175,7 @@
 <translation id="3217205077783620295">Ton ist an. Drücken Sie hier, um ihn stummzuschalten.</translation>
 <translation id="3226991577105957773">+ <ph name="COUNT" /> weitere</translation>
 <translation id="3236488194889173876">Kein Mobilfunknetz verfügbar</translation>
-<translation id="3249513730522716925">Das Fenster "<ph name="WINDOW_TITLE" />" wurde von Arbeitsbereich <ph name="ACTIVE_DESK" /> zu Arbeitsbereich <ph name="TARGET_DESK" /> verschoben</translation>
+<translation id="3249513730522716925">Das Fenster "<ph name="WINDOW_TITLE" />" wurde von Desktop <ph name="ACTIVE_DESK" /> zu Desktop <ph name="TARGET_DESK" /> verschoben</translation>
 <translation id="3255483164551725916">Was kannst du alles tun?</translation>
 <translation id="3290356915286466215">Ungesichert</translation>
 <translation id="3294437725009624529">Gast</translation>
@@ -202,7 +202,7 @@
 <translation id="3573179567135747900">Zurücksetzen auf "<ph name="FROM_LOCALE" />" (Neustart erforderlich)</translation>
 <translation id="3576141592585647168">Zeitzone ändern</translation>
 <translation id="3595596368722241419">Akku voll</translation>
-<translation id="3604801046548457007">Arbeitsbereich <ph name="DESK_TITILE" /> erstellt</translation>
+<translation id="3604801046548457007">Desktop <ph name="DESK_TITILE" /> erstellt</translation>
 <translation id="3606978283550408104">Verbindung zur Braillezeile hergestellt</translation>
 <translation id="3621202678540785336">Eingang</translation>
 <translation id="3626281679859535460">Helligkeit</translation>
@@ -267,7 +267,7 @@
 <translation id="4477892968187500306">Auf diesem Gerät befinden sich möglicherweise Apps, die nicht von Google geprüft wurden.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Entkoppelte Geräte</translation>
-<translation id="4505050298327493054">Aktiver Arbeitsbereich.</translation>
+<translation id="4505050298327493054">Aktiver Desktop.</translation>
 <translation id="4513946894732546136">Feedback</translation>
 <translation id="4527045527269911712">Das Bluetooth-Gerät "<ph name="DEVICE_NAME" />" bittet um Erlaubnis für Kopplung.</translation>
 <translation id="453661520163887813">Voll geladen in <ph name="TIME" /> h</translation>
@@ -423,7 +423,7 @@
 <translation id="6723839937902243910">Akkuleistung</translation>
 <translation id="6727969043791803658">Verbunden, Akkustand bei <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="6751826523481687655">Leistungsverfolgung ist aktiviert</translation>
-<translation id="6752912906630585008">Arbeitsbereich <ph name="REMOVED_DESK" /> wurde entfernt und mit Arbeitsbereich <ph name="RECEIVE_DESK" /> zusammengeführt</translation>
+<translation id="6752912906630585008">Desktop <ph name="REMOVED_DESK" /> wurde entfernt und mit Desktop <ph name="RECEIVE_DESK" /> zusammengeführt</translation>
 <translation id="6777216307882431711">Stromversorgung für verbundene USB-C-Geräte</translation>
 <translation id="6790428901817661496">Wiedergabe</translation>
 <translation id="6803622936009808957">Der Bildschirm konnte nicht gespiegelt werden, da die Auflösung nicht unterstützt wird. Stattdessen wurde der Modus für den erweiterten Desktop gestartet.</translation>
@@ -531,7 +531,7 @@
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /> <ph name="GET_STARTED" /></translation>
 <translation id="8351131234907093545">Notiz erstellen</translation>
 <translation id="8375916635258623388"><ph name="DEVICE_NAME" /> und Ihr Smartphone werden automatisch miteinander verbunden</translation>
-<translation id="8388750414311082622">Letzter Arbeitsbereich kann nicht entfernt werden.</translation>
+<translation id="8388750414311082622">Letzter Desktop kann nicht entfernt werden.</translation>
 <translation id="8392451568018454956">Optionsmenü für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Deine Eltern haben dieses Gerät gesperrt</translation>
 <translation id="8425213833346101688">Ändern</translation>
@@ -539,7 +539,7 @@
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8433186206711564395">Netzwerkeinstellungen</translation>
 <translation id="8433977262951327081">Die Tastenkombination zum Aufrufen des Infofelds für die Eingabeoptionen in der Ablage hat sich geändert. Bitte drücken Sie <ph name="NEW_SHORTCUT" /> statt <ph name="OLD_SHORTCUT" />.</translation>
-<translation id="8444246603146515890">Arbeitsbereich <ph name="DESK_TITILE" /> aktiviert</translation>
+<translation id="8444246603146515890">Desktop <ph name="DESK_TITILE" /> aktiviert</translation>
 <translation id="8452135315243592079">Keine SIM-Karte vorhanden</translation>
 <translation id="8454013096329229812">WLAN ist aktiviert.</translation>
 <translation id="847056008324733326">Einstellungen für Displaymaßstab</translation>

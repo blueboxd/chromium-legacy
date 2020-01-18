@@ -215,6 +215,7 @@ TEST_F(AndroidPageLoadMetricsObserverTest, LoadEvents) {
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.document_timing->load_event_start =
       base::TimeDelta::FromMilliseconds(30);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(20);
   timing.paint_timing->first_contentful_paint =
       base::TimeDelta::FromMilliseconds(20);
   PopulateRequiredTimingFields(&timing);

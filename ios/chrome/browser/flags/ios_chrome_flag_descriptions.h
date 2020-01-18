@@ -93,6 +93,11 @@ extern const char kBreakpadNoDelayInitialUploadDescription[];
 extern const char kBrowserContainerKeepsContentViewName[];
 extern const char kBrowserContainerKeepsContentViewDescription[];
 
+// Title and description for the flag to control if Chrome should wipe synced
+// data from a local device on sign-out from a non-managed account.
+extern const char kClearSyncedDataName[];
+extern const char kClearSyncedDataDescription[];
+
 // Title and description for the flag that controls whether Collections are
 // presented using the new iOS13 Card style or the custom legacy one.
 extern const char kCollectionsCardPresentationStyleName[];

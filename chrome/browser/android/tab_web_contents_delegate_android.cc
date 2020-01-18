@@ -22,12 +22,14 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/feature_utilities.h"
 #include "chrome/browser/android/hung_renderer_infobar_delegate.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/banners/app_banner_manager_android.h"
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -39,11 +41,10 @@
 #include "chrome/browser/ui/android/infobars/framebust_block_infobar.h"
 #include "chrome/browser/ui/android/sms/sms_infobar.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/find_bar/find_notification_details.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/interventions/framebust_block_message_delegate.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
@@ -51,6 +52,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "components/app_modal/javascript_dialog_manager.h"
+#include "components/find_in_page/find_notification_details.h"
+#include "components/find_in_page/find_tab_helper.h"
 #include "components/infobars/core/infobar.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "components/security_state/content/content_utils.h"
@@ -138,6 +141,23 @@ TabWebContentsDelegateAndroid::TabWebContentsDelegateAndroid(JNIEnv* env,
 
 TabWebContentsDelegateAndroid::~TabWebContentsDelegateAndroid() = default;
 
+void TabWebContentsDelegateAndroid::PortalWebContentsCreated(
+    content::WebContents* portal_contents) {
+  WebContentsDelegateAndroid::PortalWebContentsCreated(portal_contents);
+
+  // This is a subset of the tab helpers that would be attached by
+  // TabAndroid::AttachTabHelpers.
+  //
+  // TODO(jbroman): This doesn't adequately handle all of the tab helpers that
+  // might be wanted here, and there are also likely to be issues with tab
+  // helpers that are unprepared for portal activation to transition them.
+  autofill::ChromeAutofillClient::CreateForWebContents(portal_contents);
+  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
+      portal_contents,
+      autofill::ChromeAutofillClient::FromWebContents(portal_contents));
+  InfoBarService::CreateForWebContents(portal_contents);
+}
+
 void TabWebContentsDelegateAndroid::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
     std::unique_ptr<content::FileSelectListener> listener,
@@ -217,7 +237,8 @@ void TabWebContentsDelegateAndroid::FindReply(
     const gfx::Rect& selection_rect,
     int active_match_ordinal,
     bool final_update) {
-  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(web_contents);
+  find_in_page::FindTabHelper* find_tab_helper =
+      find_in_page::FindTabHelper::FromWebContents(web_contents);
   if (!find_result_observer_.IsObserving(find_tab_helper))
     find_result_observer_.Add(find_tab_helper);
 
@@ -483,8 +504,8 @@ void TabWebContentsDelegateAndroid::OnFindResultAvailable(
   if (obj.is_null())
     return;
 
-  const FindNotificationDetails& find_result =
-      FindTabHelper::FromWebContents(web_contents)->find_result();
+  const find_in_page::FindNotificationDetails& find_result =
+      find_in_page::FindTabHelper::FromWebContents(web_contents)->find_result();
 
   ScopedJavaLocalRef<jobject> selection_rect =
       JNI_TabWebContentsDelegateAndroid_CreateJavaRect(
@@ -501,7 +522,7 @@ void TabWebContentsDelegateAndroid::OnFindResultAvailable(
 }
 
 void TabWebContentsDelegateAndroid::OnFindTabHelperDestroyed(
-    FindTabHelper* helper) {
+    find_in_page::FindTabHelper* helper) {
   find_result_observer_.Remove(helper);
 }
 

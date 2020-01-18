@@ -147,6 +147,8 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
               kV8VideoPlaybackQuality_CorruptedVideoFrames_AttributeGetter,
           WebFeature::kInputTypeCheckboxRenderedNonSquare,
           WebFeature::kInputTypeRadioRenderedNonSquare,
+          WebFeature::kV8MediaSession_Metadata_AttributeSetter,
+          WebFeature::kV8MediaSession_SetActionHandler_Method,
       }));
   return *opt_in_features;
 }

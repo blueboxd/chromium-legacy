@@ -1147,6 +1147,7 @@ test("content_browsertests") {
     "//testing/gtest",
     "//third_party/blink/public:blink",
     "//third_party/blink/public/mojom:mojom_broadcastchannel_bindings",
+    "//third_party/blink/public/mojom/frame",
     "//third_party/leveldatabase",
     "//third_party/mesa_headers",
     "//third_party/zlib",

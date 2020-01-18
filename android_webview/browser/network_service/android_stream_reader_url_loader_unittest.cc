@@ -20,7 +20,11 @@ namespace android_webview {
 
 namespace {
 
-const GURL kTestURL = GURL("https://www.example.com/");
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL TestURL() {
+  return GURL("https://www.example.com/");
+}
 
 void VerifyHeaderNameAndValue(net::HttpResponseHeaders* headers,
                               std::string header_name,
@@ -241,7 +245,7 @@ class AndroidStreamReaderURLLoaderTest : public ::testing::Test {
 };
 
 TEST_F(AndroidStreamReaderURLLoaderTest, ReadFakeStream) {
-  network::ResourceRequest request = CreateRequest(kTestURL);
+  network::ResourceRequest request = CreateRequest(TestURL());
   std::unique_ptr<network::TestURLLoaderClient> client =
       std::make_unique<network::TestURLLoaderClient>();
   AndroidStreamReaderURLLoader* loader =
@@ -256,7 +260,7 @@ TEST_F(AndroidStreamReaderURLLoaderTest, ReadFakeStream) {
 }
 
 TEST_F(AndroidStreamReaderURLLoaderTest, ReadFailingStream) {
-  network::ResourceRequest request = CreateRequest(kTestURL);
+  network::ResourceRequest request = CreateRequest(TestURL());
   std::unique_ptr<network::TestURLLoaderClient> client =
       std::make_unique<network::TestURLLoaderClient>();
   AndroidStreamReaderURLLoader* loader = CreateLoader(
@@ -267,7 +271,7 @@ TEST_F(AndroidStreamReaderURLLoaderTest, ReadFailingStream) {
 }
 
 TEST_F(AndroidStreamReaderURLLoaderTest, ValidRangeRequest) {
-  network::ResourceRequest request = CreateRequest(kTestURL);
+  network::ResourceRequest request = CreateRequest(TestURL());
   request.headers.SetHeader(net::HttpRequestHeaders::kRange, "bytes=10-200");
 
   std::unique_ptr<network::TestURLLoaderClient> client =
@@ -282,7 +286,7 @@ TEST_F(AndroidStreamReaderURLLoaderTest, ValidRangeRequest) {
 }
 
 TEST_F(AndroidStreamReaderURLLoaderTest, InvalidRangeRequest) {
-  network::ResourceRequest request = CreateRequest(kTestURL);
+  network::ResourceRequest request = CreateRequest(TestURL());
   request.headers.SetHeader(net::HttpRequestHeaders::kRange, "bytes=10-0");
 
   std::unique_ptr<network::TestURLLoaderClient> client =
@@ -296,7 +300,7 @@ TEST_F(AndroidStreamReaderURLLoaderTest, InvalidRangeRequest) {
 }
 
 TEST_F(AndroidStreamReaderURLLoaderTest, NullInputStream) {
-  network::ResourceRequest request = CreateRequest(kTestURL);
+  network::ResourceRequest request = CreateRequest(TestURL());
 
   std::unique_ptr<network::TestURLLoaderClient> client =
       std::make_unique<network::TestURLLoaderClient>();
@@ -312,7 +316,7 @@ TEST_F(AndroidStreamReaderURLLoaderTest, NullInputStream) {
 }
 
 TEST_F(AndroidStreamReaderURLLoaderTest, ReadFakeStreamWithBody) {
-  network::ResourceRequest request = CreateRequest(kTestURL);
+  network::ResourceRequest request = CreateRequest(TestURL());
 
   std::string expected_body("test");
   std::unique_ptr<network::TestURLLoaderClient> client =
@@ -331,7 +335,7 @@ TEST_F(AndroidStreamReaderURLLoaderTest, ReadFakeStreamWithBody) {
 }
 
 TEST_F(AndroidStreamReaderURLLoaderTest, ReadFakeStreamWithBodyMultipleReads) {
-  network::ResourceRequest request = CreateRequest(kTestURL);
+  network::ResourceRequest request = CreateRequest(TestURL());
 
   std::string expected_body("test");
   std::unique_ptr<network::TestURLLoaderClient> client =
@@ -350,7 +354,7 @@ TEST_F(AndroidStreamReaderURLLoaderTest, ReadFakeStreamWithBodyMultipleReads) {
 
 TEST_F(AndroidStreamReaderURLLoaderTest,
        ReadFakeStreamCloseConsumerPipeDuringResponse) {
-  network::ResourceRequest request = CreateRequest(kTestURL);
+  network::ResourceRequest request = CreateRequest(TestURL());
 
   std::string expected_body("test");
   std::unique_ptr<network::TestURLLoaderClient> client =
@@ -377,7 +381,7 @@ TEST_F(AndroidStreamReaderURLLoaderTest, CustomResponseHeaderAndStatus) {
   const std::string custom_status_line = "HTTP/1.1 401 Gone";
   const std::string custom_header_name = "X-Test-Header";
   const std::string custom_header_value = "TestHeaderValue";
-  network::ResourceRequest request = CreateRequest(kTestURL);
+  network::ResourceRequest request = CreateRequest(TestURL());
 
   std::string expected_body("test");
   std::unique_ptr<network::TestURLLoaderClient> client =

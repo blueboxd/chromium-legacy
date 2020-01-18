@@ -106,7 +106,12 @@ class AppSearchProviderTest : public AppListTestBase {
  public:
   AppSearchProviderTest() {
     // Disable System Web Apps so the Settings Internal App is still installed.
-    scoped_feature_list_.InitAndDisableFeature(features::kSystemWebApps);
+    // TODO(crbug.com/990684): disable FuzzyAppSearch because we flipped the
+    // flag to be enabled by default, need to enable it after it is fully
+    // launched.
+    scoped_feature_list_.InitWithFeatures(
+        {},
+        {features::kSystemWebApps, app_list_features::kEnableFuzzyAppSearch});
   }
   ~AppSearchProviderTest() override {}
 

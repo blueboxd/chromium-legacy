@@ -22,9 +22,7 @@ static_library("net_log") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "net_export_file_writer_unittest.cc",
-  ]
+  sources = [ "net_export_file_writer_unittest.cc" ]
   deps = [
     ":net_log",
     "//base",

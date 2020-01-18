@@ -23,6 +23,11 @@ enum PortalActivateResult {
   // navigating and the navigation could not be cancelled.
   kRejectedDueToPredecessorNavigation,
 
+  // The connection with the remote was closed (usually happens during a
+  // browser shutdown). This error code is never sent as an IPC response, but
+  // is synthesized by the renderer.
+  kDisconnected,
+
   // The activation was attempted but was aborted due to a logic error, such as
   // a nonsensical reply from the other renderer. This should never happen; it
   // is always an indication of a bug if it does.

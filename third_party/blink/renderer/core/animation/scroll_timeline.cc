@@ -143,9 +143,11 @@ ScrollTimeline::InitialStartTimeForAnimations() {
 }
 
 void ScrollTimeline::ScheduleNextService() {
+  DCHECK_EQ(outdated_animation_count_, 0U);
   if (AnimationsNeedingUpdateCount() == 0)
     return;
-  ScheduleServiceOnNextFrame();
+  if (CurrentTimeInternal() != last_current_time_internal_)
+    ScheduleServiceOnNextFrame();
 }
 
 base::Optional<base::TimeDelta> ScrollTimeline::CurrentTimeInternal() {

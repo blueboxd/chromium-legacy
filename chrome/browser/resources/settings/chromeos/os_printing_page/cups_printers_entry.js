@@ -33,12 +33,19 @@ Polymer({
     });
   },
 
+  /** @private */
   onAddDiscoveredPrinterTap_(e) {
     this.fire('query-discovered-printer', {item: this.printerEntry});
   },
 
+  /** @private */
   onAddAutomaticPrinterTap_() {
     this.fire('add-automatic-printer', {item: this.printerEntry});
+  },
+
+  /** @private */
+  onAddServerPrinterTap_: function() {
+    this.fire('add-print-server-printer', {item: this.printerEntry});
   },
 
   /**
@@ -63,6 +70,14 @@ Polymer({
    */
   isAutomaticPrinter_() {
     return this.printerEntry.printerType == PrinterType.AUTOMATIC;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  isPrintServerPrinter_() {
+    return this.printerEntry.printerType == PrinterType.PRINTSERVER;
   },
 
   getSaveButtonAria_() {

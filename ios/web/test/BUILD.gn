@@ -7,9 +7,7 @@ import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
 mojom("mojo_bindings") {
-  sources = [
-    "mojo_test.mojom",
-  ]
+  sources = [ "mojo_test.mojom" ]
 }
 
 repack("packed_resources") {
@@ -34,12 +32,8 @@ grit("resources") {
   # The .grd contains references to generated files.
   source_is_generated = true
 
-  inputs = [
-    "${root_gen_dir}/ios/web/test/mojo_test.mojom.js",
-  ]
-  deps = [
-    ":mojo_bindings_js",
-  ]
+  inputs = [ "${root_gen_dir}/ios/web/test/mojo_test.mojom.js" ]
+  deps = [ ":mojo_bindings_js" ]
   outputs = [
     "grit/test_resources.h",
     "test_resources.pak",

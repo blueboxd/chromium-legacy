@@ -84,7 +84,8 @@ public class TrustedWebActivitySettingsLauncher {
         extras.putInt(SettingsNavigationSource.EXTRA_KEY,
                 SettingsNavigationSource.TWA_CLEAR_DATA_DIALOG);
 
-        SettingsLauncher.launchSettingsPage(context, SingleCategorySettings.class, extras);
+        SettingsLauncher.getInstance().launchSettingsPage(
+                context, SingleCategorySettings.class, extras);
     }
 
     /**
@@ -94,7 +95,7 @@ public class TrustedWebActivitySettingsLauncher {
             Context context, String url, @SettingsNavigationSource int navigationSource) {
         Bundle args = SingleWebsiteSettings.createFragmentArgsForSite(url);
         args.putInt(SettingsNavigationSource.EXTRA_KEY, navigationSource);
-        return SettingsLauncher.createIntentForSettingsPage(
+        return SettingsLauncher.getInstance().createIntentForSettingsPage(
                 context, SingleWebsiteSettings.class.getName(), args);
     }
 }

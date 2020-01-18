@@ -188,10 +188,7 @@ TEST_P(DisplayChangeObserverTest, FindDeviceScaleFactor) {
   EXPECT_EQ(1.0f, ComputeDeviceScaleFactor(21.5f, gfx::Rect(1920, 1080)));
 
   // 10" 1920x1200
-  float scale_factor_1777x = 1920.f / 1080.f;
-  EXPECT_NEAR(scale_factor_1777x,
-              ComputeDeviceScaleFactor(10.f, gfx::Rect(1920, 1200)),
-              std::numeric_limits<float>::epsilon());
+  EXPECT_EQ(kDsf_1_777, ComputeDeviceScaleFactor(10.f, gfx::Rect(1920, 1200)));
 
   // 12.1" 1280x800
   EXPECT_EQ(1.0f, ComputeDeviceScaleFactor(12.1f, gfx::Rect(1280, 800)));
@@ -215,24 +212,23 @@ TEST_P(DisplayChangeObserverTest, FindDeviceScaleFactor) {
   EXPECT_EQ(2.0f, ComputeDeviceScaleFactor(12.3f, gfx::Rect(2400, 1600)));
 
   // 10.1" 1920x1200
-  EXPECT_NEAR(1.777f, ComputeDeviceScaleFactor(10.1f, gfx::Rect(1920, 1200)),
-              0.001);
+  EXPECT_EQ(display::kDsf_1_777,
+            ComputeDeviceScaleFactor(10.1f, gfx::Rect(1920, 1200)));
 
   // 12.3" 3000x2000
-  EXPECT_EQ(2.25f, ComputeDeviceScaleFactor(12.3f, gfx::Rect(3000, 2000)));
+  EXPECT_EQ(display::kDsf_2_252,
+            ComputeDeviceScaleFactor(12.3f, gfx::Rect(3000, 2000)));
 
   // 13.1" 3840x2160 uses maximum scale factor which is 2.66666...
-  float max_scale_factor = 3840.f / 1440.f;
-  EXPECT_NEAR(max_scale_factor,
-              ComputeDeviceScaleFactor(13.1f, gfx::Rect(3840, 2160)),
-              std::numeric_limits<float>::epsilon());
+  float max_scale_factor = kDsf_2_666;
+  EXPECT_EQ(max_scale_factor,
+            ComputeDeviceScaleFactor(13.1f, gfx::Rect(3840, 2160)));
 
   // Erroneous values should still work.
   EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(-100.0f));
   EXPECT_EQ(1.0f, DisplayChangeObserver::FindDeviceScaleFactor(0.0f));
-  EXPECT_NEAR(max_scale_factor,
-              DisplayChangeObserver::FindDeviceScaleFactor(10000.0f),
-              std::numeric_limits<float>::epsilon());
+  EXPECT_EQ(max_scale_factor,
+            DisplayChangeObserver::FindDeviceScaleFactor(10000.0f));
 }
 
 TEST_P(DisplayChangeObserverTest,

@@ -184,8 +184,14 @@ class ProfileNetworkContextServiceCacheSameBrowsertest
   base::HistogramTester histograms_;
 };
 
+// Flaky on Linux and Mac: https://crbug.com/1041810
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#define MAYBE_TestCacheResetParameter DISABLED_TestCacheResetParameter
+#else
+#define MAYBE_TestCacheResetParameter TestCacheResetParameter
+#endif
 IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheSameBrowsertest,
-                       TestCacheResetParameter) {
+                       MAYBE_TestCacheResetParameter) {
   base::RunLoop().RunUntilIdle();
   base::ThreadPoolInstance::Get()->FlushForTesting();
 
@@ -223,8 +229,9 @@ class ProfileNetworkContextServiceCacheChangeBrowsertest
   base::HistogramTester histograms_;
 };
 
+// Flaky on Linux and Mac: https://crbug.com/1041810
 IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheChangeBrowsertest,
-                       TestCacheResetParameter) {
+                       MAYBE_TestCacheResetParameter) {
   base::RunLoop().RunUntilIdle();
   base::ThreadPoolInstance::Get()->FlushForTesting();
 

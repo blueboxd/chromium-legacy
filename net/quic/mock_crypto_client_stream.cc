@@ -195,7 +195,8 @@ bool MockCryptoClientStream::CryptoConnect() {
       } else {
         session()->connection()->SetDefaultEncryptionLevel(
             ENCRYPTION_FORWARD_SECURE);
-        session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
+        session()->OnCryptoHandshakeEvent(
+            QuicSession::EVENT_HANDSHAKE_CONFIRMED);
         session()->connection()->OnHandshakeComplete();
       }
       break;
@@ -238,7 +239,7 @@ CryptoMessageParser* MockCryptoClientStream::crypto_message_parser() {
 void MockCryptoClientStream::SendOnCryptoHandshakeEvent(
     QuicSession::CryptoHandshakeEvent event) {
   encryption_established_ = true;
-  if (event == QuicSession::HANDSHAKE_CONFIRMED) {
+  if (event == QuicSession::EVENT_HANDSHAKE_CONFIRMED) {
     handshake_confirmed_ = true;
     SetConfigNegotiated();
     if (use_mock_crypter_) {

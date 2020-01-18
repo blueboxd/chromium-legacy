@@ -376,7 +376,8 @@ public class VrBrowserTransitionTest {
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
-                SettingsLauncher.launchSettingsPage(context, SingleWebsiteSettings.class);
+                SettingsLauncher.getInstance().launchSettingsPage(
+                        context, SingleWebsiteSettings.class);
             });
         });
         TestThreadUtils.runOnUiThreadBlocking(
@@ -393,7 +394,7 @@ public class VrBrowserTransitionTest {
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApiWithDoff);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SettingsLauncher.launchSettingsPage(context, null);
+            SettingsLauncher.getInstance().launchSettingsPage(context, null);
             VrShellDelegateUtils.getDelegateInstance().acceptDoffPromptForTesting();
         });
         CriteriaHelper.pollUiThread(() -> {
@@ -420,7 +421,7 @@ public class VrBrowserTransitionTest {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Intent preferencesIntent = SettingsLauncher.createIntentForSettingsPage(
+            Intent preferencesIntent = SettingsLauncher.getInstance().createIntentForSettingsPage(
                     context, SingleWebsiteSettings.class.getName());
             Assert.assertFalse("Starting an activity did not trigger DOFF",
                     context.startActivityIfNeeded(preferencesIntent, 0));

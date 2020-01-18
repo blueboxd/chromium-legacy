@@ -313,7 +313,8 @@ class DownloadItemTest : public testing::Test {
 
     std::move(callback).Run(
         target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE, danger_type,
-        intermediate_path, DOWNLOAD_INTERRUPT_REASON_NONE);
+        DownloadItem::MixedContentStatus::UNKNOWN, intermediate_path,
+        DOWNLOAD_INTERRUPT_REASON_NONE);
     task_environment_.RunUntilIdle();
     return download_file;
   }
@@ -560,8 +561,9 @@ TEST_F(DownloadItemTest, NotificationAfterOnDownloadTargetDetermined) {
   // other than NOT_DANGEROUS.
   std::move(callback).Run(target_path,
                           DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
-                          DOWNLOAD_INTERRUPT_REASON_NONE);
+                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                          DownloadItem::MixedContentStatus::UNKNOWN,
+                          intermediate_path, DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_FALSE(observer.CheckAndResetDownloadUpdated());
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(observer.CheckAndResetDownloadUpdated());
@@ -857,6 +859,7 @@ TEST_F(DownloadItemTest, AutomaticResumption_AttemptLimit) {
     std::move(callback).Run(target_path,
                             DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                             DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                            DownloadItem::MixedContentStatus::UNKNOWN,
                             intermediate_path, DOWNLOAD_INTERRUPT_REASON_NONE);
     task_environment_.RunUntilIdle();
 
@@ -949,6 +952,7 @@ TEST_F(DownloadItemTest, FailedResumptionDoesntUpdateOriginState) {
       .Run(base::FilePath(kDummyTargetPath),
            DownloadItem::TARGET_DISPOSITION_OVERWRITE,
            DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+           DownloadItem::MixedContentStatus::UNKNOWN,
            base::FilePath(kDummyIntermediatePath),
            DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
@@ -1157,8 +1161,9 @@ TEST_F(DownloadItemTest, DisplayName) {
 
   std::move(callback).Run(target_path,
                           DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
-                          DOWNLOAD_INTERRUPT_REASON_NONE);
+                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                          DownloadItem::MixedContentStatus::UNKNOWN,
+                          intermediate_path, DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
   EXPECT_EQ(FILE_PATH_LITERAL("foo.bar"),
             item->GetFileNameToReportUser().value());
@@ -1210,6 +1215,7 @@ TEST_F(DownloadItemTest, InitDownloadFileFails) {
       .Run(base::FilePath(kDummyTargetPath),
            DownloadItem::TARGET_DISPOSITION_OVERWRITE,
            DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+           DownloadItem::MixedContentStatus::UNKNOWN,
            base::FilePath(kDummyIntermediatePath),
            DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
@@ -1252,7 +1258,8 @@ TEST_F(DownloadItemTest, StartFailedDownload) {
   base::FilePath target_path(FILE_PATH_LITERAL("foo"));
   std::move(download_target_callback)
       .Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-           DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
+           DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+           DownloadItem::MixedContentStatus::UNKNOWN, target_path,
            DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
 
@@ -1288,8 +1295,9 @@ TEST_F(DownloadItemTest, CallbackAfterRename) {
 
   std::move(callback).Run(final_path,
                           DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
-                          DOWNLOAD_INTERRUPT_REASON_NONE);
+                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                          DownloadItem::MixedContentStatus::UNKNOWN,
+                          intermediate_path, DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
   // All the callbacks should have happened by now.
   ::testing::Mock::VerifyAndClearExpectations(download_file);
@@ -1341,8 +1349,9 @@ TEST_F(DownloadItemTest, CallbackAfterInterruptedRename) {
 
   std::move(callback).Run(final_path,
                           DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
-                          DOWNLOAD_INTERRUPT_REASON_NONE);
+                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                          DownloadItem::MixedContentStatus::UNKNOWN,
+                          intermediate_path, DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
   // All the callbacks should have happened by now.
   ::testing::Mock::VerifyAndClearExpectations(download_file);
@@ -1410,8 +1419,9 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Restart) {
 
   std::move(callback).Run(final_path,
                           DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
-                          DOWNLOAD_INTERRUPT_REASON_NONE);
+                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                          DownloadItem::MixedContentStatus::UNKNOWN,
+                          intermediate_path, DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
   // All the callbacks should have happened by now.
   ::testing::Mock::VerifyAndClearExpectations(download_file);
@@ -1461,8 +1471,9 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Continue) {
 
   std::move(callback).Run(final_path,
                           DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
-                          DOWNLOAD_INTERRUPT_REASON_NONE);
+                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                          DownloadItem::MixedContentStatus::UNKNOWN,
+                          intermediate_path, DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
   // All the callbacks should have happened by now.
   ::testing::Mock::VerifyAndClearExpectations(download_file);
@@ -1507,8 +1518,9 @@ TEST_F(DownloadItemTest, InterruptedBeforeIntermediateRename_Failed) {
 
   std::move(callback).Run(final_path,
                           DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, intermediate_path,
-                          DOWNLOAD_INTERRUPT_REASON_NONE);
+                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                          DownloadItem::MixedContentStatus::UNKNOWN,
+                          intermediate_path, DOWNLOAD_INTERRUPT_REASON_NONE);
   task_environment_.RunUntilIdle();
   // All the callbacks should have happened by now.
   ::testing::Mock::VerifyAndClearExpectations(download_file);
@@ -1549,6 +1561,7 @@ TEST_F(DownloadItemTest, DownloadTargetDetermined_Cancel) {
   std::move(callback).Run(base::FilePath(FILE_PATH_LITERAL("foo")),
                           DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                           DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                          DownloadItem::MixedContentStatus::UNKNOWN,
                           base::FilePath(FILE_PATH_LITERAL("bar")),
                           DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
   EXPECT_EQ(DownloadItem::CANCELLED, item->GetState());
@@ -1562,8 +1575,9 @@ TEST_F(DownloadItemTest, DownloadTargetDetermined_CancelWithEmptyName) {
   EXPECT_CALL(*download_file, Cancel());
   std::move(callback).Run(base::FilePath(),
                           DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, base::FilePath(),
-                          DOWNLOAD_INTERRUPT_REASON_NONE);
+                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                          DownloadItem::MixedContentStatus::UNKNOWN,
+                          base::FilePath(), DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_EQ(DownloadItem::CANCELLED, item->GetState());
 }
 
@@ -1574,10 +1588,11 @@ TEST_F(DownloadItemTest, DownloadTargetDetermined_Conflict) {
   base::FilePath target_path(FILE_PATH_LITERAL("/foo/bar"));
 
   EXPECT_CALL(*download_file, Cancel());
-  std::move(callback).Run(target_path,
-                          DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                          DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
-                          DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE);
+  std::move(callback).Run(
+      target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+      DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+      DownloadItem::MixedContentStatus::UNKNOWN, target_path,
+      DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE);
   EXPECT_EQ(DownloadItem::INTERRUPTED, item->GetState());
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_SAME_AS_SOURCE,
             item->GetLastReason());
@@ -2426,7 +2441,8 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, DownloadCancelledByUser) {
                        destination_observer);
   std::move(target_callback)
       .Run(base::FilePath(), DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-           DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, base::FilePath(),
+           DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+           DownloadItem::MixedContentStatus::UNKNOWN, base::FilePath(),
            DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_EQ(DownloadItem::CANCELLED, item_->GetState());
   EXPECT_TRUE(canceled());
@@ -2480,6 +2496,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameFails) {
       .Run(base::FilePath(kDummyTargetPath),
            DownloadItem::TARGET_DISPOSITION_OVERWRITE,
            DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+           DownloadItem::MixedContentStatus::UNKNOWN,
            base::FilePath(kDummyIntermediatePath),
            DOWNLOAD_INTERRUPT_REASON_NONE);
 
@@ -2548,6 +2565,7 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameSucceeds) {
       .Run(base::FilePath(kDummyTargetPath),
            DownloadItem::TARGET_DISPOSITION_OVERWRITE,
            DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+           DownloadItem::MixedContentStatus::UNKNOWN,
            base::FilePath(kDummyIntermediatePath),
            DOWNLOAD_INTERRUPT_REASON_NONE);
 

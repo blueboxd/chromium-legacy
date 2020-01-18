@@ -4,6 +4,8 @@
 
 #include "components/spellcheck/browser/spell_check_host_impl.h"
 
+#include "build/build_config.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_thread.h"
 
 SpellCheckHostImpl::SpellCheckHostImpl() = default;

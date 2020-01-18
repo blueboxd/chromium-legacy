@@ -1220,6 +1220,7 @@ void ChromeContentRendererClient::PrepareErrorPage(
   NetErrorHelper::Get(render_frame)
       ->PrepareErrorPage(
           error_page::Error::NetError(web_error.url(), web_error.reason(),
+                                      web_error.resolve_error_info(),
                                       web_error.has_copy_in_cache()),
           http_method == "POST", error_html);
 
@@ -1246,10 +1247,13 @@ void ChromeContentRendererClient::GetErrorDescription(
     const std::string& http_method,
     base::string16* error_description) {
   error_page::Error error = error_page::Error::NetError(
-      web_error.url(), web_error.reason(), web_error.has_copy_in_cache());
+      web_error.url(), web_error.reason(), web_error.resolve_error_info(),
+      web_error.has_copy_in_cache());
   if (error_description) {
     *error_description = error_page::LocalizedError::GetErrorDetails(
-        error.domain(), error.reason(), http_method == "POST");
+        error.domain(), error.reason(),
+        error.resolve_error_info().is_secure_network_error,
+        http_method == "POST");
   }
 }
 

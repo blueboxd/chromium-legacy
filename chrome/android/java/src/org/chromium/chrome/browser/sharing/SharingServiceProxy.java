@@ -59,11 +59,12 @@ public class SharingServiceProxy {
      * @param lastUpdatedTimestampMillis The last updated timestamp in milliseconds of the receiver
      *         device.
      * @param text The text to send.
+     * @param retries The number of retries so far.
      * @param callback The result of the operation. Runs |callback| with a
      *         org.chromium.chrome.browser.sharing.SharingSendMessageResult enum value.
      */
-    public void sendSharedClipboardMessage(
-            String guid, long lastUpdatedTimestampMillis, String text, Callback<Integer> callback) {
+    public void sendSharedClipboardMessage(String guid, long lastUpdatedTimestampMillis,
+            String text, int retries, Callback<Integer> callback) {
         if (sNativeSharingServiceProxyAndroid == 0) {
             callback.onResult(SharingSendMessageResult.INTERNAL_ERROR);
             return;
@@ -71,7 +72,7 @@ public class SharingServiceProxy {
 
         Natives jni = SharingServiceProxyJni.get();
         jni.sendSharedClipboardMessage(sNativeSharingServiceProxyAndroid, guid,
-                lastUpdatedTimestampMillis, text, callback);
+                lastUpdatedTimestampMillis, text, retries, callback);
     }
 
     /**
@@ -132,7 +133,8 @@ public class SharingServiceProxy {
     interface Natives {
         void initSharingService(Profile profile);
         void sendSharedClipboardMessage(long nativeSharingServiceProxyAndroid, String guid,
-                long lastUpdatedTimestampMillis, String text, Callback<Integer> callback);
+                long lastUpdatedTimestampMillis, String text, int retries,
+                Callback<Integer> callback);
         void getDeviceCandidates(long nativeSharingServiceProxyAndroid,
                 ArrayList<DeviceInfo> deviceInfo, int requiredFeature);
         void addDeviceCandidatesInitializedObserver(

@@ -13,14 +13,33 @@
 #endif
 
 namespace {
-const GURL kSourceUrl1("http://www.google.com");
-const GURL kSourceUrl2("http://www.goog.com");
-const GURL kSourceUrl3("http://www.goog.ab");
-const GURL kSourceUrl4("http://www.foo.com");
-const GURL kAppUrl1("facetime://+1354");
-const GURL kAppUrl2("facetime-audio://+1234");
-const GURL kAppUrl3("abc://abc");
-const GURL kAppUrl4("chrome://www.google.com");
+
+// TODO(crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL SourceUrl1() {
+  return GURL("http://www.google.com");
+}
+GURL SourceUrl2() {
+  return GURL("http://www.goog.com");
+}
+GURL SourceUrl3() {
+  return GURL("http://www.goog.ab");
+}
+GURL SourceUrl4() {
+  return GURL("http://www.foo.com");
+}
+GURL AppUrl1() {
+  return GURL("facetime://+1354");
+}
+GURL AppUrl2() {
+  return GURL("facetime-audio://+1234");
+}
+GURL AppUrl3() {
+  return GURL("abc://abc");
+}
+GURL AppUrl4() {
+  return GURL("chrome://www.google.com");
+}
 
 }  // namespace
 
@@ -33,27 +52,27 @@ TEST_F(AppLauncherAbuseDetectorTest,
       [[AppLauncherAbuseDetector alloc] init];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
             [abuseDetector launchPolicyForURL:GURL("facetime://+154")
-                            fromSourcePageURL:kSourceUrl1]);
+                            fromSourcePageURL:SourceUrl1()]);
 
   [abuseDetector didRequestLaunchExternalAppURL:GURL("facetime://+1354")
-                              fromSourcePageURL:kSourceUrl1];
+                              fromSourcePageURL:SourceUrl1()];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
             [abuseDetector launchPolicyForURL:GURL("facetime://+12354")
-                            fromSourcePageURL:kSourceUrl1]);
+                            fromSourcePageURL:SourceUrl1()]);
 
   [abuseDetector didRequestLaunchExternalAppURL:GURL("facetime://+154")
-                              fromSourcePageURL:kSourceUrl1];
+                              fromSourcePageURL:SourceUrl1()];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
             [abuseDetector launchPolicyForURL:GURL("facetime://+13454")
-                            fromSourcePageURL:kSourceUrl1]);
+                            fromSourcePageURL:SourceUrl1()]);
 
   [abuseDetector didRequestLaunchExternalAppURL:GURL("facetime://+14")
-                              fromSourcePageURL:kSourceUrl1];
+                              fromSourcePageURL:SourceUrl1()];
   // App was launched more than the max allowed times, the policy should change
   // to Prompt.
   EXPECT_EQ(ExternalAppLaunchPolicyPrompt,
             [abuseDetector launchPolicyForURL:GURL("facetime://+14")
-                            fromSourcePageURL:kSourceUrl1]);
+                            fromSourcePageURL:SourceUrl1()]);
 }
 
 // Tests cases when same app is launched repeatedly from different sources.
@@ -62,29 +81,29 @@ TEST_F(AppLauncherAbuseDetectorTest,
   AppLauncherAbuseDetector* abuseDetector =
       [[AppLauncherAbuseDetector alloc] init];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
-            [abuseDetector launchPolicyForURL:kAppUrl1
-                            fromSourcePageURL:kSourceUrl1]);
-  [abuseDetector didRequestLaunchExternalAppURL:kAppUrl1
-                              fromSourcePageURL:kSourceUrl1];
+            [abuseDetector launchPolicyForURL:AppUrl1()
+                            fromSourcePageURL:SourceUrl1()]);
+  [abuseDetector didRequestLaunchExternalAppURL:AppUrl1()
+                              fromSourcePageURL:SourceUrl1()];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
-            [abuseDetector launchPolicyForURL:kAppUrl1
-                            fromSourcePageURL:kSourceUrl1]);
+            [abuseDetector launchPolicyForURL:AppUrl1()
+                            fromSourcePageURL:SourceUrl1()]);
 
-  [abuseDetector didRequestLaunchExternalAppURL:kAppUrl1
-                              fromSourcePageURL:kSourceUrl2];
+  [abuseDetector didRequestLaunchExternalAppURL:AppUrl1()
+                              fromSourcePageURL:SourceUrl2()];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
-            [abuseDetector launchPolicyForURL:kAppUrl1
-                            fromSourcePageURL:kSourceUrl2]);
-  [abuseDetector didRequestLaunchExternalAppURL:kAppUrl1
-                              fromSourcePageURL:kSourceUrl3];
+            [abuseDetector launchPolicyForURL:AppUrl1()
+                            fromSourcePageURL:SourceUrl2()]);
+  [abuseDetector didRequestLaunchExternalAppURL:AppUrl1()
+                              fromSourcePageURL:SourceUrl3()];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
-            [abuseDetector launchPolicyForURL:kAppUrl1
-                            fromSourcePageURL:kSourceUrl3]);
-  [abuseDetector didRequestLaunchExternalAppURL:kAppUrl1
-                              fromSourcePageURL:kSourceUrl4];
+            [abuseDetector launchPolicyForURL:AppUrl1()
+                            fromSourcePageURL:SourceUrl3()]);
+  [abuseDetector didRequestLaunchExternalAppURL:AppUrl1()
+                              fromSourcePageURL:SourceUrl4()];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
-            [abuseDetector launchPolicyForURL:kAppUrl1
-                            fromSourcePageURL:kSourceUrl4]);
+            [abuseDetector launchPolicyForURL:AppUrl1()
+                            fromSourcePageURL:SourceUrl4()]);
 }
 
 // Tests cases when different apps are launched from different sources.
@@ -93,29 +112,29 @@ TEST_F(AppLauncherAbuseDetectorTest,
   AppLauncherAbuseDetector* abuseDetector =
       [[AppLauncherAbuseDetector alloc] init];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
-            [abuseDetector launchPolicyForURL:kAppUrl1
-                            fromSourcePageURL:kSourceUrl1]);
-  [abuseDetector didRequestLaunchExternalAppURL:kAppUrl1
-                              fromSourcePageURL:kSourceUrl1];
+            [abuseDetector launchPolicyForURL:AppUrl1()
+                            fromSourcePageURL:SourceUrl1()]);
+  [abuseDetector didRequestLaunchExternalAppURL:AppUrl1()
+                              fromSourcePageURL:SourceUrl1()];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
-            [abuseDetector launchPolicyForURL:kAppUrl1
-                            fromSourcePageURL:kSourceUrl1]);
+            [abuseDetector launchPolicyForURL:AppUrl1()
+                            fromSourcePageURL:SourceUrl1()]);
 
-  [abuseDetector didRequestLaunchExternalAppURL:kAppUrl2
-                              fromSourcePageURL:kSourceUrl2];
+  [abuseDetector didRequestLaunchExternalAppURL:AppUrl2()
+                              fromSourcePageURL:SourceUrl2()];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
-            [abuseDetector launchPolicyForURL:kAppUrl2
-                            fromSourcePageURL:kSourceUrl2]);
-  [abuseDetector didRequestLaunchExternalAppURL:kAppUrl3
-                              fromSourcePageURL:kSourceUrl3];
+            [abuseDetector launchPolicyForURL:AppUrl2()
+                            fromSourcePageURL:SourceUrl2()]);
+  [abuseDetector didRequestLaunchExternalAppURL:AppUrl3()
+                              fromSourcePageURL:SourceUrl3()];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
-            [abuseDetector launchPolicyForURL:kAppUrl3
-                            fromSourcePageURL:kSourceUrl3]);
-  [abuseDetector didRequestLaunchExternalAppURL:kAppUrl4
-                              fromSourcePageURL:kSourceUrl4];
+            [abuseDetector launchPolicyForURL:AppUrl3()
+                            fromSourcePageURL:SourceUrl3()]);
+  [abuseDetector didRequestLaunchExternalAppURL:AppUrl4()
+                              fromSourcePageURL:SourceUrl4()];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
-            [abuseDetector launchPolicyForURL:kAppUrl4
-                            fromSourcePageURL:kSourceUrl4]);
+            [abuseDetector launchPolicyForURL:AppUrl4()
+                            fromSourcePageURL:SourceUrl4()]);
 }
 
 // Tests blocking App launch only when the app have been allowed through the
@@ -124,25 +143,25 @@ TEST_F(AppLauncherAbuseDetectorTest, TestBlockLaunchingApp) {
   AppLauncherAbuseDetector* abuseDetector =
       [[AppLauncherAbuseDetector alloc] init];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
-            [abuseDetector launchPolicyForURL:kAppUrl1
-                            fromSourcePageURL:kSourceUrl1]);
+            [abuseDetector launchPolicyForURL:AppUrl1()
+                            fromSourcePageURL:SourceUrl1()]);
   // Don't block for apps that have not been registered.
-  [abuseDetector blockLaunchingAppURL:kAppUrl1 fromSourcePageURL:kSourceUrl1];
+  [abuseDetector blockLaunchingAppURL:AppUrl1() fromSourcePageURL:SourceUrl1()];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
-            [abuseDetector launchPolicyForURL:kAppUrl1
-                            fromSourcePageURL:kSourceUrl1]);
+            [abuseDetector launchPolicyForURL:AppUrl1()
+                            fromSourcePageURL:SourceUrl1()]);
 
   // Block for apps that have been registered
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
-            [abuseDetector launchPolicyForURL:kAppUrl2
-                            fromSourcePageURL:kSourceUrl2]);
-  [abuseDetector didRequestLaunchExternalAppURL:kAppUrl2
-                              fromSourcePageURL:kSourceUrl2];
+            [abuseDetector launchPolicyForURL:AppUrl2()
+                            fromSourcePageURL:SourceUrl2()]);
+  [abuseDetector didRequestLaunchExternalAppURL:AppUrl2()
+                              fromSourcePageURL:SourceUrl2()];
   EXPECT_EQ(ExternalAppLaunchPolicyAllow,
-            [abuseDetector launchPolicyForURL:kAppUrl2
-                            fromSourcePageURL:kSourceUrl2]);
-  [abuseDetector blockLaunchingAppURL:kAppUrl2 fromSourcePageURL:kSourceUrl2];
+            [abuseDetector launchPolicyForURL:AppUrl2()
+                            fromSourcePageURL:SourceUrl2()]);
+  [abuseDetector blockLaunchingAppURL:AppUrl2() fromSourcePageURL:SourceUrl2()];
   EXPECT_EQ(ExternalAppLaunchPolicyBlock,
-            [abuseDetector launchPolicyForURL:kAppUrl2
-                            fromSourcePageURL:kSourceUrl2]);
+            [abuseDetector launchPolicyForURL:AppUrl2()
+                            fromSourcePageURL:SourceUrl2()]);
 }

@@ -21,6 +21,8 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
+import android.content.res.Resources.NotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -811,5 +813,24 @@ public class ShareHelper {
 
     private static String getClassNameKey(@NonNull String sourcePackageName) {
         return sourcePackageName + CLASS_NAME_KEY_SUFFIX;
+    }
+
+    /**
+     * Loads the icon for the provided ResolveInfo.
+     * @param info The ResolveInfo to load the icon for.
+     * @param manager The package manager to use to load the icon.
+     */
+    static Drawable loadIconForResolveInfo(ResolveInfo info, PackageManager manager) {
+        try {
+            final int iconRes = info.getIconResource();
+            if (iconRes != 0) {
+                Resources res = manager.getResourcesForApplication(info.activityInfo.packageName);
+                Drawable icon = ApiCompatibilityUtils.getDrawable(res, iconRes);
+                return icon;
+            }
+        } catch (NameNotFoundException | NotFoundException e) {
+            // Could not find the icon. loadIcon call below will return the default app icon.
+        }
+        return info.loadIcon(manager);
     }
 }

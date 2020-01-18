@@ -83,7 +83,7 @@ public class PrefetchedPagesNotifier {
         @Override
         public void onReceive(final Context context, Intent intent) {
             recordNotificationActionWhenChromeLoadsNative(NOTIFICATION_ACTION_SETTINGS_CLICKED);
-            Intent settingsIntent = SettingsLauncher.createIntentForSettingsPage(
+            Intent settingsIntent = SettingsLauncher.getInstance().createIntentForSettingsPage(
                     context, NotificationsSettings.class.getName());
             settingsIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
             context.startActivity(settingsIntent);
@@ -146,8 +146,7 @@ public class PrefetchedPagesNotifier {
         manager.notify(notification);
 
         // Increment ignored notification counter.  This will be reset on click.
-        PrefetchPrefs.setIgnoredNotificationCounter(
-                PrefetchPrefs.getIgnoredNotificationCounter() + 1);
+        PrefetchPrefs.incrementIgnoredNotificationCounter();
 
         // Metrics tracking
         recordNotificationAction(NOTIFICATION_ACTION_SHOWN);

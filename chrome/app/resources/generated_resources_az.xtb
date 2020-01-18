@@ -944,7 +944,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% hazırdır</translation>
 <translation id="2318143611928805047">Kağız ölçüsü</translation>
 <translation id="2318817390901984578">Android tətbiqləri istifadə etmək üçün <ph name="DEVICE_TYPE" /> cihazını batareya ilə doldurun və yeniləyin.</translation>
-<translation id="2318923050469484167">Cari incognito sessiyası (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">Başlıqlar və alt qeydlər</translation>
 <translation id="2322318151094136999">Saytlar seriya portlarına daxil olmaq istədikdə icazə tələb edilsin (tövsiyə edilir)</translation>
 <translation id="2325002827435400643">Bu sayt üçün deaktiv edin</translation>
@@ -1786,6 +1785,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="3511307672085573050">Link ünvanını kopyalayın</translation>
 <translation id="351152300840026870">Fiksə edilmiş eni olan şrift</translation>
 <translation id="3511528412952710609">Qısa</translation>
+<translation id="3513704683820682405">Artırılmış Reallıq</translation>
 <translation id="3514373592552233661">Birdən çox şəbəkə əlçatan olduqda, məlum olan şəbəkə ilə müqayisədə tərcih edilən şəbəkələr seçiləcək</translation>
 <translation id="3515983984924808886">Sıfırlamanı təsdiq etmək üçün təhlükəsizlik açarınıza yenidən toxunun. PIN kod daxil olmaqla təhlükəsizlik açarında saxlanılan bütün məlumatlar silinəcək.</translation>
 <translation id="3518985090088779359">Qəbul edin və davam edin</translation>
@@ -2240,7 +2240,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4099874310852108874">Şəbəkə xətası baş verdi.</translation>
 <translation id="4100733287846229632">Cihaz yaddaşı çox azdır</translation>
 <translation id="4100853287411968461">Yeni ekran vaxtı limiti</translation>
-<translation id="4103091233824664032">Ekran kilidi və girişi konfiqurasiya etmək üçün parolu daxil olun</translation>
 <translation id="4104163789986725820">Eksport...</translation>
 <translation id="4107048419833779140">Yaddaş cihazları müəyyən edin və boşaldın</translation>
 <translation id="4109135793348361820">Pəncərəni <ph name="USER_NAME" /> istifadəçisinə daşıyın (<ph name="USER_EMAIL" />)</translation>
@@ -2779,6 +2778,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="494286511941020793">Proksi Konfiqurasiyası Yardımı</translation>
 <translation id="4943368462779413526">Futbol</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" silsilə porta qoşulmaq istəyir</translation>
+<translation id="4943703118917034429">Virtual Reallıq</translation>
 <translation id="4944310289250773232">Bu doğrulama xidməti <ph name="SAML_DOMAIN" /> tərəfindən təmin edilir</translation>
 <translation id="495170559598752135">Fəaliyyətlər</translation>
 <translation id="4952981627953231344">Plugin VM'ə bu cihazda icazə verilmir. Təşkilatın cihaz admini ilə əlaqə saxlayın.</translation>
@@ -3128,7 +3128,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5468173180030470402">Fayl paylaşımı axtarılır</translation>
 <translation id="5470735824776589490">Cihazınız fabrik sıfırlaması etmədən öncə yenidən başladılmalıdır. <ph name="LINK_BEGIN" />Ətraflı məlumat<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Salam! Mən Sizin mətndən-nitqə səsinizəm.</translation>
-<translation id="5472133193607270166">Aktiv olduqda, saytlar reklamları fərdiləşdirmək üçün müxtəlif saytlarda axtarış fəaliyyətinizi istifadə edə bilməz. Bəzi saytlar düzgün işləməyə bilər.</translation>
 <translation id="5473333559083690127">Yeni PIN kodu yenidən daxil edin</translation>
 <translation id="5481941284378890518">Yaxınlıqdakı Printerləri əlavə edin</translation>
 <translation id="5483785310822538350">Fayl və cihaz girişini geri alın</translation>
@@ -3299,7 +3298,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5701381305118179107">Mərkəzi edin</translation>
 <translation id="5701441174893770082">Linux'un təkmilləşdirilməsi enerjini xeyli azalda bilər. Cihazınızı adapterə qoşun və yenidən cəhd edin.</translation>
 <translation id="5702898740348134351">&amp;Axtarış Sistemlərinə Düzəliş edin...</translation>
-<translation id="570302979952009979">Bu barmaq izi üçün ad seçin</translation>
 <translation id="5704875434923668958">Sinxronizasiya edilir</translation>
 <translation id="5707185214361380026">Artırma formasını yükləmək alınmadı:</translation>
 <translation id="5708171344853220004">Microsoft İştirakçı Adı</translation>
@@ -3391,7 +3389,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5833726373896279253">Bu ayarlar yalnız sahibi tərəfindən dəyişdirilə bilər:</translation>
 <translation id="5834581999798853053">Təxminən <ph name="TIME" /> dəqiqə qaldı</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - Kamera və ya mikrofon qeydə alması</translation>
-<translation id="5838456317242088717">Cari incognito sessiyası</translation>
 <translation id="5842497610951477805">Bluetooth'un aktiv edilməsi</translation>
 <translation id="5843250171025351504">Cihazınız artıq adminin müəyyən etdiyi mimimum klient versiyası ilə uyğun deyil. Daxil olmaq üçün yeniləyin.</translation>
 <translation id="5846200638699387931">Əlaqə sintaksis xətası: <ph name="ERROR_LINE" /></translation>
@@ -3645,7 +3642,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="6181431612547969857">Endirmə bloklandı</translation>
 <translation id="6185132558746749656">Cihaz Məkanı</translation>
 <translation id="6195693561221576702">Bu cihazı oflayn demo rejimində quraşdırmaq mümkün deyil.</translation>
-<translation id="6196640612572343990">Üçüncü tərəf kukiləri blok edin</translation>
 <translation id="6196854373336333322">"<ph name="EXTENSION_NAME" />" artırması proksi ayarlarınıza nəzarət edir, bu o dəməkdir ki, onlayn etdiyiniz hər bir şey üzərində dəyişdirə, poza və gizli izləyə bilər. Bu dəyişikliyin niyə baş verdiyinə əmin deyilsinizsə, yəqin Siz bunu istəməmisiniz.</translation>
 <translation id="6198102561359457428">Hesabdan çıxın və yenidən daxil olun...</translation>
 <translation id="6198252989419008588">PİN kodu dəyişdirin</translation>
@@ -4351,7 +4347,6 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="7225179976675429563">Şəbəkə növü çatışmır</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (Vendor: <ph name="VENDOR_ID" />, Məhsul: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">Coğrafi məkan, mikrofon və kamera kimi özəllikləri istifadə etməsini göstərən ayarları işlədin.</translation>
-<translation id="7228523857728654909">Ekran kilidi və giriş</translation>
 <translation id="7229570126336867161">EVDO lazımdır</translation>
 <translation id="7230787553283372882">Mətn ölçüsünü fərdiləşdirin</translation>
 <translation id="7232750842195536390">Yenidən adlandırmaq alınmadı</translation>
@@ -5266,7 +5261,6 @@ Bu saytın blok edilməsini düşünmürəm!</translation>
 <translation id="850875081535031620">Zərərli proqram tapılmadı</translation>
 <translation id="8509177919508253835">Təhlükəsizlik açarlarını sıfırlayın və PIN yaradın</translation>
 <translation id="8509646642152301857">Orfoqrafik yoxlama sözlüyünün endirilməsi alınmadı.</translation>
-<translation id="8510617356402557055">Bu, gözlənilməz oldu? <ph name="BEGIN_LINK" />Rəy göndərin<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">Prosesi Bitirin</translation>
 <translation id="851263357009351303"><ph name="HOST" /> şəkilləri göstərməyə hər zaman icazə verin</translation>
 <translation id="8513108775083588393">Avtodönüş</translation>

@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect_model.h"
+#include "third_party/blink/renderer/core/css/css_numeric_literal_value.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -20,6 +21,40 @@ class ScrollTimelineTest : public RenderingTest {
     EnableCompositing();
     RenderingTest::SetUp();
   }
+};
+
+class TestScrollTimeline : public ScrollTimeline {
+ public:
+  TestScrollTimeline(
+      Document* document,
+      Element* scroll_source,
+      CSSPrimitiveValue* start_scroll_offset =
+          CSSNumericLiteralValue::Create(10.0,
+                                         CSSPrimitiveValue::UnitType::kPixels),
+      CSSPrimitiveValue* end_scroll_offset =
+          CSSNumericLiteralValue::Create(90.0,
+                                         CSSPrimitiveValue::UnitType::kPixels))
+      : ScrollTimeline(document,
+                       scroll_source,
+                       ScrollTimeline::Vertical,
+                       start_scroll_offset,
+                       end_scroll_offset,
+                       100.0,
+                       Timing::FillMode::NONE),
+        next_service_scheduled_(false) {}
+
+  void ScheduleServiceOnNextFrame() override {
+    ScrollTimeline::ScheduleServiceOnNextFrame();
+    next_service_scheduled_ = true;
+  }
+  void Trace(blink::Visitor* visitor) override {
+    ScrollTimeline::Trace(visitor);
+  }
+  bool NextServiceScheduled() const { return next_service_scheduled_; }
+  void ResetNextServiceScheduled() { next_service_scheduled_ = false; }
+
+ private:
+  bool next_service_scheduled_;
 };
 
 TEST_F(ScrollTimelineTest, CurrentTimeIsNullIfScrollSourceIsNotScrollable) {
@@ -218,6 +253,104 @@ TEST_F(ScrollTimelineTest, AttachOrDetachAnimationWithNullScrollSource) {
   animation = nullptr;
   ThreadState::Current()->CollectAllGarbageForTesting();
   EXPECT_EQ(0u, scroll_timeline->GetAnimations().size());
+}
+
+TEST_F(ScrollTimelineTest, ScheduleFrameOnlyWhenScrollOffsetChanges) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { overflow: scroll; width: 100px; height: 100px; }
+      #spacer { width: 200px; height: 200px; }
+    </style>
+    <div id='scroller'>
+      <div id ='spacer'></div>
+    </div>
+  )HTML");
+
+  LayoutBoxModelObject* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 20), kProgrammaticScroll);
+
+  Element* scroller_element = GetElementById("scroller");
+  TestScrollTimeline* scroll_timeline =
+      MakeGarbageCollected<TestScrollTimeline>(&GetDocument(),
+                                               scroller_element);
+
+  NonThrowableExceptionState exception_state;
+  Timing timing;
+  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
+  Animation* scroll_animation =
+      Animation::Create(MakeGarbageCollected<KeyframeEffect>(
+                            nullptr,
+                            MakeGarbageCollected<StringKeyframeEffectModel>(
+                                StringKeyframeVector()),
+                            timing),
+                        scroll_timeline, exception_state);
+  scroll_animation->play();
+  UpdateAllLifecyclePhasesForTest();
+
+  // Validate that no frame is scheduled when there is no scroll change.
+  scroll_timeline->ResetNextServiceScheduled();
+  scroll_timeline->ScheduleNextService();
+  EXPECT_FALSE(scroll_timeline->NextServiceScheduled());
+
+  // Validate that frame is scheduled when scroll changes.
+  scroll_timeline->ResetNextServiceScheduled();
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 30), kProgrammaticScroll);
+  scroll_timeline->ScheduleNextService();
+  EXPECT_TRUE(scroll_timeline->NextServiceScheduled());
+}
+
+// TODO(crbug.com/944449): Currently DCHECK, verifying that animations do not
+// need an update after layout phase, fails. Scroll timeline snapshotting will
+// fix it.
+#if DCHECK_IS_ON()
+#define MAYBE_ScheduleFrameWhenScrollerLayoutChanges \
+  DISABLED_ScheduleFrameWhenScrollerLayoutChanges
+#else  // DCHECK_IS_ON()
+#define MAYBE_ScheduleFrameWhenScrollerLayoutChanges \
+  ScheduleFrameWhenScrollerLayoutChanges
+#endif
+// This test verifies scenario when scroll timeline is updated as a result of
+// layout run. In this case the expectation is that at the end of paint
+// lifecycle phase scroll timeline schedules a new frame that runs animations
+// update.
+TEST_F(ScrollTimelineTest, MAYBE_ScheduleFrameWhenScrollerLayoutChanges) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #scroller { overflow: scroll; width: 100px; height: 100px; }
+      #spacer { width: 200px; height: 200px; }
+    </style>
+    <div id='scroller'>
+      <div id ='spacer'></div>
+    </div>
+  )HTML");
+  LayoutBoxModelObject* scroller =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  scrollable_area->SetScrollOffset(ScrollOffset(0, 20), kProgrammaticScroll);
+  Element* scroller_element = GetElementById("scroller");
+  TestScrollTimeline* scroll_timeline =
+      MakeGarbageCollected<TestScrollTimeline>(&GetDocument(), scroller_element,
+                                               nullptr, nullptr);
+  NonThrowableExceptionState exception_state;
+  Timing timing;
+  timing.iteration_duration = AnimationTimeDelta::FromSecondsD(30);
+  Animation* scroll_animation =
+      Animation::Create(MakeGarbageCollected<KeyframeEffect>(
+                            nullptr,
+                            MakeGarbageCollected<StringKeyframeEffectModel>(
+                                StringKeyframeVector()),
+                            timing),
+                        scroll_timeline, exception_state);
+  scroll_animation->play();
+  UpdateAllLifecyclePhasesForTest();
+  // Validate that frame is scheduled when scroller layout changes.
+  Element* spacer_element = GetElementById("spacer");
+  spacer_element->setAttribute(html_names::kStyleAttr, "height:1000px;");
+  scroll_timeline->ResetNextServiceScheduled();
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(scroll_timeline->NextServiceScheduled());
 }
 
 }  //  namespace blink

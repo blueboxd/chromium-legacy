@@ -128,6 +128,8 @@ TEST_F(WorkletAnimationTest, AnimationEventLocalTimeUpdate) {
   worklet_animation_->UpdateState(true, animation_events);
 
   // One event is generated as a result of update state.
+  EXPECT_TRUE(animation_events->needs_time_updated_events());
+  worklet_animation_->TakeTimeUpdatedEvent(animation_events);
   EXPECT_EQ(1u, animation_events->events_.size());
   AnimationEvent event = animation_events->events_[0];
   EXPECT_EQ(AnimationEvent::TIME_UPDATED, event.type);
@@ -138,14 +140,14 @@ TEST_F(WorkletAnimationTest, AnimationEventLocalTimeUpdate) {
   mutator_events = host_->CreateEvents();
   animation_events = static_cast<AnimationEvents*>(mutator_events.get());
   worklet_animation_->UpdateState(true, animation_events);
-  EXPECT_EQ(0u, animation_events->events_.size());
+  EXPECT_FALSE(animation_events->needs_time_updated_events());
 
   // If local time is set to the same value no event is generated.
   worklet_animation_->SetOutputState(state);
   mutator_events = host_->CreateEvents();
   animation_events = static_cast<AnimationEvents*>(mutator_events.get());
   worklet_animation_->UpdateState(true, animation_events);
-  EXPECT_EQ(0u, animation_events->events_.size());
+  EXPECT_FALSE(animation_events->needs_time_updated_events());
 
   // If local time is set to null value, an animation event with null local
   // time is generated.
@@ -156,6 +158,8 @@ TEST_F(WorkletAnimationTest, AnimationEventLocalTimeUpdate) {
   mutator_events = host_->CreateEvents();
   animation_events = static_cast<AnimationEvents*>(mutator_events.get());
   worklet_animation_->UpdateState(true, animation_events);
+  EXPECT_TRUE(animation_events->needs_time_updated_events());
+  worklet_animation_->TakeTimeUpdatedEvent(animation_events);
   EXPECT_EQ(1u, animation_events->events_.size());
   EXPECT_EQ(local_time, animation_events->events_[0].local_time);
 }

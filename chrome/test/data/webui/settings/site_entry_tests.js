@@ -144,6 +144,43 @@ suite('SiteEntry', function() {
   });
 
   test(
+      'with single origin, shows overflow menu if storagePressureUIEnabled',
+      function() {
+        loadTimeData.overrideValues({'enableStoragePressureUI': true});
+        testElement.siteGroup = TEST_SINGLE_SITE_GROUP;
+        Polymer.dom.flush();
+        const overflowMenuButton = testElement.$.overflowMenuButton;
+        assertFalse(overflowMenuButton.closest('.row-aligned').hidden);
+      });
+
+  test('clear data for single origin fires the right method', async function() {
+    loadTimeData.overrideValues({'enableStoragePressureUI': true});
+    testElement.siteGroup =
+        JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    Polymer.dom.flush();
+
+    const collapseChild = testElement.$.originList.get();
+    Polymer.dom.flush();
+    const originList = collapseChild.querySelectorAll('.settings-box');
+    assertEquals(3, originList.length);
+
+    for (let i = 0; i < originList.length; i++) {
+      const menuOpened = test_util.eventToPromise('open-menu', testElement);
+      const originEntry = originList[i];
+      const overflowMenuButton =
+          originEntry.querySelector('#originOverflowMenuButton');
+      overflowMenuButton.click();
+      const openMenuEvent = await menuOpened;
+
+      const args = openMenuEvent.detail;
+      const {actionScope, index, origin} = args;
+      assertEquals('origin', actionScope);
+      assertEquals(testElement.listIndex, index);
+      assertEquals(testElement.siteGroup.origins[i].origin, origin);
+    }
+  });
+
+  test(
       'moving from grouped to ungrouped does not get stuck in opened state',
       function() {
         // Clone this object to avoid propagating changes made in this test.

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
+<translation id="1337778609052285767">Nenosiri unalotumia sasa halitimizi mahitaji ya uthabiti wa nenosiri. Tafadhali wasiliana na msimamizi wako.</translation>
 <translation id="1337821341856692531">Hatua ya kuendelea bila kuweka nenosiri lako la sasa la Windows inaweza kusababisha upoteze maelezo kabisa.</translation>
 <translation id="1383286653814676580">Inatumika kutekeleza ukurasa wa kuingia katika akaunti ya Mtoa Huduma za Vitambulisho vya Google.</translation>
 <translation id="1894475569413661128">Ingia ukitumia akaunti yako ya kazini.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Umeweka nenosiri lisilo sahihi la Windows. Tafadhali jaribu tena.</translation>
 <translation id="2831078752570172210">Akaunti yako imefungwa. Tafadhali wasiliana na msimamizi wako wa mfumo.</translation>
 <translation id="2844349213149998955">Huruhusiwi kuingia ukitumia akaunti ya kibinafsi kwenye kifaa hiki. Tafadhali ingia ukitumia akaunti ya kazini.</translation>
+<translation id="2995851317559936311">Ubadilishaji wa nenosiri unaruhusiwa kwenye kidhibiti cha kikoa pekee. Tafadhali wasiliana na msimamizi wako.</translation>
 <translation id="3306357053520292004">Mtumiaji wa kompyuta hii tayari alikuwa ameongezwa kwa kutumia akaunti hii. Ingia ukitumia akaunti nyingine.</translation>
 <translation id="3926852373333893095">Watumiaji wa G Suite Enterprise tu ndio wanaruhusiwa kuingia katika akaunti.</translation>
 <translation id="4057329986137569701">Hitilafu ya ndani imetokea.</translation>
 <translation id="4267670563222825190">Haikupata mtumiaji wa Kikoa kwenye akaunti yako. Tafadhali wasiliana na msimamizi wako.</translation>
 <translation id="4300229033992784001">Nenosiri la akaunti yako limebadilika. Tafadhali weka nenosiri lako la sasa la Windows ili usawazishe akaunti yako ya Windows na Akaunti yako ya kazini.</translation>
+<translation id="4669462973597624151">Jaribio la kujaribu kubadilisha nenosiri halijafaulu. Tafadhali wasiliana na msimamizi wako.</translation>
 <translation id="4706454071748629324">Imeshindwa kuongeza mtumiaji mpya. Kompyuta hii inaruhusu tu mtumiaji mmoja kuwekwa kwa kutumia akaunti ya kazini.</translation>
+<translation id="5186761973554910131">Jina la kompyuta lisilo sahihi lilitolewa wakati wa jaribio la kubadilisha nenosiri Tafadhali wasiliana na msimamizi wako.</translation>
 <translation id="6033715878377252112">Kisaidizi cha Kitoa Utambulisho Unaotumia kwenye Google kwa ajili ya Windows</translation>
 <translation id="6149399665202317746">Kitoa Utambulisho Unaotumia kwenye Google kwa ajili ya Windows</translation>
 <translation id="6239180560789153226">Kifaa chako kinakosa maelezo ya kurejesha akaunti. Ingia katika akaunti ukitumia akaunti yako ya kazini ya Google.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Ongeza akaunti ya kazini</translation>
 <translation id="7811865856574012727">Msimamizi wako amezuia kifaa kisiingie katika akaunti kwenye vikoa vifuatavyo: <ph name="EMAIL_DOMAINS" />. Jaribu tena ukitumia akaunti sahihi ya kazini.</translation>
 <translation id="7856245195110636219">Haiwezi kuendelea bila kuweka nenosiri la sasa la Windows. Tafadhali wasiliana na msimamizi wa mfumo.</translation>
+<translation id="8109730953933509335">Kulikuwa na jaribio la kubadilisha nenosiri kwenye mtumiaji asiye sahihi. Tafadhali wasiliana na msimamizi wako.</translation>
 <translation id="8639729688781680518">Umesahau Nenosiri la Windows</translation>
 <translation id="866458870819756755">Imeshindwa kuweka mtumiaji.</translation>
 <translation id="8875753657315897487">Ingia ukitumia akaunti yako ya kazini</translation>

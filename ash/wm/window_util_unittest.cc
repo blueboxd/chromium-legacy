@@ -214,14 +214,14 @@ TEST_F(WindowUtilTest, RemoveTransientDescendants) {
 }
 
 TEST_F(WindowUtilTest,
-       HideAndMaybeMinimizeWithoutAnimationMinimizesArcWindowsBeforeHiding) {
+       MinimizeAndHideWithoutAnimationMinimizesArcWindowsBeforeHiding) {
   auto window = CreateTestWindow();
   auto* state = new FakeWindowState();
   WindowState::Get(window.get())
       ->SetStateObject(std::unique_ptr<WindowState::State>(state));
 
   std::vector<aura::Window*> windows = {window.get()};
-  HideAndMaybeMinimizeWithoutAnimation(windows, /*minimize=*/true);
+  MinimizeAndHideWithoutAnimation(windows);
 
   EXPECT_FALSE(window->IsVisible());
   EXPECT_TRUE(state->was_visible_on_minimize());

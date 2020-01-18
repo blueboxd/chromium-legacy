@@ -418,22 +418,6 @@ content::mojom::WindowContainerType WindowFeaturesToContainerType(
   }
 }
 
-// Check content::BrowserControlsState, and cc::BrowserControlsState
-// are kept in sync.
-static_assert(int(BROWSER_CONTROLS_STATE_SHOWN) ==
-                  int(cc::BrowserControlsState::kShown),
-              "mismatching enums: SHOWN");
-static_assert(int(BROWSER_CONTROLS_STATE_HIDDEN) ==
-                  int(cc::BrowserControlsState::kHidden),
-              "mismatching enums: HIDDEN");
-static_assert(int(BROWSER_CONTROLS_STATE_BOTH) ==
-                  int(cc::BrowserControlsState::kBoth),
-              "mismatching enums: BOTH");
-
-cc::BrowserControlsState ContentToCc(BrowserControlsState state) {
-  return static_cast<cc::BrowserControlsState>(state);
-}
-
 }  // namespace
 
 RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
@@ -1448,7 +1432,7 @@ void RenderViewImpl::CloseWindowSoon() {
   // If the main frame is in this RenderView's frame tree, then the Close
   // request gets routed through the RenderWidget since non-frame RenderWidgets
   // share the code path.
-  render_widget_->CloseWidgetSoon();
+  main_render_frame_->GetLocalRootRenderWidget()->CloseWidgetSoon();
 }
 
 base::StringPiece RenderViewImpl::GetSessionStorageNamespaceId() {
@@ -1637,26 +1621,6 @@ void RenderViewImpl::DidUpdateMainFrameLayout() {
   needs_preferred_size_update_ = true;
 }
 
-void RenderViewImpl::UpdateBrowserControlsState(
-    BrowserControlsState constraints,
-    BrowserControlsState current,
-    bool animate) {
-  TRACE_EVENT2("renderer", "RenderViewImpl::UpdateBrowserControlsState",
-               "Constraint", static_cast<int>(constraints), "Current",
-               static_cast<int>(current));
-  TRACE_EVENT_INSTANT1("renderer", "is_animated", TRACE_EVENT_SCOPE_THREAD,
-                       "animated", animate);
-
-  if (render_widget_ && render_widget_->layer_tree_view()) {
-    render_widget_->layer_tree_view()
-        ->layer_tree_host()
-        ->UpdateBrowserControlsState(ContentToCc(constraints),
-                                     ContentToCc(current), animate);
-  }
-
-  top_controls_constraints_ = constraints;
-}
-
 void RenderViewImpl::RegisterRendererPreferenceWatcher(
     mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher) {
   renderer_preference_watchers_.Add(std::move(watcher));
@@ -1694,35 +1658,24 @@ void RenderViewImpl::SetEditCommandForNextKeyEvent(const std::string& name,
                                                    const std::string& value) {
   // This is test-only code. Only propagate the command if there is a main
   // render frame.
-  if (main_render_frame_)
-    render_widget_->SetEditCommandForNextKeyEvent(name, value);
+  if (main_render_frame_) {
+    RenderWidget* widget = main_render_frame_->GetLocalRootRenderWidget();
+    widget->SetEditCommandForNextKeyEvent(name, value);
+  }
 }
 
 void RenderViewImpl::ClearEditCommands() {
   // This is test-only code. Only propagate the command if there is a main
   // render frame.
-  if (main_render_frame_)
-    render_widget_->ClearEditCommands();
+  if (main_render_frame_) {
+    RenderWidget* widget = main_render_frame_->GetLocalRootRenderWidget();
+    widget->ClearEditCommands();
+  }
 }
 
 const std::string& RenderViewImpl::GetAcceptLanguages() {
   return renderer_preferences_.accept_languages;
 }
-
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-
-void RenderViewImpl::didScrollWithKeyboard(const blink::WebSize& delta) {
-  if (delta.height == 0)
-    return;
-
-  BrowserControlsState current = delta.height < 0
-                                     ? BROWSER_CONTROLS_STATE_SHOWN
-                                     : BROWSER_CONTROLS_STATE_HIDDEN;
-
-  UpdateBrowserControlsState(top_controls_constraints_, current, true);
-}
-
-#endif
 
 void RenderViewImpl::UpdatePreferredSize() {
   // We don't always want to send the change messages over IPC, only if we've
@@ -1737,7 +1690,8 @@ void RenderViewImpl::UpdatePreferredSize() {
 
   blink::WebSize web_size = webview()->ContentsPreferredMinimumSize();
   blink::WebRect web_rect(0, 0, web_size.width, web_size.height);
-  render_widget_->ConvertViewportToWindow(&web_rect);
+  main_render_frame_->GetLocalRootRenderWidget()->ConvertViewportToWindow(
+      &web_rect);
   gfx::Size size(web_rect.width, web_rect.height);
 
   if (size != preferred_size_) {
@@ -1757,10 +1711,6 @@ bool RenderViewImpl::Send(IPC::Message* message) {
   // keep that up.
   CHECK_NE(message->routing_id(), MSG_ROUTING_NONE);
   return RenderThread::Get()->Send(message);
-}
-
-RenderWidget* RenderViewImpl::GetWidget() {
-  return render_widget_.get();
 }
 
 RenderFrameImpl* RenderViewImpl::GetMainRenderFrame() {
@@ -1805,15 +1755,6 @@ void RenderViewImpl::ApplyPageVisibilityState(
     observer.OnPageVisibilityChanged(visibility_state);
   // Note: RenderWidget visibility is separately set from the IPC handlers, and
   // does not change when tests override the visibility of the Page.
-}
-
-void RenderViewImpl::CloseMainFrameRenderWidget() {
-  // We pass ownership of |render_widget_| to itself. Grab a raw pointer to
-  // call the Close() method on so we don't have to be a C++ expert to know
-  // whether we will end up with a nullptr where we didn't intend due to order
-  // of execution.
-  RenderWidget* closing_widget = render_widget_.get();
-  closing_widget->CloseForFrame(std::move(render_widget_));
 }
 
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
@@ -1973,8 +1914,8 @@ void RenderViewImpl::DidUpdateTextAutosizerPageInfo(
 
 void RenderViewImpl::DidAutoResize(const blink::WebSize& newSize) {
   // Auto resize should only happen on local main frames.
-  DCHECK(render_widget_);
-  render_widget_->DidAutoResize(newSize);
+  DCHECK(main_render_frame_);
+  main_render_frame_->GetLocalRootRenderWidget()->DidAutoResize(newSize);
 }
 
 void RenderViewImpl::DidFocus(blink::WebLocalFrame* calling_frame) {
@@ -2018,19 +1959,21 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
   // If the main frame is remote, return immediately. Page level focus
   // should be set from the browser process, so if needed by tests it should
   // be properly supported.
-  if (webview()->MainFrame()->IsWebRemoteFrame())
+  if (!main_render_frame_)
     return;
 
-  if (enable == render_widget_->has_focus())
+  RenderWidget* render_widget = main_render_frame_->GetLocalRootRenderWidget();
+
+  if (enable == render_widget->has_focus())
     return;
 
   if (enable) {
     SetActiveForWidget(true);
     // Fake an IPC message so go through the IPC handler.
-    render_widget_->OnSetFocus(true);
+    render_widget->OnSetFocus(true);
   } else {
     // Fake an IPC message so go through the IPC handler.
-    render_widget_->OnSetFocus(false);
+    render_widget->OnSetFocus(false);
     SetActiveForWidget(false);
   }
 }

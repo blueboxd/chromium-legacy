@@ -607,7 +607,8 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
      */
     public SettingsActivity startSettingsActivity(String fragmentName) {
         Context context = InstrumentationRegistry.getTargetContext();
-        Intent intent = SettingsLauncher.createIntentForSettingsPage(context, fragmentName);
+        Intent intent =
+                SettingsLauncher.getInstance().createIntentForSettingsPage(context, fragmentName);
         Activity activity = InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
         Assert.assertTrue(activity instanceof SettingsActivity);
         return (SettingsActivity) activity;

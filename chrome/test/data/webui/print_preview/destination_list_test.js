@@ -62,17 +62,20 @@ suite(destination_list_test.suiteName, function() {
     const items =
         list.shadowRoot.querySelectorAll('print-preview-destination-list-item');
     const noMatchHint = list.$$('.no-destinations-message');
+    const ironList = list.$.list;
 
     // Query is initialized to null. All items are shown and the hint is
     // hidden.
-    items.forEach(item => assertFalse(item.hidden));
+    assertFalse(ironList.hidden);
+    items.forEach(item => assertFalse(item.parentNode.hidden));
     assertTrue(noMatchHint.hidden);
 
     // Searching for "e" should show "One", "Three", and "Five".
     list.searchQuery = /(e)/ig;
     flush();
+    assertFalse(ironList.hidden);
     assertEquals(undefined, Array.from(items).find(item => {
-      return !item.hidden &&
+      return !item.parentNode.hidden &&
           (item.destination.displayName == 'Two' ||
            item.destination.displayName == 'Four');
     }));
@@ -81,8 +84,9 @@ suite(destination_list_test.suiteName, function() {
     // Searching for "ABC" should show "One" and "Three".
     list.searchQuery = /(ABC)/ig;
     flush();
+    assertFalse(ironList.hidden);
     assertEquals(undefined, Array.from(items).find(item => {
-      return !item.hidden && item.destination.displayName != 'One' &&
+      return !item.parentNode.hidden && item.destination.displayName != 'One' &&
           item.destination.displayName != 'Three';
     }));
     assertTrue(noMatchHint.hidden);
@@ -90,8 +94,10 @@ suite(destination_list_test.suiteName, function() {
     // Searching for "F" should show "Four" and "Five"
     list.searchQuery = /(F)/ig;
     flush();
+    assertFalse(ironList.hidden);
     assertEquals(undefined, Array.from(items).find(item => {
-      return !item.hidden && item.destination.displayName != 'Four' &&
+      return !item.parentNode.hidden &&
+          item.destination.displayName != 'Four' &&
           item.destination.displayName != 'Five';
     }));
     assertTrue(noMatchHint.hidden);
@@ -100,14 +106,15 @@ suite(destination_list_test.suiteName, function() {
     // match" hint.
     list.searchQuery = /(UVW)/ig;
     flush();
-    items.forEach(item => assertTrue(item.hidden));
+    assertTrue(ironList.hidden);
     assertFalse(noMatchHint.hidden);
 
     // Searching for 123 should show destinations "Three", "Four", and "Five".
     list.searchQuery = /(123)/ig;
     flush();
+    assertFalse(ironList.hidden);
     assertEquals(undefined, Array.from(items).find(item => {
-      return !item.hidden &&
+      return !item.parentNode.hidden &&
           (item.destination.displayName == 'One' ||
            item.destination.displayName == 'Two');
     }));
@@ -116,7 +123,8 @@ suite(destination_list_test.suiteName, function() {
     // Clearing the query restores the original state.
     list.searchQuery = null;
     flush();
-    items.forEach(item => assertFalse(item.hidden));
+    assertFalse(ironList.hidden);
+    items.forEach(item => assertFalse(item.parentNode.hidden));
     assertTrue(noMatchHint.hidden);
   });
 

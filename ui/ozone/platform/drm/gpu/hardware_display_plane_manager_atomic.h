@@ -38,8 +38,7 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
                     HardwareDisplayPlane* hw_plane,
                     const DrmOverlayPlane& overlay,
                     uint32_t crtc_id,
-                    const gfx::Rect& src_rect,
-                    CrtcController* crtc) override;
+                    const gfx::Rect& src_rect) override;
 
  private:
   bool InitializePlanes() override;
@@ -48,7 +47,7 @@ class HardwareDisplayPlaneManagerAtomic : public HardwareDisplayPlaneManager {
   bool CommitGammaCorrection(const CrtcProperties& crtc_props) override;
   bool AddOutFencePtrProperties(
       drmModeAtomicReqPtr property_set,
-      const std::vector<CrtcController*>& crtcs,
+      const std::vector<uint32_t>& crtcs,
       std::vector<base::ScopedFD>* out_fence_fds,
       std::vector<base::ScopedFD::Receiver>* out_fence_fd_receivers);
 

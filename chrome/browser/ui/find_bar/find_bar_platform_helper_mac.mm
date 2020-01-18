@@ -7,13 +7,14 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #import "chrome/browser/ui/find_bar/find_bar_platform_helper.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/find_in_page/find_tab_helper.h"
+#include "components/find_in_page/find_types.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/find_pasteboard.h"
 
@@ -40,16 +41,11 @@ class FindBarPlatformHelperMac : public FindBarPlatformHelper {
   }
 
   void OnUserChangedFindText(base::string16 text) override {
-    Browser* browser = find_bar_controller_->browser();
-    if (!browser)
+    if (find_bar_controller_->web_contents()
+            ->GetBrowserContext()
+            ->IsOffTheRecord()) {
       return;
-
-    Profile* profile = browser->profile();
-    if (!profile)
-      return;
-
-    if (profile->IsOffTheRecord())
-      return;
+    }
 
     [[FindPasteboard sharedInstance]
         setFindText:base::SysUTF16ToNSString(text)];
@@ -59,8 +55,10 @@ class FindBarPlatformHelperMac : public FindBarPlatformHelper {
   void UpdateFindBarControllerFromPasteboard() {
     content::WebContents* active_web_contents =
         find_bar_controller_->web_contents();
-
-    Browser* browser = find_bar_controller_->browser();
+    Browser* browser =
+        active_web_contents
+            ? chrome::FindBrowserWithWebContents(active_web_contents)
+            : nullptr;
     if (browser) {
       TabStripModel* tab_strip_model = browser->tab_strip_model();
 
@@ -69,9 +67,9 @@ class FindBarPlatformHelperMac : public FindBarPlatformHelper {
             tab_strip_model->GetWebContentsAt(i);
         if (active_web_contents == web_contents)
           continue;
-        FindTabHelper* find_tab_helper =
-            FindTabHelper::FromWebContents(web_contents);
-        find_tab_helper->StopFinding(FindOnPageSelectionAction::kClear);
+        find_in_page::FindTabHelper* find_tab_helper =
+            find_in_page::FindTabHelper::FromWebContents(web_contents);
+        find_tab_helper->StopFinding(find_in_page::SelectionAction::kClear);
       }
     }
 

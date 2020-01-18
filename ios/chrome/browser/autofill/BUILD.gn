@@ -76,9 +76,7 @@ source_set("autofill") {
     "//ui/base",
     "//url",
   ]
-  public_deps = [
-    ":constants",
-  ]
+  public_deps = [ ":constants" ]
   libs = [ "QuartzCore.framework" ]
 }
 
@@ -506,19 +504,15 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/autofill/heuristics/output/157_bug_971402_opentable_checkout.out",
     "//components/test/data/autofill/heuristics/output/159_bug_966406_transavia.com.out",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "form_input_egtest.mm",
-  ]
+  sources = [ "form_input_egtest.mm" ]
   deps = [
     ":autofill",
     "//base",
@@ -546,9 +540,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "form_input_egtest.mm",
-  ]
+  sources = [ "form_input_egtest.mm" ]
   deps = [
     "//base",
     "//base/test:test_support",

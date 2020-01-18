@@ -122,6 +122,7 @@ class NodeWrapper extends SAChildNode {
 
   /** @override */
   onFocus() {
+    super.onFocus();
     this.baseNode_.addEventListener(
         chrome.automation.EventType.LOCATION_CHANGED,
         this.locationChangedHandler_, false /* is_capture */);
@@ -129,6 +130,7 @@ class NodeWrapper extends SAChildNode {
 
   /** @override */
   onUnfocus() {
+    super.onUnfocus();
     this.baseNode_.removeEventListener(
         chrome.automation.EventType.LOCATION_CHANGED,
         this.locationChangedHandler_, false /* is_capture */);
@@ -256,6 +258,7 @@ class RootNodeWrapper extends SARootNode {
 
   /** @override */
   onFocus() {
+    super.onFocus();
     this.baseNode_.addEventListener(
         chrome.automation.EventType.LOCATION_CHANGED,
         this.locationChangedHandler_, false /* is_capture */);
@@ -263,6 +266,7 @@ class RootNodeWrapper extends SARootNode {
 
   /** @override */
   onUnfocus() {
+    super.onUnfocus();
     this.baseNode_.removeEventListener(
         chrome.automation.EventType.LOCATION_CHANGED,
         this.locationChangedHandler_, false /* is_capture */);

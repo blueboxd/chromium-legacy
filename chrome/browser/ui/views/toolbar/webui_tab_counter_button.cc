@@ -56,7 +56,7 @@ class TabCounterAnimator : public gfx::AnimationDelegate {
         disappearing_label_(disappearing_label),
         label_animation_(
             std::vector<gfx::MultiAnimation::Part>{
-                // Stay in place by canceling out our container's animation.
+                // Stay in place.
                 gfx::MultiAnimation::Part(kFirstPartDuration,
                                           gfx::Tween::Type::ZERO),
                 // Swap out to the new label.
@@ -71,7 +71,9 @@ class TabCounterAnimator : public gfx::AnimationDelegate {
                                           gfx::Tween::Type::EASE_OUT),
                 gfx::MultiAnimation::Part(
                     base::TimeDelta::FromMilliseconds(150),
-                    gfx::Tween::Type::EASE_IN)},
+                    gfx::Tween::Type::EASE_IN_OUT),
+                gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(50),
+                                          gfx::Tween::Type::EASE_IN_OUT)},
             gfx::MultiAnimation::kDefaultTimerInterval) {
     label_animation_.set_delegate(this);
     label_animation_.set_continuous(false);
@@ -94,27 +96,42 @@ class TabCounterAnimator : public gfx::AnimationDelegate {
   // AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override {
     // |border_view_| does a hop (if |increasing_| is false) or a dip (if true).
-    const float border_animation_value =
-        border_animation_.current_part_index() == 0
-            ? border_animation_.GetCurrentValue()
-            : 1 - border_animation_.GetCurrentValue();
-    const int border_y_delta = gfx::Tween::IntValueBetween(
-        border_animation_value, 0, GetBorderTargetYDelta());
+    int border_y_delta = 0;
+    switch (border_animation_.current_part_index()) {
+      case 0:
+        // Move away.
+        border_y_delta = gfx::Tween::IntValueBetween(
+            border_animation_.GetCurrentValue(), 0, GetBorderTargetYDelta());
+        break;
+      case 1:
+        // Return, slightly overshooting the start position.
+        border_y_delta = gfx::Tween::IntValueBetween(
+            border_animation_.GetCurrentValue(), GetBorderTargetYDelta(),
+            GetBorderOvershootYDelta());
+        break;
+      case 2:
+        // Return back to the start position.
+        border_y_delta = gfx::Tween::IntValueBetween(
+            border_animation_.GetCurrentValue(), GetBorderOvershootYDelta(), 0);
+        break;
+      default:
+        NOTREACHED();
+    }
     border_view_->SetY(GetBorderStartingY() + border_y_delta);
 
     // |appearing_label_| scrolls into view - from above if |increasing_|
     // is false, and from below otherwise.
-    const int appearing_label_position = gfx::Tween::IntValueBetween(
-        label_animation_.GetCurrentValue(),
-        GetAppearingLabelStartPosition() - border_y_delta, 0);
-    appearing_label_->SetY(appearing_label_position);
+    const int appearing_label_position =
+        gfx::Tween::IntValueBetween(label_animation_.GetCurrentValue(),
+                                    GetAppearingLabelStartPosition(), 0);
+    appearing_label_->SetY(appearing_label_position - border_y_delta);
 
     // |disappearing_label_| scrolls out of view - out the bottom if
     // |increasing_| is false, and from below otherwise.
-    const int disappearing_label_position = gfx::Tween::IntValueBetween(
-        label_animation_.GetCurrentValue(), -border_y_delta,
-        GetDisappearingLabelTargetPosition());
-    disappearing_label_->SetY(disappearing_label_position);
+    const int disappearing_label_position =
+        gfx::Tween::IntValueBetween(label_animation_.GetCurrentValue(), 0,
+                                    GetDisappearingLabelTargetPosition());
+    disappearing_label_->SetY(disappearing_label_position - border_y_delta);
   }
 
   void AnimationEnded(const gfx::Animation* animation) override {
@@ -123,6 +140,8 @@ class TabCounterAnimator : public gfx::AnimationDelegate {
 
  private:
   int GetBorderTargetYDelta() const { return increasing_ ? 4 : -4; }
+
+  int GetBorderOvershootYDelta() const { return increasing_ ? -2 : 2; }
 
   int GetAppearingLabelStartPosition() const {
     return increasing_ ? -kOffscreenLabelDistance : kOffscreenLabelDistance;

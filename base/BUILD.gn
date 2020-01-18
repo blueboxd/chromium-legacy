@@ -2846,6 +2846,7 @@ test("base_unittests") {
     sources += [
       "allocator/allocator_interception_mac_unittest.mm",
       "allocator/malloc_zone_functions_mac_unittest.cc",
+      "enterprise_util_mac_unittest.mm",
       "mac/bind_objc_block_unittest.mm",
       "mac/call_with_eh_frame_unittest.mm",
       "mac/dispatch_source_mach_unittest.cc",

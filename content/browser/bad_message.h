@@ -250,6 +250,8 @@ enum BadMessageReason {
   RFPH_ADVANCE_FOCUS_INTO_PORTAL = 222,
   RFH_UNEXPECTED_EMBEDDING_TOKEN = 223,
   RFH_MISSING_EMBEDDING_TOKEN = 224,
+  RFH_BAD_DOCUMENT_POLICY_HEADER = 225,
+  RFMF_INVALID_PLUGIN_EMBEDDER_ORIGIN = 226,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

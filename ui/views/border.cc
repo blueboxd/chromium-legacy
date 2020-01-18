@@ -33,15 +33,12 @@ class SolidSidedBorder : public Border {
 
  private:
   const gfx::Insets insets_;
-  const SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(SolidSidedBorder);
 };
 
 SolidSidedBorder::SolidSidedBorder(const gfx::Insets& insets, SkColor color)
-    : insets_(insets),
-      color_(color) {
-}
+    : Border(color), insets_(insets) {}
 
 void SolidSidedBorder::Paint(const View& view, gfx::Canvas* canvas) {
   // Undo DSF so that we can be sure to draw an integral number of pixels for
@@ -63,7 +60,7 @@ void SolidSidedBorder::Paint(const View& view, gfx::Canvas* canvas) {
   scaled_bounds.Inset(insets_.Scale(dsf));
   canvas->sk_canvas()->clipRect(gfx::RectFToSkRect(scaled_bounds),
                                 SkClipOp::kDifference, true);
-  canvas->DrawColor(color_);
+  canvas->DrawColor(color());
 }
 
 gfx::Insets SolidSidedBorder::GetInsets() const {
@@ -91,7 +88,6 @@ class RoundedRectBorder : public Border {
   const int thickness_;
   const int corner_radius_;
   const gfx::Insets paint_insets_;
-  const SkColor color_;
 
   DISALLOW_COPY_AND_ASSIGN(RoundedRectBorder);
 };
@@ -100,15 +96,15 @@ RoundedRectBorder::RoundedRectBorder(int thickness,
                                      int corner_radius,
                                      const gfx::Insets& paint_insets,
                                      SkColor color)
-    : thickness_(thickness),
+    : Border(color),
+      thickness_(thickness),
       corner_radius_(corner_radius),
-      paint_insets_(paint_insets),
-      color_(color) {}
+      paint_insets_(paint_insets) {}
 
 void RoundedRectBorder::Paint(const View& view, gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setStrokeWidth(thickness_);
-  flags.setColor(color_);
+  flags.setColor(color());
   flags.setStyle(cc::PaintFlags::kStroke_Style);
   flags.setAntiAlias(true);
 
@@ -227,6 +223,8 @@ gfx::Size BorderPainter::GetMinimumSize() const {
 }  // namespace
 
 Border::Border() = default;
+
+Border::Border(SkColor color) : color_(color) {}
 
 Border::~Border() = default;
 

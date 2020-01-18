@@ -468,7 +468,7 @@ public class SearchEngineAdapter extends BaseAdapter
         if (linkBeingShown == R.string.search_engine_system_location_disabled) {
             mContext.startActivity(LocationUtils.getInstance().getSystemLocationSettingsIntent());
         } else {
-            SettingsLauncher.launchSettingsPage(mContext, SingleWebsiteSettings.class,
+            SettingsLauncher.getInstance().launchSettingsPage(mContext, SingleWebsiteSettings.class,
                     SingleWebsiteSettings.createFragmentArgsForSite(url));
         }
     }

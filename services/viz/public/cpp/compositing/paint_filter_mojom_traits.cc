@@ -51,7 +51,7 @@ bool StructTraits<viz::mojom::PaintFilterDataView, sk_sp<cc::PaintFilter>>::
   // and serialization of PaintRecords.
   std::vector<uint8_t> scratch_buffer;
   cc::PaintOp::DeserializeOptions options(nullptr, nullptr, nullptr,
-                                          &scratch_buffer);
+                                          &scratch_buffer, false);
   cc::PaintOpReader reader(buffer->data(), buffer->size(), options,
                            true /* enable_security_constraints */);
   sk_sp<cc::PaintFilter> filter;

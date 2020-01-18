@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
+<translation id="1337778609052285767">Aktuálne heslo nespĺňa požiadavky na zložitosť hesla. Kontaktujte správcu.</translation>
 <translation id="1337821341856692531">Ak budete pokračovať bez zadania aktuálneho hesla systému Windows, môže dôjsť k nevratnej strate informácií.</translation>
 <translation id="1383286653814676580">Používa sa na spúšťanie prihlasovacej stránky poskytovateľa poverení Google</translation>
 <translation id="1894475569413661128">Prihláste sa pomocou pracovného účtu.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Zadali ste nesprávne heslo pre Windows. Skúste to znova.</translation>
 <translation id="2831078752570172210">Účet je pre vás uzamknutý. Obráťte sa na správcu systému.</translation>
 <translation id="2844349213149998955">V tomto zariadení sa nemôžete prihlásiť pomocou osobného účtu. Prihláste sa pomocou pracovného.</translation>
+<translation id="2995851317559936311">Zmena hesla je povolená iba v ovládači domény. Kontaktujte správcu.</translation>
 <translation id="3306357053520292004">Pomocou tohoto účtu už bol do tohto počítača pridaný používateľ. Prihláste sa pomocou iného účtu.</translation>
 <translation id="3926852373333893095">Prihlásiť sa môžu iba používatelia služby G Suite Enterprise.</translation>
 <translation id="4057329986137569701">Vyskytla sa interná chyba.</translation>
 <translation id="4267670563222825190">Pre váš účet sa nenašiel žiadny používateľ domény. Kontaktujte správcu.</translation>
 <translation id="4300229033992784001">Zmenilo sa heslo vášho účtu. Zadajte svoje aktuálne heslo systému Windows, aby sa váš účet Windows synchronizoval s pracovným účtom.</translation>
+<translation id="4669462973597624151">Pokus o zmenu hesla zlyhal. Kontaktujte správcu.</translation>
 <translation id="4706454071748629324">Nepodarilo sa pridať nového používateľa. V tomto počítači je možné pomocou pracovného účtu vytvoriť iba jedného používateľa.</translation>
+<translation id="5186761973554910131">Pri pokuse o zmenu hesla bol zadaný nesprávny názov počítača. Kontaktujte správcu.</translation>
 <translation id="6033715878377252112">Pomocník poskytovateľa poverení Google pre Windows</translation>
 <translation id="6149399665202317746">Poskytovateľ poverení Google pre Windows</translation>
 <translation id="6239180560789153226">Chýbajú informácie na obnovenie vášho zariadenia. Prihláste sa pomocou pracovného účtu Google.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Pridať pracovný účet</translation>
 <translation id="7811865856574012727">Správca obmedzil prihlásenie zariadenia v nasledujúcich doménach: <ph name="EMAIL_DOMAINS" />. Skúste to znova pomocou platného pracovného účtu.</translation>
 <translation id="7856245195110636219">Bez zadania aktuálneho hesla systému Windows nie je možné pokračovať. Kontaktujte správcu systému.</translation>
+<translation id="8109730953933509335">Prebehol pokus o zmenu hesla nesprávneho používateľa. Kontaktujte správcu.</translation>
 <translation id="8639729688781680518">Nepamätám si heslo systému Windows</translation>
 <translation id="866458870819756755">Používateľa sa nepodarilo vytvoriť.</translation>
 <translation id="8875753657315897487">Prihláste sa pomocou pracovného účtu</translation>

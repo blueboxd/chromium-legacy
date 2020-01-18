@@ -146,10 +146,6 @@ double WebPerformance::LoadEventEnd() const {
   return MillisecondsToSeconds(private_->timing()->loadEventEnd());
 }
 
-double WebPerformance::FirstLayout() const {
-  return MillisecondsToSeconds(private_->timing()->FirstLayout());
-}
-
 double WebPerformance::FirstPaint() const {
   return MillisecondsToSeconds(private_->timing()->FirstPaint());
 }

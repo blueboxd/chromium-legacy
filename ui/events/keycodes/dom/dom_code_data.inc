@@ -103,6 +103,12 @@ DOM_CODE_DECLARATION {
   DOM_CODE(0x000014, 0x0000, 0x0000, 0x0000, 0xffff, "Suspend", SUSPEND),
   DOM_CODE(0x000015, 0x0000, 0x0000, 0x0000, 0xffff, "Resume", RESUME),
   DOM_CODE(0x000016, 0x0000, 0x0000, 0x0000, 0xffff, "Turbo", TURBO),
+  // TODO(b/146683484): HID usage for privacy screen control is not yet
+  // approved. Once it is update the code here.
+  // TODO(https://crbug.com/952051): Privacy screen will not have a DOM |code|
+  // name defined as it is not exposed to web content.
+  DOM_CODE(0x000017, 0x0279, 0x0281, 0x0000, 0xffff, "PrivacyScreenToggle",
+             PRIVACY_SCREEN_TOGGLE),  // Privacy Screen Toggle
 
   // =========================================
   // USB Usage Page 0x01: Generic Desktop Page

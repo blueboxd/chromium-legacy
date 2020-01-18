@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/frame/csp/csp_directive_list.h"
 #include "third_party/blink/renderer/core/html/html_script_element.h"
+#include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
 #include "third_party/blink/renderer/platform/crypto.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -1642,6 +1643,142 @@ TEST_F(ContentSecurityPolicyTest, OpaqueOriginBeforeBind) {
                         IntegrityMetadataSet(), kParserInserted,
                         ResourceRequest::RedirectStatus::kNoRedirect,
                         SecurityViolationReportingPolicy::kSuppressReporting));
+}
+
+TEST_F(ContentSecurityPolicyTest, ReasonableRestrictionMetrics) {
+  struct TestCase {
+    const char* header;
+    bool expected_object;
+    bool expected_base;
+    bool expected_script;
+  } cases[] = {{"object-src 'none'", true, false, false},
+               {"object-src 'none'; base-uri 'none'", true, true, false},
+               {"object-src 'none'; base-uri 'none'; script-src 'none'", true,
+                true, true},
+               {"object-src 'none'; base-uri 'none'; script-src 'nonce-abc'",
+                true, true, true},
+               {"object-src 'none'; base-uri 'none'; script-src 'sha256-abc'",
+                true, true, true},
+               {"object-src 'none'; base-uri 'none'; script-src 'nonce-abc' "
+                "'strict-dynamic'",
+                true, true, true},
+               {"object-src 'none'; base-uri 'none'; script-src 'sha256-abc' "
+                "'strict-dynamic'",
+                true, true, true},
+               {"object-src 'none'; base-uri 'none'; script-src 'sha256-abc' "
+                "https://example.com/",
+                true, true, false},
+               {"object-src 'none'; base-uri 'none'; script-src 'sha256-abc' "
+                "https://example.com/ 'strict-dynamic'",
+                true, true, true}};
+
+  // Enforced
+  for (const auto& test : cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "[Enforce] Header: `" << test.header << "`");
+    csp = MakeGarbageCollected<ContentSecurityPolicy>();
+    csp->DidReceiveHeader(test.header, ContentSecurityPolicyType::kEnforce,
+                          ContentSecurityPolicySource::kHTTP);
+    auto dummy = std::make_unique<DummyPageHolder>();
+    csp->BindToDelegate(
+        dummy->GetDocument().GetContentSecurityPolicyDelegate());
+
+    EXPECT_EQ(test.expected_object,
+              dummy->GetDocument().IsUseCounted(
+                  WebFeature::kCSPWithReasonableObjectRestrictions));
+    EXPECT_EQ(test.expected_base,
+              dummy->GetDocument().IsUseCounted(
+                  WebFeature::kCSPWithReasonableBaseRestrictions));
+    EXPECT_EQ(test.expected_script,
+              dummy->GetDocument().IsUseCounted(
+                  WebFeature::kCSPWithReasonableScriptRestrictions));
+    EXPECT_EQ(
+        test.expected_object && test.expected_base && test.expected_script,
+        dummy->GetDocument().IsUseCounted(
+            WebFeature::kCSPWithReasonableRestrictions));
+  }
+
+  // Report-Only
+  for (const auto& test : cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "[ReportOnly] Header: `" << test.header << "`");
+    csp = MakeGarbageCollected<ContentSecurityPolicy>();
+    csp->DidReceiveHeader(test.header, ContentSecurityPolicyType::kReport,
+                          ContentSecurityPolicySource::kHTTP);
+    auto dummy = std::make_unique<DummyPageHolder>();
+    csp->BindToDelegate(
+        dummy->GetDocument().GetContentSecurityPolicyDelegate());
+
+    EXPECT_EQ(test.expected_object,
+              dummy->GetDocument().IsUseCounted(
+                  WebFeature::kCSPROWithReasonableObjectRestrictions));
+    EXPECT_EQ(test.expected_base,
+              dummy->GetDocument().IsUseCounted(
+                  WebFeature::kCSPROWithReasonableBaseRestrictions));
+    EXPECT_EQ(test.expected_script,
+              dummy->GetDocument().IsUseCounted(
+                  WebFeature::kCSPROWithReasonableScriptRestrictions));
+    EXPECT_EQ(
+        test.expected_object && test.expected_base && test.expected_script,
+        dummy->GetDocument().IsUseCounted(
+            WebFeature::kCSPROWithReasonableRestrictions));
+  }
+}
+
+TEST_F(ContentSecurityPolicyTest, BetterThanReasonableRestrictionMetrics) {
+  struct TestCase {
+    const char* header;
+    bool expected;
+  } cases[] = {
+      {"object-src 'none'", false},
+      {"object-src 'none'; base-uri 'none'", false},
+      {"object-src 'none'; base-uri 'none'; script-src 'none'", true},
+      {"object-src 'none'; base-uri 'none'; script-src 'nonce-abc'", true},
+      {"object-src 'none'; base-uri 'none'; script-src 'sha256-abc'", true},
+      {"object-src 'none'; base-uri 'none'; script-src 'nonce-abc' "
+       "'strict-dynamic'",
+       false},
+      {"object-src 'none'; base-uri 'none'; script-src 'sha256-abc' "
+       "'strict-dynamic'",
+       false},
+      {"object-src 'none'; base-uri 'none'; script-src 'sha256-abc' "
+       "https://example.com/",
+       false},
+      {"object-src 'none'; base-uri 'none'; script-src 'sha256-abc' "
+       "https://example.com/ 'strict-dynamic'",
+       false}};
+
+  // Enforced
+  for (const auto& test : cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "[Enforce] Header: `" << test.header << "`");
+    csp = MakeGarbageCollected<ContentSecurityPolicy>();
+    csp->DidReceiveHeader(test.header, ContentSecurityPolicyType::kEnforce,
+                          ContentSecurityPolicySource::kHTTP);
+    auto dummy = std::make_unique<DummyPageHolder>();
+    csp->BindToDelegate(
+        dummy->GetDocument().GetContentSecurityPolicyDelegate());
+
+    EXPECT_EQ(test.expected,
+              dummy->GetDocument().IsUseCounted(
+                  WebFeature::kCSPWithBetterThanReasonableRestrictions));
+  }
+
+  // Report-Only
+  for (const auto& test : cases) {
+    SCOPED_TRACE(testing::Message()
+                 << "[ReportOnly] Header: `" << test.header << "`");
+    csp = MakeGarbageCollected<ContentSecurityPolicy>();
+    csp->DidReceiveHeader(test.header, ContentSecurityPolicyType::kReport,
+                          ContentSecurityPolicySource::kHTTP);
+    auto dummy = std::make_unique<DummyPageHolder>();
+    csp->BindToDelegate(
+        dummy->GetDocument().GetContentSecurityPolicyDelegate());
+
+    EXPECT_EQ(test.expected,
+              dummy->GetDocument().IsUseCounted(
+                  WebFeature::kCSPROWithBetterThanReasonableRestrictions));
+  }
 }
 
 }  // namespace blink

@@ -684,7 +684,8 @@ class CONTENT_EXPORT RenderFrameImpl
                             const blink::FramePolicy& frame_policy) override;
   void DidSetFramePolicyHeaders(
       blink::WebSandboxFlags flags,
-      const blink::ParsedFeaturePolicy& parsed_header) override;
+      const blink::ParsedFeaturePolicy& fp_header,
+      const blink::DocumentPolicy::FeatureState& dp_header) override;
   void DidAddContentSecurityPolicies(
       const blink::WebVector<blink::WebContentSecurityPolicy>&) override;
   void DidChangeFrameOwnerProperties(

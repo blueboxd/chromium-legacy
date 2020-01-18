@@ -301,7 +301,7 @@
 <translation id="3282568296779691940">Войти в Chrome</translation>
 <translation id="3288003805934695103">Обновите страницу.</translation>
 <translation id="32895400574683172">Может отправлять уведомления</translation>
-<translation id="3290926146403723641">Чтобы выполнять действия в Интернете с помощью Ассистента, Chrome перенаправляет URL сайта, его контент и необходимые персональные данные в Google</translation>
+<translation id="3290926146403723641">Чтобы выполнять действия в Интернете с помощью Ассистента, Chrome передает URL сайта, его контент и необходимые персональные данные в Google</translation>
 <translation id="3295530008794733555">Быстрый просмотр сайтов и экономия трафика</translation>
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Скачать?</translation>
@@ -668,6 +668,7 @@
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6064125863973209585">Завершенные скачивания</translation>
 <translation id="6075798973483050474">Изменение главной страницы</translation>
+<translation id="6092062101542170135">Чтобы продолжить, включите NFC в настройках Android.</translation>
 <translation id="60923314841986378">Осталось <ph name="HOURS" /> ч.</translation>
 <translation id="6108923351542677676">Настройка…</translation>
 <translation id="6111020039983847643">использовано</translation>

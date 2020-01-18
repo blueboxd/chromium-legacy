@@ -6,9 +6,7 @@ import("//build/config/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
-  sources = [
-    "pdf.mojom",
-  ]
+  sources = [ "pdf.mojom" ]
 
   public_deps = [
     "//third_party/blink/public/mojom:mojom_platform",

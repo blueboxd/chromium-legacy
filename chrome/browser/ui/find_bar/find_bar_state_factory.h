@@ -10,17 +10,11 @@
 #include "base/strings/string16.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class Profile;
 class FindBarState;
 
 class FindBarStateFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static FindBarState* GetForProfile(Profile* profile);
-
-  // Retrieves the last prepopulate text for a given Profile.  If the profile is
-  // incognito and has an empty prepopulate text, falls back to the
-  // prepopulate text from the normal profile.
-  static base::string16 GetLastPrepopulateText(Profile* profile);
+  static FindBarState* GetForBrowserContext(content::BrowserContext* context);
 
   static FindBarStateFactory* GetInstance();
 
@@ -32,7 +26,7 @@ class FindBarStateFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const override;
+      content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 

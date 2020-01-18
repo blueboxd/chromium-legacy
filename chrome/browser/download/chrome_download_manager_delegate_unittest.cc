@@ -126,6 +126,7 @@ struct DetermineDownloadTargetResult {
   base::FilePath target_path;
   download::DownloadItem::TargetDisposition disposition;
   download::DownloadDangerType danger_type;
+  download::DownloadItem::MixedContentStatus mixed_content_status;
   base::FilePath intermediate_path;
   download::DownloadInterruptReason interrupt_reason;
 };
@@ -133,6 +134,7 @@ struct DetermineDownloadTargetResult {
 DetermineDownloadTargetResult::DetermineDownloadTargetResult()
     : disposition(download::DownloadItem::TARGET_DISPOSITION_OVERWRITE),
       danger_type(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS),
+      mixed_content_status(download::DownloadItem::MixedContentStatus::UNKNOWN),
       interrupt_reason(download::DOWNLOAD_INTERRUPT_REASON_NONE) {}
 
 // Subclass of the ChromeDownloadManagerDelegate that replaces a few interaction
@@ -390,11 +392,13 @@ void StoreDownloadTargetInfo(
     const base::FilePath& target_path,
     DownloadItem::TargetDisposition target_disposition,
     download::DownloadDangerType danger_type,
+    download::DownloadItem::MixedContentStatus mixed_content_status,
     const base::FilePath& intermediate_path,
     download::DownloadInterruptReason interrupt_reason) {
   result->target_path = target_path;
   result->disposition = target_disposition;
   result->danger_type = danger_type;
+  result->mixed_content_status = mixed_content_status;
   result->intermediate_path = intermediate_path;
   result->interrupt_reason = interrupt_reason;
   closure.Run();

@@ -101,6 +101,7 @@ void AssistantAshTestBase::SetUp() {
 
 void AssistantAshTestBase::TearDown() {
   windows_.clear();
+  widgets_.clear();
   SetTouchKeyboardEnabled(false);
   AshTestBase::TearDown();
   scoped_feature_list_.Reset();
@@ -214,6 +215,16 @@ aura::Window* AssistantAshTestBase::SwitchToNewAppWindow() {
   aura::Window* window = windows_.back().get();
   window->SetName("<app-window>");
   return window;
+}
+
+views::Widget* AssistantAshTestBase::SwitchToNewWidget() {
+  widgets_.push_back(CreateTestWidget());
+
+  views::Widget* result = widgets_.back().get();
+  // Give the widget a non-zero size, otherwise things like tapping and clicking
+  // on it do not work.
+  result->SetBounds(gfx::Rect(500, 100));
+  return result;
 }
 
 aura::Window* AssistantAshTestBase::window() {

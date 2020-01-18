@@ -84,7 +84,7 @@ Polymer({
   listeners: {
     'edit-cups-printer-details': 'onShowCupsEditPrinterDialog_',
     'show-cups-printer-toast': 'openResultToast_',
-    'show-cups-print-server-toast': 'openPrintServerResultToast_',
+    'add-print-server-and-show-toast': 'addPrintServerAndShowResultToast_',
     'open-manufacturer-model-dialog-for-specified-printer':
         'openManufacturerModelDialogForSpecifiedPrinter_',
   },
@@ -190,7 +190,8 @@ Polymer({
    * }>} event
    * @private
    */
-  openPrintServerResultToast_: function(event) {
+  addPrintServerAndShowResultToast_: function(event) {
+    this.entryManager_.addPrintServerPrinters(event.detail.printers);
     const length = event.detail.printers.printerList.length;
     if (length === 0) {
       this.addPrintServerResultText_ =

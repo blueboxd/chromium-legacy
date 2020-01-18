@@ -2805,6 +2805,7 @@ static int multiSelect(
     }
   #endif
   }
+  if( pParse->nErr ) goto multi_select_end;
 
   /* Compute collating sequences used by
   ** temporary tables needed to implement the compound select.
@@ -3596,6 +3597,7 @@ static void substSelect(
 **        (3b) the FROM clause of the subquery may not contain a virtual
 **             table and
 **        (3c) the outer query may not be an aggregate.
+**        (3d) the outer query may not be DISTINCT.
 **
 **   (4)  The subquery can not be DISTINCT.
 **
@@ -3792,8 +3794,11 @@ static int flattenSubquery(
   */
   if( (pSubitem->fg.jointype & JT_OUTER)!=0 ){
     isLeftJoin = 1;
-    if( pSubSrc->nSrc>1 || isAgg || IsVirtual(pSubSrc->a[0].pTab) ){
-      /*  (3a)             (3c)     (3b) */
+    if( pSubSrc->nSrc>1                   /* (3a) */
+     || isAgg                             /* (3b) */
+     || IsVirtual(pSubSrc->a[0].pTab)     /* (3c) */
+     || (p->selFlags & SF_Distinct)!=0    /* (3d) */
+    ){
       return 0;
     }
   }
@@ -4193,7 +4198,7 @@ static int propagateConstantExprRewrite(Walker *pWalker, Expr *pExpr){
   int i;
   WhereConst *pConst;
   if( pExpr->op!=TK_COLUMN ) return WRC_Continue;
-  if( ExprHasProperty(pExpr, EP_FixedCol) ) return WRC_Continue;
+  if( ExprHasProperty(pExpr, EP_FixedCol|EP_FromJoin) ) return WRC_Continue;
   pConst = pWalker->u.pConst;
   for(i=0; i<pConst->nConst; i++){
     Expr *pColumn = pConst->apExpr[i*2];

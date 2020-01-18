@@ -96,7 +96,7 @@ Some interesting flags and Features:
 
 WebView also defines its own flags and Features:
 
- * [AwSwitches.java](https://cs.chromium.org/chromium/src/android_webview/java/src/org/chromium/android_webview/AwSwitches.java)
+ * [AwSwitches.java](https://cs.chromium.org/chromium/src/android_webview/java/src/org/chromium/android_webview/common/AwSwitches.java)
    (and its [native
    counterpart](https://cs.chromium.org/chromium/src/android_webview/common/aw_switches.h))
  * [AwFeatureList.java](https://cs.chromium.org/chromium/src/android_webview/java/src/org/chromium/android_webview/AwFeatureList.java)

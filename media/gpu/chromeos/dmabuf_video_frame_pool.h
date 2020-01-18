@@ -42,7 +42,7 @@ class MEDIA_GPU_EXPORT DmabufVideoFramePool {
   // Sets the parameters of allocating frames and the maximum number of frames
   // which can be allocated. Returns a valid GpuBufferLayout if VideoFrame
   // will be created by GetFrame().
-  virtual base::Optional<GpuBufferLayout> RequestFrames(
+  virtual base::Optional<GpuBufferLayout> Initialize(
       const Fourcc& fourcc,
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,

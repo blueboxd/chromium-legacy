@@ -101,7 +101,7 @@ class MockFrameHost : public mojom::FrameHost {
                          bool user_gesture) override {}
 
   void DidAddContentSecurityPolicies(
-      const std::vector<ContentSecurityPolicy>&) override {}
+      std::vector<network::mojom::ContentSecurityPolicyPtr>) override {}
 
  protected:
   // mojom::FrameHost:
@@ -162,7 +162,9 @@ class MockFrameHost : public mojom::FrameHost {
 
   void DidSetFramePolicyHeaders(
       blink::WebSandboxFlags sandbox_flags,
-      const blink::ParsedFeaturePolicy& parsed_header) override {}
+      const blink::ParsedFeaturePolicy& feature_policy_header,
+      const blink::DocumentPolicy::FeatureState& document_policy_header)
+      override {}
 
   void CancelInitialHistoryLoad() override {}
 

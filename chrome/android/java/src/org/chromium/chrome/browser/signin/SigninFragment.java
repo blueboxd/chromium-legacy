@@ -143,7 +143,7 @@ public class SigninFragment extends SigninFragmentBase {
                         UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
                                 true);
                         if (settingsClicked) {
-                            SettingsLauncher.launchSettingsPage(getActivity(),
+                            SettingsLauncher.getInstance().launchSettingsPage(getActivity(),
                                     SyncAndServicesPreferences.class,
                                     SyncAndServicesPreferences.createArguments(true));
                         } else if (ChromeFeatureList.isEnabled(

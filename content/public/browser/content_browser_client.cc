@@ -1039,4 +1039,12 @@ void ContentBrowserClient::IsClipboardPasteAllowed(
   std::move(callback).Run(ClipboardPasteAllowed(true));
 }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+bool ContentBrowserClient::ShouldAllowPluginCreation(
+    const url::Origin& embedder_origin,
+    const content::PepperPluginInfo& plugin_info) {
+  return true;
+}
+#endif
+
 }  // namespace content

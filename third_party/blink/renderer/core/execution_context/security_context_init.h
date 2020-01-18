@@ -54,7 +54,9 @@ class SecurityContextInit : public FeaturePolicyParserDelegate {
   const Vector<String>& FeaturePolicyParseMessages() const {
     return feature_policy_parse_messages_;
   }
-  const ParsedFeaturePolicy& ParsedHeader() const { return parsed_header_; }
+  const ParsedFeaturePolicy& FeaturePolicyHeader() const {
+    return feature_policy_header_;
+  }
 
   OriginTrialContext* GetOriginTrialContext() { return origin_trials_; }
 
@@ -89,7 +91,7 @@ class SecurityContextInit : public FeaturePolicyParserDelegate {
   std::unique_ptr<FeaturePolicy> feature_policy_;
   std::unique_ptr<DocumentPolicy> document_policy_;
   Vector<String> feature_policy_parse_messages_;
-  ParsedFeaturePolicy parsed_header_;
+  ParsedFeaturePolicy feature_policy_header_;
   Member<ContentSecurityPolicy> csp_;
   Member<OriginTrialContext> origin_trials_;
   Member<Agent> agent_;

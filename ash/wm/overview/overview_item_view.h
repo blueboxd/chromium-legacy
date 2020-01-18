@@ -61,18 +61,16 @@ class ASH_EXPORT OverviewItemView
   // dragging.
   void RefreshPreviewView();
 
-  // Sets or hides rounded corners on |preview_view_|, if it exists.
-  void UpdatePreviewRoundedCorners(bool show, float rounding);
-
   // WindowMiniView:
   int GetMargin() const override;
   gfx::Rect GetHeaderBounds() const override;
 
   // OverviewHighlightController::OverviewHighlightableView:
   views::View* GetView() override;
-  gfx::Rect GetHighlightBoundsInScreen() override;
   void MaybeActivateHighlightedView() override;
   void MaybeCloseHighlightedView() override;
+  void OnViewHighlighted() override;
+  void OnViewUnhighlighted() override;
   gfx::Point GetMagnifierFocusPointInScreen() override;
 
   views::ImageButton* close_button() { return close_button_; }

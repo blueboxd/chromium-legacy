@@ -447,10 +447,6 @@ public class AwContents implements SmartClipProvider {
     private AwViewMethods mAwViewMethods;
     private final FullScreenTransitionsState mFullScreenTransitionsState;
 
-    // This flag indicates that ShouldOverrideUrlNavigation should be posted
-    // through the resourcethrottle. This is only used for popup windows.
-    private boolean mDeferredShouldOverrideUrlLoadingIsPendingForPopup;
-
     // This is a workaround for some qualcomm devices discarding buffer on
     // Activity restore.
     private boolean mInvalidateRootViewOnNextDraw;
@@ -1318,7 +1314,6 @@ public class AwContents implements SmartClipProvider {
     // called on the popup window's content.
     private void receivePopupContents(long popupNativeAwContents) {
         if (isDestroyed(WARN)) return;
-        mDeferredShouldOverrideUrlLoadingIsPendingForPopup = true;
         // Save existing view state.
         final boolean wasAttached = mIsAttachedToWindow;
         final boolean wasViewVisible = mIsViewVisible;

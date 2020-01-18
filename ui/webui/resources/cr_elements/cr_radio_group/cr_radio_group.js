@@ -258,8 +258,8 @@
       }
       let noneMadeFocusable = true;
       this.buttons_.forEach(radio => {
-        radio.checked =
-            this.selected !== undefined && radio.name === this.selected;
+        radio.checked = this.selected !== undefined &&
+            `${radio.name}` === `${this.selected}`;
         const disabled = this.disabled || !isEnabled(radio);
         const canBeFocused = radio.checked && !disabled;
         if (canBeFocused) {

@@ -14,6 +14,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/parse_number.h"
 #include "net/base/url_util.h"
+#include "url/url_util.h"
 
 namespace net {
 
@@ -189,18 +190,6 @@ class IPBlockRule : public ProxyBypassRules::Rule {
   DISALLOW_COPY_AND_ASSIGN(IPBlockRule);
 };
 
-// Returns true if the given string represents an IP address.
-// IPv6 addresses are expected to be bracketed.
-bool IsIPAddress(const std::string& domain) {
-  // From GURL::HostIsIPAddress()
-  url::RawCanonOutputT<char, 128> ignored_output;
-  url::CanonHostInfo host_info;
-  url::Component domain_comp(0, domain.size());
-  url::CanonicalizeIPAddress(domain.c_str(), domain_comp, &ignored_output,
-                             &host_info);
-  return host_info.IsIPAddress();
-}
-
 std::unique_ptr<ProxyBypassRules::Rule> ParseRule(
     const std::string& raw_untrimmed,
     ProxyBypassRules::ParseFormat format) {
@@ -253,7 +242,7 @@ std::unique_ptr<ProxyBypassRules::Rule> ParseRule(
     // Note that HostPortPair is used to merely to convert any IPv6 literals to
     // a URL-safe format that can be used by canonicalization below.
     std::string bracketed_host = HostPortPair(host, 80).HostForURL();
-    if (IsIPAddress(bracketed_host)) {
+    if (url::HostIsIPAddress(bracketed_host)) {
       // Canonicalize the IP literal before adding it as a string pattern.
       GURL tmp_url("http://" + bracketed_host);
       return std::make_unique<HostnamePatternRule>(scheme, tmp_url.host(),

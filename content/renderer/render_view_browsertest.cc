@@ -253,20 +253,28 @@ class RenderViewImplTest : public RenderViewTest {
     return static_cast<RenderViewImpl*>(view_);
   }
 
+  RenderWidget* main_widget() {
+    return view()->GetMainRenderFrame()->GetLocalRootRenderWidget();
+  }
+
   TestRenderFrame* frame() {
     return static_cast<TestRenderFrame*>(view()->GetMainRenderFrame());
   }
 
   void ReceiveDisableDeviceEmulation(RenderViewImpl* view) {
     // Emulates receiving an IPC message.
-    view->GetWidget()->OnDisableDeviceEmulation();
+    RenderWidget* widget =
+        view->GetMainRenderFrame()->GetLocalRootRenderWidget();
+    widget->OnDisableDeviceEmulation();
   }
 
   void ReceiveEnableDeviceEmulation(
       RenderViewImpl* view,
       const blink::WebDeviceEmulationParams& params) {
     // Emulates receiving an IPC message.
-    view->GetWidget()->OnEnableDeviceEmulation(params);
+    RenderWidget* widget =
+        view->GetMainRenderFrame()->GetLocalRootRenderWidget();
+    widget->OnEnableDeviceEmulation(params);
   }
 
   void ReceiveSetTextDirection(RenderWidget* widget,
@@ -465,7 +473,7 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
   }
 
   void SetDeviceScaleFactor(float dsf) {
-    RenderWidget* widget = view()->GetWidget();
+    RenderWidget* widget = main_widget();
     WidgetMsg_UpdateVisualProperties msg(
         widget->routing_id(), MakeVisualPropertiesWithDeviceScaleFactor(dsf));
     widget->OnMessageReceived(msg);
@@ -480,14 +488,13 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
     visual_properties.new_size = gfx::Size(100, 100);
     visual_properties.compositor_viewport_pixel_rect = gfx::Rect(200, 200);
     visual_properties.visible_viewport_size = visual_properties.new_size;
-    visual_properties.auto_resize_enabled =
-        view()->GetWidget()->auto_resize_mode();
+    visual_properties.auto_resize_enabled = main_widget()->auto_resize_mode();
     visual_properties.capture_sequence_number =
-        view()->GetWidget()->capture_sequence_number();
+        main_widget()->capture_sequence_number();
     visual_properties.min_size_for_auto_resize =
-        view()->GetWidget()->min_size_for_auto_resize();
+        main_widget()->min_size_for_auto_resize();
     visual_properties.max_size_for_auto_resize =
-        view()->GetWidget()->max_size_for_auto_resize();
+        main_widget()->max_size_for_auto_resize();
     visual_properties.local_surface_id_allocation =
         viz::LocalSurfaceIdAllocation(
             viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()),
@@ -519,7 +526,7 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
     EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_dpr, &emulated_dpr));
     EXPECT_EQ(static_cast<int>(dpr * 10), emulated_dpr);
     cc::LayerTreeHost* host =
-        view()->GetWidget()->layer_tree_view()->layer_tree_host();
+        main_widget()->layer_tree_view()->layer_tree_host();
     EXPECT_EQ(compositor_dsf, host->device_scale_factor());
   }
 };
@@ -644,7 +651,7 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
   gfx::Rect widget_screen_rect(5, 7, 57, 59);
 
   // Verify screen rect will be set.
-  EXPECT_EQ(gfx::Rect(view()->GetWidget()->GetScreenInfo().rect), screen_rect);
+  EXPECT_EQ(gfx::Rect(main_widget()->GetScreenInfo().rect), screen_rect);
 
   {
     // Make a popup widget.
@@ -682,9 +689,9 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
   emulation_params.view_size = emulated_widget_rect.size();
   emulation_params.view_position = emulated_widget_rect.origin();
   {
-    WidgetMsg_EnableDeviceEmulation msg(view()->GetWidget()->routing_id(),
+    WidgetMsg_EnableDeviceEmulation msg(main_widget()->routing_id(),
                                         emulation_params);
-    view()->GetWidget()->OnMessageReceived(msg);
+    main_widget()->OnMessageReceived(msg);
   }
 
   {
@@ -723,9 +730,8 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
     EXPECT_EQ(window_screen_rect.height(), popup_widget->WindowRect().height);
     EXPECT_EQ(widget_screen_rect.width(), popup_widget->ViewRect().width);
     EXPECT_EQ(widget_screen_rect.height(), popup_widget->ViewRect().height);
-    EXPECT_EQ(emulated_widget_rect, gfx::Rect(view()->GetWidget()->ViewRect()));
-    EXPECT_EQ(emulated_widget_rect,
-              gfx::Rect(view()->GetWidget()->WindowRect()));
+    EXPECT_EQ(emulated_widget_rect, gfx::Rect(main_widget()->ViewRect()));
+    EXPECT_EQ(emulated_widget_rect, gfx::Rect(main_widget()->WindowRect()));
 
     // TODO(danakj): Why isn't the ScreenRect visible to the popup an emulated
     // value? The ScreenRect has been changed by emulation as demonstrated
@@ -733,7 +739,7 @@ TEST_F(RenderViewImplEmulatingPopupTest, EmulatingPopupRect) {
     EXPECT_EQ(gfx::Rect(800, 600),
               gfx::Rect(popup_widget->GetScreenInfo().rect));
     EXPECT_EQ(emulated_widget_rect,
-              gfx::Rect(view()->GetWidget()->GetScreenInfo().rect));
+              gfx::Rect(main_widget()->GetScreenInfo().rect));
 
     // Close and destroy the widget.
     {
@@ -1021,7 +1027,7 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
   // RenderFrameProxy.
   EXPECT_EQ(device_scale, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
   EXPECT_EQ(device_scale,
-            view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
+            main_widget()->GetOriginalScreenInfo().device_scale_factor);
   EXPECT_EQ(device_scale, child_proxy->screen_info().device_scale_factor);
 
   TestEmulatedSizeDprDsf(640, 480, 3.f, compositor_dsf);
@@ -1029,7 +1035,7 @@ TEST_F(RenderViewImplScaleFactorTest, DeviceEmulationWithOOPIF) {
   // Verify that the RenderFrameProxy device scale factor is still the same.
   EXPECT_EQ(3.f, view()->GetMainRenderFrame()->GetDeviceScaleFactor());
   EXPECT_EQ(device_scale,
-            view()->GetWidget()->GetOriginalScreenInfo().device_scale_factor);
+            main_widget()->GetOriginalScreenInfo().device_scale_factor);
   EXPECT_EQ(device_scale, child_proxy->screen_info().device_scale_factor);
 
   ReceiveDisableDeviceEmulation(view());
@@ -1277,7 +1283,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to activate IMEs.
-    view()->GetWidget()->UpdateTextInputState();
+    main_widget()->UpdateTextInputState();
     const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != nullptr);
     EXPECT_EQ(static_cast<uint32_t>(WidgetHostMsg_TextInputStateChanged::ID),
@@ -1299,7 +1305,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
 
     // Update the IME status and verify if our IME backend sends an IPC message
     // to de-activate IMEs.
-    view()->GetWidget()->UpdateTextInputState();
+    main_widget()->UpdateTextInputState();
     msg = render_thread_->sink().GetMessageAt(0);
     EXPECT_TRUE(msg != nullptr);
     EXPECT_EQ(static_cast<uint32_t>(WidgetHostMsg_TextInputStateChanged::ID),
@@ -1324,7 +1330,7 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
 
       // Update the IME status and verify if our IME backend sends an IPC
       // message to activate IMEs.
-      view()->GetWidget()->UpdateTextInputState();
+      main_widget()->UpdateTextInputState();
       base::RunLoop().RunUntilIdle();
       const IPC::Message* msg = render_thread_->sink().GetMessageAt(0);
       EXPECT_TRUE(msg != nullptr);
@@ -1375,7 +1381,7 @@ TEST_F(RenderViewImplTest, ShouldSuppressKeyboardIsPropagated) {
   // is sent.
   ExecuteJavaScriptForTests("document.getElementById('test').focus();");
   base::RunLoop().RunUntilIdle();
-  view()->GetWidget()->UpdateTextInputState();
+  main_widget()->UpdateTextInputState();
   auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
   EXPECT_FALSE(std::get<0>(params).always_hide_ime);
   render_thread_->sink().ClearMessages();
@@ -1383,7 +1389,7 @@ TEST_F(RenderViewImplTest, ShouldSuppressKeyboardIsPropagated) {
   // Tell the client to suppress the keyboard. Check whether always_hide_ime is
   // set correctly.
   client.SetShouldSuppressKeyboard(true);
-  view()->GetWidget()->UpdateTextInputState();
+  main_widget()->UpdateTextInputState();
   params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
   EXPECT_TRUE(std::get<0>(params).always_hide_ime);
 
@@ -1411,7 +1417,7 @@ TEST_F(RenderViewImplTest, EditContextGetLayoutBoundsAndInputPanelPolicy) {
   base::RunLoop().RunUntilIdle();
   // Update the IME status and verify if our IME backend sends an IPC message
   // to notify layout bounds of the EditContext.
-  view()->GetWidget()->UpdateTextInputState();
+  main_widget()->UpdateTextInputState();
   auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
   EXPECT_EQ(true, std::get<0>(params).show_ime_if_needed);
   gfx::Rect edit_context_control_bounds_expected(10, 20, 30, 40);
@@ -1515,37 +1521,37 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
       case IME_SETFOCUS:
         // Update the window focus.
-        view()->GetWidget()->OnSetFocus(ime_message->enable);
+        main_widget()->OnSetFocus(ime_message->enable);
         break;
 
       case IME_SETCOMPOSITION:
-        view()->GetWidget()->OnImeSetComposition(
+        main_widget()->OnImeSetComposition(
             base::WideToUTF16(ime_message->ime_string),
             std::vector<blink::WebImeTextSpan>(), gfx::Range::InvalidRange(),
             ime_message->selection_start, ime_message->selection_end);
         break;
 
       case IME_COMMITTEXT:
-        view()->GetWidget()->OnImeCommitText(
+        main_widget()->OnImeCommitText(
             base::WideToUTF16(ime_message->ime_string),
             std::vector<blink::WebImeTextSpan>(), gfx::Range::InvalidRange(),
             0);
         break;
 
       case IME_FINISHCOMPOSINGTEXT:
-        view()->GetWidget()->OnImeFinishComposingText(false);
+        main_widget()->OnImeFinishComposingText(false);
         break;
 
       case IME_CANCELCOMPOSITION:
-        view()->GetWidget()->OnImeSetComposition(
-            base::string16(), std::vector<blink::WebImeTextSpan>(),
-            gfx::Range::InvalidRange(), 0, 0);
+        main_widget()->OnImeSetComposition(base::string16(),
+                                           std::vector<blink::WebImeTextSpan>(),
+                                           gfx::Range::InvalidRange(), 0, 0);
         break;
     }
 
     // Update the status of our IME back-end.
     // TODO(hbono): we should verify messages to be sent from the back-end.
-    view()->GetWidget()->UpdateTextInputState();
+    main_widget()->UpdateTextInputState();
     base::RunLoop().RunUntilIdle();
     render_thread_->sink().ClearMessages();
 
@@ -1588,7 +1594,7 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
   for (size_t i = 0; i < base::size(kTextDirection); ++i) {
     // Set the text direction of the <textarea> element.
     ExecuteJavaScriptForTests("document.getElementById('test').focus();");
-    ReceiveSetTextDirection(view()->GetWidget(), kTextDirection[i].direction);
+    ReceiveSetTextDirection(main_widget(), kTextDirection[i].direction);
 
     // Write the values of its DOM 'dir' attribute and its CSS 'direction'
     // property to the <div> element.
@@ -1781,46 +1787,44 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   const base::string16 empty_string;
   const std::vector<blink::WebImeTextSpan> empty_ime_text_span;
   std::vector<gfx::Rect> bounds;
-  view()->GetWidget()->OnSetFocus(true);
+  main_widget()->OnSetFocus(true);
 
   // ASCII composition
   const base::string16 ascii_composition = base::UTF8ToUTF16("aiueo");
-  view()->GetWidget()->OnImeSetComposition(
-      ascii_composition, empty_ime_text_span, gfx::Range::InvalidRange(), 0, 0);
-  view()->GetWidget()->GetCompositionCharacterBounds(&bounds);
+  main_widget()->OnImeSetComposition(ascii_composition, empty_ime_text_span,
+                                     gfx::Range::InvalidRange(), 0, 0);
+  main_widget()->GetCompositionCharacterBounds(&bounds);
   ASSERT_EQ(ascii_composition.size(), bounds.size());
 
   for (size_t i = 0; i < bounds.size(); ++i)
     EXPECT_LT(0, bounds[i].width());
-  view()->GetWidget()->OnImeCommitText(empty_string,
-                                       std::vector<blink::WebImeTextSpan>(),
-                                       gfx::Range::InvalidRange(), 0);
+  main_widget()->OnImeCommitText(empty_string,
+                                 std::vector<blink::WebImeTextSpan>(),
+                                 gfx::Range::InvalidRange(), 0);
 
   // Non surrogate pair unicode character.
   const base::string16 unicode_composition = base::UTF8ToUTF16(
       "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
-  view()->GetWidget()->OnImeSetComposition(unicode_composition,
-                                           empty_ime_text_span,
-                                           gfx::Range::InvalidRange(), 0, 0);
-  view()->GetWidget()->GetCompositionCharacterBounds(&bounds);
+  main_widget()->OnImeSetComposition(unicode_composition, empty_ime_text_span,
+                                     gfx::Range::InvalidRange(), 0, 0);
+  main_widget()->GetCompositionCharacterBounds(&bounds);
   ASSERT_EQ(unicode_composition.size(), bounds.size());
   for (size_t i = 0; i < bounds.size(); ++i)
     EXPECT_LT(0, bounds[i].width());
-  view()->GetWidget()->OnImeCommitText(empty_string, empty_ime_text_span,
-                                       gfx::Range::InvalidRange(), 0);
+  main_widget()->OnImeCommitText(empty_string, empty_ime_text_span,
+                                 gfx::Range::InvalidRange(), 0);
 
   // Surrogate pair character.
   const base::string16 surrogate_pair_char =
       base::UTF8ToUTF16("\xF0\xA0\xAE\x9F");
-  view()->GetWidget()->OnImeSetComposition(surrogate_pair_char,
-                                           empty_ime_text_span,
-                                           gfx::Range::InvalidRange(), 0, 0);
-  view()->GetWidget()->GetCompositionCharacterBounds(&bounds);
+  main_widget()->OnImeSetComposition(surrogate_pair_char, empty_ime_text_span,
+                                     gfx::Range::InvalidRange(), 0, 0);
+  main_widget()->GetCompositionCharacterBounds(&bounds);
   ASSERT_EQ(surrogate_pair_char.size(), bounds.size());
   EXPECT_LT(0, bounds[0].width());
   EXPECT_EQ(0, bounds[1].width());
-  view()->GetWidget()->OnImeCommitText(empty_string, empty_ime_text_span,
-                                       gfx::Range::InvalidRange(), 0);
+  main_widget()->OnImeCommitText(empty_string, empty_ime_text_span,
+                                 gfx::Range::InvalidRange(), 0);
 
   // Mixed string.
   const base::string16 surrogate_pair_mixed_composition =
@@ -1829,10 +1833,10 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   const size_t utf16_length = 8UL;
   const bool is_surrogate_pair_empty_rect[8] = {
     false, true, false, false, true, false, false, true };
-  view()->GetWidget()->OnImeSetComposition(surrogate_pair_mixed_composition,
-                                           empty_ime_text_span,
-                                           gfx::Range::InvalidRange(), 0, 0);
-  view()->GetWidget()->GetCompositionCharacterBounds(&bounds);
+  main_widget()->OnImeSetComposition(surrogate_pair_mixed_composition,
+                                     empty_ime_text_span,
+                                     gfx::Range::InvalidRange(), 0, 0);
+  main_widget()->GetCompositionCharacterBounds(&bounds);
   ASSERT_EQ(utf16_length, bounds.size());
   for (size_t i = 0; i < utf16_length; ++i) {
     if (is_surrogate_pair_empty_rect[i]) {
@@ -1841,8 +1845,8 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
       EXPECT_LT(0, bounds[i].width());
     }
   }
-  view()->GetWidget()->OnImeCommitText(empty_string, empty_ime_text_span,
-                                       gfx::Range::InvalidRange(), 0);
+  main_widget()->OnImeCommitText(empty_string, empty_ime_text_span,
+                                 gfx::Range::InvalidRange(), 0);
 }
 #endif
 
@@ -2032,7 +2036,7 @@ TEST_F(RenderViewImplTest, BasicRenderFrame) {
 TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
   LoadHTML("<textarea id=\"test\"></textarea>");
 
-  view()->GetWidget()->SetHandlingInputEvent(true);
+  main_widget()->SetHandlingInputEvent(true);
   ExecuteJavaScriptForTests("document.getElementById('test').focus();");
 
   bool is_input_type_called = false;
@@ -2641,7 +2645,7 @@ TEST_F(RenderViewImplDisableZoomForDSFTest,
        ConverViewportToWindowWithoutZoomForDSF) {
   SetDeviceScaleFactor(2.f);
   blink::WebRect rect(20, 10, 200, 100);
-  view()->GetWidget()->ConvertViewportToWindow(&rect);
+  main_widget()->ConvertViewportToWindow(&rect);
   EXPECT_EQ(20, rect.x);
   EXPECT_EQ(10, rect.y);
   EXPECT_EQ(200, rect.width);
@@ -2710,7 +2714,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   SetDeviceScaleFactor(1.f);
   {
     blink::WebRect rect(20, 10, 200, 100);
-    view()->GetWidget()->ConvertViewportToWindow(&rect);
+    main_widget()->ConvertViewportToWindow(&rect);
     EXPECT_EQ(20, rect.x);
     EXPECT_EQ(10, rect.y);
     EXPECT_EQ(200, rect.width);
@@ -2720,7 +2724,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   SetDeviceScaleFactor(2.f);
   {
     blink::WebRect rect(20, 10, 200, 100);
-    view()->GetWidget()->ConvertViewportToWindow(&rect);
+    main_widget()->ConvertViewportToWindow(&rect);
     EXPECT_EQ(10, rect.x);
     EXPECT_EQ(5, rect.y);
     EXPECT_EQ(100, rect.width);
@@ -2744,18 +2748,18 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   const base::string16 empty_string;
   const std::vector<blink::WebImeTextSpan> empty_ime_text_span;
   std::vector<gfx::Rect> bounds_at_1x;
-  view()->GetWidget()->OnSetFocus(true);
+  main_widget()->OnSetFocus(true);
 
   // ASCII composition
   const base::string16 ascii_composition = base::UTF8ToUTF16("aiueo");
-  view()->GetWidget()->OnImeSetComposition(
-      ascii_composition, empty_ime_text_span, gfx::Range::InvalidRange(), 0, 0);
-  view()->GetWidget()->GetCompositionCharacterBounds(&bounds_at_1x);
+  main_widget()->OnImeSetComposition(ascii_composition, empty_ime_text_span,
+                                     gfx::Range::InvalidRange(), 0, 0);
+  main_widget()->GetCompositionCharacterBounds(&bounds_at_1x);
   ASSERT_EQ(ascii_composition.size(), bounds_at_1x.size());
 
   SetDeviceScaleFactor(2.f);
   std::vector<gfx::Rect> bounds_at_2x;
-  view()->GetWidget()->GetCompositionCharacterBounds(&bounds_at_2x);
+  main_widget()->GetCompositionCharacterBounds(&bounds_at_2x);
   ASSERT_EQ(bounds_at_1x.size(), bounds_at_2x.size());
   for (size_t i = 0; i < bounds_at_1x.size(); i++) {
     const gfx::Rect& b1 = bounds_at_1x[i];
@@ -2784,28 +2788,28 @@ const char kAutoResizeTestPage[] =
 }  // namespace
 
 TEST_F(RenderViewImplEnableZoomForDSFTest, AutoResizeWithZoomForDSF) {
-  view()->GetWidget()->EnableAutoResizeForTesting(gfx::Size(5, 5),
-                                                  gfx::Size(1000, 1000));
+  main_widget()->EnableAutoResizeForTesting(gfx::Size(5, 5),
+                                            gfx::Size(1000, 1000));
   LoadHTML(kAutoResizeTestPage);
-  gfx::Size size_at_1x = view()->GetWidget()->size();
+  gfx::Size size_at_1x = main_widget()->size();
   ASSERT_FALSE(size_at_1x.IsEmpty());
 
   SetDeviceScaleFactor(2.f);
   LoadHTML(kAutoResizeTestPage);
-  gfx::Size size_at_2x = view()->GetWidget()->size();
+  gfx::Size size_at_2x = main_widget()->size();
   EXPECT_EQ(size_at_1x, size_at_2x);
 }
 
 TEST_F(RenderViewImplScaleFactorTest, AutoResizeWithoutZoomForDSF) {
-  view()->GetWidget()->EnableAutoResizeForTesting(gfx::Size(5, 5),
-                                                  gfx::Size(1000, 1000));
+  main_widget()->EnableAutoResizeForTesting(gfx::Size(5, 5),
+                                            gfx::Size(1000, 1000));
   LoadHTML(kAutoResizeTestPage);
-  gfx::Size size_at_1x = view()->GetWidget()->size();
+  gfx::Size size_at_1x = main_widget()->size();
   ASSERT_FALSE(size_at_1x.IsEmpty());
 
   SetDeviceScaleFactor(2.f);
   LoadHTML(kAutoResizeTestPage);
-  gfx::Size size_at_2x = view()->GetWidget()->size();
+  gfx::Size size_at_2x = main_widget()->size();
   EXPECT_EQ(size_at_1x, size_at_2x);
 }
 

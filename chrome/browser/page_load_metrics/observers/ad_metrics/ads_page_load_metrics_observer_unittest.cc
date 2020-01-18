@@ -1140,8 +1140,10 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdPageLoadUKM) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::Now();
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(10);
   timing.response_start = base::TimeDelta::FromSeconds(0);
-  timing.interactive_timing->interactive = base::TimeDelta::FromSeconds(0);
+  timing.interactive_timing->interactive =
+      base::TimeDelta::FromMilliseconds(10);
   PopulateRequiredTimingFields(&timing);
   TimingUpdate(timing);
   ResourceDataUpdate(

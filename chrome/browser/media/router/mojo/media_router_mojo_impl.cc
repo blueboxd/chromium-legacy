@@ -1048,14 +1048,15 @@ void MediaRouterMojoImpl::BindToMojoReceiver(
 base::Optional<MediaRouteProviderId> MediaRouterMojoImpl::GetProviderIdForRoute(
     const MediaRoute::Id& route_id) {
   for (const auto& routes_query : routes_queries_) {
-    for (const auto& provider_to_routes :
-         routes_query.second->providers_to_routes()) {
+    MediaRoutesQuery* query = routes_query.second.get();
+    for (const auto& provider_to_routes : query->providers_to_routes()) {
+      const MediaRouteProviderId provider_id = provider_to_routes.first;
       const std::vector<MediaRoute>& routes = provider_to_routes.second;
       if (std::find_if(routes.begin(), routes.end(),
                        [&route_id](const MediaRoute& route) {
                          return route.media_route_id() == route_id;
                        }) != routes.end()) {
-        return provider_to_routes.first;
+        return provider_id;
       }
     }
   }
@@ -1073,14 +1074,17 @@ base::Optional<MediaRouteProviderId>
 MediaRouterMojoImpl::GetProviderIdForPresentation(
     const std::string& presentation_id) {
   for (const auto& routes_query : routes_queries_) {
-    for (const auto& provider_to_routes :
-         routes_query.second->providers_to_routes()) {
+    MediaRoutesQuery* query = routes_query.second.get();
+    for (const auto& provider_to_routes : query->providers_to_routes()) {
+      const MediaRouteProviderId provider_id = provider_to_routes.first;
       const std::vector<MediaRoute>& routes = provider_to_routes.second;
-      if (std::find_if(routes.begin(), routes.end(),
-                       [&presentation_id](const MediaRoute& route) {
-                         return route.presentation_id() == presentation_id;
-                       }) != routes.end()) {
-        return provider_to_routes.first;
+      auto pred = [&presentation_id](const MediaRoute& route) {
+        return route.presentation_id() == presentation_id;
+      };
+      DCHECK_LE(std::count_if(routes.begin(), routes.end(), pred), 1)
+          << "Found multiple routes for presentation ID " << presentation_id;
+      if (std::find_if(routes.begin(), routes.end(), pred) != routes.end()) {
+        return provider_id;
       }
     }
   }
@@ -1094,9 +1098,12 @@ const MediaSink* MediaRouterMojoImpl::GetSinkById(
   for (const auto& sinks_query : sinks_queries_) {
     const std::vector<MediaSink>& sinks =
         sinks_query.second->cached_sink_list();
-    auto sink_it = std::find_if(
-        sinks.begin(), sinks.end(),
-        [&sink_id](const MediaSink& sink) { return sink.id() == sink_id; });
+    auto pred = [&sink_id](const MediaSink& sink) {
+      return sink.id() == sink_id;
+    };
+    DCHECK_LE(std::count_if(sinks.begin(), sinks.end(), pred), 1)
+        << "Found multiple sinks with ID " << sink_id;
+    auto sink_it = std::find_if(sinks.begin(), sinks.end(), pred);
     if (sink_it != sinks.end())
       return &(*sink_it);
   }

@@ -18,6 +18,15 @@
 // other keys are optional. Must be set before starting the coordinator.
 @property(nonatomic, copy) NSDictionary* iTunesProductParameters;
 
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_STORE_KIT_STORE_KIT_COORDINATOR_H_

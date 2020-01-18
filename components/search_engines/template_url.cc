@@ -216,23 +216,21 @@ size_t TemplateURLRef::SearchTermsArgs::EstimateMemoryUsage() const {
 }
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::
-    ContextualSearchParams()
-    : version(-1),
-      contextual_cards_version(0),
-      previous_event_id(0),
-      previous_event_results(0) {}
+    ContextualSearchParams() = default;
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     int version,
     int contextual_cards_version,
     const std::string& home_country,
     int64_t previous_event_id,
-    int previous_event_results)
+    int previous_event_results,
+    bool is_exact_search)
     : version(version),
       contextual_cards_version(contextual_cards_version),
       home_country(home_country),
       previous_event_id(previous_event_id),
-      previous_event_results(previous_event_results) {}
+      previous_event_results(previous_event_results),
+      is_exact_search(is_exact_search) {}
 
 TemplateURLRef::SearchTermsArgs::ContextualSearchParams::ContextualSearchParams(
     const ContextualSearchParams& other) = default;
@@ -995,6 +993,8 @@ std::string TemplateURLRef::HandleReplacements(
           args.push_back("ctxsl_per=" +
                          base::NumberToString(params.previous_event_results));
         }
+        if (params.is_exact_search)
+          args.push_back("ctxsl_exact=1");
 
         HandleReplacement(std::string(), base::JoinString(args, "&"), *i, &url);
         break;

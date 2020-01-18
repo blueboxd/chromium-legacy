@@ -27,6 +27,12 @@ SkiaOutputDevice::SkiaOutputDevice(
 
 SkiaOutputDevice::~SkiaOutputDevice() = default;
 
+void SkiaOutputDevice::CommitOverlayPlanes(
+    BufferPresentedCallback feedback,
+    std::vector<ui::LatencyInfo> latency_info) {
+  NOTREACHED();
+}
+
 void SkiaOutputDevice::PostSubBuffer(
     const gfx::Rect& rect,
     BufferPresentedCallback feedback,

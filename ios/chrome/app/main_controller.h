@@ -7,7 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/app/application_delegate/app_navigation.h"
 #import "ios/chrome/app/application_delegate/browser_launcher.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #import "ios/chrome/app/main_controller_guts.h"
@@ -28,8 +27,7 @@
 //
 // By design, it has no public API of its own. Anything interacting with
 // MainController should be doing so through a specific protocol.
-@interface MainController : NSObject <AppNavigation,
-                                      BrowserLauncher,
+@interface MainController : NSObject <BrowserLauncher,
                                       MainControllerGuts,
                                       StartupInformation,
                                       BrowsingDataCommands>

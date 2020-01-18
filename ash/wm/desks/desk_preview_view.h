@@ -5,6 +5,8 @@
 #ifndef ASH_WM_DESKS_DESK_PREVIEW_VIEW_H_
 #define ASH_WM_DESKS_DESK_PREVIEW_VIEW_H_
 
+#include <memory>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/aura/window_occlusion_tracker.h"
@@ -16,9 +18,9 @@ class LayerTreeOwner;
 
 namespace ash {
 
-class DesksBarItemBorder;
 class DeskMiniView;
 class WallpaperBaseView;
+class WmHighlightItemBorder;
 
 // A view that shows the contents of the corresponding desk in its mini_view.
 // This view has the following layer hierarchy:
@@ -93,7 +95,7 @@ class ASH_EXPORT DeskPreviewView : public views::View {
 
   // Owned by this View via `View::border_`. This is just a convenient pointer
   // to it.
-  DesksBarItemBorder* border_ptr_;
+  WmHighlightItemBorder* border_ptr_;
 
   // Owns the layer tree of the desk's contents mirrored layers.
   std::unique_ptr<ui::LayerTreeOwner> desk_mirrored_contents_layer_tree_owner_;

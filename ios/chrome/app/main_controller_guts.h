@@ -36,8 +36,6 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 
 // Coordinator for displaying history.
 @property(nonatomic, strong) HistoryCoordinator* historyCoordinator;
-@property(nonatomic, strong)
-    SettingsNavigationController* settingsNavigationController;
 
 // The application level component for url loading. Is passed down to
 // browser state level UrlLoadingService instances.

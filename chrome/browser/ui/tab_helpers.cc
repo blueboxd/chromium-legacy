@@ -67,7 +67,7 @@
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
+#include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/navigation_correction_tab_observer.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
@@ -222,7 +222,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   DataReductionProxyTabHelper::CreateForWebContents(web_contents);
   ExternalProtocolObserver::CreateForWebContents(web_contents);
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
-  FindTabHelper::CreateForWebContents(web_contents);
+  FindBarState::ConfigureWebContents(web_contents);
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());

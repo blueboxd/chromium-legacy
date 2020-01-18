@@ -84,7 +84,7 @@ public class SyncErrorInfoBar extends ConfirmInfoBar {
     private void accept() {
         recordHistogram(mType, SyncErrorInfoBarAction.OPEN_SETTINGS_CLICKED);
 
-        SettingsLauncher.launchSettingsPage(getApplicationContext(),
+        SettingsLauncher.getInstance().launchSettingsPage(getApplicationContext(),
                 SyncAndServicesPreferences.class,
                 SyncAndServicesPreferences.createArguments(false));
     }

@@ -949,7 +949,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% مکمل</translation>
 <translation id="2318143611928805047">کاغذ کا سائز</translation>
 <translation id="2318817390901984578">‏Android ایپس استعمال کرنے کیلئے، اپنے <ph name="DEVICE_TYPE" /> کو چارج اور اپ ڈیٹ کریں۔</translation>
-<translation id="2318923050469484167">موجودہ پوشیدگی سیشن (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">ہیڈرز اور فوٹرز</translation>
 <translation id="2322318151094136999">جب کوئی سائٹ سیریل پورٹس تک رسائی حاصل کرنا چاہے تو پوچھیں (تجویز کردہ)</translation>
 <translation id="2325002827435400643">اس سائٹ کے لیے آف کریں</translation>
@@ -1792,6 +1791,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="3511307672085573050">لنک پ&amp;تہ کاپی کریں</translation>
 <translation id="351152300840026870">مقررہ چوڑائی کا فونٹ</translation>
 <translation id="3511528412952710609">مختصر</translation>
+<translation id="3513704683820682405">افزودہ حقیقت</translation>
 <translation id="3514373592552233661">اگر ایک سے زیادہ نیٹ ورکس دستیاب ہوتے ہیں تو دیگر معلوم نیٹ ورکس پر ترجیحی نیٹ ورکس کو ترجیح دی جائے گی</translation>
 <translation id="3515983984924808886">‏دوبارہ ترتیب دینے کی تصدیق کرنے کے لیے اپنی سیکیورٹی کلید کو دوبارہ ٹچ کریں۔ سیکیورٹی کلید کے PIN سمیت اس میں اسٹور کردہ سبھی معلومات کو حذف کر دیا جائے گا۔</translation>
 <translation id="3518985090088779359">قبول کرکے جاری رکھیں</translation>
@@ -2248,7 +2248,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="4099874310852108874">نیٹ ورک کی خرابی پیش آگئی۔</translation>
 <translation id="4100733287846229632">آلہ میں جگہ انتہائی کم ہے</translation>
 <translation id="4100853287411968461">اسکرین کے وقت کی نئی حد</translation>
-<translation id="4103091233824664032">اسکرین لاک کنفیگر کرنے اور سائن ان کرنے کیلئے اپنا پاس ورڈ درج کریں</translation>
 <translation id="4104163789986725820">برآ&amp;مد کریں…</translation>
 <translation id="4107048419833779140">اسٹوریج کے آلات کی شناخت کر کے انہیں خارج کریں</translation>
 <translation id="4109135793348361820">‏ونڈو کو ‎<ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)‎ میں منتقل کریں</translation>
@@ -2787,6 +2786,7 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="494286511941020793">پراکسی کنفیگریشن مدد</translation>
 <translation id="4943368462779413526">فٹبال</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" ایک سیریل پورٹ سے منسلک ہونا چاہتا ہے</translation>
+<translation id="4943703118917034429">ورچوئل رئیلٹی</translation>
 <translation id="4944310289250773232">یہ توثیقی سروس <ph name="SAML_DOMAIN" /> کی زیر میزبانی ہے</translation>
 <translation id="495170559598752135">کارروائیاں</translation>
 <translation id="4952981627953231344">‏اس آلہ پر Plugin VM کی اجازت نہیں ہے۔ اپنی تنظیم کے آلہ کے منتظم سے رابطہ کریں۔</translation>
@@ -3136,7 +3136,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5468173180030470402">فائل کے اشتراکات تلاش کر رہے ہیں</translation>
 <translation id="5470735824776589490">‏Powerwash کے ساتھ آپ کا آلہ دوبارہ ترتیب دینے سے پہلے ایک ری اسٹارٹ درکار ہے۔ <ph name="LINK_BEGIN" />مزید جانیں<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">آداب! میں آپ کی ٹیکسٹ ٹو اسپیچ آواز ہوں۔</translation>
-<translation id="5472133193607270166">آن ہونے پر، اشتہارات کو مختلف سائٹس پر ذاتی نوعیت کا بنانے کے لیے سائٹس آپ کی براؤزنگ کی سرگرمی کا استعمال نہیں کر سکتی ہیں۔ ہو سکتا ہے کہ کچھ سائٹس ٹھیک طرح سے کام نہ کریں۔</translation>
 <translation id="5473333559083690127">‏نیا PIN دوبارہ درج کریں</translation>
 <translation id="5481941284378890518">قریبی پرنٹرز کو شامل کریں</translation>
 <translation id="5483785310822538350">فائل اور آلہ کی رسائی کو کالعدم کریں</translation>
@@ -3307,7 +3306,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5701381305118179107">مرکز</translation>
 <translation id="5701441174893770082">‏Linux کو اپ گریڈ کرنے سے آپ کی بیٹری کی چارجنگ کافی حد تک ختم ہو سکتی ہے۔ براہ کرم اپنے آلہ کو چارجر سے منسلک کریں اور دوبارہ کوشش کریں۔</translation>
 <translation id="5702898740348134351">سرچ انجنز میں &amp;ترمیم کریں…</translation>
-<translation id="570302979952009979">اس فنگر پرنٹ کیلئے ایک نام منتخب کریں</translation>
 <translation id="5704875434923668958">یہاں مطابقت پذیری کی جا رہی ہے</translation>
 <translation id="5707185214361380026">ایکسٹیشن کو اس سے لوڈ کرنے میں ناکام:</translation>
 <translation id="5708171344853220004">‏Microsoft کا اصولی نام</translation>
@@ -3399,7 +3397,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="5833726373896279253">ان ترتیبات میں صرف مالک ترمیم کر سکتا ہے:</translation>
 <translation id="5834581999798853053">تقریباً <ph name="TIME" /> منٹ باقی</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - کیمرا یا مائیکروفون ریکارڈ کر رہا ہے</translation>
-<translation id="5838456317242088717">موجودہ پوشیدگی سیشن</translation>
 <translation id="5842497610951477805">بلوٹوتھ فعال</translation>
 <translation id="5843250171025351504">اب آپ کا آلہ آپ کے ڈومین کے ذریعے متعین کردہ کم از کم کلائنٹ ورژن سے موافق نہیں ہے۔ براہ کرم لاگ ان کرنے کیلئے اپ ڈیٹ کریں۔</translation>
 <translation id="5846200638699387931">تعلق کے سِنٹیکس کی خرابی: <ph name="ERROR_LINE" /></translation>
@@ -3655,7 +3652,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="6181431612547969857">ڈاؤن لوڈ مسدود ہوگیا</translation>
 <translation id="6185132558746749656">آلہ کا مقام</translation>
 <translation id="6195693561221576702">اس آلہ کو آف لائن ڈیمو موڈ میں سیٹ نہیں کیا جا سکتا ہے۔</translation>
-<translation id="6196640612572343990">فریق ثالث کوکیز کو مسدود کریں</translation>
 <translation id="6196854373336333322">ایکسٹینشن "<ph name="EXTENSION_NAME" />" نے آپ کی پراکسی ترتیبات کو کنٹرول میں لے لیا ہے، جس کا مطلب ہے کہ آپ آن لائن جو بھی کرتے ہیں وہ اسے تبدیل کر سکتی، بریک کر سکتی یا اس کی جاسوسی کر سکتی ہے۔ اگر آپ کو اس تبدیلی کی وجہ ٹھیک سے معلوم نہیں تو غالباً آپ کو اس کی ضرورت نہیں ہے۔</translation>
 <translation id="6198102561359457428">سائن آؤٹ ہوں پھر دوبارہ سائن ان کریں…</translation>
 <translation id="6198252989419008588">‏PIN تبدیل کریں</translation>
@@ -4361,7 +4357,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="7225179976675429563">نیٹ ورک کی قسم غائب ہے</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (وینڈر: <ph name="VENDOR_ID" />، پروڈکٹ: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">وہ ترتیبات استعمال کریں جو تعین کرتی ہیں کہ آیا ویب سائٹس جغرافیائی مقام، مائیکروفون، کیمرا وغیرہ جیسی خصوصیات استعمال کر سکتی ہیں۔</translation>
-<translation id="7228523857728654909">اسکرین لاک اور سائن ان</translation>
 <translation id="7229570126336867161">‏EVDO درکار ہے</translation>
 <translation id="7230787553283372882">اپنے متن کے سائز کو حسب ضرورت بنائیں</translation>
 <translation id="7232750842195536390">نام کی تبدییلی ناکام ہو گئی</translation>
@@ -5278,7 +5273,6 @@ myaccount.google.com/activitycontrols/search پر تبدیل کر سکتے ہي�
 <translation id="850875081535031620">کوئی نقصان دہ سافٹ ویئر نہیں ملا</translation>
 <translation id="8509177919508253835">‏سیکیورٹی کلیدوں کو دوبارہ ترتیب دیں اور PINs تخلیق کریں</translation>
 <translation id="8509646642152301857">املا کی جانچ کی لغت کو ڈاؤن لوڈ کرنا ناکام ہوگیا۔</translation>
-<translation id="8510617356402557055">کیا یہ غیر متوقع تھا؟ <ph name="BEGIN_LINK" />تاثرات بھیجیں<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">کارروائی ختم کریں</translation>
 <translation id="851263357009351303"><ph name="HOST" /> کو تصاویر دکھانے کی ہمیشہ اجازت دیں</translation>
 <translation id="8513108775083588393">خود کار طور پر گھمائیں</translation>

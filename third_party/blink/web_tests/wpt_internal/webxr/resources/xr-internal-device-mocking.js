@@ -11,9 +11,9 @@ MockRuntime.prototype.setHitTestResults = function(results) {
 // XREnvironmentIntegrationProvider implementation
 
 MockRuntime.prototype.requestHitTest = function(ray) {
-  var hit_results = this.hittest_results_;
+  let hit_results = this.hittest_results_;
   if (!hit_results) {
-    var hit = new device.mojom.XRHitResult();
+    const hit = new device.mojom.XRHitResult();
 
     // No change to the underlying matrix/leaving it null results in identity.
     hit.hitMatrix = new gfx.mojom.Transform();
@@ -30,7 +30,10 @@ MockRuntime.prototype.getMissingFrameCount = function() {
   return this.presentation_provider_.missing_frame_count_;
 };
 
+MockRuntime.prototype._injectAdditionalFrameData_preLightEstimation = MockRuntime.prototype._injectAdditionalFrameData;
 MockRuntime.prototype._injectAdditionalFrameData = function(options, frameData) {
+  this._injectAdditionalFrameData_preLightEstimation(options, frameData);
+
   if (!options || !options.includeLightingEstimationData) {
     return;
   }
@@ -38,7 +41,7 @@ MockRuntime.prototype._injectAdditionalFrameData = function(options, frameData) 
   frameData.lightEstimationData = {
     lightProbe: {
       sphericalHarmonics: {
-        coefficients: new Array(9).fill().map((x, i) => { return { red: i, green: i, blue: i }; }),
+        coefficients: new Array(9).fill().map((x, i) => ({ red: i, green: i, blue: i })),
       },
       mainLightDirection: { x: 0, y: 1, z: 0 },
       mainLightIntensity: { red: 1, green: 1, blue: 1 },
@@ -82,7 +85,7 @@ MockXRInputSource.prototype.getInputSourceStateCommon =
     MockXRInputSource.prototype.getInputSourceState;
 
 MockXRInputSource.prototype.getInputSourceState = function() {
-  let input_state = this.getInputSourceStateCommon();
+  const input_state = this.getInputSourceStateCommon();
 
   console.log('getInputSourceState this.overlay_pointer_position_=' + JSON.stringify(this.overlay_pointer_position_));
   if (this.overlay_pointer_position_) {

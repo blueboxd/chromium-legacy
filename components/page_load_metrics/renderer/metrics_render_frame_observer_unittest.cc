@@ -78,7 +78,6 @@ TEST_F(MetricsRenderFrameObserverTest, NoMetrics) {
 
 TEST_F(MetricsRenderFrameObserverTest, SingleMetric) {
   base::Time nav_start = base::Time::FromDoubleT(10);
-  base::TimeDelta first_layout = base::TimeDelta::FromMillisecondsD(10);
 
   TestMetricsRenderFrameObserver observer;
 
@@ -91,7 +90,7 @@ TEST_F(MetricsRenderFrameObserverTest, SingleMetric) {
   observer.DidCommitProvisionalLoad(false, ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
 
-  timing.document_timing->first_layout = first_layout;
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(10);
   observer.ExpectPageLoadTiming(timing);
 
   observer.DidChangePerformanceTiming();
@@ -122,7 +121,6 @@ TEST_F(MetricsRenderFrameObserverTest, SingleCpuMetric) {
 
 TEST_F(MetricsRenderFrameObserverTest, MultipleMetrics) {
   base::Time nav_start = base::Time::FromDoubleT(10);
-  base::TimeDelta first_layout = base::TimeDelta::FromMillisecondsD(2);
   base::TimeDelta dom_event = base::TimeDelta::FromMillisecondsD(2);
   base::TimeDelta load_event = base::TimeDelta::FromMillisecondsD(2);
 
@@ -137,7 +135,6 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleMetrics) {
   observer.DidCommitProvisionalLoad(false, ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
 
-  timing.document_timing->first_layout = first_layout;
   timing.document_timing->dom_content_loaded_event_start = dom_event;
   observer.ExpectPageLoadTiming(timing);
 
@@ -170,7 +167,6 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleMetrics) {
 
 TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   base::Time nav_start = base::Time::FromDoubleT(10);
-  base::TimeDelta first_layout = base::TimeDelta::FromMillisecondsD(2);
   base::TimeDelta dom_event = base::TimeDelta::FromMillisecondsD(2);
   base::TimeDelta load_event = base::TimeDelta::FromMillisecondsD(2);
 
@@ -185,7 +181,6 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   observer.DidCommitProvisionalLoad(false, ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
 
-  timing.document_timing->first_layout = first_layout;
   timing.document_timing->dom_content_loaded_event_start = dom_event;
   timing.document_timing->load_event_start = load_event;
   observer.ExpectPageLoadTiming(timing);
@@ -198,7 +193,6 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   observer.VerifyExpectedTimings();
 
   base::Time nav_start_2 = base::Time::FromDoubleT(100);
-  base::TimeDelta first_layout_2 = base::TimeDelta::FromMillisecondsD(20);
   base::TimeDelta dom_event_2 = base::TimeDelta::FromMillisecondsD(20);
   base::TimeDelta load_event_2 = base::TimeDelta::FromMillisecondsD(20);
   mojom::PageLoadTiming timing_2;
@@ -213,7 +207,6 @@ TEST_F(MetricsRenderFrameObserverTest, MultipleNavigations) {
   observer.DidCommitProvisionalLoad(false, ui::PAGE_TRANSITION_LINK);
   observer.GetMockTimer()->Fire();
 
-  timing_2.document_timing->first_layout = first_layout_2;
   timing_2.document_timing->dom_content_loaded_event_start = dom_event_2;
   timing_2.document_timing->load_event_start = load_event_2;
   observer.ExpectPageLoadTiming(timing_2);

@@ -400,6 +400,7 @@ test("android_webview_unittests") {
     "../browser/aw_contents_client_bridge_unittest.cc",
     "../browser/aw_form_database_service_unittest.cc",
     "../browser/aw_media_url_interceptor_unittest.cc",
+    "../browser/aw_pac_processor_unittest.cc",
     "../browser/aw_permission_manager_unittest.cc",
     "../browser/gfx/aw_attaching_to_window_recorder_unittest.cc",
     "../browser/gfx/begin_frame_source_webview_unittest.cc",
@@ -421,6 +422,8 @@ test("android_webview_unittests") {
     "../browser/state_serializer_unittest.cc",
     "../lib/webview_tests.cc",
   ]
+
+  deps += [ "//v8:v8_external_startup_data_assets" ]
 }
 
 android_assets("android_webview_unittests_assets") {

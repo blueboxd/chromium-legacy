@@ -16,7 +16,6 @@ namespace internal {
 // specified by the ".Background" suffix. For these events, we put them into the
 // background histogram if the web contents was ever in the background from
 // navigation start to the event in question.
-extern const char kHistogramFirstLayout[];
 extern const char kHistogramFirstInputDelay[];
 extern const char kHistogramFirstInputTimestamp[];
 extern const char kHistogramFirstInputDelay4[];
@@ -40,7 +39,6 @@ extern const char kHistogramParseBlockedOnScriptLoad[];
 extern const char kHistogramParseBlockedOnScriptExecution[];
 extern const char kHistogramParseStartToFirstMeaningfulPaint[];
 
-extern const char kBackgroundHistogramFirstLayout[];
 extern const char kBackgroundHistogramFirstImagePaint[];
 extern const char kBackgroundHistogramDomContentLoaded[];
 extern const char kBackgroundHistogramLoad[];
@@ -130,8 +128,6 @@ class CorePageLoadMetricsObserver
   void OnDomContentLoadedEventStart(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnLoadEventStart(
-      const page_load_metrics::mojom::PageLoadTiming& timing) override;
-  void OnFirstLayout(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstPaintInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;

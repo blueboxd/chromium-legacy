@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/pickle.h"
-#include "components/sessions/core/session_backend.h"
+#include "components/sessions/core/command_storage_backend.h"
 #include "components/sessions/core/session_types.h"
 
 namespace sessions {

@@ -998,9 +998,8 @@ void CrxInstaller::NotifyCrxInstallComplete(
             error->detail());
         break;
       case CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE:
-        installation_reporter->ReportFailure(
-            extension_id, InstallationReporter::FailureReason::
-                              CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE);
+        installation_reporter->ReportSandboxedUnpackerFailureReason(
+            extension_id, error->sandbox_failure_detail());
         break;
       case CrxInstallErrorType::OTHER:
         installation_reporter->ReportCrxInstallError(

@@ -255,12 +255,6 @@ views::View* DeskMiniView::GetView() {
   return this;
 }
 
-gfx::Rect DeskMiniView::GetHighlightBoundsInScreen() {
-  gfx::Rect bounds_in_screen = bounds();
-  views::View::ConvertRectToScreen(this->parent(), &bounds_in_screen);
-  return bounds_in_screen;
-}
-
 void DeskMiniView::MaybeActivateHighlightedView() {
   DesksController::Get()->ActivateDesk(desk(),
                                        DesksSwitchSource::kMiniViewButton);
@@ -270,9 +264,8 @@ void DeskMiniView::MaybeCloseHighlightedView() {
   OnCloseButtonPressed();
 }
 
-bool DeskMiniView::OnViewHighlighted() {
+void DeskMiniView::OnViewHighlighted() {
   UpdateBorderColor();
-  return true;
 }
 
 void DeskMiniView::OnViewUnhighlighted() {

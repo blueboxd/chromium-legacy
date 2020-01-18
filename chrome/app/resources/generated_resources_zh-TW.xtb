@@ -396,6 +396,7 @@
 <translation id="1545177026077493356">自動 Kiosk 模式</translation>
 <translation id="1545775234664667895">已安裝「<ph name="THEME_NAME" />」主題</translation>
 <translation id="1546280085599573572">這個擴充功能已變更您點選 [首頁] 按鈕時所顯示的網頁。</translation>
+<translation id="1549275686094429035">已啟用 ARC</translation>
 <translation id="1549788673239553762">「<ph name="APP_NAME" />」要求存取 <ph name="VOLUME_NAME" />。您的檔案可能會遭到修改或刪除。</translation>
 <translation id="1553538517812678578">無限制</translation>
 <translation id="1554390798506296774">一律允許在 <ph name="HOST" /> 執行無沙箱防護的外掛程式</translation>
@@ -650,6 +651,7 @@
 <translation id="1879000426787380528">登入身分</translation>
 <translation id="1880905663253319515">要刪除憑證「<ph name="CERTIFICATE_NAME" />」嗎？</translation>
 <translation id="1884013283844450420">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，連線</translation>
+<translation id="1884930769492918228">追蹤攝影機位置並對應你的房間</translation>
 <translation id="1886996562706621347">允許網站要求成為通訊協定的預設處理常式 (建議)</translation>
 <translation id="1887442540531652736">登入錯誤</translation>
 <translation id="1887597546629269384">再說一次「Hey Google」</translation>
@@ -732,6 +734,7 @@
 <translation id="2018352199541442911">很抱歉，系統目前不支援你的外部儲存裝置。</translation>
 <translation id="2019718679933488176">在新分頁中開啟音效(&amp;O)</translation>
 <translation id="2020183425253392403">顯示網路位址設定</translation>
+<translation id="2020225359413970060">掃描檔案</translation>
 <translation id="2022953316617983419">QR 圖碼</translation>
 <translation id="2023167225947895179">你所輸入的 PIN 碼可能很容易被別人猜到</translation>
 <translation id="202352106777823113">下載時間過長，網路已中止下載。</translation>
@@ -761,6 +764,7 @@
 <translation id="2059913712424898428">時區</translation>
 <translation id="2065405795449409761">Chrome 目前受到自動測試軟體控制。</translation>
 <translation id="2071393345806050157">沒有本機記錄檔案。</translation>
+<translation id="2073148037220830746">{NUM_EXTENSIONS,plural, =1{按一下即可安裝擴充功能}other{按一下即可安裝這些擴充功能}}</translation>
 <translation id="2075474481720804517">電量：<ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="2075959085554270910">讓你啟用/停用輕觸點選和輕觸拖曳功能</translation>
 <translation id="2076269580855484719">隱藏這個外掛程式</translation>
@@ -856,6 +860,7 @@
 <translation id="219008588003277019">Native Client 模組：<ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(空白)</translation>
 <translation id="2191223688506386601">最後一個步驟</translation>
+<translation id="2191754378957563929">開啟</translation>
 <translation id="2192505247865591433">來源：</translation>
 <translation id="2193365732679659387">信任設定</translation>
 <translation id="2195331105963583686">你仍然可以在該時間點之後使用這部 <ph name="DEVICE_TYPE" />，但屆時這部裝置將無法自動取得軟體和安全性更新</translation>
@@ -948,7 +953,6 @@
 <translation id="2317842250900878657">已完成 <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">紙張大小</translation>
 <translation id="2318817390901984578">如要使用 Android 應用程式，請先為你的 <ph name="DEVICE_TYPE" /> 充電並進行更新。</translation>
-<translation id="2318923050469484167">目前的無痕模式工作階段 (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">頁首及頁尾</translation>
 <translation id="2322318151094136999">當網站要存取序列埠時，必須先詢問你 (建議)</translation>
 <translation id="2325002827435400643">關閉這個網站的 Cookie 封鎖設定</translation>
@@ -1367,6 +1371,7 @@
 <translation id="2875698561019555027">(Chrome 錯誤頁面)</translation>
 <translation id="2876336351874743617">手指 2</translation>
 <translation id="2876369937070532032">當網站具有安全性風險時，Chrome 會將你造訪的部分網頁網址傳送給 Google</translation>
+<translation id="2877030408509021795">掃描完成，一切都準備就緒。</translation>
 <translation id="2878782256107578644">正在掃描，要立即開啟嗎？</translation>
 <translation id="288042212351694283">存取你的 Universal 2nd Factor 裝置</translation>
 <translation id="2881076733170862447">當你點選擴充功能時</translation>
@@ -1698,6 +1703,7 @@
 <translation id="3382073616108123819">糟糕！系統無法判別這個裝置的裝置識別碼。</translation>
 <translation id="3382086682569279540">系統即將移除你管理的帳戶</translation>
 <translation id="3382200254148930874">正在停用監督功能...</translation>
+<translation id="3383210070657133526"><ph name="URL" /> 希望能開始虛擬實境工作階段</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">分隔線</translation>
 <translation id="338691029516748599">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，<ph name="SECURITY_STATUS" />，訊號強度 <ph name="SIGNAL_STRENGTH" />%，由系統管理員管理，連線</translation>
@@ -1790,6 +1796,7 @@
 <translation id="3511307672085573050">複製連結網址(&amp;E)</translation>
 <translation id="351152300840026870">固定寬度字型</translation>
 <translation id="3511528412952710609">短</translation>
+<translation id="3513704683820682405">擴增實境</translation>
 <translation id="3514373592552233661">如有多個可用網路，慣用網路的優先使用順序高於其他已知網路</translation>
 <translation id="3515983984924808886">請再次輕觸安全金鑰以確認重設。這個安全金鑰上儲存的所有資訊 (包括 PIN 碼) 都將遭到刪除。</translation>
 <translation id="3518985090088779359">接受並繼續</translation>
@@ -2033,6 +2040,7 @@
 <translation id="3819800052061700452">全螢幕(&amp;F)</translation>
 <translation id="3820172043799983114">PIN 無效。</translation>
 <translation id="3820749202859700794">SECG 橢圓曲線 secp521r1 (亦稱為 NIST P-521)</translation>
+<translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{已核准擴充功能}other{已核准 # 個擴充功能}}</translation>
 <translation id="3822559385185038546">這是由管理員強制啟用的 Proxy</translation>
 <translation id="3826440694796503677">你的系統管理員已停用新增 Google 帳戶的功能</translation>
 <translation id="3827306204503227641">繼續允許無沙箱防護的外掛程式</translation>
@@ -2245,7 +2253,6 @@
 <translation id="4099874310852108874">網路發生錯誤。</translation>
 <translation id="4100733287846229632">裝置空間嚴重不足</translation>
 <translation id="4100853287411968461">新的裝置使用時間限制</translation>
-<translation id="4103091233824664032">如要設定螢幕鎖定和登入，請輸入你的密碼</translation>
 <translation id="4104163789986725820">匯出(&amp;X)...</translation>
 <translation id="4107048419833779140">識別並退出儲存裝置</translation>
 <translation id="4109135793348361820">將視窗傳送給 <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
@@ -2391,6 +2398,7 @@
 <translation id="4353114845960720315">當你進入 VR 時，這個網站可能會取得以下資訊：</translation>
 <translation id="4354344420232759511">這裡會顯示你曾造訪的網站</translation>
 <translation id="435527878592612277">請選取你的相片</translation>
+<translation id="4357784477082216550"><ph name="URL" /> 想要追蹤攝影機位置並對應你的房間</translation>
 <translation id="4358313196493694334">穩定點擊位置</translation>
 <translation id="4359408040881008151">你已安裝相依的擴充功能，因此必須一併安裝這個擴充功能。</translation>
 <translation id="4359717112757026264">城市景觀</translation>
@@ -2631,6 +2639,7 @@
 <translation id="4720185134442950733">行動數據網路</translation>
 <translation id="4722735765955348426"><ph name="USERNAME" />的密碼</translation>
 <translation id="4722920479021006856"><ph name="APP_NAME" /> 正在共用你的畫面。</translation>
+<translation id="4723140812774948886">與下一個交換</translation>
 <translation id="4724450788351008910">聯盟已變更</translation>
 <translation id="4725511304875193254">柯基犬</translation>
 <translation id="4726710629007580002">嘗試安裝這項擴充功能時顯示警告訊息：</translation>
@@ -2784,6 +2793,7 @@
 <translation id="494286511941020793">Proxy 設定說明</translation>
 <translation id="4943368462779413526">足球</translation>
 <translation id="4943691134276646401">「<ph name="CHROME_EXTENSION_NAME" />」要求與序列埠連線</translation>
+<translation id="4943703118917034429">虛擬實境</translation>
 <translation id="4944310289250773232">這是由 <ph name="SAML_DOMAIN" /> 代管的驗證服務</translation>
 <translation id="495170559598752135">動作</translation>
 <translation id="4952981627953231344">這部裝置不允許使用 Plugin VM。請與貴機構的裝置管理員聯絡。</translation>
@@ -2944,6 +2954,7 @@
 <translation id="51918995459521422"><ph name="ORIGIN" /> 想要下載多個檔案</translation>
 <translation id="5192062846343383368">開啟 Family Link 應用程式以查看監督功能設定</translation>
 <translation id="5193988420012215838">已複製到剪貼簿</translation>
+<translation id="5203920255089865054">{NUM_EXTENSIONS,plural, =1{按一下即可查看擴充功能}other{按一下即可查看這些擴充功能}}</translation>
 <translation id="5204673965307125349">請在裝置上執行 Powerwash，然後再試一次。</translation>
 <translation id="5206215183583316675">要刪除「<ph name="CERTIFICATE_NAME" />」嗎？</translation>
 <translation id="520621735928254154">憑證匯入錯誤</translation>
@@ -3026,6 +3037,7 @@
 <translation id="5310281978693206542">將連結傳送至裝置</translation>
 <translation id="5311304534597152726">使用以下身分登入：</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" />請再試一次。</translation>
+<translation id="5313628438272378649">這個上傳項目違反貴機構的安全性政策，因此無法完成上傳。</translation>
 <translation id="5315738755890845852">多餘的大括弧：<ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">身分</translation>
 <translation id="5317780077021120954">儲存</translation>
@@ -3081,6 +3093,7 @@
 <translation id="5398772614898833570">已封鎖廣告</translation>
 <translation id="5402815541704507626">使用行動數據下載更新</translation>
 <translation id="540296380408672091">一律封鎖 <ph name="HOST" /> 的 Cookie</translation>
+<translation id="540495485885201800">與上一個交換</translation>
 <translation id="5405146885510277940">重設設定</translation>
 <translation id="5408750356094797285">縮放比例：<ph name="PERCENT" /></translation>
 <translation id="5411472733320185105">不要對以下主機和網域使用 Proxy 設定：</translation>
@@ -3118,6 +3131,7 @@
 <translation id="5449588825071916739">將所有分頁加入書籤</translation>
 <translation id="5449716055534515760">關閉視窗(&amp;D)</translation>
 <translation id="5454166040603940656">提供者：<ph name="PROVIDER" /></translation>
+<translation id="5454360575035671759">移除 Plugin VM 將會刪除你的 VM，包含其應用程式、設定和資料。你確定要繼續嗎？</translation>
 <translation id="5457113250005438886">無效</translation>
 <translation id="5457459357461771897">讀取及刪除你電腦中的相片、音樂及其他媒體</translation>
 <translation id="5457599981699367932">以訪客身分瀏覽</translation>
@@ -3133,8 +3147,8 @@
 <translation id="5468173180030470402">正在尋找檔案共用區</translation>
 <translation id="5470735824776589490">你必須先重新啟動裝置，才能透過 Powerwash 重設裝置。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">你好！這是文字轉語音的語音。</translation>
-<translation id="5472133193607270166">開啟這項功能時，網站不能根據你在各網站的瀏覽活動放送個人化廣告。部分網站可能無法正常運作。</translation>
 <translation id="5473333559083690127">再次輸入新的 PIN 碼</translation>
+<translation id="548137908954174608">啟用即時字幕</translation>
 <translation id="5481941284378890518">新增附近的印表機</translation>
 <translation id="5483785310822538350">撤銷檔案和裝置存取權</translation>
 <translation id="5485080380723335835">你的 <ph name="DEVICE_TYPE" /> 因安全考量而進入鎖定狀態。如要繼續操作，請手動輸入你的密碼。</translation>
@@ -3171,6 +3185,7 @@
 <translation id="5518584115117143805">電子郵件加密憑證</translation>
 <translation id="5521078259930077036">這是你想要的首頁嗎？</translation>
 <translation id="5522156646677899028">這個擴充功能內含嚴重安全性漏洞。</translation>
+<translation id="5523149538118225875">{NUM_EXTENSIONS,plural, =1{你的系統管理員已安裝擴充功能}other{你的系統管理員已安裝 # 個擴充功能}}</translation>
 <translation id="5525677322972469346">建立新的受監管使用者</translation>
 <translation id="5526701598901867718">全部 (不安全)</translation>
 <translation id="5526745900034778153">如要繼續同步處理，請重新登入</translation>
@@ -3304,7 +3319,6 @@
 <translation id="5701381305118179107">置中</translation>
 <translation id="5701441174893770082">升級 Linux 相當耗電。請將裝置連接充電器，然後再試一次。</translation>
 <translation id="5702898740348134351">編輯搜尋引擎(&amp;E)...</translation>
-<translation id="570302979952009979">請輸入這個指紋的名稱</translation>
 <translation id="5704875434923668958">同步到</translation>
 <translation id="5707185214361380026">無法載入下列來源的擴充功能：</translation>
 <translation id="5708171344853220004">Microsoft 主要名稱</translation>
@@ -3396,7 +3410,6 @@
 <translation id="5833726373896279253">你必須是擁有者，才能修改這些設定：</translation>
 <translation id="5834581999798853053">剩下 <ph name="TIME" /> 分鐘</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - 攝影機或麥克風錄影/錄音中</translation>
-<translation id="5838456317242088717">目前的無痕模式工作階段</translation>
 <translation id="5842497610951477805">啟用藍牙</translation>
 <translation id="5843250171025351504">你的裝置已不符合管理員指定的最低用戶端版本規定。如要登入，請更新版本。</translation>
 <translation id="5846200638699387931">關聯語法錯誤：<ph name="ERROR_LINE" /></translation>
@@ -3652,7 +3665,6 @@
 <translation id="6181431612547969857">下載遭封鎖</translation>
 <translation id="6185132558746749656">裝置位置</translation>
 <translation id="6195693561221576702">這個裝置無法設為離線示範模式。</translation>
-<translation id="6196640612572343990">封鎖第三方 Cookie</translation>
 <translation id="6196854373336333322">您的 Proxy 設定已受到擴充功能「<ph name="EXTENSION_NAME" />」控制，該擴充功能可變更、中斷、或監視您在網路上的行為。如果您不確定這項變更的發生原因，建議您停用該擴充功能。</translation>
 <translation id="6198102561359457428">登出然後再次登入...</translation>
 <translation id="6198252989419008588">變更 PIN 碼</translation>
@@ -3840,6 +3852,7 @@
 <translation id="6459799433792303855">使用中的視窗已移至其他畫面。</translation>
 <translation id="6460601847208524483">尋找下一個項目</translation>
 <translation id="6461170143930046705">正在搜尋網路...</translation>
+<translation id="6462438303393708881">取消上傳</translation>
 <translation id="6463795194797719782">編輯(&amp;E)</translation>
 <translation id="6466988389784393586">開啟所有書籤(&amp;O)</translation>
 <translation id="6467304607960172345">針對全螢幕影片進行最佳化處理</translation>
@@ -3887,6 +3900,7 @@
 <translation id="6531282281159901044">保留不安全的檔案</translation>
 <translation id="6532101170117367231">儲存至 Google 雲端硬碟</translation>
 <translation id="6532106788206463496">儲存變更</translation>
+<translation id="6532663472409656417">已註冊企業</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注意：<ph name="END_BOLD" />除非你瞭解這項功能的用途或是收到相關指示，否則請不要啟用這項功能，因為收集資料可能會導致系統效能降低。</translation>
 <translation id="6541638731489116978">這個網站無法存取你的動作感應器。</translation>
 <translation id="6545665334409411530">重複頻率</translation>
@@ -4028,6 +4042,7 @@
 <translation id="6758056191028427665">請讓我們瞭解你的滿意度。</translation>
 <translation id="6759193508432371551">恢復原廠設定</translation>
 <translation id="6762833852331690540">開啟</translation>
+<translation id="6767115174726603949">存取虛擬實境裝置和資料</translation>
 <translation id="6767566652486411142">選擇其他語言...</translation>
 <translation id="6767639283522617719">無法加入網域。請確認該機構單位使用正確設定。</translation>
 <translation id="6769712124046837540">新增印表機...</translation>
@@ -4040,6 +4055,7 @@
 <translation id="677965093459947883">非常小</translation>
 <translation id="6781284683813954823">Doodle 連結</translation>
 <translation id="6781978626986383437">已取消 Linux 備份作業</translation>
+<translation id="6785915470941880363">反向捲動。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="6786747875388722282">擴充功能</translation>
 <translation id="6787839852456839824">鍵盤快速鍵</translation>
 <translation id="6788210894632713004">未封裝擴充功能</translation>
@@ -4146,6 +4162,7 @@
 <translation id="6923132443355966645">捲動/點選</translation>
 <translation id="6923633482430812883">掛接共用裝置時發生錯誤。請檢查你要連接的檔案伺服器是否支援 SMBv2 以上版本。</translation>
 <translation id="6930036377490597025">外部的安全金鑰或內建的感應器</translation>
+<translation id="6930161297841867798">{NUM_EXTENSIONS,plural, =1{已拒絕擴充功能}other{已拒絕 # 個擴充功能}}</translation>
 <translation id="6935286146439255109">找不到紙匣</translation>
 <translation id="693807610556624488">對以下裝置執行的寫入作業超過屬性長度上限：「<ph name="DEVICE_NAME" />」。</translation>
 <translation id="6938386202199793006">你有 1 台已儲存的印表機。</translation>
@@ -4234,6 +4251,7 @@
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7055152154916055070">已禁止重新導向：</translation>
 <translation id="7056526158851679338">檢查裝置 (&amp;I)</translation>
+<translation id="7057767408836081338">無法取得應用程式資料，正在嘗試繼續執行應用程式...</translation>
 <translation id="7059858479264779982">設為自動啟動</translation>
 <translation id="7059893117020417984">如果想要進行私密瀏覽，請按一下三個圓點圖示的選單，然後開啟無痕式視窗</translation>
 <translation id="7062222374113411376">允許最近關閉的網站完成資料收發作業 (建議)</translation>
@@ -4287,6 +4305,7 @@
 <translation id="7120865473764644444">無法連上同步處理伺服器。重試中...</translation>
 <translation id="7121362699166175603">將歷史記錄和自動即時查詢從網址列中清除。你的 Google 帳戶可能會儲存其他形式的瀏覽記錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="7121389946694989825">傳送使用狀況與診斷資料。這個裝置目前會自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google。這些資料將有助於系統和應用程式提高穩定性及做出其他改善，並不會用於識別貴子女的身分。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。如果貴子女的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到他們的 Google 帳戶。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
+<translation id="7121438501124788993">開發人員模式</translation>
 <translation id="7121728544325372695">智慧型破折號</translation>
 <translation id="7123360114020465152">已停止支援</translation>
 <translation id="7127980134843952133">下載記錄</translation>
@@ -4358,7 +4377,6 @@
 <translation id="7225179976675429563">找不到網路類型</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (製造商：<ph name="VENDOR_ID" />，產品：<ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">控制可指定網站能否使用地理位置、麥克風、攝影機等功能的設定。</translation>
-<translation id="7228523857728654909">螢幕鎖定和登入</translation>
 <translation id="7229570126336867161">需要 EVDO</translation>
 <translation id="7230787553283372882">自訂文字大小</translation>
 <translation id="7232750842195536390">無法重新命名</translation>
@@ -4451,6 +4469,7 @@
 <translation id="7352651011704765696">發生錯誤</translation>
 <translation id="735361434055555355">正在安裝 Linux...</translation>
 <translation id="7353887511974462734">新增到現有群組</translation>
+<translation id="7354341762311560488">指紋感應器位於鍵盤左下方，請以任何一隻手指輕觸這個按鍵。</translation>
 <translation id="735745346212279324">已中斷 VPN 連線</translation>
 <translation id="7359588939039777303">已封鎖廣告。</translation>
 <translation id="7360183604634508679">書籤選單</translation>
@@ -4751,6 +4770,7 @@
 <translation id="7792388396321542707">停止共用</translation>
 <translation id="779308894558717334">淺綠色</translation>
 <translation id="7793098747275782155">深藍色</translation>
+<translation id="7797571222998226653">關閉</translation>
 <translation id="7799299114731150374">已成功設定桌布</translation>
 <translation id="7800518121066352902">逆時針旋轉(&amp;O)</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
@@ -5086,6 +5106,7 @@
 <translation id="8227119283605456246">附加檔案</translation>
 <translation id="8230134520748321204">要儲存 <ph name="ORIGIN" /> 的密碼嗎？</translation>
 <translation id="8234795456569844941">請告訴我們在你收到設定檔錯誤訊息前執行的動作，以協助工程師修正此問題：</translation>
+<translation id="8236123533334037984">機構正在掃描這個上傳項目以取得安全性核准。</translation>
 <translation id="8236917170563564587">改為分享這個分頁</translation>
 <translation id="8237647586961940482">深粉紅色與紅色</translation>
 <translation id="8241040075392580210">晴時多雲</translation>
@@ -5274,7 +5295,6 @@
 <translation id="850875081535031620">未發現有害軟體</translation>
 <translation id="8509177919508253835">重設安全金鑰並建立 PIN 碼</translation>
 <translation id="8509646642152301857">拼字檢查字典下載失敗。</translation>
-<translation id="8510617356402557055">這是未預期的情況嗎？<ph name="BEGIN_LINK" />提供意見<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">結束處理程序</translation>
 <translation id="851263357009351303">永遠允許 <ph name="HOST" /> 顯示圖片</translation>
 <translation id="8513108775083588393">自動旋轉</translation>
@@ -5543,6 +5563,7 @@
 <translation id="8863753581171631212">另外在「<ph name="APP" />」中開啟連結</translation>
 <translation id="8864055848767439877">正在與 <ph name="APP_NAME" /> 共用 <ph name="TAB_NAME" /></translation>
 <translation id="8864458770072227512">已將 <ph name="EMAIL" /> 從這個裝置中移除</translation>
+<translation id="8867228703146808825">將版本詳細資料複製到剪貼簿</translation>
 <translation id="8868626022555786497">已使用的空間</translation>
 <translation id="8870318296973696995">首頁</translation>
 <translation id="8870413625673593573">最近關閉的分頁</translation>

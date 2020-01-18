@@ -7,7 +7,5 @@ source_set("base") {
     "//ios/consumer/base/debugger.mm",
     "//ios/public/consumer/base/debugger.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

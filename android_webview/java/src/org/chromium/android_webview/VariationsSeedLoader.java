@@ -356,6 +356,7 @@ public class VariationsSeedLoader {
             return;
         }
 
+        VariationsUtils.debugLog("Requesting new seed from IVariationsSeedServer");
         SeedServerConnection connection = new SeedServerConnection(newSeedFd, oldSeedDate);
         connection.start();
     }
@@ -374,6 +375,8 @@ public class VariationsSeedLoader {
         if (seed != null) {
             AwVariationsSeedBridge.setSeed(seed);
             AwVariationsSeedBridge.setLoadedSeedFresh(isLoadedSeedFresh());
+            long seedAge = TimeUnit.MILLISECONDS.toSeconds(new Date().getTime() - seed.date);
+            VariationsUtils.debugLog("Loaded seed with age " + seedAge + "s");
         }
     }
 }

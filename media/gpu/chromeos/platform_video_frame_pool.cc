@@ -57,7 +57,7 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
   base::AutoLock auto_lock(lock_);
 
   if (!frame_layout_) {
-    VLOGF(1) << "Please call RequestFrames() first.";
+    VLOGF(1) << "Please call Initialize() first.";
     return nullptr;
   }
 
@@ -99,7 +99,7 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
   return wrapped_frame;
 }
 
-base::Optional<GpuBufferLayout> PlatformVideoFramePool::RequestFrames(
+base::Optional<GpuBufferLayout> PlatformVideoFramePool::Initialize(
     const Fourcc& fourcc,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,

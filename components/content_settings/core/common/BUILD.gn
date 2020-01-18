@@ -26,9 +26,7 @@ jumbo_static_library("common") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  public_deps = [
-    ":features",
-  ]
+  public_deps = [ ":features" ]
 
   deps = [
     "//base",
@@ -60,13 +58,9 @@ jumbo_source_set("unit_tests") {
 
 mojom("mojo_bindings") {
   generate_java = true
-  sources = [
-    "content_settings.mojom",
-  ]
+  sources = [ "content_settings.mojom" ]
 
-  public_deps = [
-    "//mojo/public/mojom/base",
-  ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 }
 
 component("features") {
@@ -79,7 +73,5 @@ component("features") {
     "features.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

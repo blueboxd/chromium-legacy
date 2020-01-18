@@ -273,6 +273,26 @@ SkColor ShelfConfig::GetMaximizedShelfColor() const {
   return SkColorSetA(GetDefaultShelfColor(), 254);  // ~100% opacity
 }
 
+SkColor ShelfConfig::GetThemedColorFromWallpaper(SkColor base_color) const {
+  if (!Shell::Get()->wallpaper_controller())
+    return base_color;
+
+  SkColor dark_muted_color =
+      Shell::Get()->wallpaper_controller()->GetProminentColor(
+          color_utils::ColorProfile(color_utils::LumaRange::DARK,
+                                    color_utils::SaturationRange::MUTED));
+
+  if (dark_muted_color == kInvalidWallpaperColor)
+    return base_color;
+
+  int base_alpha = SkColorGetA(base_color);
+  // Combine SK_ColorBLACK at 50% opacity with |dark_muted_color|.
+  base_color = color_utils::GetResultingPaintColor(
+      SkColorSetA(SK_ColorBLACK, 127), dark_muted_color);
+
+  return SkColorSetA(base_color, base_alpha);
+}
+
 SkColor ShelfConfig::GetDefaultShelfColor() const {
   if (!features::IsBackgroundBlurEnabled()) {
     return AshColorProvider::Get()->GetBaseLayerColor(
@@ -284,24 +304,8 @@ SkColor ShelfConfig::GetDefaultShelfColor() const {
       IsTabletMode() ? AshColorProvider::BaseLayerType::kTransparent60
                      : AshColorProvider::BaseLayerType::kTransparent74,
       AshColorProvider::AshColorMode::kDark);
-  int final_alpha = SkColorGetA(final_color);
 
-  if (!Shell::Get()->wallpaper_controller())
-    return final_color;
-
-  SkColor dark_muted_color =
-      Shell::Get()->wallpaper_controller()->GetProminentColor(
-          color_utils::ColorProfile(color_utils::LumaRange::DARK,
-                                    color_utils::SaturationRange::MUTED));
-
-  if (dark_muted_color == kInvalidWallpaperColor)
-    return final_color;
-
-  // Combine SK_ColorBLACK at 50% opacity with |dark_muted_color|.
-  final_color = color_utils::GetResultingPaintColor(
-      SkColorSetA(SK_ColorBLACK, 127), dark_muted_color);
-
-  return SkColorSetA(final_color, final_alpha);
+  return GetThemedColorFromWallpaper(final_color);
 }
 
 int ShelfConfig::GetShelfControlButtonBlurRadius() const {

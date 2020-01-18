@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -36,6 +37,8 @@ const int64_t CloudPolicyRefreshScheduler::kRefreshDelayMinMs =
     30 * 60 * 1000;  // 30 minutes.
 const int64_t CloudPolicyRefreshScheduler::kRefreshDelayMaxMs =
     7 * 24 * 60 * 60 * 1000;  // 1 week.
+const int64_t CloudPolicyRefreshScheduler::kRandomSaltDelayMaxValueMs =
+    5 * 60 * 1000;  // 5 minutes.
 
 #else
 
@@ -53,6 +56,8 @@ const int64_t CloudPolicyRefreshScheduler::kRefreshDelayMinMs =
     30 * 60 * 1000;  // 30 minutes.
 const int64_t CloudPolicyRefreshScheduler::kRefreshDelayMaxMs =
     24 * 60 * 60 * 1000;  // 1 day.
+const int64_t CloudPolicyRefreshScheduler::kRandomSaltDelayMaxValueMs =
+    5 * 60 * 1000;  // 5 minutes.
 
 #endif
 
@@ -69,6 +74,8 @@ CloudPolicyRefreshScheduler::CloudPolicyRefreshScheduler(
       network_connection_tracker_(network_connection_tracker_getter.Run()),
       error_retry_delay_ms_(kInitialErrorRetryDelayMs),
       refresh_delay_ms_(kDefaultRefreshDelayMs),
+      refresh_delay_salt_ms_(static_cast<int64_t>(
+          base::RandGenerator(kRandomSaltDelayMaxValueMs))),
       invalidations_available_(false),
       creation_time_(base::Time::NowFromSystemTime()) {
   client_->AddObserver(this);
@@ -364,7 +371,13 @@ void CloudPolicyRefreshScheduler::RefreshAfter(int delta_ms) {
   const base::TimeDelta time_ticks_delay =
       std::max((last_refresh_ticks_ + delta) - base::TimeTicks::Now(),
                base::TimeDelta());
-  const base::TimeDelta delay = std::min(system_delay, time_ticks_delay);
+  base::TimeDelta delay = std::min(system_delay, time_ticks_delay);
+
+  // Unless requesting an immediate refresh, add a delay to the scheduled policy
+  // refresh in order to spread out server load.
+  if (!delay.is_zero())
+    delay += base::TimeDelta::FromMilliseconds(refresh_delay_salt_ms_);
+
   refresh_callback_.Reset(base::BindOnce(
       &CloudPolicyRefreshScheduler::PerformRefresh, base::Unretained(this)));
   task_runner_->PostDelayedTask(FROM_HERE, refresh_callback_.callback(), delay);

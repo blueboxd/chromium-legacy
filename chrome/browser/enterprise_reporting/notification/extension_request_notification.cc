@@ -58,11 +58,13 @@ ExtensionRequestNotification::ExtensionRequestNotification(
 
 ExtensionRequestNotification::~ExtensionRequestNotification() = default;
 
-void ExtensionRequestNotification::Show() {
+void ExtensionRequestNotification::Show(NotificationCloseCallback callback) {
   if (extension_ids_.empty()) {
     NOTREACHED();
     return;
   }
+
+  callback_ = std::move(callback);
 
   const base::string16 title = l10n_util::GetPluralStringFUTF16(
       kNotificationTitles[notify_type_], extension_ids_.size());
@@ -80,22 +82,23 @@ void ExtensionRequestNotification::Show() {
       message_center::NotifierId(message_center::NotifierType::APPLICATION,
                                  kExtensionRequestNotifierId),
       message_center::RichNotificationData(),
-      new message_center::HandleNotificationClickDelegate(base::BindRepeating(
-          &ExtensionRequestNotification::OnClick, weak_factory_.GetWeakPtr())));
+      base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
+          weak_factory_.GetWeakPtr()));
   notification_->set_never_timeout(true);
 
   NotificationDisplayService::GetForProfile(profile_)->Display(
       NotificationHandler::Type::TRANSIENT, *notification_, nullptr);
 }
 
-void ExtensionRequestNotification::Close() {
+void ExtensionRequestNotification::CloseNotification() {
   NotificationDisplayService::GetForProfile(profile_)->Close(
       NotificationHandler::Type::TRANSIENT, kNotificationIds[notify_type_]);
   notification_.reset();
 }
 
-void ExtensionRequestNotification::OnClick(
-    const base::Optional<int> button_index) {
+void ExtensionRequestNotification::Click(
+    const base::Optional<int>& button_index,
+    const base::Optional<base::string16>& reply) {
   for (const std::string& extension_id : extension_ids_) {
     NavigateParams params(profile_, GURL(kChromeWebstoreUrl + extension_id),
                           ui::PAGE_TRANSITION_LINK);
@@ -103,7 +106,15 @@ void ExtensionRequestNotification::OnClick(
     params.window_action = NavigateParams::SHOW_WINDOW;
     Navigate(&params);
   }
-  Close();
+  if (callback_)
+    std::move(callback_).Run(true);
+  CloseNotification();
+}
+
+void ExtensionRequestNotification::Close(bool by_user) {
+  if (callback_) {
+    std::move(callback_).Run(by_user);
+  }
 }
 
 }  // namespace enterprise_reporting

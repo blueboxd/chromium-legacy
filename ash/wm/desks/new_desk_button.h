@@ -14,7 +14,7 @@
 
 namespace ash {
 
-class DesksBarItemBorder;
+class WmHighlightItemBorder;
 
 // A button view that shows up in the top-right corner of the screen when
 // overview mode is on, which is used to create a new virtual desk.
@@ -55,11 +55,9 @@ class ASH_EXPORT NewDeskButton
 
   // OverviewHighlightController::OverviewHighlightableView:
   views::View* GetView() override;
-  gfx::Rect GetHighlightBoundsInScreen() override;
-  gfx::RoundedCornersF GetRoundedCornersRadii() const override;
   void MaybeActivateHighlightedView() override;
   void MaybeCloseHighlightedView() override;
-  bool OnViewHighlighted() override;
+  void OnViewHighlighted() override;
   void OnViewUnhighlighted() override;
 
   SkColor GetBackgroundColorForTesting() const { return background_color_; }
@@ -70,7 +68,7 @@ class ASH_EXPORT NewDeskButton
 
   // Owned by this View via `View::border_`. This is just a convenient pointer
   // to it.
-  DesksBarItemBorder* border_ptr_;
+  WmHighlightItemBorder* border_ptr_;
 
   SkColor background_color_;
 

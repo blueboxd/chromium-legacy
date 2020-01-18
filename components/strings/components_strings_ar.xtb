@@ -126,7 +126,6 @@
     &lt;p&gt;لإصلاح الخطأ، انقر على &lt;strong&gt;"اتصال"&lt;/strong&gt; في الصفحة التي تحاول فتحها.&lt;/p&gt;</translation>
 <translation id="1513706915089223971">قائمة إدخالات السجل</translation>
 <translation id="1517433312004943670">رقم الهاتف مطلوب</translation>
-<translation id="1517500485252541695">بطاقات الائتمان وبطاقات السحب الآلي المقبولة</translation>
 <translation id="1519264250979466059">تاريخ الإصدار</translation>
 <translation id="1521655867290435174">‏جداول بيانات Google</translation>
 <translation id="1527263332363067270">في انتظار الاتصال بالإنترنت…</translation>
@@ -203,7 +202,6 @@
 <translation id="1842969606798536927">الدفع</translation>
 <translation id="1871208020102129563">‏تم تعيين الخادم الوكيل لاستخدام الخوادم الوكيلة الثابتة وليس عنوان URL لنص برمجي pac.</translation>
 <translation id="1871284979644508959">حقل مطلوب</translation>
-<translation id="1874765382782611674">بطاقات السحب الآلي المقبولة</translation>
 <translation id="1875512691959384712">‏نماذج Google</translation>
 <translation id="187918866476621466">فتح صفحات بدء التشغيل</translation>
 <translation id="1883255238294161206">تصغير القائمة</translation>
@@ -216,11 +214,9 @@
 <translation id="1919345977826869612">الإعلانات</translation>
 <translation id="1919367280705858090">الحصول على مساعدة بخصوص رسالة خطأ محددة</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{بدون}=1{موقع واحد}two{ موقعان (#)}few{# مواقع}many{# موقعًا}other{# موقع}}</translation>
-<translation id="1927235823738766038">بطاقات الائتمان وبطاقات السحب الآلي المقبولة</translation>
 <translation id="194030505837763158">الانتقال إلى <ph name="LINK" /></translation>
 <translation id="1945968466830820669">‏قد تفقد إمكانية الوصول إلى حساب مؤسستك أو تتعرَّض لسرقة هويتك. لذا، يوصي Chromium بتغيير كلمة مرورك الآن.</translation>
 <translation id="1947454675006758438">وضع دبوس أعلى اليمين</translation>
-<translation id="1948773908305951926">بطاقات الدفع المُسبق المقبولة</translation>
 <translation id="1962204205936693436">إشارات <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">خطأ أثناء التسلسل</translation>
 <translation id="1974060860693918893">الإعدادات المتقدّمة</translation>
@@ -297,7 +293,6 @@
 <translation id="2315864634253056100">يشبه اسم هذا الموقع الإلكتروني النطاق <ph name="LOOKALIKE_DOMAIN" />. يحاكي المخترِقون أحيانًا المواقع الإلكترونية من خلال إجراء تغييرات يصعب رؤيتها على عنوان الويب.</translation>
 <translation id="2316887270356262533">سيتم توفير أقل من 1 ميغابايت. وقد يتم تحميل بعض المواقع بشكل أبطأ عند زيارتها في المرة القادمة.</translation>
 <translation id="2317259163369394535">يتطلَّب <ph name="DOMAIN" /> اسم مستخدم وكلمة مرور.</translation>
-<translation id="2317583587496011522">يتم قبول بطاقات السحب الآلي.</translation>
 <translation id="2330137317877982892">تنتهي صلاحية <ph name="CREDIT_CARD" /> في <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">يتم التحكّم في الإعداد من قبل المشرف</translation>
 <translation id="2346319942568447007">الصورة التي نسختها</translation>
@@ -337,7 +332,6 @@
 <translation id="2495093607237746763">‏عند وضع علامة على هذا الخيار، سيخزّن Chromium نسخة من بطاقتك على هذا الجهاز لتعبئة النماذج بشكل أسرع.</translation>
 <translation id="2498091847651709837">فحص بطاقة جديدة</translation>
 <translation id="2501278716633472235">الرجوع</translation>
-<translation id="2503184589641749290">بطاقات السحب الآلي وبطاقات الدفع المسبق المقبولة</translation>
 <translation id="2505268675989099013">حماية الحساب</translation>
 <translation id="2515629240566999685">التحقّق من اتصال الإنترنت في منطقتك</translation>
 <translation id="2521385132275182522">وضع دبوس أسفل اليمين</translation>
@@ -403,7 +397,6 @@
 <translation id="277499241957683684">سجِلّ الجهاز مفقود</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">تمت إعادة تعيين الاتصال.</translation>
-<translation id="2788784517760473862">بطاقات الائتمان المقبولة</translation>
 <translation id="2792012897584536778">أعدّ مشرفو هذا الجهاز شهادات الأمان التي قد تسمح لهم بالاطّلاع على محتوى مواقع الويب التي تزورها.</translation>
 <translation id="2799020568854403057">يحتوي موقع الويب المقصود على تطبيقات ضارة</translation>
 <translation id="2799223571221894425">إعادة تشغيل</translation>
@@ -550,7 +543,6 @@
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">تعرض صفحة مُضمنة في موقع <ph name="SITE" /></translation>
 <translation id="3581089476000296252">‏سيخبرك Chrome عندما تكون هذه الصفحة جاهزة. &lt;a&gt;إلغاء&lt;/a&gt;</translation>
-<translation id="358285529439630156">يتم قبول بطاقات الائتمان وبطاقات الدفع المسبق.</translation>
 <translation id="3582930987043644930">إضافة اسم</translation>
 <translation id="3583757800736429874">إ&amp;عادة النقل</translation>
 <translation id="3584299510153766161">عمل ثقبَين بالأسفل</translation>
@@ -616,7 +608,6 @@
 <translation id="3828924085048779000">غير مسموح باستخدام عبارة مرور فارغة.</translation>
 <translation id="3831915413245941253">ثبّت <ph name="ENROLLMENT_DOMAIN" /> الإضافات للوظائف الإضافية. يمكن للإضافات الوصول إلى بعض بياناتك.</translation>
 <translation id="3832522519263485449">عمل عدة ثقوب يسارًا</translation>
-<translation id="3838154488026099170">‏لقد أدخلت للتو كلمة مرورك في موقع إلكتروني مريب. لذا ينصح Chromium بالانتقال إلى <ph name="WEBSITE_1" /> و<ph name="WEBSITE_2" /> و<ph name="WEBSITE_3" />، وأيّ مواقع إلكترونية أخرى تستخدم فيها كلمة المرور هذه، وتغيير الكلمة الآن.</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3858027520442213535">تحديث التاريخ والوقت</translation>
 <translation id="3884278016824448484">معرف جهاز متضارب</translation>
@@ -654,7 +645,6 @@
 <translation id="4072486802667267160">حدث خطأ أثناء معالجة طلبك. يُرجى إعادة المحاولة.</translation>
 <translation id="4075732493274867456">لا يدعم كل من العميل والخادم مجموعة تشفير أو إصدار بروتوكول طبقة المقابس الآمنة الشائع.</translation>
 <translation id="4075941231477579656">رقم التعريف باللمس</translation>
-<translation id="4077092919748553596">‏لقد أدخلت للتو كلمة مرورك في موقع إلكتروني مريب. لذا ينصح Chrome بالانتقال إلى <ph name="WEBSITE_1" /> و<ph name="WEBSITE_2" /> و<ph name="WEBSITE_3" />، وأيّ مواقع إلكترونية أخرى تستخدم فيها كلمة المرور هذه، وبتغيير الكلمة الآن.</translation>
 <translation id="4079302484614802869">‏تم تعيين تهيئة الخادم الوكيل لاستخدام عنوان URL نص برمجي ‎.pac وليس الخوادم الوكيلة الثابتة.</translation>
 <translation id="4082393374666368382">الإعدادات - الإدارة</translation>
 <translation id="4098354747657067197">أمامك موقع مخادع</translation>
@@ -751,7 +741,6 @@
 <translation id="4434045419905280838">النوافذ المنبثقة وإعادة التوجيه</translation>
 <translation id="4435702339979719576">بطاقة بريدية)</translation>
 <translation id="443673843213245140">تم إيقاف استخدام الخادم الوكيل ولكن تم تحديد تهيئة صريحة للخادم الوكيل.</translation>
-<translation id="445100540951337728">بطاقات السحب الآلي المقبولة</translation>
 <translation id="4466881336512663640">سيتم فقدان تغييرات النموذج. هل تريد فعلاً المتابعة؟</translation>
 <translation id="4477350412780666475">المقطع الصوتي التالي</translation>
 <translation id="4482953324121162758">لن تتم ترجمة هذا الموقع.</translation>
@@ -957,6 +946,7 @@
 <translation id="5457113250005438886">غير صالحة</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> وجهة اتصال <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> أخرى}two{<ph name="CONTACT_PREVIEW" /> وجهتا اتصال (<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />) أخريان}few{<ph name="CONTACT_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهات اتصال أخرى}many{<ph name="CONTACT_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهة اتصال أخرى}other{<ph name="CONTACT_PREVIEW" /> و<ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> جهة اتصال أخرى}}</translation>
 <translation id="5470861586879999274">إعادة الت&amp;حرير</translation>
+<translation id="5472133193607270166">عند التفعيل، لا يمكن للمواقع الإلكترونية استخدام نشاط التصفّح الخاص بك على المواقع الإلكترونية المختلفة لتخصيص الإعلانات. يمكن ألا تعمل بعض المواقع الإلكترونية على نحو سليم.</translation>
 <translation id="5478437291406423475">‏B6/C4 (مغلف)</translation>
 <translation id="5481076368049295676">قد يحاول هذا المحتوى تثبيت برامج خطيرة على جهازك تسرق معلوماتك أو تحذفها. <ph name="BEGIN_LINK" />عرض على أي حال<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">إضافة عنوان صالح</translation>
@@ -1010,7 +1000,6 @@
 <translation id="570530837424789914">إدارة...</translation>
 <translation id="57094364128775171">اقتراح كلمة مرور قوية…</translation>
 <translation id="5710435578057952990">لم  يتمّ التحقق من هوية هذا الموقع.</translation>
-<translation id="5719499550583120431">يتم قبول بطاقات الدفع المسبق.</translation>
 <translation id="5720705177508910913">المستخدم الحالي</translation>
 <translation id="5728056243719941842">‏C5 (مغلف)</translation>
 <translation id="5730040223043577876">‏يُوصي Chrome بإعادة تحديد كلمة المرور في حال إعادة استخدامها في مواقع ويب أخرى.</translation>
@@ -1045,7 +1034,6 @@
 <translation id="5869405914158311789">لا يمكن الوصول إلى موقع الويب هذا</translation>
 <translation id="5869522115854928033">كلمات المرور المحفوظة</translation>
 <translation id="5887400589839399685">تم حفظ البطاقة</translation>
-<translation id="5893752035575986141">يتم قبول بطاقات الائتمان.</translation>
 <translation id="5895138241574237353">إعادة التشغيل</translation>
 <translation id="5901630391730855834">أصفر</translation>
 <translation id="5905445707201418379">تم الحظر وفقًا لسياسة المصدر <ph name="ORIGIN" />.</translation>
@@ -1097,7 +1085,6 @@
 <translation id="6106989379647458772">قد تكون صفحة الويب على <ph name="PAGE" /> غير متاحة مؤقتًا أو تم نقلها نهائيًا إلى عنوان ويب جديد.</translation>
 <translation id="610911394827799129">‏قد يتضمّن حسابك على Google نماذج أخرى من سجلّ التصفّح على <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6120179357481664955">هل تتذكر معرّف واجهة الدفعات الموحّدة؟</translation>
-<translation id="6132597952260690497">معلومات حول المكوّنات الإضافية والإضافات المُثبّتة</translation>
 <translation id="6146055958333702838">تحقق من أي كابلات وأعد تشغيل أي أجهزة توجيه أو أجهزة مودم أو أجهزة شبكة
         أخرى ربما تستخدمها.</translation>
 <translation id="614940544461990577">يمكنك محاولة:</translation>
@@ -1106,6 +1093,7 @@
 <translation id="6157877588268064908">لعرض طرق الشحن ومتطلباته، حدِّد عنوانًا</translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6177128806592000436">إن اتصالك بهذا الموقع غير آمن</translation>
+<translation id="6196640612572343990">حظر ملفات تعريف الارتباط للجهات الخارجية</translation>
 <translation id="6203231073485539293">التحقق من اتصالك بالإنترنت</translation>
 <translation id="6218753634732582820">‏هل تريد إزالة العنوان من Chromium؟</translation>
 <translation id="622039917539443112">الطي بشكلٍ متوازٍ</translation>
@@ -1178,7 +1166,6 @@
 <translation id="6476284679642588870">إدارة طرق الدفع</translation>
 <translation id="6489534406876378309">بدء تحميل الأعطال</translation>
 <translation id="6499038740797743453">هل تريد إعادة ضبط كلمة المرور؟</translation>
-<translation id="6507833130742554667">يتم قبول بطاقات الائتمان وبطاقات السحب الآلي.</translation>
 <translation id="6508722015517270189">‏إعادة تشغيل Chrome</translation>
 <translation id="6517596291481585650">تحذير: لم يتم دمج هذه السياسة كقائمة كما هو موضح بموجب السياسة؛ لأنها ليست قائمة.</translation>
 <translation id="6518133107902771759">تحقق</translation>
@@ -1318,7 +1305,6 @@
 <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">تعذر إنشاء اتصال خاص بـ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> نظرًا لأن التاريخ والوقت لجهاز الكمبيوتر (<ph name="DATE_AND_TIME" />) غير صحيحين.</translation>
 <translation id="7260504762447901703">إبطال حق الدخول</translation>
-<translation id="7271803869921933038">بطاقات الدفع المُسبق المقبولة</translation>
 <translation id="7275334191706090484">الإشارات المرجعية المُدارة</translation>
 <translation id="7298195798382681320">موصى بها</translation>
 <translation id="7300012071106347854">أزرق كوبالت</translation>
@@ -1456,7 +1442,6 @@
 <translation id="785549533363645510">ومع ذلك، أنت غير مرئي. لا يخفي الانتقال إلى وضع التخفي التصفح من صاحب العمل أو مزود خدمة الإنترنت أو المواقع التي تزورها.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">هل تريد مغادرة الموقع؟</translation>
-<translation id="7878176543348854470">يتم قبول بطاقات السحب الآلي وبطاقات الدفع المسبق.</translation>
 <translation id="7878562273885520351">من المحتمل أنه تم اختراق كلمة مرورك</translation>
 <translation id="7882421473871500483">بني</translation>
 <translation id="7887683347370398519">‏تحقق من رمز التحقق من البطاقة (CVC) ثم أعد المحاولة.</translation>
@@ -1619,7 +1604,6 @@
 <translation id="8730621377337864115">تم</translation>
 <translation id="8738058698779197622">‏لإنشاء اتصال آمن، فإنك بحاجة إلى ضبط ساعتك بشكل صحيح. وذلك لأن الشهادات التي تستخدمها مواقع الويب لتعريف نفسها تكون صالحة فقط لفترات محددة من الوقت. فإذا كانت ساعة جهازك غير صحيحة، فلن يتمكن Chromium من التحقق من هذه الشهادات.</translation>
 <translation id="8740359287975076522">‏تعذر العثور على &lt;/abbr&gt;عنوان نظام أسماء النطاقات (DNS)‏&lt;abbr id="dnsDefinition"&gt; لـ <ph name="HOST_NAME" />. جارٍ تشخيص المشكلة.</translation>
-<translation id="874846938927089722">بطاقات الائتمان وبطاقات الدفع المسبق المقبولة</translation>
 <translation id="874918643257405732">وضع إشارة مرجعية لعلامة التبويب هذه</translation>
 <translation id="8751426954251315517">يُرجى إعادة المحاولة في المرة القادمة.</translation>
 <translation id="8759274551635299824">هذه البطاقة منتهية الصلاحية</translation>
@@ -1653,7 +1637,6 @@
 <translation id="8931333241327730545">‏هل تريد حفظ هذه البطاقة إلى حسابك في Google؟</translation>
 <translation id="8932102934695377596">توقيت ساعتك متأخر عن الوقت الحالي</translation>
 <translation id="893332455753468063">إضافة اسم</translation>
-<translation id="8938939909778640821">بطاقات الائتمان وبطاقات الدفع المسبق المقبولة</translation>
 <translation id="8943282376843390568">ليموني</translation>
 <translation id="8957210676456822347">تفويض المدخل المقيد</translation>
 <translation id="8962950042226115166">موقع إلكتروني مريب</translation>
@@ -1723,7 +1706,6 @@
 <translation id="939736085109172342">مجلد جديد</translation>
 <translation id="945855313015696284">يجب التحقُّق من المعلومات الواردة أدناه وحذف أي بطاقات غير صالحة</translation>
 <translation id="950736567201356821">عمل ثلاثة ثقوب من الأعلى</translation>
-<translation id="951104842009476243">بطاقات السحب الآلي وبطاقات الدفع المسبق المقبولة</translation>
 <translation id="961663415146723894">التجليد من الأسفل</translation>
 <translation id="962484866189421427">قد يحاول هذا المحتوى تثبيت تطبيقات مضللة تظهر كبرامج أخرى أو تجمع بيانات قد تُستخدم لتتبعك. <ph name="BEGIN_LINK" />العرض على أي حال<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">البنية الرسمية</translation>

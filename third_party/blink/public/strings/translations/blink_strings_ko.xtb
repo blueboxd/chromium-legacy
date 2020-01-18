@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">슬라이더</translation>
 <translation id="1211441953136645838">미주</translation>
 <translation id="1281252709823657822">대화상자</translation>
+<translation id="1306460908038601864">꺼짐</translation>
 <translation id="1335095011850992622">저작권 표시</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">배너</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" />PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' 앞 부분을 입력해 주세요. '<ph name="INVALIDADDRESS" />'(이)가 완전하지 않습니다.</translation>
 <translation id="5334352251556557839">미디어를 재생할 수 없습니다.</translation>
+<translation id="537648784377940524">최소 날짜(<ph name="MIN_DATE_OR_TIME" />)는 최대 날짜(<ph name="MAX_DATE_OR_TIME" />) 이전이어야 합니다.</translation>
 <translation id="5406322316791861025">그림</translation>
 <translation id="5453733299334684579">트리 항목</translation>
 <translation id="5466621249238537318">파일을 한 개 이상 선택하세요.</translation>

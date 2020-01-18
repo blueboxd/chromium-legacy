@@ -1,9 +1,1 @@
-# tags: [ Android Fuchsia IOS IOS12.2 IOS13.0 Linux Mac Mac10.10 Mac10.11 Mac10.12 Retina
-#         Mac10.13 Win Win7 Win10 ]
-# tags: [ Release Debug ]
-# results: [ Timeout Crash Pass Failure Slow Skip ]
-
-# Expected Image Region Rendering Nothing.
-crbug.com/1002547 fast/canvas/imagebitmap/transferFromImageBitmap-alpha.html [ Skip ]
-crbug.com/1002547 fast/canvas/imagebitmap/transferFromImageBitmap-no-alpha.html [ Skip ]
-crbug.com/1002547 fast/canvas/imagebitmap/transferFromImageBitmap.html [ Skip ]
+# TODO(jonross): Remove once Finch completes.

@@ -17,11 +17,11 @@
 #include "components/prefs/pref_member.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/dns/dns_config.h"
 #include "services/network/public/mojom/host_resolver.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
 #include "services/network/public/mojom/ssl_config.mojom-forward.h"
-#include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -78,6 +78,13 @@ class SystemNetworkContextManager {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  static void GetStubResolverConfig(
+      PrefService* local_state,
+      bool* insecure_stub_resolver_enabled,
+      net::DnsConfig::SecureDnsMode* secure_dns_mode,
+      base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
+          dns_over_https_servers);
+
   // Returns the System NetworkContext. May only be called after SetUp(). Does
   // any initialization of the NetworkService that may be needed when first
   // called.
@@ -130,13 +137,6 @@ class SystemNetworkContextManager {
   // Call |FlushForTesting()| on Network Service related interfaces. For test
   // use only.
   void FlushNetworkInterfaceForTesting();
-
-  // Returns configuration that would be sent to the stub DNS resolver.
-  static void GetStubResolverConfigForTesting(
-      bool* insecure_stub_resolver_enabled,
-      net::DnsConfig::SecureDnsMode* secure_dns_mode,
-      base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
-          dns_over_https_servers);
 
   static network::mojom::HttpAuthStaticParamsPtr
   GetHttpAuthStaticParamsForTesting();

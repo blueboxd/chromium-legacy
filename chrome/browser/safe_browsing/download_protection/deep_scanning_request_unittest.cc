@@ -94,7 +94,9 @@ class DeepScanningRequestTest : public testing::Test {
     download_path_ = temp_dir_.GetPath().AppendASCII("download.exe");
     std::string download_contents = "download contents";
     download_hash_ = "hash";
+    tab_url_string_ = "https://example.com/";
     download_url_ = GURL("https://example.com/download.exe");
+    tab_url_ = GURL(tab_url_string_);
 
     base::File download(download_path_,
                         base::File::FLAG_CREATE | base::File::FLAG_WRITE);
@@ -106,6 +108,7 @@ class DeepScanningRequestTest : public testing::Test {
     EXPECT_CALL(item_, GetTotalBytes())
         .WillRepeatedly(Return(download_contents.size()));
     EXPECT_CALL(item_, GetURL()).WillRepeatedly(ReturnRef(download_url_));
+    EXPECT_CALL(item_, GetTabUrl()).WillRepeatedly(ReturnRef(tab_url_));
     EXPECT_CALL(item_, GetHash()).WillRepeatedly(ReturnRef(download_hash_));
     EXPECT_CALL(item_, GetTargetFilePath())
         .WillRepeatedly(ReturnRef(download_path_));
@@ -159,6 +162,8 @@ class DeepScanningRequestTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   base::FilePath download_path_;
   GURL download_url_;
+  GURL tab_url_;
+  std::string tab_url_string_;
   std::string download_hash_;
 
   DownloadCheckResult last_result_;
@@ -243,6 +248,11 @@ TEST_F(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
     EXPECT_TRUE(download_protection_service_.GetFakeBinaryUploadService()
                     ->last_request()
                     .has_dlp_scan_request());
+    EXPECT_EQ(download_protection_service_.GetFakeBinaryUploadService()
+                  ->last_request()
+                  .dlp_scan_request()
+                  .url(),
+              tab_url_string_);
   }
 
   {

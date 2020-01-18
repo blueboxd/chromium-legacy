@@ -62,6 +62,8 @@ constexpr char kHttpErrorCodeManifestFetchFailedStats[] =
     "Extensions.ForceInstalledManifestFetchFailedHttpErrorCode";
 constexpr char kFetchRetriesManifestFetchFailedStats[] =
     "Extensions.ForceInstalledManifestFetchFailedFetchTries";
+constexpr char kSandboxUnpackFailureReason[] =
+    "Extensions.ForceInstalledFailureSandboxUnpackFailureReason";
 }  // namespace
 
 namespace extensions {
@@ -197,6 +199,27 @@ TEST_F(ForcedExtensionsInstallationTrackerTest,
   histogram_tester_.ExpectUniqueSample(
       kTotalCountStats,
       prefs_->GetManagedPref(pref_names::kInstallForceList)->DictSize(), 1);
+}
+
+// Reporting SandboxedUnpackerFailureReason when the force installed extension
+// fails to install with error CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE.
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       ExtensionsCrxInstallErrorSandboxUnpackFailure) {
+  SetupForceList();
+  installation_reporter_->ReportSandboxedUnpackerFailureReason(
+      kExtensionId1, SandboxedUnpackerFailureReason::CRX_FILE_NOT_READABLE);
+  installation_reporter_->ReportSandboxedUnpackerFailureReason(
+      kExtensionId2, SandboxedUnpackerFailureReason::UNZIP_FAILED);
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectTotalCount(kSandboxUnpackFailureReason, 2);
+  histogram_tester_.ExpectBucketCount(
+      kSandboxUnpackFailureReason,
+      SandboxedUnpackerFailureReason::CRX_FILE_NOT_READABLE, 1);
+  histogram_tester_.ExpectBucketCount(
+      kSandboxUnpackFailureReason, SandboxedUnpackerFailureReason::UNZIP_FAILED,
+      1);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsStuck) {

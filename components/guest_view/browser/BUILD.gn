@@ -56,9 +56,7 @@ static_library("test_support") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "guest_view_manager_unittest.cc",
-  ]
+  sources = [ "guest_view_manager_unittest.cc" ]
   deps = [
     ":test_support",
     "//testing/gtest",

@@ -64,7 +64,8 @@ public class PrivacySettings
 
         Preference syncAndServicesLink = findPreference(PREF_SYNC_AND_SERVICES_LINK);
         NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan(getResources(), view -> {
-            SettingsLauncher.launchSettingsPage(getActivity(), SyncAndServicesPreferences.class,
+            SettingsLauncher.getInstance().launchSettingsPage(getActivity(),
+                    SyncAndServicesPreferences.class,
                     SyncAndServicesPreferences.createArguments(false));
         });
         syncAndServicesLink.setSummary(

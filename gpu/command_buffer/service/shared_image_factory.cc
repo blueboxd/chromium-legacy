@@ -353,9 +353,9 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
       using_metal_ && (usage & SHARED_IMAGE_USAGE_OOP_RASTERIZATION);
   bool share_between_threads = IsSharedBetweenThreads(usage);
   bool share_between_gl_vulkan = gl_usage && vulkan_usage;
-  bool using_interop_factory = share_between_threads ||
-                               share_between_gl_vulkan || using_dawn ||
-                               share_between_gl_metal;
+  bool using_interop_factory = share_between_gl_vulkan || using_dawn ||
+                               share_between_gl_metal ||
+                               (share_between_threads && vulkan_usage);
 
   // TODO(vasilyt): Android required AHB for overlays
   // What about other platforms?
@@ -390,8 +390,8 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     using_interop_factory |= interop_factory_supports_gmb;
   }
 
-  *allow_legacy_mailbox =
-      !using_wrapped_sk_image && !using_interop_factory && !using_vulkan_;
+  *allow_legacy_mailbox = !using_wrapped_sk_image && !using_interop_factory &&
+                          !using_vulkan_ && !share_between_threads;
 
   if (using_wrapped_sk_image)
     return wrapped_sk_image_factory_.get();

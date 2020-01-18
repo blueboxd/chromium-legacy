@@ -44,8 +44,8 @@ public class SiteSettingsHelper {
      * Shows the site settings activity for a given url.
      */
     public static void showSiteSettings(Context context, String fullUrl) {
-        Intent preferencesIntent = SettingsLauncher.createIntentForSettingsPage(context,
-                SingleWebsiteSettings.class.getName(),
+        Intent preferencesIntent = SettingsLauncher.getInstance().createIntentForSettingsPage(
+                context, SingleWebsiteSettings.class.getName(),
                 SingleWebsiteSettings.createFragmentArgsForSite(fullUrl));
         // Disabling StrictMode to avoid violations (https://crbug.com/819410).
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {

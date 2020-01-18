@@ -1689,7 +1689,7 @@ void DocumentLoader::CreateParserPostCommit() {
   // FeaturePolicy is reset in the browser process on commit, so this needs to
   // be initialized and replicated to the browser process after commit messages
   // are sent in didCommitNavigation().
-  document->ApplyPendingFeaturePolicyHeaders();
+  document->ApplyPendingFramePolicyHeaders();
 
   WTF::String report_only_feature_policy(
       response_.HttpHeaderField(http_names::kFeaturePolicyReportOnly));

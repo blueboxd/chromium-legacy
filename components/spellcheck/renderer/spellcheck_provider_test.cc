@@ -8,6 +8,7 @@
 
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/renderer/hunspell_engine.h"

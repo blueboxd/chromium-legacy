@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
+<translation id="1337778609052285767">La contraseña actual no cumple los requisitos de complejidad. Ponte en contacto con tu administrador.</translation>
 <translation id="1337821341856692531">Continuar sin introducir tu contraseña actual de Windows podría causar una pérdida de información irreversible.</translation>
 <translation id="1383286653814676580">Se usa para ejecutar la página de inicio de sesión de Google Credential Provider.</translation>
 <translation id="1894475569413661128">Inicia sesión con tu cuenta de trabajo.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">La contraseña de Windows que has introducido es incorrecta. Inténtalo de nuevo.</translation>
 <translation id="2831078752570172210">Parece que se ha bloqueado tu cuenta. Ponte en contacto con el administrador del sistema.</translation>
 <translation id="2844349213149998955">No se permite iniciar sesión con una cuenta personal en este dispositivo. Inicia sesión con una cuenta de trabajo.</translation>
+<translation id="2995851317559936311">Solo se puede cambiar la contraseña en el controlador del dominio. Ponte en contacto con tu administrador.</translation>
 <translation id="3306357053520292004">Ya se ha registrado otro usuario en este ordenador con esta cuenta. Inicia sesión con otra cuenta.</translation>
 <translation id="3926852373333893095">Solo pueden iniciar sesión los usuarios de GSuite Enterprise.</translation>
 <translation id="4057329986137569701">Se ha producido un error interno.</translation>
 <translation id="4267670563222825190">No se ha encontrado ningún usuario de dominio para tu cuenta. Ponte en contacto con tu administrador.</translation>
 <translation id="4300229033992784001">La contraseña de tu cuenta ha cambiado. Introduce tu contraseña de Windows actual para sincronizar tu cuenta de Windows con la de trabajo.</translation>
+<translation id="4669462973597624151">No se ha podido cambiar la contraseña. Ponte en contacto con tu administrador.</translation>
 <translation id="4706454071748629324">No se ha podido añadir un nuevo usuario. En este ordenador solo se pueden crear usuarios con una cuenta de trabajo.</translation>
+<translation id="5186761973554910131">Se ha proporcionado un nombre de ordenador no válido para el intento de cambio de contraseña. Ponte en contacto con tu administrador.</translation>
 <translation id="6033715878377252112">Asistente del proveedor de credenciales de Google para Windows</translation>
 <translation id="6149399665202317746">Proveedor de credenciales de Google para Windows</translation>
 <translation id="6239180560789153226">Falta información de recuperación en tu dispositivo. Inicia sesión con tu cuenta de trabajo de Google.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Añadir cuenta de trabajo</translation>
 <translation id="7811865856574012727">El administrador ha restringido el inicio de sesión con el dispositivo en los siguientes dominios: <ph name="EMAIL_DOMAINS" />. Inténtalo de nuevo usando una cuenta de trabajo válida.</translation>
 <translation id="7856245195110636219">No se puede continuar sin introducir la contraseña actual de Windows. Ponte en contacto con el administrador del sistema.</translation>
+<translation id="8109730953933509335">Se ha intentado cambiar la contraseña de un usuario no válido. Ponte en contacto con tu administrador.</translation>
 <translation id="8639729688781680518">He olvidado la contraseña de Windows</translation>
 <translation id="866458870819756755">No se ha podido crear el usuario.</translation>
 <translation id="8875753657315897487">Inicia sesión con tu cuenta de trabajo</translation>

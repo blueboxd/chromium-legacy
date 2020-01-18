@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">sleði</translation>
 <translation id="1211441953136645838">aftanmálsgrein</translation>
 <translation id="1281252709823657822">gluggi</translation>
+<translation id="1306460908038601864">Slökkt</translation>
 <translation id="1335095011850992622">samstarfsaðilar</translation>
 <translation id="1342835525016946179">grein</translation>
 <translation id="1359897965706325498">borði</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Sláðu inn hluta og síðan „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ er ólokið.</translation>
 <translation id="5334352251556557839">Ekki er hægt að spila efni.</translation>
+<translation id="537648784377940524">Lágmarksdagsetning (<ph name="MIN_DATE_OR_TIME" />) verður að vera á undan hámarksdagsetningu (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">mynd</translation>
 <translation id="5453733299334684579">trjáatriði</translation>
 <translation id="5466621249238537318">Veldu eina eða fleiri skrár.</translation>

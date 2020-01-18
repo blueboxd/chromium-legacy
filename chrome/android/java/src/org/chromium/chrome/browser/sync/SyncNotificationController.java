@@ -196,8 +196,8 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
      * @return the intent for opening the settings
      */
     private Intent createSettingsIntent() {
-        return SettingsLauncher.createIntentForSettingsPage(ContextUtils.getApplicationContext(),
-                SyncAndServicesPreferences.class.getName(),
+        return SettingsLauncher.getInstance().createIntentForSettingsPage(
+                ContextUtils.getApplicationContext(), SyncAndServicesPreferences.class.getName(),
                 SyncAndServicesPreferences.createArguments(false));
     }
 

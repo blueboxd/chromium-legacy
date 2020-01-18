@@ -6,10 +6,9 @@
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FEATURE_POLICY_DOCUMENT_POLICY_H_
 
 #include <limits>
-#include <map>
 #include <memory>
-#include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/feature_policy/policy_value.h"
@@ -66,7 +65,7 @@ namespace blink {
 
 class BLINK_COMMON_EXPORT DocumentPolicy {
  public:
-  using FeatureState = std::map<mojom::FeaturePolicyFeature, PolicyValue>;
+  using FeatureState = base::flat_map<mojom::FeaturePolicyFeature, PolicyValue>;
 
   static std::unique_ptr<DocumentPolicy> CreateWithHeaderPolicy(
       const FeatureState& header_policy);

@@ -300,8 +300,7 @@ base::File ObfuscatedFileUtil::CreateOrOpen(FileSystemOperationContext* context,
   if (file.IsValid() && file_flags & base::File::FLAG_WRITE &&
       context->quota_limit_type() == storage::kQuotaLimitTypeUnlimited &&
       sandbox_delegate_) {
-    sandbox_delegate_->StickyInvalidateUsageCache(url.origin().GetURL(),
-                                                  url.type());
+    sandbox_delegate_->StickyInvalidateUsageCache(url.origin(), url.type());
   }
   return file;
 }
@@ -1301,7 +1300,7 @@ void ObfuscatedFileUtil::InvalidateUsageCache(
     const url::Origin& origin,
     FileSystemType type) {
   if (sandbox_delegate_)
-    sandbox_delegate_->InvalidateUsageCache(origin.GetURL(), type);
+    sandbox_delegate_->InvalidateUsageCache(origin, type);
 }
 
 void ObfuscatedFileUtil::MarkUsed() {

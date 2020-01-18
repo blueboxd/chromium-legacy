@@ -4,7 +4,5 @@
 
 source_set("public") {
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "signin_presenter.h",
-  ]
+  sources = [ "signin_presenter.h" ]
 }

@@ -72,12 +72,4 @@ void DocumentTiming::MarkDomComplete() {
   NotifyDocumentTimingChanged();
 }
 
-void DocumentTiming::MarkFirstLayout() {
-  first_layout_ = base::TimeTicks::Now();
-  TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing,rail", "firstLayout",
-                                   first_layout_, "frame",
-                                   ToTraceValue(GetFrame()));
-  NotifyDocumentTimingChanged();
-}
-
 }  // namespace blink

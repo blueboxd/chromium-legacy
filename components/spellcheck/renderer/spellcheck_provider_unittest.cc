@@ -6,8 +6,10 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/renderer/spellcheck.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"

@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">ස්ලයිඩරය</translation>
 <translation id="1211441953136645838">නිමි සටහන</translation>
 <translation id="1281252709823657822">සංවාදය</translation>
+<translation id="1306460908038601864">අක්‍රිය</translation>
 <translation id="1335095011850992622">සම්මාන</translation>
 <translation id="1342835525016946179">ලිපිය</translation>
 <translation id="1359897965706325498">බැනරය</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">කරුණාකර '<ph name="ATSIGN" />' පසුපසින් යෙදෙන කොටසක් ඇතුළත් කරන්න. '<ph name="INVALIDADDRESS" />' අසම්පූර්ණයි.</translation>
 <translation id="5334352251556557839">මාධ්‍ය ධාවන කළ නොහැක.</translation>
+<translation id="537648784377940524">අවම දිනය (<ph name="MIN_DATE_OR_TIME" />) උපරිම දිනයට (<ph name="MAX_DATE_OR_TIME" />) පෙර ආ යුතුම ය.</translation>
 <translation id="5406322316791861025">රූප සටහන</translation>
 <translation id="5453733299334684579">රුක් අයිතමය</translation>
 <translation id="5466621249238537318">කරුණාකර ගොනු එකක් හෝ කිහිපයක් තෝරන්න.</translation>

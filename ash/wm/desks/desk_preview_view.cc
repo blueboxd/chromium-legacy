@@ -5,13 +5,14 @@
 #include "ash/wm/desks/desk_preview_view.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/multi_user/multi_user_window_manager_impl.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wallpaper/wallpaper_base_view.h"
 #include "ash/wm/desks/desk_mini_view.h"
-#include "ash/wm/desks/desks_bar_item_border.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/wm_highlight_item_border.h"
 #include "base/containers/flat_map.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -232,7 +233,7 @@ DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
   contents_view_layer->SetIsFastRoundedCorner(true);
   AddChildView(desk_mirrored_contents_view_);
 
-  auto border = std::make_unique<DesksBarItemBorder>(kBorderCornerRadius);
+  auto border = std::make_unique<WmHighlightItemBorder>(kBorderCornerRadius);
   border_ptr_ = border.get();
   SetBorder(std::move(border));
 

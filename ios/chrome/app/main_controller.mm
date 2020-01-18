@@ -129,7 +129,6 @@
 #import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
@@ -287,11 +286,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // The object that drives the Chrome startup/shutdown logic.
   std::unique_ptr<IOSChromeMain> _chromeMain;
 
-  // Wrangler to handle BVC and tab model creation, access, and related logic.
-  // Implements faetures exposed from this object through the
-  // BrowserViewInformation protocol.
-  BrowserViewWrangler* _browserViewWrangler;
-
   // TabSwitcher object -- the tab grid.
   id<TabSwitcher> _tabSwitcher;
 
@@ -337,6 +331,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // If the animations were disabled.
   BOOL _animationDisabled;
 }
+
+// Wrangler to handle BVC and tab model creation, access, and related logic.
+// Implements faetures exposed from this object through the
+// BrowserViewInformation protocol.
+@property(nonatomic, strong) BrowserViewWrangler* browserViewWrangler;
 
 // The ChromeBrowserState associated with the main (non-OTR) browsing mode.
 @property(nonatomic, assign)
@@ -441,7 +440,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @implementation MainController
 // Defined by MainControllerGuts.
 @synthesize historyCoordinator;
-@synthesize settingsNavigationController;
 @synthesize appURLLoadingService;
 @synthesize isProcessingTabSwitcherCommand;
 @synthesize isProcessingVoiceSearchCommand;
@@ -602,8 +600,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Initialize and set the main browser state.
   [self initializeBrowserState:chromeBrowserState];
   self.mainBrowserState = chromeBrowserState;
-  [_browserViewWrangler shutdown];
-  _browserViewWrangler = [[BrowserViewWrangler alloc]
+  [self.browserViewWrangler shutdown];
+  self.browserViewWrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:self.mainBrowserState
              webStateListObserver:self
        applicationCommandEndpoint:self.sceneController
@@ -627,7 +625,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       ->NotifyEvent(feature_engagement::events::kChromeOpened);
 
   // Ensure the main tab model is created. This also creates the BVC.
-  [_browserViewWrangler createMainBrowser];
+  [self.browserViewWrangler createMainBrowser];
 
   _spotlightManager =
       [SpotlightManager spotlightManagerWithBrowserState:self.mainBrowserState];
@@ -673,7 +671,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   [self scheduleLowPriorityStartupTasks];
 
-  [_browserViewWrangler updateDeviceSharingManager];
+  [self.browserViewWrangler updateDeviceSharingManager];
 
   [self.sceneController openTabFromLaunchOptions:_launchOptions
                               startupInformation:self
@@ -760,7 +758,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // be destroyed.
   [_tabSwitcher setOtrBrowser:nil];
 
-  [_browserViewWrangler destroyAndRebuildIncognitoBrowser];
+  [self.browserViewWrangler destroyAndRebuildIncognitoBrowser];
 
   if (otrBVCIsCurrent) {
     [self activateBVCAndMakeCurrentBVCPrimary];
@@ -793,7 +791,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 #pragma mark - Property implementation.
 
 - (id<BrowserInterfaceProvider>)interfaceProvider {
-  return _browserViewWrangler;
+  return self.browserViewWrangler;
 }
 
 - (TabGridCoordinator*)mainCoordinator {
@@ -819,7 +817,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (BOOL)isSettingsViewPresented {
-  return self.settingsNavigationController ||
+  return [self.sceneController hasSettingsNavigationController] ||
          self.signinInteractionCoordinator.isSettingsViewPresented;
 }
 
@@ -858,8 +856,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   // Invariant: The UI is stopped before the model is shutdown.
   DCHECK(!_mainCoordinator);
-  [_browserViewWrangler shutdown];
-  _browserViewWrangler = nil;
+  [self.browserViewWrangler shutdown];
+  self.browserViewWrangler = nil;
 
   _extensionSearchEngineDataUpdater = nullptr;
 
@@ -999,7 +997,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                     if ([SignedInAccountsViewController
                             shouldBePresentedForBrowserState:
                                 [self currentBrowserState]]) {
-                      [self
+                      [self.sceneController
                           presentSignedInAccountsViewControllerForBrowserState:
                               [self currentBrowserState]];
                     }
@@ -1557,25 +1555,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self.mainCoordinator showTabSwitcher:_tabSwitcher];
 }
 
-#pragma mark - App Navigation
-
-- (void)presentSignedInAccountsViewControllerForBrowserState:
-    (ios::ChromeBrowserState*)browserState {
-  UIViewController* accountsViewController =
-      [[SignedInAccountsViewController alloc]
-          initWithBrowserState:browserState
-                    dispatcher:self.mainBVC.dispatcher];
-  [[self topPresentedViewController]
-      presentViewController:accountsViewController
-                   animated:YES
-                 completion:nil];
-}
-
-- (void)closeSettingsAnimated:(BOOL)animated
-                   completion:(ProceduralBlock)completion {
-  [self.sceneController closeSettingsAnimated:animated completion:completion];
-}
-
 #pragma mark - WebStateListObserving
 
 // Called when a WebState is removed. Triggers the switcher view when the last
@@ -1756,18 +1735,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (DeviceSharingManager*)deviceSharingManager {
-  return [_browserViewWrangler deviceSharingManager];
+  return [self.browserViewWrangler deviceSharingManager];
 }
 
 - (void)setTabSwitcher:(id<TabSwitcher>)switcher {
   _tabSwitcher = switcher;
-}
-
-- (UIViewController*)topPresentedViewController {
-  // TODO(crbug.com/754642): Implement TopPresentedViewControllerFrom()
-  // privately.
-  return top_view_controller::TopPresentedViewControllerFrom(
-      self.mainCoordinator.viewController);
 }
 
 - (void)setTabSwitcherActive:(BOOL)active {

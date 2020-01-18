@@ -33,6 +33,10 @@ class ExternalPopupMenuTest : public RenderViewTest {
     return static_cast<RenderViewImpl*>(view_);
   }
 
+  RenderWidget* main_frame_widget() {
+    return view()->GetMainRenderFrame()->GetLocalRootRenderWidget();
+  }
+
   RenderFrameImpl* frame() {
     return view()->GetMainRenderFrame();
   }
@@ -61,8 +65,8 @@ class ExternalPopupMenuTest : public RenderViewTest {
     LoadHTML(html.c_str());
 
     // Set a minimum size and give focus so simulated events work.
-    view()->GetWidget()->GetWebWidget()->Resize(blink::WebSize(500, 500));
-    view()->GetWidget()->GetWebWidget()->SetFocus(true);
+    main_frame_widget()->GetWebWidget()->Resize(blink::WebSize(500, 500));
+    main_frame_widget()->GetWebWidget()->SetFocus(true);
   }
 
   int GetSelectedIndex() {
@@ -202,8 +206,8 @@ class ExternalPopupMenuDisplayNoneTest : public ExternalPopupMenuTest {
     LoadHTML(html.c_str());
 
     // Set a minimum size and give focus so simulated events work.
-    view()->GetWidget()->GetWebWidget()->Resize(blink::WebSize(500, 500));
-    view()->GetWidget()->GetWebWidget()->SetFocus(true);
+    main_frame_widget()->GetWebWidget()->Resize(blink::WebSize(500, 500));
+    main_frame_widget()->GetWebWidget()->SetFocus(true);
   }
 
 };

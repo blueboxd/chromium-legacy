@@ -27,9 +27,7 @@ jumbo_component("crdtp") {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }
-  deps = [
-    ":crdtp_platform",
-  ]
+  deps = [ ":crdtp_platform" ]
 }
 
 # A small adapter library which only :crdtp may depend on.
@@ -39,9 +37,7 @@ source_set("crdtp_platform") {
     "crdtp/chromium/json_platform_chromium.cc",
     "crdtp/json_platform.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 # These tests are linked into //content/test:content_unittests.
@@ -55,10 +51,10 @@ source_set("crdtp_test") {
     "crdtp/serializer_traits_test.cc",
     "crdtp/span_test.cc",
     "crdtp/status_test.cc",
+    "crdtp/status_test_support.cc",
+    "crdtp/status_test_support.h",
   ]
-  deps = [
-    ":crdtp_test_platform",
-  ]
+  deps = [ ":crdtp_test_platform" ]
 }
 
 # A small adapter library which only :crdtp_test may depend on.

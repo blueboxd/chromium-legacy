@@ -32,11 +32,11 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
 //   "SafeBrowsing.DeepScan.<access-point>.BytesPerSeconds"
 //   "SafeBrowsing.DeepScan.<access-point>.Duration"
 //   "SafeBrowsing.DeepScan.<access-point>.<result>.Duration"
-// TODO(domfc): Add PASTE access point.
 enum class DeepScanAccessPoint {
   DOWNLOAD,
   UPLOAD,
   DRAG_AND_DROP,
+  PASTE,
 };
 std::string DeepScanAccessPointToString(DeepScanAccessPoint access_point);
 

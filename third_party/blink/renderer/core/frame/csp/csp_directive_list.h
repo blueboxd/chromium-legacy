@@ -165,6 +165,20 @@ class CORE_EXPORT CSPDirectiveList final
   // instance it doesn't contains 'unsafe-inline' or 'unsafe-eval'
   WebContentSecurityPolicy ExposeForNavigationalChecks() const;
 
+  // We consider `object-src` restrictions to be reasonable iff they're
+  // equivalent to `object-src 'none'`.
+  bool IsObjectRestrictionReasonable() const;
+
+  // We consider `base-uri` restrictions to be reasonable iff they're equivalent
+  // to `base-uri 'none'` or `base-uri 'self'`.
+  bool IsBaseRestrictionReasonable() const;
+
+  // We consider `script-src` restrictions to be reasonable iff they're not
+  // URL-based (e.g. they contain only nonces and hashes, or they use
+  // 'strict-dynamic'). Neither `'unsafe-eval'` nor `'unsafe-hashes'` affect
+  // this judgement.
+  bool IsScriptRestrictionReasonable() const;
+
   void Trace(blink::Visitor*);
 
  private:

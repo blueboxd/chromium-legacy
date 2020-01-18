@@ -8,9 +8,19 @@
 #include <memory>
 
 #include "chrome/browser/sharing/sharing_device_registration.h"
+#include "chrome/browser/sharing/sharing_message_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+class FakeMessageHandler : public SharingMessageHandler {
+ public:
+  FakeMessageHandler() = default;
+  ~FakeMessageHandler() override = default;
+
+  void OnMessage(chrome_browser_sharing::SharingMessage message,
+                 SharingMessageHandler::DoneCallback done_callback) override {}
+};
 
 class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
  public:
@@ -53,11 +63,35 @@ TEST_F(SharingHandlerRegistryImplTest, SharedClipboard_IsAdded) {
   auto handler_registry = CreateHandlerRegistry();
   EXPECT_TRUE(handler_registry->GetSharingHandler(
       chrome_browser_sharing::SharingMessage::kSharedClipboardMessage));
+
+  // Default handlers cannot be removed.
+  handler_registry->UnregisterSharingHandler(
+      chrome_browser_sharing::SharingMessage::kSharedClipboardMessage);
+  EXPECT_TRUE(handler_registry->GetSharingHandler(
+      chrome_browser_sharing::SharingMessage::kSharedClipboardMessage));
 }
 
 TEST_F(SharingHandlerRegistryImplTest, SharedClipboard_NotAdded) {
   sharing_device_registration_.SetIsSharedClipboardSupported(false);
   auto handler_registry = CreateHandlerRegistry();
+  EXPECT_FALSE(handler_registry->GetSharingHandler(
+      chrome_browser_sharing::SharingMessage::kSharedClipboardMessage));
+}
+
+TEST_F(SharingHandlerRegistryImplTest, SharedClipboard_AddRemoveManually) {
+  sharing_device_registration_.SetIsSharedClipboardSupported(false);
+  auto handler_registry = CreateHandlerRegistry();
+  EXPECT_FALSE(handler_registry->GetSharingHandler(
+      chrome_browser_sharing::SharingMessage::kSharedClipboardMessage));
+
+  handler_registry->RegisterSharingHandler(
+      std::make_unique<FakeMessageHandler>(),
+      chrome_browser_sharing::SharingMessage::kSharedClipboardMessage);
+  EXPECT_TRUE(handler_registry->GetSharingHandler(
+      chrome_browser_sharing::SharingMessage::kSharedClipboardMessage));
+
+  handler_registry->UnregisterSharingHandler(
+      chrome_browser_sharing::SharingMessage::kSharedClipboardMessage);
   EXPECT_FALSE(handler_registry->GetSharingHandler(
       chrome_browser_sharing::SharingMessage::kSharedClipboardMessage));
 }

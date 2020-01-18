@@ -1089,10 +1089,19 @@ void BaseRenderingContext2D::DrawImageInternal(cc::PaintCanvas* c,
       // crbug.com/504687
       return;
     }
-    c->save();
-    c->concat(inv_ctm);
     SkRect bounds = dst_rect;
     ctm.mapRect(&bounds);
+    if (!bounds.isFinite()) {
+      // There is an earlier check for the correctness of the bounds, but it is
+      // possible that after applying the matrix transformation we get a faulty
+      // set of bounds, so we want to catch this asap and avoid sending a draw
+      // command. crbug.com/1039125
+      // We want to do this before the save command is sent.
+      return;
+    }
+    c->save();
+    c->concat(inv_ctm);
+
     PaintFlags layer_flags;
     layer_flags.setBlendMode(flags->getBlendMode());
     layer_flags.setImageFilter(flags->getImageFilter());

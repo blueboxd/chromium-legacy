@@ -495,7 +495,7 @@ Polymer({
    */
   onPrintServerAddedSucceeded_: function(printers) {
     this.inProgress_ = false;
-    this.fire('show-cups-print-server-toast', {printers: printers});
+    this.fire('add-print-server-and-show-toast', {printers: printers});
     this.$$('add-printer-dialog').close();
   },
 

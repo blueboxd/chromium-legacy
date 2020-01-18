@@ -301,10 +301,10 @@ void OnCheckExistingDownloadPathDone(
   if (file_exists)
     target_info->result = download::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED;
 
-  std::move(callback).Run(target_info->target_path,
-                          target_info->target_disposition,
-                          target_info->danger_type,
-                          target_info->intermediate_path, target_info->result);
+  std::move(callback).Run(
+      target_info->target_path, target_info->target_disposition,
+      target_info->danger_type, target_info->mixed_content_status,
+      target_info->intermediate_path, target_info->result);
 }
 
 }  // namespace
@@ -780,12 +780,12 @@ DownloadProtectionService*
   return nullptr;
 }
 
-void ChromeDownloadManagerDelegate::ShouldBlockDownload(
+void ChromeDownloadManagerDelegate::GetMixedContentStatus(
     download::DownloadItem* download,
     const base::FilePath& virtual_path,
-    const ShouldBlockDownloadCallback& callback) {
+    const GetMixedContentStatusCallback& callback) {
   DCHECK(download);
-  callback.Run(ShouldBlockFileAsMixedContent(virtual_path, *download));
+  callback.Run(GetMixedContentStatusForDownload(virtual_path, *download));
 }
 
 void ChromeDownloadManagerDelegate::NotifyExtensions(

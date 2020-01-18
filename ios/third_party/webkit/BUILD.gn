@@ -10,9 +10,7 @@ _build_custom_webkit = checkout_ios_webkit && is_debug && use_ios_simulator
 
 group("webkit") {
   if (_build_custom_webkit) {
-    deps = [
-      ":bundle_webkit_frameworks",
-    ]
+    deps = [ ":bundle_webkit_frameworks" ]
   }
 
   all_dependent_configs = [ ":_webkit_config" ]
@@ -89,9 +87,7 @@ if (_build_custom_webkit) {
   }
 
   bundle_data("bundle_webkit_frameworks") {
-    public_deps = [
-      ":compile_webkit",
-    ]
+    public_deps = [ ":compile_webkit" ]
 
     _framework_out_dir = "$target_out_dir/$_webkit_xcodebuild_out_dir"
     sources = [
@@ -104,9 +100,8 @@ if (_build_custom_webkit) {
       "$_framework_out_dir/com.apple.WebKit.WebContent.Development.xpc",
       "$_framework_out_dir/com.apple.WebKit.WebContent.xpc",
     ]
-    outputs = [
-      "{{bundle_contents_dir}}/WebKitFrameworks/{{source_file_part}}",
-    ]
+    outputs =
+        [ "{{bundle_contents_dir}}/WebKitFrameworks/{{source_file_part}}" ]
   }
 }
 

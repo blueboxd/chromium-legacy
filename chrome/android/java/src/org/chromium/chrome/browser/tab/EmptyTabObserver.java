@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.tab;
 import android.graphics.Bitmap;
 import android.view.ContextMenu;
 
-import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
-import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
+import org.chromium.components.find_in_page.FindMatchRectsDetails;
+import org.chromium.components.find_in_page.FindNotificationDetails;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;

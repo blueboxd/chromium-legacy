@@ -88,7 +88,7 @@ void NetErrorTabHelper::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
-  if (net::IsDnsError(navigation_handle->GetNetErrorCode())) {
+  if (net::IsHostnameResolutionError(navigation_handle->GetNetErrorCode())) {
     dns_error_active_ = true;
     OnMainFrameDnsError();
   }

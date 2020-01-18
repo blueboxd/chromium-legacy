@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 19 Nov 2019 15:19:40 -0800
-Subject: [PATCH 06/22] Detect/Prevent infinite recursion
+Subject: [PATCH 06/25] Detect/Prevent infinite recursion
 
 Backports https://www.sqlite.org/src/info/dfcf081d842629a0
 
@@ -52,5 +52,5 @@ index c516c34d564a..ddb6c177cf0a 100644
  
  finish_test
 -- 
-2.24.1.735.g03f4e72817-goog
+2.25.0.rc1.283.g88dfdc4193-goog
 

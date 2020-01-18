@@ -126,7 +126,6 @@
     &lt;p&gt;برای برطرف کردن این خطا، در صفحه‌ای که می‌خواهید باز کنید روی &lt;strong&gt;اتصال&lt;/strong&gt; کلیک کنید.&lt;/p&gt;</translation>
 <translation id="1513706915089223971">فهرست ورودی‌های سابقه</translation>
 <translation id="1517433312004943670">شماره تلفن ضروری است</translation>
-<translation id="1517500485252541695">کارت‌های اعتباری و نقدی قابل‌قبول</translation>
 <translation id="1519264250979466059">تاریخ ساخت</translation>
 <translation id="1521655867290435174">‏کاربرگ‌نگار Google</translation>
 <translation id="1527263332363067270">درانتظار برقراری اتصال…‏</translation>
@@ -203,7 +202,6 @@
 <translation id="1842969606798536927">پرداخت</translation>
 <translation id="1871208020102129563">‏تنظیم پروکسی به گونه‌ای است که از سرورهای ثابت پروکسی استفاده کند و از آدرس اسکریپت pac. استفاده نکند.</translation>
 <translation id="1871284979644508959">قسمت الزامی</translation>
-<translation id="1874765382782611674">کارت‌های نقدی قابل‌قبول</translation>
 <translation id="1875512691959384712">‏فرم‌نگار Google</translation>
 <translation id="187918866476621466">باز کردن صفحه‌های شروع</translation>
 <translation id="1883255238294161206">کوچک کردن فهرست</translation>
@@ -216,11 +214,9 @@
 <translation id="1919345977826869612">آگهی‌ها</translation>
 <translation id="1919367280705858090">دریافت راهنمایی برای پیام خطایی خاص</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{هیچ‌کدام}=1{۱ سایت}one{# سایت}other{# سایت}}</translation>
-<translation id="1927235823738766038">کارت‌های اعتباری و نقدی قابل‌قبول</translation>
 <translation id="194030505837763158">رفتن به <ph name="LINK" /></translation>
 <translation id="1945968466830820669">‏ممکن است دسترسی به حساب سازمانتان را از دست بدهید یا به سرقت هویت دچار شوید. Chromium توصیه می‌کند هم‌اکنون گذرواژه‌تان را تغییر دهید.</translation>
 <translation id="1947454675006758438">منگنه در بالا راست</translation>
-<translation id="1948773908305951926">کارت‌های پیش‌پرداخت قابل‌قبول</translation>
 <translation id="1962204205936693436">نشانک‌های <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">خطای ترتیب</translation>
 <translation id="1974060860693918893">پیشرفته</translation>
@@ -297,7 +293,6 @@
 <translation id="2315864634253056100">نام این سایت شبیه به نام <ph name="LOOKALIKE_DOMAIN" /> است. گاهی‌اوقات مهاجمان با ایجاد تغییراتی بسیار جزئی در نشانی وب، سایت‌ها را جعل می‌کنند.</translation>
 <translation id="2316887270356262533">کمتر از ۱ مگابایت از فضا را آزاد می‌کند. ممکن است برخی از سایت‌ها در بازدیدهای بعدی کندتر بارگیری شوند.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> به نام کاربری و گذرواژه نیاز دارد.</translation>
-<translation id="2317583587496011522">کارت‌های نقدی پذیرفته می‌شوند.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />، در <ph name="EXPIRATION_DATE_ABBR" /> منقضی می‌شود</translation>
 <translation id="2337852623177822836">تنظیم توسط سرپرست کنترل می‌شود</translation>
 <translation id="2346319942568447007">تصویری که کپی کرده‌اید</translation>
@@ -337,7 +332,6 @@
 <translation id="2495093607237746763">‏اگر علامت زده شود، Chromium برای پر کردن سریع‌تر فرم، یک کپی از کارت شما در این دستگاه ذخیره می‌کند.</translation>
 <translation id="2498091847651709837">اسکن کارت جدید</translation>
 <translation id="2501278716633472235">بازگشت</translation>
-<translation id="2503184589641749290">کارت‌های نقدی و پیش‌پرداخت قابل‌قبول</translation>
 <translation id="2505268675989099013">محافظت از حساب</translation>
 <translation id="2515629240566999685">بررسی سیگنال در منطقه‌تان</translation>
 <translation id="2521385132275182522">منگنه در پایین سمت راست</translation>
@@ -402,7 +396,6 @@
 <translation id="277499241957683684">ثبت دستگاه موجود نیست</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">اتصال مجدداً برقرار شد.</translation>
-<translation id="2788784517760473862">کارت‌های اعتباری قابل‌قبول</translation>
 <translation id="2792012897584536778">سرپرستان این دستگاه چند گواهینامه امنیتی راه‌اندازی کرده‌اند که می‌تواند به آن‌ها اجازه دهد محتوای وب‌سایت‌هایی را که بازدید می‌کنید، ببینند.</translation>
 <translation id="2799020568854403057">سایت پیش‌رو حاوی برنامه‌های خطرناک است</translation>
 <translation id="2799223571221894425">راه‌اندازی مجدد</translation>
@@ -549,7 +542,6 @@
 <translation id="3574305903863751447"><ph name="CITY" />، <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">صفحه جاسازی‌شده‌ای در <ph name="SITE" /> می‌گوید</translation>
 <translation id="3581089476000296252">‏وقتی این صفحه آماده شد، Chrome به شما اطلاع می‌دهد. &lt;a&gt;لغو&lt;/a&gt;</translation>
-<translation id="358285529439630156">کارت‌های اعتباری و پیش‌پرداخت پذیرفته می‌شوند.</translation>
 <translation id="3582930987043644930">افزودن نام</translation>
 <translation id="3583757800736429874">&amp;انجام مجدد انتقال</translation>
 <translation id="3584299510153766161">دو سوراخ پایین</translation>
@@ -615,7 +607,6 @@
 <translation id="3828924085048779000">عبارت عبور خالی مجاز نیست.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> افزونه‌هایی را برای عملکردهای اضافی نصب کرده است. افزونه‌ها به برخی از داده‌های شما دسترسی دارند.</translation>
 <translation id="3832522519263485449">چندین سوراخ در چپ</translation>
-<translation id="3838154488026099170">‏اخیراً گذرواژه‌تان را در سایتی فریب‌کار وارد کرده‌اید. Chromium توصیه می‌کند همین حالا به <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" />، و<ph name="WEBSITE_3" />، و سایت‌های دیگری که در آن‌ها از این گذرواژه استفاده کرده‌اید، بروید و گذرواژه را تغییر دهید.</translation>
 <translation id="385051799172605136">بازگشت</translation>
 <translation id="3858027520442213535">به‌روزرسانی تاریخ و زمان</translation>
 <translation id="3884278016824448484">شناسه دستگاه یکسان نیست</translation>
@@ -653,7 +644,6 @@
 <translation id="4072486802667267160">هنگام پردازش سفارش شما خطایی روی داد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="4075732493274867456">‏کلاینت و سرور از مجموعه رمزگذاری یا نسخه پروتکل SSL مشترکی استفاده نمی‌کنند.</translation>
 <translation id="4075941231477579656">شناسه لمسی</translation>
-<translation id="4077092919748553596">‏اخیراً گذرواژه‌تان را در سایتی فریب‌کار وارد کرده‌اید. Chrome توصیه می‌کند همین حالا به <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" />، و<ph name="WEBSITE_3" />، و سایت‌های دیگری که در آن‌ها از این گذرواژه استفاده کرده‌اید، بروید و گذرواژه را تغییر دهید.</translation>
 <translation id="4079302484614802869">‏تنظیمات پروکسی، برای استفاده از آدرس اسکریپت pac. تنظیم شده است و از سرورهای ثابت نمی‌تواند استفاده کند.</translation>
 <translation id="4082393374666368382">تنظیمات - مدیریت</translation>
 <translation id="4098354747657067197">احتیاط، سایت گول‌زننده</translation>
@@ -750,7 +740,6 @@
 <translation id="4434045419905280838">پنجره‌های بازشو و هدایت‌ها</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">استفاده از پروکسی غیرفعال است اما یک پیکربندی خاص برای پروکسی تعیین شده است.</translation>
-<translation id="445100540951337728">کارت‌های نقدی قابل‌قبول</translation>
 <translation id="4466881336512663640">تغییرات فرم از بین می‌رود. مطمئن هستید می‌خواهید ادامه دهید؟</translation>
 <translation id="4477350412780666475">آهنگ بعدی</translation>
 <translation id="4482953324121162758">این سایت ترجمه نخواهد شد.</translation>
@@ -956,6 +945,7 @@
 <translation id="5457113250005438886">نامعتبر</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> مخاطب دیگر}one{<ph name="CONTACT_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> مخاطب دیگر}other{<ph name="CONTACT_PREVIEW" /> و <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> مخاطب دیگر}}</translation>
 <translation id="5470861586879999274">&amp;انجام مجدد ویرایش</translation>
+<translation id="5472133193607270166">وقتی روشن باشد، سایت‌ها نمی‌توانند از فعالیت مرور شما در سایت‌های مختلف برای شخصی‌سازی آگهی استفاده کنند. ممکن است برخی سایت‌ها به‌درستی کار نکنند.</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">شاید این محتوا تلاش کند نرم‌افزار خطرناکی در دستگاهتان نصب کند که اطلاعاتتان را به سرقت برد یا حذف کند. <ph name="BEGIN_LINK" />درهرصورت نمایش داده شود<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">نشانی معتبری اضافه کنید</translation>
@@ -1009,7 +999,6 @@
 <translation id="570530837424789914">مدیریت…</translation>
 <translation id="57094364128775171">پیشنهاد گذرواژه قوی…</translation>
 <translation id="5710435578057952990">هویت این وب سایت تأیید نشده است.</translation>
-<translation id="5719499550583120431">کارت‌های پیش‌پرداخت پذیرفته می‌شوند.</translation>
 <translation id="5720705177508910913">کاربر کنونی</translation>
 <translation id="5728056243719941842">C5 (Envelope)</translation>
 <translation id="5730040223043577876">‏Chrome توصیه می‌کند اگر از گذرواژه‌تان در سایت‌های دیگری استفاده کردید آن را بازنشانی کنید.</translation>
@@ -1044,7 +1033,6 @@
 <translation id="5869405914158311789">دسترسی به این سایت امکان‌پذیر نیست</translation>
 <translation id="5869522115854928033">گذرواژه‌های ذخیره‌شده</translation>
 <translation id="5887400589839399685">کارت ذخیره‌ شد</translation>
-<translation id="5893752035575986141">کارت‌های اعتباری پذیرفته می‌شوند.</translation>
 <translation id="5895138241574237353">راه‌اندازی مجدد</translation>
 <translation id="5901630391730855834">زرد</translation>
 <translation id="5905445707201418379">مسدودشده براساس خط‌مشی اصلی <ph name="ORIGIN" />.</translation>
@@ -1096,7 +1084,6 @@
 <translation id="6106989379647458772">شاید صفحه وب در <ph name="PAGE" /> موقتاً غیرفعال شده باشد یا شاید به‌طور دائم به آدرس وب جدیدی منتقل شده باشد.</translation>
 <translation id="610911394827799129">‏ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد</translation>
 <translation id="6120179357481664955">‏شناسه «رابط پرداخت‌های یکپارچه» (UPI) شما به‌خاطر سپرده شود؟</translation>
-<translation id="6132597952260690497">اطلاعات مربوط به افزونه‌ها و افزایه‌های نصب‌شده</translation>
 <translation id="6146055958333702838">همه کابل‌ها را بررسی کنید و همه ره‌یاب‌ها، مودم‌ها، یا دیگر دستگاه‌های
    شبکه‌ای را که ممکن است درحال استفاده از آن‌ها باشید مجدداً راه‌اندازی کنید.</translation>
 <translation id="614940544461990577">این موارد را امتحان کنید:</translation>
@@ -1105,6 +1092,7 @@
 <translation id="6157877588268064908">برای دیدن روش‌های ارسال و شرایط موردنیاز، یک نشانی انتخاب کنید</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6177128806592000436">اتصال شما به این سایت امن نیست</translation>
+<translation id="6196640612572343990">مسدود کردن کوکی‌های شخص ثالث</translation>
 <translation id="6203231073485539293">اتصال اینترنتتان را بررسی کنید</translation>
 <translation id="6218753634732582820">‏آدرس از Chromium پاک شود؟</translation>
 <translation id="622039917539443112">تاخوردگی موازی</translation>
@@ -1177,7 +1165,6 @@
 <translation id="6476284679642588870">مدیریت روش‌های پرداخت</translation>
 <translation id="6489534406876378309">شروع بارگذاری کردن خرابی‌ها</translation>
 <translation id="6499038740797743453">گذرواژه بازنشانی شود؟</translation>
-<translation id="6507833130742554667">کارت‌های اعتباری و نقدی پذیرفته می‌شوند.</translation>
 <translation id="6508722015517270189">‏Chrome را راه‌اندازی مجدد کنید</translation>
 <translation id="6517596291481585650">این خط‌مشی به‌عنوان فهرستی که خط‌مشی مشخص کرده است ادغام نشد، زیرا فهرست نیست.</translation>
 <translation id="6518133107902771759">تأیید</translation>
@@ -1317,7 +1304,6 @@
 <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">اتصال خصوصی به <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> برقرار نمی‌شود زیرا تاریخ و زمان رایانه شما (<ph name="DATE_AND_TIME" />) نادرست است.</translation>
 <translation id="7260504762447901703">لغو دسترسی</translation>
-<translation id="7271803869921933038">کارت‌های پیش‌پرداخت قابل‌قبول</translation>
 <translation id="7275334191706090484">نشانک‌های مدیریت شده</translation>
 <translation id="7298195798382681320">توصیه می‌شود</translation>
 <translation id="7300012071106347854">آبی پررنگ</translation>
@@ -1455,7 +1441,6 @@
 <translation id="785549533363645510">اما، شما نامرئی نیستید. با استفاده از حالت ناشناس، مرورتان از چشمان کارفرمای شما، ارائه‌دهنده خدمات اینترنت یا وب‌‌سایت‌هایی که بازدید می‌کنید پنهان نمی‌ماند.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">سایت را ترک می‌کنید؟</translation>
-<translation id="7878176543348854470">کارت‌های نقدی و پیش‌پرداخت پذیرفته می‌شوند.</translation>
 <translation id="7878562273885520351">ممکن است گذرواژه‌تان درمعرض خطر باشد</translation>
 <translation id="7882421473871500483">قهوه‌ای</translation>
 <translation id="7887683347370398519">‏CVC را بررسی کرده و دوباره امتحان کنید</translation>
@@ -1617,7 +1602,6 @@
 <translation id="8730621377337864115">تمام</translation>
 <translation id="8738058698779197622">‏به منظور برقراری یک اتصال امن، لازم است که ساعت شما به درستی تنظیم شود. زیرا گواهینامه‌هایی که وب‌سایت‌ها برای شناسایی خودشان استفاده می‌کنند تنها برای دوره‌های زمانی خاصی معتبر هستند. از آنجایی که ساعت دستگاه نادرست است، Chromium نمی‌تواند این گواهینامه‌ها را تأیید کند.</translation>
 <translation id="8740359287975076522">‏<ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;آدرس DNS&lt;/abbr&gt; پیدا نشد. درحال بررسی برای تشخیص مشکل.</translation>
-<translation id="874846938927089722">کارت‌های اعتباری و پیش‌پرداخت قابل‌قبول</translation>
 <translation id="874918643257405732">نشانک‌گذاری این برگه</translation>
 <translation id="8751426954251315517">لطفاً بعداً دوباره امتحان کنید</translation>
 <translation id="8759274551635299824">کارت منقضی شده است</translation>
@@ -1651,7 +1635,6 @@
 <translation id="8931333241327730545">‏می‌خواهید این کارت را در حساب Google خود ذخیره کنید؟</translation>
 <translation id="8932102934695377596">ساعت شما عقب است</translation>
 <translation id="893332455753468063">افزودن نام</translation>
-<translation id="8938939909778640821">کارت‌های اعتباری و پیش‌پرداخت قابل‌قبول</translation>
 <translation id="8943282376843390568">لیمویی</translation>
 <translation id="8957210676456822347">مجوز پورتال محدود</translation>
 <translation id="8962950042226115166">سایت مشکوک</translation>
@@ -1721,7 +1704,6 @@
 <translation id="939736085109172342">پوشهٔ جدید</translation>
 <translation id="945855313015696284">اطلاعات زیر را بررسی و کارت‌های نامعتبر را حذف کنید</translation>
 <translation id="950736567201356821">سه سوراخ در بالا</translation>
-<translation id="951104842009476243">کارت‌های نقدی و پیش‌پرداخت قابل‌قبول</translation>
 <translation id="961663415146723894">به‌هم چسباندن از پایین</translation>
 <translation id="962484866189421427">این محتوا ممکن است برنامه‌های فریب‌دهنده‌ای نصب کند که وانمود می‌کنند برنامه دیگری هستند یا اینکه داده‌هایی برای ردیابی شما جمع‌آوری می‌کنند. <ph name="BEGIN_LINK" />درهرصورت نشان داده شود<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">ساخت رسمی</translation>

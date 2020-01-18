@@ -385,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(
 
   waiter = CreatePageLoadMetricsTestWaiter();
   waiter->AddPageExpectation(
-      page_load_metrics::PageLoadMetricsTestWaiter::TimingField::kFirstLayout);
+      page_load_metrics::PageLoadMetricsTestWaiter::TimingField::kLoadEvent);
   ui_test_utils::NavigateToURL(browser(), https_url_without_content());
   waiter->Wait();
   EXPECT_EQ(1u, session_fcp->GetNumberOfSamples());

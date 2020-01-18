@@ -16,7 +16,6 @@
 #include "ash/public/mojom/assistant_volume_control.mojom.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/shell_delegate.h"
 #include "ash/utility/screenshot_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
@@ -24,7 +23,6 @@
 #include "chromeos/services/assistant/public/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 
 namespace ash {
 
@@ -107,6 +105,14 @@ void AssistantController::SendAssistantFeedback(
   assistant_feedback->description = feedback_description;
   assistant_feedback->screenshot_png = screenshot_png;
   assistant_->SendAssistantFeedback(std::move(assistant_feedback));
+}
+
+void AssistantController::StartTextInteraction(
+    const std::string& query,
+    bool allow_tts,
+    chromeos::assistant::mojom::AssistantQuerySource source) {
+  assistant_interaction_controller_.StartTextInteraction(query, allow_tts,
+                                                         source);
 }
 
 void AssistantController::StartSpeakerIdEnrollmentFlow() {
@@ -253,12 +259,6 @@ void AssistantController::OpenUrl(const GURL& url,
         url, /*from_user_interaction=*/true);
   }
   NotifyUrlOpened(url, from_server);
-}
-
-void AssistantController::GetNavigableContentsFactory(
-    mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
-  Shell::Get()->shell_delegate()->BindNavigableContentsFactory(
-      std::move(receiver));
 }
 
 bool AssistantController::IsAssistantReady() const {

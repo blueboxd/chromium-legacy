@@ -6,9 +6,7 @@ import("//third_party/protobuf/proto_library.gni")
 
 if (is_win) {
   proto_library("stability_report_proto") {
-    sources = [
-      "stability_report.proto",
-    ]
+    sources = [ "stability_report.proto" ]
   }
 
   static_library("browser_watcher") {
@@ -22,9 +20,7 @@ if (is_win) {
       "window_hang_monitor_win.cc",
       "window_hang_monitor_win.h",
     ]
-    deps = [
-      "//base",
-    ]
+    deps = [ "//base" ]
   }
 
   static_library("browser_watcher_client") {
@@ -158,9 +154,7 @@ if (is_win) {
   }
 
   executable("dump_stability") {
-    sources = [
-      "dump_stability_report_main_win.cc",
-    ]
+    sources = [ "dump_stability_report_main_win.cc" ]
     deps = [
       ":stability_report_proto",
       "//base",
@@ -168,9 +162,7 @@ if (is_win) {
   }
 
   executable("fetch_system_session_events") {
-    sources = [
-      "fetch_system_session_events_main_win.cc",
-    ]
+    sources = [ "fetch_system_session_events_main_win.cc" ]
     deps = [
       ":postmortem_stability",
       "//base",

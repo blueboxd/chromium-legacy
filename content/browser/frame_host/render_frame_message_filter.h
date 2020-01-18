@@ -96,6 +96,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter : public BrowserMessageFilter {
                        WebPluginInfo* info,
                        std::string* actual_mime_type);
   void OnOpenChannelToPepperPlugin(
+      const url::Origin& embedder_origin,
       const base::FilePath& path,
       const base::Optional<url::Origin>& origin_lock,
       IPC::Message* reply_msg);

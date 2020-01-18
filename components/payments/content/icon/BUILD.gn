@@ -10,7 +10,5 @@ jumbo_static_library("icon") {
     "icon_size.h",
   ]
 
-  deps = [
-    "//ui/display",
-  ]
+  deps = [ "//ui/display" ]
 }

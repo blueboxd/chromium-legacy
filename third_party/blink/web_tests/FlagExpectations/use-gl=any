@@ -20,28 +20,19 @@ crbug.com/993384 media/video-layer-crash.html [ Skip ]
 crbug.com/993384 transforms/transformed-document-element.html [ Skip ]
 crbug.com/993384 transforms/3d/point-mapping/3d-point-mapping-deep.html [ Skip ]
 
-# Untriaged Windows Failures
-crbug.com/1011512 [ Win ] compositing/geometry/clipping-foreground.html [ Skip ]
-crbug.com/1011512 [ Win ] compositing/iframes/composited-iframe-alignment.html [ Skip ]
-crbug.com/1011512 [ Win ] compositing/masks/mask-with-added-filters.html [ Skip ]
-crbug.com/1011512 [ Win ] css2.1/t090501-c414-flt-02-d-g.html [ Skip ]
-crbug.com/1011512 [ Win ] css2.1/t090501-c414-flt-03-b-g.html [ Skip ]
-crbug.com/1011512 [ Win ] css2.1/t100304-c43-rpl-bbx-01-d-g.html [ Skip ]
-crbug.com/1011512 [ Win ] css3/blending/background-blend-mode-default-value.html [ Skip ]
-crbug.com/1011512 [ Win ] css3/blending/background-blend-mode-gradient-gradient.html [ Skip ]
-crbug.com/1011512 [ Win ] images/color-profile-image-filter-all.html [ Skip ]
-crbug.com/1011512 [ Win ] images/color-profile-svg-fill-text.html [ Skip ]
-crbug.com/1011512 [ Win ] media/autoplay-muted-conditions.html [ Skip ]
-crbug.com/1011512 [ Win ] media/encrypted-media/encrypted-media-playback-setmediakeys-before-src.html [ Skip ]
-crbug.com/1011512 [ Win ] media/video-currentTime-delay.html [ Skip ]
-crbug.com/1011512 [ Win ] media/video-pause-immediately.html [ Skip ]
-crbug.com/1011512 [ Win ] transforms/svg-vs-css.xhtml [ Skip ]
+# Windows only rebaselines needed.
+crbug.com/993384 [ Win ] compositing/geometry/clipping-foreground.html [ Skip ]
+crbug.com/993384 [ Win ] compositing/iframes/composited-iframe-alignment.html [ Skip ]
+crbug.com/993384 [ Win ] css2.1/t090501-c414-flt-02-d-g.html [ Skip ]
+crbug.com/993384 [ Win ] css2.1/t090501-c414-flt-03-b-g.html [ Skip ]
+crbug.com/993384 [ Win ] css2.1/t100304-c43-rpl-bbx-01-d-g.html [ Skip ]
+crbug.com/993384 [ Win ] css3/blending/background-blend-mode-default-value.html [ Skip ]
+crbug.com/993384 [ Win ] css3/blending/background-blend-mode-gradient-gradient.html [ Skip ]
+crbug.com/993384 [ Win ] images/color-profile-image-filter-all.html [ Skip ]
+crbug.com/993384 [ Win ] transforms/svg-vs-css.xhtml [ Skip ]
 
-# OOPIF tests fail due to input event coordinates.
-crbug.com/935970 http/tests/misc/scroll-cross-origin-iframes-scrollbar.html [ Skip ]
-crbug.com/935970 http/tests/security/referrer-policy-redirect-link.html [ Skip ]
-crbug.com/935970 http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Skip ]
-crbug.com/935970 http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change.html [ Skip ]
+# Incorrect clipping of the SVG image
+crbug.com/1043227 [ Win ] images/color-profile-svg-fill-text.html [ Skip ]
 
 # Viewport image is the wrong size.
 crbug.com/1009718 images/huge-image-viewport-scale.html [ Skip ]

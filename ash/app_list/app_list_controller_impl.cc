@@ -1309,7 +1309,9 @@ bool AppListControllerImpl::ShouldDismissImmediately() {
       Shelf::ForWindow(presenter_.GetView()->GetWidget()->GetNativeView())
           ->GetIdealBounds()
           .y();
-  const int current_y = presenter_.GetView()->GetBoundsInScreen().y();
+
+  const int current_y =
+      presenter_.GetView()->GetWidget()->GetNativeWindow()->bounds().y();
   return current_y > ideal_shelf_y;
 }
 

@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
-<translation id="5372829067651257087">URL をコピーしました。</translation>
 <translation id="6315516427814392808">メモリ不足のため直前の操作を完了できません</translation>
 <translation id="6555463879959038093">クリップボードにコピーできませんでした</translation>
+<translation id="6757101664402245801">URL がコピーされました</translation>
 <translation id="793640675459356075">選択したファイルを開けません</translation>
 </translationbundle>

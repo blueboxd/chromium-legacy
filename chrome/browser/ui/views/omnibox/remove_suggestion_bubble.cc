@@ -77,9 +77,6 @@ class RemoveSuggestionBubbleDialogDelegateView
   }
 
   // views::DialogDelegateView:
-  int GetDialogButtons() const override {
-    return ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL;
-  }
   bool Accept() override {
     std::move(remove_closure_).Run();
     return true;

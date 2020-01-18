@@ -948,7 +948,6 @@
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% হয়েছে</translation>
 <translation id="2318143611928805047">কাগজের আকার</translation>
 <translation id="2318817390901984578">Android অ্যাপ ব্যবহার করতে, আপনার <ph name="DEVICE_TYPE" /> চার্জ ও আপডেট করতে।</translation>
-<translation id="2318923050469484167">বর্তমান ছদ্মবেশী সেশন (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">শিরোলেখ এবং পাদলেখ</translation>
 <translation id="2322318151094136999">কোনও সাইট সিরিয়াল পোর্ট অ্যাক্সেস করতে চাইলে আমাকে জিজ্ঞাসা করুন (সাজেস্ট করা হচ্ছে)</translation>
 <translation id="2325002827435400643">এই সাইটের জন্য বন্ধ করুন</translation>
@@ -1790,6 +1789,7 @@
 <translation id="3511307672085573050">লিঙ্ক ঠিকানা কপি করুন</translation>
 <translation id="351152300840026870">নির্দিষ্ট-চওড়া হরফ</translation>
 <translation id="3511528412952710609">স্বল্পস্থায়ী</translation>
+<translation id="3513704683820682405">অগমেন্টেড রিয়েলিটি</translation>
 <translation id="3514373592552233661">একাধিক নেটওয়ার্ক উপলব্ধ থাকলে, পছন্দের নেটওয়ার্ককে অন্যান্য পরিচিত নেটওয়ার্কগুলির থেকে অগ্রাধিকার দেওয়া হবে</translation>
 <translation id="3515983984924808886">রিসেট করা কনফার্ম করতে আপনার নিরাপত্তা কী আবার টাচ করুন। পিন সহ নিরাপত্তা কীয়ে সেভ করা সব তথ্য মুছে যাবে।</translation>
 <translation id="3518985090088779359">স্বীকার করুন ও অবিরত রাখুন</translation>
@@ -2245,7 +2245,6 @@
 <translation id="4099874310852108874">নেটওয়ার্কে সমস্যা হয়েছে।</translation>
 <translation id="4100733287846229632">ডিভাইসের স্থান আশংকাজনকভাবে কম</translation>
 <translation id="4100853287411968461">নতুন স্ক্রিন টাইমের সীমা</translation>
-<translation id="4103091233824664032">স্ক্রিন লক এবং সাইন-ইন কনফিগার করার জন্য আপনার পাসওয়ার্ড লিখুন</translation>
 <translation id="4104163789986725820">র&amp;প্তানি...</translation>
 <translation id="4107048419833779140">স্টোরেজ ডিভাইসগুলি শনাক্ত করে সরিয়ে দিন</translation>
 <translation id="4109135793348361820"><ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) এ উইন্ডো সরান</translation>
@@ -2784,6 +2783,7 @@
 <translation id="494286511941020793">প্রক্সি কনফিগারেশন সহায়তা</translation>
 <translation id="4943368462779413526">ফুটবল</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" সিরিয়াল পোর্টে কানেক্ট করতে চাইছে</translation>
+<translation id="4943703118917034429">ভার্চুয়াল রিয়ালিটি</translation>
 <translation id="4944310289250773232"><ph name="SAML_DOMAIN" />-এর মাধ্যমে যাচাইকরণ পরিষেবা হোস্ট করা হয়েছে</translation>
 <translation id="495170559598752135">ক্রিয়াসমূহ</translation>
 <translation id="4952981627953231344">Plugin VM এই ডিভাইসে ব্যবহার করা যাবে না। আপনার প্রতিষ্ঠানের ডিভাইস অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।</translation>
@@ -3133,7 +3133,6 @@
 <translation id="5468173180030470402">ফাইল শেয়ার বিকল্পটি খোঁজা হচ্ছে</translation>
 <translation id="5470735824776589490">আপনার ডিভাইস পাওয়ারওয়াশের মাধ্যমে রিসেট করার আগে একবার রিস্টার্ট করা প্রয়োজন। <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">হ্যালো! আমি হলাম আপনার পাঠ্য থেকে ভাষ্য ভয়েস।</translation>
-<translation id="5472133193607270166">এটি চালু থাকাকালীন, বিজ্ঞাপন আপনার মতো করে সাজিয়ে নিতে সাইট আপনার অন্যান্য সাইটে করা ব্রাউজিং অ্যাক্টিভিটি ব্যবহার করতে পারবে না। কিছু সাইট সঠিকভাবে কাজ নাও করতে পারে।</translation>
 <translation id="5473333559083690127">নতুন পিন পুনরায় লিখুন</translation>
 <translation id="5481941284378890518">আশেপাশের প্রিন্টারগুলি যোগ করুন</translation>
 <translation id="5483785310822538350">ফাইল এবং ডিভাইসের অ্যাক্সেস প্রত্যাহার করুন</translation>
@@ -3305,7 +3304,6 @@
 <translation id="5701381305118179107">কেন্দ্র</translation>
 <translation id="5701441174893770082">Linux আপগ্রেড করলে আপনার ব্যাটারির চার্জ খুব তাড়াতাড়ি ফুরিয়ে যেতে পারে। আপনার ডিভাইস চার্জারের সাথে কানেক্ট করুন এবং আবার চেষ্টা করুন।</translation>
 <translation id="5702898740348134351">&amp;সার্চ ইঞ্জিন সম্পাদনা...</translation>
-<translation id="570302979952009979">এই ফিঙ্গারপ্রিন্টের জন্য একটি নাম বেছে নিন</translation>
 <translation id="5704875434923668958">এতে সিঙ্ক হচ্ছে</translation>
 <translation id="5707185214361380026">এর থেকে এক্সটেনশন লোড করা যায়নি:</translation>
 <translation id="5708171344853220004">Microsoft Principal Name</translation>
@@ -3397,7 +3395,6 @@
 <translation id="5833726373896279253">এই সেটিংস কেবল মালিক ঈষত্সংশোধন করতে পারেন:</translation>
 <translation id="5834581999798853053">প্রায় <ph name="TIME" /> মিনিট বাকি</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - ক্যামেরা বা মাইক্রোফোন রেকর্ডিং</translation>
-<translation id="5838456317242088717">বর্তমান ছদ্মবেশী সেশন</translation>
 <translation id="5842497610951477805">ব্লুটুথ সক্ষম</translation>
 <translation id="5843250171025351504">আপনার প্রশাসকের মাধ্যমে নির্দিষ্ট ন্যূনতম ক্লায়েন্ট সংস্করণের সাথে আপনার ডিভাইসের সাথে আর সঙ্গতিশীল নয় অনুগ্রহ করে লগ-ইন আপডেট করুন।</translation>
 <translation id="5846200638699387931">রিলেশন সিন্ট্যাক্সে সমস্যা হয়েছে: <ph name="ERROR_LINE" /></translation>
@@ -3654,7 +3651,6 @@
 <translation id="6181431612547969857">ডাউনলোড ব্লক করা হয়েছে</translation>
 <translation id="6185132558746749656">ডিভাইসের লোকেশন</translation>
 <translation id="6195693561221576702">এই ডিভাইসটি অফলাইন ডেমো মোডে সেট-আপ করা যাবে না।</translation>
-<translation id="6196640612572343990">তৃতীয় পক্ষের কুকিজ অবরুদ্ধ করুন</translation>
 <translation id="6196854373336333322">"<ph name="EXTENSION_NAME" />" এক্সটেনশন আপনার প্রক্সী সেটিংস নিয়ন্ত্রণ করছে, যার মানে হল আপনি অনলাইনে যাই করুন না কেন এটি তার পরিবর্তন করতে, সেখানে জোর করে প্রবেশ বা সেটি লুকিয়ে দেখতে পারবে। আপনি যদি বুঝতে না পারেন কেন এই পরিবর্তনটি হয়েছে তাহলে আপনি সম্ভবত এটি চাইছেন না।</translation>
 <translation id="6198102561359457428">সাইন-আউট করুন করে আবার সাইন-ইন করুন...</translation>
 <translation id="6198252989419008588">পিন পরিবর্তন করুন</translation>
@@ -4360,7 +4356,6 @@
 <translation id="7225179976675429563">নেটওয়ার্কের প্রকার হারিয়ে গেছে</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (ভেন্ডর: <ph name="VENDOR_ID" />, প্রোডাক্ট: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">ভৌগোলিক লোকেশন, মাইক্রোফোন, ক্যামেরা, ইত্যাদির মতো বৈশিষ্ট্যগুলিকে ওয়েবসাইটগুলি ব্যবহার করতে পারবে কিনা তা নির্দিষ্ট করতে সেটিংস নিয়ন্ত্রণ করে।</translation>
-<translation id="7228523857728654909">স্ক্রিন লক এবং সাইন-ইন করুন</translation>
 <translation id="7229570126336867161">EVDO এর প্রয়োজন</translation>
 <translation id="7230787553283372882">আপনার পাঠ্যের আকার কাস্টমাইজ করুন</translation>
 <translation id="7232750842195536390">নাম পরিবর্তন করা যায়নি</translation>
@@ -5275,7 +5270,6 @@
 <translation id="850875081535031620">কোনও ক্ষতিকর সফ্টওয়্যার খুঁজে পাওয়া যায়নি</translation>
 <translation id="8509177919508253835">নিরাপত্তা কী ডিভাইস রিসেট করে পিন তৈরি করুন</translation>
 <translation id="8509646642152301857">বানান পরীক্ষক অভিধান ডাউনলোড করা যায়নি৷</translation>
-<translation id="8510617356402557055">এটি কি অপ্রত্যাশিত ছিল? <ph name="BEGIN_LINK" />মতামত পাঠান<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">প্রক্রিয়া সমাপ্ত করুন</translation>
 <translation id="851263357009351303">ছবিগুলি দেখানোর জন্য সর্বদা <ph name="HOST" />-কে অনুমতি দিন </translation>
 <translation id="8513108775083588393">নিজে থেকে ঘুরবে</translation>

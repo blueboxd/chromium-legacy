@@ -32,6 +32,7 @@ class WebContents;
 }
 
 namespace weblayer {
+class BrowserImpl;
 class FullscreenDelegate;
 class NavigationControllerImpl;
 class NewTabDelegate;
@@ -54,15 +55,24 @@ class TabImpl : public Tab,
                    std::unique_ptr<content::WebContents> = nullptr);
   ~TabImpl() override;
 
-  // Returns the TabImpl from the specified WebContents, or null
-  // if TabImpl was not created by a TabImpl.
+  // Returns the TabImpl from the specified WebContents, or null if
+  // |web_contents| was not created by a TabImpl.
   static TabImpl* FromWebContents(content::WebContents* web_contents);
+
+  ProfileImpl* profile() { return profile_; }
+
+  void set_browser(BrowserImpl* browser) { browser_ = browser; }
+  BrowserImpl* browser() { return browser_; }
 
   content::WebContents* web_contents() const { return web_contents_.get(); }
 
   bool has_new_tab_delegate() const { return new_tab_delegate_ != nullptr; }
 
 #if defined(OS_ANDROID)
+  base::android::ScopedJavaGlobalRef<jobject> GetJavaTab() {
+    return java_impl_;
+  }
+
   // Call this method to disable integration with the system-level Autofill
   // infrastructure. Useful in conjunction with InitializeAutofillForTests().
   // Should be called early in the lifetime of WebLayer, and in
@@ -174,6 +184,7 @@ class TabImpl : public Tab,
                                   bool animate);
 #endif
 
+  BrowserImpl* browser_ = nullptr;
   DownloadDelegate* download_delegate_ = nullptr;
   ErrorPageDelegate* error_page_delegate_ = nullptr;
   FullscreenDelegate* fullscreen_delegate_ = nullptr;

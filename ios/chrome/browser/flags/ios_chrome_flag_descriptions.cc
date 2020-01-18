@@ -120,6 +120,12 @@ const char kBrowserContainerKeepsContentViewDescription[] =
     "When enable, the browser container keeps the content view in the view "
     "hierarchy, to avoid WKWebView from being unloaded from the process.";
 
+const char kClearSyncedDataName[] = "Clear Synced Data on Sign Out";
+const char kClearSyncedDataDescription[] =
+    "When enabled users signed in with a non-managed account will be "
+    "presented with the option to clear synced data from the local "
+    "device when signing out.";
+
 const char kCollectionsCardPresentationStyleName[] =
     "Card style presentation for Collections.";
 const char kCollectionsCardPresentationStyleDescription[] =

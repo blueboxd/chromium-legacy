@@ -12,7 +12,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.settings.LocationSettings;
 import org.chromium.chrome.browser.settings.SettingsUtils;
 import org.chromium.chrome.browser.settings.website.SiteSettingsCategory.Type;
 import org.chromium.content_public.browser.ContentFeatureList;
@@ -107,7 +106,7 @@ public class SiteSettings
             int setting = ContentSettingValues.DEFAULT;
 
             if (prefCategory == Type.DEVICE_LOCATION) {
-                checked = LocationSettings.getInstance().areAllLocationSettingsEnabled();
+                checked = WebsitePreferenceBridge.areAllLocationSettingsEnabled();
             } else if (requiresTriStateSetting) {
                 setting = WebsitePreferenceBridge.getContentSetting(contentType);
             } else {

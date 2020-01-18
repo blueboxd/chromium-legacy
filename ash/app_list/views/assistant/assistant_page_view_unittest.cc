@@ -12,6 +12,7 @@
 #include "ui/events/event.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -48,6 +49,15 @@ using chromeos::assistant::mojom::AssistantInteractionType;
         << "'" << expected_->GetClassName()              \
         << "' should not have the focus (but it does)."; \
   })
+
+views::View* AddTextfield(views::Widget* widget) {
+  auto* result = widget->GetContentsView()->AddChildView(
+      std::make_unique<views::Textfield>());
+  // Give the text field a non-zero size, otherwise things like tapping on it
+  // will fail.
+  result->SetSize(gfx::Size(20, 10));
+  return result;
+}
 
 // Stubbed |FocusChangeListener| that simply remembers all the views that
 // received focus.
@@ -486,10 +496,25 @@ TEST_F(AssistantPageViewTabletModeTest,
 }
 
 TEST_F(AssistantPageViewTabletModeTest,
+       ShouldDismissKeyboardWhenOpeningUiInVoiceMode) {
+  // Start by focussing a text field so the system has a reason to show the
+  // keyboard.
+  views::Widget* widget = SwitchToNewWidget();
+  auto* textfield = AddTextfield(widget);
+  TapOnAndWait(textfield);
+  ASSERT_TRUE(IsKeyboardShowing());
+
+  ShowAssistantUiInVoiceMode();
+
+  EXPECT_FALSE(IsKeyboardShowing());
+}
+
+TEST_F(AssistantPageViewTabletModeTest,
        ShouldDismissAssistantUiIfLostFocusWhenOtherAppWindowOpens) {
   ShowAssistantUi();
 
-  // Creates a new window to steal the focus should dismiss the Assistant UI.
+  // Create a new window to steal the focus which should dismiss the Assistant
+  // UI.
   SwitchToNewAppWindow();
 
   EXPECT_FALSE(IsVisible());

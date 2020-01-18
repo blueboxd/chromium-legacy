@@ -272,11 +272,13 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void DidChangeFramePolicy(WebFrame* child_frame, const FramePolicy&) {
   }
 
-  // Called when a Feature-Policy or Content-Security-Policy HTTP header (for
-  // sandbox flags) is encountered while loading the frame's document.
+  // Called when a Feature-Policy or Document-Policy or Content-Security-Policy
+  // HTTP header (for sandbox flags) is encountered while loading the frame's
+  // document.
   virtual void DidSetFramePolicyHeaders(
       WebSandboxFlags flags,
-      const ParsedFeaturePolicy& parsed_header) {}
+      const ParsedFeaturePolicy& feature_policy_header,
+      const DocumentPolicy::FeatureState& document_policy_header) {}
 
   // Called when a new Content Security Policy is added to the frame's
   // document.  This can be triggered by handling of HTTP headers, handling

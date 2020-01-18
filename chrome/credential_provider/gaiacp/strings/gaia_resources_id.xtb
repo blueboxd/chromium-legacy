@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
+<translation id="1337778609052285767">Sandi saat ini tidak memenuhi persyaratan kerumitan sandi. Harap hubungi administrator Anda.</translation>
 <translation id="1337821341856692531">Melanjutkan tanpa memasukkan sandi Windows saat ini dapat menyebabkan kehilangan informasi secara permanen.</translation>
 <translation id="1383286653814676580">Digunakan untuk menjalankan halaman login Penyedia Kredensial Google.</translation>
 <translation id="1894475569413661128">Login menggunakan akun kerja Anda.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Anda memasukkan sandi Windows yang salah. Coba lagi.</translation>
 <translation id="2831078752570172210">Akun Anda telah terkunci. Harap hubungi administrator sistem Anda.</translation>
 <translation id="2844349213149998955">Login dengan akun pribadi di perangkat ini tidak diizinkan. Silakan login dengan akun kerja.</translation>
+<translation id="2995851317559936311">Perubahan sandi hanya diizinkan pada pengontrol domain. Harap hubungi administrator Anda.</translation>
 <translation id="3306357053520292004">Pengguna di komputer ini telah ditambahkan menggunakan akun ini. Harap login menggunakan akun lain.</translation>
 <translation id="3926852373333893095">Hanya pengguna G Suite Enterprise yang diizinkan login.</translation>
 <translation id="4057329986137569701">Terjadi error internal.</translation>
 <translation id="4267670563222825190">Tidak ada pengguna Domain yang dapat ditemukan untuk akun Anda. Harap hubungi administrator Anda.</translation>
 <translation id="4300229033992784001">Sandi akun Anda telah diubah. Harap masukkan sandi Windows saat ini untuk menyinkronkan akun Windows dengan akun kerja Anda.</translation>
+<translation id="4669462973597624151">Percobaan mengubah sandi gagal. Harap hubungi administrator Anda.</translation>
 <translation id="4706454071748629324">Gagal menambahkan pengguna baru. Komputer ini hanya mengizinkan pembuatan satu pengguna yang menggunakan akun kerja.</translation>
+<translation id="5186761973554910131">Nama komputer yang diberikan saat percobaan perubahan sandi tidak valid. Harap hubungi administrator Anda.</translation>
 <translation id="6033715878377252112">Bantuan Penyedia Kredensial Google untuk Windows</translation>
 <translation id="6149399665202317746">Penyedia Kredensial Google untuk Windows</translation>
 <translation id="6239180560789153226">Tidak ditemukan info pemulihan di perangkat Anda. Login menggunakan akun kerja Google Anda.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Tambahkan akun kerja</translation>
 <translation id="7811865856574012727">Administrator telah membatasi login perangkat untuk domain berikut: <ph name="EMAIL_DOMAINS" />. Coba lagi menggunakan akun kerja yang valid.</translation>
 <translation id="7856245195110636219">Tidak dapat melanjutkan tanpa memasukkan sandi Windows saat ini. Harap hubungi administrator sistem Anda.</translation>
+<translation id="8109730953933509335">Percobaan perubahan sandi dilakukan pada pengguna yang tidak valid. Harap hubungi administrator Anda.</translation>
 <translation id="8639729688781680518">Lupa Sandi Windows</translation>
 <translation id="866458870819756755">Tidak dapat membuat pengguna.</translation>
 <translation id="8875753657315897487">Login menggunakan akun kerja Anda</translation>

@@ -134,7 +134,7 @@ class WebappActionsNotificationManager {
             // Not routing through onMenuOrKeyboardAction to control UMA String.
             Tab tab = webappActivity.getActivityTab();
             boolean isIncognito = tab.isIncognito();
-            webappActivity.getShareDelegate().share(tab, false);
+            webappActivity.getShareDelegateSupplier().get().share(tab, false);
             RecordUserAction.record("Webapp.NotificationShare");
             return true;
         } else if (ACTION_OPEN_IN_CHROME.equals(intent.getAction())) {

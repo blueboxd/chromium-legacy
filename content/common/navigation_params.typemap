@@ -6,8 +6,8 @@ mojom = "//content/common/navigation_params.mojom"
 public_headers = [
   "//content/common/content_param_traits.h",
   "//content/common/navigation_params.h",
-  "//content/public/common/page_state.h",
   "//content/public/common/navigation_policy.h",
+  "//content/public/common/page_state.h",
   "//third_party/blink/public/platform/web_mixed_content_context_type.h",
   "//ui/base/page_transition_types.h",
 ]
@@ -15,11 +15,8 @@ traits_headers = [
   "//content/common/frame_messages.h",
   "//content/common/resource_messages.h",
 ]
-deps = [
-  "//content:export",
-]
+deps = [ "//content:export" ]
 type_mappings = [
-  "content.mojom.InitiatorCSPInfo=::content::InitiatorCSPInfo",
   "content.mojom.MixedContentContextType=::blink::WebMixedContentContextType",
   "content.mojom.NavigationDownloadPolicy=::content::NavigationDownloadPolicy",
   "content.mojom.PageState=::content::PageState",

@@ -143,6 +143,10 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   void SwapBuffers(
       OutputSurfaceFrame frame,
       base::OnceCallback<bool()> deferred_framebuffer_draw_closure);
+  // Runs |deferred_framebuffer_draw_closure| when SwapBuffers() or CopyOutput()
+  // will not.
+  void SwapBuffersSkipped(
+      base::OnceCallback<bool()> deferred_framebuffer_draw_closure);
   void EnsureBackbuffer() { output_device_->EnsureBackbuffer(); }
   void DiscardBackbuffer() { output_device_->DiscardBackbuffer(); }
   void FinishPaintRenderPass(RenderPassId id,

@@ -156,9 +156,7 @@ source_set("eg_app_support+eg2") {
 
 source_set("run_all_unittests") {
   testonly = true
-  sources = [
-    "test/run_all_unittests.cc",
-  ]
+  sources = [ "test/run_all_unittests.cc" ]
   deps = [
     "//base",
     "//base/test:test_support",
@@ -176,10 +174,8 @@ bundle_data("ios_web_unittests_bundle_data") {
     "test/data/testfavicon.png",
     "test/data/testpass.pkpass",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_root_relative_dir}}/" +
-        "{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/{{source_root_relative_dir}}/" +
+              "{{source_file_part}}" ]
 }
 
 test("ios_web_unittests") {
@@ -349,9 +345,7 @@ source_set("test_support") {
     "public/test/crw_fake_web_state_delegate.h",
     "public/test/crw_fake_web_state_delegate.mm",
   ]
-  deps = [
-    "//ios/web",
-  ]
+  deps = [ "//ios/web" ]
 }
 
 source_set("ios_web_web_state_unittests") {
@@ -647,18 +641,12 @@ js_compile_checked("js_resources") {
     ":main_frame_web_bundle",
   ]
 
-  sources = [
-    "js_messaging/resources/window_id.js",
-  ]
+  sources = [ "js_messaging/resources/window_id.js" ]
 }
 
 bundle_data("navigation_resources") {
-  sources = [
-    "navigation/resources/restore_session.html",
-  ]
-  outputs = [
-    "{{bundle_resources_dir}}/{{source_file_part}}",
-  ]
+  sources = [ "navigation/resources/restore_session.html" ]
+  outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
 }
 
 grit("resources") {
@@ -675,7 +663,5 @@ grit("resources") {
     "-E",
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
-  deps = [
-    "//mojo/public/js:bindings",
-  ]
+  deps = [ "//mojo/public/js:bindings" ]
 }

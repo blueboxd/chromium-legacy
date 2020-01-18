@@ -25,6 +25,8 @@ const char* DnsProbeStatusToString(int status) {
       return "DNS_PROBE_FINISHED_BAD_CONFIG";
     case DNS_PROBE_FINISHED_NXDOMAIN:
       return "DNS_PROBE_FINISHED_NXDOMAIN";
+    case DNS_PROBE_FINISHED_BAD_SECURE_CONFIG:
+      return "DNS_PROBE_FINISHED_BAD_SECURE_CONFIG";
     default:
       NOTREACHED();
       return "";

@@ -8,6 +8,7 @@
 #include "ui/display/display.h"
 #include "ui/display/mojom/display.mojom.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
+#include "ui/gfx/mojom/display_color_spaces_mojom_traits.h"
 
 namespace mojo {
 
@@ -72,6 +73,10 @@ struct StructTraits<display::mojom::DisplayDataView, display::Display> {
 
   static const gfx::Size& maximum_cursor_size(const display::Display& display) {
     return display.maximum_cursor_size();
+  }
+
+  static gfx::DisplayColorSpaces color_spaces(const display::Display& display) {
+    return display.color_spaces();
   }
 
   static int32_t color_depth(const display::Display& display) {

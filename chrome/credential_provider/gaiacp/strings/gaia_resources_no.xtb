@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
+<translation id="1337778609052285767">Det nåværende passordet oppfyller ikke kravene til passordkompleksitet. Kontakt administratoren din.</translation>
 <translation id="1337821341856692531">Hvis du fortsetter uten å skrive inn det nåværende Windows-passordet, kan det føre til uopprettelig tap av informasjon.</translation>
 <translation id="1383286653814676580">Brukes til å kjøre påloggingssiden for Google-legitimasjonsleverandøren.</translation>
 <translation id="1894475569413661128">Logg på med jobbkontoen din.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Du skrev inn feil Windows-passord. Prøv på nytt.</translation>
 <translation id="2831078752570172210">Kontoen er utestengt. Kontakt systemadministratoren.</translation>
 <translation id="2844349213149998955">Det er ikke tillatt å logge på med personlige kontoer på denne enheten. Logg på med en jobbkonto.</translation>
+<translation id="2995851317559936311">Passordendring er kun tillatt på domenekontrolleren. Kontakt administratoren din.</translation>
 <translation id="3306357053520292004">En bruker på denne datamaskinen er allerede lagt til med denne kontoen. Logg på med en annen konto.</translation>
 <translation id="3926852373333893095">Kun GSuite Enterprise-brukere har lov til å logge på.</translation>
 <translation id="4057329986137569701">Det oppsto en intern feil.</translation>
 <translation id="4267670563222825190">Fant ingen domenebruker for kontoen din. Kontakt administratoren din.</translation>
 <translation id="4300229033992784001">Passordet for kontoen din er endret. Skriv inn Windows-passordet ditt for å synkronisere Windows-kontoen og jobbkontoen din.</translation>
+<translation id="4669462973597624151">Forsøk på passordendring mislyktes. Kontakt administratoren din.</translation>
 <translation id="4706454071748629324">Kunne ikke legge til den nye brukeren. Denne datamaskinen tillater bare oppretting av én bruker per jobbkonto.</translation>
+<translation id="5186761973554910131">Ugyldig datamaskinnavn ble oppgitt under forsøk på endring av passord. Kontakt administratoren din.</translation>
 <translation id="6033715878377252112">Hjelpebruker for Google-legitimasjonsleverandøren for Windows</translation>
 <translation id="6149399665202317746">Google-legitimasjonsleverandør for Windows</translation>
 <translation id="6239180560789153226">Enheten mangler gjenopprettingsinformasjon. Logg på med Google-jobbkontoen din.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Legg til jobbkonto</translation>
 <translation id="7811865856574012727">Administratoren har begrenset enhetspålogging til disse domenene: <ph name="EMAIL_DOMAINS" />. Prøv på nytt med en gyldig arbeidskonto.</translation>
 <translation id="7856245195110636219">Kan ikke fortsette uten at du skriver inn det nåværende Windows-passordet. Kontakt en systemadministrator.</translation>
+<translation id="8109730953933509335">Passordet ble forsøkt endret på en ugyldig bruker. Kontakt administratoren din.</translation>
 <translation id="8639729688781680518">Jeg har glemt Windows-passordet</translation>
 <translation id="866458870819756755">Kunne ikke opprette bruker.</translation>
 <translation id="8875753657315897487">Logg på med jobbkontoen din</translation>

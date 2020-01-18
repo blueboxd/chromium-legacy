@@ -946,7 +946,6 @@
 <translation id="2317842250900878657">ສຳເລັດແລ້ວ <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">ຂະ​ຫນາດ​ເຈ້ຍ</translation>
 <translation id="2318817390901984578">ເພື່ອໃຊ້ແອັບ Android, ກະລຸນາສາກ ແລະ ອັບເດດ <ph name="DEVICE_TYPE" /> ຂອງທ່ານ.</translation>
-<translation id="2318923050469484167">ເຊດຊັນແບບບໍ່ເຜີຍຕົວຕົນໃນປັດຈຸບັນ (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">ຫົວຂອງໜ້າ ແລະທ້າຍຂອງໜ້າ</translation>
 <translation id="2322318151094136999">ຖາມເມື່ອເວັບໄຊຕ້ອງການເຂົ້າເຖິງຜອດອະນຸກຳ (ແນະນຳ)</translation>
 <translation id="2325002827435400643">ປິດສຳລັບເວັບໄຊນີ້</translation>
@@ -1789,6 +1788,7 @@
 <translation id="3511307672085573050">ກັອບປີ້ທີ່ຢູ່ລິ້ງ</translation>
 <translation id="351152300840026870">ຟ້ອນໜັງສືຄວາມກ້ວາງ-ກໍານົດແລ້ວ</translation>
 <translation id="3511528412952710609">ສັ້ນ</translation>
+<translation id="3513704683820682405">ອາກິວເມັນ ຣີອາລິຕີ</translation>
 <translation id="3514373592552233661">ເຄືອຂ່າຍທີ່ເລືອກໄວ້ຈະຖືກໃຊ້ກ່ອນເຄືອຂ່າຍທີ່ຮູ້ຈັກອື່ນ ຖ້າມີຫຼາຍກວ່າໜຶ່ງເຄືອຂ່າຍໃຫ້ນຳໃຊ້</translation>
 <translation id="3515983984924808886">ສຳຜັດກະແຈຄວາມປອດໄພຂອງທ່ານອີກຄັ້ງເພື່ອຢືນຢັນການຣີເຊັດ. ລະບົບຈະລຶບຂໍ້ມູນທັງໝົດທີ່ເກັບໄວ້ໃນກະແຈຄວາມປອດໄພ, ຮວມທັງ PIN ຂອງມັນ.</translation>
 <translation id="3518985090088779359">ຍອມ​ຮັບ​ ແລະ​ສືບ​ຕໍ່</translation>
@@ -2245,7 +2245,6 @@
 <translation id="4099874310852108874">ເຄືອຂ່າຍເກີດຄວາມຜິດພາດ.</translation>
 <translation id="4100733287846229632">ພື້ນທີ່ຫວ່າງໃນອຸປະກອນເຫຼືອໜ້ອຍທີ່ສຸດ</translation>
 <translation id="4100853287411968461">ຈຳກັດເວລາໜ້າຈໍໃໝ່</translation>
-<translation id="4103091233824664032">ປ້ອນລະຫັດຜ່ານຂອງທ່ານເພື່ອກຳນົດການລັອກໜ້າຈໍ ແລະ ການເຂົ້າສູ່ລະບົບ</translation>
 <translation id="4104163789986725820">ສົ່ງອອກ...</translation>
 <translation id="4107048419833779140">ລະບຸ ແລະ ປະຕິເສດອຸປະກອນເກັບຂໍ້ມູນ</translation>
 <translation id="4109135793348361820">ຍ້າຍໜ້າຕ່າງໄປຫາ <ph name="USER_NAME" /> ( <ph name="USER_EMAIL" /> )</translation>
@@ -2784,6 +2783,7 @@
 <translation id="494286511941020793">ຊ່ວຍເຫຼືອການ​ປັບ​ຕັ້ງ​ຄ່າພຣັອກຊີ</translation>
 <translation id="4943368462779413526">ບານເຕະ</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" ຕ້ອງການເຊື່ອມຕໍ່ກັບຜອດອະນຸກໍາ</translation>
+<translation id="4943703118917034429">ເວີຊົວ ຣິອາລິຕີ</translation>
 <translation id="4944310289250773232"><ph name="SAML_DOMAIN" /> ເປັນແມ່ຂ່າຍການບໍລິການກວດສອບຄວາມຖືກຕ້ອງ.</translation>
 <translation id="495170559598752135">ການກະທໍາ</translation>
 <translation id="4952981627953231344">Plugin VM ບໍ່ໄດ້ຮັບອະນຸຍາດໃນອຸປະກອນນີ້. ຕິດຕໍ່ຫາຜູ້ເບິ່ງແຍງລະບົບອຸປະກອນຂອງອົງການຂອງທ່ານ.</translation>
@@ -3133,7 +3133,6 @@
 <translation id="5468173180030470402">ກຳລັງຊອກຫາການແບ່ງປັນໄຟລ໌</translation>
 <translation id="5470735824776589490">ຈໍາເປັນຕ້ອງຣິສະຕາດກ່ອນທີ່ຈະສາມາດຣີເຊັດອຸປະກອນຂອງທ່ານດ້ວຍ Powerwash ໄດ້. <ph name="LINK_BEGIN" />ສຶກສາເພີ່ມເຕີມ<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">ສະບາຍດີ! ຂ້ອຍແມ່ນສຽງການປ່ຽນຂໍ້ຄວາມເປັນສຽງເວົ້າຂອງເຈົ້າ.</translation>
-<translation id="5472133193607270166">ເມື່ອເປີດຢູ່, ເວັບໄຊບໍ່ສາມາດໃຊ້ການເຄື່ອນໄຫວທ່ອງເວັບຂອງທ່ານໃນທົ່ວເວັບໄຊຕ່າງໆເພື່ອປັບແຕ່ງໂຄສະນາໃຫ້ເປັນແບບສ່ວນຕົວໄດ້. ບາງເວັບໄຊອາດຈະໃຊ້ບໍ່ໄດ້ຢ່າງຖືກຕ້ອງ.</translation>
 <translation id="5473333559083690127">ປ້ອນ​ PIN ໃໝ່​ຄືນອີກ</translation>
 <translation id="5481941284378890518">ເພີ່ມເຄື່ອງພິມທີ່ຢູ່ໃກ້ຄຽງ</translation>
 <translation id="5483785310822538350">ຖອນຄືນ​ໄຟລ​໌​ ແລະ​ການ​ເຂົ້າຫາ​ອຸ​ປະ​ກອນ</translation>
@@ -3304,7 +3303,6 @@
 <translation id="5701381305118179107">ໃຈກາງ</translation>
 <translation id="5701441174893770082">ການອັບເກຣດ Linux ສາມາດເຮັດໃຫ້ແບັດເຕີຣີໝົດຢ່າງວ່ອງໄວໄດ້. ກະລຸນາເຊື່ອມຕໍ່ອຸປະກອນຂອງທ່ານກັບສາຍສາກ ແລ້ວລອງໃໝ່.</translation>
 <translation id="5702898740348134351">ແກ້ໄຂເຄື່ອງຈັກຄົ້ນຫາ...</translation>
-<translation id="570302979952009979">ເລືອກຊື່ສຳລັບລາຍນິ້ວມືນີ້</translation>
 <translation id="5704875434923668958">ກຳລັງຊິ້ງຂໍ້ມູນກັບ</translation>
 <translation id="5707185214361380026">ບໍ່​ສາມາດໂຫຼດສ່ວນຂະຫຍາຍຈາກ:</translation>
 <translation id="5708171344853220004">ຊື່ສໍາຄັນຂອງ Microsoft</translation>
@@ -3396,7 +3394,6 @@
 <translation id="5833726373896279253">ການຕັ້ງຄ່າເຫຼົ່ານີ້ອາດຈະມີແຕ່ເຈົ້າຂອງເທົ່ານັ້ນທີ່ດັດແກ້ໄດ້:</translation>
 <translation id="5834581999798853053">ຍັງເຫຼືອປະມານ <ph name="TIME" /> ນາ​ທີ</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - ການບັນທຶກກ້ອງຖ່າຍຮູບ ຫຼື ໄມໂຄຣໂຟນ</translation>
-<translation id="5838456317242088717">ເຊດຊັນແບບບໍ່ເຜີຍຕົວຕົນໃນປັດຈຸບັນ</translation>
 <translation id="5842497610951477805">ເປີດນຳໃຊ້ Bluetooth</translation>
 <translation id="5843250171025351504">ອຸປະກອນຂອງທ່ານບໍ່ປະຕິບັດຕາມເວີຊັນລູກຂ່າຍຕໍ່າສຸດທີ່ຜູ້ຄວບຄຸມລະບົບຂອງທ່ານລະບຸໄວ້. ກະລຸນາອັບເດດເພື່ອເຂົ້າສູ່ລະບົບ.</translation>
 <translation id="5846200638699387931">ຂໍ້ຜິດພາດທາງໄວຍະກອນທີ່ກ່ຽວຂ້ອງ: <ph name="ERROR_LINE" /></translation>
@@ -3652,7 +3649,6 @@
 <translation id="6181431612547969857">ບລັອກດາວໂຫຼດແລ້ວ</translation>
 <translation id="6185132558746749656">​ທີ່​ຕັ້ງ​ອຸ​ປະ​ກອນ</translation>
 <translation id="6195693561221576702">ບໍ່ສາມາດຕັ້ງຄ່າອຸປະກອນນີ້ໃນໂໝດສາທິດອອບລາຍໄດ້.</translation>
-<translation id="6196640612572343990">ບລັອກຄຸກກີ້ພາກສ່ວນທີສາມ</translation>
 <translation id="6196854373336333322">ສ່ວນຂະຫຍາຍ "<ph name="EXTENSION_NAME" />" ໄດ້ດໍາເນີນການຄວບຄຸມການຕັ້ງຄ່າພຣັອກຊີຂອງທ່ານ, ເຊິ່ງໝາຍຄວາມວ່າ ມັນສາມາດປ່ຽນແປງ, ທໍາລາຍ, ຫຼືລັກຟັງອັນໃດອັນໜຶ່ງທີ່ທ່ານເຮັດອອນລາຍນ໌ໄດ້. ຖ້າທ່ານບໍ່ແນ່ໃຈວ່າ ເປັນຫຍັງການປ່ຽນແປງນີ້ຈິ່ງເກີດຂຶ້ນ, ທ່ານອາດຈະບໍ່ຕ້ອງການມັນ.</translation>
 <translation id="6198102561359457428">ອອກຈາກລະບົບ ຈາກນັ້ນລົງຊື່ເຂົ້າ​ໃຊ້ອີກ...</translation>
 <translation id="6198252989419008588">ປ່ຽນ PIN</translation>
@@ -4358,7 +4354,6 @@
 <translation id="7225179976675429563">ປະ​ເພດ​ເຄືອ​ຂ່າຍຂາດຫາຍໄປ</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (ຜູ້ຂາຍ: <ph name="VENDOR_ID" />, ຜະລິດຕະພັນ: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">ຄວບຄຸມການຕັ້ງຄ່າທີ່ລະບຸວ່າເວັບໄຊສາມາດໃຊ້ຄຸນສົມບັດຕ່າງໆ ເຊັ່ນ ສະຖານທີ່ທາງພູມສາດ, ໄມໂຄຣໂຟນ, ກ້ອງຖ່າຍຮູບ ແລະ ອື່ນໆ ໄດ້ຫຼືບໍ່.</translation>
-<translation id="7228523857728654909">ການລັອກໜ້າຈໍ ແລະ ການເຂົ້າສູ່ລະບົບ</translation>
 <translation id="7229570126336867161">ຕ້ອງການ EVDO</translation>
 <translation id="7230787553283372882">ກຳນົດຂະໜາດຂໍ້ຄວາມຂອງທ່ານເອົາເອງ</translation>
 <translation id="7232750842195536390">ການປ່ຽນຊື່ບໍ່ສຳເລັດ</translation>
@@ -5273,7 +5268,6 @@
 <translation id="850875081535031620">ບໍ່ພົບຊອບແວອັນຕະລາຍໃດໆ</translation>
 <translation id="8509177919508253835">ຣີເຊັດກະແຈຄວາມປອດໄພ ແລະ ສ້າງ PIN</translation>
 <translation id="8509646642152301857">ດາວໂຫຼດພົດຈະນານຸກົມສະກົດຄໍາບໍ່ສໍາ​ເລັດ​.</translation>
-<translation id="8510617356402557055">ນີ້ແມ່ນສິ່ງບໍ່ຄາດຄິດແມ່ນບໍ? <ph name="BEGIN_LINK" />ສົ່ງຄຳຕິຊົມ<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">ສິ້ນສຸດຂະບວນການ</translation>
 <translation id="851263357009351303">​ອະ​ນຸ​ຍາດ​ໃຫ້ <ph name="HOST" /> ສະ​ແດງຮູບທຸກຄັ້ງ</translation>
 <translation id="8513108775083588393">ໝຸນອັດຕະໂນມັດ</translation>

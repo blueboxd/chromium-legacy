@@ -178,8 +178,7 @@ bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
     HardwareDisplayPlane* hw_plane,
     const DrmOverlayPlane& overlay,
     uint32_t crtc_id,
-    const gfx::Rect& src_rect,
-    CrtcController* crtc) {
+    const gfx::Rect& src_rect) {
   // Legacy modesetting rejects transforms.
   if (overlay.plane_transform != gfx::OVERLAY_TRANSFORM_NONE)
     return false;
@@ -188,7 +187,7 @@ bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
       plane_list->legacy_page_flips.back().crtc_id != crtc_id) {
     plane_list->legacy_page_flips.push_back(
         HardwareDisplayPlaneList::PageFlipInfo(
-            crtc_id, overlay.buffer->opaque_framebuffer_id(), crtc));
+            crtc_id, overlay.buffer->opaque_framebuffer_id()));
   } else {
     return false;
   }

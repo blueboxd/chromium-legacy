@@ -91,12 +91,9 @@ ASH_EXPORT bool ShouldExcludeForOverview(const aura::Window* window);
 ASH_EXPORT void RemoveTransientDescendants(
     std::vector<aura::Window*>* out_window_list);
 
-// Hides a list of |windows| without any animations, in case users wants to hide
-// them right away or apply their own animations. Setting |minimize| to true
-// will result in also setting the window states to minimized.
-ASH_EXPORT void HideAndMaybeMinimizeWithoutAnimation(
-    std::vector<aura::Window*> windows,
-    bool minimize);
+// Minimizes a hides list of |windows| without any animations.
+ASH_EXPORT void MinimizeAndHideWithoutAnimation(
+    const std::vector<aura::Window*>& windows);
 
 // Returns the RootWindow at |point_in_screen| in virtual screen coordinates.
 // Returns nullptr if the root window does not exist at the given point.

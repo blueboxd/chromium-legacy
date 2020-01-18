@@ -16,14 +16,14 @@
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
-#include "chrome/browser/ui/find_bar/find_notification_details.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/find_in_page/find_notification_details.h"
+#include "components/find_in_page/find_tab_helper.h"
+#include "components/find_in_page/find_types.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -85,7 +85,7 @@ class FindBarView::MatchCountLabel : public views::Label {
     node_data->role = ax::mojom::Role::kStatus;
   }
 
-  void SetResult(const FindNotificationDetails& result) {
+  void SetResult(const find_in_page::FindNotificationDetails& result) {
     if (last_result_ && result == *last_result_)
       return;
 
@@ -107,7 +107,7 @@ class FindBarView::MatchCountLabel : public views::Label {
   }
 
  private:
-  base::Optional<FindNotificationDetails> last_result_;
+  base::Optional<find_in_page::FindNotificationDetails> last_result_;
 
   DISALLOW_COPY_AND_ASSIGN(MatchCountLabel);
 };
@@ -237,8 +237,9 @@ base::string16 FindBarView::GetMatchCountText() const {
   return match_count_text_->GetText();
 }
 
-void FindBarView::UpdateForResult(const FindNotificationDetails& result,
-                                  const base::string16& find_text) {
+void FindBarView::UpdateForResult(
+    const find_in_page::FindNotificationDetails& result,
+    const base::string16& find_text) {
   bool have_valid_range =
       result.number_of_matches() != -1 && result.active_match_ordinal() != -1;
 
@@ -330,8 +331,9 @@ void FindBarView::ButtonPressed(
     case VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON:
     case VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON:
       if (!find_text_->GetText().empty()) {
-        FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(
-            find_bar_host_->GetFindBarController()->web_contents());
+        find_in_page::FindTabHelper* find_tab_helper =
+            find_in_page::FindTabHelper::FromWebContents(
+                find_bar_host_->GetFindBarController()->web_contents());
         find_tab_helper->StartFinding(
             find_text_->GetText(),
             sender->GetID() == VIEW_ID_FIND_IN_PAGE_NEXT_BUTTON,
@@ -340,7 +342,8 @@ void FindBarView::ButtonPressed(
       break;
     case VIEW_ID_FIND_IN_PAGE_CLOSE_BUTTON:
       find_bar_host_->GetFindBarController()->EndFindSession(
-          FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
+          find_in_page::SelectionAction::kKeep,
+          find_in_page::ResultAction::kKeep);
       break;
     default:
       NOTREACHED() << "Unknown button";
@@ -366,8 +369,9 @@ bool FindBarView::HandleKeyEvent(views::Textfield* sender,
     base::string16 find_string = find_text_->GetText();
     if (!find_string.empty()) {
       FindBarController* controller = find_bar_host_->GetFindBarController();
-      FindTabHelper* find_tab_helper =
-          FindTabHelper::FromWebContents(controller->web_contents());
+      find_in_page::FindTabHelper* find_tab_helper =
+          find_in_page::FindTabHelper::FromWebContents(
+              controller->web_contents());
       // Search forwards for enter, backwards for shift-enter.
       find_tab_helper->StartFinding(find_string,
                                     !key_event.IsShiftDown(),
@@ -402,7 +406,8 @@ void FindBarView::Find(const base::string16& search_text) {
   // can lead to crashes, as exposed by automation testing in issue 8048.
   if (!web_contents)
     return;
-  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(web_contents);
+  find_in_page::FindTabHelper* find_tab_helper =
+      find_in_page::FindTabHelper::FromWebContents(web_contents);
 
   last_searched_text_ = search_text;
 
@@ -415,7 +420,7 @@ void FindBarView::Find(const base::string16& search_text) {
     // The last two params here are forward (true) and case sensitive (false).
     find_tab_helper->StartFinding(search_text, true, false);
   } else {
-    find_tab_helper->StopFinding(FindOnPageSelectionAction::kClear);
+    find_tab_helper->StopFinding(find_in_page::SelectionAction::kClear);
     UpdateForResult(find_tab_helper->find_result(), base::string16());
     find_bar_host_->MoveWindowIfNecessary();
 
@@ -424,10 +429,9 @@ void FindBarView::Find(const base::string16& search_text) {
     // deleted. We can't do this on ChromeOS yet because we get ContentsChanged
     // sent for a lot more things than just the user nulling out the search
     // terms. See http://crbug.com/45372.
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents->GetBrowserContext());
-    FindBarState* find_bar_state = FindBarStateFactory::GetForProfile(profile);
-    find_bar_state->set_last_prepopulate_text(base::string16());
+    FindBarState* find_bar_state = FindBarStateFactory::GetForBrowserContext(
+        web_contents->GetBrowserContext());
+    find_bar_state->SetLastSearchText(base::string16());
   }
 }
 

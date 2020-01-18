@@ -948,7 +948,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2317842250900878657">Dokončano: <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Velikost papirja</translation>
 <translation id="2318817390901984578">Če želite uporabljati aplikacije za Android, napolnite in uporabite napravo <ph name="DEVICE_TYPE" />.</translation>
-<translation id="2318923050469484167">Trenutna seja brez beleženja zgodovine (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">Glave in noge</translation>
 <translation id="2322318151094136999">Vprašaj, ko želi spletno mesto dostop do serijskih vrat (priporočljivo)</translation>
 <translation id="2325002827435400643">Izklopi za to spletno mesto</translation>
@@ -1791,6 +1790,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="3511307672085573050">Kopiraj naslov pove&amp;zave</translation>
 <translation id="351152300840026870">Pisava fiksne širine</translation>
 <translation id="3511528412952710609">Kratka</translation>
+<translation id="3513704683820682405">Razširjena resničnost</translation>
 <translation id="3514373592552233661">Če je na voljo več kot eno omrežje, bodo pred drugimi znanimi omrežji prednostno izbrana prednostna omrežja</translation>
 <translation id="3515983984924808886">Znova se dotaknite varnostnega ključa, da potrdite ponastavitev. Vsi podatki, shranjeni na varnostnem ključu, vključno s kodo PIN, bodo izbrisani.</translation>
 <translation id="3518985090088779359">Sprejmi in nadaljuj</translation>
@@ -2247,7 +2247,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="4099874310852108874">Prišlo je do napake omrežja.</translation>
 <translation id="4100733287846229632">V napravi kritično primanjkuje prostora</translation>
 <translation id="4100853287411968461">Nova omejitev časa uporabe</translation>
-<translation id="4103091233824664032">Vnesite geslo, če želite konfigurirati zaklepanje zaslona in prijavo</translation>
 <translation id="4104163789986725820">I&amp;zvozi ...</translation>
 <translation id="4107048419833779140">Prepoznavanje in izmet naprav za shranjevanje</translation>
 <translation id="4109135793348361820">Premakni okno uporabniku <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
@@ -2786,6 +2785,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="494286511941020793">Pomoč pri nastavitvi strežnika proxy</translation>
 <translation id="4943368462779413526">Žoga</translation>
 <translation id="4943691134276646401">»<ph name="CHROME_EXTENSION_NAME" />« se želi povezati z zaporednimi vrati</translation>
+<translation id="4943703118917034429">Navidezna resničnost</translation>
 <translation id="4944310289250773232">Storitev preverjanja pristnosti gosti <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Dejanja</translation>
 <translation id="4952981627953231344">Plugin VM ni dovoljen v tej napravi. Obrnite se na skrbnika naprave v organizaciji.</translation>
@@ -3135,7 +3135,6 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5468173180030470402">Iskanje datotečnih sredstev v skupni rabi</translation>
 <translation id="5470735824776589490">Pred ponastavitvijo naprave s funkcijo Powerwash je potreben vnovičen zagon. <ph name="LINK_BEGIN" />Več o tem<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Pozdravljeni! Jaz sem glas za pretvorbo besedila v govor.</translation>
-<translation id="5472133193607270166">Ko je to omogočeno, spletna mesta ne morejo uporabljati vaše dejavnosti brskanja na različnih spletnih mestih za individualno prilagajanje oglasov. Nekatera spletna mesta morda ne bodo delovala pravilno.</translation>
 <translation id="5473333559083690127">Vnovični vnos nove kode PIN</translation>
 <translation id="5481941284378890518">Dodajanje tiskalnikov v bližini</translation>
 <translation id="5483785310822538350">Umakni dostop do datotek in naprav</translation>
@@ -3308,7 +3307,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5701381305118179107">Na sredino</translation>
 <translation id="5701441174893770082">Nadgradnja Linuxa lahko znatno izprazni baterijo. Priključite napravo na polnilnik in poskusite znova.</translation>
 <translation id="5702898740348134351">&amp;Urejanje iskalnikov ...</translation>
-<translation id="570302979952009979">Izberite ime za ta prstni odtis</translation>
 <translation id="5704875434923668958">Sinhronizacija z:</translation>
 <translation id="5707185214361380026">Ni bilo mogoče naložiti razširitve z mesta:</translation>
 <translation id="5708171344853220004">Microsoftovo glavno ime</translation>
@@ -3400,7 +3398,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5833726373896279253">Te nastavitve lahko spreminja samo lastnik:</translation>
 <translation id="5834581999798853053">Še približno <ph name="TIME" /> min</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – snemanje fotoaparata ali mikrofona</translation>
-<translation id="5838456317242088717">Trenutna seja brez beleženja zgodovine</translation>
 <translation id="5842497610951477805">Omogočanje Bluetootha</translation>
 <translation id="5843250171025351504">Naprava ne ustreza več skrbniški zahtevi za najstarejšo dovoljeno različico odjemalca. Če se želite prijaviti, jo posodobite.</translation>
 <translation id="5846200638699387931">Napaka v sintaksi razmerja: <ph name="ERROR_LINE" /></translation>
@@ -3656,7 +3653,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6181431612547969857">Prenos je bil blokiran</translation>
 <translation id="6185132558746749656">Lokacija naprave</translation>
 <translation id="6195693561221576702">Te naprave ni mogoče nastaviti v predstavitvenem načinu brez povezave.</translation>
-<translation id="6196640612572343990">Blokiraj piškotke drugih spletnih mest</translation>
 <translation id="6196854373336333322">Razširitev »<ph name="EXTENSION_NAME" />« je prevzela nadzor nad nastavitvami strežnika proxy, kar pomeni, da lahko spremeni, prekine ali nadzoruje vse, kar počnete v spletu. Če ne veste, zakaj je prišlo do te spremembe, je verjetno nezaželena.</translation>
 <translation id="6198102561359457428">Odjavite se in znova prijavite ...</translation>
 <translation id="6198252989419008588">Spremeni PIN</translation>
@@ -4362,7 +4358,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7225179976675429563">Vrsta omrežja manjka</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (ponudnik: <ph name="VENDOR_ID" />, izdelek: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">Spreminjanje nastavitev, ki določajo, ali smejo spletna mesta uporabljati funkcije, kot so geolokacija, mikrofon, fotoaparat ipd.</translation>
-<translation id="7228523857728654909">Zaklepanje zaslona in prijava</translation>
 <translation id="7229570126336867161">Potreben je EVDO</translation>
 <translation id="7230787553283372882">Prilagajanje velikosti besedila</translation>
 <translation id="7232750842195536390">Preimenovanje ni uspelo</translation>
@@ -5279,7 +5274,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="850875081535031620">Najdena ni bila nobena škodljiva programska oprema</translation>
 <translation id="8509177919508253835">Ponastavitev varnostnih ključev in ustvarjanje kod PIN</translation>
 <translation id="8509646642152301857">Prenos slovarja za preverjanje črkovanja ni uspel.</translation>
-<translation id="8510617356402557055">Je bilo to pričakovano? <ph name="BEGIN_LINK" />Pošljite povratne informacije<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">Končaj proces</translation>
 <translation id="851263357009351303">Vedno dovoli mestu <ph name="HOST" />, da pokaže slike</translation>
 <translation id="8513108775083588393">Samodejni zasuk</translation>

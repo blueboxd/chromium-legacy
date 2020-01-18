@@ -16,9 +16,7 @@ static_library("structured") {
     "structured_metrics_provider.h",
   ]
 
-  public_deps = [
-    "//third_party/metrics_proto",
-  ]
+  public_deps = [ "//third_party/metrics_proto" ]
 
   deps = [
     "//base",
@@ -30,9 +28,7 @@ static_library("structured") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "structured_metrics_provider_unittest.cc",
-  ]
+  sources = [ "structured_metrics_provider_unittest.cc" ]
 
   deps = [
     ":structured",

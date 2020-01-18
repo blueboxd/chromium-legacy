@@ -103,6 +103,7 @@ include_rules = [
   "+components/feature_engagement",
   "+components/feed",
   "+components/feedback",
+  "+components/find_in_page",
   "+components/flags_ui",
   "+components/games/core",
   "+components/gcm_driver",

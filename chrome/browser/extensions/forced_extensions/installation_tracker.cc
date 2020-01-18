@@ -272,6 +272,12 @@ void InstallationTracker::ReportResults() {
           UMA_HISTOGRAM_ENUMERATION(
               "Extensions.ForceInstalledFailureCrxInstallError", detail);
         }
+        if (installation.unpacker_failure_reason) {
+          UMA_HISTOGRAM_ENUMERATION(
+              "Extensions.ForceInstalledFailureSandboxUnpackFailureReason",
+              installation.unpacker_failure_reason.value(),
+              SandboxedUnpackerFailureReason::NUM_FAILURE_REASONS);
+        }
       }
     }
   }

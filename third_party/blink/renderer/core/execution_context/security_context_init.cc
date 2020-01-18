@@ -251,7 +251,7 @@ void SecurityContextInit::InitializeFeaturePolicy(
     opener_feature_state = &frame->OpenerFeatureState();
   }
 
-  parsed_header_ = FeaturePolicyParser::ParseHeader(
+  feature_policy_header_ = FeaturePolicyParser::ParseHeader(
       initializer.FeaturePolicyHeader(), security_origin_,
       &feature_policy_parse_messages_, this);
 
@@ -261,7 +261,8 @@ void SecurityContextInit::InitializeFeaturePolicy(
     // such cases the sandbox is not part of the container policy. They are
     // added to the header policy (which specifically makes sense in the case
     // of CSP sandbox).
-    ApplySandboxFlagsToParsedFeaturePolicy(sandbox_flags_, parsed_header_);
+    ApplySandboxFlagsToParsedFeaturePolicy(sandbox_flags_,
+                                           feature_policy_header_);
   }
 
   ParsedFeaturePolicy container_policy;
@@ -313,7 +314,7 @@ void SecurityContextInit::InitializeFeaturePolicy(
     feature_policy_ = FeaturePolicy::CreateWithOpenerPolicy(
         *opener_feature_state, security_origin_->ToUrlOrigin());
   }
-  feature_policy_->SetHeaderPolicy(parsed_header_);
+  feature_policy_->SetHeaderPolicy(feature_policy_header_);
 }
 
 void SecurityContextInit::InitializeSecureContextMode(

@@ -500,9 +500,6 @@ void OverviewGrid::PositionWindows(
     OverviewItem* window_item = window_list_[i].get();
     window_item->SetBounds(rects[i], animation_types[i]);
   }
-
-  overview_session_->highlight_controller()->OnWindowsRepositioned(
-      root_window_);
 }
 
 OverviewItem* OverviewGrid::GetOverviewItemContaining(
@@ -755,7 +752,7 @@ void OverviewGrid::OnWindowDragContinued(
       SplitViewController::NONE) {
     // If the dragged window is currently dragged into preview window area,
     // hide the highlight.
-    overview_session_->highlight_controller()->ClearTabDragHighlight();
+    overview_session_->highlight_controller()->HideTabDragHighlight();
 
     // Also clear ash::kIsDeferredTabDraggingTargetWindowKey key on the target
     // overview item so that it can't merge into this overview item if the
@@ -774,13 +771,12 @@ void OverviewGrid::OnWindowDragContinued(
     if (!item)
       return;
 
-    overview_session_->highlight_controller()->UpdateTabDragHighlight(
-        target_window->GetRootWindow(),
-        item->overview_item_view()->GetBoundsInScreen());
+    overview_session_->highlight_controller()->ShowTabDragHighlight(
+        item->overview_item_view());
     return;
   }
 
-  overview_session_->highlight_controller()->ClearTabDragHighlight();
+  overview_session_->highlight_controller()->HideTabDragHighlight();
 }
 
 void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
@@ -798,7 +794,7 @@ void OverviewGrid::OnWindowDragEnded(aura::Window* dragged_window,
   // not be selected and tab dragging might drag a tab window to merge it into a
   // browser window in overview.
   if (overview_session_->highlight_controller()->IsTabDragHighlightVisible())
-    overview_session_->highlight_controller()->ClearTabDragHighlight();
+    overview_session_->highlight_controller()->HideTabDragHighlight();
   else if (should_drop_window_into_overview)
     AddDraggedWindowIntoOverviewOnDragEnd(dragged_window);
 

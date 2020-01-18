@@ -164,10 +164,10 @@ class ChromeDownloadManagerDelegate
       const DownloadTargetDeterminerDelegate::ConfirmationCallback& callback);
 
   // DownloadTargetDeterminerDelegate. Protected for testing.
-  void ShouldBlockDownload(
+  void GetMixedContentStatus(
       download::DownloadItem* download,
       const base::FilePath& virtual_path,
-      const ShouldBlockDownloadCallback& callback) override;
+      const GetMixedContentStatusCallback& callback) override;
   void NotifyExtensions(download::DownloadItem* download,
                         const base::FilePath& suggested_virtual_path,
                         const NotifyExtensionsCallback& callback) override;

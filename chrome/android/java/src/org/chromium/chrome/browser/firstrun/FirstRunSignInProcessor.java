@@ -107,7 +107,7 @@ public final class FirstRunSignInProcessor {
     private static void openSignInSettings(Activity activity) {
         final Class<? extends Fragment> fragment = SyncAndServicesPreferences.class;
         final Bundle arguments = SyncAndServicesPreferences.createArguments(true);
-        SettingsLauncher.launchSettingsPage(activity, fragment, arguments);
+        SettingsLauncher.getInstance().launchSettingsPage(activity, fragment, arguments);
     }
 
     /**

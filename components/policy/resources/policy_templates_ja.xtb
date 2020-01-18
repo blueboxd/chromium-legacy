@@ -208,6 +208,12 @@
       またはホスト名パターン</translation>
 <translation id="1312799700549720683">ディスプレイの設定を制御します。</translation>
 <translation id="131353325527891113">ログイン画面でユーザー名を表示する</translation>
+<translation id="1327351219049180837">このポリシーでは、ポリシーデータとポリシーの取得日時について、レポートを作成するかどうかを管理します。
+
+      このポリシーが未設定または True に設定されている場合、ポリシーデータとポリシーの取得日時が収集されます。
+      このポリシーが False に設定されている場合、ポリシーデータとポリシーの取得日時は収集されません。
+
+      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="1327466551276625742">オフライン時のネットワーク設定メッセージの表示を有効にする</translation>
 <translation id="1330145147221172764">画面キーボードを有効にする</translation>
 <translation id="13356285923490863">ポリシー名</translation>
@@ -352,6 +358,7 @@
 <translation id="152657506688053119">デフォルトの検索プロバイダが使用する代替 URL のリスト</translation>
 <translation id="1530812829012954197">ホスト ブラウザに次の URL パターンを常に表示する</translation>
 <translation id="1541170838458414064">印刷ページサイズを制限</translation>
+<translation id="1553532014072799546">アプリごとの時間制限のホワイトリスト</translation>
 <translation id="1553684822621013552">このポリシーを true に設定すると、ユーザーが ARC を使用できるようになります
       （ポリシー設定について追加の確認が行われ、現在のユーザー セッションで
       一時的ログインモードまたはマルチログインが有効になっている場合、ユーザーは
@@ -450,6 +457,14 @@
       </translation>
 <translation id="1700811900332333712">デバイスに Powerwash のリクエストを許可する</translation>
 <translation id="1708496595873025510">バリエーション シードの取得に制限を設定する</translation>
+<translation id="1713533749396963716">このポリシーでは、アプリごとの使用制限のホワイトリストに登録するアプリと URL を指定します。
+        設定したホワイトリストは、<ph name="PRODUCT_OS_NAME" /> にインストールされているアプリに適用され、アプリごとの時間制限が設定されているユーザーが対象になります。
+        設定したホワイトリストは、子供のユーザー アカウントにのみ適用でき、<ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> ポリシーが設定されている場合に有効になります。
+        ホワイトリストには、アプリごとの時間制限によってブロックしないアプリと URL を登録します。
+        ホワイトリストに登録した URL へのアクセスは Chrome の時間制限にカウントされません。
+        |url_list| に URL の正規表現を追加すると、リストの正規表現に一致するすべての URL がホワイトリストに登録されます。
+        |app_list| にアプリの |app_id| と |app_type| を追加すると、そのアプリがホワイトリストに登録されます。
+       </translation>
 <translation id="1715151459541210849">「音声入力」のユーザー補助機能を有効にする</translation>
 <translation id="1717817358640580294">このポリシーが未設定の場合、Chrome クリーンアップで望ましくないソフトウェアが検出されると、SafeBrowsingExtendedReportingEnabled で設定されているポリシーに基づいて、スキャンに関するメタデータのレポートが Google に送信される可能性があります。ユーザーは望ましくないソフトウェアをクリーンアップするかどうかを選択できます。また、望ましくないソフトウェアの検出精度を向上するために、クリーンアップの結果を Google と共有するかどうかも選択できます。これらの結果には、Chrome のプライバシー ホワイトペーパーで説明されているとおり、ファイルのメタデータのほか自動インストールされた拡張機能とレジストリキーが含まれます。
 
@@ -961,6 +976,12 @@
 
           Windows の場合、このポリシーは <ph name="MS_AD_NAME" /> ドメインに追加したインスタンス、またはデバイスの管理対象として登録した Windows 10 Pro あるいは Enterprise インスタンスでのみ使用できます。</translation>
 <translation id="247658312644322296">「PDF に保存」の送信先</translation>
+<translation id="2478649170422995190">このポリシーでは、バージョン情報（OS バージョン、OS プラットフォーム、OS アーキテクチャ、<ph name="PRODUCT_NAME" /> のバージョン、<ph name="PRODUCT_NAME" /> のチャンネルなど）について、レポートを作成するかどうかを管理します。
+
+      このポリシーが未設定または True に設定されている場合、バージョン情報が収集されます。
+      このポリシーが False に設定されている場合、バージョン情報は収集されません。
+
+      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="2480971699591919564">Click-to-Call 機能を有効にします。この機能により、ログインしているユーザーは Chrome デスクトップから Android デバイスに電話番号を送信できます。詳しくは、ヘルプセンター記事 https://support.google.com/chrome/answer/9430554?hl=ja をご覧ください。
 
       このポリシーを有効に設定した場合は、該当の Chrome ユーザーに対して、Android デバイスへの電話番号の送信機能が有効になります。
@@ -2765,6 +2786,12 @@
 
       このポリシーを設定する場合は、値として「tls1.2」または「tls1.3」を指定できます。このポリシーが設定されている場合、<ph name="PRODUCT_NAME" /> では、指定されたバージョンより大きい SSL / TLS バージョンは使用されません。また、認識されない値は無視されます。</translation>
 <translation id="5330684698007383292">次のコンテンツ タイプの処理を <ph name="PRODUCT_FRAME_NAME" /> に対して許可する</translation>
+<translation id="5331081760098249172">
+      このポリシーを True に設定すると、<ph name="PRODUCT_NAME" /> で Google サービス（Hangouts Meet など）から WebRTC イベントログを収集して Google にアップロードできるようになります。これらのログには、RTP パケットの時間とサイズ、ネットワークの輻輳に関するフィードバック、音声および動画フレームの時間と品質に関するメタデータなど、<ph name="PRODUCT_NAME" /> での音声や動画の会議に関する問題をデバッグする際に役立つ診断情報が含まれます。会議の音声や動画の内容はログに含まれません。Google はデバッグを容易にする目的で、これらのログと、Google サービス自体により収集される他のログとをセッション ID を使って関連付けることがあります。
+
+      このポリシーを False に設定すると、ログの収集とアップロードは行われません。
+
+      ポリシーが未設定の場合、<ph name="PRODUCT_NAME" /> M76 まではデフォルトの設定によりログの収集とアップロードは行えません。<ph name="PRODUCT_NAME" /> M77 以降では、クラウドベースのユーザーレベル エンタープライズ ポリシーの対象となるほとんどのプロファイルから、ログの収集とアップロードをデフォルトで行うことができます。<ph name="PRODUCT_NAME" /> M77 から M80 までは、<ph name="PRODUCT_NAME" /> オンプレミス管理の対象となるプロファイルからも、ログの収集とアップロードをデフォルトで行うことができます。</translation>
 <translation id="5331746669335642668"><ph name="PRODUCT_NAME" /> のクラウド ポリシーはプラットフォーム ポリシーに優先します。</translation>
 <translation id="5362531528507578966">背景のグラフィックのデフォルト印刷モードをオーバーライドします。</translation>
 <translation id="5365476955714838841">代替ブラウザに渡すコマンドラインのパラメータ。</translation>
@@ -3383,6 +3410,12 @@
       このポリシーが False に設定されている場合、ユーザーは報告されません。</translation>
 <translation id="638668187106406971">アップロードに対して、機密データ保護ルールの違反をチェックする</translation>
 <translation id="6394350458541421998">このポリシーは <ph name="PRODUCT_OS_NAME" /> バージョン 29 で廃止されました。PresentationScreenDimDelayScale ポリシーを代わりに使用してください。</translation>
+<translation id="6399242659768117666">このポリシーでは、拡張機能とプラグインの情報について、レポートを作成するかどうかを管理します。
+
+      このポリシーが未設定または True に設定されている場合、拡張機能とプラグインのデータが収集されます。
+      このポリシーが False に設定されている場合、拡張機能とプラグインのデータは収集されません。
+
+      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="6401669939808766804">ユーザーをログアウトする</translation>
 <translation id="6406448383934634215">起動時の動作として [URL のリストを開く] が選択されている場合に、開かれる URL のリストを指定できます。このポリシーを未設定のままにした場合、起動時に URL は開かれません。
 
@@ -3465,6 +3498,12 @@
 
       このポリシーは、実行ファイルのパスに設定するか、Chrome のインストール場所を自動検出するには <ph name="PRODUCT_NAME_PLACEHOLDER" /> に設定できます。</translation>
 <translation id="6536600139108165863">デバイスのシャットダウン時に自動的に再起動する</translation>
+<translation id="6537062468544950724">このポリシーでは、マシンを識別できる情報（マシン名、ネットワーク アドレスなど）について、レポートを作成するかどうかを管理します。
+
+      このポリシーが未設定または True に設定されている場合、マシンを識別できる情報が収集されます。
+      このポリシーが False に設定されている場合、マシンを識別できる情報は収集されません。
+
+      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="6539246272469751178">このポリシーは Android アプリには適用されません。Android アプリは、常にデフォルトのダウンロード ディレクトリを使用し、<ph name="PRODUCT_OS_NAME" /> によってデフォルト以外のダウンロード ディレクトリにダウンロードされたファイルにはアクセスできません。</translation>
 <translation id="654303922206238013">ecryptfs の移行方法</translation>
 <translation id="6544897973797372144">このポリシーを true に設定し、ChromeOsReleaseChannel ポリシーを指定していない場合、登録したドメインのユーザーに、デバイスのリリース チャンネルの変更を許可します。このポリシーを false に設定すると、デバイスは、最後に設定されたチャンネルに固定されます。
@@ -3687,6 +3726,12 @@
       このポリシーが True に設定されているか未設定の場合は、スマート消灯モデルが有効になり、画面が暗くなるまでの時間が必要に応じて延長されるようになります。このポリシーが False に設定されている場合は、画面が暗くなるまでの時間がスマート消灯モデルによって変更されることはありません。</translation>
 <translation id="6972540544240464302">タスク スケジューラ設定を選択します</translation>
 <translation id="6979158407327259162">Google ドライブ</translation>
+<translation id="6991078864332103177">このポリシーでは、ユーザーを識別できる情報（OS のログイン、<ph name="PRODUCT_NAME" /> プロフィールのログイン、<ph name="PRODUCT_NAME" /> プロフィール名、<ph name="PRODUCT_NAME" /> プロフィールのパス、<ph name="PRODUCT_NAME" /> 実行ファイルのパスなど）について、レポートを作成するかどうかを管理します。
+
+      このポリシーが未設定または True に設定されている場合、ユーザーを識別できる情報が収集されます。
+      このポリシーが False に設定されている場合、ユーザーを識別できる情報は収集されません。
+
+      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="6994082778848658360">搭載されているセキュア エレメント ハードウェアが 2 段階認証プロセスに対応している場合に、このプロセスを適用するためにハードウェアをどのように使用できるかを指定します。ユーザーの所在地を検出するには本体の電源ボタンを使用します。
 
       [無効にする] を選択した場合、2 段階認証プロセスは適用されません。
@@ -4179,11 +4224,20 @@
           この設定を無効にするか、未設定にする場合、2 段階認証プロセスは無効で、デフォルトのユーザー定義 PIN の機能が使用されます。</translation>
 <translation id="7750991880413385988">新しいタブ ページを開く</translation>
 <translation id="7754704193130578113">ダウンロード前に各ファイルの保存場所を確認する</translation>
+<translation id="7755495228644343508">Chrome レポート拡張機能に関するポリシーを設定します。
+
+      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="7758378441185523981">アンビエント認証をプロフィールのタイプ別に有効にします。</translation>
 <translation id="7761446981238915769">ログイン画面でインストールするアプリのリストを設定する</translation>
 <translation id="7763614521440615342">[新しいタブ] ページにおすすめのコンテンツを表示します</translation>
 <translation id="7765879851993224640">Smart Lock Signin の使用を許可する</translation>
 <translation id="7774768074957326919">システムのプロキシ設定を使用する</translation>
+<translation id="7775902646576367944">このポリシーでは、セーフ ブラウジングの警告数、セーフ ブラウジングの警告のクリック数といったセーフ ブラウジングに関する情報について、レポートを作成するかどうかを管理します。
+
+      このポリシーが未設定または True に設定されている場合、セーフ ブラウジング データが収集されます。
+      このポリシーが False に設定されている場合、セーフ ブラウジング データは収集されません。
+
+      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="7777535871204167559">外部ストレージ デバイスを読み取り専用にする</translation>
 <translation id="7788511847830146438">プロフィール単位</translation>
 <translation id="7792973482799545782">すべてのサイトに対してブロック可能な混合コンテンツの読み込みを許可しない</translation>
@@ -4741,6 +4795,15 @@
 <translation id="8757552286070680084">Wilco DTC の設定</translation>
 <translation id="8758831693895931466">クラウド管理への登録を必須にする</translation>
 <translation id="8759829385824155666">許可されている Kerberos 暗号化タイプ</translation>
+<translation id="87635449713742708">このポリシーでは、ネットワーク用のコードがブラウザ プロセスで実行されます。
+
+      デフォルトでは、このポリシーは無効です。有効にした場合、ネットワーク プロセスがサンドボックス化されると、ユーザーはセキュリティの問題から保護されなくなります。
+
+      このポリシーは、企業がネットワーク API のフックに依存しないサードパーティのソフトウェアに移行できるようにすることを目的としたものです。LSP や Win32 API のパッチ適用にはプロキシ サーバーをおすすめします。
+
+      このポリシーを設定しない場合、ネットワーク コードは、デフォルトでブラウザ プロセス外で実行されます。
+
+      このポリシーは <ph name="PRODUCT_NAME" /> バージョン 82 で削除されます。</translation>
 <translation id="8764119899999036911">標準の DNS 名と入力された元の名前のうちどちらを基準にして Kerberos SPN を生成するかを指定します。この設定を有効にすると CNAME 検索がスキップされ、入力されたサーバー名が使用されます。この設定を無効にするか未設定の場合、サーバーの標準名は CNAME 検索によって決まります。</translation>
 <translation id="8764477907716150749">このポリシーは、<ph name="PRODUCT_NAME" /> 自体が内部で使用するものです。</translation>
 <translation id="8777369558049831576">外部プロトコルに関するダイアログに [常に開く] チェックボックスを表示する。</translation>

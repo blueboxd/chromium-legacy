@@ -74,7 +74,6 @@
     _appState = [[AppState alloc] initWithBrowserLauncher:_browserLauncher
                                        startupInformation:_startupInformation
                                       applicationDelegate:self];
-    _appNavigation = _mainController;
     [_mainController setAppState:_appState];
 
     if (!IsMultiwindowSupported()) {
@@ -91,6 +90,7 @@
       _mainController.sceneController = _sceneController;
       _tabSwitcherProtocol = _sceneController;
       _tabOpener = _sceneController;
+      _appNavigation = _sceneController;
     }
   }
   return self;

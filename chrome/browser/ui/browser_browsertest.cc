@@ -78,7 +78,7 @@
 #include "components/embedder_support/switches.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/prefs/pref_service.h"
-#include "components/sessions/core/base_session_service_test_helper.h"
+#include "components/sessions/core/command_storage_manager_test_helper.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "content/public/browser/browser_context.h"
@@ -2212,8 +2212,9 @@ class NoStartupWindowTest : public BrowserTest {
 
   // Returns true if any commands were processed.
   bool ProcessedAnyCommands(
-      sessions::BaseSessionService* base_session_service) {
-    sessions::BaseSessionServiceTestHelper test_helper(base_session_service);
+      sessions::CommandStorageManager* command_storage_manager) {
+    sessions::CommandStorageManagerTestHelper test_helper(
+        command_storage_manager);
     return test_helper.ProcessedAnyCommands();
   }
 };
@@ -2236,13 +2237,13 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, DontInitSessionServiceForApps) {
 
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile);
-  sessions::BaseSessionService* base_session_service =
-      session_service->GetBaseSessionServiceForTest();
-  ASSERT_FALSE(ProcessedAnyCommands(base_session_service));
+  sessions::CommandStorageManager* command_storage_manager =
+      session_service->GetCommandStorageManagerForTest();
+  ASSERT_FALSE(ProcessedAnyCommands(command_storage_manager));
 
   CreateBrowserForApp("blah", profile);
 
-  ASSERT_FALSE(ProcessedAnyCommands(base_session_service));
+  ASSERT_FALSE(ProcessedAnyCommands(command_storage_manager));
 }
 #endif  // !defined(OS_CHROMEOS)
 

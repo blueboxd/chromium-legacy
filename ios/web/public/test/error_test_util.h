@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "net/cert/cert_status_flags.h"
+
 class GURL;
 
 @class NSError;
@@ -28,7 +30,7 @@ std::string GetErrorText(WebState* web_state,
                          long error_code,
                          bool is_post,
                          bool is_off_the_record,
-                         bool has_ssl_info);
+                         net::CertStatus cert_status);
 
 }  // namespace testing
 }  // namespace web

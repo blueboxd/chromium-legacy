@@ -199,6 +199,12 @@
 <translation id="1307454923744766368">不適用不安全來源相關限制的來源或主機名稱模式</translation>
 <translation id="1312799700549720683">控管顯示設定。</translation>
 <translation id="131353325527891113">在登入畫面中顯示使用者名稱</translation>
+<translation id="1327351219049180837">這項政策可控管系統是否要回報政策資料和擷取政策的時間。
+
+      如果不設定這項政策或設為 True，系統會收集政策資料和擷取政策的時間。
+      如果將這項政策設為 False，系統將不會收集政策資料和擷取政策的時間。
+
+      只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="1327466551276625742">離線時啟用網路設定提示</translation>
 <translation id="1330145147221172764">啟用螢幕小鍵盤</translation>
 <translation id="13356285923490863">政策名稱</translation>
@@ -344,6 +350,7 @@
 <translation id="152657506688053119">預設搜尋的替代網址清單</translation>
 <translation id="1530812829012954197">一律在瀏覽器中算繪以下網址模式</translation>
 <translation id="1541170838458414064">限制列印頁面大小</translation>
+<translation id="1553532014072799546">個別應用程式時間限制許可清單</translation>
 <translation id="1553684822621013552">如果將這項政策設為 true，系統會為使用者啟用 ARC
       (需經過額外政策設定檢查 - 如果目前的
       使用者工作階段已啟用暫時模式或多帳戶登入功能，
@@ -442,6 +449,14 @@
       </translation>
 <translation id="1700811900332333712">允許裝置要求執行 Powerwash</translation>
 <translation id="1708496595873025510">設定變異版本種子的擷取限制</translation>
+<translation id="1713533749396963716">這項政策會指定哪些應用程式和網址應加入個別應用程式使用限制的許可清單。
+        系統會將已設定的許可清單套用到 <ph name="PRODUCT_OS_NAME" />上安裝的應用程式，適用於設有個別應用程式時間限制的指定使用者。
+        已設定的許可清單只能套用到子使用者帳戶，且必須設定 <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> 政策才會生效。
+        系統會將已設定的許可清單套用到應用程式和網址，如此一來，這些應用程式和網址就不會因個別應用程式的時間限制而遭到封鎖。
+        存取許可清單中的網址不會計入 Chrome 的時間限制。
+        將網址規則運算式新增到 |url_list|，即可將符合清單中任何規則運算式的網址加入許可清單。
+        將應用程式的 |app_id| 和 |app_type| 新增到 |app_list|，即可將應用程式加入許可清單。
+       </translation>
 <translation id="1715151459541210849">啟用語音輸入無障礙功能</translation>
 <translation id="1717817358640580294">如未設定這項政策，當 Chrome 清理功能偵測到垃圾軟體時，可能會根據 SafeBrowsingExtendedReportingEnabled 設定的政策，將掃描作業的相關中繼資料回報給 Google。回報完畢後，Chrome 清理功能會詢問使用者是否要將偵測到的垃圾軟體清除。使用者可以選擇將清理作業的執行結果分享給 Google，讓日後的垃圾軟體偵測作業更精確。分享的結果包括檔案中繼資料、自動安裝的擴充功能和登錄機碼，詳情請見《Chrome 隱私權白皮書》。
 
@@ -960,6 +975,12 @@
 
           在 Windows 上，這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="247658312644322296">「另存為 PDF」目的地</translation>
+<translation id="2478649170422995190">這項政策可控管系統是否要回報版本資訊，例如作業系統版本、作業系統平台、作業系統架構、<ph name="PRODUCT_NAME" /> 版本和 <ph name="PRODUCT_NAME" /> 發布版本。
+
+      如果不設定這項政策或設為 True，系統會收集版本資訊。
+      如果將這項政策設為 False，則系統不會收集版本資訊。
+
+      只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="2480971699591919564">啟用「點選通話」功能，讓登入 Google 帳戶的使用者可以將電話號碼從 Chrome 桌面傳送到 Android 裝置。詳情請參閱說明中心文章：https://support.google.com/chrome/answer/9430554?hl=zh-TW。
 
       如果將這項政策設為啟用，Chrome 使用者便可以將電話號碼傳送到 Android 裝置。
@@ -2754,6 +2775,12 @@
 
       如要設定這項政策，則可使用的設定值包括：「tls1.2」或「tls1.3」。設定後，<ph name="PRODUCT_NAME" /> 就不會使用高於指定版本的 SSL/TLS 版本。系統會忽略無法辨識的值。</translation>
 <translation id="5330684698007383292">允許 <ph name="PRODUCT_FRAME_NAME" /> 處理列出的內容類型</translation>
+<translation id="5331081760098249172">
+      如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 可以從 Google 服務 (例如 Hangouts Meet) 收集 WebRTC 事件記錄，並將這些記錄上傳至 Google。這些記錄包含的診斷資訊可用於偵錯 <ph name="PRODUCT_NAME" /> 中的語音或視訊會議問題，例如 RTP 封包的時間和大小、回報網路壅塞情形，以及有關語音與視訊畫格的時間和品質等中繼資料。這些記錄中不會包含會議的語音和視訊內容。為了簡化偵錯作業，Google 可能會依照工作階段 ID 將這些記錄與 Google 服務本身收集的其他記錄建立關聯。
+
+      如果將這項政策設為 False，系統將不會收集或上傳這類記錄。
+
+      如果 M76 以下版本 (包含 M76 版) 不設定這項政策，則 <ph name="PRODUCT_NAME" /> 根據預設無法收集及上傳這類記錄。自 M77 版起，針對大多數會受到雲端使用者層級企業政策影響的設定檔，<ph name="PRODUCT_NAME" /> 根據預設可以收集及上傳這類記錄。自 M77 版起 (包含 M80 版)，針對會受到 <ph name="PRODUCT_NAME" /> 內部部署管理影響的設定檔，<ph name="PRODUCT_NAME" /> 根據預設也可以收集及上傳這類記錄。</translation>
 <translation id="5331746669335642668"><ph name="PRODUCT_NAME" /> 雲端政策會覆寫平台政策。</translation>
 <translation id="5362531528507578966">覆寫預設的背景圖形列印模式。</translation>
 <translation id="5365476955714838841">替代瀏覽器的指令行參數。</translation>
@@ -3356,6 +3383,12 @@
       如果這項政策設為 False，則不會回報這些使用者。</translation>
 <translation id="638668187106406971">檢查上傳內容是否違反機密資料保護規則</translation>
 <translation id="6394350458541421998">我們已於 <ph name="PRODUCT_OS_NAME" />版本 29 中移除這項政策。請改用 PresentationScreenDimDelayScale 政策。</translation>
+<translation id="6399242659768117666">這項政策可控管系統是否要回報擴充功能和外掛程式資訊。
+
+      如果不設定這項政策或設為 True，系統會收集擴充功能和外掛程式資料。
+      如果將這項政策設為 False，系統將不會收集擴充功能和外掛程式資料。
+
+      只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="6401669939808766804">登出使用者</translation>
 <translation id="6406448383934634215">如果選取 [開啟網址清單] 做為啟動動作，你就能指定要開啟的網址清單。如果沒有設定這項政策，啟動時就不會開啟任何網址。
 
@@ -3438,6 +3471,12 @@
 
       你可以將這項政策設為執行檔路徑，或是設為 <ph name="PRODUCT_NAME_PLACEHOLDER" />，讓系統自動偵測 Chrome 的安裝位置。</translation>
 <translation id="6536600139108165863">裝置關機時自動重新啟動</translation>
+<translation id="6537062468544950724">這項政策可控管系統是否要回報能用於辨識電腦的資訊，例如電腦名稱和網路位址。
+
+      如果不設定這項政策或設為 True，系統會收集可用於辨識電腦的資訊。
+      如果將這項政策設為 False，系統將不會收集可用於辨識電腦的資訊。
+
+      只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="6539246272469751178">這項政策對 Android 應用程式沒有影響。Android 應用程式會一律使用預設的下載目錄，無法存取任何由 <ph name="PRODUCT_OS_NAME" />下載到非預設下載目錄的檔案。</translation>
 <translation id="654303922206238013">eCryptfs 遷移策略</translation>
 <translation id="6544897973797372144">如果你將這項政策設為「True」，且並未指定 ChromeOsReleaseChannel 政策，則註冊網域的使用者將可變更裝置的發布頻道。如果你將這項政策設為「False」，則系統會將裝置鎖定為先前設定的任何頻道。
@@ -3655,6 +3694,12 @@
 如果你將這項政策設為 True 或不予設定，系統會啟用智慧型調光模式並允許延長使用時間，直到螢幕變暗為止。如果將這項政策設為 False，智慧型調光模式便無法管理螢幕的調光設定。</translation>
 <translation id="6972540544240464302">選取工作排程器設定</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
+<translation id="6991078864332103177">這項政策可控管系統是否要回報能用於辨識使用者身分的資訊，例如作業系統登入資訊、<ph name="PRODUCT_NAME" /> 設定檔登入資訊、<ph name="PRODUCT_NAME" /> 設定檔名稱、<ph name="PRODUCT_NAME" /> 設定檔路徑和 <ph name="PRODUCT_NAME" /> 執行檔路徑。
+
+      如果不設定這項政策或設為 True，系統會收集可用於辨識使用者身分的資訊。
+      如果將這項政策設為 False，系統將不會收集可用於辨識使用者身分的資訊。
+
+      只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="6994082778848658360">如果你安裝的安全元素硬體和雙重驗證功能相容，就可以使用這項政策來指定如何使用該硬體提供雙重驗證功能。裝置的電源鍵會用來偵測使用者是否真實存在。
 
       如果選取 [已停用]，系統就不會提供雙重驗證功能。
@@ -4151,11 +4196,20 @@
           如果你停用這項設定或並未進行設置，系統就不會啟用雙重驗證機制，而預設行為則會改採用輸入使用者定義的 PIN。</translation>
 <translation id="7750991880413385988">開啟新分頁</translation>
 <translation id="7754704193130578113">下載每個檔案前先詢問儲存位置</translation>
+<translation id="7755495228644343508">設定 Chrome 資訊回報擴充功能相關政策。
+
+      只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="7758378441185523981">為設定檔類型啟用背景驗證。</translation>
 <translation id="7761446981238915769">設定登入畫面中的已安裝應用程式清單</translation>
 <translation id="7763614521440615342">在新分頁顯示內容建議</translation>
 <translation id="7765879851993224640">允許使用 Smart Lock 登入功能。</translation>
 <translation id="7774768074957326919">使用系統 Proxy 設定</translation>
+<translation id="7775902646576367944">這項政策可控管系統是否要回報安全瀏覽資訊，包含安全瀏覽警告訊息數以及安全瀏覽警告訊息點閱數。
+
+      如果不設定這項政策或設為 True，系統會收集安全瀏覽資料。
+      如果將這項政策設為 False，系統將不會收集安全瀏覽資料。
+
+      只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="7777535871204167559">以唯讀模式處理外部儲存裝置</translation>
 <translation id="7788511847830146438">根據設定檔</translation>
 <translation id="7792973482799545782">不允許任何網站載入可封鎖的混合內容</translation>
@@ -4705,6 +4759,15 @@
 <translation id="8757552286070680084">設定 Wilco DTC</translation>
 <translation id="8758831693895931466">啟用雲端管理強制註冊設定</translation>
 <translation id="8759829385824155666">允許的 Kerberos 加密類型</translation>
+<translation id="87635449713742708">這項政策會強制網路程式碼在瀏覽器程序中執行。
+
+      這項政策預設為停用；如果你啟用政策，當網路程序採用沙箱機制時，使用者就可能會遇到安全性問題。
+
+      設置這項政策是為了讓企業能移轉到不需掛接網路 API 的第三方軟體。建議你在 LSP 和 Win32 API 修補程式使用 Proxy 伺服器。
+
+      如果不設定這項政策，網路程式碼依預設會在瀏覽器程序外執行。
+
+      這項政策將在 <ph name="PRODUCT_NAME" /> 第 82 版中移除。</translation>
 <translation id="8764119899999036911">指定是否要根據標準 DNS 名稱或輸入的原始名稱來產生 Kerberos SPN。如果啟用這項設定，系統會略過 CNAME 查詢，並且使用先前輸入的伺服器名稱。如果你停用或未調整這項設定，伺服器的標準名稱會透過 CNAME 查詢決定。</translation>
 <translation id="8764477907716150749">這項政策僅供 <ph name="PRODUCT_NAME" /> 內部使用。</translation>
 <translation id="8777369558049831576">在外部通訊協定對話方塊中顯示「一律開啟」核取方塊。</translation>

@@ -31,10 +31,9 @@ class UpdateNotificationServiceImpl : public UpdateNotificationService {
  private:
   // UpdateNotificationService implementation.
   void Schedule(UpdateNotificationInfo data) override;
-
   bool IsReadyToDisplay() const override;
-
   void OnUserDismiss() override;
+  void OnUserClick() override;
 
   // Called after querying the |ClientOverview| struct from scheduler system
   // completed.

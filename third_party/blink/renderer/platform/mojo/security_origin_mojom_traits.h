@@ -22,7 +22,7 @@ struct UrlOriginAdapter {
       const url::SchemeHostPort& tuple,
       const base::Optional<base::UnguessableToken>& nonce_if_opaque) {
     scoped_refptr<blink::SecurityOrigin> tuple_origin;
-    if (!tuple.IsInvalid()) {
+    if (tuple.IsValid()) {
       // url::SchemeHostPort is percent encoded and SecurityOrigin is percent
       // decoded.
       String host = blink::DecodeURLEscapeSequences(
@@ -79,7 +79,7 @@ struct StructTraits<url::mojom::blink::Origin::DataView,
 
     const url::SchemeHostPort& tuple =
         url::SchemeHostPort(scheme, host, data.port());
-    if (tuple.IsInvalid()) {
+    if (!tuple.IsValid()) {
       // If the tuple is invalid, it is a valid case if and only if it is an
       // opaque origin and the scheme, host, and port are empty.
       if (!nonce_if_opaque)

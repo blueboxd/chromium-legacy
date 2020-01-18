@@ -51,7 +51,6 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/layout/layout_provider.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_types.h"
@@ -785,9 +784,7 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
           : base::nullopt);
   if (transform_window_.IsMinimized()) {
     overview_item_view_->UpdatePreviewRoundedCorners(
-        should_show_rounded_corners,
-        views::LayoutProvider::Get()->GetCornerRadiusMetric(
-            views::EMPHASIS_LOW));
+        should_show_rounded_corners);
   }
 }
 

@@ -243,7 +243,7 @@ bool AppListPresenterImpl::GetTargetVisibility() const {
   return is_target_visibility_show_;
 }
 
-void AppListPresenterImpl::UpdateYPositionAndOpacity(int y_position_in_screen,
+void AppListPresenterImpl::UpdateYPositionAndOpacity(float y_position_in_screen,
                                                      float background_opacity) {
   if (!is_target_visibility_show_)
     return;
@@ -264,7 +264,7 @@ void AppListPresenterImpl::ProcessMouseWheelOffset(
 }
 
 void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
-    int y_position_in_screen,
+    float y_position_in_screen,
     float opacity,
     base::Optional<TabletModeAnimationTransition> transition,
     UpdateHomeLauncherAnimationSettingsCallback callback) {
@@ -283,7 +283,7 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
   }
 
   const gfx::Transform translation(1.f, 0.f, 0.f, 1.f, 0.f,
-                                   static_cast<float>(y_position_in_screen));
+                                   y_position_in_screen);
   if (layer->GetAnimator()->is_animating()) {
     layer->GetAnimator()->StopAnimating();
 

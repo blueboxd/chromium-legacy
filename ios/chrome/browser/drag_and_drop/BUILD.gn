@@ -22,9 +22,7 @@ source_set("drag_and_drop") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "drop_and_navigate_interaction_unittest.mm",
-  ]
+  sources = [ "drop_and_navigate_interaction_unittest.mm" ]
   deps = [
     ":drag_and_drop",
     "//base",

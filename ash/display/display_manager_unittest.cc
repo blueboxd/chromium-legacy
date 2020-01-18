@@ -55,6 +55,7 @@
 #include "ui/display/manager/test/touch_device_manager_test_api.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/font_render_params.h"
@@ -4522,7 +4523,7 @@ TEST_F(DisplayManagerTest, DISABLED_SoftwareMirrorRotationForNonTablet) {
 TEST_F(DisplayManagerTest, DPSizeTest) {
   display::test::DisplayManagerTestApi(display_manager())
       .SetFirstDisplayAsInternalDisplay();
-  UpdateDisplay("3840x2160*2.66666");
+  UpdateDisplay(base::StringPrintf("3840x2160*%s", display::kDsfStr_2_666));
   {
     gfx::Size expected(1440, 810);
     EXPECT_EQ(expected,
@@ -4530,16 +4531,16 @@ TEST_F(DisplayManagerTest, DPSizeTest) {
     EXPECT_EQ(expected, Shell::GetPrimaryRootWindow()->bounds().size());
   }
 
-  UpdateDisplay("1920x1200*1.77777");
+  UpdateDisplay(base::StringPrintf("1920x1200*%s", display::kDsfStr_1_777));
   {
     gfx::Size expected(1080, 675);
     EXPECT_EQ(expected,
               display::Screen::GetScreen()->GetPrimaryDisplay().size());
     EXPECT_EQ(expected, Shell::GetPrimaryRootWindow()->bounds().size());
   }
-  UpdateDisplay("3000x2000*2.25");
+  UpdateDisplay(base::StringPrintf("3000x2000*%s", display::kDsfStr_2_252));
   {
-    gfx::Size expected(1333, 888);
+    gfx::Size expected(1332, 888);
     EXPECT_EQ(expected,
               display::Screen::GetScreen()->GetPrimaryDisplay().size());
     EXPECT_EQ(expected, Shell::GetPrimaryRootWindow()->bounds().size());

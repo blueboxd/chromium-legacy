@@ -51,7 +51,8 @@ public class PasswordEditingBridge implements PasswordEditingDelegate {
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_URL, site);
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_NAME, username);
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_PASSWORD, password);
-        SettingsLauncher.launchSettingsPage(context, PasswordEntryEditor.class, fragmentArgs);
+        SettingsLauncher.getInstance().launchSettingsPage(
+                context, PasswordEntryEditor.class, fragmentArgs);
     }
 
     /**

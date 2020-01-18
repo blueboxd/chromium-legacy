@@ -528,7 +528,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
         tab, screenshot, page.expected_colors, page.tolerance,
         device_pixel_ratio,
         self.GetParsedCommandLineOptions().test_machine_name)
-    except Exception:
+    except Exception as comparison_exception:
       # An exception raised from self.fail() indicates a failure.
       image_name = self._UrlToImageName(page.name)
       # We want to report the screenshot comparison failure, not any failures
@@ -538,9 +538,14 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
           image_name, screenshot,
           tab, page,
           build_id_args=build_id_args)
-      except Exception as e:
-        logging.error(str(e))
-      raise
+      except Exception as gold_exception:
+        logging.error(str(gold_exception))
+      # TODO(https://crbug.com/1043129): Switch this to just "raise" once these
+      # tests are run with Python 3. Python 2's behavior with nested try/excepts
+      # is weird and ends up re-raising the exception raised by
+      # _UploadTestResultToSkiaGold instead of the one by
+      # _CompareScreenshotSamples. See https://stackoverflow.com/q/28698622.
+      raise comparison_exception
 
   @classmethod
   def _IsLocalRun(cls):

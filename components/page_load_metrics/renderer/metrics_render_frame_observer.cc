@@ -388,9 +388,6 @@ mojom::PageLoadTimingPtr MetricsRenderFrameObserver::GetTiming() const {
     timing->document_timing->load_event_start =
         ClampDelta(perf.LoadEventStart(), start);
   }
-  if (perf.FirstLayout() > 0.0)
-    timing->document_timing->first_layout =
-        ClampDelta(perf.FirstLayout(), start);
   if (perf.FirstPaint() > 0.0)
     timing->paint_timing->first_paint = ClampDelta(perf.FirstPaint(), start);
   if (perf.FirstImagePaint() > 0.0) {

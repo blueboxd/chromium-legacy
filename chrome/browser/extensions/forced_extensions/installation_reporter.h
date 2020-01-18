@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/install/crx_install_error.h"
+#include "extensions/browser/install/sandboxed_unpacker_failure_reason.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/common/extension_id.h"
 
@@ -194,6 +195,10 @@ class InstallationReporter : public KeyedService {
     // Number of fetch tries made when failure reason is CRX_FETCH_FAILED or
     // MANIFEST_FETCH_FAILED.
     base::Optional<int> fetch_tries;
+    // Unpack failure reason in case of
+    // CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE.
+    base::Optional<extensions::SandboxedUnpackerFailureReason>
+        unpacker_failure_reason;
   };
 
   class Observer : public base::CheckedObserver {
@@ -233,6 +238,9 @@ class InstallationReporter : public KeyedService {
   void ReportCrxInstallError(const ExtensionId& id,
                              FailureReason reason,
                              CrxInstallErrorDetail crx_install_error);
+  void ReportSandboxedUnpackerFailureReason(
+      const ExtensionId& id,
+      SandboxedUnpackerFailureReason unpacker_failure_reason);
 
   // Retrieves known information for installation of extension |id|.
   // Returns empty data if not found.

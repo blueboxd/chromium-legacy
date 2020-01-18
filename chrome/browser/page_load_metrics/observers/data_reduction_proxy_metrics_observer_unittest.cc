@@ -81,8 +81,6 @@ class DataReductionProxyMetricsObserverTest
     ValidateHistogramsForSuffix(
         ::internal::kHistogramDOMContentLoadedEventFiredSuffix,
         timing_.document_timing->dom_content_loaded_event_start);
-    ValidateHistogramsForSuffix(::internal::kHistogramFirstLayoutSuffix,
-                                timing_.document_timing->first_layout);
     ValidateHistogramsForSuffix(::internal::kHistogramLoadEventFiredSuffix,
                                 timing_.document_timing->load_event_start);
     ValidateHistogramsForSuffix(

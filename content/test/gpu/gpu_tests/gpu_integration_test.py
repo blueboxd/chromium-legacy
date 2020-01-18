@@ -204,7 +204,7 @@ class GpuIntegrationTest(
         # crash, so restart the browser to make sure any state doesn't
         # propagate to the next test iteration.
         self._RestartBrowser('unexpected test failure')
-      self.fail()
+      raise
     else:
       if ResultType.Failure in expected_results:
         logging.warning(

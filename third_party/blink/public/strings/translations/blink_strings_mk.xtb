@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">лизгач</translation>
 <translation id="1211441953136645838">референца</translation>
 <translation id="1281252709823657822">дијалог</translation>
+<translation id="1306460908038601864">Исклучени</translation>
 <translation id="1335095011850992622">благодарност</translation>
 <translation id="1342835525016946179">статија</translation>
 <translation id="1359897965706325498">банер</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="5307600278924710095">Внесете дел проследен со „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ е нецелосна.</translation>
 <translation id="5334352251556557839">Не може да пушта аудиовизуелни содржини.</translation>
+<translation id="537648784377940524">Најраниот датум (<ph name="MIN_DATE_OR_TIME" />) мора да биде пред најдоцниот датум (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">слика</translation>
 <translation id="5453733299334684579">ставка на дрво</translation>
 <translation id="5466621249238537318">Изберете една или повеќе датотеки.</translation>

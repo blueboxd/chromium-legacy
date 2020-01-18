@@ -710,66 +710,70 @@ void AppCacheUpdateJob::HandleResourceFetchCompleted(URLFetcher* url_fetcher,
     // file whose root element is an html element with a manifest attribute
     // whose value doesn't match the manifest url of the application cache
     // being processed, mark the entry as being foreign.
-  } else {
+  } else if ((entry.IsExplicit() || entry.IsFallback() ||
+              entry.IsIntercept()) &&
+             response_code == 304 &&
+             entry_fetcher->existing_entry().has_response_id()) {
     VLOG(1) << "Request error: " << net_error
             << " response code: " << response_code;
-    if (entry.IsExplicit() || entry.IsFallback() || entry.IsIntercept()) {
-      if (response_code == 304 &&
-          entry_fetcher->existing_entry().has_response_id()) {
-        // Keep the existing response.
-        entry.set_response_id(entry_fetcher->existing_entry().response_id());
-        entry.SetResponseAndPaddingSizes(
-            entry_fetcher->existing_entry().response_size(),
-            entry_fetcher->existing_entry().padding_size());
-        inprogress_cache_->AddOrModifyEntry(url, entry);
-      } else {
-        const char kFormatString[] = "Resource fetch failed (%d) %s";
-        std::string message = FormatUrlErrorMessage(
-            kFormatString, url, entry_fetcher->result(), response_code);
-        ResultType result = entry_fetcher->result();
-        bool is_cross_origin = url.GetOrigin() != manifest_url_.GetOrigin();
-        switch (result) {
-          case DISKCACHE_ERROR:
-            HandleCacheFailure(
-                blink::mojom::AppCacheErrorDetails(
-                    message,
-                    blink::mojom::AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR,
-                    GURL(), 0, is_cross_origin),
-                result, url);
-            break;
-          case NETWORK_ERROR:
-            HandleCacheFailure(
-                blink::mojom::AppCacheErrorDetails(
-                    message,
-                    blink::mojom::AppCacheErrorReason::APPCACHE_RESOURCE_ERROR,
-                    url, 0, is_cross_origin),
-                result, url);
-            break;
-          default:
-            HandleCacheFailure(
-                blink::mojom::AppCacheErrorDetails(
-                    message,
-                    blink::mojom::AppCacheErrorReason::APPCACHE_RESOURCE_ERROR,
-                    url, response_code, is_cross_origin),
-                result, url);
-            break;
-        }
-        return;
-      }
-    } else if (response_code == 404 || response_code == 410) {
-      // Entry is skipped.  They are dropped from the cache.
-    } else if (update_type_ == UPGRADE_ATTEMPT &&
-               entry_fetcher->existing_entry().has_response_id()) {
-      // Keep the existing response.
-      // TODO(michaeln): Not sure this is a good idea. This is spec compliant
-      // but the old resource may or may not be compatible with the new contents
-      // of the cache. Impossible to know one way or the other.
-      entry.set_response_id(entry_fetcher->existing_entry().response_id());
-      entry.SetResponseAndPaddingSizes(
-          entry_fetcher->existing_entry().response_size(),
-          entry_fetcher->existing_entry().padding_size());
-      inprogress_cache_->AddOrModifyEntry(url, entry);
+    // Keep the existing response.
+    entry.set_response_id(entry_fetcher->existing_entry().response_id());
+    entry.SetResponseAndPaddingSizes(
+        entry_fetcher->existing_entry().response_size(),
+        entry_fetcher->existing_entry().padding_size());
+    inprogress_cache_->AddOrModifyEntry(url, entry);
+  } else if (entry.IsExplicit() || entry.IsFallback() || entry.IsIntercept()) {
+    VLOG(1) << "Request error: " << net_error
+            << " response code: " << response_code;
+    const char kFormatString[] = "Resource fetch failed (%d) %s";
+    std::string message = FormatUrlErrorMessage(
+        kFormatString, url, entry_fetcher->result(), response_code);
+    ResultType result = entry_fetcher->result();
+    bool is_cross_origin = url.GetOrigin() != manifest_url_.GetOrigin();
+    switch (result) {
+      case DISKCACHE_ERROR:
+        HandleCacheFailure(
+            blink::mojom::AppCacheErrorDetails(
+                message,
+                blink::mojom::AppCacheErrorReason::APPCACHE_UNKNOWN_ERROR,
+                GURL(), 0, is_cross_origin),
+            result, url);
+        break;
+      case NETWORK_ERROR:
+        HandleCacheFailure(
+            blink::mojom::AppCacheErrorDetails(
+                message,
+                blink::mojom::AppCacheErrorReason::APPCACHE_RESOURCE_ERROR, url,
+                0, is_cross_origin),
+            result, url);
+        break;
+      default:
+        HandleCacheFailure(
+            blink::mojom::AppCacheErrorDetails(
+                message,
+                blink::mojom::AppCacheErrorReason::APPCACHE_RESOURCE_ERROR, url,
+                response_code, is_cross_origin),
+            result, url);
+        break;
     }
+    return;
+  } else if (response_code == 404 || response_code == 410) {
+    VLOG(1) << "Request error: " << net_error
+            << " response code: " << response_code;
+    // Entry is skipped.  They are dropped from the cache.
+  } else if (update_type_ == UPGRADE_ATTEMPT &&
+             entry_fetcher->existing_entry().has_response_id()) {
+    VLOG(1) << "Request error: " << net_error
+            << " response code: " << response_code;
+    // Keep the existing response.
+    // TODO(michaeln): Not sure this is a good idea. This is spec compliant
+    // but the old resource may or may not be compatible with the new contents
+    // of the cache. Impossible to know one way or the other.
+    entry.set_response_id(entry_fetcher->existing_entry().response_id());
+    entry.SetResponseAndPaddingSizes(
+        entry_fetcher->existing_entry().response_size(),
+        entry_fetcher->existing_entry().padding_size());
+    inprogress_cache_->AddOrModifyEntry(url, entry);
   }
 
   // Fetch another URL now that one request has completed.

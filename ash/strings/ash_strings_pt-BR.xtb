@@ -46,7 +46,7 @@
 <translation id="1460620680449458626">O som está desativado.</translation>
 <translation id="1467432559032391204">À esquerda</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Ativado</translation>
+<translation id="1508507608940204251">Ativada</translation>
 <translation id="1516740043221086139">O "Não perturbe" está ativado.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostrar configurações de notificação. As notificações estão desativadas para um app}one{Mostrar configurações de notificação. As notificações estão desativadas para # app}other{Mostrar configurações de notificação. As notificações estão desativadas para # apps}}</translation>
 <translation id="1525508553941733066">DISPENSAR</translation>
@@ -311,7 +311,7 @@
 <translation id="5207949376430453814">Destacar cursor de texto</translation>
 <translation id="5222676887888702881">Sair</translation>
 <translation id="523505283826916779">Configurações de acessibilidade</translation>
-<translation id="5250225880026334010">Desativado</translation>
+<translation id="5250225880026334010">Desativada</translation>
 <translation id="5260676007519551770">Área de trabalho 4</translation>
 <translation id="5283198616748585639">Adicionar 1 min</translation>
 <translation id="5286194356314741248">Verificando</translation>

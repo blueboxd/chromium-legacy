@@ -6,16 +6,13 @@
 #define ASH_WM_OVERVIEW_OVERVIEW_HIGHLIGHT_CONTROLLER_H_
 
 #include <memory>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
-
-namespace aura {
-class Window;
-}
 
 namespace views {
 class View;
@@ -25,46 +22,40 @@ namespace ash {
 class OverviewItem;
 class OverviewSession;
 
-// Manages highlighting items while in overview. Creates a semi transparent
-// highlight when users try to traverse through overview items using arrow keys
-// or tab keys, or when users are tab dragging.
+// Manages highlighting items while in overview. Responsible for telling
+// overview items to show or hide their focus ring borders, when tabbing through
+// overview items with arrow keys and trackpad swipes, or when tab dragging.
 class ASH_EXPORT OverviewHighlightController {
  public:
-  class HighlightWidget;
-
   // An interface that must be implemented by classes that want to be
   // highlighted in overview.
   class OverviewHighlightableView {
    public:
     // Get the view class associated with |this|.
     virtual views::View* GetView() = 0;
-    // Get the bounds of where the highlight should be for |this|, in screen
-    // coordinates.
-    virtual gfx::Rect GetHighlightBoundsInScreen() = 0;
-
-    // Get the rounded corners the highlight should have when highlighting
-    // |this|.
-    virtual gfx::RoundedCornersF GetRoundedCornersRadii() const;
 
     // Attempts to activate or close this view. Overriders may do nothing.
     virtual void MaybeActivateHighlightedView() = 0;
     virtual void MaybeCloseHighlightedView() = 0;
 
-    // Subclasses can override these if they wish to have custom behavior when
-    // they're highlighted. They should return true if overridden, otherwise the
-    // default highlight will show up.
-    virtual bool OnViewHighlighted();
-    virtual void OnViewUnhighlighted();
+    void SetHighlightVisibility(bool visible);
 
     // Returns true if this is the current highlighted view.
-    bool IsViewHighlighted();
+    bool IsViewHighlighted() { return is_highlighted_; }
 
     // Returns the point the accessibility magnifiers should focus when this is
     // highlighted. If not overridden, this will return the centerpoint.
     virtual gfx::Point GetMagnifierFocusPointInScreen();
 
    protected:
-    virtual ~OverviewHighlightableView() {}
+    virtual ~OverviewHighlightableView() = default;
+
+    // Highlights or unhighlights this view.
+    virtual void OnViewHighlighted() = 0;
+    virtual void OnViewUnhighlighted() = 0;
+
+   private:
+    bool is_highlighted_ = false;
   };
 
   // TestApi is used for tests to get internal implementation details.
@@ -73,9 +64,7 @@ class ASH_EXPORT OverviewHighlightController {
     explicit TestApi(OverviewHighlightController* highlight_controller);
     ~TestApi();
 
-    gfx::Rect GetHighlightBoundsInScreen() const;
     OverviewHighlightableView* GetHighlightView() const;
-    HighlightWidget* GetHighlightWidget() const;
 
    private:
     OverviewHighlightController* const highlight_controller_;
@@ -84,14 +73,14 @@ class ASH_EXPORT OverviewHighlightController {
   explicit OverviewHighlightController(OverviewSession* overview_session);
   ~OverviewHighlightController();
 
-  // Moves the |highlight_widget_| to the next traversable view.
+  // Moves the focus ring to the next traversable view.
   void MoveHighlight(bool reverse);
 
   // Called when a |view| that might be in the focus traversal rotation is about
   // to be deleted.
   void OnViewDestroyingOrDisabling(OverviewHighlightableView* view);
 
-  // Sets and gets the visibility of |highlight_widget_|.
+  // Sets and gets the visibility of |highlighted_view_|.
   void SetFocusHighlightVisibility(bool visible);
   bool IsFocusHighlightVisible() const;
 
@@ -104,23 +93,18 @@ class ASH_EXPORT OverviewHighlightController {
   // is no highlight, or if the highlight is on a desk view.
   OverviewItem* GetHighlightedItem() const;
 
-  // Clears, creates or repositions the tab dragging highlight.
-  void ClearTabDragHighlight();
-  void UpdateTabDragHighlight(aura::Window* root_window,
-                              const gfx::Rect& bounds_in_screen);
+  // Hides or shows the tab dragging highlight.
+  void HideTabDragHighlight();
+  void ShowTabDragHighlight(OverviewHighlightableView* view);
   bool IsTabDragHighlightVisible() const;
-
-  // Called when an overview grid repositions its windows. Moves the focus
-  // highlight widget without animation.
-  void OnWindowsRepositioned(aura::Window* root_window);
 
  private:
   // Returns a vector of views that can be traversed via overview tabbing.
   // Includes desk mini views, the new desk button and overview items.
   std::vector<OverviewHighlightableView*> GetTraversableViews() const;
 
-  void UpdateFocusWidget(OverviewHighlightableView* view_to_be_highlighted,
-                         bool reverse);
+  void UpdateHighlight(OverviewHighlightableView* view_to_be_highlighted,
+                       bool reverse);
 
   // The overview session which owns this object. Guaranteed to be non-null for
   // the lifetime of |this|.
@@ -130,18 +114,11 @@ class ASH_EXPORT OverviewHighlightController {
   // traversal can pick up where it left off.
   base::Optional<int> deleted_index_ = base::nullopt;
 
-  // The current view that |highlight_widget_| is highlighting.
+  // The current view that is being highlighted, if any.
   OverviewHighlightableView* highlighted_view_ = nullptr;
 
-  // A background highlight that shows up when using keyboard traversal with tab
-  // or arrow keys. This may not exist if the current highlighted view has its
-  // own highlighting override.
-  std::unique_ptr<HighlightWidget> highlight_widget_;
-
-  // A background highlight that shows up when dragging a tab towards a chrome
-  // window overview item, signaling that we can drop the tab into that browser
-  // window.
-  std::unique_ptr<HighlightWidget> tab_drag_widget_;
+  // The current view that is being tab dragged, if any.
+  OverviewHighlightableView* tab_dragged_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(OverviewHighlightController);
 };

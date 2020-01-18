@@ -2491,6 +2491,16 @@ enum WebFeature {
   kV8KeyframeEffect_Constructor = 3126,
   kWebNfcAPI = 3127,
   kHostCandidateAttributeGetter = 3128,
+  kCSPWithReasonableObjectRestrictions = 3129,
+  kCSPWithReasonableBaseRestrictions = 3130,
+  kCSPWithReasonableScriptRestrictions = 3131,
+  kCSPWithReasonableRestrictions = 3132,
+  kCSPROWithReasonableObjectRestrictions = 3133,
+  kCSPROWithReasonableBaseRestrictions = 3134,
+  kCSPROWithReasonableScriptRestrictions = 3135,
+  kCSPROWithReasonableRestrictions = 3136,
+  kCSPWithBetterThanReasonableRestrictions = 3137,
+  kCSPROWithBetterThanReasonableRestrictions = 3138,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

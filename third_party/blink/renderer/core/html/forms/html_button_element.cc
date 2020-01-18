@@ -120,33 +120,8 @@ void HTMLButtonElement::DefaultEventHandlerInternal(Event& event) {
     }
   }
 
-  if (event.IsKeyboardEvent()) {
-    if (event.type() == event_type_names::kKeydown &&
-        ToKeyboardEvent(event).key() == " ") {
-      SetActive(true);
-      // No setDefaultHandled() - IE dispatches a keypress in this case.
-      return;
-    }
-    if (event.type() == event_type_names::kKeypress) {
-      switch (ToKeyboardEvent(event).charCode()) {
-        case '\r':
-          DispatchSimulatedClick(&event);
-          event.SetDefaultHandled();
-          return;
-        case ' ':
-          // Prevent scrolling down the page.
-          event.SetDefaultHandled();
-          return;
-      }
-    }
-    if (event.type() == event_type_names::kKeyup &&
-        ToKeyboardEvent(event).key() == " ") {
-      if (IsActive())
-        DispatchSimulatedClick(&event);
-      event.SetDefaultHandled();
-      return;
-    }
-  }
+  if (HandleKeyboardActivation(event))
+    return;
 
   HTMLFormControlElement::DefaultEventHandler(event);
 }

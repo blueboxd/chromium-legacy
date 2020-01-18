@@ -22,7 +22,6 @@ namespace internal {
 
 // Various UMA histogram names for Previews core page load metrics.
 extern const char kHistogramOfflinePreviewsDOMContentLoadedEventFired[];
-extern const char kHistogramOfflinePreviewsFirstLayout[];
 extern const char kHistogramOfflinePreviewsLoadEventFired[];
 extern const char kHistogramOfflinePreviewsFirstContentfulPaint[];
 extern const char kHistogramOfflinePreviewsParseStart[];
@@ -48,8 +47,6 @@ class OfflinePagePreviewsPageLoadMetricsObserver
   void OnDomContentLoadedEventStart(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnLoadEventStart(
-      const page_load_metrics::mojom::PageLoadTiming& timing) override;
-  void OnFirstLayout(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstContentfulPaintInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;

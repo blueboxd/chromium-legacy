@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr-CA">
+<translation id="1337778609052285767">Le mot de passe actuel ne répond pas aux exigences de complexité. Veuillez communiquer avec votre administrateur.</translation>
 <translation id="1337821341856692531">Si vous poursuivez sans entrer votre mot de passe Windows actuel, vous risquez de perdre certaines données définitivement.</translation>
 <translation id="1383286653814676580">Utilisé pour exécuter la page de connexion du Fournisseur d'authentifiants Google.</translation>
 <translation id="1894475569413661128">Connectez-vous à l'aide de votre compte professionnel.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Le mot de passe Windows que vous avez entré est incorrect. Veuillez réessayer.</translation>
 <translation id="2831078752570172210">Votre compte a été verrouillé. Veuillez communiquer avec votre administrateur système.</translation>
 <translation id="2844349213149998955">La connexion avec un compte personnel n'est pas autorisée sur cet appareil. Veuillez vous connecter à l'aide d'un compte professionnel.</translation>
+<translation id="2995851317559936311">Le changement de mot de passe n'est autorisé que sur le contrôleur de domaine. Veuillez communiquer avec votre administrateur.</translation>
 <translation id="3306357053520292004">Un utilisateur a déjà été ajouté sur cet ordinateur à l'aide de ce compte. Veuillez vous connecter avec un autre compte.</translation>
 <translation id="3926852373333893095">Seuls les utilisateurs de G Suite Enterprise sont autorisés à se connecter.</translation>
 <translation id="4057329986137569701">Une erreur interne s'est produite.</translation>
 <translation id="4267670563222825190">Aucun utilisateur de domaine n'a été trouvé pour votre compte. Veuillez communiquer avec votre administrateur.</translation>
 <translation id="4300229033992784001">Le mot de passe de votre compte a changé. Veuillez entrer le mot de passe actuel de votre session Windows afin de synchroniser votre compte Windows avec votre compte professionnel.</translation>
+<translation id="4669462973597624151">La tentative de modification du mot de passe a échoué. Veuillez communiquer avec votre administrateur.</translation>
 <translation id="4706454071748629324">Impossible d'ajouter un utilisateur. Cet ordinateur n'autorise qu'un utilisateur créé à partir d'un compte professionnel.</translation>
+<translation id="5186761973554910131">Un nom d'ordinateur incorrect a été fourni lors du changement de mot de passe. Veuillez communiquer avec votre administrateur.</translation>
 <translation id="6033715878377252112">Aide du fournisseur d'authentifiants Google pour Windows</translation>
 <translation id="6149399665202317746">Fournisseur d'authentifiants Google pour Windows</translation>
 <translation id="6239180560789153226">Les données de récupération de votre appareil sont manquantes. Connectez-vous à l'aide de votre compte professionnel Google.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Ajouter un compte professionnel</translation>
 <translation id="7811865856574012727">Votre administrateur a restreint la connexion d'appareil aux domaines suivants : <ph name="EMAIL_DOMAINS" />. Réessayez en utilisant un compte professionnel valide.</translation>
 <translation id="7856245195110636219">Pour continuer, vous devez entrer le mot de passe Windows actuel. Veuillez communiquer avec un administrateur système.</translation>
+<translation id="8109730953933509335">Un utilisateur incorrect a tenté de modifier le mot de passe. Veuillez communiquer avec votre administrateur.</translation>
 <translation id="8639729688781680518">Mot de passe Windows oublié</translation>
 <translation id="866458870819756755">Impossible de créer l'utilisateur.</translation>
 <translation id="8875753657315897487">Connectez-vous à l'aide de votre compte professionnel</translation>

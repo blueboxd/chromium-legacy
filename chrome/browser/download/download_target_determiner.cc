@@ -139,8 +139,8 @@ void DownloadTargetDeterminer::DoLoop() {
       case STATE_GENERATE_TARGET_PATH:
         result = DoGenerateTargetPath();
         break;
-      case STATE_CHECK_IF_DOWNLOAD_BLOCKED:
-        result = DoCheckIfDownloadBlocked();
+      case STATE_SET_MIXED_CONTENT_STATUS:
+        result = DoSetMixedContentStatus();
         break;
       case STATE_NOTIFY_EXTENSIONS:
         result = DoNotifyExtensions();
@@ -193,7 +193,7 @@ DownloadTargetDeterminer::Result
   DCHECK(!should_notify_extensions_);
   bool is_forced_path = !download_->GetForcedFilePath().empty();
 
-  next_state_ = STATE_CHECK_IF_DOWNLOAD_BLOCKED;
+  next_state_ = STATE_SET_MIXED_CONTENT_STATUS;
 
   // Transient download should use the existing path.
   if (download_->IsTransient()) {
@@ -309,26 +309,29 @@ DownloadTargetDeterminer::Result
 }
 
 DownloadTargetDeterminer::Result
-DownloadTargetDeterminer::DoCheckIfDownloadBlocked() {
+DownloadTargetDeterminer::DoSetMixedContentStatus() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!virtual_path_.empty());
 
   next_state_ = STATE_NOTIFY_EXTENSIONS;
 
-  delegate_->ShouldBlockDownload(
+  delegate_->GetMixedContentStatus(
       download_, virtual_path_,
-      base::Bind(&DownloadTargetDeterminer::CheckIfDownloadBlockedDone,
+      base::Bind(&DownloadTargetDeterminer::GetMixedContentStatusDone,
                  weak_ptr_factory_.GetWeakPtr()));
   return QUIT_DOLOOP;
 }
 
-void DownloadTargetDeterminer::CheckIfDownloadBlockedDone(bool should_block) {
+void DownloadTargetDeterminer::GetMixedContentStatusDone(
+    download::DownloadItem::MixedContentStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Delegate should not call back here more than once.
   DCHECK_EQ(STATE_NOTIFY_EXTENSIONS, next_state_);
 
-  if (should_block) {
+  mixed_content_status_ = status;
+
+  if (status == download::DownloadItem::MixedContentStatus::SILENT_BLOCK) {
     ScheduleCallbackAndDeleteSelf(
         download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
     return;
@@ -957,6 +960,7 @@ void DownloadTargetDeterminer::ScheduleCallbackAndDeleteSelf(
   target_info->intermediate_path = intermediate_path_;
   target_info->mime_type = mime_type_;
   target_info->is_filetype_handled_safely = is_filetype_handled_safely_;
+  target_info->mixed_content_status = mixed_content_status_;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

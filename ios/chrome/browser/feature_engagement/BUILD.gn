@@ -52,9 +52,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
-  sources = [
-    "feature_engagement_egtest.mm",
-  ]
+  sources = [ "feature_engagement_egtest.mm" ]
   deps = [
     ":eg_test_support",
     ":feature_engagement",
@@ -109,12 +107,8 @@ source_set("eg_test_support+eg2") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "feature_engagement_app_interface.h",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "feature_engagement_app_interface.h" ]
+  deps = [ "//base" ]
 }
 
 source_set("eg2_tests") {
@@ -124,9 +118,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "feature_engagement_egtest.mm",
-  ]
+  sources = [ "feature_engagement_egtest.mm" ]
   deps = [
     ":eg_test_support+eg2",
     "//base",

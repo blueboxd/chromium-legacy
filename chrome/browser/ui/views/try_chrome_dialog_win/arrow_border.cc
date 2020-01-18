@@ -26,7 +26,7 @@ ArrowBorder::ArrowBorder(int thickness,
                          SkColor background_color,
                          const gfx::VectorIcon& arrow_icon,
                          const Properties* properties)
-    : color_(color),
+    : views::Border(color),
       insets_(gfx::Insets(thickness) + properties->insets),
       arrow_border_insets_(properties->arrow_border_insets),
       arrow_(gfx::CreateVectorIcon(arrow_icon, background_color)) {
@@ -73,7 +73,7 @@ void ArrowBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
     arrow_bounds.Inset(arrow_border_insets_.Scale(dsf));
     canvas->sk_canvas()->clipRect(gfx::RectToSkRect(arrow_bounds),
                                   SkClipOp::kDifference, true);
-    canvas->DrawColor(color_);
+    canvas->DrawColor(color());
   }
 
   // Paint the arrow.

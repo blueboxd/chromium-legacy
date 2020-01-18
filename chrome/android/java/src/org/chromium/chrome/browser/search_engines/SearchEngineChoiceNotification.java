@@ -52,7 +52,7 @@ public final class SearchEngineChoiceNotification {
 
         @Override
         public void onAction(Object actionData) {
-            SettingsLauncher.launchSettingsPage(mContext, SearchEngineSettings.class);
+            SettingsLauncher.getInstance().launchSettingsPage(mContext, SearchEngineSettings.class);
             SearchEngineChoiceMetrics.recordEvent(SearchEngineChoiceMetrics.Events.PROMPT_FOLLOWED);
             SearchEngineChoiceMetrics.recordSearchEngineTypeBeforeChoice();
         }

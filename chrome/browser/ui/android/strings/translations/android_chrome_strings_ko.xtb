@@ -301,7 +301,7 @@
 <translation id="3282568296779691940">Chrome에 로그인</translation>
 <translation id="3288003805934695103">페이지 새로고침</translation>
 <translation id="32895400574683172">알림이 허용되었습니다</translation>
-<translation id="3290926146403723641">Google 어시스턴트 통해 웹에서 작업을 완료하기 위해 Chrome에서 사이트 URL, 사이트 콘텐츠, 관련 개인정보를 Google에 전송합니다.</translation>
+<translation id="3290926146403723641">Google 어시스턴트를 통해 웹에서 작업을 완료하기 위해 Chrome에서 사이트 URL, 사이트 콘텐츠, 관련 개인정보를 Google에 전송합니다.</translation>
 <translation id="3295530008794733555">데이터를 절약하면서 웹을 더 빠르게 탐색하세요</translation>
 <translation id="3298243779924642547">라이트</translation>
 <translation id="3303414029551471755">콘텐츠를 다운로드하시겠습니까?</translation>
@@ -668,6 +668,7 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6064125863973209585">다운로드 완료</translation>
 <translation id="6075798973483050474">홈 페이지 수정</translation>
+<translation id="6092062101542170135">계속하려면 Android 설정에서 NFC를 사용 설정하세요.</translation>
 <translation id="60923314841986378"><ph name="HOURS" />시간 남음</translation>
 <translation id="6108923351542677676">설정 진행 중...</translation>
 <translation id="6111020039983847643">데이터 사용됨</translation>

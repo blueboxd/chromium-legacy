@@ -113,11 +113,14 @@ void WorkletAnimation::Tick(base::TimeTicks monotonic_time) {
 void WorkletAnimation::UpdateState(bool start_ready_animations,
                                    AnimationEvents* events) {
   Animation::UpdateState(start_ready_animations, events);
+  if (last_synced_local_time_ != local_time_)
+    events->set_needs_time_updated_events(true);
+}
+
+void WorkletAnimation::TakeTimeUpdatedEvent(AnimationEvents* events) {
+  DCHECK(events->needs_time_updated_events());
   if (last_synced_local_time_ != local_time_) {
     AnimationEvent event(animation_timeline()->id(), id_, local_time_);
-    // TODO(http://crbug.com/1013654): Instead of pushing multiple events per
-    // single main frame, push just the recent one to be handled by next main
-    // frame.
     events->events_.push_back(event);
     last_synced_local_time_ = local_time_;
   }

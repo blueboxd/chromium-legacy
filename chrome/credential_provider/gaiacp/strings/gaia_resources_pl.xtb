@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
+<translation id="1337778609052285767">Bieżące hasło nie spełnia wymagań dotyczących stopnia złożoności haseł. Skontaktuj się z administratorem.</translation>
 <translation id="1337821341856692531">Przejście dalej bez wpisania obecnego hasła do Windows może spowodować nieodwracalną utratę danych.</translation>
 <translation id="1383286653814676580">Używane do uruchamiania strony logowania dostawcy danych uwierzytelniających Google.</translation>
 <translation id="1894475569413661128">Zaloguj się, używając swojego konta do pracy.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Podane hasło do systemu Windows jest nieprawidłowe. Spróbuj ponownie.</translation>
 <translation id="2831078752570172210">Twoje konto zostało zablokowane. Skontaktuj się z administratorem systemu.</translation>
 <translation id="2844349213149998955">Logowanie się na to urządzenie za pomocą konta osobistego jest niedozwolone. Zaloguj się za pomocą konta do pracy.</translation>
+<translation id="2995851317559936311">Zmiana hasła dozwolona jest tylko w kontrolerze domeny. Skontaktuj się z administratorem.</translation>
 <translation id="3306357053520292004">Inny użytkownik komputera został już dodany za pomocą tego konta. Zaloguj się, używając innego konta.</translation>
 <translation id="3926852373333893095">Logować się mogą tylko użytkownicy korzystający z G Suite Enterprise.</translation>
 <translation id="4057329986137569701">Wystąpił błąd wewnętrzny.</translation>
 <translation id="4267670563222825190">Z tym kontem nie jest powiązany żaden użytkownik w domenie. Skontaktuj się z administratorem.</translation>
 <translation id="4300229033992784001">Zmieniło się hasło do Twojego konta. Aby zsynchronizować konto Windows z kontem do pracy, wpisz swoje aktualne hasło do systemu Windows.</translation>
+<translation id="4669462973597624151">Nie udało się zmienić hasła. Skontaktuj się z administratorem.</translation>
 <translation id="4706454071748629324">Nie udało się dodać nowego użytkownika. Ten komputer zezwala na utworzenie tylko jednego użytkownika za pomocą konta do pracy.</translation>
+<translation id="5186761973554910131">Podczas próby zmiany hasła podano nieprawidłową nazwę komputera. Skontaktuj się z administratorem.</translation>
 <translation id="6033715878377252112">Konto pomocnicze dostawcy danych uwierzytelniających Google do systemów Windows</translation>
 <translation id="6149399665202317746">Dostawca danych uwierzytelniających Google do systemów Windows</translation>
 <translation id="6239180560789153226">Na Twoim urządzeniu brakuje danych odzyskiwania. Zaloguj się, używając swojego konta Google do pracy.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Dodaj konto do pracy</translation>
 <translation id="7811865856574012727">Administrator ograniczył logowanie na urządzeniu do tych domen: <ph name="EMAIL_DOMAINS" />. Spróbuj ponownie, używając odpowiedniego konta do pracy.</translation>
 <translation id="7856245195110636219">Nie można przejść dalej bez wpisania obecnego hasła do Windows. Skontaktuj się z administratorem systemu.</translation>
+<translation id="8109730953933509335">Próbowano zmienić hasło w przypadku nieprawidłowego użytkownika. Skontaktuj się z administratorem.</translation>
 <translation id="8639729688781680518">Nie pamiętam hasła do Windows</translation>
 <translation id="866458870819756755">Nie udało się utworzyć użytkownika.</translation>
 <translation id="8875753657315897487">Zaloguj się, używając swojego konta do pracy</translation>

@@ -124,7 +124,6 @@
 #include "chrome/browser/ui/exclusive_access/mouse_lock_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/global_error/global_error.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
@@ -166,6 +165,7 @@
 #include "components/bubble/bubble_controller.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "components/find_in_page/find_tab_helper.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -664,7 +664,7 @@ ChromeBubbleManager* Browser::GetBubbleManager() {
 FindBarController* Browser::GetFindBarController() {
   if (!find_bar_controller_.get()) {
     find_bar_controller_ =
-        std::make_unique<FindBarController>(window_->CreateFindBar(), this);
+        std::make_unique<FindBarController>(window_->CreateFindBar());
     find_bar_controller_->find_bar()->SetFindBarController(
         find_bar_controller_.get());
     find_bar_controller_->ChangeWebContents(
@@ -1933,7 +1933,8 @@ void Browser::FindReply(WebContents* web_contents,
                         const gfx::Rect& selection_rect,
                         int active_match_ordinal,
                         bool final_update) {
-  FindTabHelper* find_tab_helper = FindTabHelper::FromWebContents(web_contents);
+  find_in_page::FindTabHelper* find_tab_helper =
+      find_in_page::FindTabHelper::FromWebContents(web_contents);
   if (!find_tab_helper)
     return;
 

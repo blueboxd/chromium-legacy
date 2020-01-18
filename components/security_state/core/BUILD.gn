@@ -26,24 +26,18 @@ jumbo_static_library("core") {
     "//url",
   ]
 
-  deps = [
-    "//services/network/public/cpp",
-  ]
+  deps = [ "//services/network/public/cpp" ]
 }
 
 if (is_android) {
   java_cpp_enum("security_state_enums_java") {
-    sources = [
-      "security_state.h",
-    ]
+    sources = [ "security_state.h" ]
   }
 }
 
 jumbo_source_set("unit_tests") {
   testonly = true
-  sources = [
-    "security_state_unittest.cc",
-  ]
+  sources = [ "security_state_unittest.cc" ]
 
   deps = [
     ":core",
@@ -63,7 +57,5 @@ component("features") {
     "features.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

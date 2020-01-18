@@ -32,6 +32,10 @@ message DlpDeepScanningClientRequest {
     WEB_CONTENT_UPLOAD = 3;
   }
   optional ContentSource content_source = 1;
+
+  // The URL containing the file download/upload or to which web content is
+  // being uploaded.
+  optional string url = 2;
 }
 
 // Scanning configuration sent from Chrome.

@@ -39,16 +39,6 @@ struct EnumTraits<network::mojom::CookieAccessSemantics,
 };
 
 template <>
-struct EnumTraits<network::mojom::CookieInclusionStatusWarningReason,
-                  net::CanonicalCookie::CookieInclusionStatus::WarningReason> {
-  static network::mojom::CookieInclusionStatusWarningReason ToMojom(
-      net::CanonicalCookie::CookieInclusionStatus::WarningReason input);
-  static bool FromMojom(
-      network::mojom::CookieInclusionStatusWarningReason input,
-      net::CanonicalCookie::CookieInclusionStatus::WarningReason* output);
-};
-
-template <>
 struct EnumTraits<network::mojom::CookieSameSiteContext,
                   net::CookieOptions::SameSiteCookieContext> {
   static network::mojom::CookieSameSiteContext ToMojom(
@@ -143,9 +133,9 @@ struct StructTraits<network::mojom::CookieInclusionStatusDataView,
       const net::CanonicalCookie::CookieInclusionStatus& s) {
     return s.exclusion_reasons();
   }
-  static net::CanonicalCookie::CookieInclusionStatus::WarningReason warning(
+  static uint32_t warning_reasons(
       const net::CanonicalCookie::CookieInclusionStatus& s) {
-    return s.warning();
+    return s.warning_reasons();
   }
   static bool Read(network::mojom::CookieInclusionStatusDataView status,
                    net::CanonicalCookie::CookieInclusionStatus* out);

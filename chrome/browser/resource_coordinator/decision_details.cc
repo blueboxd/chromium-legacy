@@ -38,6 +38,7 @@ const char* kDecisionFailureReasonStrings[] = {
     "Tab is currently holding a WebLock",
     "Tab is currently holding an IndexedDB lock",
     "Tab has notification permission ",
+    "Tab is a web application window",
 };
 static_assert(base::size(kDecisionFailureReasonStrings) ==
                   static_cast<size_t>(DecisionFailureReason::MAX),
@@ -147,6 +148,9 @@ void PopulateFailureReason(
       break;
     case DecisionFailureReason::LIVE_STATE_HAS_NOTIFICATIONS_PERMISSION:
       ukm->SetFailureLiveStateHasNotificationsPermission(1);
+      break;
+    case DecisionFailureReason::LIVE_WEB_APP:
+      ukm->SetFailureLiveWebApp(1);
       break;
     case DecisionFailureReason::MAX:
       NOTREACHED();

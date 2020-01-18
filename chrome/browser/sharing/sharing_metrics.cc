@@ -48,7 +48,7 @@ std::string DevicePlatformToString(SharingDevicePlatform device_platform) {
 
 // Maps SharingSendMessageResult enum values to strings used as histogram
 // suffixes. Keep in sync with "SharingSendMessageResult" in histograms.xml.
-std::string SharingSendMessageResultToSuffix(SharingSendMessageResult result) {
+std::string SendMessageResultToSuffix(SharingSendMessageResult result) {
   switch (result) {
     case SharingSendMessageResult::kSuccessful:
       return "Successful";
@@ -112,6 +112,10 @@ chrome_browser_sharing::MessageType SharingPayloadCaseToMessageType(
       return chrome_browser_sharing::SIGNALLING_MESSAGE;
     case chrome_browser_sharing::SharingMessage::kIceCandidateMessage:
       return chrome_browser_sharing::ICE_CANDIDATE_MESSAGE;
+    case chrome_browser_sharing::SharingMessage::kDiscoveryRequest:
+      return chrome_browser_sharing::DISCOVERY_REQUEST;
+    case chrome_browser_sharing::SharingMessage::kWebRtcSignalingFrame:
+      return chrome_browser_sharing::WEB_RTC_SIGNALING_FRAME;
   }
   // For proto3 enums unrecognized enum values are kept when parsing, and a new
   // payload case received over the network would not default to
@@ -265,7 +269,7 @@ void LogSharingDeviceLastUpdatedAgeWithResult(SharingSendMessageResult result,
                                               base::TimeDelta age) {
   base::UmaHistogramCounts1000(
       base::StrCat({"Sharing.DeviceLastUpdatedAgeWithResult.",
-                    SharingSendMessageResultToSuffix(result)}),
+                    SendMessageResultToSuffix(result)}),
       age.InHours());
 }
 
@@ -354,6 +358,14 @@ void LogSendSharingAckMessageResult(
 void LogSharedClipboardSelectedTextSize(size_t size) {
   base::UmaHistogramCounts100000("Sharing.SharedClipboardSelectedTextSize",
                                  size);
+}
+
+void LogSharedClipboardRetries(int retries, SharingSendMessageResult result) {
+  constexpr char kBase[] = "Sharing.SharedClipboardRetries";
+  base::UmaHistogramExactLinear(kBase, retries, /*value_max=*/20);
+  base::UmaHistogramExactLinear(
+      base::StrCat({kBase, ".", SendMessageResultToSuffix(result)}), retries,
+      /*value_max=*/20);
 }
 
 void LogRemoteCopyHandleMessageResult(RemoteCopyHandleMessageResult result) {

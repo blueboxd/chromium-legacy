@@ -198,9 +198,10 @@ inline std::string GetDLBlockingHistogramName(const std::string& initiator,
       .append(download);
 }
 
-// When enabled (via kTreatUnsafeDownloadsAsActive), block unsafe downloads
-// that are requested by secure sources but are served insecurely.
-bool ShouldBlockFileAsMixedContent(const base::FilePath& path,
-                                   const download::DownloadItem& item);
+// Returns the correct mixed content download blocking behavior for the given
+// |item| saved to |path|.  Controlled by kTreatUnsafeDownloadsAsActive.
+download::DownloadItem::MixedContentStatus GetMixedContentStatusForDownload(
+    const base::FilePath& path,
+    const download::DownloadItem& item);
 
 #endif  // CHROME_BROWSER_DOWNLOAD_MIXED_CONTENT_DOWNLOAD_BLOCKING_H_

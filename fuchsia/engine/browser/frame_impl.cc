@@ -51,8 +51,7 @@ const logging::LogSeverity kLogSeverityNone =
     std::numeric_limits<logging::LogSeverity>::min();
 
 // Simulated screen bounds to use when headless rendering is enabled.
-// TODO(crbug.com/1039762): Use 1x1 bounds once the rendering bug is fixed.
-constexpr gfx::Size kHeadlessWindowSize = {2, 2};
+constexpr gfx::Size kHeadlessWindowSize = {1, 1};
 
 // Simulated screen bounds to use when testing the SemanticsManager.
 constexpr gfx::Size kSemanticsTestingWindowSize = {720, 640};

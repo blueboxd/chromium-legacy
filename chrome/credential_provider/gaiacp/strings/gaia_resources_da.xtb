@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
+<translation id="1337778609052285767">Den aktuelle adgangskode stemmer ikke overens med kravene til sværhedsgraden af adgangskoder. Kontakt din administrator.</translation>
 <translation id="1337821341856692531">Hvis du fortsætter uden at angive din aktuelle adgangskode til Windows, kan det medføre uopretteligt tab af oplysninger.</translation>
 <translation id="1383286653814676580">Bruges til at køre Google Loginhåndterings loginside.</translation>
 <translation id="1894475569413661128">Log ind med din arbejdskonto.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Du har indtastet en forkert Windows-adgangskode. Prøv igen.</translation>
 <translation id="2831078752570172210">Din konto kan ikke åbnes. Kontakt din systemadministrator.</translation>
 <translation id="2844349213149998955">Det er ikke tilladt at logge ind med en personlig konto på denne enhed. Log ind med en arbejdskonto.</translation>
+<translation id="2995851317559936311">Ændring af adgangskoder er kun tilladt på domænecontrolleren. Kontakt din administrator.</translation>
 <translation id="3306357053520292004">Der er allerede tilføjet en bruger ved hjælp af denne konto på denne computer. Log ind med en anden konto.</translation>
 <translation id="3926852373333893095">Det er kun G Suite Enterprise-brugere, som har tilladelse til at logge ind.</translation>
 <translation id="4057329986137569701">Der opstod en intern fejl.</translation>
 <translation id="4267670563222825190">Der blev ikke fundet nogen domænebruger for din konto. Kontakt din administrator.</translation>
 <translation id="4300229033992784001">Adgangskoden til din konto er ændret. Angiv din nuværende Windows-adgangskode for at synkronisere din Windows-konto med din arbejdskonto.</translation>
+<translation id="4669462973597624151">Forsøget på at ændre adgangskode mislykkedes. Kontakt din administrator.</translation>
 <translation id="4706454071748629324">Det var ikke muligt at tilføje en ny bruger. Denne computer giver kun mulighed for at oprette én bruger med en arbejdskonto.</translation>
+<translation id="5186761973554910131">Der blev angivet et ugyldigt computernavn under forsøget på at ændre adgangskode. Kontakt din administrator.</translation>
 <translation id="6033715878377252112">Hjælper til Google Loginhåndtering til Windows</translation>
 <translation id="6149399665202317746">Google Loginhåndtering til Windows</translation>
 <translation id="6239180560789153226">Din enhed mangler gendannelsesoplysninger. Log ind med din Google-arbejdskonto.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Tilføj arbejdskonto</translation>
 <translation id="7811865856574012727">Din administrator har begrænset login på enheder for følgende domæner: <ph name="EMAIL_DOMAINS" />. Prøv igen ved hjælp af en gyldig arbejdskonto.</translation>
 <translation id="7856245195110636219">Det er ikke muligt at fortsætte, før den aktuelle adgangskode til Windows angives. Kontakt en systemadministrator.</translation>
+<translation id="8109730953933509335">En ugyldig brugers adgangskode blev forsøgt ændret. Kontakt din administrator.</translation>
 <translation id="8639729688781680518">Glemt adgangskode til Windows</translation>
 <translation id="866458870819756755">En bruger kunne ikke oprettes.</translation>
 <translation id="8875753657315897487">Log ind med din arbejdskonto</translation>

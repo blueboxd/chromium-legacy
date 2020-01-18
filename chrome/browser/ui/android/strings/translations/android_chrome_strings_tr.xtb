@@ -301,6 +301,7 @@
 <translation id="3282568296779691940">Chrome'da oturum aç</translation>
 <translation id="3288003805934695103">Sayfayı yeniden yükleme</translation>
 <translation id="32895400574683172">Bildirimlere izin veriliyor</translation>
+<translation id="3290926146403723641">Chrome, web'deki görevleri Google Asistan kullanarak yapabilmek için sitelerin URL'sini, site içeriğini ve alakalı kişisel bilgileri Google'a gönderir</translation>
 <translation id="3295530008794733555">Daha hızlı tarayın. Daha az veri kullanın.</translation>
 <translation id="3298243779924642547">Basit</translation>
 <translation id="3303414029551471755">İçeriği indirme işlemine başlansın mı?</translation>
@@ -667,6 +668,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="605721222689873409">YY</translation>
 <translation id="6064125863973209585">Tamamlanan indirme işlemleri</translation>
 <translation id="6075798973483050474">Ana sayfayı düzenle</translation>
+<translation id="6092062101542170135">Devam etmek için Android ayarlarında NFC'yi açın</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> saat kaldı</translation>
 <translation id="6108923351542677676">Kurulum devam ediyor…</translation>
 <translation id="6111020039983847643">kullanılan veri miktarı</translation>

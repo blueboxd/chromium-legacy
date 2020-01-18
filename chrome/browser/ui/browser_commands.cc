@@ -48,8 +48,6 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help.h"
 #include "chrome/browser/ui/in_product_help/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -72,6 +70,8 @@
 #include "components/dom_distiller/core/url_utils.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/feature_engagement/buildflags.h"
+#include "components/find_in_page/find_tab_helper.h"
+#include "components/find_in_page/find_types.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/live_tab_context.h"
@@ -667,10 +667,7 @@ void NewTab(Browser* browser) {
   reopen_tab_iph->NewTabOpened();
 
   if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)) {
-    TabStripModel* const model = browser->tab_strip_model();
-    const auto group_id = model->GetTabGroupForTab(model->active_index());
-    AddTabAt(browser, GURL(), -1, true, group_id);
-    model->GetActiveWebContents()->RestoreFocus();
+    AddTabAt(browser, GURL(), -1, true);
   } else {
     ScopedTabbedBrowserDisplayer displayer(browser->profile());
     Browser* b = displayer.browser();
@@ -1203,13 +1200,14 @@ bool CanCloseFind(Browser* browser) {
   if (!current_tab)
     return false;
 
-  FindTabHelper* find_helper = FindTabHelper::FromWebContents(current_tab);
+  find_in_page::FindTabHelper* find_helper =
+      find_in_page::FindTabHelper::FromWebContents(current_tab);
   return find_helper ? find_helper->find_ui_active() : false;
 }
 
 void CloseFind(Browser* browser) {
   browser->GetFindBarController()->EndFindSession(
-      FindOnPageSelectionAction::kKeep, FindBoxResultAction::kKeep);
+      find_in_page::SelectionAction::kKeep, find_in_page::ResultAction::kKeep);
 }
 
 void Zoom(Browser* browser, content::PageZoom zoom) {

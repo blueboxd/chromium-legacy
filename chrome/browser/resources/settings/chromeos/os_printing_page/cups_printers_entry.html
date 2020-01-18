@@ -37,7 +37,15 @@
       </template>
       <template is="dom-if"
           if="[[isAutomaticPrinter_(printerEntry.printerType)]]">
-        <cr-button id="savePrinterButton" on-click="onAddAutomaticPrinterTap_"
+        <cr-button class="save-printer-button"
+            on-click="onAddAutomaticPrinterTap_"
+            aria-label$="[[getSaveButtonAria_()]]">
+          $i18n{savePrinter}
+        </cr-button>
+      </template>
+      <template is="dom-if"
+          if="[[isPrintServerPrinter_(printerEntry.printerType)]]">
+        <cr-button class="save-printer-button" on-click="onAddServerPrinterTap_"
             aria-label$="[[getSaveButtonAria_()]]">
           $i18n{savePrinter}
         </cr-button>

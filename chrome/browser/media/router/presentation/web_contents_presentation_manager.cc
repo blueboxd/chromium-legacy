@@ -8,12 +8,25 @@
 
 namespace media_router {
 
+namespace {
+WebContentsPresentationManager* g_test_instance = nullptr;
+}  // namespace
+
 // static
 base::WeakPtr<WebContentsPresentationManager>
 WebContentsPresentationManager::Get(content::WebContents* web_contents) {
+  if (g_test_instance)
+    return g_test_instance->GetWeakPtr();
+
   return PresentationServiceDelegateImpl::GetOrCreateForWebContents(
              web_contents)
       ->GetWeakPtr();
+}
+
+// static
+void WebContentsPresentationManager::SetTestInstance(
+    WebContentsPresentationManager* test_instance) {
+  g_test_instance = test_instance;
 }
 
 WebContentsPresentationManager::~WebContentsPresentationManager() = default;

@@ -88,6 +88,9 @@ class TargetThread : public SimpleThread {
 // sentinels. TSAN hangs on the AsyncSafeWaitableEvent FUTEX_WAIT call.
 #if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
 #define MAYBE_CopyStack DISABLED_CopyStack
+#elif defined(OS_CHROMEOS)
+// https://crbug.com/1042974
+#define MAYBE_CopyStack DISABLED_CopyStack
 #else
 #define MAYBE_CopyStack CopyStack
 #endif

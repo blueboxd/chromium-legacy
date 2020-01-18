@@ -301,6 +301,7 @@
 <translation id="3282568296779691940">Connexion à Chrome</translation>
 <translation id="3288003805934695103">D'actualiser la page</translation>
 <translation id="32895400574683172">Les notifications sont autorisées</translation>
+<translation id="3290926146403723641">Pour effectuer des tâches sur le Web à l'aide de l'Assistant Google, Chrome envoie l'URL et le contenu du site ainsi que les renseignements personnels pertinents à Google</translation>
 <translation id="3295530008794733555">Naviguez plus vite. Utilisez moins de données.</translation>
 <translation id="3298243779924642547">Simplifié</translation>
 <translation id="3303414029551471755">Lancer le téléchargement du contenu?</translation>
@@ -667,6 +668,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="605721222689873409">AA</translation>
 <translation id="6064125863973209585">Téléchargements terminés</translation>
 <translation id="6075798973483050474">Modifier la page d'accueil</translation>
+<translation id="6092062101542170135">Pour continuer, activez la NFC dans les paramètres d'Android</translation>
 <translation id="60923314841986378">Il reste <ph name="HOURS" /> heures</translation>
 <translation id="6108923351542677676">Configuration en cours...</translation>
 <translation id="6111020039983847643">données utilisées</translation>

@@ -420,7 +420,7 @@ class CommandBufferSetup {
     decoder_.reset(raster::RasterDecoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
         gpu_feature_info, gpu_preferences_, nullptr /* memory_tracker */,
-        shared_image_manager_.get(), context_state_));
+        shared_image_manager_.get(), context_state_, true /* is_privileged */));
 #else
     context_->MakeCurrent(surface_.get());
     // GLES2Decoder may Initialize feature_info differently than

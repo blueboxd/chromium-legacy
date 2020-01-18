@@ -21,11 +21,12 @@ namespace ash {
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantCardElement
     : public AssistantUiElement {
  public:
-  using ProcessingCallback = base::OnceCallback<void(bool)>;
-
   explicit AssistantCardElement(const std::string& html,
                                 const std::string& fallback);
   ~AssistantCardElement() override;
+
+  // AssistantUiElement:
+  void Process(ProcessingCallback callback) override;
 
   const std::string& html() const { return html_; }
   const std::string& fallback() const { return fallback_; }
@@ -38,31 +39,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantCardElement
     contents_view_ = std::move(contents_view);
   }
 
-  // Invoke to begin processing the card element. Upon completion, the specified
-  // |callback| will be run to indicate success or failure.
-  void Process(ProcessingCallback callback);
-
  private:
-  // Handles processing of an AssistantCardElement.
-  class Processor : public AssistantWebView2::Observer {
-   public:
-    Processor(AssistantCardElement& card_element, ProcessingCallback callback);
-    ~Processor() override;
-
-    // Invoke to begin processing.
-    void Process();
-
-    // AssistantWebView2::Observer:
-    void DidStopLoading() override;
-
-   private:
-    AssistantCardElement& card_element_;
-    ProcessingCallback callback_;
-
-    std::unique_ptr<AssistantWebView2> contents_view_;
-
-    DISALLOW_COPY_AND_ASSIGN(Processor);
-  };
+  class Processor;
 
   const std::string html_;
   const std::string fallback_;

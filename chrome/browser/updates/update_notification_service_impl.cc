@@ -124,4 +124,8 @@ void UpdateNotificationServiceImpl::ApplyLinearThrottle() {
   updates::UpdateThrottleInterval(scale * interval + offset);
 }
 
+void UpdateNotificationServiceImpl::OnUserClick() {
+  updates::LaunchChromeActivity();
+}
+
 }  // namespace updates

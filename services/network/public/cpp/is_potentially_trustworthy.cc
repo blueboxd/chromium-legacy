@@ -49,7 +49,7 @@ bool IsValidWildcardPattern(const std::string& hostname_pattern) {
   // hostname is valid.
   url::SchemeHostPort scheme_host_port(
       GURL(base::StringPrintf("http://%s:80", wildcards_replaced.c_str())));
-  if (scheme_host_port.IsInvalid())
+  if (!scheme_host_port.IsValid())
     return false;
 
   // Check that wildcards only appear beyond the eTLD+1.
@@ -59,7 +59,7 @@ bool IsValidWildcardPattern(const std::string& hostname_pattern) {
           net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
   // std::string::npos should only be returned for empty inputs, which should be
-  // filtered out by the IsInvalid() check above.
+  // filtered out by the IsValid() check above.
   CHECK(registry_length != std::string::npos);
   // If there is no registrar portion, the pattern is considered invalid.
   if (registry_length == 0)

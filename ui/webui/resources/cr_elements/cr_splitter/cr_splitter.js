@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
+import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 // TODO(arv): Currently this only supports horizontal layout.
 // TODO(arv): This ignores min-width and max-width of the elements to the
@@ -39,6 +39,8 @@ function getZoomFactor(doc) {
 
 Polymer({
   is: 'cr-splitter',
+
+  _template: null,
 
   properties: {
     resizeNextElement: {
@@ -266,4 +268,3 @@ Polymer({
     this.classList.remove('splitter-active');
   },
 });
-})();

@@ -19,6 +19,7 @@
 #include "components/autofill_assistant/browser/device_context.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/website_login_fetcher.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace autofill_assistant {
@@ -103,6 +104,7 @@ class ClientAndroid : public Client,
   std::string GetLocale() override;
   std::string GetCountryCode() override;
   DeviceContext GetDeviceContext() override;
+  content::WebContents* GetWebContents() override;
   void Shutdown(Metrics::DropOutReason reason) override;
 
   // Overrides AccessTokenFetcher

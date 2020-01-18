@@ -85,9 +85,6 @@ void ReleaseCopiedMSGEvent(const MSG& native_event);
 // Returns the detailed pointer information for touch events.
 PointerDetails GetTouchPointerDetailsFromMSG(const MSG& native_event);
 
-// Gets the touch id from a native event.
-int GetTouchId(const MSG& native_event);
-
 // Clear the touch id from bookkeeping if it is a release/cancel event.
 void ClearTouchIdIfReleased(const MSG& native_event);
 

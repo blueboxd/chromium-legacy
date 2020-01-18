@@ -122,7 +122,7 @@ class COMPONENT_EXPORT(URL) SchemeHostPort {
   const std::string& host() const { return host_; }
   const std::string& scheme() const { return scheme_; }
   uint16_t port() const { return port_; }
-  bool IsInvalid() const;
+  bool IsValid() const;
 
   // Serializes the SchemeHostPort tuple to a canonical form.
   //

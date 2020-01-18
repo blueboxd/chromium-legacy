@@ -282,10 +282,11 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     }
 
     @CalledByNative
-    private void setSelectedPaymentInstrument(@Nullable PersonalDataManager.CreditCard card,
+    private void setSelectedPaymentInstrument(WebContents webContents,
+            @Nullable PersonalDataManager.CreditCard card,
             @Nullable PersonalDataManager.AutofillProfile billingProfile) {
         set(SELECTED_PAYMENT_INSTRUMENT,
-                createAutofillPaymentInstrument(get(WEB_CONTENTS), card, billingProfile));
+                createAutofillPaymentInstrument(webContents, card, billingProfile));
     }
 
     /** Creates an empty list of login options. */
@@ -476,13 +477,13 @@ public class AssistantCollectUserDataModel extends PropertyModel {
         return new ArrayList<>();
     }
 
-    // TODO(b/144005336): Make this method static.
     @CalledByNative
-    private void addAutofillPaymentInstrument(List<AutofillPaymentInstrument> paymentInstruments,
+    private static void addAutofillPaymentInstrument(
+            List<AutofillPaymentInstrument> paymentInstruments, WebContents webContents,
             @Nullable PersonalDataManager.CreditCard card,
             @Nullable PersonalDataManager.AutofillProfile billingProfile) {
         AutofillPaymentInstrument paymentInstrument =
-                createAutofillPaymentInstrument(get(WEB_CONTENTS), card, billingProfile);
+                createAutofillPaymentInstrument(webContents, card, billingProfile);
         if (paymentInstrument != null) {
             paymentInstruments.add(paymentInstrument);
         }
@@ -491,8 +492,8 @@ public class AssistantCollectUserDataModel extends PropertyModel {
     // TODO(b/144005336): Call from native instead.
     @VisibleForTesting
     @Nullable
-    public static AutofillPaymentInstrument createAutofillPaymentInstrument(
-            @Nullable WebContents webContents, @Nullable PersonalDataManager.CreditCard card,
+    public static AutofillPaymentInstrument createAutofillPaymentInstrument(WebContents webContents,
+            @Nullable PersonalDataManager.CreditCard card,
             @Nullable PersonalDataManager.AutofillProfile billingProfile) {
         if (webContents == null) {
             return null;

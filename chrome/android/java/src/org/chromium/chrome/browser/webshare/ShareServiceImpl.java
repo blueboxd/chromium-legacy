@@ -186,8 +186,8 @@ public class ShareServiceImpl implements ShareService {
                                                           .setCallback(innerCallback);
 
         if (files == null || files.length == 0) {
-            ChromeActivity activity = (ChromeActivity) mWindow.getActivity().get();
-            activity.getShareDelegate().share(paramsBuilder.build());
+            ChromeActivity<?> activity = (ChromeActivity<?>) mWindow.getActivity().get();
+            activity.getShareDelegateSupplier().get().share(paramsBuilder.build());
             return;
         }
 

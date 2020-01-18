@@ -173,8 +173,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) SandboxFileSystemBackendDelegate
   // Registers quota observer for file updates on filesystem of |type|.
   void RegisterQuotaUpdateObserver(FileSystemType type);
 
-  void InvalidateUsageCache(const GURL& origin_url, FileSystemType type);
-  void StickyInvalidateUsageCache(const GURL& origin_url, FileSystemType type);
+  void InvalidateUsageCache(const url::Origin& origin, FileSystemType type);
+  void StickyInvalidateUsageCache(const url::Origin& origin,
+                                  FileSystemType type);
 
   void CollectOpenFileSystemMetrics(base::File::Error error_code);
 

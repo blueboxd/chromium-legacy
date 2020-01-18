@@ -192,6 +192,10 @@ DWORD GetGlobalFlagOrDefault(const base::string16& reg_key,
   return SUCCEEDED(hr) ? value : default_value;
 }
 
+HRESULT SetGlobalFlag(const base::string16& name, DWORD value) {
+  return SetMachineRegDWORD(kGcpRootKeyName, name, value);
+}
+
 HRESULT SetGlobalFlagForTesting(const base::string16& name,
                                 const base::string16& value) {
   return SetMachineRegString(kGcpRootKeyName, name, value);

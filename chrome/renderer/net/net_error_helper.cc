@@ -335,6 +335,7 @@ LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
 
   LocalizedError::PageState page_state = LocalizedError::GetPageState(
       error.reason(), error.domain(), error.url(), is_failed_post,
+      error.resolve_error_info().is_secure_network_error,
       error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
       IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),
@@ -366,6 +367,7 @@ LocalizedError::PageState NetErrorHelper::UpdateErrorPage(
     bool can_show_network_diagnostics_dialog) {
   LocalizedError::PageState page_state = LocalizedError::GetPageState(
       error.reason(), error.domain(), error.url(), is_failed_post,
+      error.resolve_error_info().is_secure_network_error,
       error.stale_copy_in_cache(), can_show_network_diagnostics_dialog,
       ChromeRenderThreadObserver::is_incognito_process(),
       IsOfflineContentOnNetErrorFeatureEnabled(), IsAutoFetchFeatureEnabled(),

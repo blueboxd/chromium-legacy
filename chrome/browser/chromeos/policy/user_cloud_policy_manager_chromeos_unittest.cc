@@ -1248,7 +1248,8 @@ TEST_P(UserCloudPolicyManagerChromeOSChildTest, RefreshScheduler) {
   // of the test will work incorrectly and should be updated.
   const int iterations = 3;
   base::TimeDelta refresh_delay = base::TimeDelta::FromMilliseconds(
-      manager_->core()->refresh_scheduler()->GetActualRefreshDelay());
+      manager_->core()->refresh_scheduler()->GetActualRefreshDelay() +
+      manager_->core()->refresh_scheduler()->GetSaltDelayForTesting());
   ASSERT_GT(refresh_delay, iterations * token_lifetime);
 
   // Advancing the clock will trigger delivery of new tokens. It should not

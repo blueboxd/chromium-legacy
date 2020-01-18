@@ -68,8 +68,7 @@ def validate_blink_idl_definitions(idl_filename, idl_file_basename,
             len(definitions.enumerations) + len(definitions.typedefs) +
             len(definitions.callback_functions))
         if number_of_definitions == 0:
-            raise Exception(
-                'No definition found in %s' % idl_filename)
+            raise Exception('No definition found in %s. (Missing semicolon?)' % idl_filename)
         return
     target = targets[0]
     if target.is_partial:

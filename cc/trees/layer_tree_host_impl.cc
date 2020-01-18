@@ -3400,6 +3400,7 @@ LayerTreeHostImpl::TakeCompletedImageDecodeRequests() {
 std::unique_ptr<MutatorEvents> LayerTreeHostImpl::TakeMutatorEvents() {
   std::unique_ptr<MutatorEvents> events = mutator_host_->CreateEvents();
   std::swap(events, mutator_events_);
+  mutator_host_->TakeTimeUpdatedEvents(events.get());
   return events;
 }
 
@@ -5292,6 +5293,8 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
   // animation_host, so on the last frame of an animation we will
   // still request an extra SetNeedsAnimate here.
   if (animated) {
+    // TODO(crbug.com/1039750): If only scroll animations present, schedule a
+    // frame only if scroll changes.
     SetNeedsOneBeginImplFrame();
     frame_trackers_.StartSequence(
         FrameSequenceTrackerType::kCompositorAnimation);
@@ -5300,7 +5303,7 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
         FrameSequenceTrackerType::kCompositorAnimation);
   }
 
-  // TODO(crbug.com/551138): We could return true only if the animaitons are on
+  // TODO(crbug.com/551138): We could return true only if the animations are on
   // the active tree. There's no need to cause a draw to take place from
   // animations starting/ticking on the pending tree.
   return animated;

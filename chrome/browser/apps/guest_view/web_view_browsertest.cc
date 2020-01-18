@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
@@ -54,6 +53,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/download/public/common/download_task_runner.h"
+#include "components/find_in_page/find_tab_helper.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/guest_view_manager_factory.h"
@@ -4122,7 +4122,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSignInWebViewTest,
   // which is before attaching begins).
   auto* unattached_guest = GetGuestViewManager()->GetLastGuestCreated();
   EXPECT_NE(unattached_guest, attached_guest);
-  auto* find_helper = FindTabHelper::FromWebContents(embedder_web_contents);
+  auto* find_helper =
+      find_in_page::FindTabHelper::FromWebContents(embedder_web_contents);
   find_helper->StartFinding(base::ASCIIToUTF16("doesn't matter"), true, true,
                             false);
   auto pending =

@@ -84,7 +84,7 @@ public class DataReductionMainMenuItem extends FrameLayout implements View.OnCli
         RecordUserAction.record("MobileMenuDataSaverOpened");
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putBoolean(DataReductionPreferenceFragment.FROM_MAIN_MENU, true);
-        SettingsLauncher.launchSettingsPage(
+        SettingsLauncher.getInstance().launchSettingsPage(
                 getContext(), DataReductionPreferenceFragment.class, fragmentArgs);
 
         Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());

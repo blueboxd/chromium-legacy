@@ -79,7 +79,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   Element* MouseButtonListener() const;
   bool IsNativeCheckboxOrRadio() const;
   void SetNode(Node*);
-  AXObject* CorrespondingControlForLabelElement() const;
+  AXObject* CorrespondingControlAXObjectForLabelElement() const;
+  AXObject* CorrespondingLabelAXObject() const;
   HTMLLabelElement* LabelElementContainer() const;
 
   //

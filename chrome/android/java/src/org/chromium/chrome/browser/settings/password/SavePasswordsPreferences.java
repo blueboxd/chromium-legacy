@@ -389,7 +389,7 @@ public class SavePasswordsPreferences
             Bundle fragmentAgs = new Bundle(preference.getExtras());
             fragmentAgs.putBoolean(
                     SavePasswordsPreferences.EXTRA_FOUND_VIA_SEARCH, mSearchQuery != null);
-            SettingsLauncher.launchSettingsPage(
+            SettingsLauncher.getInstance().launchSettingsPage(
                     getActivity(), PasswordEntryViewer.class, fragmentAgs);
         }
         return true;

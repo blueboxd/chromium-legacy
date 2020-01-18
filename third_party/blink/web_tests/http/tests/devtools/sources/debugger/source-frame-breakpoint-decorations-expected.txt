@@ -25,13 +25,11 @@ breakpoint at 2
   inline breakpoint at (2, 4)
   inline breakpoint at (2, 13) disabled
 Adding conditional enabled breakpoint
-breakpoint at 2 conditional
+breakpoint at 2
   inline breakpoint at (2, 4)
   inline breakpoint at (2, 13) disabled
 Disable breakpoints
-breakpoint at 2 disabled conditional
-  inline breakpoint at (2, 4) disabled
-  inline breakpoint at (2, 13) disabled
+breakpoint at 2 disabled
 Enable breakpoints
 breakpoint at 2 conditional
   inline breakpoint at (2, 4)

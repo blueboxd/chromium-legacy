@@ -11,6 +11,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.components.location.LocationUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -483,6 +484,14 @@ public class WebsitePreferenceBridge {
      */
     public static boolean isAllowLocationManagedByCustodian() {
         return WebsitePreferenceBridgeJni.get().getAllowLocationManagedByCustodian();
+    }
+
+    /**
+     * @return Whether location is enabled system-wide and the Chrome location setting is enabled.
+     */
+    public static boolean areAllLocationSettingsEnabled() {
+        return isAllowLocationEnabled()
+                && LocationUtils.getInstance().isSystemLocationSettingEnabled();
     }
 
     /**

@@ -10,9 +10,7 @@ source_set("feature_flags") {
     "features.h",
     "features.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("breadcrumbs") {

@@ -393,6 +393,11 @@ public final class ChromePreferenceKeys {
     public static final String FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED =
             "tab_group_android_enabled";
 
+    public static final String FONT_USER_FONT_SCALE_FACTOR = "user_font_scale_factor";
+    public static final String FONT_USER_SET_FORCE_ENABLE_ZOOM = "user_set_force_enable_zoom";
+
+    public static final String HISTORY_SHOW_HISTORY_INFO = "history_home_show_info";
+
     /** Keys used to save settings related to homepage. */
     public static final String HOMEPAGE_CUSTOM_URI = "homepage_custom_uri";
     public static final String HOMEPAGE_ENABLED = "homepage";
@@ -442,6 +447,13 @@ public final class ChromePreferenceKeys {
 
     /** Preference to indicate whether payment request has been completed successfully once.*/
     public static final String PAYMENTS_PAYMENT_COMPLETE_ONCE = "payment_complete_once";
+
+    public static final String PREFETCH_HAS_NEW_PAGES = "prefetch_notification_has_new_pages";
+    public static final String PREFETCH_IGNORED_NOTIFICATION_COUNTER =
+            "prefetch_notification_ignored_counter";
+    public static final String PREFETCH_NOTIFICATION_ENABLED = "prefetch_notification_enabled";
+    public static final String PREFETCH_NOTIFICATION_TIME = "prefetch_notification_shown_time";
+    public static final String PREFETCH_OFFLINE_COUNTER = "prefetch_notification_offline_counter";
 
     public static final String PRIVACY_METRICS_REPORTING = "metrics_reporting";
     public static final String PRIVACY_METRICS_IN_SAMPLE = "in_metrics_sample";
@@ -748,6 +760,9 @@ public final class ChromePreferenceKeys {
                 FLAGS_CACHED_START_SURFACE_ENABLED,
                 FLAGS_CACHED_SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
                 FLAGS_CACHED_TAB_GROUPS_ANDROID_ENABLED,
+                FONT_USER_FONT_SCALE_FACTOR,
+                FONT_USER_SET_FORCE_ENABLE_ZOOM,
+                HISTORY_SHOW_HISTORY_INFO,
                 HOMEPAGE_CUSTOM_URI,
                 HOMEPAGE_ENABLED,
                 HOMEPAGE_USE_DEFAULT_URI,
@@ -761,6 +776,11 @@ public final class ChromePreferenceKeys {
                 NTP_SNIPPETS_IS_SCHEDULED,
                 OFFLINE_INDICATOR_V2_ENABLED,
                 PAYMENTS_PAYMENT_COMPLETE_ONCE,
+                PREFETCH_HAS_NEW_PAGES,
+                PREFETCH_IGNORED_NOTIFICATION_COUNTER,
+                PREFETCH_NOTIFICATION_ENABLED,
+                PREFETCH_NOTIFICATION_TIME,
+                PREFETCH_OFFLINE_COUNTER,
                 PRIVACY_ALLOW_PRERENDER_OLD,
                 PRIVACY_BANDWIDTH_NO_CELLULAR_OLD,
                 PRIVACY_BANDWIDTH_OLD,

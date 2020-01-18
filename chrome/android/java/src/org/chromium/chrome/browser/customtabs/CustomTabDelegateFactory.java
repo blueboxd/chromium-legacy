@@ -19,6 +19,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -78,7 +79,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
      */
     static class CustomTabNavigationDelegate extends ExternalNavigationDelegateImpl {
         private static final String TAG = "customtabs";
-        private final String mClientPackageName;
+        private final TabAssociatedApp mTabAssociatedApp;
         private final ExternalAuthUtils mExternalAuthUtils;
         private final ExternalIntentsPolicyProvider mExternalIntentsPolicyProvider;
         private final @ActivityType int mActivityType;
@@ -88,11 +89,11 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         /**
          * Constructs a new instance of {@link CustomTabNavigationDelegate}.
          */
-        CustomTabNavigationDelegate(Tab tab, String clientPackageName, ExternalAuthUtils authUtils,
+        CustomTabNavigationDelegate(Tab tab, ExternalAuthUtils authUtils,
                 ExternalIntentsPolicyProvider externalIntentsPolicyProvider,
                 @ActivityType int activityType) {
             super(tab);
-            mClientPackageName = clientPackageName;
+            mTabAssociatedApp = TabAssociatedApp.from(tab);
             mExternalAuthUtils = authUtils;
             mExternalIntentsPolicyProvider = externalIntentsPolicyProvider;
             mActivityType = activityType;
@@ -114,9 +115,10 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
             try {
                 // For a URL chrome can handle and there is no default set, handle it ourselves.
                 if (!hasDefaultHandler) {
-                    if (!TextUtils.isEmpty(mClientPackageName)
-                            && isPackageSpecializedHandler(mClientPackageName, intent)) {
-                        intent.setPackage(mClientPackageName);
+                    String clientPackageName = mTabAssociatedApp.getAppId();
+                    if (!TextUtils.isEmpty(clientPackageName)
+                            && isPackageSpecializedHandler(clientPackageName, intent)) {
+                        intent.setPackage(clientPackageName);
                     } else if (!isExternalProtocol) {
                         return false;
                     }
@@ -163,10 +165,11 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
 
         @Override
         public boolean isIntentForTrustedCallingApp(Intent intent) {
-            if (TextUtils.isEmpty(mClientPackageName)) return false;
-            if (!mExternalAuthUtils.isGoogleSigned(mClientPackageName)) return false;
+            String clientPackageName = mTabAssociatedApp.getAppId();
+            if (TextUtils.isEmpty(clientPackageName)) return false;
+            if (!mExternalAuthUtils.isGoogleSigned(clientPackageName)) return false;
 
-            return isPackageSpecializedHandler(mClientPackageName, intent);
+            return isPackageSpecializedHandler(clientPackageName, intent);
         }
 
         /**
@@ -356,7 +359,6 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
     private final MultiWindowUtils mMultiWindowUtils;
     private final PendingIntent mFocusIntent;
     private ExternalIntentsPolicyProvider mExternalIntentsPolicyProvider;
-    private final ShareDelegate mShareDelegate;
 
     private TabWebContentsDelegateAndroid mWebContentsDelegateAndroid;
     private ExternalNavigationDelegateImpl mNavigationDelegate;
@@ -380,8 +382,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
             @WebDisplayMode int displayMode, boolean shouldEnableEmbeddedMediaExperience,
             BrowserControlsVisibilityDelegate visibilityDelegate, ExternalAuthUtils authUtils,
             MultiWindowUtils multiWindowUtils, @Nullable PendingIntent focusIntent,
-            ExternalIntentsPolicyProvider externalIntentsPolicyProvider,
-            ShareDelegate shareDelegate) {
+            ExternalIntentsPolicyProvider externalIntentsPolicyProvider) {
         mActivity = activity;
         mShouldHideBrowserControls = shouldHideBrowserControls;
         mIsOpenedByChrome = isOpenedByChrome;
@@ -394,7 +395,6 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         mMultiWindowUtils = multiWindowUtils;
         mFocusIntent = focusIntent;
         mExternalIntentsPolicyProvider = externalIntentsPolicyProvider;
-        mShareDelegate = shareDelegate;
     }
 
     @Inject
@@ -408,7 +408,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
                 getDisplayMode(intentDataProvider),
                 intentDataProvider.shouldEnableEmbeddedMediaExperience(), visibilityDelegate,
                 authUtils, multiWindowUtils, intentDataProvider.getFocusIntent(),
-                externalIntentsPolicyProvider, activity.getShareDelegate());
+                externalIntentsPolicyProvider);
     }
 
     /**
@@ -417,7 +417,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
      */
     static CustomTabDelegateFactory createDummy() {
         return new CustomTabDelegateFactory(null, false, false, null, WebDisplayMode.BROWSER, false,
-                null, null, null, null, null, null);
+                null, null, null, null, null);
     }
 
     @Override
@@ -462,9 +462,8 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
                 }
             };
         } else {
-            mNavigationDelegate =
-                    new CustomTabNavigationDelegate(tab, TabAssociatedApp.getAppId(tab),
-                            mExternalAuthUtils, mExternalIntentsPolicyProvider, mActivityType);
+            mNavigationDelegate = new CustomTabNavigationDelegate(
+                    tab, mExternalAuthUtils, mExternalIntentsPolicyProvider, mActivityType);
         }
         return new ExternalNavigationHandler(mNavigationDelegate);
     }
@@ -473,8 +472,10 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
     public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
         @ChromeContextMenuPopulator.ContextMenuMode
         int contextMenuMode = getContextMenuMode(mActivityType);
+        Supplier<ShareDelegate> shareDelegateSupplier =
+                mActivity == null ? null : mActivity.getShareDelegateSupplier();
         return new ChromeContextMenuPopulator(
-                new TabContextMenuItemDelegate(tab), mShareDelegate, contextMenuMode);
+                new TabContextMenuItemDelegate(tab), shareDelegateSupplier, contextMenuMode);
     }
 
     /**

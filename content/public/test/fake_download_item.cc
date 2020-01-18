@@ -419,6 +419,12 @@ download::DownloadDangerType FakeDownloadItem::GetDangerType() const {
   return download::DownloadDangerType();
 }
 
+download::DownloadItem::MixedContentStatus
+FakeDownloadItem::GetMixedContentStatus() const {
+  NOTREACHED();
+  return download::DownloadItem::MixedContentStatus();
+}
+
 bool FakeDownloadItem::TimeRemaining(base::TimeDelta* remaining) const {
   NOTREACHED();
   return false;

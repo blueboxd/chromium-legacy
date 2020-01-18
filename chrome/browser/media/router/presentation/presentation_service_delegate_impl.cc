@@ -115,6 +115,11 @@ class PresentationFrame {
           receiver_connection_receiver);
   void RemovePresentation(const std::string& presentation_id);
 
+  const base::small_map<std::map<std::string, MediaRoute>>&
+  presentation_id_to_route() const {
+    return presentation_id_to_route_;
+  }
+
  private:
   base::small_map<std::map<std::string, MediaRoute>> presentation_id_to_route_;
   base::small_map<
@@ -502,8 +507,7 @@ void PresentationServiceDelegateImpl::AddPresentation(
     const MediaRoute& route) {
   auto* presentation_frame = GetOrAddPresentationFrame(render_frame_host_id);
   presentation_frame->AddPresentation(presentation_info, route);
-  // TODO(crbug.com/1031672): Notify WebContentsPresentationManager::Observer
-  // that the presentation routes have changed for the WebContents.
+  NotifyMediaRoutesChanged();
 }
 
 void PresentationServiceDelegateImpl::RemovePresentation(
@@ -512,8 +516,7 @@ void PresentationServiceDelegateImpl::RemovePresentation(
   const auto it = presentation_frames_.find(render_frame_host_id);
   if (it != presentation_frames_.end())
     it->second->RemovePresentation(presentation_id);
-  // TODO(crbug.com/1031672): Notify WebContentsPresentationManager::Observer
-  // that the presentation routes have changed for the WebContents.
+  NotifyMediaRoutesChanged();
 }
 
 void PresentationServiceDelegateImpl::StartPresentation(
@@ -538,7 +541,8 @@ void PresentationServiceDelegateImpl::StartPresentation(
       request,
       base::BindOnce(
           &PresentationServiceDelegateImpl::OnStartPresentationSucceeded,
-          GetWeakPtr(), render_frame_host_id, std::move(success_cb)),
+          weak_factory_.GetWeakPtr(), render_frame_host_id,
+          std::move(success_cb)),
       std::move(error_cb));
   if (start_presentation_cb_) {
     start_presentation_cb_.Run(std::move(presentation_context));
@@ -609,8 +613,8 @@ void PresentationServiceDelegateImpl::ReconnectPresentation(
         MediaSource::ForPresentationUrl(presentation_url).id(), presentation_id,
         request.frame_origin, web_contents_,
         base::BindOnce(&PresentationServiceDelegateImpl::OnJoinRouteResponse,
-                       GetWeakPtr(), render_frame_host_id, presentation_url,
-                       presentation_id, std::move(success_cb),
+                       weak_factory_.GetWeakPtr(), render_frame_host_id,
+                       presentation_url, presentation_id, std::move(success_cb),
                        std::move(error_cb)),
         base::TimeDelta(), incognito);
   }
@@ -718,7 +722,7 @@ void PresentationServiceDelegateImpl::OnPresentationResponse(
   }
 }
 
-base::WeakPtr<PresentationServiceDelegateImpl>
+base::WeakPtr<WebContentsPresentationManager>
 PresentationServiceDelegateImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
@@ -802,10 +806,20 @@ void PresentationServiceDelegateImpl::EnsurePresentationConnection(
 
 void PresentationServiceDelegateImpl::NotifyDefaultPresentationChanged(
     const content::PresentationRequest* request) {
-  for (WebContentsPresentationManager::Observer& presentation_observer :
-       presentation_observers_) {
+  for (auto& presentation_observer : presentation_observers_)
     presentation_observer.OnDefaultPresentationChanged(request);
+}
+
+void PresentationServiceDelegateImpl::NotifyMediaRoutesChanged() {
+  std::vector<MediaRoute> routes;
+  for (const auto& presentation_frame : presentation_frames_) {
+    for (const auto& route :
+         presentation_frame.second->presentation_id_to_route()) {
+      routes.push_back(route.second);
+    }
   }
+  for (auto& presentation_observer : presentation_observers_)
+    presentation_observer.OnMediaRoutesChanged(routes);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(PresentationServiceDelegateImpl)

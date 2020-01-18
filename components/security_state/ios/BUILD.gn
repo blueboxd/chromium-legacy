@@ -25,9 +25,7 @@ component("ios") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "security_state_utils_unittest.mm",
-  ]
+  sources = [ "security_state_utils_unittest.mm" ]
   deps = [
     ":ios",
     "//components/security_state/core",

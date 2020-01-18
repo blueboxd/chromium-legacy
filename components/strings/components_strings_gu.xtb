@@ -126,7 +126,6 @@
     &lt;p&gt;આ સમસ્યા ઉકેલવા માટે, તમે ખોલવાનો પ્રયાસ કરી રહ્યા છો એ પેજ પર &lt;strong&gt;કનેક્ટ કરો&lt;/strong&gt; પર ક્લિક કરો.&lt;/p&gt;</translation>
 <translation id="1513706915089223971">ઇતિહાસના એન્ટ્રીની સૂચિ</translation>
 <translation id="1517433312004943670">ફોન નંબર આવશ્યક</translation>
-<translation id="1517500485252541695">સ્વીકૃત ક્રેડિટ અને ડેબિટ કાર્ડ</translation>
 <translation id="1519264250979466059">નિર્માણ તારીખ</translation>
 <translation id="1521655867290435174">Google શીટ</translation>
 <translation id="1527263332363067270">કનેક્શનની રાહ જોઈ રહ્યાં છીએ...</translation>
@@ -203,7 +202,6 @@
 <translation id="1842969606798536927">ચુકવણી કરો</translation>
 <translation id="1871208020102129563">પ્રૉક્સી નક્કી કરેલા પ્રૉક્સી સર્વરનો ઉપયોગ કરવા માટે સેટ કરેલી છે, .pac સ્ક્રિપ્ટ URL નથી.</translation>
 <translation id="1871284979644508959">જરૂરી ફીલ્ડ</translation>
-<translation id="1874765382782611674">સ્વીકૃત ડેબિટ કાર્ડ</translation>
 <translation id="1875512691959384712">Google ફોર્મ્સ</translation>
 <translation id="187918866476621466">સ્ટાર્ટઅપ પૃષ્ઠો ખોલો</translation>
 <translation id="1883255238294161206">સૂચિ સંકુચિત કરો</translation>
@@ -216,11 +214,9 @@
 <translation id="1919345977826869612">જાહેરાતો</translation>
 <translation id="1919367280705858090">ભૂલના ચોક્કસ સંદેશ વડે સહાય મેળવો</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{કોઈ નહીં}=1{1 સાઇટ}one{# સાઇટ}other{# સાઇટ}}</translation>
-<translation id="1927235823738766038">સ્વીકૃત ક્રેડિટ અને ડેબિટ કાર્ડ</translation>
 <translation id="194030505837763158"><ph name="LINK" /> પર જાઓ</translation>
 <translation id="1945968466830820669">તમે તમારી સંસ્થાના એકાઉન્ટ માટે ઍક્સેસ ગુમાવી શકો છો અથવા તમને ઓળખ ચોરીનો અનુભવ થઈ શકે છે. Chromium તમને હમણાં જ તમારો પાસવર્ડ બદલવાની ભલામણ કરે છે.</translation>
 <translation id="1947454675006758438">ઉપર જમણી બાજુએ સ્ટેપલ લગાવો</translation>
-<translation id="1948773908305951926">સ્વીકૃત પ્રીપેઇડ કાર્ડ</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> બુકમાર્ક્સ</translation>
 <translation id="1973335181906896915">અનુક્રમાંકન ભૂલ</translation>
 <translation id="1974060860693918893">વિગતવાર</translation>
@@ -297,7 +293,6 @@
 <translation id="2315864634253056100">આ સાઇટનું નામ <ph name="LOOKALIKE_DOMAIN" /> જેવું લાગે છે. હુમલાખોરો ઘણી વાર વેબ ઍડ્રેસમાં સરળતાથી જોઈ ન શકાય એવા ફેરફારો કરીને સાઇટની નકલ કરતા હોય છે.</translation>
 <translation id="2316887270356262533">1 MB કરતાં ઓછું ખાલી કરે છે. તમારી આગલી મુલાકાત સમયે કેટલીક સાઇટો વધુ ધીમે લોડ થઈ શકે છે.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> માટે વપરાશકર્તાનામ અને પાસવર્ડ આવશ્યક છે.</translation>
-<translation id="2317583587496011522">ડેબિટ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, <ph name="EXPIRATION_DATE_ABBR" />ના રોજ સમાપ્ત થાય છે</translation>
 <translation id="2337852623177822836">તમારા વ્યવસ્થાપકે નિયંત્રિત કરેલ સેટિંગ</translation>
 <translation id="2346319942568447007">તમે કૉપિ કરેલી છબી</translation>
@@ -337,7 +332,6 @@
 <translation id="2495093607237746763">જો ચેક કરેલું હોય, તો ઝડપથી ફોર્મ ભરવા માટે Chromium આ ઉપકરણ પર તમારા કાર્ડની એક કૉપિ સંગ્રહિત કરશે.</translation>
 <translation id="2498091847651709837">નવું કાર્ડ સ્કૅન કરો</translation>
 <translation id="2501278716633472235">પાછા જાઓ</translation>
-<translation id="2503184589641749290">સ્વીકૃત ડેબિટ અને પ્રીપેઇડ કાર્ડ</translation>
 <translation id="2505268675989099013">એકાઉન્ટ સુરક્ષિત કરો</translation>
 <translation id="2515629240566999685">તમારા વિસ્તારમાં સિગ્નલ તપાસીને</translation>
 <translation id="2521385132275182522">નીચે જમણી બાજુએ સ્ટેપલ લાગાવો</translation>
@@ -401,7 +395,6 @@
 <translation id="277499241957683684">ઉપકરણ રેકોર્ડ ખૂટે છે</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">કનેક્શન ફરીથી સેટ થયું.</translation>
-<translation id="2788784517760473862">સ્વીકૃત ક્રેડિટ કાર્ડ</translation>
 <translation id="2792012897584536778">આ ડિવાઇસના વ્યવસ્થાપકોએ સુરક્ષા પ્રમાણપત્રો સેટ અપ કર્યા છે, જેના કારણે તેમને તમે મુલાકાત લો તે વેબસાઇટનું કન્ટેન્ટ જોવાની મંજૂરી મળી શકે છે.</translation>
 <translation id="2799020568854403057">સાઇટ આગળ હાનિકારક ઍપ્લિકેશનો ધરાવે છે</translation>
 <translation id="2799223571221894425">ફરીથી લોંચ કરો</translation>
@@ -548,7 +541,6 @@
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> પરનું શામેલ કરેલ પેજ કહે છે કે</translation>
 <translation id="3581089476000296252">આ પેજ તૈયાર થશે, ત્યારે Chrome તમને જણાવશે. &lt;a&gt;રદ કરો&lt;/a&gt;</translation>
-<translation id="358285529439630156">ક્રેડિટ અને પ્રીપેઇડ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
 <translation id="3582930987043644930">નામ ઉમેરો</translation>
 <translation id="3583757800736429874">&amp;ખસેડવું ફરી કરો</translation>
 <translation id="3584299510153766161">નીચેની બાજુએ બે કાણાં પાડો</translation>
@@ -613,7 +605,6 @@
 <translation id="3828924085048779000">ખાલી પાસફ્રેઝને અનુમતિ નથી. </translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" />એ વધારાના કાર્યો માટે એક્સ્ટેંશન ઇન્સ્ટૉલ કર્યા છે. એક્સ્ટેંશન પાસે તમારા કેટલાક ડેટાનો ઍક્સેસ છે.</translation>
 <translation id="3832522519263485449">ડાબી બાજુએ એકથી વધુ કાણાં પાડો</translation>
-<translation id="3838154488026099170">હમણાં જ કોઈ છેતરામણી સાઇટ પર તમે તમારો પાસવર્ડ દાખલ કર્યો. Chromium <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> અને <ph name="WEBSITE_3" /> તેમજ તમે આ પાસવર્ડનો જ્યાં ઉપયોગ કરતા હોય તેના પર જઈને તેને હમણાં જ બદલવાનો સુઝાવ આપે છે.</translation>
 <translation id="385051799172605136">પાછળ</translation>
 <translation id="3858027520442213535">તારીખ અને સમય અપડેટ કરો</translation>
 <translation id="3884278016824448484">વિરોધાભાસી ઉપકરણ ઓળખકર્તા</translation>
@@ -651,7 +642,6 @@
 <translation id="4072486802667267160">તમારા ઑર્ડરની પ્રક્રિયા કરતી વખતે એક ભૂલ આવી હતી. કૃપા કરીને ફરીથી પ્રયાસ કરો.</translation>
 <translation id="4075732493274867456">ક્લાઇન્ટ અને સર્વર સામાન્ય SSL પ્રોટોકોલ વર્ઝન અથવા સાઇફર સ્યૂટની સહાય કરતા નથી.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
-<translation id="4077092919748553596">હમણાં જ કોઈ છેતરામણી સાઇટ પર તમે તમારો પાસવર્ડ દાખલ કર્યો. Chrome <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> અને <ph name="WEBSITE_3" /> તેમજ તમે આ પાસવર્ડનો જ્યાં ઉપયોગ કરતા હોય તે અન્ય સાઇટ પર જઈને તેને હમણાં જ બદલવાનો સુઝાવ આપે છે.</translation>
 <translation id="4079302484614802869">પ્રૉક્સી ગોઠવણી .pac સ્ક્રિપ્ટ URLનો ઉપયોગ કરવા માટે સેટ છે, ફિક્સ્ડ પ્રૉક્સી સર્વર માટે નહીંં.</translation>
 <translation id="4082393374666368382">સેટિંગ - મેનેજમેન્ટ</translation>
 <translation id="4098354747657067197">આગળ છેતરામણી સાઇટ છે</translation>
@@ -748,7 +738,6 @@
 <translation id="4434045419905280838">પૉપ-અપ અને રીડાયરેક્ટ</translation>
 <translation id="4435702339979719576">પોસ્ટકાર્ડ)</translation>
 <translation id="443673843213245140">પ્રૉક્સીનો ઉપયોગ બંધ કરેલો છે પણ એક સ્પષ્ટ પ્રૉક્સી ગોઠવણીનો ઉલ્લેખ કરેલો છે.</translation>
-<translation id="445100540951337728">સ્વીકૃત ડેબિટ કાર્ડ</translation>
 <translation id="4466881336512663640">ફોર્મના ફેરફારો ગુમાવશો. શું તમે ખરેખર ચાલુ રાખવા માગો છો?</translation>
 <translation id="4477350412780666475">આગલો ટ્રૅક</translation>
 <translation id="4482953324121162758">આ સાઇટનો અનુવાદ થશે નહીં.</translation>
@@ -953,6 +942,7 @@
 <translation id="5457113250005438886">અમાન્ય</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> વધુ}one{<ph name="CONTACT_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> વધુ}other{<ph name="CONTACT_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> વધુ}}</translation>
 <translation id="5470861586879999274">&amp;ફરી ફેરફાર કરો</translation>
+<translation id="5472133193607270166">જ્યારે ચાલુ હોય, ત્યારે સાઇટ જાહેરાતોને વ્યક્તિગત બનાવવા માટે બધી અલગ-અલગ સાઇટ પરની તમારી બ્રાઉઝિંગ પ્રવૃત્તિનો ઉપયોગ કરી શકતી નથી. અમુક સાઇટ કદાચ યોગ્ય રીતે કાર્ય કરશે નહીં.</translation>
 <translation id="5478437291406423475">B6/C4 (એન્વલપ)</translation>
 <translation id="5481076368049295676">આ કન્ટેન્ટ કદાચ તમારા ડિવાઇસ પર જોખમકારક સૉફ્ટવેર ઇન્સ્ટૉલ કરવાનો પ્રયાસ કરી શકે છે કે જે તમારી માહિતીની ચોરી કરે અથવા કાઢી નાખે છે. <ph name="BEGIN_LINK" />છતાં પણ બતાવો<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">માન્ય સરનામું ઉમેરો</translation>
@@ -1006,7 +996,6 @@
 <translation id="570530837424789914">મેનેજ કરો…</translation>
 <translation id="57094364128775171">સશક્ત પાસવર્ડ સૂચવો…</translation>
 <translation id="5710435578057952990">આ વેબસાઇટની ઓળખ ચકાસવામાં આવી નથી.</translation>
-<translation id="5719499550583120431">પ્રીપેઇડ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
 <translation id="5720705177508910913">વર્તમાન વપરાશકર્તા</translation>
 <translation id="5728056243719941842">C5 (એન્વલપ)</translation>
 <translation id="5730040223043577876">જો તમે અન્ય સાઇટ પર તમારા પાસવર્ડનો ફરી ઉપયોગ કર્યો હોય, તો Chrome તેને રીસેટ કરવાનો સુઝાવ આપે છે.</translation>
@@ -1041,7 +1030,6 @@
 <translation id="5869405914158311789">આ સાઇટ પર પહોંચી શકાતું નથી</translation>
 <translation id="5869522115854928033">સાચવેલા પાસવર્ડ્સ</translation>
 <translation id="5887400589839399685">કાર્ડ સાચવ્યું</translation>
-<translation id="5893752035575986141">ક્રેડિટ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
 <translation id="5895138241574237353">પુનઃપ્રારંભ કરો</translation>
 <translation id="5901630391730855834">પીળો</translation>
 <translation id="5905445707201418379"><ph name="ORIGIN" />ની ઑરિજિન પૉલિસી અનુસાર બ્લૉક કરેલી છે.</translation>
@@ -1093,7 +1081,6 @@
 <translation id="6106989379647458772"><ph name="PAGE" /> પરનું વેબપેજ થોડી વાર માટે બંધ હોઈ શકે છે અથવા તે કાયમ માટે નવા વેબ ઍડ્રેસ પર ખસેડવામાં આવ્યું હોઈ શકે છે.</translation>
 <translation id="610911394827799129">તમારા Google એકાઉન્ટમાં <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> પર બ્રાઉઝિંગ ઇતિહાસના બીજા સ્વરૂપો હોય શકે છે</translation>
 <translation id="6120179357481664955">તમારું UPI ID યાદ રાખીએ?</translation>
-<translation id="6132597952260690497">ઇન્સ્ટૉલ કરેલાં એક્સ્ટેંશન અને પ્લગ-ઇન વિશે માહિતી</translation>
 <translation id="6146055958333702838">કોઈપણ કેબલ્સ તપાસો અને તમે કદાચ ઉપયોગમાં લઇ રહ્યાં હોય તેવા કોઇપણ રાઉટર્સ, મૉડેમ્સ 
     અથવા અન્ય નેટવર્ક ઉપકરણોને રીબૂટ કરો.</translation>
 <translation id="614940544461990577">પ્રયાસ કરો:</translation>
@@ -1102,6 +1089,7 @@
 <translation id="6157877588268064908">વિતરણ પદ્ધતિ અને આવશ્યકતાઓ જોવા માટે, એક સરનામું પસંદ કરો</translation>
 <translation id="6165508094623778733">વધુ જાણો</translation>
 <translation id="6177128806592000436">આ સાઇટ પરનું તમારું કનેક્શન સુરક્ષિત નથી</translation>
+<translation id="6196640612572343990">તૃતીય પક્ષની કુકીઝ અવરોધિત કરો</translation>
 <translation id="6203231073485539293">તમારું ઇન્ટરનેટ કનેક્શન તપાસો</translation>
 <translation id="6218753634732582820">Chromium માંથી સરનામું દૂર કરીએ?</translation>
 <translation id="622039917539443112">સમાંતર ફોલ્ડ</translation>
@@ -1174,7 +1162,6 @@
 <translation id="6476284679642588870">ચુકવણી પદ્ધતિઓ મેનેજ કરો</translation>
 <translation id="6489534406876378309">ક્રેશ અપલોડ કરવાનું શરૂ કરો</translation>
 <translation id="6499038740797743453">પાસવર્ડ રીસેટ કરીએ?</translation>
-<translation id="6507833130742554667">ક્રેડિટ અને ડેબિટ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
 <translation id="6508722015517270189">Chrome ને પુનઃપ્રારંભ કરો</translation>
 <translation id="6517596291481585650">ચેતવણી: આ નીતિને નીતિ દ્વારા ઉલ્લેખ થયા મુજબ સૂચિ તરીકે મર્જ કરવામાં આવી ન હતી, કારણ કે તે સૂચિ નથી.</translation>
 <translation id="6518133107902771759">પ્રમાણિત કરો</translation>
@@ -1314,7 +1301,6 @@
 <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> પર ખાનગી કનેક્શન સ્થાપિત કરી શકાતું નથી કારણ કે તમારા ઉપકરણની તારીખ અને સમય (<ph name="DATE_AND_TIME" />) અયોગ્ય છે.</translation>
 <translation id="7260504762447901703">ઍક્સેસ રદબાતલ કરો</translation>
-<translation id="7271803869921933038">સ્વીકૃત પ્રિપેઇડ કાર્ડ</translation>
 <translation id="7275334191706090484">સંચાલિત બુકમાર્ક્સ</translation>
 <translation id="7298195798382681320">ભલામણ કરેલ</translation>
 <translation id="7300012071106347854">ઘેરો વાદળી</translation>
@@ -1452,7 +1438,6 @@
 <translation id="785549533363645510">જોકે, તમે અદૃશ્ય નથી. છુપામાં જવું તમારા નિયોક્તા, તમારા ઇન્ટરનેટ સેવા પ્રદાતા અથવા તમે મુલાકાત લો છો તે વેબસાઇટથી તમારા બ્રાઉઝિંગને છુપાવતું નથી.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">સાઇટ છોડવી છે?</translation>
-<translation id="7878176543348854470">ડેબિટ અને પ્રીપેઇડ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
 <translation id="7878562273885520351">તમારા પાસવર્ડ સાથે ચેડાં થઈ શકે છે</translation>
 <translation id="7882421473871500483">ભૂરો</translation>
 <translation id="7887683347370398519">તમારું CVC તપાસો અને ફરીથી પ્રયાસ કરો</translation>
@@ -1614,7 +1599,6 @@
 <translation id="8730621377337864115">થઈ ગયું</translation>
 <translation id="8738058698779197622">એક સુરક્ષિત કનેક્શન સ્થાપિત કરવા માટે, તમારું ઘડિયાળ યોગ્ય રીતે સેટ હોવું જરૂરી છે. આનું કારણ એ કે  વેબસાઇટ્સ તેઓને ઓળખવા માટે જે પ્રમાણપત્રોનો ઉપયોગ કરે છે તે ચોક્કસ સમય અવધિ માટે જ માન્ય હોય છે. તમારા ઉપકરણની ઘડિયાળ ખોટી હોવાને લીધે, Chromium આ પ્રમાણપત્રોને ચકાસી શકતું નથી.</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" /> નું &lt;abbr id="dnsDefinition"&gt;DNS સરનામું&lt;/abbr&gt; શોધી શકાયું નથી. સમસ્યાનું નિદાન કરી રહ્યાં છીએ.</translation>
-<translation id="874846938927089722">સ્વીકૃત ક્રેડિટ અને પ્રિપેઇડ કાર્ડ</translation>
 <translation id="874918643257405732">આ ટૅબને બુકમાર્ક કરો</translation>
 <translation id="8751426954251315517">કૃપા કરીને આગલી વખતે ફરી પ્રયાસ કરો</translation>
 <translation id="8759274551635299824">આ કાર્ડની સમયસીમા સમાપ્ત થઈ ગઈ છે</translation>
@@ -1648,7 +1632,6 @@
 <translation id="8931333241327730545">શું તમે આ કાર્ડને તમારા Google એકાઉન્ટમાં સાચવવા માગો છો?</translation>
 <translation id="8932102934695377596">તમારી ઘડિયાળ પાછળ છે</translation>
 <translation id="893332455753468063">નામ ઉમેરો</translation>
-<translation id="8938939909778640821">સ્વીકૃત ક્રેડિટ અને પ્રીપેઇડ કાર્ડ</translation>
 <translation id="8943282376843390568">લાઇમ</translation>
 <translation id="8957210676456822347">કૅપ્ટિવ પોર્ટલ પ્રમાણિત</translation>
 <translation id="8962950042226115166">શંકાસ્પદ સાઇટ</translation>
@@ -1718,7 +1701,6 @@
 <translation id="939736085109172342">નવું ફોલ્ડર</translation>
 <translation id="945855313015696284">નીચેની માહિતી જુઓ અને કોઈપણ અમાન્ય કાર્ડ ડિલીટ કરો</translation>
 <translation id="950736567201356821">ઉપરની બાજુએ ત્રણ કાણાં પાડો</translation>
-<translation id="951104842009476243">સ્વીકૃત ડેબિટ અને પ્રિપેઇડ કાર્ડ</translation>
 <translation id="961663415146723894">નીચેની બાજુએ જોડો</translation>
 <translation id="962484866189421427">આ કન્ટેન્ટ કદાચ ભ્રામક ઍપ ઇન્સ્ટૉલ કરવાનો પ્રયાસ કરે છે કે જે પોતાની ખોટી ઓળખ આપે છે અથવા તમને ટ્રૅક કરવા માટે ઉપયોગમાં લઈ શકાય તેવો ડેટા મેળવે છે. <ph name="BEGIN_LINK" />તો પણ બતાવો<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">આધિકારિક બિલ્ડ</translation>

@@ -16,25 +16,26 @@
 
   print-preview-search-box {
     margin-bottom: 16px;
-    margin-top: 14px;
+    margin-top: 6px;
   }
 
   .user-info {
-    font-size: calc(13 / 15 * 1em);
     line-height: calc(20 / 15 * 1em);
     margin-bottom: 14px;
-    margin-top: 8px;
   }
 
-  .user-info .account-select-label {
+  .user-info .md-select {
+    width: auto;
+  }
+
+  #accountSelectLabel {
+    color: var(--cr-primary-text-color);
     padding-inline-end: 18px;
   }
 
-  .user-info .account-select {
-    width: auto
-  }
-
   cr-dialog [slot=body] {
+    display: flex;
+    flex-direction: column;
     height: 100%;
   }
 
@@ -113,18 +114,14 @@
   }
 </style>
 <cr-dialog id="dialog" on-close="onCloseOrCancel_">
-  <div slot="title" id="header">
-    <div>$i18n{destinationSearchTitle}</div>
+  <div slot="title" id="header">$i18n{destinationSearchTitle}</div>
+  <div slot="body">
     <div class="user-info" hidden$="[[!activeUser]]" hidden>
-      <label class="account-select-label" id="accountSelectLabel">
-        $i18n{accountSelectTitle}
-      </label>
-      <select class="md-select account-select"
+      <label id="accountSelectLabel">$i18n{accountSelectTitle}</label>
+      <select class="md-select"
           aria-labelledby="accountSelectLabel" on-change="onUserChange_">
         <template is="dom-repeat" items="[[users]]">
-          <option value="[[item]]">
-            [[item]]
-          </option>
+          <option value="[[item]]">[[item]]</option>
         </template>
         <option value="">$i18n{addAccountTitle}</option>
       </select>
@@ -133,8 +130,6 @@
         label="$i18n{searchBoxPlaceholder}" search-query="{{searchQuery_}}"
         autofocus>
     </print-preview-search-box>
-  </div>
-  <div slot="body">
     <print-preview-destination-list id="printList"
         destinations="[[destinations_]]"
         loading-destinations="[[loadingDestinations_]]"

@@ -86,8 +86,6 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
 
   // The below are non-spec timings, for Page Load UMA metrics.
 
-  // The time the first document layout is performed.
-  uint64_t FirstLayout() const;
   // The time the first paint operation was performed.
   uint64_t FirstPaint() const;
   // The time the first paint operation for image was performed.

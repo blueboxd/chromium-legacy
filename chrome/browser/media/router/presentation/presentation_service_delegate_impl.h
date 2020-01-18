@@ -158,8 +158,7 @@ class PresentationServiceDelegateImpl
   void OnPresentationResponse(const content::PresentationRequest& request,
                               mojom::RoutePresentationConnectionPtr connection,
                               const RouteRequestResult& result) override;
-
-  base::WeakPtr<PresentationServiceDelegateImpl> GetWeakPtr();
+  base::WeakPtr<WebContentsPresentationManager> GetWeakPtr() override;
 
   // Returns the WebContents that owns this instance.
   content::WebContents* web_contents() const { return web_contents_; }
@@ -254,6 +253,7 @@ class PresentationServiceDelegateImpl
 
   void NotifyDefaultPresentationChanged(
       const content::PresentationRequest* request);
+  void NotifyMediaRoutesChanged();
 
   // References to the WebContents that owns this instance, and associated
   // browser profile's MediaRouter instance.
@@ -261,7 +261,7 @@ class PresentationServiceDelegateImpl
   MediaRouter* router_;
 
   // References to the observers listening for changes to the default
-  // presentation of the associated WebContents.
+  // presentation and presentation MediaRoutes associated with the WebContents.
   base::ObserverList<WebContentsPresentationManager::Observer>
       presentation_observers_;
 

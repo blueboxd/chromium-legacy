@@ -30,6 +30,7 @@
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/button.h"
@@ -235,11 +236,20 @@ bool TabGroupEditorBubbleView::TitleFieldController::HandleKeyEvent(
     const ui::KeyEvent& key_event) {
   DCHECK_EQ(sender, parent_->title_field_);
 
-  const ui::KeyboardCode key_code = key_event.key_code();
-  if (key_code == ui::VKEY_RETURN || key_code == ui::VKEY_ESCAPE) {
-    parent_->GetWidget()->CloseWithReason(
-        views::Widget::ClosedReason::kUnspecified);
-    return true;
+  // For special actions, only respond to key pressed events, to be consistent
+  // with other views like buttons and dialogs.
+  if (key_event.type() == ui::EventType::ET_KEY_PRESSED) {
+    const ui::KeyboardCode key_code = key_event.key_code();
+    if (key_code == ui::VKEY_ESCAPE) {
+      parent_->GetWidget()->CloseWithReason(
+          views::Widget::ClosedReason::kEscKeyPressed);
+      return true;
+    }
+    if (key_code == ui::VKEY_RETURN) {
+      parent_->GetWidget()->CloseWithReason(
+          views::Widget::ClosedReason::kUnspecified);
+      return true;
+    }
   }
 
   return false;

@@ -1477,7 +1477,7 @@ TEST_F(ChildProcessSecurityPolicyTest, CanAccessDataForOrigin_Origin) {
   for (const auto& origin : all_origins) {
     if (AreAllSitesIsolatedForTesting() && IsCitadelProtectionEnabled()) {
       if (origin.opaque() &&
-          origin.GetTupleOrPrecursorTupleIfOpaque().IsInvalid()) {
+          !origin.GetTupleOrPrecursorTupleIfOpaque().IsValid()) {
         EXPECT_TRUE(p->CanAccessDataForOrigin(kRendererID, origin)) << origin;
       } else {
         EXPECT_FALSE(p->CanAccessDataForOrigin(kRendererID, origin)) << origin;

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="1337778609052285767">현재 비밀번호는 비밀번호 복잡성 요구사항을 충족하지 않습니다. 관리자에게 문의하세요.</translation>
 <translation id="1337821341856692531">현재 Windows 비밀번호를 입력하지 않고 계속하면 정보가 영구적으로 손실될 수 있습니다.</translation>
 <translation id="1383286653814676580">Google 사용자 인증 정보 제공업체 로그인 페이지에 사용됩니다.</translation>
 <translation id="1894475569413661128">직장 계정으로 로그인하세요.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">잘못된 Windows 비밀번호를 입력했습니다. 다시 시도해 주세요.</translation>
 <translation id="2831078752570172210">계정이 잠겼습니다. 시스템 관리자에게 문의하세요.</translation>
 <translation id="2844349213149998955">이 기기에서는 개인 계정으로 로그인할 수 없습니다. 직장 계정으로 로그인하세요.</translation>
+<translation id="2995851317559936311">도메인 컨트롤러에서만 비밀번호를 변경할 수 있습니다. 관리자에게 문의하세요.</translation>
 <translation id="3306357053520292004">이 컴퓨터의 사용자가 이미 이 계정으로 추가되었습니다. 다른 계정으로 로그인해 주세요.</translation>
 <translation id="3926852373333893095">G Suite Enterprise 사용자만 로그인할 수 있습니다.</translation>
 <translation id="4057329986137569701">내부 오류가 발생했습니다.</translation>
 <translation id="4267670563222825190">계정에 도메인 사용자가 없습니다. 관리자에게 문의하시기 바랍니다.</translation>
 <translation id="4300229033992784001">계정 비밀번호가 변경되었습니다. Windows 계정과 직장 계정을 동기화하려면 현재 Windows 비밀번호를 입력해 주세요.</translation>
+<translation id="4669462973597624151">비밀번호 변경 시도가 실패했습니다. 관리자에게 문의하세요.</translation>
 <translation id="4706454071748629324">신규 사용자를 추가하지 못했습니다. 이 컴퓨터에서는 직장 계정마다 사용자 1명만 만들 수 있습니다.</translation>
+<translation id="5186761973554910131">비밀번호 변경 시도 중 잘못된 컴퓨터 이름을 입력했습니다. 관리자에게 문의하세요.</translation>
 <translation id="6033715878377252112">Windows 도우미용 Google 사용자 인증 정보 제공 프로그램</translation>
 <translation id="6149399665202317746">Windows용 Google 사용자 인증 정보 제공 프로그램</translation>
 <translation id="6239180560789153226">기기에 복구 정보가 없습니다. Google 직장 계정으로 로그인하세요.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">직장 계정 추가</translation>
 <translation id="7811865856574012727">관리자가 기기에서 다음 도메인에 로그인하지 못하도록 제한했습니다. <ph name="EMAIL_DOMAINS" /> 올바른 직장 계정을 사용하여 다시 시도해 보세요.</translation>
 <translation id="7856245195110636219">계속하려면 현재 Windows 비밀번호를 입력해야 합니다. 시스템 관리자에게 문의해 보세요.</translation>
+<translation id="8109730953933509335">유효하지 않은 사용자의 비밀번호 변경을 시도했습니다. 관리자에게 문의하세요.</translation>
 <translation id="8639729688781680518">Windows 비밀번호를 잊어버림</translation>
 <translation id="866458870819756755">사용자를 만들 수 없습니다.</translation>
 <translation id="8875753657315897487">직장 계정으로 로그인</translation>

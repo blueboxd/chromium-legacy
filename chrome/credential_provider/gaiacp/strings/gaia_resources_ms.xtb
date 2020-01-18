@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
+<translation id="1337778609052285767">Kata laluan semasa tidak memenuhi syarat kerumitan kata laluan. Sila hubungi pentadbir anda.</translation>
 <translation id="1337821341856692531">Meneruskan proses ini tanpa memasukkan kata laluan semasa Windows anda mungkin menyebabkan kehilangan maklumat yang tidak dapat dibalikkan.</translation>
 <translation id="1383286653814676580">Digunakan untuk menjalankan halaman log masuk Penyedia Bukti Kelayakan Google.</translation>
 <translation id="1894475569413661128">Log masuk menggunakan akaun kerja anda.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Anda memasukkan kata laluan Windows yang salah. Sila cuba lagi.</translation>
 <translation id="2831078752570172210">Akaun anda telah dikunci. Sila hubungi pentadbir sistem anda.</translation>
 <translation id="2844349213149998955">Log masuk dengan akaun peribadi pada peranti ini tidak benarkan. Sila log masuk dengan akaun kerja.</translation>
+<translation id="2995851317559936311">Perubahan kata laluan hanya dibenarkan pada pengawal domain. Sila hubungi pentadbir anda.</translation>
 <translation id="3306357053520292004">Seorang pengguna pada komputer ini sudah pun ditambahkan menggunakan akaun ini. Sila log masuk dengan akaun lain.</translation>
 <translation id="3926852373333893095">Hanya pengguna GSuite Enterprise dibenarkan untuk log masuk.</translation>
 <translation id="4057329986137569701">Ralat dalaman telah berlaku.</translation>
 <translation id="4267670563222825190">Tiada pengguna Domain ditemui untuk akaun anda. Sila hubungi pentadbir anda.</translation>
 <translation id="4300229033992784001">Kata laluan akaun anda telah berubah. Sila masukkan kata laluan Windows semasa anda untuk menyegerakkan akaun Windows anda dengan akaun kerja anda.</translation>
+<translation id="4669462973597624151">Percubaan mengubah kata laluan gagal. Sila hubungi pentadbir anda.</translation>
 <translation id="4706454071748629324">Gagal menambahkan pengguna baharu. Komputer ini hanya membenarkan satu pengguna dibuat menggunakan akaun kerja.</translation>
+<translation id="5186761973554910131">Nama komputer yang tidak sah diberikan semasa percubaan mengubah kata laluan. Sila hubungi pentadbir anda.</translation>
 <translation id="6033715878377252112">Pembantu Penyedia Bukti Kelayakan Google untuk Windows</translation>
 <translation id="6149399665202317746">Penyedia Bukti Kelayakan Google untuk Windows</translation>
 <translation id="6239180560789153226">Peranti anda tiada maklumat pemulihan. Log masuk menggunakan akaun kerja Google anda.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Tambahkan akaun kerja</translation>
 <translation id="7811865856574012727">Pentadbir anda telah mengehadkan log masuk peranti ke domain berikut: <ph name="EMAIL_DOMAINS" />. Cuba lagi menggunakan akaun kerja yang sah.</translation>
 <translation id="7856245195110636219">Tidak dapat meneruskan tanpa memasukkan kata laluan semasa Windows. Sila hubungi pentadbir sistem.</translation>
+<translation id="8109730953933509335">Percubaan mengubah kata laluan pada pengguna yang tidak sah. Sila hubungi pentadbir anda.</translation>
 <translation id="8639729688781680518">Terlupa Kata Laluan Windows</translation>
 <translation id="866458870819756755">Pengguna tidak dapat dibuat.</translation>
 <translation id="8875753657315897487">Log masuk menggunakan akaun kerja anda</translation>

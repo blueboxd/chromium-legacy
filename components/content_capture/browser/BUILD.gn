@@ -23,9 +23,7 @@ source_set("browser") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "content_capture_receiver_test.cc",
-  ]
+  sources = [ "content_capture_receiver_test.cc" ]
 
   deps = [
     ":browser",

@@ -78,15 +78,6 @@ const char kWidevineCdmPluginId[] = "application_x-ppapi-widevine-cdm";
 const char kClearKeyCdmPluginId[] = "application_x-ppapi-clearkey-cdm";
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
-// TODO(crbug.com/889590): Use helper for url::Origin creation from string.
-const url::Origin kOrigin1 = url::Origin::Create(GURL(kTestOrigin1));
-const url::Origin kOrigin2 = url::Origin::Create(GURL(kTestOrigin2));
-const url::Origin kOrigin3 = url::Origin::Create(GURL(kTestOrigin3));
-const url::Origin kOriginDevTools =
-    url::Origin::Create(GURL(kTestOriginDevTools));
-const GURL kResourceURL(kTestURL);
-const GURL kFilterResourceURLForCodeCache(kFilterURLForCodeCache);
-
 const blink::mojom::StorageType kTemporary =
     blink::mojom::StorageType::kTemporary;
 const blink::mojom::StorageType kPersistent =
@@ -99,6 +90,28 @@ const uint32_t kAllQuotaRemoveMask =
     StoragePartition::REMOVE_DATA_MASK_FILE_SYSTEMS |
     StoragePartition::REMOVE_DATA_MASK_INDEXEDDB |
     StoragePartition::REMOVE_DATA_MASK_WEBSQL;
+
+// TODO(crbug.com/889590): Use helper for url::Origin creation from string.
+url::Origin Origin1() {
+  return url::Origin::Create(GURL(kTestOrigin1));
+}
+url::Origin Origin2() {
+  return url::Origin::Create(GURL(kTestOrigin2));
+}
+url::Origin Origin3() {
+  return url::Origin::Create(GURL(kTestOrigin3));
+}
+url::Origin OriginDevTools() {
+  return url::Origin::Create(GURL(kTestOriginDevTools));
+}
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL ResourceUrl() {
+  return GURL(kTestURL);
+}
+GURL FilterResourceURLForCodeCache() {
+  return GURL(kFilterURLForCodeCache);
+}
 
 class AwaitCompletionHelper {
  public:
@@ -145,7 +158,7 @@ class RemoveCookieTester {
   bool ContainsCookie() {
     get_cookie_success_ = false;
     storage_partition_->GetCookieManagerForBrowserProcess()->GetCookieList(
-        kOrigin1.GetURL(), net::CookieOptions::MakeAllInclusive(),
+        Origin1().GetURL(), net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(&RemoveCookieTester::GetCookieListCallback,
                        base::Unretained(this)));
     await_completion_.BlockUntilNotified();
@@ -155,10 +168,10 @@ class RemoveCookieTester {
   void AddCookie() {
     CanonicalCookie::CookieInclusionStatus status;
     std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
-        kOrigin1.GetURL(), "A=1", base::Time::Now(),
+        Origin1().GetURL(), "A=1", base::Time::Now(),
         base::nullopt /* server_time */, &status));
     storage_partition_->GetCookieManagerForBrowserProcess()->SetCanonicalCookie(
-        *cc, kOrigin1.scheme(), net::CookieOptions::MakeAllInclusive(),
+        *cc, Origin1().scheme(), net::CookieOptions::MakeAllInclusive(),
         base::BindOnce(&RemoveCookieTester::SetCookieCallback,
                        base::Unretained(this)));
     await_completion_.BlockUntilNotified();
@@ -259,26 +272,26 @@ class RemoveLocalStorageTester {
     data.set_last_modified(now.ToInternalValue());
     data.set_size_bytes(16);
     ASSERT_TRUE(
-        db.Put(CreateMetaDataKey(kOrigin1),
+        db.Put(CreateMetaDataKey(Origin1()),
                base::as_bytes(base::make_span(data.SerializeAsString())))
             .ok());
-    ASSERT_TRUE(db.Put(CreateDataKey(kOrigin1), {}).ok());
+    ASSERT_TRUE(db.Put(CreateDataKey(Origin1()), {}).ok());
 
     base::Time one_day_ago = now - base::TimeDelta::FromDays(1);
     data.set_last_modified(one_day_ago.ToInternalValue());
     ASSERT_TRUE(
-        db.Put(CreateMetaDataKey(kOrigin2),
+        db.Put(CreateMetaDataKey(Origin2()),
                base::as_bytes(base::make_span((data.SerializeAsString()))))
             .ok());
-    ASSERT_TRUE(db.Put(CreateDataKey(kOrigin2), {}).ok());
+    ASSERT_TRUE(db.Put(CreateDataKey(Origin2()), {}).ok());
 
     base::Time sixty_days_ago = now - base::TimeDelta::FromDays(60);
     data.set_last_modified(sixty_days_ago.ToInternalValue());
     ASSERT_TRUE(
-        db.Put(CreateMetaDataKey(kOrigin3),
+        db.Put(CreateMetaDataKey(Origin3()),
                base::as_bytes(base::make_span(data.SerializeAsString())))
             .ok());
-    ASSERT_TRUE(db.Put(CreateDataKey(kOrigin3), {}).ok());
+    ASSERT_TRUE(db.Put(CreateDataKey(Origin3()), {}).ok());
   }
 
  private:
@@ -404,8 +417,8 @@ class RemovePluginPrivateDataTester {
       : filesystem_context_(filesystem_context) {}
 
   // Add some files to the PluginPrivateFileSystem. They are created as follows:
-  //   kOrigin1 - ClearKey - 1 file - timestamp 10 days ago
-  //   kOrigin2 - Widevine - 2 files - timestamps now and 60 days ago
+  //   Origin1() - ClearKey - 1 file - timestamp 10 days ago
+  //   Origin2() - Widevine - 2 files - timestamps now and 60 days ago
   void AddPluginPrivateTestData() {
     base::Time now = base::Time::Now();
     base::Time ten_days_ago = now - base::TimeDelta::FromDays(10);
@@ -414,18 +427,18 @@ class RemovePluginPrivateDataTester {
     // Create a PluginPrivateFileSystem for ClearKey and add a single file
     // with a timestamp of 1 day ago.
     std::string clearkey_fsid =
-        CreateFileSystem(kClearKeyCdmPluginId, kOrigin1.GetURL());
-    clearkey_file_ = CreateFile(kOrigin1.GetURL(), clearkey_fsid, "foo");
+        CreateFileSystem(kClearKeyCdmPluginId, Origin1().GetURL());
+    clearkey_file_ = CreateFile(Origin1().GetURL(), clearkey_fsid, "foo");
     SetFileTimestamp(clearkey_file_, ten_days_ago);
 
     // Create a second PluginPrivateFileSystem for Widevine and add two files
     // with different times.
     std::string widevine_fsid =
-        CreateFileSystem(kWidevineCdmPluginId, kOrigin2.GetURL());
+        CreateFileSystem(kWidevineCdmPluginId, Origin2().GetURL());
     storage::FileSystemURL widevine_file1 =
-        CreateFile(kOrigin2.GetURL(), widevine_fsid, "bar1");
+        CreateFile(Origin2().GetURL(), widevine_fsid, "bar1");
     storage::FileSystemURL widevine_file2 =
-        CreateFile(kOrigin2.GetURL(), widevine_fsid, "bar2");
+        CreateFile(Origin2().GetURL(), widevine_fsid, "bar2");
     SetFileTimestamp(widevine_file1, now);
     SetFileTimestamp(widevine_file2, sixty_days_ago);
   }
@@ -607,7 +620,7 @@ bool DoesOriginMatchForBothProtectedAndUnprotectedWeb(
 bool DoesOriginMatchUnprotected(
     const url::Origin& origin,
     storage::SpecialStoragePolicy* special_storage_policy) {
-  return origin.scheme() != kOriginDevTools.scheme();
+  return origin.scheme() != OriginDevTools().scheme();
 }
 
 void ClearQuotaData(content::StoragePartition* partition,
@@ -701,7 +714,7 @@ void ClearCodeCache(content::StoragePartition* partition,
 }
 
 bool FilterURL(const GURL& url) {
-  if (url == kFilterResourceURLForCodeCache)
+  if (url == FilterResourceURLForCodeCache())
     return true;
   return false;
 }
@@ -836,37 +849,37 @@ TEST_F(StoragePartitionImplTest, QuotaClientMaskGeneration) {
 }
 
 void PopulateTestQuotaManagedPersistentData(MockQuotaManager* manager) {
-  manager->AddOrigin(kOrigin2, kPersistent, kClientFile, base::Time());
-  manager->AddOrigin(kOrigin3, kPersistent, kClientFile,
+  manager->AddOrigin(Origin2(), kPersistent, kClientFile, base::Time());
+  manager->AddOrigin(Origin3(), kPersistent, kClientFile,
                      base::Time::Now() - base::TimeDelta::FromDays(1));
 
-  EXPECT_FALSE(manager->OriginHasData(kOrigin1, kPersistent, kClientFile));
-  EXPECT_TRUE(manager->OriginHasData(kOrigin2, kPersistent, kClientFile));
-  EXPECT_TRUE(manager->OriginHasData(kOrigin3, kPersistent, kClientFile));
+  EXPECT_FALSE(manager->OriginHasData(Origin1(), kPersistent, kClientFile));
+  EXPECT_TRUE(manager->OriginHasData(Origin2(), kPersistent, kClientFile));
+  EXPECT_TRUE(manager->OriginHasData(Origin3(), kPersistent, kClientFile));
 }
 
 void PopulateTestQuotaManagedTemporaryData(MockQuotaManager* manager) {
-  manager->AddOrigin(kOrigin1, kTemporary, kClientFile, base::Time::Now());
-  manager->AddOrigin(kOrigin3, kTemporary, kClientFile,
+  manager->AddOrigin(Origin1(), kTemporary, kClientFile, base::Time::Now());
+  manager->AddOrigin(Origin3(), kTemporary, kClientFile,
                      base::Time::Now() - base::TimeDelta::FromDays(1));
 
-  EXPECT_TRUE(manager->OriginHasData(kOrigin1, kTemporary, kClientFile));
-  EXPECT_FALSE(manager->OriginHasData(kOrigin2, kTemporary, kClientFile));
-  EXPECT_TRUE(manager->OriginHasData(kOrigin3, kTemporary, kClientFile));
+  EXPECT_TRUE(manager->OriginHasData(Origin1(), kTemporary, kClientFile));
+  EXPECT_FALSE(manager->OriginHasData(Origin2(), kTemporary, kClientFile));
+  EXPECT_TRUE(manager->OriginHasData(Origin3(), kTemporary, kClientFile));
 }
 
 void PopulateTestQuotaManagedData(MockQuotaManager* manager) {
-  // Set up kOrigin1 with a temporary quota, kOrigin2 with a persistent
-  // quota, and kOrigin3 with both. kOrigin1 is modified now, kOrigin2
-  // is modified at the beginning of time, and kOrigin3 is modified one day
+  // Set up Origin1() with a temporary quota, Origin2() with a persistent
+  // quota, and Origin3() with both. Origin1() is modified now, Origin2()
+  // is modified at the beginning of time, and Origin3() is modified one day
   // ago.
   PopulateTestQuotaManagedPersistentData(manager);
   PopulateTestQuotaManagedTemporaryData(manager);
 }
 
 void PopulateTestQuotaManagedNonBrowsingData(MockQuotaManager* manager) {
-  manager->AddOrigin(kOriginDevTools, kTemporary, kClientFile, base::Time());
-  manager->AddOrigin(kOriginDevTools, kPersistent, kClientFile, base::Time());
+  manager->AddOrigin(OriginDevTools(), kTemporary, kClientFile, base::Time());
+  manager->AddOrigin(OriginDevTools(), kPersistent, kClientFile, base::Time());
 }
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverBoth) {
@@ -882,17 +895,17 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverBoth) {
   run_loop.Run();
 
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kPersistent, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kPersistent, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kPersistent, kClientFile));
 }
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
@@ -908,17 +921,17 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverOnlyTemporary) {
   run_loop.Run();
 
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kPersistent, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kPersistent, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kPersistent, kClientFile));
 }
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
@@ -934,17 +947,17 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverOnlyPersistent) {
   run_loop.Run();
 
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kPersistent, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kPersistent, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kPersistent, kClientFile));
 }
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverNeither) {
@@ -958,17 +971,17 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverNeither) {
   run_loop.Run();
 
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kPersistent, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kPersistent, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kPersistent, kClientFile));
 }
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverSpecificOrigin) {
@@ -981,21 +994,21 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForeverSpecificOrigin) {
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&ClearQuotaDataForOrigin, partition,
-                                kOrigin1.GetURL(), base::Time(), &run_loop));
+                                Origin1().GetURL(), base::Time(), &run_loop));
   run_loop.Run();
 
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kTemporary, kClientFile));
   EXPECT_TRUE(
-      GetMockManager()->OriginHasData(kOrigin3, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kPersistent, kClientFile));
   EXPECT_TRUE(
-      GetMockManager()->OriginHasData(kOrigin2, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kPersistent, kClientFile));
   EXPECT_TRUE(
-      GetMockManager()->OriginHasData(kOrigin3, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kPersistent, kClientFile));
 }
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForLastHour) {
@@ -1014,17 +1027,17 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForLastHour) {
   run_loop.Run();
 
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kTemporary, kClientFile));
   EXPECT_TRUE(
-      GetMockManager()->OriginHasData(kOrigin3, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kPersistent, kClientFile));
   EXPECT_TRUE(
-      GetMockManager()->OriginHasData(kOrigin2, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kPersistent, kClientFile));
   EXPECT_TRUE(
-      GetMockManager()->OriginHasData(kOrigin3, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kPersistent, kClientFile));
 }
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForLastWeek) {
@@ -1042,24 +1055,24 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedDataForLastWeek) {
   run_loop.Run();
 
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kPersistent, kClientFile));
   EXPECT_TRUE(
-      GetMockManager()->OriginHasData(kOrigin2, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kPersistent, kClientFile));
   EXPECT_TRUE(
-      GetMockManager()->OriginHasData(kOrigin3, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kPersistent, kClientFile));
 }
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedUnprotectedOrigins) {
-  // Protect kOrigin1.
+  // Protect Origin1().
   scoped_refptr<MockSpecialStoragePolicy> mock_policy =
       new MockSpecialStoragePolicy;
-  mock_policy->AddProtected(kOrigin1.GetURL());
+  mock_policy->AddProtected(Origin1().GetURL());
 
   PopulateTestQuotaManagedData(GetMockManager());
 
@@ -1077,28 +1090,28 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedUnprotectedOrigins) {
   run_loop.Run();
 
   EXPECT_TRUE(
-      GetMockManager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kPersistent, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kPersistent, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kPersistent, kClientFile));
 }
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedOrigins) {
-  // Protect kOrigin1.
+  // Protect Origin1().
   scoped_refptr<MockSpecialStoragePolicy> mock_policy =
       new MockSpecialStoragePolicy;
-  mock_policy->AddProtected(kOrigin1.GetURL());
+  mock_policy->AddProtected(Origin1().GetURL());
 
   PopulateTestQuotaManagedData(GetMockManager());
 
-  // Try to remove kOrigin1. Expect success.
+  // Try to remove Origin1(). Expect success.
   base::RunLoop run_loop;
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
@@ -1113,17 +1126,17 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedProtectedOrigins) {
   run_loop.Run();
 
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kTemporary, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kTemporary, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin1, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin1(), kPersistent, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin2, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin2(), kPersistent, kClientFile));
   EXPECT_FALSE(
-      GetMockManager()->OriginHasData(kOrigin3, kPersistent, kClientFile));
+      GetMockManager()->OriginHasData(Origin3(), kPersistent, kClientFile));
 }
 
 TEST_F(StoragePartitionImplTest, RemoveQuotaManagedIgnoreDevTools) {
@@ -1141,9 +1154,9 @@ TEST_F(StoragePartitionImplTest, RemoveQuotaManagedIgnoreDevTools) {
   run_loop.Run();
 
   // Check that devtools data isn't removed.
-  EXPECT_TRUE(GetMockManager()->OriginHasData(kOriginDevTools, kTemporary,
+  EXPECT_TRUE(GetMockManager()->OriginHasData(OriginDevTools(), kTemporary,
                                               kClientFile));
-  EXPECT_TRUE(GetMockManager()->OriginHasData(kOriginDevTools, kPersistent,
+  EXPECT_TRUE(GetMockManager()->OriginHasData(OriginDevTools(), kPersistent,
                                               kClientFile));
 }
 
@@ -1200,17 +1213,17 @@ TEST_F(StoragePartitionImplTest, RemoveCookieWithDeleteInfo) {
 }
 
 TEST_F(StoragePartitionImplTest, RemoveUnprotectedLocalStorageForever) {
-  // Protect kOrigin1.
+  // Protect Origin1().
   scoped_refptr<MockSpecialStoragePolicy> mock_policy =
       new MockSpecialStoragePolicy;
-  mock_policy->AddProtected(kOrigin1.GetURL());
+  mock_policy->AddProtected(Origin1().GetURL());
 
   RemoveLocalStorageTester tester(task_environment(), browser_context());
 
   tester.AddDOMStorageTestData();
-  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin1));
-  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin2));
-  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(Origin1()));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(Origin2()));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(Origin3()));
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
@@ -1229,23 +1242,23 @@ TEST_F(StoragePartitionImplTest, RemoveUnprotectedLocalStorageForever) {
   // So run all scheduled tasks to make sure data is cleared.
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin1));
-  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin2));
-  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin3));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(Origin1()));
+  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(Origin2()));
+  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(Origin3()));
 }
 
 TEST_F(StoragePartitionImplTest, RemoveProtectedLocalStorageForever) {
-  // Protect kOrigin1.
+  // Protect Origin1().
   scoped_refptr<MockSpecialStoragePolicy> mock_policy =
       new MockSpecialStoragePolicy;
-  mock_policy->AddProtected(kOrigin1.GetURL());
+  mock_policy->AddProtected(Origin1().GetURL());
 
   RemoveLocalStorageTester tester(task_environment(), browser_context());
 
   tester.AddDOMStorageTestData();
-  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin1));
-  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin2));
-  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(Origin1()));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(Origin2()));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(Origin3()));
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
@@ -1266,20 +1279,20 @@ TEST_F(StoragePartitionImplTest, RemoveProtectedLocalStorageForever) {
   // So run all scheduled tasks to make sure data is cleared.
   base::RunLoop().RunUntilIdle();
 
-  // Even if kOrigin1 is protected, it will be deleted since we specify
+  // Even if Origin1() is protected, it will be deleted since we specify
   // ClearData to delete protected data.
-  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin1));
-  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin2));
-  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin3));
+  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(Origin1()));
+  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(Origin2()));
+  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(Origin3()));
 }
 
 TEST_F(StoragePartitionImplTest, RemoveLocalStorageForLastWeek) {
   RemoveLocalStorageTester tester(task_environment(), browser_context());
 
   tester.AddDOMStorageTestData();
-  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin1));
-  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin2));
-  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(Origin1()));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(Origin2()));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(Origin3()));
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(browser_context()));
@@ -1300,10 +1313,10 @@ TEST_F(StoragePartitionImplTest, RemoveLocalStorageForLastWeek) {
   // So run all scheduled tasks to make sure data is cleared.
   base::RunLoop().RunUntilIdle();
 
-  // kOrigin1 and kOrigin2 do not have age more than a week.
-  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin1));
-  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin2));
-  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
+  // Origin1() and Origin2() do not have age more than a week.
+  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(Origin1()));
+  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(Origin2()));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(Origin3()));
 }
 
 TEST_F(StoragePartitionImplTest, ClearCodeCache) {
@@ -1317,9 +1330,9 @@ TEST_F(StoragePartitionImplTest, ClearCodeCache) {
 
   GURL origin = GURL(kTestOrigin1);
   std::string data("SomeData");
-  tester.AddEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin, data);
+  tester.AddEntry(RemoveCodeCacheTester::kJs, ResourceUrl(), origin, data);
   EXPECT_TRUE(
-      tester.ContainsEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin));
+      tester.ContainsEntry(RemoveCodeCacheTester::kJs, ResourceUrl(), origin));
   EXPECT_EQ(tester.received_data(), data);
 
   base::RunLoop run_loop;
@@ -1330,7 +1343,7 @@ TEST_F(StoragePartitionImplTest, ClearCodeCache) {
   run_loop.Run();
 
   EXPECT_FALSE(
-      tester.ContainsEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin));
+      tester.ContainsEntry(RemoveCodeCacheTester::kJs, ResourceUrl(), origin));
 
   // Make sure there isn't a second invalid callback sitting in the queue.
   // (this used to be a bug).
@@ -1348,13 +1361,13 @@ TEST_F(StoragePartitionImplTest, ClearCodeCacheSpecificURL) {
 
   GURL origin = GURL(kTestOrigin1);
   std::string data("SomeData");
-  tester.AddEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin, data);
-  tester.AddEntry(RemoveCodeCacheTester::kJs, kFilterResourceURLForCodeCache,
+  tester.AddEntry(RemoveCodeCacheTester::kJs, ResourceUrl(), origin, data);
+  tester.AddEntry(RemoveCodeCacheTester::kJs, FilterResourceURLForCodeCache(),
                   origin, data);
   EXPECT_TRUE(
-      tester.ContainsEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin));
+      tester.ContainsEntry(RemoveCodeCacheTester::kJs, ResourceUrl(), origin));
   EXPECT_TRUE(tester.ContainsEntry(RemoveCodeCacheTester::kJs,
-                                   kFilterResourceURLForCodeCache, origin));
+                                   FilterResourceURLForCodeCache(), origin));
   EXPECT_EQ(tester.received_data(), data);
 
   base::RunLoop run_loop;
@@ -1365,9 +1378,9 @@ TEST_F(StoragePartitionImplTest, ClearCodeCacheSpecificURL) {
   run_loop.Run();
 
   EXPECT_TRUE(
-      tester.ContainsEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin));
+      tester.ContainsEntry(RemoveCodeCacheTester::kJs, ResourceUrl(), origin));
   EXPECT_FALSE(tester.ContainsEntry(RemoveCodeCacheTester::kJs,
-                                    kFilterResourceURLForCodeCache, origin));
+                                    FilterResourceURLForCodeCache(), origin));
 
   // Make sure there isn't a second invalid callback sitting in the queue.
   // (this used to be a bug).
@@ -1390,20 +1403,20 @@ TEST_F(StoragePartitionImplTest, ClearCodeCacheDateRange) {
 
   GURL origin = GURL(kTestOrigin1);
   std::string data("SomeData");
-  tester.AddEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin, data);
+  tester.AddEntry(RemoveCodeCacheTester::kJs, ResourceUrl(), origin, data);
   EXPECT_TRUE(
-      tester.ContainsEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin));
+      tester.ContainsEntry(RemoveCodeCacheTester::kJs, ResourceUrl(), origin));
   EXPECT_EQ(tester.received_data(), data);
-  tester.SetLastUseTime(RemoveCodeCacheTester::kJs, kResourceURL, origin,
+  tester.SetLastUseTime(RemoveCodeCacheTester::kJs, ResourceUrl(), origin,
                         out_of_range_time);
 
   // Add a new entry.
-  tester.AddEntry(RemoveCodeCacheTester::kJs, kFilterResourceURLForCodeCache,
+  tester.AddEntry(RemoveCodeCacheTester::kJs, FilterResourceURLForCodeCache(),
                   origin, data);
   EXPECT_TRUE(tester.ContainsEntry(RemoveCodeCacheTester::kJs,
-                                   kFilterResourceURLForCodeCache, origin));
+                                   FilterResourceURLForCodeCache(), origin));
   tester.SetLastUseTime(RemoveCodeCacheTester::kJs,
-                        kFilterResourceURLForCodeCache, origin, in_range_time);
+                        FilterResourceURLForCodeCache(), origin, in_range_time);
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1413,9 +1426,9 @@ TEST_F(StoragePartitionImplTest, ClearCodeCacheDateRange) {
   run_loop.Run();
 
   EXPECT_TRUE(
-      tester.ContainsEntry(RemoveCodeCacheTester::kJs, kResourceURL, origin));
+      tester.ContainsEntry(RemoveCodeCacheTester::kJs, ResourceUrl(), origin));
   EXPECT_FALSE(tester.ContainsEntry(RemoveCodeCacheTester::kJs,
-                                    kFilterResourceURLForCodeCache, origin));
+                                    FilterResourceURLForCodeCache(), origin));
 
   // Make sure there isn't a second invalid callback sitting in the queue.
   // (this used to be a bug).
@@ -1437,10 +1450,10 @@ TEST_F(StoragePartitionImplTest, ClearWasmCodeCache) {
 
   GURL origin = GURL(kTestOrigin1);
   std::string data("SomeData.wasm");
-  tester.AddEntry(RemoveCodeCacheTester::kWebAssembly, kResourceURL, origin,
+  tester.AddEntry(RemoveCodeCacheTester::kWebAssembly, ResourceUrl(), origin,
                   data);
   EXPECT_TRUE(tester.ContainsEntry(RemoveCodeCacheTester::kWebAssembly,
-                                   kResourceURL, origin));
+                                   ResourceUrl(), origin));
   EXPECT_EQ(tester.received_data(), data);
 
   base::RunLoop run_loop;
@@ -1451,7 +1464,7 @@ TEST_F(StoragePartitionImplTest, ClearWasmCodeCache) {
   run_loop.Run();
 
   EXPECT_FALSE(tester.ContainsEntry(RemoveCodeCacheTester::kWebAssembly,
-                                    kResourceURL, origin));
+                                    ResourceUrl(), origin));
 
   // Make sure there isn't a second invalid callback sitting in the queue.
   // (this used to be a bug).
@@ -1483,8 +1496,8 @@ TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataForever) {
 
   RemovePluginPrivateDataTester tester(partition->GetFileSystemContext());
   tester.AddPluginPrivateTestData();
-  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin1));
-  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
+  EXPECT_TRUE(tester.DataExistsForOrigin(Origin1()));
+  EXPECT_TRUE(tester.DataExistsForOrigin(Origin2()));
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1492,8 +1505,8 @@ TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataForever) {
                                 base::Time(), base::Time::Max(), &run_loop));
   run_loop.Run();
 
-  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin1));
-  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin2));
+  EXPECT_FALSE(tester.DataExistsForOrigin(Origin1()));
+  EXPECT_FALSE(tester.DataExistsForOrigin(Origin2()));
 }
 
 TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataLastWeek) {
@@ -1503,8 +1516,8 @@ TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataLastWeek) {
 
   RemovePluginPrivateDataTester tester(partition->GetFileSystemContext());
   tester.AddPluginPrivateTestData();
-  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin1));
-  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
+  EXPECT_TRUE(tester.DataExistsForOrigin(Origin1()));
+  EXPECT_TRUE(tester.DataExistsForOrigin(Origin2()));
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1515,8 +1528,8 @@ TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataLastWeek) {
   // Origin1 has 1 file from 10 days ago, so it should remain around.
   // Origin2 has a current file, so it should be removed (even though the
   // second file is much older).
-  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin1));
-  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin2));
+  EXPECT_TRUE(tester.DataExistsForOrigin(Origin1()));
+  EXPECT_FALSE(tester.DataExistsForOrigin(Origin2()));
 }
 
 TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataForOrigin) {
@@ -1525,19 +1538,19 @@ TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataForOrigin) {
 
   RemovePluginPrivateDataTester tester(partition->GetFileSystemContext());
   tester.AddPluginPrivateTestData();
-  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin1));
-  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
+  EXPECT_TRUE(tester.DataExistsForOrigin(Origin1()));
+  EXPECT_TRUE(tester.DataExistsForOrigin(Origin2()));
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&ClearPluginPrivateData, partition, kOrigin1.GetURL(),
+      base::BindOnce(&ClearPluginPrivateData, partition, Origin1().GetURL(),
                      base::Time(), base::Time::Max(), &run_loop));
   run_loop.Run();
 
   // Only Origin1 should be deleted.
-  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin1));
-  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
+  EXPECT_FALSE(tester.DataExistsForOrigin(Origin1()));
+  EXPECT_TRUE(tester.DataExistsForOrigin(Origin2()));
 }
 
 TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataAfterDeletion) {
@@ -1546,15 +1559,15 @@ TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataAfterDeletion) {
 
   RemovePluginPrivateDataTester tester(partition->GetFileSystemContext());
   tester.AddPluginPrivateTestData();
-  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin1));
-  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
+  EXPECT_TRUE(tester.DataExistsForOrigin(Origin1()));
+  EXPECT_TRUE(tester.DataExistsForOrigin(Origin2()));
 
-  // Delete the single file saved for |kOrigin1|. This does not remove the
+  // Delete the single file saved for |Origin1()|. This does not remove the
   // origin from the list of Origins. However, ClearPluginPrivateData() will
   // remove it.
   tester.DeleteClearKeyTestData();
-  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin1));
-  EXPECT_TRUE(tester.DataExistsForOrigin(kOrigin2));
+  EXPECT_TRUE(tester.DataExistsForOrigin(Origin1()));
+  EXPECT_TRUE(tester.DataExistsForOrigin(Origin2()));
 
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -1562,8 +1575,8 @@ TEST_F(StoragePartitionImplTest, RemovePluginPrivateDataAfterDeletion) {
                                 base::Time(), base::Time::Max(), &run_loop));
   run_loop.Run();
 
-  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin1));
-  EXPECT_FALSE(tester.DataExistsForOrigin(kOrigin2));
+  EXPECT_FALSE(tester.DataExistsForOrigin(Origin1()));
+  EXPECT_FALSE(tester.DataExistsForOrigin(Origin2()));
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 

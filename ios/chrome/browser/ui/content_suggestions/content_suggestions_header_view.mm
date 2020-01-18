@@ -68,9 +68,6 @@ CGFloat ToolbarHeight() {
 @property(nonatomic, strong) NSLayoutConstraint* fakeToolbarTopConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* hintLabelLeadingConstraint;
 @property(nonatomic, strong) NSLayoutConstraint* voiceSearchTrailingConstraint;
-// Layout constraints for Identity Disc that need to be adjusted based on
-// device size class changes.
-@property(nonatomic, strong) NSLayoutConstraint* identityDiscTopConstraint;
 // Layout constraint for the invisible button that is where the omnibox should
 // be and that focuses the omnibox when tapped.
 @property(nonatomic, strong) NSLayoutConstraint* invisibleOmniboxConstraint;
@@ -108,23 +105,19 @@ CGFloat ToolbarHeight() {
 - (void)setIdentityDiscView:(UIView*)identityDiscView {
   DCHECK(identityDiscView);
   _identityDiscView = identityDiscView;
-  [self addSubview:_identityDiscView];
+  [self.toolBarView addSubview:_identityDiscView];
 
-  // Sets the layout constraints for size of Identity Disc and the placement
-  // based on whether there is a top toolbar or not.
+  // Sets the layout constraints for size of Identity Disc and toolbar.
   self.identityDiscView.translatesAutoresizingMaskIntoConstraints = NO;
-  id<LayoutGuideProvider> layoutGuide = self.safeAreaLayoutGuide;
-  self.identityDiscTopConstraint = [self.identityDiscView.topAnchor
-      constraintEqualToAnchor:self.topAnchor
-                     constant:self.safeAreaInsets.top];
   CGFloat dimension =
       ntp_home::kIdentityAvatarDimension + 2 * ntp_home::kIdentityAvatarMargin;
   [NSLayoutConstraint activateConstraints:@[
     [self.identityDiscView.heightAnchor constraintEqualToConstant:dimension],
     [self.identityDiscView.widthAnchor constraintEqualToConstant:dimension],
     [self.identityDiscView.trailingAnchor
-        constraintEqualToAnchor:layoutGuide.trailingAnchor],
-    self.identityDiscTopConstraint
+        constraintEqualToAnchor:self.safeAreaLayoutGuide.trailingAnchor],
+    [self.identityDiscView.topAnchor
+        constraintEqualToAnchor:self.toolBarView.topAnchor],
   ]];
 }
 
@@ -403,7 +396,6 @@ CGFloat ToolbarHeight() {
 }
 
 - (void)updateForTopSafeAreaInset:(CGFloat)topSafeAreaInset {
-  self.identityDiscTopConstraint.constant = topSafeAreaInset;
   self.invisibleOmniboxConstraint.constant = topSafeAreaInset;
 }
 

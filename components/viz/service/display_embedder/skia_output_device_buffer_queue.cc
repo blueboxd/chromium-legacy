@@ -67,8 +67,8 @@ class SkiaOutputDeviceBufferQueue::Image {
   }
 
   SkSurface* BeginWriteSkia() {
-    DCHECK(!scoped_write_access_);
-    DCHECK(!scoped_read_access_);
+    DCHECK(!scoped_skia_write_access_);
+    DCHECK(!scoped_overlay_read_access_);
     DCHECK(end_semaphores_.empty());
 
     std::vector<GrBackendSemaphore> begin_semaphores;
@@ -77,29 +77,29 @@ class SkiaOutputDeviceBufferQueue::Image {
     // Buffer queue is internal to GPU proc and handles texture initialization,
     // so allow uncleared access.
     // TODO(vasilyt): Props and MSAA
-    scoped_write_access_ = skia_representation_->BeginScopedWriteAccess(
+    scoped_skia_write_access_ = skia_representation_->BeginScopedWriteAccess(
         0 /* final_msaa_count */, surface_props, &begin_semaphores,
         &end_semaphores_,
         gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
-    DCHECK(scoped_write_access_);
+    DCHECK(scoped_skia_write_access_);
     if (!begin_semaphores.empty()) {
-      scoped_write_access_->surface()->wait(begin_semaphores.size(),
-                                            begin_semaphores.data());
+      scoped_skia_write_access_->surface()->wait(begin_semaphores.size(),
+                                                 begin_semaphores.data());
     }
 
-    return scoped_write_access_->surface();
+    return scoped_skia_write_access_->surface();
   }
 
   void EndWriteSkia() {
-    DCHECK(scoped_write_access_);
+    DCHECK(scoped_skia_write_access_);
     GrFlushInfo flush_info = {
         .fFlags = kNone_GrFlushFlags,
         .fNumSemaphores = end_semaphores_.size(),
         .fSignalSemaphores = end_semaphores_.data(),
     };
-    scoped_write_access_->surface()->flush(
+    scoped_skia_write_access_->surface()->flush(
         SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
-    scoped_write_access_.reset();
+    scoped_skia_write_access_.reset();
     end_semaphores_.clear();
 
     // SkiaRenderer always draws the full frame.
@@ -107,14 +107,19 @@ class SkiaOutputDeviceBufferQueue::Image {
   }
 
   void BeginPresent() {
-    DCHECK(!scoped_write_access_);
-    DCHECK(!scoped_read_access_);
-    DCHECK(!scoped_gl_read_access_);
+    if (++present_count_ != 1) {
+      DCHECK(scoped_overlay_read_access_ || scoped_gl_read_access_);
+      return;
+    }
+
+    DCHECK(!scoped_skia_write_access_);
+    DCHECK(!scoped_overlay_read_access_);
 
     if (overlay_representation_) {
-      scoped_read_access_ = overlay_representation_->BeginScopedReadAccess(
-          true /* need_gl_image */);
-      DCHECK(scoped_read_access_);
+      scoped_overlay_read_access_ =
+          overlay_representation_->BeginScopedReadAccess(
+              true /* need_gl_image */);
+      DCHECK(scoped_overlay_read_access_);
       return;
     }
 
@@ -125,22 +130,30 @@ class SkiaOutputDeviceBufferQueue::Image {
   }
 
   void EndPresent() {
-    scoped_read_access_.reset();
+    DCHECK(present_count_);
+    if (--present_count_)
+      return;
+    scoped_overlay_read_access_.reset();
     scoped_gl_read_access_.reset();
   }
 
   gl::GLImage* GetGLImage(std::unique_ptr<gfx::GpuFence>* fence) {
-    *fence = nullptr;
-
-    if (scoped_read_access_)
-      return scoped_read_access_->gl_image();
+    if (scoped_overlay_read_access_)
+      return scoped_overlay_read_access_->gl_image();
 
     DCHECK(scoped_gl_read_access_);
-    if (auto gl_fence = gl::GLFence::CreateForGpuFence()) {
-      *fence = gl_fence->GetGpuFence();
+
+    if (gl::GLFence::IsGpuFenceSupported() && fence) {
+      if (auto gl_fence = gl::GLFence::CreateForGpuFence())
+        *fence = gl_fence->GetGpuFence();
     }
     auto* texture = gl_representation_->GetTexture();
     return texture->GetLevelImage(texture->target(), 0);
+  }
+
+  int present_count() const { return present_count_; }
+  gpu::SharedImageRepresentationSkia* skia_representation() {
+    return skia_representation_.get();
   }
 
  private:
@@ -153,12 +166,13 @@ class SkiaOutputDeviceBufferQueue::Image {
       overlay_representation_;
   std::unique_ptr<gpu::SharedImageRepresentationGLTexture> gl_representation_;
   std::unique_ptr<gpu::SharedImageRepresentationSkia::ScopedWriteAccess>
-      scoped_write_access_;
+      scoped_skia_write_access_;
   std::unique_ptr<gpu::SharedImageRepresentationOverlay::ScopedReadAccess>
-      scoped_read_access_;
+      scoped_overlay_read_access_;
   std::unique_ptr<gpu::SharedImageRepresentationGLTexture::ScopedAccess>
       scoped_gl_read_access_;
   std::vector<GrBackendSemaphore> end_semaphores_;
+  int present_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(Image);
 };
@@ -193,7 +207,8 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
                        memory_tracker,
                        did_swap_buffer_complete_callback),
       dependency_(deps),
-      gl_surface_(gl_surface),
+      gl_surface_(std::move(gl_surface)),
+      supports_async_swap_(gl_surface_->SupportsAsyncSwap()),
       shared_image_factory_(deps->GetGpuPreferences(),
                             deps->GetGpuDriverBugWorkarounds(),
                             deps->GetGpuFeatureInfo(),
@@ -214,8 +229,11 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   image_format_ = RGBA_8888;
 #endif
 
+  capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
   // TODO(vasilyt): Need to figure out why partial swap isn't working
   capabilities_.supports_post_sub_buffer = false;
+  capabilities_.supports_commit_overlay_planes =
+      gl_surface_->SupportsCommitOverlayPlanes();
   capabilities_.max_frames_pending = 2;
   // Set supports_surfaceless to enable overlays.
   capabilities_.supports_surfaceless = true;
@@ -226,7 +244,7 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
     SkiaOutputSurfaceDependency* deps,
     gpu::MemoryTracker* memory_tracker,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback)
-    : SkiaOutputDeviceBufferQueue(gl_surface,
+    : SkiaOutputDeviceBufferQueue(std::move(gl_surface),
                                   deps,
                                   memory_tracker,
                                   did_swap_buffer_complete_callback,
@@ -274,17 +292,9 @@ SkiaOutputDeviceBufferQueue::Create(
 }
 
 SkiaOutputDeviceBufferQueue::Image*
-SkiaOutputDeviceBufferQueue::GetCurrentImage() {
-  if (!current_image_)
-    current_image_ = GetNextImage();
-
-  return current_image_.get();
-}
-
-std::unique_ptr<SkiaOutputDeviceBufferQueue::Image>
 SkiaOutputDeviceBufferQueue::GetNextImage() {
   if (!available_images_.empty()) {
-    std::unique_ptr<Image> image = std::move(available_images_.back());
+    auto* image = available_images_.back();
     available_images_.pop_back();
     return image;
   }
@@ -294,47 +304,59 @@ SkiaOutputDeviceBufferQueue::GetNextImage() {
 
   if (image->Initialize(image_size_, color_space_, image_format_, dependency_,
                         shared_image_usage_)) {
-    return image;
+    images_.push_back(std::move(image));
+    return images_.back().get();
   }
 
   return nullptr;
 }
 
-void SkiaOutputDeviceBufferQueue::PageFlipComplete(
-    std::unique_ptr<Image> image) {
+void SkiaOutputDeviceBufferQueue::PageFlipComplete(Image* image) {
+  DCHECK(image);
+
   if (displayed_image_) {
+    DCHECK_EQ(displayed_image_->present_count() > 1, displayed_image_ == image);
     displayed_image_->EndPresent();
-    available_images_.push_back(std::move(displayed_image_));
+    if (!displayed_image_->present_count()) {
+      available_images_.push_back(displayed_image_);
+    }
   }
-  displayed_image_ = std::move(image);
+
+  displayed_image_ = image;
 
   swap_completion_callbacks_.pop_front();
 }
 
 void SkiaOutputDeviceBufferQueue::FreeAllSurfaces() {
-  displayed_image_.reset();
-  current_image_.reset();
   // Clear and cancel swap buffer callbacks.
   swap_completion_callbacks_.clear();
 
+  images_.clear();
+  current_image_ = nullptr;
+  submitted_image_ = nullptr;
+  displayed_image_ = nullptr;
   available_images_.clear();
 }
 
 void SkiaOutputDeviceBufferQueue::SchedulePrimaryPlane(
     const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane) {
-  if (!current_image_)
-    return;
+  // If the current_image_ is nullptr, it means there is no change on the
+  // primary plane. So we just need to schedule the last submitted image.
+  auto* image = current_image_ ? current_image_ : submitted_image_;
+  DCHECK(image);
 
-  current_image_->BeginPresent();
+  image->BeginPresent();
 
   std::unique_ptr<gfx::GpuFence> fence;
-  auto* image = current_image_->GetGLImage(&fence);
+  // If the submitted_image_ is being scheduled, we don't new a new fence.
+  auto* gl_image =
+      image->GetGLImage(image == submitted_image_ ? nullptr : &fence);
 
   // Output surface is also z-order 0.
   constexpr int kPlaneZOrder = 0;
   // Output surface always uses the full texture.
-  constexpr gfx::RectF kUVRect(0.f, 0.f, 1.f, 1.f);
-  gl_surface_->ScheduleOverlayPlane(kPlaneZOrder, plane.transform, image,
+  constexpr gfx::RectF kUVRect(0.f, 0.f, 1.0f, 1.0f);
+  gl_surface_->ScheduleOverlayPlane(kPlaneZOrder, plane.transform, gl_image,
                                     ToNearestRect(plane.display_rect), kUVRect,
                                     plane.enable_blending, std::move(fence));
 }
@@ -382,19 +404,22 @@ void SkiaOutputDeviceBufferQueue::SwapBuffers(
     std::vector<ui::LatencyInfo> latency_info) {
   StartSwapBuffers({});
 
-  if (gl_surface_->SupportsAsyncSwap()) {
+  DCHECK(current_image_);
+  submitted_image_ = current_image_;
+  current_image_ = nullptr;
+
+  if (supports_async_swap_) {
     // Cancelable callback uses weak ptr to drop this task upon destruction.
     // Thus it is safe to use |base::Unretained(this)|.
     swap_completion_callbacks_.emplace_back(
         std::make_unique<CancelableSwapCompletionCallback>(base::BindOnce(
             &SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
             base::Unretained(this), image_size_, std::move(latency_info),
-            std::move(current_image_), std::move(committed_overlays_))));
+            submitted_image_, std::move(committed_overlays_))));
     gl_surface_->SwapBuffersAsync(swap_completion_callbacks_.back()->callback(),
                                   std::move(feedback));
   } else {
-    DoFinishSwapBuffers(image_size_, std::move(latency_info),
-                        std::move(current_image_),
+    DoFinishSwapBuffers(image_size_, std::move(latency_info), submitted_image_,
                         std::move(committed_overlays_),
                         gl_surface_->SwapBuffers(std::move(feedback)), nullptr);
   }
@@ -402,46 +427,46 @@ void SkiaOutputDeviceBufferQueue::SwapBuffers(
   std::swap(committed_overlays_, pending_overlays_);
 }
 
-void SkiaOutputDeviceBufferQueue::PostSubBuffer(
-    const gfx::Rect& rect,
+void SkiaOutputDeviceBufferQueue::CommitOverlayPlanes(
     BufferPresentedCallback feedback,
     std::vector<ui::LatencyInfo> latency_info) {
   StartSwapBuffers({});
 
-  if (gl_surface_->SupportsAsyncSwap()) {
+  // There is no drawing for this frame on the main buffer.
+  DCHECK(!current_image_);
+  // A main buffer has to be submitted for previous frames.
+  DCHECK(submitted_image_);
+
+  if (supports_async_swap_) {
     // Cancelable callback uses weak ptr to drop this task upon destruction.
     // Thus it is safe to use |base::Unretained(this)|.
     swap_completion_callbacks_.emplace_back(
         std::make_unique<CancelableSwapCompletionCallback>(base::BindOnce(
             &SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
             base::Unretained(this), image_size_, std::move(latency_info),
-            std::move(current_image_), std::move(committed_overlays_))));
-    gl_surface_->PostSubBufferAsync(
-        rect.x(), rect.y(), rect.width(), rect.height(),
+            submitted_image_, std::move(committed_overlays_))));
+    gl_surface_->CommitOverlayPlanesAsync(
         swap_completion_callbacks_.back()->callback(), std::move(feedback));
-
   } else {
-    DoFinishSwapBuffers(
-        image_size_, std::move(latency_info), std::move(current_image_),
-        std::move(committed_overlays_),
-        gl_surface_->PostSubBuffer(rect.x(), rect.y(), rect.width(),
-                                   rect.height(), std::move(feedback)),
-        nullptr);
+    DoFinishSwapBuffers(image_size_, std::move(latency_info), submitted_image_,
+                        std::move(committed_overlays_),
+                        gl_surface_->CommitOverlayPlanes(std::move(feedback)),
+                        nullptr);
   }
-  committed_overlays_ = std::move(pending_overlays_);
-  pending_overlays_.clear();
+  committed_overlays_.clear();
+  std::swap(committed_overlays_, pending_overlays_);
 }
 
 void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
     const gfx::Size& size,
     std::vector<ui::LatencyInfo> latency_info,
-    std::unique_ptr<Image> image,
+    Image* image,
     std::vector<OverlayData> overlays,
     gfx::SwapResult result,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   DCHECK(!gpu_fence);
 
-  PageFlipComplete(std::move(image));
+  PageFlipComplete(image);
   FinishSwapBuffers(result, size, latency_info);
 }
 
@@ -462,14 +487,15 @@ bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
 }
 
 SkSurface* SkiaOutputDeviceBufferQueue::BeginPaint() {
-  auto* image = GetCurrentImage();
-  return image->BeginWriteSkia();
+  if (!current_image_)
+    current_image_ = GetNextImage();
+  return current_image_->BeginWriteSkia();
 }
 
 void SkiaOutputDeviceBufferQueue::EndPaint(
     const GrBackendSemaphore& semaphore) {
-  auto* image = GetCurrentImage();
-  image->EndWriteSkia();
+  DCHECK(current_image_);
+  current_image_->EndWriteSkia();
 }
 
 }  // namespace viz

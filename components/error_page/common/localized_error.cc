@@ -50,22 +50,23 @@ static const char kWeakDHKeyLearnMoreUrl[] =
 static const int kGoogleCachedCopySuggestionType = 0;
 
 enum NAV_SUGGESTIONS {
-  SUGGEST_NONE                              = 0,
-  SUGGEST_DIAGNOSE_TOOL                     = 1 << 0,
-  SUGGEST_CHECK_CONNECTION                  = 1 << 1,
-  SUGGEST_DNS_CONFIG                        = 1 << 2,
-  SUGGEST_FIREWALL_CONFIG                   = 1 << 3,
-  SUGGEST_PROXY_CONFIG                      = 1 << 4,
-  SUGGEST_DISABLE_EXTENSION                 = 1 << 5,
-  SUGGEST_LEARNMORE                         = 1 << 6,
-  SUGGEST_CONTACT_ADMINISTRATOR             = 1 << 7,
-  SUGGEST_UNSUPPORTED_CIPHER                = 1 << 8,
-  SUGGEST_ANTIVIRUS_CONFIG                  = 1 << 9,
-  SUGGEST_OFFLINE_CHECKS                    = 1 << 10,
-  SUGGEST_COMPLETE_SETUP                    = 1 << 11,
+  SUGGEST_NONE = 0,
+  SUGGEST_DIAGNOSE_TOOL = 1 << 0,
+  SUGGEST_CHECK_CONNECTION = 1 << 1,
+  SUGGEST_DNS_CONFIG = 1 << 2,
+  SUGGEST_FIREWALL_CONFIG = 1 << 3,
+  SUGGEST_PROXY_CONFIG = 1 << 4,
+  SUGGEST_DISABLE_EXTENSION = 1 << 5,
+  SUGGEST_LEARNMORE = 1 << 6,
+  SUGGEST_CONTACT_ADMINISTRATOR = 1 << 7,
+  SUGGEST_UNSUPPORTED_CIPHER = 1 << 8,
+  SUGGEST_ANTIVIRUS_CONFIG = 1 << 9,
+  SUGGEST_OFFLINE_CHECKS = 1 << 10,
+  SUGGEST_COMPLETE_SETUP = 1 << 11,
   // Reload page suggestion for pages created by a post.
-  SUGGEST_REPOST_RELOAD                     = 1 << 12,
-  SUGGEST_NAVIGATE_TO_ORIGIN                = 1 << 13,
+  SUGGEST_REPOST_RELOAD = 1 << 12,
+  SUGGEST_NAVIGATE_TO_ORIGIN = 1 << 13,
+  SUGGEST_SECURE_DNS_CONFIG = 1 << 14,
 };
 
 enum SHOW_BUTTONS {
@@ -339,6 +340,18 @@ const LocalizedErrorMap repost_error = {
   SHOW_NO_BUTTONS,
 };
 
+// Special error page to be used for hostname resolution errors that resulted
+// from secure DNS network failures.  LocalizedError::HasStrings expects this
+// net error code to also appear in the array above.
+const LocalizedErrorMap secure_dns_network_error = {
+    net::ERR_NAME_NOT_RESOLVED,
+    IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
+    IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
+    SUGGEST_CHECK_CONNECTION | SUGGEST_SECURE_DNS_CONFIG |
+        SUGGEST_FIREWALL_CONFIG | SUGGEST_PROXY_CONFIG | SUGGEST_DIAGNOSE_TOOL,
+    SHOW_BUTTON_RELOAD,
+};
+
 const LocalizedErrorMap http_error_options[] = {
     {
         403, IDS_ERRORPAGES_HEADING_ACCESS_DENIED,
@@ -389,46 +402,60 @@ const LocalizedErrorMap generic_4xx_5xx_error = {
 };
 
 const LocalizedErrorMap dns_probe_error_options[] = {
-  {error_page::DNS_PROBE_POSSIBLE,
-   IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
-   IDS_ERRORPAGES_SUMMARY_DNS_PROBE_RUNNING,
-   SUGGEST_DIAGNOSE_TOOL,
-   SHOW_BUTTON_RELOAD,
-  },
+    {
+        error_page::DNS_PROBE_POSSIBLE,
+        IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
+        IDS_ERRORPAGES_SUMMARY_DNS_PROBE_RUNNING,
+        SUGGEST_DIAGNOSE_TOOL,
+        SHOW_BUTTON_RELOAD,
+    },
 
-  // DNS_PROBE_NOT_RUN is not here; NetErrorHelper will restore the original
-  // error, which might be one of several DNS-related errors.
+    // DNS_PROBE_NOT_RUN is not here; NetErrorHelper will restore the original
+    // error, which might be one of several DNS-related errors.
 
-  {error_page::DNS_PROBE_STARTED,
-   IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
-   IDS_ERRORPAGES_SUMMARY_DNS_PROBE_RUNNING,
-   // Include SUGGEST_RELOAD so the More button doesn't jump when we update.
-   SUGGEST_DIAGNOSE_TOOL,
-   SHOW_BUTTON_RELOAD,
-  },
+    {
+        error_page::DNS_PROBE_STARTED,
+        IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
+        IDS_ERRORPAGES_SUMMARY_DNS_PROBE_RUNNING,
+        // Include SUGGEST_RELOAD so the More button doesn't jump when we
+        // update.
+        SUGGEST_DIAGNOSE_TOOL,
+        SHOW_BUTTON_RELOAD,
+    },
 
-  // DNS_PROBE_FINISHED_UNKNOWN is not here; NetErrorHelper will restore the
-  // original error, which might be one of several DNS-related errors.
+    // DNS_PROBE_FINISHED_UNKNOWN is not here; NetErrorHelper will restore the
+    // original error, which might be one of several DNS-related errors.
 
-  {error_page::DNS_PROBE_FINISHED_NO_INTERNET,
-   IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
-   IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
-   SUGGEST_OFFLINE_CHECKS | SUGGEST_DIAGNOSE_TOOL,
-   SHOW_NO_BUTTONS,
-  },
-  {error_page::DNS_PROBE_FINISHED_BAD_CONFIG,
-   IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
-   IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
-   SUGGEST_DNS_CONFIG | SUGGEST_FIREWALL_CONFIG | SUGGEST_PROXY_CONFIG |
-       SUGGEST_DIAGNOSE_TOOL,
-   SHOW_BUTTON_RELOAD,
-  },
-  {error_page::DNS_PROBE_FINISHED_NXDOMAIN,
-   IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
-   IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
-   SUGGEST_DIAGNOSE_TOOL,
-   SHOW_BUTTON_RELOAD,
-  },
+    {
+        error_page::DNS_PROBE_FINISHED_NO_INTERNET,
+        IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
+        IDS_ERRORPAGES_HEADING_INTERNET_DISCONNECTED,
+        SUGGEST_OFFLINE_CHECKS | SUGGEST_DIAGNOSE_TOOL,
+        SHOW_NO_BUTTONS,
+    },
+    {
+        error_page::DNS_PROBE_FINISHED_BAD_CONFIG,
+        IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
+        IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
+        SUGGEST_DNS_CONFIG | SUGGEST_FIREWALL_CONFIG | SUGGEST_PROXY_CONFIG |
+            SUGGEST_DIAGNOSE_TOOL,
+        SHOW_BUTTON_RELOAD,
+    },
+    {
+        error_page::DNS_PROBE_FINISHED_BAD_SECURE_CONFIG,
+        IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
+        IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
+        SUGGEST_SECURE_DNS_CONFIG | SUGGEST_FIREWALL_CONFIG |
+            SUGGEST_PROXY_CONFIG | SUGGEST_DIAGNOSE_TOOL,
+        SHOW_BUTTON_RELOAD,
+    },
+    {
+        error_page::DNS_PROBE_FINISHED_NXDOMAIN,
+        IDS_ERRORPAGES_HEADING_NOT_AVAILABLE,
+        IDS_ERRORPAGES_SUMMARY_NAME_NOT_RESOLVED,
+        SUGGEST_DIAGNOSE_TOOL,
+        SHOW_BUTTON_RELOAD,
+    },
 };
 
 const LocalizedErrorMap* FindErrorMapInArray(const LocalizedErrorMap* maps,
@@ -442,12 +469,20 @@ const LocalizedErrorMap* FindErrorMapInArray(const LocalizedErrorMap* maps,
 }
 
 const LocalizedErrorMap* LookupErrorMap(const std::string& error_domain,
-                                        int error_code, bool is_post) {
+                                        int error_code,
+                                        bool is_secure_dns_network_error,
+                                        bool is_post) {
   if (error_domain == Error::kNetErrorDomain) {
     // Display a different page in the special case of navigating through the
     // history to an uncached page created by a POST.
     if (is_post && error_code == net::ERR_CACHE_MISS)
       return &repost_error;
+    // Display a different page in the special case of achieving a hostname
+    // resolution error that was the result of a secure DNS network failure.
+    if (is_secure_dns_network_error &&
+        net::IsHostnameResolutionError(error_code)) {
+      return &secure_dns_network_error;
+    }
     return FindErrorMapInArray(net_error_options, base::size(net_error_options),
                                error_code);
   } else if (error_domain == Error::kHttpErrorDomain) {
@@ -697,6 +732,13 @@ void GetSuggestionsSummaryList(int error_code,
       IsSuggested(suggestions, SUGGEST_PROXY_CONFIG)) {
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
         IDS_ERRORPAGES_SUGGESTION_CHECK_PROXY_FIREWALL_DNS_SUMMARY, false);
+  } else if (IsSuggested(suggestions, SUGGEST_SECURE_DNS_CONFIG) &&
+             IsSuggested(suggestions, SUGGEST_FIREWALL_CONFIG) &&
+             IsSuggested(suggestions, SUGGEST_PROXY_CONFIG)) {
+    AddSingleEntryDictionaryToList(
+        suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_CHECK_PROXY_FIREWALL_SECURE_DNS_SUMMARY,
+        false);
   } else if (IsSuggested(suggestions, SUGGEST_FIREWALL_CONFIG) &&
              IsSuggested(suggestions, SUGGEST_ANTIVIRUS_CONFIG)) {
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
@@ -712,6 +754,13 @@ void GetSuggestionsSummaryList(int error_code,
     DCHECK(!(suggestions & SUGGEST_PROXY_CONFIG));
     DCHECK(!(suggestions & SUGGEST_FIREWALL_CONFIG));
     DCHECK(!(suggestions & SUGGEST_DNS_CONFIG));
+    DCHECK(!(suggestions & SUGGEST_SECURE_DNS_CONFIG));
+  }
+#elif defined(OS_ANDROID)
+  if (IsSuggested(suggestions, SUGGEST_SECURE_DNS_CONFIG)) {
+    AddSingleEntryDictionaryToList(
+        suggestions_summary_list, "summary",
+        IDS_ERRORPAGES_SUGGESTION_CHECK_SECURE_DNS_SUMMARY, false);
   }
 #endif
 
@@ -795,6 +844,14 @@ void AddSuggestionsDetails(int error_code,
           IDS_ERRORPAGES_SUGGESTION_CHECK_CONNECTION_BODY, false);
   }
 
+#if !defined(OS_IOS)
+  if (suggestions & SUGGEST_SECURE_DNS_CONFIG) {
+    AddSuggestionDetailDictionaryToList(
+        suggestions_details, IDS_ERRORPAGES_SUGGESTION_SECURE_DNS_CONFIG_HEADER,
+        IDS_ERRORPAGES_SUGGESTION_SECURE_DNS_CONFIG_BODY, true);
+  }
+#endif
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   if (suggestions & SUGGEST_DNS_CONFIG) {
     AddSuggestionDetailDictionaryToList(suggestions_details,
@@ -866,6 +923,7 @@ LocalizedError::PageState LocalizedError::GetPageState(
     const std::string& error_domain,
     const GURL& failed_url,
     bool is_post,
+    bool is_secure_dns_network_error,
     bool stale_copy_in_cache,
     bool can_show_network_diagnostics_dialog,
     bool is_incognito,
@@ -888,8 +946,8 @@ LocalizedError::PageState LocalizedError::GetPageState(
     SHOW_NO_BUTTONS,
   };
 
-  const LocalizedErrorMap* error_map = LookupErrorMap(error_domain, error_code,
-                                                      is_post);
+  const LocalizedErrorMap* error_map = LookupErrorMap(
+      error_domain, error_code, is_secure_dns_network_error, is_post);
   if (error_map)
     options = *error_map;
 
@@ -1083,9 +1141,10 @@ LocalizedError::PageState LocalizedError::GetPageState(
 
 base::string16 LocalizedError::GetErrorDetails(const std::string& error_domain,
                                                int error_code,
+                                               bool is_secure_dns_network_error,
                                                bool is_post) {
-  const LocalizedErrorMap* error_map =
-      LookupErrorMap(error_domain, error_code, is_post);
+  const LocalizedErrorMap* error_map = LookupErrorMap(
+      error_domain, error_code, is_secure_dns_network_error, is_post);
   if (error_map)
     return l10n_util::GetStringUTF16(error_map->summary_resource_id);
   else
@@ -1095,9 +1154,12 @@ base::string16 LocalizedError::GetErrorDetails(const std::string& error_domain,
 bool LocalizedError::HasStrings(const std::string& error_domain,
                                 int error_code) {
   // Whether or not the there are strings for an error does not depend on
-  // whether or not the page was be generated by a POST, so just claim it was
-  // not.
-  return LookupErrorMap(error_domain, error_code, /*is_post=*/false) != nullptr;
+  // whether or not the page was generated by a POST, so just claim it was
+  // not. Likewise it does not depend on whether a DNS error resulted from a
+  // secure DNS lookup or not.
+  return LookupErrorMap(error_domain, error_code,
+                        /*is_secure_dns_network_error=*/false,
+                        /*is_post=*/false) != nullptr;
 }
 
 }  // namespace error_page

@@ -522,20 +522,20 @@ void SandboxFileSystemBackendDelegate::RegisterQuotaUpdateObserver(
 }
 
 void SandboxFileSystemBackendDelegate::InvalidateUsageCache(
-    const GURL& origin,
+    const url::Origin& origin,
     FileSystemType type) {
   base::File::Error error = base::File::FILE_OK;
   base::FilePath usage_file_path = GetUsageCachePathForOriginAndType(
-      obfuscated_file_util(), url::Origin::Create(origin), type, &error);
+      obfuscated_file_util(), origin, type, &error);
   if (error != base::File::FILE_OK)
     return;
   usage_cache()->IncrementDirty(usage_file_path);
 }
 
 void SandboxFileSystemBackendDelegate::StickyInvalidateUsageCache(
-    const GURL& origin,
+    const url::Origin& origin,
     FileSystemType type) {
-  sticky_dirty_origins_.insert(std::make_pair(origin, type));
+  sticky_dirty_origins_.insert(std::make_pair(origin.GetURL(), type));
   quota_observer()->SetUsageCacheEnabled(origin, type, false);
   InvalidateUsageCache(origin, type);
 }

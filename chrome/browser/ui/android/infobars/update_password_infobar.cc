@@ -11,7 +11,9 @@
 #include "base/android/jni_string.h"
 #include "chrome/android/chrome_jni_headers/UpdatePasswordInfoBar_jni.h"
 #include "chrome/browser/password_manager/update_password_infobar_delegate_android.h"
+#include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using base::android::JavaParamRef;
 
@@ -41,14 +43,12 @@ UpdatePasswordInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
   std::vector<base::string16> usernames;
   int selected_username = 0;
-  if (update_password_delegate->ShowMultipleAccounts()) {
-    for (const auto& form : update_password_delegate->GetCurrentForms()) {
-      usernames.push_back(form->username_value);
-      if (usernames.back() == update_password_delegate->get_default_username())
-        selected_username = usernames.size() - 1;
+  for (const auto& form : update_password_delegate->GetCurrentForms()) {
+    usernames.push_back(GetDisplayUsername(*form));
+    if (form->username_value ==
+        update_password_delegate->get_default_username()) {
+      selected_username = usernames.size() - 1;
     }
-  } else {
-    usernames.push_back(update_password_delegate->get_default_username());
   }
 
   base::android::ScopedJavaLocalRef<jobject> infobar;

@@ -78,7 +78,8 @@ public class SharedClipboardShareActivity
         if (!AndroidSyncSettings.get().isChromeSyncEnabled()) {
             chromeSettingsButton.setVisibility(View.VISIBLE);
             chromeSettingsButton.setOnClickListener(view -> {
-                SettingsLauncher.launchSettingsPage(ContextUtils.getApplicationContext(), null);
+                SettingsLauncher.getInstance().launchSettingsPage(
+                        ContextUtils.getApplicationContext(), null);
             });
         }
 
@@ -128,8 +129,8 @@ public class SharedClipboardShareActivity
         SharedClipboardMetrics.recordDeviceClick(position);
         SharedClipboardMetrics.recordTextSize(text.length());
 
-        SharedClipboardMessageHandler.showSendingNotification(
-                device.guid, device.clientName, device.lastUpdatedTimestampMillis, text);
+        SharedClipboardMessageHandler.showSendingNotification(device.guid, device.clientName,
+                device.lastUpdatedTimestampMillis, text, /*retries=*/0);
         finish();
     }
 }

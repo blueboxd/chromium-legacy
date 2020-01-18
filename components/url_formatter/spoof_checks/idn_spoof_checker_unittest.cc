@@ -1219,10 +1219,19 @@ const IDNTestCase kIdnCases[] = {
     {"xn--gpd3ag.com", L"ჽჿხ.com", kUnsafe},
     {"xn--gpd3ag.ge", L"ჽჿხ.ge", kSafe},
     {"xn--gpd3ag.xn--node", L"ჽჿხ.გე", kSafe},
-    // Hebrew.
+    // Hebrew:
     {"xn--7dbh4a.com", L"חסד.com", kUnsafe},
     {"xn--7dbh4a.il", L"חסד.il", kSafe},
     {"xn--9dbq2a.xn--7dbh4a", L"קום.חסד", kSafe},
+    // Myanmar:
+    {"xn--oidbbf41a.com", L"င၀ဂခဂ.com", kUnsafe},
+    {"xn--oidbbf41a.mm", L"င၀ဂခဂ.mm", kSafe},
+    {"xn--oidbbf41a.xn--7idjb0f4ck", L"င၀ဂခဂ.မြန်မာ", kSafe},
+    // Myanmar Shan digits:
+    {"xn--rmdcmef.com", L"႐႑႕႖႗.com", kUnsafe},
+    {"xn--rmdcmef.mm", L"႐႑႕႖႗.mm", kSafe},
+    {"xn--rmdcmef.xn--7idjb0f4ck", L"႐႑႕႖႗.မြန်မာ", kSafe},
+
     // Indic scripts:
     // Bengali:
     {"xn--07baub.com", L"০৭০৭.com", kUnsafe},

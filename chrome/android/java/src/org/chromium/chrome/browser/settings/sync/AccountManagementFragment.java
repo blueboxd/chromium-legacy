@@ -421,7 +421,7 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     public static void openAccountManagementScreen(@GAIAServiceType int serviceType) {
         Bundle arguments = new Bundle();
         arguments.putInt(SHOW_GAIA_SERVICE_TYPE_EXTRA, serviceType);
-        SettingsLauncher.launchSettingsPage(
+        SettingsLauncher.getInstance().launchSettingsPage(
                 ContextUtils.getApplicationContext(), AccountManagementFragment.class, arguments);
     }
 

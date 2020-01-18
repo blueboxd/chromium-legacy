@@ -101,6 +101,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD0(GetDownloadFile, DownloadFile*());
   MOCK_CONST_METHOD0(IsDangerous, bool());
   MOCK_CONST_METHOD0(GetDangerType, DownloadDangerType());
+  MOCK_CONST_METHOD0(GetMixedContentStatus, MixedContentStatus());
   MOCK_CONST_METHOD1(TimeRemaining, bool(base::TimeDelta*));
   MOCK_CONST_METHOD0(CurrentSpeed, int64_t());
   MOCK_CONST_METHOD0(PercentComplete, int());
@@ -127,6 +128,7 @@ class MockDownloadItem : public DownloadItem {
   MOCK_METHOD1(SetOpened, void(bool));
   MOCK_METHOD1(SetLastAccessTime, void(base::Time));
   MOCK_METHOD1(SetDisplayName, void(const base::FilePath&));
+  MOCK_METHOD1(SetMixedContentStatus, void(MixedContentStatus));
   MOCK_CONST_METHOD1(DebugString, std::string(bool));
   MOCK_METHOD1(SimulateErrorForTesting, void(DownloadInterruptReason));
   MOCK_METHOD2(Rename, void(const base::FilePath&, RenameDownloadCallback));

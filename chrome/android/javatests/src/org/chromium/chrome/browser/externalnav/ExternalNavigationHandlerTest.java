@@ -23,7 +23,6 @@ import android.test.mock.MockPackageManager;
 
 import androidx.browser.customtabs.CustomTabsIntent;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -147,16 +146,10 @@ public class ExternalNavigationHandlerTest {
 
     @Before
     public void setUp() {
-        RecordHistogram.setDisabledForTests(true);
         mContext = new TestContext(InstrumentationRegistry.getTargetContext(), mDelegate);
         ContextUtils.initApplicationContextForTests(mContext);
 
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
-    }
-
-    @After
-    public void tearDown() {
-        RecordHistogram.setDisabledForTests(false);
     }
 
     @Test
@@ -1660,6 +1653,60 @@ public class ExternalNavigationHandlerTest {
 
         Assert.assertNotNull(mDelegate.startActivityIntent);
         Assert.assertTrue(mDelegate.startActivityIntent.getScheme().startsWith("https"));
+    }
+
+    @Test
+    @SmallTest
+    public void testIntentActionMetrics() {
+        final String intentWithAction =
+                "intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;"
+                + "action=android.intent.action.PICK;end";
+        final String intentWithoutAction =
+                "intent://scan/#Intent;scheme=zxing;package=com.google.zxing.client.android;end";
+
+        final int pickCount = RecordHistogram.getHistogramValueCountForTesting(
+                ExternalNavigationHandler.INTENT_ACTION_HISTOGRAM,
+                ExternalNavigationHandler.StandardActions.PICK);
+        final int viewCount = RecordHistogram.getHistogramValueCountForTesting(
+                ExternalNavigationHandler.INTENT_ACTION_HISTOGRAM,
+                ExternalNavigationHandler.StandardActions.VIEW);
+
+        checkUrl(intentWithAction)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+        Assert.assertEquals(pickCount + 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        ExternalNavigationHandler.INTENT_ACTION_HISTOGRAM,
+                        ExternalNavigationHandler.StandardActions.PICK));
+        Assert.assertEquals(viewCount,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        ExternalNavigationHandler.INTENT_ACTION_HISTOGRAM,
+                        ExternalNavigationHandler.StandardActions.VIEW));
+
+        checkUrl(intentWithoutAction)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+        Assert.assertEquals(viewCount + 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        ExternalNavigationHandler.INTENT_ACTION_HISTOGRAM,
+                        ExternalNavigationHandler.StandardActions.VIEW));
+    }
+
+    @Test
+    @SmallTest
+    public void testAppIntentActionMetrics() {
+        final String appIntent = "android-app://com.google.zxing.client.android/zxing/scan/#Intent;"
+                + "action=android.intent.action.ANSWER;end";
+        final int count = RecordHistogram.getHistogramValueCountForTesting(
+                ExternalNavigationHandler.INTENT_ACTION_HISTOGRAM,
+                ExternalNavigationHandler.StandardActions.ANSWER);
+
+        checkUrl(appIntent).expecting(
+                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, START_OTHER_ACTIVITY);
+        Assert.assertEquals(count + 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        ExternalNavigationHandler.INTENT_ACTION_HISTOGRAM,
+                        ExternalNavigationHandler.StandardActions.ANSWER));
     }
 
     private static ResolveInfo newResolveInfo(String packageName) {

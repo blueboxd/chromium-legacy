@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.util.IntentUtils;
 
@@ -18,14 +19,31 @@ import org.chromium.chrome.browser.util.IntentUtils;
  * A utility class for launching Chrome Settings.
  */
 public class SettingsLauncher {
+    private static SettingsLauncher sSettingsLauncher = new SettingsLauncher();
+    private static SettingsLauncher sInstanceForTests;
+
+    @VisibleForTesting
+    protected SettingsLauncher() {}
+
+    /**
+     * Returns the singleton instance of this class.
+     */
+    public static SettingsLauncher getInstance() {
+        return sInstanceForTests == null ? sSettingsLauncher : sInstanceForTests;
+    }
+
+    @VisibleForTesting
+    public void setInstanceForTests(SettingsLauncher getter) {
+        sInstanceForTests = getter;
+    }
+
     /**
      * Launches settings, either on the top-level page or on a subpage.
      *
      * @param context The current Activity, or an application context if no Activity is available.
      * @param fragment The fragment to show, or null to show the top-level page.
      */
-    public static void launchSettingsPage(
-            Context context, @Nullable Class<? extends Fragment> fragment) {
+    public void launchSettingsPage(Context context, @Nullable Class<? extends Fragment> fragment) {
         launchSettingsPage(context, fragment, null);
     }
 
@@ -36,8 +54,8 @@ public class SettingsLauncher {
      * @param fragment The name of the fragment to show, or null to show the top-level page.
      * @param fragmentArgs The arguments bundle to initialize the instance of subpage fragment.
      */
-    public static void launchSettingsPage(Context context,
-            @Nullable Class<? extends Fragment> fragment, @Nullable Bundle fragmentArgs) {
+    public void launchSettingsPage(Context context, @Nullable Class<? extends Fragment> fragment,
+            @Nullable Bundle fragmentArgs) {
         String fragmentName = fragment != null ? fragment.getName() : null;
         Intent intent = createIntentForSettingsPage(context, fragmentName, fragmentArgs);
         IntentUtils.safeStartActivity(context, intent);
@@ -50,8 +68,7 @@ public class SettingsLauncher {
      * @param context The current Activity, or an application context if no Activity is available.
      * @param fragmentName The name of the fragment to show, or null to show the top-level page.
      */
-    public static Intent createIntentForSettingsPage(
-            Context context, @Nullable String fragmentName) {
+    public Intent createIntentForSettingsPage(Context context, @Nullable String fragmentName) {
         return createIntentForSettingsPage(context, fragmentName, null);
     }
 
@@ -63,7 +80,7 @@ public class SettingsLauncher {
      * @param fragmentName The name of the fragment to show, or null to show the top-level page.
      * @param fragmentArgs The arguments bundle to initialize the instance of subpage fragment.
      */
-    public static Intent createIntentForSettingsPage(
+    public Intent createIntentForSettingsPage(
             Context context, @Nullable String fragmentName, @Nullable Bundle fragmentArgs) {
         Intent intent = new Intent();
         intent.setClass(context, SettingsActivity.class);

@@ -35,7 +35,7 @@ public class PreviewsLitePageInfoBar extends ConfirmInfoBar {
 
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putBoolean(FROM_INFOBAR, true);
-        SettingsLauncher.launchSettingsPage(
+        SettingsLauncher.getInstance().launchSettingsPage(
                 getContext(), DataReductionPreferenceFragment.class, fragmentArgs);
     }
 }

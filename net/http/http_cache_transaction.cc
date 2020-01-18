@@ -1432,7 +1432,8 @@ int HttpCache::Transaction::DoDoneHeadersAddToEntryComplete(int result) {
   cache_pending_ = false;
   done_headers_create_new_entry_ = false;
 
-  // Speculative fix for rare crash. crbug.com/959194
+  // It is unclear exactly how this state is reached with an ERR_CACHE_RACE, but
+  // this check appears to fix a rare crash. See crbug.com/959194.
   if (result == ERR_CACHE_RACE) {
     TransitionToState(STATE_HEADERS_PHASE_CANNOT_PROCEED);
     return OK;

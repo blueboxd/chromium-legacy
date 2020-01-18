@@ -15,7 +15,7 @@ assert(is_fuchsia)
 #   deps           - (optional) List of other fidl_library() targets that this
 #                    FIDL library depends on.
 #   languages      - Generate bindings for the given languages, defaults to
-#                    [ "cpp" ]. "js" also supported.
+#                    [ "cpp" ]. Only "cpp" is currently supported.
 #
 # $namespace.$library_name must match the the library name specified in the FIDL
 # files.
@@ -45,16 +45,8 @@ template("fidl_library") {
     languages = [ "cpp" ]
   }
 
-  _define_cpp_action = false
-  _define_js_action = false
-
-  foreach(language, languages) {
-    if (language == "cpp") {
-      _define_cpp_action = true
-    } else if (language == "js") {
-      _define_js_action = true
-    }
-  }
+  assert(languages == [ "cpp" ])
+  _define_cpp_action = true
 
   _response_file = "$target_gen_dir/$target_name.rsp"
   _json_representation = "$target_gen_dir/${_library_name}.fidl.json"
@@ -179,38 +171,6 @@ template("fidl_library") {
         "-output-base",
         rebase_path("${_output_base}", root_build_dir),
       ]
-    }
-  }
-
-  if (_define_js_action) {
-    _output_js_path = "$_output_gen_dir/${_library_path}/js/fidl.js"
-    action("${target_name}_js_gen") {
-      visibility = [ ":${invoker.target_name}" ]
-      forward_variables_from(invoker, [ "testonly" ])
-
-      deps = [ ":${invoker.target_name}_compile" ]
-
-      inputs = [
-        # Depend on the SDK hash, to ensure rebuild if the SDK tools change.
-        "${fuchsia_sdk}/.hash",
-        _json_representation,
-        "//build/fuchsia/fidlgen_js/fidl.py",  # The schema helper file.
-      ]
-
-      outputs = [ _output_js_path ]
-
-      script = "//build/fuchsia/fidlgen_js/gen.py"
-
-      args = [
-        rebase_path(_json_representation, root_build_dir),
-        "--output",
-        rebase_path("${_output_js_path}", root_build_dir),
-      ]
-
-      data = []
-      foreach(o, outputs) {
-        data += [ o ]
-      }
     }
   }
 

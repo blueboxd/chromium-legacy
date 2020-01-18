@@ -205,6 +205,12 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
       unsichere Quellen nicht gelten sollen</translation>
 <translation id="1312799700549720683">Legt die Displayeinstellungen fest.</translation>
 <translation id="131353325527891113">Nutzernamen auf Anmeldeseite zeigen</translation>
+<translation id="1327351219049180837">Mit dieser Richtlinie wird festgelegt, ob Richtliniendaten und die Abrufzeit der Richtlinie erhoben werden.
+
+      Wenn die Richtlinie auf "true" gestellt oder gar nicht konfiguriert ist, werden Richtliniendaten und die Abrufzeit der Richtlinie erhoben.
+      Ist die Richtlinie auf "false" gestellt, werden Richtliniendaten und die Abrufzeit der Richtlinie nicht erhoben.
+
+      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="1327466551276625742">Eingabeaufforderung zur Netzwerkkonfiguration im Offlinemodus aktivieren</translation>
 <translation id="1330145147221172764">Bildschirmtastatur aktivieren</translation>
 <translation id="13356285923490863">Richtlinienname</translation>
@@ -352,6 +358,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="152657506688053119">Liste alternativer URLs für den Standardsuchanbieter</translation>
 <translation id="1530812829012954197">Immer die folgenden URL-Muster im Host-Browser darstellen</translation>
 <translation id="1541170838458414064">Druckseitengröße einschränken</translation>
+<translation id="1553532014072799546">Weiße Liste für App-Zeitbeschränkungen</translation>
 <translation id="1553684822621013552">Wenn diese Richtlinie auf "true" gesetzt ist, wird ARC für den Nutzer aktiviert.
       Dies unterliegt jedoch zusätzlichen Überprüfungen der Richtlinieneinstellungen
       – ARC ist weiterhin nicht verfügbar, wenn entweder der flüchtige Modus oder die Mehrfachanmeldung in der aktuellen Nutzersitzung aktiviert
@@ -450,6 +457,14 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       </translation>
 <translation id="1700811900332333712">Powerwash-Anfrage durch Gerät zulassen</translation>
 <translation id="1708496595873025510">Beschränkung für Abruf des Varianten-Seeds festlegen</translation>
+<translation id="1713533749396963716">Mit dieser Richtlinie wird festgelegt, welche Apps und URLs für Nutzungsbeschränkungen auf die weiße Liste gesetzt werden sollen.
+        Apps, die unter <ph name="PRODUCT_OS_NAME" /> installiert sind, werden für den jeweiligen Nutzer auf die weiße Liste gesetzt, sodass keine Zeitbeschränkungen gelten.
+        Die Liste kann nur auf untergeordnete Nutzerkonten angewendet werden und kommt nur zum Tragen, wenn die <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" />-Richtlinie konfiguriert wurde.
+        Apps und URLs, die auf der weißen Liste stehen, werden dann nicht durch Zeitbeschränkungen blockiert.
+        Zugriffe auf solche URLs werden nicht auf die Chrome-Zeitbeschränkung angerechnet.
+        Wenn Sie URLs auf die weiße Liste setzen möchten, die mit den regulären Ausdrücken auf der Liste übereinstimmen, fügen Sie |url_list| reguläre Ausdrücke hinzu.
+        Wenn Sie eine App auf die weiße Liste setzen möchten, fügen Sie sie unter Angabe der |app_id| und dem |app_type| |app_list| hinzu.
+       </translation>
 <translation id="1715151459541210849">Bedienungshilfe "Spracheingabe" aktivieren</translation>
 <translation id="1717817358640580294">Wenn die Richtlinie nicht konfiguriert ist und das Chrome Cleanup Tool unerwünschte Software findet, kann es Metadaten betreffend den Scan an Google senden. Dies geschieht in Übereinstimmung mit der über "SafeBrowsingExtendedReportingEnabled" festgelegten Richtlinie. Der Nutzer wird dann vom Chrome Cleanup Tool gefragt, ob die unerwünschte Software gelöscht werden soll. Er kann die Ergebnisse der Bereinigung mit Google teilen, damit unerwünschte Software zukünftig besser erkannt wird. Diese Ergebnisse enthalten Dateimetadaten, automatisch installierte Erweiterungen und Registrierungsschlüssel, wie es im Whitepaper zum Datenschutz bei Chrome beschrieben ist.
 
@@ -974,6 +989,12 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 
           Unter Windows steht diese Richtlinie nur bei Instanzen zur Verfügung, die Teil einer "<ph name="MS_AD_NAME" />"-Domain sind, oder bei Windows 10 Pro- oder Windows 10 Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
 <translation id="247658312644322296">Das Ziel "Als PDF speichern"</translation>
+<translation id="2478649170422995190">Mit dieser Richtlinie wird festgelegt, ob Versionsinformationen wie die Betriebssystemversion, das Betriebssystem, die Architektur des Betriebssystems, die <ph name="PRODUCT_NAME" />-Version und der <ph name="PRODUCT_NAME" />-Kanal erhoben werden.
+
+      Wenn die Richtlinie auf "true" gestellt oder gar nicht konfiguriert ist, werden Versionsinformationen erhoben.
+      Ist die Richtlinie auf "false" gestellt, werden keine Versionsinformationen erhoben.
+
+      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="2480971699591919564">Hiermit wird die Funktion "Zum Anrufen klicken" aktiviert. Mit ihr können Telefonnummern von Chrome-Computern an Android-Geräte gesendet werden, wenn der Nutzer angemeldet ist. Weitere Informationen finden Sie in diesem Hilfeartikel: https://support.google.com/chrome/answer/9430554?.
 
       Wenn diese Richtlinie aktiviert ist, können Chrome-Nutzer Telefonnummern an Android-Geräte senden.
@@ -2784,6 +2805,12 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Ansonsten kann sie auf einen der folgenden Werte festgelegt werden: "tls1.2" oder "tls1.3". Wenn die Richtlinie konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> keine SSL- oder TLS-Versionen, die neuer als die festgelegte Version sind. Ein unbekannter Wert wird ignoriert.</translation>
 <translation id="5330684698007383292">Verarbeitung der folgenden Inhaltstypen durch <ph name="PRODUCT_FRAME_NAME" /> zulassen</translation>
+<translation id="5331081760098249172">
+      Wenn diese Richtlinie auf "true" gestellt ist, darf <ph name="PRODUCT_NAME" /> WebRTC-Ereignisprotokolle aus Google-Diensten wie Hangouts Meet speichern und die Protokolle bei Google hochladen. Diese Protokolle enthalten Diagnoseinformationen, die für die Fehlerbehebung bei Audioanrufen oder Videokonferenzen in <ph name="PRODUCT_NAME" /> hilfreich sein können. Dazu zählen die Sende- und Empfangszeit sowie die Größe von RTP-Paketen, Feedback zur Auslastung des Netzwerks und Metadaten zur Länge und Qualität von Audio- und Videoframes. Audio- oder Videoinhalte von Anrufen bzw. Konferenzen gehören nicht dazu. Damit Fehler leichter behoben werden können, verknüpft Google diese Protokolle anhand einer Sitzungs-ID unter Umständen mit anderen Protokollen, die vom Google-Dienst selbst erfasst wurden.
+
+      Wenn die Richtlinie auf "false" gestellt ist, werden solche Protokolle weder erfasst noch hochgeladen.
+
+      Ist diese Richtlinie nicht konfiguriert (bis einschließlich Version M76), kann <ph name="PRODUCT_NAME" /> diese Protokolle standardmäßig weder erfassen noch hochladen. Ab Version M77 kann <ph name="PRODUCT_NAME" /> diese Protokolle standardmäßig von den meisten Profilen erfassen und hochladen, die von cloudbasierten Unternehmensrichtlinien auf Nutzerebene betroffen sind. Ab Version M77 bis einschließlich M80 kann <ph name="PRODUCT_NAME" /> diese Protokolle außerdem standardmäßig von Profilen erfassen und hochladen, die mit <ph name="PRODUCT_NAME" /> lokal verwaltet werden.</translation>
 <translation id="5331746669335642668">Cloud-Richtlinie von <ph name="PRODUCT_NAME" /> überschreibt Plattformrichtlinie.</translation>
 <translation id="5362531528507578966">Überschreibt den Standarddruckmodus mit Hintergrundgrafiken.</translation>
 <translation id="5365476955714838841">Befehlszeilenparameter für den alternativen Browser.</translation>
@@ -3385,6 +3412,12 @@ Durch Festlegen dieser Richtlinie bestimmen Sie, ob sich ein Nutzer in <ph name=
       Wird die Richtlinie auf "False" gesetzt, werden die Nutzer nicht gemeldet.</translation>
 <translation id="638668187106406971">Hochgeladene Inhalte auf Verstöße gegen die Richtlinie zum Schutz von sensiblen Daten überprüfen</translation>
 <translation id="6394350458541421998">Diese Richtlinie ist ab <ph name="PRODUCT_OS_NAME" />-Version 29 nicht mehr vorhanden. Verwenden Sie stattdessen die Richtlinie "PresentationScreenDimDelayScale".</translation>
+<translation id="6399242659768117666">Mit dieser Richtlinie wird festgelegt, ob Daten von Erweiterungen und Plug-ins erhoben werden.
+
+      Wenn die Richtlinie auf "true" gestellt oder gar nicht konfiguriert ist, werden Daten von Erweiterungen und Plug-ins erhoben.
+      Ist die Richtlinie auf "false" gestellt, werden Daten von Erweiterungen und Plug-ins nicht erhoben.
+
+      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät bei "<ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />" registriert ist.</translation>
 <translation id="6401669939808766804">Nutzer abmelden</translation>
 <translation id="6406448383934634215">Ist "URL-Liste öffnen" als Startaktion ausgewählt, können Sie die Liste der URLs angeben, die geöffnet werden. Ist die Richtlinie nicht konfiguriert, wird keine URL beim Start geöffnet.
 
@@ -3469,6 +3502,12 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 
       Diese Richtlinie kann mit einem Pfad zur ausführbaren Datei oder <ph name="PRODUCT_NAME_PLACEHOLDER" /> konfiguriert werden, damit das Installationsverzeichnis von Chrome automatisch erkannt wird.</translation>
 <translation id="6536600139108165863">Automatischer Neustart nach Herunterfahren des Geräts</translation>
+<translation id="6537062468544950724">Mit dieser Richtlinie wird festgelegt, ob Daten erhoben werden, mit denen Geräte identifiziert werden können, etwa Gerätenamen und Netzwerkadressen.
+
+      Wenn die Richtlinie auf "true" gestellt oder gar nicht konfiguriert ist, werden Daten, mit denen Geräte identifiziert werden können, erhoben.
+      Ist die Richtlinie auf "false" gestellt, werden keine Daten erhoben, mit denen Geräte identifiziert werden können.
+
+      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="6539246272469751178">Diese Richtlinie hat keine Auswirkung auf Android-Apps. Android-Apps verwenden immer das Standardverzeichnis für Downloads und haben keinen Zugriff auf Dateien, die von <ph name="PRODUCT_OS_NAME" /> in ein anderes Verzeichnis als das Standardverzeichnis für Downloads heruntergeladen werden.</translation>
 <translation id="654303922206238013">Migrationsstrategie für eCryptfs</translation>
 <translation id="6544897973797372144">Wenn diese Richtlinie auf "True" gesetzt ist und die Richtlinie "ChromeOsReleaseChannel" nicht angegeben ist, können Nutzer der Anmelde-Domain den Release-Kanal des Geräts ändern. Ist diese Richtlinie auf "False" gesetzt, wird auf dem Gerät der zuletzt eingestellte Kanal verwendet und dieser kann nicht geändert werden.
@@ -3689,6 +3728,12 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Ist die Richtlinie auf "true" festgelegt oder nicht konfiguriert, wird das intelligente Dimmmodell aktiviert und der Zeitraum bis zum Dimmen des Bildschirms kann durch das Modell verlängert werden. Wenn die Richtlinie auf "false" festgelegt ist, wird das Dimmen des Bildschirms durch das intelligente Dimmmodell nicht beeinflusst.</translation>
 <translation id="6972540544240464302">Konfiguration für Aufgabenplaner auswählen</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6991078864332103177">Mit dieser Richtlinie wird festgelegt, ob personenbezogene Daten erhoben werden, zum Beispiel die Anmeldedaten für das Betriebssystem oder das <ph name="PRODUCT_NAME" />-Profil, der <ph name="PRODUCT_NAME" />-Profilname, der <ph name="PRODUCT_NAME" />-Profilpfad und der ausführbare Pfad für <ph name="PRODUCT_NAME" />.
+
+      Wenn die Richtlinie auf "true" gestellt oder gar nicht konfiguriert ist, werden personenbezogene Daten erhoben.
+      Ist die Richtlinie auf "false" gestellt, werden keine personenbezogenen Daten erhoben.
+
+      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="6994082778848658360">Hiermit wird angegeben, wie die integrierte Secure Element-Hardware zur Zwei-Faktor-Authentifizierung verwendet werden kann, wenn sie mit dieser Funktion kompatibel ist. Mithilfe der Ein-/Aus-Taste des Geräts wird die Anwesenheit des Nutzers ermittelt.
 
       Wenn "Deaktiviert" ausgewählt ist, steht kein zweiter Authentifizierungsfaktor zur Verfügung.
@@ -4191,11 +4236,20 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
           Ist diese Einstellung deaktiviert oder nicht festgelegt, wird die Zwei-Faktor-Authentifizierung nicht aktiviert und das Standardverfahren zur Eingabe einer nutzerdefinierten PIN wird verwendet.</translation>
 <translation id="7750991880413385988">"Neuer Tab"-Seite öffnen</translation>
 <translation id="7754704193130578113">Vor dem Download von Dateien nach dem Speicherort fragen</translation>
+<translation id="7755495228644343508">Richtlinien für die Chrome Reporting Extension konfigurieren.
+
+      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="7758378441185523981">Aktiviert die passive Authentifizierung für Profiltypen.</translation>
 <translation id="7761446981238915769">Liste der installierten Apps auf dem Anmeldebildschirm konfigurieren</translation>
 <translation id="7763614521440615342">Inhaltsvorschläge auf der "Neuer Tab"-Seite anzeigen</translation>
 <translation id="7765879851993224640">Verwendung von Smart Lock zur Anmeldung erlauben.</translation>
 <translation id="7774768074957326919">System-Proxy-Einstellungen verwenden</translation>
+<translation id="7775902646576367944">Mit dieser Richtlinie wird festgelegt, ob Safe Browsing-Daten erhoben werden, etwa die Anzahl der Safe Browsing-Warnungen und die Anzahl der Klicks auf Safe Browsing-Warnungen.
+
+      Wenn die Richtlinie auf "true" gestellt oder gar nicht konfiguriert ist, werden Safe Browsing-Daten erhoben.
+      Ist die Richtlinie auf "false" gestellt, werden keine Safe Browsing-Daten erhoben.
+
+      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät bei <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="7777535871204167559">Externe Speichergeräte nur schreibgeschützt verwenden</translation>
 <translation id="7788511847830146438">Nach Profil</translation>
 <translation id="7792973482799545782">Keiner Website das Laden von blockierbaren gemischten Inhalten erlauben</translation>
@@ -4738,6 +4792,15 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8757552286070680084">Wilco DTC-Konfiguration</translation>
 <translation id="8758831693895931466">Erforderliche Registrierung für Cloud Management aktivieren</translation>
 <translation id="8759829385824155666">Erlaubte Kerberos-Verschlüsselungstypen</translation>
+<translation id="87635449713742708">Mit dieser Richtlinie wird erzwungen, dass der Netzwerkcode im Browserprozess ausgeführt wird.
+
+      Sie ist standardmäßig deaktiviert. Ist sie aktiviert, so ist der Nutzer nicht mehr vor den Sicherheitsproblemen geschützt, sobald der Netzwerkprozess in einer Sandbox ausgeführt wird.
+
+      Diese Richtlinie soll Unternehmen ermöglichen, zu Drittanbietersoftware zu migrieren, die nicht auf Hooking von Netzwerk-APIs angewiesen sind. Proxyserver werden anstelle von LSPs und Win32 API-Patching empfohlen.
+
+      Wenn diese Richtlinie nicht konfiguriert ist, wird der Netzwerkcode standardmäßig außerhalb des Browserprozesses ausgeführt.
+
+      Diese Richtlinie wird in <ph name="PRODUCT_NAME" /> 82 entfernt.</translation>
 <translation id="8764119899999036911">Gibt an, ob der generierte Kerberos-SPN auf dem kanonischen DNS-Namen oder dem ursprünglich eingegebenen Namen basiert. Wenn Sie diese Einstellung aktivieren, wird die CNAME-Suche übersprungen und der Servername so wie eingegeben verwendet. Sollten Sie die Einstellung deaktivieren oder nicht konfigurieren, wird der kanonische Name des Servers per CNAME-Suche ermittelt.</translation>
 <translation id="8764477907716150749">Diese Richtlinie ist zur internen Nutzung in <ph name="PRODUCT_NAME" /> vorgesehen.</translation>
 <translation id="8777369558049831576">Kästchen für "Immer öffnen" auf Bestätigungsaufforderung anzeigen</translation>

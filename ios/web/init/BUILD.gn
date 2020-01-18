@@ -36,9 +36,7 @@ source_set("init") {
 }
 
 source_set("global_state") {
-  sources = [
-    "ios_global_state.mm",
-  ]
+  sources = [ "ios_global_state.mm" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 

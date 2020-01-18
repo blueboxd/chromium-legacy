@@ -101,6 +101,7 @@ message SharingSpecificFields {
     SMS_FETCHER = 3;
     REMOTE_COPY = 4;
     PEER_CONNECTION = 5;
+    DISCOVERY = 6;
   }
 
   // A list of enabled Sharing features.

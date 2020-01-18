@@ -47,9 +47,7 @@ static_library("version_string") {
 }
 
 source_set("channel") {
-  sources = [
-    "channel.h",
-  ]
+  sources = [ "channel.h" ]
 }
 
 process_version("generate_version_info") {

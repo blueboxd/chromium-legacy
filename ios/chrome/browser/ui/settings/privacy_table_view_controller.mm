@@ -52,7 +52,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Only used in this class to openn the Sync and Google services settings.
 // This link should not be dispatched.
-GURL kGoogleServicesSettingsURL("settings://open_google_services");
+// TODO(crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL GoogleServicesSettingsURL() {
+  return GURL("settings://open_google_services");
+}
 
 }  // namespace
 
@@ -150,7 +154,7 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
           initWithType:ItemTypeClearBrowsingDataFooter];
   showClearBrowsingDataFooterItem.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_GOOGLE_SERVICES_FOOTER);
-  showClearBrowsingDataFooterItem.linkURL = kGoogleServicesSettingsURL;
+  showClearBrowsingDataFooterItem.linkURL = GoogleServicesSettingsURL();
 
   return showClearBrowsingDataFooterItem;
 }
@@ -253,8 +257,8 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
 #pragma mark - TableViewLinkHeaderFooterItemDelegate
 
 - (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(GURL)URL {
-  if (URL == kGoogleServicesSettingsURL) {
-    // kGoogleServicesSettingsURL is not a realy link. It should be handled
+  if (URL == GoogleServicesSettingsURL()) {
+    // GoogleServicesSettingsURL() is not a realy link. It should be handled
     // with a special case.
     [self.dispatcher showGoogleServicesSettingsFromViewController:self];
   } else {

@@ -48,7 +48,6 @@ import org.chromium.chrome.browser.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.settings.ChromeBasePreference;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
 import org.chromium.chrome.browser.settings.ExpandablePreferenceGroup;
-import org.chromium.chrome.browser.settings.LocationSettings;
 import org.chromium.chrome.browser.settings.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.settings.SearchUtils;
@@ -987,8 +986,7 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
 
         // Set the checked value.
         if (mCategory.showSites(SiteSettingsCategory.Type.DEVICE_LOCATION)) {
-            binaryToggle.setChecked(
-                    LocationSettings.getInstance().isChromeLocationSettingEnabled());
+            binaryToggle.setChecked(WebsitePreferenceBridge.isAllowLocationEnabled());
         } else {
             binaryToggle.setChecked(WebsitePreferenceBridge.isCategoryEnabled(contentType));
         }

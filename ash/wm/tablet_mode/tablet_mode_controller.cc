@@ -620,6 +620,11 @@ void TabletModeController::OnLayerAnimationAborted(
 
 void TabletModeController::OnLayerAnimationEnded(
     ui::LayerAnimationSequence* sequence) {
+  // This may be called before |OnLayerAnimationScheduled()| if tablet is
+  // entered/exited while an animation is in progress, so we won't get
+  // stats/screenshot in those cases.
+  // TODO(sammiequon): We may want to remove the |fps_counter_| check and
+  // simplify things since those are edge cases.
   if (!fps_counter_ || !IsTransformAnimationSequence(sequence))
     return;
 
@@ -680,21 +685,28 @@ void TabletModeController::SetTabletModeEnabledInternal(bool should_enable) {
     state_ = State::kEnteringTabletMode;
 
     // Take a screenshot if there is a top window that will get animated.
-    // Since with ash::features::kDragToSnapInClamshellMode enabled, we'll keep
-    // overview active after clamshell <-> tablet mode transition if it was
-    // active before transition, do not take screenshot if overview is active
-    // in this case.
     // TODO(sammiequon): Handle the case where the top window is not on the
     // primary display.
     aura::Window* top_window = TabletModeWindowManager::GetTopWindow();
     const bool top_window_on_primary_display =
         top_window &&
         top_window->GetRootWindow() == Shell::GetPrimaryRootWindow();
+    // If the top window was already animating (eg. tablet mode event received
+    // while create window animation still running), skip taking the screenshot.
+    // It will take a performance hit but will remove cases where the screenshot
+    // might not get deleted because of the extra animation observer methods
+    // getting fired.
+    const bool top_window_animating =
+        top_window && top_window->layer()->GetAnimator()->is_animating();
+    // Since with ash::features::kDragToSnapInClamshellMode enabled, we'll keep
+    // overview active after clamshell <-> tablet mode transition if it was
+    // active before transition, do not take screenshot if overview is active
+    // in this case.
     const bool overview_remain_active =
         IsClamshellSplitViewModeEnabled() &&
         Shell::Get()->overview_controller()->InOverviewSession();
     if (use_screenshot_for_test && top_window_on_primary_display &&
-        !overview_remain_active) {
+        !top_window_animating && !overview_remain_active) {
       TakeScreenshot(top_window);
     } else {
       FinishInitTabletMode();

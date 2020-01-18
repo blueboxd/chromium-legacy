@@ -124,6 +124,10 @@ class AssistantInteractionController
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
+  void StartTextInteraction(const std::string& text,
+                            bool allow_tts,
+                            AssistantQuerySource query_source);
+
  private:
   void OnTabletModeChanged();
 
@@ -141,9 +145,6 @@ class AssistantInteractionController
   void StartProactiveSuggestionsInteraction(
       scoped_refptr<const ProactiveSuggestions> proactive_suggestions);
   void StartScreenContextInteraction(AssistantQuerySource query_source);
-  void StartTextInteraction(const std::string text,
-                            bool allow_tts,
-                            AssistantQuerySource query_source);
 
   void StartVoiceInteraction();
   void StopActiveInteraction(bool cancel_conversation);

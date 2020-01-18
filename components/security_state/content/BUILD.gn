@@ -30,9 +30,7 @@ jumbo_static_library("content") {
 
 jumbo_source_set("unit_tests") {
   testonly = true
-  sources = [
-    "content_utils_unittest.cc",
-  ]
+  sources = [ "content_utils_unittest.cc" ]
 
   deps = [
     ":content",

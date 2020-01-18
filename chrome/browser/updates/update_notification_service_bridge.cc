@@ -80,4 +80,8 @@ int GetUserDismissCount() {
   return Java_UpdateNotificationServiceBridge_getUserDismissCount(env);
 }
 
+void LaunchChromeActivity() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_UpdateNotificationServiceBridge_launchChromeActivity(env);
+}
 }  // namespace updates

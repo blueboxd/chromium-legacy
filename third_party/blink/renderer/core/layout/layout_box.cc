@@ -491,6 +491,10 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
       old_style.ScrollMarginTop() != StyleRef().ScrollMarginTop() ||
       old_style.ScrollMarginRight() != StyleRef().ScrollMarginRight())
     snap_coordinator.SnapAreaDidChange(*this, StyleRef().GetScrollSnapAlign());
+
+  // Transform invalidates the snap area.
+  if (old_style.Transform() != StyleRef().Transform())
+    snap_coordinator.SnapAreaDidChange(*this, StyleRef().GetScrollSnapAlign());
 }
 
 void LayoutBox::AddScrollSnapMapping() {

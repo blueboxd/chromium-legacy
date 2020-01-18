@@ -123,6 +123,7 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(
     return false;
   }
 
+  crtc_id_ = crtc_id;
   return true;
 }
 

@@ -194,6 +194,7 @@
       "--test-launcher-retry-limit=0",
     ],
     "label": "//base:base_perftests",
+    "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
@@ -793,12 +794,6 @@
     "label": "//extensions:extensions_unittests",
     "type": "windowed_test_launcher",
   },
-  # TODO(https://bugs.fuchsia.dev/44191): Fix the build and re-instate this
-  # target.
-  #"fidlgen_js_unittests": {
-  #  "label": "//build/fuchsia/fidlgen_js:fidlgen_js_unittests",
-  #  "type": "console_test_launcher",
-  #},
   "filesystem_service_unittests": {
     "label": "//components/services/filesystem:filesystem_service_unittests",
     "type": "console_test_launcher",
@@ -1082,6 +1077,7 @@
       "--test-launcher-print-test-stdio=always",
     ],
     "label": "//chrome/test:load_library_perf_tests",
+    "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
@@ -1110,6 +1106,7 @@
       "--isolated-script-test-filter=*::-*_unoptimized::*_unaligned::*unoptimized_aligned",
     ],
     "label": "//media:media_perftests",
+    "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
@@ -1274,6 +1271,7 @@
     ],
     "label": "//net:net_perftests",
     "script": "//testing/scripts/run_performance_tests.py",
+    "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "type": "script",
   },
   "net_unittests": {
@@ -1345,6 +1343,7 @@
       "--gtest_filter=*/TabCapturePerformanceTest.*:*/CastV2PerformanceTest.*",
     ],
     "label": "//chrome/test:performance_browser_tests",
+    "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },
@@ -1624,6 +1623,7 @@
       "src/third_party/android_sdk/public/platform-tools/adb",
     ],
     "label": "//components/tracing:tracing_perftests",
+    "skip_usage_check": True,  # Used by Pinpoint: crbug.com/1042778
     "script": "//testing/scripts/run_performance_tests.py",
     "type": "script",
   },

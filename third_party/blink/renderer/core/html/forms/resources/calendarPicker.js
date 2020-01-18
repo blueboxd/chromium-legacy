@@ -2505,8 +2505,10 @@ YearListView.prototype.onClick = function(event) {
     // Always start with first month when changing the year.
     const month = new Month(year, 0);
     this.highlightMonth(month);
-    this.dispatchEvent(
-        YearListView.EventTypeYearListViewDidSelectMonth, this, month);
+    if (!global.params.isFormControlsRefreshEnabled) {
+      this.dispatchEvent(
+          YearListView.EventTypeYearListViewDidSelectMonth, this, month);
+    }
     this.scrollView.scrollTo(this.selectedRow * YearListCell.GetHeight(), true);
   } else {
     var monthButton = enclosingNodeOrSelfWithClass(
@@ -2517,7 +2519,9 @@ YearListView.prototype.onClick = function(event) {
     this.dispatchEvent(
         YearListView.EventTypeYearListViewDidSelectMonth, this,
         new Month(year, month));
-    this.hide();
+    if (!global.params.isFormControlsRefreshEnabled) {
+      this.hide();
+    }
   }
 };
 
@@ -2795,8 +2799,11 @@ YearListView.prototype._moveHighlightTo = function(month) {
   this.highlightMonth(month);
   this.select(this.highlightedMonth.year - 1);
 
-  this.dispatchEvent(
-      YearListView.EventTypeYearListViewDidSelectMonth, this, month);
+  if (!global.params.isFormControlsRefreshEnabled) {
+    this.dispatchEvent(
+        YearListView.EventTypeYearListViewDidSelectMonth, this, month);
+  }
+
   this.scrollView.scrollTo(this.selectedRow * YearListCell.GetHeight(), true);
   return true;
 };
@@ -2831,6 +2838,11 @@ YearListView.prototype.onKeyDown = function(event) {
       this.dispatchEvent(
           YearListView.EventTypeYearListViewDidSelectMonth, this,
           this.highlightedMonth);
+      if (!global.params.isFormControlsRefreshEnabled) {
+        this.hide();
+      }
+      eventHandled = true;
+    } else if (key == 'Escape' && global.params.isFormControlsRefreshEnabled) {
       this.hide();
       eventHandled = true;
     }
@@ -2950,7 +2962,6 @@ function MonthPopupButton(maxWidth) {
   this.element.style.maxWidth = maxWidth + 'px';
 
   this.element.addEventListener('click', this.onClick, false);
-  this.element.addEventListener('keydown', this.onKeyDown, false);
 }
 
 MonthPopupButton.prototype = Object.create(View.prototype);
@@ -2994,20 +3005,6 @@ MonthPopupButton.prototype.onClick = function(event) {
 };
 
 /**
- * @param {?Event} event
- */
-MonthPopupButton.prototype.onKeyDown = function(event) {
-  if (event.key === 'Enter') {
-    // Prevent an Enter keypress on the month selector from submitting the
-    // popup.  The click handler will also run for a keypress even though this
-    // event is suppressed, so the month popup will still open from the
-    // Enter key.
-    event.stopPropagation();
-    event.preventDefault();
-  }
-};
-
-/**
  * @constructor
  * @extends View
  */
@@ -3032,7 +3029,6 @@ function CalendarNavigationButton() {
    */
   this._timer = null;
   this.element.addEventListener('click', this.onClick, false);
-  this.element.addEventListener('keydown', this.onKeyDown, false);
   this.element.addEventListener('mousedown', this.onMouseDown, false);
   this.element.addEventListener('touchstart', this.onTouchStart, false);
 };
@@ -3060,20 +3056,6 @@ CalendarNavigationButton.prototype.setDisabled = function(disabled) {
  */
 CalendarNavigationButton.prototype.onClick = function(event) {
   this.dispatchEvent(CalendarNavigationButton.EventTypeButtonClick, this);
-};
-
-/**
- * @param {?Event} event
- */
-CalendarNavigationButton.prototype.onKeyDown = function(event) {
-  if (event.key === 'Enter') {
-    // Prevent an Enter keypress on the previous/next month and Today buttons
-    // from submitting the popup.  The click handler will also run for a
-    // keypress even though this event is suppressed, so the action for the
-    // button will still be triggered from the Enter key.
-    event.stopPropagation();
-    event.preventDefault();
-  }
 };
 
 /**
@@ -3179,7 +3161,6 @@ function CalendarHeaderView(calendarPicker) {
      */
     this._todayButton = new CalendarNavigationButton();
     this._todayButton.attachTo(this);
-    this._todayButton.isTodayButton = true;
     this._todayButton.on(
         CalendarNavigationButton.EventTypeButtonClick,
         this.onNavigationButtonClick);
@@ -3677,7 +3658,6 @@ function CalendarTableView(calendarPicker) {
      * @const
      */
     var todayButton = new CalendarNavigationButton();
-    todayButton.isTodayButton = true;
     todayButton.attachTo(this);
     todayButton.on(
         CalendarNavigationButton.EventTypeButtonClick, this.onTodayButtonClick);
@@ -4146,6 +4126,7 @@ CalendarPicker.prototype.onYearListViewDidHide = function(sender) {
   this.calendarHeaderView.setDisabled(false);
   if (global.params.isFormControlsRefreshEnabled) {
     this.calendarTableView.element.style.visibility = 'visible';
+    this.calendarTableView.element.focus();
   } else {
     this.adjustHeight();
   }
@@ -4158,6 +4139,9 @@ CalendarPicker.prototype.onYearListViewDidHide = function(sender) {
 CalendarPicker.prototype.onYearListViewDidSelectMonth = function(
     sender, month) {
   this.setCurrentMonth(month, CalendarPicker.NavigationBehavior.None);
+  if (global.params.isFormControlsRefreshEnabled) {
+    this.onYearListViewDidHide();
+  }
 };
 
 /**

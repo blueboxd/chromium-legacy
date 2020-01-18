@@ -84,9 +84,7 @@ ios_framework_bundle("gtx") {
     "src/Classes/GTXiLibCore.h",
     "src/Classes/NSError+GTXAdditions.h",
   ]
-  deps = [
-    "//build/config/ios:xctest",
-  ]
+  deps = [ "//build/config/ios:xctest" ]
 
   libs = [
     "CoreGraphics.framework",

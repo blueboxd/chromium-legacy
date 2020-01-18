@@ -642,7 +642,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
     CreateCrashUploadList()->Clear(delete_begin_, delete_end_);
 
-    FindBarStateFactory::GetForProfile(profile_)->set_last_prepopulate_text(
+    FindBarStateFactory::GetForBrowserContext(profile_)->SetLastSearchText(
         base::string16());
   }
 

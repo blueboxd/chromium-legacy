@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">glidebryter</translation>
 <translation id="1211441953136645838">sluttnote</translation>
 <translation id="1281252709823657822">dialog</translation>
+<translation id="1306460908038601864">Av</translation>
 <translation id="1335095011850992622">anerkjennelser</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Skriv inn en del etterfulgt av «<ph name="ATSIGN" />». «<ph name="INVALIDADDRESS" />» er ufullstendig.</translation>
 <translation id="5334352251556557839">Kunne ikke spille innholdet.</translation>
+<translation id="537648784377940524">Minimumsdatoen (<ph name="MIN_DATE_OR_TIME" />) må komme før maksimumsdatoen (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">figur</translation>
 <translation id="5453733299334684579">treelement</translation>
 <translation id="5466621249238537318">Velg én eller flere filer.</translation>

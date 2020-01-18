@@ -150,11 +150,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // or not.
   bool widgets_never_composited() const { return widgets_never_composited_; }
 
-  // Returns the RenderWidget owned by this RenderView. Can be nullptr if the
-  // RenderView does not own a RenderWidget [e.g. for remote main frame in
-  // future].
-  RenderWidget* GetWidget();
-
   const WebPreferences& webkit_preferences() const {
     return webkit_preferences_;
   }
@@ -283,9 +278,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void ClearEditCommands() override;
 
   const std::string& GetAcceptLanguages() override;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-  virtual void didScrollWithKeyboard(const blink::WebSize& delta);
-#endif
 
   // Please do not add your stuff randomly to the end here. If there is an
   // appropriate section, add it there. If not, there are some random functions
@@ -521,14 +513,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Becomes true when Destroy() is called.
   bool destroying_ = false;
 
-  // This is the |render_widget_| for the main frame.
-  //
-  // Instances of RenderWidget for child frame local roots, popups, and
-  // fullscreen widgets are never contained by this pointer. Child frame
-  // local roots are owned by a RenderFrame. The others are owned by the IPC
-  // system.
-  std::unique_ptr<RenderWidget> render_widget_;
-
   // Routing ID that allows us to communicate with the corresponding
   // RenderViewHost in the parent browser process.
   const int32_t routing_id_;
@@ -625,10 +609,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   // The next target URL we want to send to the browser.
   GURL pending_target_url_;
-
-  // Cache the old browser controls state constraints. Used when updating
-  // current value only without altering the constraints.
-  BrowserControlsState top_controls_constraints_ = BROWSER_CONTROLS_STATE_BOTH;
 
   // View ----------------------------------------------------------------------
 

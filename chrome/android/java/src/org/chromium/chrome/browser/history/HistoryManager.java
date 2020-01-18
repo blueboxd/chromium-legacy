@@ -31,9 +31,11 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar.PrefObserver;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.privacy.ClearBrowsingDataTabsFragment;
@@ -66,7 +68,6 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     private static final int FAVICON_MAX_CACHE_SIZE_BYTES =
             10 * ConversionUtils.BYTES_PER_MEGABYTE; // 10MB
     private static final String METRICS_PREFIX = "Android.HistoryPage.";
-    private static final String PREF_SHOW_HISTORY_INFO = "history_home_show_info";
 
     // Keep consistent with the UMA constants on the WebUI history page (history/constants.js).
     private static final int UMA_MAX_BUCKET_VALUE = 1000;
@@ -112,8 +113,8 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     @SuppressWarnings("unchecked") // mSelectableListLayout
     public HistoryManager(Activity activity, boolean isSeparateActivity,
             SnackbarManager snackbarManager, boolean isIncognito) {
-        mShouldShowInfoHeader =
-                ContextUtils.getAppSharedPreferences().getBoolean(PREF_SHOW_HISTORY_INFO, true);
+        mShouldShowInfoHeader = SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.HISTORY_SHOW_HISTORY_INFO, true);
         mActivity = activity;
         mIsSeparateActivity = isSeparateActivity;
         mSnackbarManager = snackbarManager;
@@ -266,10 +267,8 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             return true;
         } else if (item.getItemId() == R.id.info_menu_id) {
             mShouldShowInfoHeader = !mShouldShowInfoHeader;
-            ContextUtils.getAppSharedPreferences()
-                    .edit()
-                    .putBoolean(PREF_SHOW_HISTORY_INFO, mShouldShowInfoHeader)
-                    .apply();
+            SharedPreferencesManager.getInstance().writeBoolean(
+                    ChromePreferenceKeys.HISTORY_SHOW_HISTORY_INFO, mShouldShowInfoHeader);
             mToolbar.updateInfoMenuItem(shouldShowInfoButton(), shouldShowInfoHeaderIfAvailable());
             mHistoryAdapter.setPrivacyDisclaimer();
         }
@@ -392,7 +391,8 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      */
     public void openClearBrowsingDataPreference() {
         recordUserAction("ClearBrowsingData");
-        SettingsLauncher.launchSettingsPage(mActivity, ClearBrowsingDataTabsFragment.class);
+        SettingsLauncher.getInstance().launchSettingsPage(
+                mActivity, ClearBrowsingDataTabsFragment.class);
     }
 
     @Override

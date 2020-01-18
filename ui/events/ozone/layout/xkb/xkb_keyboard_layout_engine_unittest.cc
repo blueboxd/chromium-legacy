@@ -819,6 +819,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForNonPrintable) {
     // known to XKB.
     {{DomCode::LAUNCH_ASSISTANT, EF_NONE}, VKEY_ASSISTANT},
     {{DomCode::LAUNCH_CONTROL_PANEL, EF_NONE}, VKEY_SETTINGS},
+    {{DomCode::PRIVACY_SCREEN_TOGGLE, EF_NONE}, VKEY_PRIVACY_SCREEN_TOGGLE},
     // Verify that number pad digits produce located VKEY codes.
     {{DomCode::NUMPAD0, EF_NONE, XKB_KEY_KP_0, '0'}, VKEY_NUMPAD0},
     {{DomCode::NUMPAD9, EF_NONE, XKB_KEY_KP_9, '9'}, VKEY_NUMPAD9},

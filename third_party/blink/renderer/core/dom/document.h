@@ -1412,8 +1412,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // May return nullptr when PerformanceManager instrumentation is disabled.
   DocumentResourceCoordinator* GetResourceCoordinator();
 
-  // Apply pending feature policy headers.
-  void ApplyPendingFeaturePolicyHeaders();
+  // Apply pending feature policy headers and document policy headers.
+  void ApplyPendingFramePolicyHeaders();
 
   // Set the report-only feature policy on this document in response to an HTTP
   // Feature-Policy-Report-Only header.
@@ -1659,10 +1659,10 @@ class CORE_EXPORT Document : public ContainerNode,
            SecurityContextInit init_helper,
            DocumentClassFlags document_classes);
 
-  // Post initialization of the object handling of the feature policy.
-  void FeaturePolicyInitialized(
-      const DocumentInit& document_initializer,
-      const SecurityContextInit& security_initializer);
+  // Post initialization of the object handling of both feature policy and
+  // document policy.
+  void PoliciesInitialized(const DocumentInit& document_initializer,
+                           const SecurityContextInit& security_initializer);
 
   friend class AXContext;
   void AddAXContext(AXContext*);
@@ -2112,9 +2112,16 @@ class CORE_EXPORT Document : public ContainerNode,
   // We don't use std::bitset to avoid to include feature_policy.mojom-blink.h.
   mutable Vector<bool> potentially_violated_features_;
 
-  // Pending parsed headers to send to browser after DidCommitNavigation
+  // Pending feature policy headers to send to browser after DidCommitNavigation
   // IPC.
-  ParsedFeaturePolicy pending_parsed_headers_;
+  ParsedFeaturePolicy pending_fp_headers_;
+
+  // Pending document policy headers to send to browser after
+  // DidCommitNavigation IPC. Note: pending_dp_headers is the document policy
+  // state used to initialize |document_policy_| in SecurityContext. Verifying
+  // its integrity against required_document_policy has already been done in
+  // DocumentLoader.
+  DocumentPolicy::FeatureState pending_dp_headers_;
 
   AtomicString override_last_modified_;
 

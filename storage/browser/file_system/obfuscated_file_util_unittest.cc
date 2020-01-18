@@ -169,7 +169,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         origin_(Origin::Create(GURL("http://www.example.com"))),
         type_(storage::kFileSystemTypeTemporary),
-        sandbox_file_system_(origin_.GetURL(), type_),
+        sandbox_file_system_(origin_, type_),
         quota_status_(blink::mojom::QuotaStatusCode::kUnknown),
         usage_(-1) {}
 
@@ -262,7 +262,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   SandboxFileSystemTestHelper* NewFileSystem(const Origin& origin,
                                              storage::FileSystemType type) {
     SandboxFileSystemTestHelper* file_system =
-        new SandboxFileSystemTestHelper(origin.GetURL(), type);
+        new SandboxFileSystemTestHelper(origin, type);
 
     file_system->SetUp(file_system_context_.get());
     return file_system;

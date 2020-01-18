@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="af">
+<translation id="1337778609052285767">Huidige wagwoord voldoen nie aan wagwoordkompleksiteitvereistes nie. Kontak jou administrateur.</translation>
 <translation id="1337821341856692531">As jy voortgaan sonder om jou huidige Windows-wagwoord in te voer, kan dit tot die onomkeerbare verlies van inligting lei.</translation>
 <translation id="1383286653814676580">Word gebruik om aanmeldbladsy van Google Eiebewysverskaffer te laat loop.</translation>
 <translation id="1894475569413661128">Meld aan met jou werkrekening.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Jy het 'n verkeerde Windows-wagwoord ingevoer. Probeer weer.</translation>
 <translation id="2831078752570172210">Jou rekening is uitgesluit. Kontak asseblief jou stelseladministrateur.</translation>
 <translation id="2844349213149998955">Aanmelding met 'n persoonlike rekening word nie op hierdie toestel toegelaat nie. Meld asseblief met 'n werkrekening aan.</translation>
+<translation id="2995851317559936311">Wagwoordverandering word net op domeinbeheerder toegelaat. Kontak jou administrateur.</translation>
 <translation id="3306357053520292004">'n Gebruiker op hierdie rekenaar is reeds met hierdie rekening bygevoeg. Meld aan met 'n ander rekening.</translation>
 <translation id="3926852373333893095">Net GSuite Enterprise-gebruikers word toegelaat om aan te meld.</translation>
 <translation id="4057329986137569701">'n Interne fout het voorgekom.</translation>
 <translation id="4267670563222825190">Geen domeingebruiker kon vir jou rekening gekry word nie. Kontak jou administrateur.</translation>
 <translation id="4300229033992784001">Jou rekening se wagwoord het verander. Voer asseblief jou huidige Windows-wagwoord in om jou Windows-rekening met jou werkrekening te sinkroniseer.</translation>
+<translation id="4669462973597624151">Kon nie wagwoord verander nie. Kontak jou administrateur.</translation>
 <translation id="4706454071748629324">Kon nie 'n nuwe gebruiker byvoeg nie. Hierdie rekenaar laat net toe dat een gebruiker met 'n werkrekening geskep word.</translation>
+<translation id="5186761973554910131">Ongeldige rekenaarnaam is verskaf gedurende poging om die wagwoord te verander. Kontak jou administrateur.</translation>
 <translation id="6033715878377252112">Google Eiebewysverskaffer vir Windows-helper</translation>
 <translation id="6149399665202317746">Google Eiebewysverskaffer vir Windows</translation>
 <translation id="6239180560789153226">Herwinningsinligting ontbreek op jou toestel. Meld aan met jou Google-werkrekening.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Voeg werkrekening by</translation>
 <translation id="7811865856574012727">Jou administrateur het toestelaanmelding tot die volgende domeine beperk: <ph name="EMAIL_DOMAINS" />. Probeer weer met 'n geldige werkrekening.</translation>
 <translation id="7856245195110636219">Kan nie voortgaan sonder om die huidige Windows-wagwoord in te voer nie. Kontak asseblief 'n stelseladministrateur.</translation>
+<translation id="8109730953933509335">Wagwoordverandering is vir ongeldige gebruiker probeer. Kontak jou administrateur.</translation>
 <translation id="8639729688781680518">Het Windows-wagwoord vergeet</translation>
 <translation id="866458870819756755">'n Gebruiker kon nie geskep word nie.</translation>
 <translation id="8875753657315897487">Meld aan met jou werkrekening</translation>

@@ -36,11 +36,8 @@ bool SupportsZeroCopy(const gpu::GpuPreferences& preferences,
   if (!preferences.enable_zero_copy_dxgi_video)
     return false;
 
-  // If we're ignoring workarounds, then pretend that it does support
-  // zero copy.  Otherwise, believe the workaround.
-  if (!base::FeatureList::IsEnabled(kD3D11VideoDecoderIgnoreWorkarounds))
-    if (workarounds.disable_dxgi_zero_copy_video)
-      return false;
+  if (workarounds.disable_dxgi_zero_copy_video)
+    return false;
 
   return true;
 }

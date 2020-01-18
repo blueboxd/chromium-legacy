@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
+<translation id="1337778609052285767">目前的密碼不符合密碼複雜度要求。請與你的系統管理員聯絡。</translation>
 <translation id="1337821341856692531">如果不輸入目前的 Windows 密碼就繼續，可能會導致無法復原的資訊遺失。</translation>
 <translation id="1383286653814676580">用於執行 Google 憑證提供者登入頁面。</translation>
 <translation id="1894475569413661128">請使用公司帳戶登入。</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">你輸入的 Windows 密碼有誤。請再試一次。</translation>
 <translation id="2831078752570172210">你的帳戶已遭到鎖定。請與你的系統管理員聯絡。</translation>
 <translation id="2844349213149998955">無法以個人帳戶登入這個裝置。請使用公司帳戶登入。</translation>
+<translation id="2995851317559936311">只能在網域控制站上變更密碼。請與你的系統管理員聯絡。</translation>
 <translation id="3306357053520292004">這台電腦已有其他使用者使用這個帳戶登入。請改用其他帳戶登入。</translation>
 <translation id="3926852373333893095">僅限 G Suite Enterprise 使用者登入。</translation>
 <translation id="4057329986137569701">發生內部錯誤。</translation>
 <translation id="4267670563222825190">找不到帳戶的網域使用者。請與你的系統管理員聯絡。</translation>
 <translation id="4300229033992784001">你的帳戶密碼已變更。請輸入目前的 Windows 密碼，讓系統同步處理你的 Windows 帳戶與公司帳戶。</translation>
+<translation id="4669462973597624151">嘗試變更密碼失敗。請與你的系統管理員聯絡。</translation>
 <translation id="4706454071748629324">無法新增使用者。在這台電腦上，公司帳戶只能用於建立一位使用者。</translation>
+<translation id="5186761973554910131">嘗試變更密碼時提供的電腦名稱無效。請與你的系統管理員聯絡。</translation>
 <translation id="6033715878377252112">Windows 小幫手適用的 Google 憑證提供者</translation>
 <translation id="6149399665202317746">Windows 適用的 Google 憑證提供者</translation>
 <translation id="6239180560789153226">你的裝置缺少救援資訊。請使用 Google 公司帳戶登入。</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">新增公司帳戶</translation>
 <translation id="7811865856574012727">你的系統管理員已限制裝置登入下列網域：<ph name="EMAIL_DOMAINS" />。請使用有效的公司帳戶再試一次。</translation>
 <translation id="7856245195110636219">必須輸入目前的 Windows 密碼才能繼續操作。請與系統管理員聯絡。</translation>
+<translation id="8109730953933509335">嘗試變更無效使用者的密碼。請與你的系統管理員聯絡。</translation>
 <translation id="8639729688781680518">忘記 Windows 密碼</translation>
 <translation id="866458870819756755">無法建立使用者。</translation>
 <translation id="8875753657315897487">請使用公司帳戶登入</translation>

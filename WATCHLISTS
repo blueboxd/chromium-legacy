@@ -2652,6 +2652,7 @@
     'source_idls': ['jmedley+watch@chromium.org'],
     'speed_metrics_changelog': ['igrigorik@chromium.org',
                                 'kayce@chromium.org',
+                                'rviscomi@chromium.org',
                                 'sullivan@chromium.org'],
     'spellcheck': ['rlp+watch@chromium.org',
                    'rouslan+spell@chromium.org',

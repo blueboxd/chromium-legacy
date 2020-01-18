@@ -199,9 +199,10 @@ void SetFocusAndActivate(RenderView* render_view, bool enable) {
 
 void ForceResizeRenderView(RenderView* render_view, const WebSize& new_size) {
   RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  if (!render_view_impl->GetMainRenderFrame())
+  RenderFrameImpl* main_frame = render_view_impl->GetMainRenderFrame();
+  if (!main_frame)
     return;
-  RenderWidget* render_widget = render_view_impl->GetWidget();
+  RenderWidget* render_widget = main_frame->GetLocalRootRenderWidget();
   gfx::Rect window_rect(render_widget->WindowRect().x,
                         render_widget->WindowRect().y, new_size.width,
                         new_size.height);
@@ -210,9 +211,11 @@ void ForceResizeRenderView(RenderView* render_view, const WebSize& new_size) {
 
 void SetDeviceScaleFactor(RenderView* render_view, float factor) {
   RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  if (!render_view_impl->GetMainRenderFrame())
+  RenderFrameImpl* main_frame = render_view_impl->GetMainRenderFrame();
+  if (!main_frame)
     return;
-  render_view_impl->GetWidget()->SetDeviceScaleFactorForTesting(factor);
+  RenderWidget* render_widget = main_frame->GetLocalRootRenderWidget();
+  render_widget->SetDeviceScaleFactorForTesting(factor);
 }
 
 std::unique_ptr<blink::WebInputEvent> TransformScreenToWidgetCoordinates(
@@ -268,9 +271,11 @@ gfx::ColorSpace GetTestingColorSpace(const std::string& name) {
 void SetDeviceColorSpace(RenderView* render_view,
                          const gfx::ColorSpace& color_space) {
   RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  if (!render_view_impl->GetMainRenderFrame())
+  RenderFrameImpl* main_frame = render_view_impl->GetMainRenderFrame();
+  if (!main_frame)
     return;
-  render_view_impl->GetWidget()->SetDeviceColorSpaceForTesting(color_space);
+  RenderWidget* render_widget = main_frame->GetLocalRootRenderWidget();
+  render_widget->SetDeviceColorSpaceForTesting(color_space);
 }
 
 void SetTestBluetoothScanDuration(BluetoothTestScanDurationSetting setting) {
@@ -290,25 +295,31 @@ void SetTestBluetoothScanDuration(BluetoothTestScanDurationSetting setting) {
 
 void UseSynchronousResizeMode(RenderView* render_view, bool enable) {
   RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  if (!render_view_impl->GetMainRenderFrame())
+  RenderFrameImpl* main_frame = render_view_impl->GetMainRenderFrame();
+  if (!main_frame)
     return;
-  render_view_impl->GetWidget()->UseSynchronousResizeModeForTesting(enable);
+  RenderWidget* render_widget = main_frame->GetLocalRootRenderWidget();
+  render_widget->UseSynchronousResizeModeForTesting(enable);
 }
 
 void EnableAutoResizeMode(RenderView* render_view,
                           const WebSize& min_size,
                           const WebSize& max_size) {
   RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  if (!render_view_impl->GetMainRenderFrame())
+  RenderFrameImpl* main_frame = render_view_impl->GetMainRenderFrame();
+  if (!main_frame)
     return;
-  render_view_impl->GetWidget()->EnableAutoResizeForTesting(min_size, max_size);
+  RenderWidget* render_widget = main_frame->GetLocalRootRenderWidget();
+  render_widget->EnableAutoResizeForTesting(min_size, max_size);
 }
 
 void DisableAutoResizeMode(RenderView* render_view, const WebSize& new_size) {
   RenderViewImpl* render_view_impl = static_cast<RenderViewImpl*>(render_view);
-  if (!render_view_impl->GetMainRenderFrame())
+  RenderFrameImpl* main_frame = render_view_impl->GetMainRenderFrame();
+  if (!main_frame)
     return;
-  render_view_impl->GetWidget()->DisableAutoResizeForTesting(new_size);
+  RenderWidget* render_widget = main_frame->GetLocalRootRenderWidget();
+  render_widget->DisableAutoResizeForTesting(new_size);
 }
 
 void SchedulerRunIdleTasks(base::OnceClosure callback) {

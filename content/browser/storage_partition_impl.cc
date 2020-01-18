@@ -373,26 +373,24 @@ void DeprecateSameSiteCookies(int process_id,
                                             excluded_cookie.cookie.IsSecure())
             .possibly_invalid_spec();
 
-    net::CanonicalCookie::CookieInclusionStatus::WarningReason warning =
-        excluded_cookie.status.warning();
-    switch (warning) {
-      case net::CanonicalCookie::CookieInclusionStatus::
-          WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT:
-      case net::CanonicalCookie::CookieInclusionStatus::
-          WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE:
+    if (excluded_cookie.status.ShouldWarn()) {
+      if (excluded_cookie.status.HasWarningReason(
+              net::CanonicalCookie::CookieInclusionStatus::
+                  WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT))
         samesite_treated_as_lax_cookies = true;
-        break;
-      case net::CanonicalCookie::CookieInclusionStatus::
-          WARN_SAMESITE_NONE_INSECURE:
+      if (excluded_cookie.status.HasWarningReason(
+              net::CanonicalCookie::CookieInclusionStatus::
+                  WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE))
+        samesite_treated_as_lax_cookies = true;
+      if (excluded_cookie.status.HasWarningReason(
+              net::CanonicalCookie::CookieInclusionStatus::
+                  WARN_SAMESITE_NONE_INSECURE))
         samesite_none_insecure_cookies = true;
-        break;
-      default:
-        break;
     }
 
     if (emit_messages) {
       root_frame_host->AddSameSiteCookieDeprecationMessage(
-          cookie_url, warning,
+          cookie_url, excluded_cookie.status,
           net::cookie_util::IsSameSiteByDefaultCookiesEnabled(),
           net::cookie_util::IsCookiesWithoutSameSiteMustBeSecureEnabled());
     }

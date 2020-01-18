@@ -14,7 +14,10 @@
 
 class FindBarController;
 class FindBarTesting;
+
+namespace find_in_page {
 class FindNotificationDetails;
+}
 
 namespace gfx {
 class Range;
@@ -41,7 +44,8 @@ class FindBar {
   virtual void SetFocusAndSelection() = 0;
 
   // Clear the text in the find box.
-  virtual void ClearResults(const FindNotificationDetails& results) = 0;
+  virtual void ClearResults(
+      const find_in_page::FindNotificationDetails& results) = 0;
 
   // Stop the animation.
   virtual void StopAnimation() = 0;
@@ -63,8 +67,9 @@ class FindBar {
 
   // Updates the FindBar with the find result details contained within the
   // specified |result|.
-  virtual void UpdateUIForFindResult(const FindNotificationDetails& result,
-                                     const base::string16& find_text) = 0;
+  virtual void UpdateUIForFindResult(
+      const find_in_page::FindNotificationDetails& result,
+      const base::string16& find_text) = 0;
 
   // No match was found; play an audible alert.
   virtual void AudibleAlert() = 0;

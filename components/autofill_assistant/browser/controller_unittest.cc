@@ -71,6 +71,7 @@ class FakeClient : public Client {
   std::string GetLocale() override { return ""; }
   std::string GetCountryCode() override { return ""; }
   DeviceContext GetDeviceContext() override { return DeviceContext(); }
+  MOCK_METHOD0(GetWebContents, content::WebContents*());
   MOCK_METHOD1(Shutdown, void(Metrics::DropOutReason reason));
   MOCK_METHOD0(AttachUI, void());
   MOCK_METHOD0(DestroyUI, void());
@@ -111,6 +112,8 @@ class ControllerTest : public content::RenderViewHostTestHarness {
     mock_web_controller_ = web_controller.get();
     auto service = std::make_unique<NiceMock<MockService>>();
     mock_service_ = service.get();
+
+    ON_CALL(fake_client_, GetWebContents).WillByDefault(Return(web_contents()));
 
     controller_ = std::make_unique<Controller>(
         web_contents(), &fake_client_, task_environment()->GetMockTickClock(),

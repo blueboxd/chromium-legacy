@@ -398,7 +398,8 @@ suite('AllSites', function() {
   });
 
   function resetSettingsViaOverflowMenu(buttonType) {
-    assertTrue(buttonType == 'cancel-button' || buttonType == 'action-button');
+    assertTrue(
+        buttonType === 'cancel-button' || buttonType === 'action-button');
     Polymer.dom.flush();
     siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
     assertEquals(1, siteEntries.length);
@@ -422,10 +423,6 @@ suite('AllSites', function() {
             buttonType);
     assertEquals(1, actionButtonList.length);
     actionButtonList[0].click();
-    testElement.actionMenuModel_ = {
-      index: 0,
-      item: testElement.filteredList_[0],
-    };
 
     // Check the dialog and overflow menu are now both closed.
     assertFalse(testElement.$.confirmResetSettings.get().open);
@@ -495,7 +492,8 @@ suite('AllSites', function() {
   });
 
   function clearDataViaOverflowMenu(buttonType) {
-    assertTrue(buttonType == 'cancel-button' || buttonType == 'action-button');
+    assertTrue(
+        buttonType === 'cancel-button' || buttonType === 'action-button');
     Polymer.dom.flush();
     siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
     assertEquals(1, siteEntries.length);
@@ -584,7 +582,8 @@ suite('AllSites', function() {
       });
 
   function clearDataViaClearAllButton(buttonType) {
-    assertTrue(buttonType == 'cancel-button' || buttonType == 'action-button');
+    assertTrue(
+        buttonType === 'cancel-button' || buttonType === 'action-button');
     Polymer.dom.flush();
     siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
     assertTrue(siteEntries.length >= 1);
@@ -660,5 +659,196 @@ suite('AllSites', function() {
         clearDataViaClearAllButton('action-button');
         assertEquals(testElement.filteredList_.length, 1);
         assertEquals(testElement.filteredList_[0].origins.length, 1);
+      });
+
+  /**
+   * Opens the overflow menu for a specific origin within a SiteEntry, clicks
+   * on the clear data option, and then clicks on either the cancel or clear
+   * data button.
+   * @param {string} buttonType The button to click on the clear data dialog
+   * @param {!SiteGroup} siteGroup The SiteGroup for which the origin to clear
+   *     belongs to.
+   * @param {number} originIndex The index of the origin to clear in the
+   *     SiteGroup.origins array.
+   */
+  function clearOriginDataViaOverflowMenu(buttonType, siteGroup, originIndex) {
+    assertTrue(
+        buttonType === 'cancel-button' || buttonType === 'action-button');
+    Polymer.dom.flush();
+    siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
+    assertEquals(1, siteEntries.length);
+
+    const expandButton = siteEntries[0].$.expandIcon;
+    // Open the overflow menu.
+    const overflowMenu = testElement.$.menu.get();
+    assertFalse(overflowMenu.open);
+    testElement.fire('open-menu', {
+      target: expandButton,
+      index: 0,
+      item: siteGroup,
+      origin: siteGroup.origins[originIndex].origin,
+      actionScope: 'origin',
+    });
+    assertTrue(overflowMenu.open);
+
+    const menuItems = overflowMenu.querySelectorAll('.dropdown-item');
+
+    // Open the clear data dialog and tap the |buttonType| button.
+    assertFalse(testElement.$.confirmClearData.get().open);
+    menuItems[1].click();
+    assertTrue(testElement.$.confirmClearData.get().open);
+    const actionButtonList =
+        testElement.$.confirmClearData.get().getElementsByClassName(buttonType);
+    assertEquals(1, actionButtonList.length);
+    testElement.actionMenuModel_ = {
+      index: 0,
+      item: testElement.filteredList_[0],
+      origin: siteGroup.origins[originIndex].origin,
+      actionScope: 'origin',
+    };
+    actionButtonList[0].click();
+
+    // Check the dialog and overflow menu are now both closed.
+    assertFalse(testElement.$.confirmClearData.get().open);
+    assertFalse(overflowMenu.open);
+  }
+
+  test('cancelling the confirm dialog on clear data works', function() {
+    siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    testElement.siteGroupMap.set(siteGroup.etldPlus1, siteGroup);
+    testElement.forceListUpdate_();
+    assertEquals(1, testElement.filteredList_.length);
+    assertEquals(3, testElement.filteredList_[0].origins.length);
+    clearOriginDataViaOverflowMenu('cancel-button', siteGroup, 0);
+    assertEquals(1, testElement.filteredList_.length);
+    assertEquals(3, testElement.filteredList_[0].origins.length);
+  });
+
+  test('clear single origin data via overflow menu', function() {
+    siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    siteGroup.origins[0].hasPermissionSettings = false;
+    siteGroup.origins[0].usage = 100;
+    siteGroup.origins[0].numCookies = 3;
+    testElement.siteGroupMap.set(
+        siteGroup.etldPlus1, JSON.parse(JSON.stringify(siteGroup)));
+    testElement.forceListUpdate_();
+    clearOriginDataViaOverflowMenu('action-button', siteGroup, 0);
+    assertEquals(1, testElement.filteredList_.length);
+    assertEquals(2, testElement.filteredList_[0].origins.length);
+  });
+
+  test(
+      'clear single origin data via overflow menu (has permissions)',
+      function() {
+        siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+        siteGroup.origins[0].hasPermissionSettings = true;
+        siteGroup.origins[0].usage = 100;
+        siteGroup.origins[0].numCookies = 3;
+        testElement.siteGroupMap.set(
+            siteGroup.etldPlus1, JSON.parse(JSON.stringify(siteGroup)));
+        testElement.forceListUpdate_();
+        clearOriginDataViaOverflowMenu('action-button', siteGroup, 0);
+        assertEquals(1, testElement.filteredList_.length);
+        assertEquals(3, testElement.filteredList_[0].origins.length);
+
+        const updatedOrigin = testElement.filteredList_[0].origins[0];
+        assertTrue(updatedOrigin.hasPermissionSettings);
+        assertEquals(0, updatedOrigin.usage);
+        assertEquals(0, updatedOrigin.numCookies);
+      });
+
+  /**
+   * Clicks on the overflow menu for a specific origin, hits the reset
+   * permissions button on the overflow menu, and takes the specified action on
+   * the confirmation dialog.
+   * @param {string} buttonType The button to click on the confirmation dialog.
+   * @param {!SiteGroup} siteGroup The SiteGroup to which the origin to reset
+   *     belongs to.
+   * @param {number} originIndex The index in the SiteGroup.origins array of the
+   *     origin to reset permissions for.
+   */
+  function resetOriginSettingsViaOverflowMenu(
+      buttonType, siteGroup, originIndex) {
+    assertTrue(
+        buttonType === 'cancel-button' || buttonType === 'action-button');
+    Polymer.dom.flush();
+    siteEntries = testElement.$.listContainer.querySelectorAll('site-entry');
+    assertEquals(1, siteEntries.length);
+
+    const expandButton = siteEntries[0].$.expandIcon;
+    // Open the overflow menu.
+    const overflowMenu = testElement.$.menu.get();
+    assertFalse(overflowMenu.open);
+    testElement.fire('open-menu', {
+      target: expandButton,
+      index: 0,
+      item: siteGroup,
+      origin: siteGroup.origins[originIndex].origin,
+      actionScope: 'origin',
+    });
+    assertTrue(overflowMenu.open);
+
+    const menuItems = overflowMenu.querySelectorAll('.dropdown-item');
+
+    // Open the clear data dialog and tap the |buttonType| button.
+    assertFalse(testElement.$.confirmResetSettings.get().open);
+    menuItems[0].click();
+    assertTrue(testElement.$.confirmResetSettings.get().open);
+    const actionButtonList =
+        testElement.$.confirmResetSettings.get().getElementsByClassName(
+            buttonType);
+    assertEquals(1, actionButtonList.length);
+    testElement.actionMenuModel_ = {
+      index: 0,
+      item: testElement.filteredList_[0],
+      origin: siteGroup.origins[originIndex].origin,
+      actionScope: 'origin',
+    };
+    actionButtonList[0].click();
+
+    // Check the dialog and overflow menu are now both closed.
+    assertFalse(testElement.$.confirmResetSettings.get().open);
+    assertFalse(overflowMenu.open);
+  }
+
+  test('cancelling the confirm dialog on resetting settings works', function() {
+    siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+    testElement.siteGroupMap.set(siteGroup.etldPlus1, siteGroup);
+    testElement.forceListUpdate_();
+    assertEquals(1, testElement.filteredList_.length);
+    assertEquals(3, testElement.filteredList_[0].origins.length);
+    resetOriginSettingsViaOverflowMenu('cancel-button', siteGroup, 0);
+    assertEquals(1, testElement.filteredList_.length);
+    assertEquals(3, testElement.filteredList_[0].origins.length);
+  });
+
+  test(
+      'clear single origin permissions via overflow menu (no usage/cookies)',
+      function() {
+        siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+        siteGroup.origins[0].hasPermissionSettings = true;
+        siteGroup.origins[0].usage = 0;
+        siteGroup.origins[0].numCookies = 0;
+        testElement.siteGroupMap.set(
+            siteGroup.etldPlus1, JSON.parse(JSON.stringify(siteGroup)));
+        testElement.forceListUpdate_();
+        resetOriginSettingsViaOverflowMenu('action-button', siteGroup, 0);
+        assertEquals(1, testElement.filteredList_.length);
+        assertEquals(2, testElement.filteredList_[0].origins.length);
+      });
+
+  test(
+      'clear single origin permissions via overflow menu (has usage/cookies)',
+      function() {
+        siteGroup = JSON.parse(JSON.stringify(TEST_MULTIPLE_SITE_GROUP));
+        siteGroup.origins[0].hasPermissionSettings = true;
+        siteGroup.origins[0].usage = 100;
+        siteGroup.origins[0].numCookies = 10;
+        testElement.siteGroupMap.set(
+            siteGroup.etldPlus1, JSON.parse(JSON.stringify(siteGroup)));
+        testElement.forceListUpdate_();
+        resetOriginSettingsViaOverflowMenu('action-button', siteGroup, 0);
+        assertEquals(1, testElement.filteredList_.length);
+        assertEquals(3, testElement.filteredList_[0].origins.length);
       });
 });

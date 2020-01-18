@@ -85,7 +85,5 @@ source_set("download_inttests") {
     "//net:test_support",
   ]
 
-  sources = [
-    "download_inttest.mm",
-  ]
+  sources = [ "download_inttest.mm" ]
 }

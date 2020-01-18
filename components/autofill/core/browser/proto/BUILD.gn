@@ -20,7 +20,5 @@ static_library("legacy_proto_bridge") {
     "legacy_proto_bridge.cc",
     "legacy_proto_bridge.h",
   ]
-  deps = [
-    ":proto",
-  ]
+  deps = [ ":proto" ]
 }

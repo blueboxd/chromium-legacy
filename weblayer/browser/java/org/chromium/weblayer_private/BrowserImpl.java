@@ -12,6 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.ValueCallback;
 
+import org.chromium.base.ObserverList;
+import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IBrowser;
@@ -22,23 +26,49 @@ import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Implementation of {@link IBrowser}.
  */
+@JNINamespace("weblayer")
 public class BrowserImpl extends IBrowser.Stub {
+    private static final ObserverList<Observer> sLifecycleObservers = new ObserverList<Observer>();
+
+    private long mNativeBrowser;
     private final ProfileImpl mProfile;
     private BrowserViewController mViewController;
     private FragmentWindowAndroid mWindowAndroid;
-    private ArrayList<TabImpl> mTabs = new ArrayList<TabImpl>();
-    private TabImpl mActiveTab;
     private IBrowserClient mClient;
     private LocaleChangedBroadcastReceiver mLocaleReceiver;
+    private boolean mInDestroy;
+
+    /**
+     * Observer interface that can be implemented to observe when the first
+     * fragment requiring WebLayer is attached, and when the last such fragment
+     * is detached.
+     */
+    public static interface Observer {
+        public void onBrowserCreated();
+        public void onBrowserDestroyed();
+    }
+
+    public static void addObserver(Observer observer) {
+        sLifecycleObservers.addObserver(observer);
+    }
+
+    public static void removeObserver(Observer observer) {
+        sLifecycleObservers.removeObserver(observer);
+    }
 
     public BrowserImpl(ProfileImpl profile, Bundle savedInstanceState) {
         mProfile = profile;
+        mNativeBrowser = BrowserImplJni.get().createBrowser(profile.getNativeProfile(), this);
+
+        for (Observer observer : sLifecycleObservers) {
+            observer.onBrowserCreated();
+        }
         // Restore tabs etc from savedInstanceState here.
     }
 
@@ -58,14 +88,14 @@ public class BrowserImpl extends IBrowser.Stub {
         mViewController = new BrowserViewController(context, windowAndroid);
         mLocaleReceiver = new LocaleChangedBroadcastReceiver(context);
 
-        if (mTabs.isEmpty()) {
+        if (getTabs().isEmpty()) {
             TabImpl tab = new TabImpl(mProfile, windowAndroid);
             addTab(tab);
             boolean set_active_result = setActiveTab(tab);
             assert set_active_result;
         } else {
             updateAllTabs();
-            mViewController.setActiveTab(mActiveTab);
+            mViewController.setActiveTab(getActiveTab());
         }
     }
 
@@ -127,15 +157,11 @@ public class BrowserImpl extends IBrowser.Stub {
         StrictModeWorkaround.apply();
         TabImpl tab = (TabImpl) iTab;
         if (tab.getBrowser() == this) return;
-        addTabImpl(tab);
+        BrowserImplJni.get().addTab(mNativeBrowser, this, tab.getNativeTab());
     }
 
-    private void addTabImpl(TabImpl tab) {
-        // Null case is only during initial creation.
-        if (tab.getBrowser() != this && tab.getBrowser() != null) {
-            tab.getBrowser().detachTab(tab);
-        }
-        mTabs.add(tab);
+    @CalledByNative
+    private void onTabAdded(TabImpl tab) {
         tab.attachToBrowser(this);
         try {
             if (mClient != null) mClient.onTabAdded(tab);
@@ -144,11 +170,22 @@ public class BrowserImpl extends IBrowser.Stub {
         }
     }
 
-    public void detachTab(ITab iTab) {
-        TabImpl tab = (TabImpl) iTab;
-        if (tab.getBrowser() != this) return;
-        if (getActiveTab() == tab) setActiveTab(null);
-        mTabs.remove(tab);
+    @CalledByNative
+    private void onActiveTabChanged(TabImpl tab) {
+        mViewController.setActiveTab(tab);
+        if (mInDestroy) return;
+        try {
+            if (mClient != null) {
+                mClient.onActiveTabChanged(tab != null ? tab.getId() : 0);
+            }
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    @CalledByNative
+    private void onTabRemoved(TabImpl tab) {
+        if (mInDestroy) return;
         try {
             if (mClient != null) mClient.onTabRemoved(tab.getId());
         } catch (RemoteException e) {
@@ -162,27 +199,20 @@ public class BrowserImpl extends IBrowser.Stub {
     public boolean setActiveTab(ITab controller) {
         StrictModeWorkaround.apply();
         TabImpl tab = (TabImpl) controller;
-        mActiveTab = tab;
         if (tab != null && tab.getBrowser() != this) return false;
-        mViewController.setActiveTab(tab);
-        try {
-            if (mClient != null) {
-                mClient.onActiveTabChanged(tab != null ? tab.getId() : 0);
-            }
-        } catch (RemoteException e) {
-            throw new APICallException(e);
-        }
+        BrowserImplJni.get().setActiveTab(
+                mNativeBrowser, this, tab != null ? tab.getNativeTab() : 0);
         return true;
     }
 
     public TabImpl getActiveTab() {
-        return mActiveTab;
+        return BrowserImplJni.get().getActiveTab(mNativeBrowser, this);
     }
 
     @Override
     public List getTabs() {
         StrictModeWorkaround.apply();
-        return new ArrayList(mTabs);
+        return Arrays.asList(BrowserImplJni.get().getTabs(mNativeBrowser, this));
     }
 
     @Override
@@ -200,8 +230,14 @@ public class BrowserImpl extends IBrowser.Stub {
     @Override
     public void destroyTab(ITab iTab) {
         StrictModeWorkaround.apply();
-        detachTab(iTab);
-        ((TabImpl) iTab).destroy();
+        TabImpl tab = (TabImpl) iTab;
+        if (tab.getBrowser() != this) return;
+        destroyTabImpl((TabImpl) iTab);
+    }
+
+    private void destroyTabImpl(TabImpl tab) {
+        BrowserImplJni.get().removeTab(mNativeBrowser, this, tab.getNativeTab());
+        tab.destroy();
     }
 
     public View getFragmentView() {
@@ -209,12 +245,16 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     public void destroy() {
+        mInDestroy = true;
         setActiveTab(null);
-        for (TabImpl tab : mTabs) {
-            tab.destroy();
+        for (Object tab : getTabs()) {
+            destroyTabImpl((TabImpl) tab);
         }
-        mTabs.clear();
         destroyAttachmentState();
+        for (Observer observer : sLifecycleObservers) {
+            observer.onBrowserDestroyed();
+        }
+        BrowserImplJni.get().deleteBrowser(mNativeBrowser);
     }
 
     private void destroyAttachmentState() {
@@ -233,8 +273,19 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     private void updateAllTabs() {
-        for (TabImpl tab : mTabs) {
-            tab.updateFromBrowser();
+        for (Object tab : getTabs()) {
+            ((TabImpl) tab).updateFromBrowser();
         }
+    }
+
+    @NativeMethods
+    interface Natives {
+        long createBrowser(long profile, BrowserImpl caller);
+        void deleteBrowser(long browser);
+        void addTab(long nativeBrowserImpl, BrowserImpl browser, long nativeTab);
+        void removeTab(long nativeBrowserImpl, BrowserImpl browser, long nativeTab);
+        TabImpl[] getTabs(long nativeBrowserImpl, BrowserImpl browser);
+        void setActiveTab(long nativeBrowserImpl, BrowserImpl browser, long nativeTab);
+        TabImpl getActiveTab(long nativeBrowserImpl, BrowserImpl browser);
     }
 }

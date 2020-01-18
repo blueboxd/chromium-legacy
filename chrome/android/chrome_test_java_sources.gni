@@ -485,6 +485,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/tasks/ReturnToChromeTest.java",
   "javatests/src/org/chromium/chrome/browser/test/CommandLineInitRule.java",
   "javatests/src/org/chromium/chrome/browser/test/ScreenShooter.java",
+  "javatests/src/org/chromium/chrome/browser/toolbar/HomeButtonTest.java",
   "javatests/src/org/chromium/chrome/browser/toolbar/IdentityDiscControllerTest.java",
   "javatests/src/org/chromium/chrome/browser/toolbar/LocationBarModelTest.java",
   "javatests/src/org/chromium/chrome/browser/toolbar/ToolbarProgressBarIntegrationTest.java",

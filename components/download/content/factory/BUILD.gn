@@ -10,9 +10,7 @@ source_set("factory") {
     "navigation_monitor_factory.h",
   ]
 
-  public_deps = [
-    "//components/download/public/background_service:public",
-  ]
+  public_deps = [ "//components/download/public/background_service:public" ]
 
   deps = [
     "//base",

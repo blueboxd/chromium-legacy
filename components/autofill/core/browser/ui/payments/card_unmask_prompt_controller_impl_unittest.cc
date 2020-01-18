@@ -268,67 +268,6 @@ TEST_F(CardUnmaskPromptControllerImplTest, LogUnmaskedCardAfterFailure) {
       AutofillMetrics::UNMASK_PROMPT_UNMASKED_CARD_AFTER_FAILED_ATTEMPTS, 1);
 }
 
-TEST_F(CardUnmaskPromptControllerImplTest, LogSavedCardLocally) {
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/true,
-                                /*enable_fido_auth=*/false);
-  base::HistogramTester histogram_tester;
-
-  controller_->OnVerificationResult(AutofillClient::SUCCESS);
-  controller_->OnUnmaskDialogClosed();
-
-  histogram_tester.ExpectBucketCount(
-      "Autofill.UnmaskPrompt.Events",
-      AutofillMetrics::UNMASK_PROMPT_SAVED_CARD_LOCALLY, 1);
-}
-
-TEST_F(CardUnmaskPromptControllerImplTest, LogDidOptIn) {
-  SetImportCheckboxState(false);
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/true,
-                                /*enable_fido_auth=*/false);
-  base::HistogramTester histogram_tester;
-  controller_->OnUnmaskDialogClosed();
-
-  histogram_tester.ExpectBucketCount(
-      "Autofill.UnmaskPrompt.Events",
-      AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_IN, 1);
-}
-
-TEST_F(CardUnmaskPromptControllerImplTest, LogDidNotOptIn) {
-  SetImportCheckboxState(false);
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
-                                /*enable_fido_auth=*/false);
-  base::HistogramTester histogram_tester;
-  controller_->OnUnmaskDialogClosed();
-
-  histogram_tester.ExpectBucketCount(
-      "Autofill.UnmaskPrompt.Events",
-      AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_IN, 1);
-}
-
-TEST_F(CardUnmaskPromptControllerImplTest, LogDidOptOut) {
-  SetImportCheckboxState(true);
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
-                                /*enable_fido_auth=*/false);
-  base::HistogramTester histogram_tester;
-  controller_->OnUnmaskDialogClosed();
-
-  histogram_tester.ExpectBucketCount(
-      "Autofill.UnmaskPrompt.Events",
-      AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_OPT_OUT, 1);
-}
-
-TEST_F(CardUnmaskPromptControllerImplTest, LogDidNotOptOut) {
-  SetImportCheckboxState(true);
-  ShowPromptAndSimulateResponse(/*should_store_pan=*/true,
-                                /*enable_fido_auth=*/false);
-  base::HistogramTester histogram_tester;
-  controller_->OnUnmaskDialogClosed();
-
-  histogram_tester.ExpectBucketCount(
-      "Autofill.UnmaskPrompt.Events",
-      AutofillMetrics::UNMASK_PROMPT_LOCAL_SAVE_DID_NOT_OPT_OUT, 1);
-}
-
 TEST_F(CardUnmaskPromptControllerImplTest, DontLogForHiddenCheckbox) {
   controller_->set_can_store_locally(false);
   ShowPromptAndSimulateResponse(/*should_store_pan=*/false,

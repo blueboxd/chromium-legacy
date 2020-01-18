@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">kitelezi</translation>
 <translation id="1211441953136645838">maelezo ya mwisho wa kitabu</translation>
 <translation id="1281252709823657822">kidirisha</translation>
+<translation id="1306460908038601864">Imezimwa</translation>
 <translation id="1335095011850992622">walioshiriki</translation>
 <translation id="1342835525016946179">makala</translation>
 <translation id="1359897965706325498">bango</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650">PB <ph name="QUANTITY" /></translation>
 <translation id="5307600278924710095">Tafadhali ingiza sehemu ikifuatiwa na '<ph name="ATSIGN" />'. '<ph name="INVALIDADDRESS" />' haijakamilika.</translation>
 <translation id="5334352251556557839">Imeshindwa kucheza maudhui.</translation>
+<translation id="537648784377940524">Tarehe ya awali zaidi (<ph name="MIN_DATE_OR_TIME" />) lazima ije kabla ya Tarehe ya baadaye zaidi (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">umbo</translation>
 <translation id="5453733299334684579">kipengee cha mti</translation>
 <translation id="5466621249238537318">Tafadhali chagua faili moja au zaidi.</translation>

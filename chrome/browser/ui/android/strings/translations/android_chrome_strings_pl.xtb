@@ -301,7 +301,7 @@
 <translation id="3282568296779691940">Zaloguj się w Chrome</translation>
 <translation id="3288003805934695103">Odśwież stronę</translation>
 <translation id="32895400574683172">Powiadomienia są włączone</translation>
-<translation id="3290926146403723641">Aby wykonać zadania w internecie za pomocą Asystenta Google, Chrome wysyła do Google URL strony, jej zawartość oraz odpowiednie dane osobowe</translation>
+<translation id="3290926146403723641">Aby wykonać zadania w internecie za pomocą Asystenta Google, Chrome wysyła do Google adres URL strony, jej zawartość oraz odpowiednie dane osobowe</translation>
 <translation id="3295530008794733555">Szybsze przeglądanie. Mniejsze zużycie danych.</translation>
 <translation id="3298243779924642547">Lżejsza</translation>
 <translation id="3303414029551471755">Przejść do pobrania treści?</translation>
@@ -668,6 +668,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="605721222689873409">RR</translation>
 <translation id="6064125863973209585">Ukończenie pobierania plików</translation>
 <translation id="6075798973483050474">Edytuj stronę główną</translation>
+<translation id="6092062101542170135">Aby kontynuować, włącz NFC w ustawieniach Androida</translation>
 <translation id="60923314841986378">Pozostało: <ph name="HOURS" /> godz.</translation>
 <translation id="6108923351542677676">Trwa konfigurowanie…</translation>
 <translation id="6111020039983847643">użytych danych</translation>

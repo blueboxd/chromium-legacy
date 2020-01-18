@@ -416,3 +416,9 @@ QUIC_FLAG(bool,
 
 // The default minimum number of loss marking events to exit PROBE_UP phase.
 QUIC_FLAG(double, FLAGS_quic_bbr2_default_probe_bw_full_loss_count, 2)
+
+// When true, ensure the ACK delay is never less than the alarm granularity when
+// ACK decimation is enabled.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_ack_delay_alarm_granularity,
+          false)

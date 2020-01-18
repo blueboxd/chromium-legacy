@@ -23,6 +23,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/input/web_mouse_wheel_event_traits.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
 #include "content/shell/test_runner/mock_spell_check.h"
 #include "content/shell/test_runner/test_interfaces.h"
@@ -1820,8 +1821,9 @@ void EventSender::ZoomPageIn() {
     // Only set page zoom on main frames. Any RenderViews that exist for
     // a proxy main frame will hear about the change as a side effect of
     // changing the main frame.
-    if (view_proxy->GetMainRenderFrame()) {
-      view_proxy->GetWidget()->SetZoomLevelForTesting(
+    content::RenderFrameImpl* main_frame = view_proxy->GetMainRenderFrame();
+    if (main_frame) {
+      main_frame->GetLocalRootRenderWidget()->SetZoomLevelForTesting(
           view_proxy->webview()->ZoomLevel() + 1);
     }
   }
@@ -1832,8 +1834,9 @@ void EventSender::ZoomPageOut() {
     // Only set page zoom on main frames. Any RenderViews that exist for
     // a proxy main frame will hear about the change as a side effect of
     // changing the main frame.
-    if (view_proxy->GetMainRenderFrame()) {
-      view_proxy->GetWidget()->SetZoomLevelForTesting(
+    content::RenderFrameImpl* main_frame = view_proxy->GetMainRenderFrame();
+    if (main_frame) {
+      main_frame->GetLocalRootRenderWidget()->SetZoomLevelForTesting(
           view_proxy->webview()->ZoomLevel() - 1);
     }
   }
@@ -1844,9 +1847,10 @@ void EventSender::SetPageZoomFactor(double zoom_factor) {
     // Only set page zoom on main frames. Any RenderViews that exist for
     // a proxy main frame will hear about the change as a side effect of
     // changing the main frame.
-    if (view_proxy->GetMainRenderFrame()) {
-      view_proxy->GetWidget()->SetZoomLevelForTesting(std::log(zoom_factor) /
-                                                      std::log(1.2));
+    content::RenderFrameImpl* main_frame = view_proxy->GetMainRenderFrame();
+    if (main_frame) {
+      main_frame->GetLocalRootRenderWidget()->SetZoomLevelForTesting(
+          std::log(zoom_factor) / std::log(1.2));
     }
   }
 }

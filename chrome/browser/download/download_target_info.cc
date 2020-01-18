@@ -11,6 +11,8 @@ DownloadTargetInfo::DownloadTargetInfo()
       danger_type(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS),
       danger_level(safe_browsing::DownloadFileType::NOT_DANGEROUS),
       is_filetype_handled_safely(false),
-      result(download::DOWNLOAD_INTERRUPT_REASON_NONE) {}
+      result(download::DOWNLOAD_INTERRUPT_REASON_NONE),
+      mixed_content_status(
+          download::DownloadItem::MixedContentStatus::UNKNOWN) {}
 
 DownloadTargetInfo::~DownloadTargetInfo() {}

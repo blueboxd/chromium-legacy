@@ -4380,10 +4380,11 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
       EXPECT_TRUE(network_context_client.reported_response_cookies()[0]
                       .status.IsInclude());
     }
-    EXPECT_EQ(
-        net::CanonicalCookie::CookieInclusionStatus::WarningReason::
-            WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
-        network_context_client.reported_response_cookies()[0].status.warning());
+    EXPECT_TRUE(
+        network_context_client.reported_response_cookies()[0]
+            .status.HasWarningReason(
+                net::CanonicalCookie::CookieInclusionStatus::WarningReason::
+                    WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT));
   }
 
   // Blocked.

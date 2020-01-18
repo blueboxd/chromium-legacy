@@ -323,16 +323,25 @@ void Display::SetSize(const gfx::Size& size_in_pixel) {
   SetScaleAndBounds(device_scale_factor_, gfx::Rect(origin, size_in_pixel));
 }
 
+gfx::ColorSpace Display::color_space() const {
+  return color_spaces_.hdr_transparent;
+}
+
+void Display::set_color_space(const gfx::ColorSpace& color_space) {
+  color_spaces_ = gfx::DisplayColorSpaces(color_space);
+}
+
+float Display::sdr_white_level() const {
+  return color_spaces_.sdr_white_level;
+}
+
 void Display::SetColorSpaceAndDepth(const gfx::ColorSpace& color_space,
                                     float sdr_white_level) {
-  color_space_ = color_space;
-  sdr_white_level_ = sdr_white_level;
-  if (color_space_ == gfx::ColorSpace::CreateHDR10()) {
+  color_spaces_ = gfx::DisplayColorSpaces(color_space);
+  color_spaces_.sdr_white_level = sdr_white_level;
+  if (color_spaces_.SupportsHDR()) {
     color_depth_ = kHDR10BitsPerPixel;
     depth_per_component_ = kHDR10BitsPerComponent;
-  } else if (color_space == gfx::ColorSpace::CreateSCRGBLinear()) {
-    color_depth_ = kSCRGBLinearBitsPerPixel;
-    depth_per_component_ = kSCRGBLinearBitsPerComponent;
   } else {
     color_depth_ = kDefaultBitsPerPixel;
     depth_per_component_ = kDefaultBitsPerComponent;
@@ -394,7 +403,8 @@ bool Display::operator==(const Display& rhs) const {
          rotation_ == rhs.rotation_ && touch_support_ == rhs.touch_support_ &&
          accelerometer_support_ == rhs.accelerometer_support_ &&
          maximum_cursor_size_ == rhs.maximum_cursor_size_ &&
-         color_space_ == rhs.color_space_ && color_depth_ == rhs.color_depth_ &&
+         color_spaces_ == rhs.color_spaces_ &&
+         color_depth_ == rhs.color_depth_ &&
          depth_per_component_ == rhs.depth_per_component_ &&
          is_monochrome_ == rhs.is_monochrome_ &&
          display_frequency_ == rhs.display_frequency_;

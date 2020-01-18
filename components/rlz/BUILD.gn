@@ -28,9 +28,7 @@ static_library("rlz") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "rlz_tracker_unittest.cc",
-  ]
+  sources = [ "rlz_tracker_unittest.cc" ]
 
   deps = [
     ":rlz",

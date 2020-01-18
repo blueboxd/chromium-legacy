@@ -45,6 +45,7 @@
 #include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_constants.h"
 #include "components/sessions/core/session_types.h"
+#include "components/sessions/core/snapshotting_command_storage_manager.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
@@ -75,10 +76,11 @@ static const int kWritesPerReset = 250;
 SessionService::SessionService(Profile* profile)
     : profile_(profile),
       should_use_delayed_save_(true),
-      base_session_service_(new sessions::BaseSessionService(
-          sessions::BaseSessionService::SESSION_RESTORE,
-          profile->GetPath(),
-          this)),
+      command_storage_manager_(
+          std::make_unique<sessions::SnapshottingCommandStorageManager>(
+              sessions::SnapshottingCommandStorageManager::SESSION_RESTORE,
+              profile->GetPath(),
+              this)),
       has_open_trackable_browsers_(false),
       move_on_new_browser_(false),
       force_browser_not_alive_with_no_windows_(false),
@@ -91,10 +93,11 @@ SessionService::SessionService(Profile* profile)
 SessionService::SessionService(const base::FilePath& save_path)
     : profile_(nullptr),
       should_use_delayed_save_(false),
-      base_session_service_(new sessions::BaseSessionService(
-          sessions::BaseSessionService::SESSION_RESTORE,
-          save_path,
-          this)),
+      command_storage_manager_(
+          std::make_unique<sessions::SnapshottingCommandStorageManager>(
+              sessions::SnapshottingCommandStorageManager::SESSION_RESTORE,
+              save_path,
+              this)),
       has_open_trackable_browsers_(false),
       move_on_new_browser_(false),
       force_browser_not_alive_with_no_windows_(false),
@@ -106,7 +109,7 @@ SessionService::~SessionService() {
   // The BrowserList should outlive the SessionService since it's static and
   // the SessionService is a KeyedService.
   BrowserList::RemoveObserver(this);
-  base_session_service_->Save();
+  command_storage_manager_->Save();
 }
 
 bool SessionService::ShouldNewWindowStartSession() {
@@ -144,11 +147,11 @@ void SessionService::MoveCurrentSessionToLastSession() {
   window_closing_ids_.clear();
   pending_window_close_ids_.clear();
 
-  base_session_service_->MoveCurrentSessionToLastSession();
+  command_storage_manager_->MoveCurrentSessionToLastSession();
 }
 
 void SessionService::DeleteLastSession() {
-  base_session_service_->DeleteLastSession();
+  command_storage_manager_->DeleteLastSession();
 }
 
 void SessionService::SetTabWindow(const SessionID& window_id,
@@ -421,7 +424,7 @@ void SessionService::TabRestored(WebContents* tab, bool pinned) {
 
   BuildCommandsForTab(session_tab_helper->window_id(), tab, -1, base::nullopt,
                       pinned, nullptr);
-  base_session_service_->StartSaveTimer();
+  command_storage_manager_->StartSaveTimer();
 }
 
 void SessionService::SetSelectedTabInWindow(const SessionID& window_id,
@@ -464,7 +467,7 @@ base::CancelableTaskTracker::TaskId SessionService::GetLastSession(
     base::CancelableTaskTracker* tracker) {
   // OnGotSessionCommands maps the SessionCommands to browser state, then run
   // the callback.
-  return base_session_service_->ScheduleGetLastSessionCommands(
+  return command_storage_manager_->ScheduleGetLastSessionCommands(
       base::BindOnce(&SessionService::OnGotSessionCommands,
                      weak_factory_.GetWeakPtr(), std::move(callback)),
       tracker);
@@ -576,7 +579,7 @@ void SessionService::TabNavigationPathEntriesDeleted(const SessionID& window_id,
   // Multiple tabs might be affected by this deletion, so the rebuild is
   // delayed until next save.
   rebuild_on_next_save_ = true;
-  base_session_service_->StartSaveTimer();
+  command_storage_manager_->StartSaveTimer();
 }
 
 void SessionService::Init() {
@@ -667,7 +670,7 @@ void SessionService::BuildCommandsForTab(
   sessions::SessionTabHelper* session_tab_helper =
       sessions::SessionTabHelper::FromWebContents(tab);
   const SessionID& session_id(session_tab_helper->session_id());
-  base_session_service_->AppendRebuildCommand(
+  command_storage_manager_->AppendRebuildCommand(
       sessions::CreateSetTabWindowCommand(window_id, session_id));
 
   const int current_index = tab->GetController().GetCurrentEntryIndex();
@@ -683,25 +686,25 @@ void SessionService::BuildCommandsForTab(
   }
 
   if (is_pinned) {
-    base_session_service_->AppendRebuildCommand(
+    command_storage_manager_->AppendRebuildCommand(
         sessions::CreatePinnedStateCommand(session_id, true));
   }
 
-  base_session_service_->AppendRebuildCommand(
+  command_storage_manager_->AppendRebuildCommand(
       sessions::CreateLastActiveTimeCommand(session_id,
                                             tab->GetLastActiveTime()));
 
   extensions::TabHelper* extensions_tab_helper =
       extensions::TabHelper::FromWebContents(tab);
   if (extensions_tab_helper->is_app()) {
-    base_session_service_->AppendRebuildCommand(
+    command_storage_manager_->AppendRebuildCommand(
         sessions::CreateSetTabExtensionAppIDCommand(
             session_id, extensions_tab_helper->GetAppId()));
   }
 
   const std::string& ua_override = tab->GetUserAgentOverride();
   if (!ua_override.empty()) {
-    base_session_service_->AppendRebuildCommand(
+    command_storage_manager_->AppendRebuildCommand(
         sessions::CreateSetTabUserAgentOverrideCommand(session_id,
                                                        ua_override));
   }
@@ -714,22 +717,22 @@ void SessionService::BuildCommandsForTab(
     if (ShouldTrackURLForRestore(entry->GetVirtualURL())) {
       const SerializedNavigationEntry navigation =
           ContentSerializedNavigationBuilder::FromNavigationEntry(i, entry);
-      base_session_service_->AppendRebuildCommand(
+      command_storage_manager_->AppendRebuildCommand(
           CreateUpdateTabNavigationCommand(session_id, navigation));
     }
   }
-  base_session_service_->AppendRebuildCommand(
+  command_storage_manager_->AppendRebuildCommand(
       sessions::CreateSetSelectedNavigationIndexCommand(session_id,
                                                         current_index));
 
   if (index_in_window != -1) {
-    base_session_service_->AppendRebuildCommand(
+    command_storage_manager_->AppendRebuildCommand(
         sessions::CreateSetTabIndexInWindowCommand(session_id,
                                                    index_in_window));
   }
 
   if (group.has_value()) {
-    base_session_service_->AppendRebuildCommand(
+    command_storage_manager_->AppendRebuildCommand(
         sessions::CreateTabGroupCommand(session_id, std::move(group)));
   }
 
@@ -747,22 +750,19 @@ void SessionService::BuildCommandsForBrowser(
   DCHECK(browser);
   DCHECK(browser->session_id().is_valid());
 
-  base_session_service_->AppendRebuildCommand(
+  command_storage_manager_->AppendRebuildCommand(
       sessions::CreateSetWindowBoundsCommand(
-          browser->session_id(),
-          browser->window()->GetRestoredBounds(),
+          browser->session_id(), browser->window()->GetRestoredBounds(),
           browser->window()->GetRestoredState()));
 
-  base_session_service_->AppendRebuildCommand(
+  command_storage_manager_->AppendRebuildCommand(
       sessions::CreateSetWindowTypeCommand(
-          browser->session_id(),
-          WindowTypeForBrowserType(browser->type())));
+          browser->session_id(), WindowTypeForBrowserType(browser->type())));
 
   if (!browser->app_name().empty()) {
-    base_session_service_->AppendRebuildCommand(
-        sessions::CreateSetWindowAppNameCommand(
-            browser->session_id(),
-            browser->app_name()));
+    command_storage_manager_->AppendRebuildCommand(
+        sessions::CreateSetWindowAppNameCommand(browser->session_id(),
+                                                browser->app_name()));
   }
 
   sessions::CreateSetWindowWorkspaceCommand(
@@ -784,14 +784,13 @@ void SessionService::BuildCommandsForBrowser(
   for (const tab_groups::TabGroupId& group_id : group_model->ListTabGroups()) {
     const tab_groups::TabGroupVisualData* visual_data =
         group_model->GetTabGroup(group_id)->visual_data();
-    base_session_service_->AppendRebuildCommand(
+    command_storage_manager_->AppendRebuildCommand(
         sessions::CreateTabGroupMetadataUpdateCommand(group_id, visual_data));
   }
 
-  base_session_service_->AppendRebuildCommand(
+  command_storage_manager_->AppendRebuildCommand(
       sessions::CreateSetSelectedTabInWindowCommand(
-          browser->session_id(),
-          browser->tab_strip_model()->active_index()));
+          browser->session_id(), browser->tab_strip_model()->active_index()));
 }
 
 void SessionService::BuildCommandsFromBrowsers(
@@ -814,8 +813,8 @@ void SessionService::BuildCommandsFromBrowsers(
 }
 
 void SessionService::ScheduleResetCommands() {
-  base_session_service_->set_pending_reset(true);
-  base_session_service_->ClearPendingCommands();
+  command_storage_manager_->set_pending_reset(true);
+  command_storage_manager_->ClearPendingCommands();
   tab_to_available_range_.clear();
   windows_tracking_.clear();
   last_selected_tab_in_window_.clear();
@@ -828,21 +827,21 @@ void SessionService::ScheduleResetCommands() {
     has_open_trackable_browsers_ = true;
     move_on_new_browser_ = true;
   }
-  base_session_service_->StartSaveTimer();
+  command_storage_manager_->StartSaveTimer();
 }
 
 void SessionService::ScheduleCommand(
     std::unique_ptr<sessions::SessionCommand> command) {
   DCHECK(command);
-  if (ReplacePendingCommand(base_session_service_.get(), &command))
+  if (ReplacePendingCommand(command_storage_manager_.get(), &command))
     return;
   bool is_closing_command = IsClosingCommand(command.get());
-  base_session_service_->ScheduleCommand(std::move(command));
+  command_storage_manager_->ScheduleCommand(std::move(command));
   // Don't schedule a reset on tab closed/window closed. Otherwise we may
   // lose tabs/windows we want to restore from if we exit right after this.
-  if (!base_session_service_->pending_reset() &&
+  if (!command_storage_manager_->pending_reset() &&
       pending_window_close_ids_.empty() &&
-      base_session_service_->commands_since_reset() >= kWritesPerReset &&
+      command_storage_manager_->commands_since_reset() >= kWritesPerReset &&
       !is_closing_command) {
     ScheduleResetCommands();
   }
@@ -949,8 +948,9 @@ void SessionService::MaybeDeleteSessionOnlyData() {
   DeleteSessionOnlyData(profile());
 }
 
-sessions::BaseSessionService* SessionService::GetBaseSessionServiceForTest() {
-  return base_session_service_.get();
+sessions::CommandStorageManager*
+SessionService::GetCommandStorageManagerForTest() {
+  return command_storage_manager_.get();
 }
 
 void SessionService::SetAvailableRangeForTest(

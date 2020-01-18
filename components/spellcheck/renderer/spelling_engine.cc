@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck_features.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
 
 #if BUILDFLAG(USE_RENDERER_SPELLCHECKER)

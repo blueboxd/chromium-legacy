@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
+<translation id="1337778609052285767">Pašreizējā parole neatbilst paroļu sarežģītības prasībai. Lūdzu, sazinieties ar administratoru.</translation>
 <translation id="1337821341856692531">Ja turpināsiet darbu, neievadot pašreizējo Windows paroli, var tikt neatgriezeniski zaudēta informācija.</translation>
 <translation id="1383286653814676580">Tiek izmantots Google akreditācijas datu nodrošinātāja pierakstīšanās lapā.</translation>
 <translation id="1894475569413661128">Pierakstieties, izmantojot savu darba kontu.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Jūs ievadījāt nepareizu Windows paroli. Mēģiniet vēlreiz.</translation>
 <translation id="2831078752570172210">Piekļuve jūsu kontam ir bloķēta. Lūdzu, sazinieties ar sistēmas administratoru.</translation>
 <translation id="2844349213149998955">Šajā ierīcē nav atļauts pierakstīties ar personīgo kontu. Lūdzu, pierakstieties ar darba kontu.</translation>
+<translation id="2995851317559936311">Paroles mainīšana ir atļauta tikai domēna kontrollerī. Lūdzu, sazinieties ar administratoru.</translation>
 <translation id="3306357053520292004">Lietotājs šajā datorā jau tika pievienots, izmantojot šo kontu. Lūdzu, pierakstieties ar citu kontu.</translation>
 <translation id="3926852373333893095">Drīkst pieteikties tikai G Suite Enterprise lietotāji.</translation>
 <translation id="4057329986137569701">Radās iekšēja kļūda.</translation>
 <translation id="4267670563222825190">Jūsu kontam nevarēja atrast nevienu domēna lietotāju. Lūdzu, sazinieties ar savu administratoru.</translation>
 <translation id="4300229033992784001">Jūsu konta parole ir mainīta. Lūdzu, ievadiet pašreizējo Windows paroli, lai sinhronizētu Windows kontu ar jūsu darba kontu.</translation>
+<translation id="4669462973597624151">Neizdevās mainīt paroli. Lūdzu, sazinieties ar administratoru.</translation>
 <translation id="4706454071748629324">Neizdevās pievienot jaunu lietotāju. Šis dators ļauj tikai vienam lietotājam veidot darba kontu.</translation>
+<translation id="5186761973554910131">Mēģinot mainīt paroli, tika norādīts nederīgs datora nosaukums. Lūdzu, sazinieties ar administratoru.</translation>
 <translation id="6033715878377252112">Palīgs programmai “Google akreditācijas datu nodrošinātājs” operētājsistēmai Windows</translation>
 <translation id="6149399665202317746">Google akreditācijas datu nodrošinātājs operētājsistēmai Windows</translation>
 <translation id="6239180560789153226">Ierīcē trūkst atkopšanas informācijas. Pierakstieties Google darba kontā.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Pievienot darba kontu</translation>
 <translation id="7811865856574012727">Jūsu administrators ir ierobežojis ierīces pierakstīšanos šādos domēnos: <ph name="EMAIL_DOMAINS" />. Mēģiniet vēlreiz, izmantojot derīgu darba kontu.</translation>
 <translation id="7856245195110636219">Nevar turpināt darbu, neievadot pašreizējo Windows paroli. Lūdzu, sazinieties ar sistēmas administratoru.</translation>
+<translation id="8109730953933509335">Tika mēģināts mainīt nederīga lietotāja paroli. Lūdzu, sazinieties ar administratoru.</translation>
 <translation id="8639729688781680518">Aizmirsu Windows paroli</translation>
 <translation id="866458870819756755">Nevarēja izveidot lietotāju.</translation>
 <translation id="8875753657315897487">Pierakstīties, izmantojot darba kontu</translation>

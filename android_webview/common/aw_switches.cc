@@ -14,9 +14,6 @@ const char kWebViewSandboxedRenderer[] = "webview-sandboxed-renderer";
 const char kWebViewDisableSafeBrowsingSupport[] =
     "webview-disable-safebrowsing-support";
 
-// Used to enable shared image API for webview.
-const char kWebViewEnableSharedImage[] = "webview-enable-shared-image";
-
 // Used to enable vulkan draw mode instead of interop draw mode for webview.
 const char kWebViewEnableVulkan[] = "webview-enable-vulkan";
 

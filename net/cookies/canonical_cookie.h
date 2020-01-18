@@ -359,26 +359,31 @@ class NET_EXPORT CanonicalCookie::CookieInclusionStatus {
 
   // Reason to warn about a cookie. If you add one, please update
   // GetDebugString().
-  // TODO(chlily): Do we need to support multiple warning statuses?
   enum WarningReason {
-    DO_NOT_WARN = 0,
+    // Of the following 3 SameSite warnings, there will be, at most, a single
+    // active one.
+
     // Warn if a cookie with unspecified SameSite attribute is used in a
     // cross-site context.
-    WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
+    WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT = 0,
     // Warn if a cookie with SameSite=None is not Secure.
-    WARN_SAMESITE_NONE_INSECURE,
+    WARN_SAMESITE_NONE_INSECURE = 1,
     // Warn if a cookie with unspecified SameSite attribute is defaulted into
     // Lax and is sent on a request with unsafe method, only because it is new
     // enough to activate the Lax-allow-unsafe intervention.
-    WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE,
+    WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE = 2,
+
+    // This should be kept last.
+    NUM_WARNING_REASONS
   };
 
-  // Makes a status that says include.
+  // Makes a status that says include and should not warn.
   CookieInclusionStatus();
 
+  // Make a status that contains the given exclusion reason.
+  explicit CookieInclusionStatus(ExclusionReason reason);
   // Makes a status that contains the given exclusion reason and warning.
-  explicit CookieInclusionStatus(ExclusionReason reason,
-                                 WarningReason warning = DO_NOT_WARN);
+  CookieInclusionStatus(ExclusionReason reason, WarningReason warning);
 
   bool operator==(const CookieInclusionStatus& other) const;
   bool operator!=(const CookieInclusionStatus& other) const;
@@ -404,13 +409,24 @@ class NET_EXPORT CanonicalCookie::CookieInclusionStatus {
   // Whether the cookie should be warned about.
   bool ShouldWarn() const;
 
-  WarningReason warning() const { return warning_; }
-  void set_warning(WarningReason warning) { warning_ = warning; }
+  // Whether the given reason for warning is present.
+  bool HasWarningReason(WarningReason reason) const;
+
+  // Add an warning reason.
+  void AddWarningReason(WarningReason reason);
+
+  // Remove an warning reason.
+  void RemoveWarningReason(WarningReason reason);
 
   // Used for serialization/deserialization.
   uint32_t exclusion_reasons() const { return exclusion_reasons_; }
   void set_exclusion_reasons(uint32_t exclusion_reasons) {
     exclusion_reasons_ = exclusion_reasons;
+  }
+
+  uint32_t warning_reasons() const { return warning_reasons_; }
+  void set_warning_reasons(uint32_t warning_reasons) {
+    warning_reasons_ = warning_reasons;
   }
 
   // Get exclusion reason(s) and warning in string format.
@@ -426,17 +442,22 @@ class NET_EXPORT CanonicalCookie::CookieInclusionStatus {
   bool HasExactlyExclusionReasonsForTesting(
       std::vector<ExclusionReason> reasons) const;
 
+  // Checks whether the warning reasons are exactly the set of warning
+  // reasons in the vector. (Ignores exclusions.)
+  bool HasExactlyWarningReasonsForTesting(
+      std::vector<WarningReason> reasons) const;
+
   // Makes a status that contains the given exclusion reasons and warning.
   static CookieInclusionStatus MakeFromReasonsForTesting(
       std::vector<ExclusionReason> reasons,
-      WarningReason warning = DO_NOT_WARN);
+      std::vector<WarningReason> warnings = std::vector<WarningReason>());
 
  private:
   // A bit vector of the applicable exclusion reasons.
   uint32_t exclusion_reasons_ = 0u;
 
-  // Applicable warning reason.
-  WarningReason warning_ = DO_NOT_WARN;
+  // A bit vector of the applicable warning reasons.
+  uint32_t warning_reasons_ = 0u;
 };
 
 NET_EXPORT inline std::ostream& operator<<(

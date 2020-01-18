@@ -216,7 +216,8 @@ class RasterDecoderImpl final : public RasterDecoder,
                     const GpuPreferences& gpu_preferences,
                     MemoryTracker* memory_tracker,
                     SharedImageManager* shared_image_manager,
-                    scoped_refptr<SharedContextState> shared_context_state);
+                    scoped_refptr<SharedContextState> shared_context_state,
+                    bool is_privileged);
   ~RasterDecoderImpl() override;
 
   gles2::GLES2Util* GetGLES2Util() override { return &util_; }
@@ -611,6 +612,8 @@ class RasterDecoderImpl final : public RasterDecoder,
   bool in_copy_sub_texture_ = false;
   bool reset_texture_state_ = false;
 
+  bool is_privileged_ = false;
+
   gl::GLApi* api_ = nullptr;
 
   base::WeakPtrFactory<DecoderContext> weak_ptr_factory_{this};
@@ -639,11 +642,12 @@ RasterDecoder* RasterDecoder::Create(
     const GpuPreferences& gpu_preferences,
     MemoryTracker* memory_tracker,
     SharedImageManager* shared_image_manager,
-    scoped_refptr<SharedContextState> shared_context_state) {
+    scoped_refptr<SharedContextState> shared_context_state,
+    bool is_privileged) {
   return new RasterDecoderImpl(client, command_buffer_service, outputter,
                                gpu_feature_info, gpu_preferences,
                                memory_tracker, shared_image_manager,
-                               std::move(shared_context_state));
+                               std::move(shared_context_state), is_privileged);
 }
 
 RasterDecoder::RasterDecoder(DecoderClient* client,
@@ -695,7 +699,8 @@ RasterDecoderImpl::RasterDecoderImpl(
     const GpuPreferences& gpu_preferences,
     MemoryTracker* memory_tracker,
     SharedImageManager* shared_image_manager,
-    scoped_refptr<SharedContextState> shared_context_state)
+    scoped_refptr<SharedContextState> shared_context_state,
+    bool is_privileged)
     : RasterDecoder(client, command_buffer_service, outputter),
       raster_decoder_id_(g_raster_decoder_id.GetNext() + 1),
       supports_gpu_raster_(
@@ -716,7 +721,8 @@ RasterDecoderImpl::RasterDecoderImpl(
                                            memory_tracker),
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
           TRACE_DISABLED_BY_DEFAULT("gpu.decoder"))),
-      font_manager_(base::MakeRefCounted<ServiceFontManager>(this)) {
+      font_manager_(base::MakeRefCounted<ServiceFontManager>(this)),
+      is_privileged_(is_privileged) {
   DCHECK(shared_context_state_);
 }
 
@@ -2447,7 +2453,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   TransferCacheDeserializeHelperImpl impl(raster_decoder_id_, transfer_cache());
   cc::PaintOp::DeserializeOptions options(
       &impl, paint_cache_.get(), font_manager_->strike_client(),
-      shared_context_state_->scratch_deserialization_buffer());
+      shared_context_state_->scratch_deserialization_buffer(), is_privileged_);
   options.crash_dump_on_failure = true;
 
   size_t paint_buffer_size = raster_shm_size;

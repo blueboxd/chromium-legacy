@@ -201,9 +201,6 @@ crbug.com/1041856 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4
 # Produces blank images on Intel HD 630 w/ Mesa 19.0.2
 crbug.com/976861 [ linux intel-0x5912 ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
 
-# Flakes regularly on Mac.
-crbug.com/1040202 [ mac ] Pixel_CSSFilterEffects_NoOverlays [ Failure ]
-
 # Skip swap chain tests on non-Windows
 [ android ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
 [ android ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]

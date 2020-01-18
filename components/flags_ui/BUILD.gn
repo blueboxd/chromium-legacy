@@ -41,9 +41,7 @@ static_library("switches") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "flags_state_unittest.cc",
-  ]
+  sources = [ "flags_state_unittest.cc" ]
 
   deps = [
     ":flags_ui",

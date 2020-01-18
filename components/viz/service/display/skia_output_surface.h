@@ -99,6 +99,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   // Swaps the current backbuffer to the screen.
   virtual void SkiaSwapBuffers(OutputSurfaceFrame frame) = 0;
 
+  // Called if SkiaSwapBuffers() will be skipped.
+  virtual void SwapBuffersSkipped() = 0;
+
   // TODO(weiliangc): This API should move to OverlayProcessor.
   // Schedule |output_surface_plane| as an overlay plane to be displayed.
   virtual void ScheduleOutputSurfaceAsOverlay(

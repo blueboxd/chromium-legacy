@@ -55,7 +55,7 @@ const base::Feature kEnableAggregatedMlAppRanking{
 const base::Feature kScalableAppList{"ScalableAppList",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableFuzzyAppSearch{"EnableFuzzyAppSearch",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAggregatedMlSearchRanking{
     "EnableAggregatedMlSearchRanking", base::FEATURE_DISABLED_BY_DEFAULT};
 

@@ -7,10 +7,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/find_in_page/find_tab_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/web_contents_tester.h"
 
@@ -21,15 +21,16 @@ class FindBackendTest : public ChromeRenderViewHostTestHarness {
  protected:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    FindTabHelper::CreateForWebContents(web_contents());
+    FindBarState::ConfigureWebContents(web_contents());
   }
 };
 
 namespace {
 
 base::string16 FindPrepopulateText(WebContents* contents) {
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  return FindBarStateFactory::GetLastPrepopulateText(profile);
+  return FindBarStateFactory::GetForBrowserContext(
+             contents->GetBrowserContext())
+      ->GetSearchPrepopulateText();
 }
 
 }  // end namespace
@@ -37,8 +38,8 @@ base::string16 FindPrepopulateText(WebContents* contents) {
 // This test takes two WebContents objects, searches in both of them and
 // tests the internal state for find_text and find_prepopulate_text.
 TEST_F(FindBackendTest, InternalState) {
-  FindTabHelper* find_tab_helper =
-      FindTabHelper::FromWebContents(web_contents());
+  find_in_page::FindTabHelper* find_tab_helper =
+      find_in_page::FindTabHelper::FromWebContents(web_contents());
   // Initial state for the WebContents is blank strings.
   EXPECT_EQ(base::string16(), FindPrepopulateText(web_contents()));
   EXPECT_EQ(base::string16(), find_tab_helper->find_text());
@@ -46,9 +47,9 @@ TEST_F(FindBackendTest, InternalState) {
   // Get another WebContents object ready.
   std::unique_ptr<WebContents> contents2(
       WebContentsTester::CreateTestWebContents(profile(), nullptr));
-  FindTabHelper::CreateForWebContents(contents2.get());
-  FindTabHelper* find_tab_helper2 =
-      FindTabHelper::FromWebContents(contents2.get());
+  FindBarState::ConfigureWebContents(contents2.get());
+  find_in_page::FindTabHelper* find_tab_helper2 =
+      find_in_page::FindTabHelper::FromWebContents(contents2.get());
 
   // No search has still been issued, strings should be blank.
   EXPECT_EQ(base::string16(), FindPrepopulateText(web_contents()));
@@ -86,8 +87,8 @@ TEST_F(FindBackendTest, InternalState) {
   // find_tab_helper (as indicated by the last two params).
   find_tab_helper->StartFinding(search_term3, true, false);
 
-  // Once more, pre-populate string should always match between the two, but
-  // find_text should not.
+  // The fallback search term for the first WebContents will be the original
+  // search.
   EXPECT_EQ(search_term3, FindPrepopulateText(web_contents()));
   EXPECT_EQ(search_term3, find_tab_helper->find_text());
   EXPECT_EQ(search_term3, FindPrepopulateText(contents2.get()));

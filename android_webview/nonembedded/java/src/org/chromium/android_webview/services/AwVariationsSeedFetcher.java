@@ -87,6 +87,7 @@ public class AwVariationsSeedFetcher extends JobService {
 
         // Check if it's already scheduled.
         if (getPendingJob(scheduler, JOB_ID) != null) {
+            VariationsUtils.debugLog("Seed download job already scheduled");
             return;
         }
 
@@ -95,10 +96,12 @@ public class AwVariationsSeedFetcher extends JobService {
         if (lastRequestTime != 0) {
             long now = (new Date()).getTime();
             if (now < lastRequestTime + MIN_JOB_PERIOD_MILLIS) {
+                VariationsUtils.debugLog("Throttling seed download job");
                 return;
             }
         }
 
+        VariationsUtils.debugLog("Scheduling seed download job");
         ComponentName thisComponent = new ComponentName(
                 ContextUtils.getApplicationContext(), AwVariationsSeedFetcher.class);
         JobInfo job = new JobInfo.Builder(JOB_ID, thisComponent)
@@ -125,6 +128,7 @@ public class AwVariationsSeedFetcher extends JobService {
             try {
                 VariationsUtils.updateStampTime();
 
+                VariationsUtils.debugLog("Downloading new seed");
                 VariationsSeedFetcher downloader =
                         sMockDownloader != null ? sMockDownloader : VariationsSeedFetcher.get();
                 String milestone = String.valueOf(VersionConstants.PRODUCT_MAJOR_VERSION);

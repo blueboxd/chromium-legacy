@@ -8,6 +8,7 @@ import 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import './print_preview_shared_css.js';
 import './settings_section.js';
 
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {State} from '../data/state.js';
@@ -20,7 +21,7 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
-  behaviors: [SettingsBehavior, InputBehavior],
+  behaviors: [SettingsBehavior, InputBehavior, I18nBehavior],
 
   properties: {
     /** @type {!State} */
@@ -175,5 +176,13 @@ Polymer({
     this.$.pinValue.value = this.inputString_;
     this.$.pinValue.validate();
     return !this.$.pinValue.invalid;
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getPinErrorMessage_() {
+    return this.inputValid_ ? '' : this.i18n('pinErrorMessage');
   },
 });

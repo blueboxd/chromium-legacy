@@ -40,4 +40,8 @@ extern const base::Feature kForceUnstackedTabstrip;
 // presented.
 extern const base::Feature kContainedBVC;
 
+// Feature flag to display a new option that wipes synced data on a local
+// device when signing out from a non-managed account.
+extern const base::Feature kClearSyncedData;
+
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

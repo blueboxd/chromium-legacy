@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
+<translation id="1337778609052285767">Het huidige wachtwoord is niet complex genoeg. Neem contact op met je beheerder.</translation>
 <translation id="1337821341856692531">Als je doorgaat zonder je huidige Windows-wachtwoord in te voeren, kun je gegevens kwijtraken die je niet meer kunt terughalen.</translation>
 <translation id="1383286653814676580">Wordt gebruikt om de inlogpagina van Google-inlogprovider uit te voeren.</translation>
 <translation id="1894475569413661128">Log in met je werkaccount.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Je hebt een onjuist Windows-wachtwoord ingevoerd. Probeer het opnieuw.</translation>
 <translation id="2831078752570172210">Je hebt geen toegang meer tot je account. Neem contact op met je systeembeheerder.</translation>
 <translation id="2844349213149998955">Inloggen met een persoonlijk account op dit apparaat is niet toegestaan. Log in met een werkaccount.</translation>
+<translation id="2995851317559936311">Het wachtwoord kan alleen worden gewijzigd via de domeincontroller. Neem contact op met je beheerder.</translation>
 <translation id="3306357053520292004">Er is al een gebruiker op deze computer toegevoegd met dit account. Log in met een ander account.</translation>
 <translation id="3926852373333893095">Alleen G Suite Enterprise-gebruikers mogen inloggen.</translation>
 <translation id="4057329986137569701">Er is een interne fout opgetreden.</translation>
 <translation id="4267670563222825190">Er kan geen domeingebruiker worden gevonden voor je account. Neem contact op met je beheerder.</translation>
 <translation id="4300229033992784001">Het wachtwoord van je account is gewijzigd. Geef je huidige Windows-wachtwoord op om je Windows-account te synchroniseren met je werkaccount.</translation>
+<translation id="4669462973597624151">Het is niet gelukt het wachtwoord te wijzigen. Neem contact op met je beheerder.</translation>
 <translation id="4706454071748629324">Nieuwe gebruiker toevoegen is mislukt. Op deze computer kan slechts één gebruiker worden gemaakt met een werkaccount.</translation>
+<translation id="5186761973554910131">Je hebt een ongeldige computernaam opgegeven toen je het wachtwoord probeerde te wijzigen. Neem contact op met je beheerder.</translation>
 <translation id="6033715878377252112">Helper voor Google-referentieprovider voor Windows</translation>
 <translation id="6149399665202317746">Google-referentieprovider voor Windows</translation>
 <translation id="6239180560789153226">Er ontbreekt herstelinformatie voor je apparaat. Log in met je Google-werkaccount.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Werkaccount toevoegen</translation>
 <translation id="7811865856574012727">Je beheerder heeft inloggen op apparaten beperkt tot de volgende domeinen: <ph name="EMAIL_DOMAINS" />. Probeer het opnieuw met een geldig werkaccount.</translation>
 <translation id="7856245195110636219">Kan niet doorgaan voordat je het huidige Windows-wachtwoord hebt ingevoerd. Neem contact op met een systeembeheerder.</translation>
+<translation id="8109730953933509335">Je hebt geprobeerd het wachtwoord van een ongeldige gebruiker te wijzigen. Neem contact op met je beheerder.</translation>
 <translation id="8639729688781680518">Windows-wachtwoord vergeten</translation>
 <translation id="866458870819756755">Gebruiker kan niet worden gemaakt.</translation>
 <translation id="8875753657315897487">Log in met je werkaccount</translation>

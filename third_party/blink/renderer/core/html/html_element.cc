@@ -1391,6 +1391,37 @@ void HTMLElement::DefaultEventHandler(Event& event) {
   Element::DefaultEventHandler(event);
 }
 
+bool HTMLElement::HandleKeyboardActivation(Event& event) {
+  if (event.IsKeyboardEvent()) {
+    if (event.type() == event_type_names::kKeydown &&
+        ToKeyboardEvent(event).key() == " ") {
+      SetActive(true);
+      // No setDefaultHandled() - IE dispatches a keypress in this case.
+      return true;
+    }
+    if (event.type() == event_type_names::kKeypress) {
+      switch (ToKeyboardEvent(event).charCode()) {
+        case '\r':
+          DispatchSimulatedClick(&event);
+          event.SetDefaultHandled();
+          return true;
+        case ' ':
+          // Prevent scrolling down the page.
+          event.SetDefaultHandled();
+          return true;
+      }
+    }
+    if (event.type() == event_type_names::kKeyup &&
+        ToKeyboardEvent(event).key() == " ") {
+      if (IsActive())
+        DispatchSimulatedClick(&event);
+      event.SetDefaultHandled();
+      return true;
+    }
+  }
+  return false;
+}
+
 bool HTMLElement::MatchesReadOnlyPseudoClass() const {
   return !MatchesReadWritePseudoClass();
 }

@@ -54,20 +54,16 @@ TEST_F(CorePageLoadMetricsObserverTest, NoMetrics) {
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramDomContentLoaded, 0);
   tester()->histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
-  tester()->histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout,
-                                                0);
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramFirstImagePaint, 0);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest,
        SameDocumentNoTriggerUntilTrueNavCommit) {
-  base::TimeDelta first_layout = base::TimeDelta::FromMilliseconds(1);
 
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.document_timing->first_layout = first_layout;
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL(kDefaultTestUrl));
@@ -79,16 +75,11 @@ TEST_F(CorePageLoadMetricsObserverTest,
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramDomContentLoaded, 0);
   tester()->histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
-  tester()->histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout,
-                                                1);
-  tester()->histogram_tester().ExpectBucketCount(
-      internal::kHistogramFirstLayout, first_layout.InMilliseconds(), 1);
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramFirstImagePaint, 0);
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, SingleMetricAfterCommit) {
-  base::TimeDelta first_layout = base::TimeDelta::FromMilliseconds(1);
   base::TimeDelta parse_start = base::TimeDelta::FromMilliseconds(1);
   base::TimeDelta parse_stop = base::TimeDelta::FromMilliseconds(5);
   base::TimeDelta parse_script_load_duration =
@@ -99,7 +90,6 @@ TEST_F(CorePageLoadMetricsObserverTest, SingleMetricAfterCommit) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.document_timing->first_layout = first_layout;
   timing.parse_timing->parse_start = parse_start;
   timing.parse_timing->parse_stop = parse_stop;
   timing.parse_timing->parse_blocked_on_script_load_duration =
@@ -117,10 +107,6 @@ TEST_F(CorePageLoadMetricsObserverTest, SingleMetricAfterCommit) {
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramDomContentLoaded, 0);
   tester()->histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
-  tester()->histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout,
-                                                1);
-  tester()->histogram_tester().ExpectBucketCount(
-      internal::kHistogramFirstLayout, first_layout.InMilliseconds(), 1);
   tester()->histogram_tester().ExpectBucketCount(
       internal::kHistogramParseDuration,
       (parse_stop - parse_start).InMilliseconds(), 1);
@@ -138,9 +124,8 @@ TEST_F(CorePageLoadMetricsObserverTest, SingleMetricAfterCommit) {
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
+  base::TimeDelta parse_start = base::TimeDelta::FromMilliseconds(1);
   base::TimeDelta response = base::TimeDelta::FromMilliseconds(1);
-  base::TimeDelta first_layout_1 = base::TimeDelta::FromMilliseconds(10);
-  base::TimeDelta first_layout_2 = base::TimeDelta::FromMilliseconds(20);
   base::TimeDelta first_image_paint = base::TimeDelta::FromMilliseconds(30);
   base::TimeDelta first_contentful_paint = first_image_paint;
   base::TimeDelta dom_content = base::TimeDelta::FromMilliseconds(40);
@@ -150,7 +135,7 @@ TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.response_start = response;
-  timing.document_timing->first_layout = first_layout_1;
+  timing.parse_timing->parse_start = parse_start;
   timing.paint_timing->first_image_paint = first_image_paint;
   timing.paint_timing->first_contentful_paint = first_contentful_paint;
   timing.document_timing->dom_content_loaded_event_start = dom_content;
@@ -171,19 +156,11 @@ TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
   page_load_metrics::mojom::PageLoadTiming timing2;
   page_load_metrics::InitPageLoadTimingForTest(&timing2);
   timing2.navigation_start = base::Time::FromDoubleT(200);
-  timing2.document_timing->first_layout = first_layout_2;
   PopulateRequiredTimingFields(&timing2);
 
   tester()->SimulateTimingUpdate(timing2);
 
   NavigateAndCommit(GURL(kDefaultTestUrl));
-
-  tester()->histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout,
-                                                2);
-  tester()->histogram_tester().ExpectBucketCount(
-      internal::kHistogramFirstLayout, first_layout_1.InMilliseconds(), 1);
-  tester()->histogram_tester().ExpectBucketCount(
-      internal::kHistogramFirstLayout, first_layout_2.InMilliseconds(), 1);
 
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramFirstContentfulPaint, 1);
@@ -207,12 +184,9 @@ TEST_F(CorePageLoadMetricsObserverTest, MultipleMetricsAfterCommits) {
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, BackgroundDifferentHistogram) {
-  base::TimeDelta first_layout = base::TimeDelta::FromSeconds(2);
-
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.document_timing->first_layout = first_layout;
   PopulateRequiredTimingFields(&timing);
 
   // Simulate "Open link in new tab."
@@ -231,18 +205,11 @@ TEST_F(CorePageLoadMetricsObserverTest, BackgroundDifferentHistogram) {
   tester()->histogram_tester().ExpectTotalCount(
       internal::kBackgroundHistogramLoad, 0);
   tester()->histogram_tester().ExpectTotalCount(
-      internal::kBackgroundHistogramFirstLayout, 1);
-  tester()->histogram_tester().ExpectBucketCount(
-      internal::kBackgroundHistogramFirstLayout, first_layout.InMilliseconds(),
-      1);
-  tester()->histogram_tester().ExpectTotalCount(
       internal::kBackgroundHistogramFirstImagePaint, 0);
 
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramDomContentLoaded, 0);
   tester()->histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
-  tester()->histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout,
-                                                0);
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramFirstImagePaint, 0);
 }
@@ -312,14 +279,9 @@ TEST_F(CorePageLoadMetricsObserverTest, OnlyBackgroundLaterEvents) {
 }
 
 TEST_F(CorePageLoadMetricsObserverTest, DontBackgroundQuickerLoad) {
-  // Set this event at 1 microsecond so it occurs before we foreground later in
-  // the test.
-  base::TimeDelta first_layout = base::TimeDelta::FromMicroseconds(1);
-
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.document_timing->first_layout = first_layout;
   PopulateRequiredTimingFields(&timing);
 
   web_contents()->WasHidden();
@@ -340,10 +302,6 @@ TEST_F(CorePageLoadMetricsObserverTest, DontBackgroundQuickerLoad) {
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramDomContentLoaded, 0);
   tester()->histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
-  tester()->histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout,
-                                                1);
-  tester()->histogram_tester().ExpectBucketCount(
-      internal::kHistogramFirstLayout, first_layout.InMilliseconds(), 1);
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramFirstImagePaint, 0);
 }
@@ -360,8 +318,6 @@ TEST_F(CorePageLoadMetricsObserverTest, FailedProvisionalLoad) {
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramDomContentLoaded, 0);
   tester()->histogram_tester().ExpectTotalCount(internal::kHistogramLoad, 0);
-  tester()->histogram_tester().ExpectTotalCount(internal::kHistogramFirstLayout,
-                                                0);
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramFirstImagePaint, 0);
   tester()->histogram_tester().ExpectTotalCount(
@@ -1365,6 +1321,7 @@ TEST_F(CorePageLoadMetricsObserverTest, ForegroundToFirstMeaningfulPaint) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(10);
   timing.paint_timing->first_meaningful_paint = base::TimeDelta::FromSeconds(2);
   PopulateRequiredTimingFields(&timing);
 

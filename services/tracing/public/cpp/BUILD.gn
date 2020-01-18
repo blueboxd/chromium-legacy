@@ -29,7 +29,6 @@ if (!is_nacl && !is_ios) {
       "base_agent.h",
       "perfetto/dummy_producer.cc",
       "perfetto/dummy_producer.h",
-      "perfetto/event_context.h",
       "perfetto/interning_index.h",
       "perfetto/java_heap_profiler/hprof_buffer_android.cc",
       "perfetto/java_heap_profiler/hprof_buffer_android.h",

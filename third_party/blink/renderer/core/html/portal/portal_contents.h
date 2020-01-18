@@ -79,6 +79,10 @@ class PortalContents : public GarbageCollected<PortalContents>,
   // down.
   void Destroy();
 
+  // Called when the connection to the browser-side Portal object is lost.
+  // Cleans up any remaining state.
+  void DisconnectHandler();
+
   // blink::mojom::PortalClient implementation
   void ForwardMessageFromGuest(
       BlinkTransferableMessage message,

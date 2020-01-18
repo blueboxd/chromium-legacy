@@ -31,7 +31,7 @@ class MouseLockDispatcherTest : public RenderViewTest {
  public:
   void SetUp() override {
     RenderViewTest::SetUp();
-    route_id_ = view()->GetWidget()->routing_id();
+    route_id_ = widget()->routing_id();
     target_ = new MockLockTarget();
     alternate_target_ = new MockLockTarget();
   }
@@ -44,7 +44,9 @@ class MouseLockDispatcherTest : public RenderViewTest {
 
  protected:
   RenderViewImpl* view() { return static_cast<RenderViewImpl*>(view_); }
-  RenderWidget* widget() { return view()->GetWidget(); }
+  RenderWidget* widget() {
+    return view()->GetMainRenderFrame()->GetLocalRootRenderWidget();
+  }
   MouseLockDispatcher* dispatcher() {
     return widget()->mouse_lock_dispatcher();
   }

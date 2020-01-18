@@ -113,9 +113,6 @@ group("telemetry_chrome_test_without_chrome") {
   }
   if (is_android) {
     data += [
-      "//build/android/stacktrace/",
-      "//build/android/tombstones.py",
-
       # TODO(httpss://crbug.com/833808): Remove this once bots always set
       # CHROMIUM_OUTPUT_DIR correctly. Currently, this is necessary in order
       # for //build/android/pylib/constants/__init__.py to detect the output
@@ -124,6 +121,7 @@ group("telemetry_chrome_test_without_chrome") {
     ]
     data_deps += [
       "//build/android:devil_chromium_py",
+      "//build/android:stack_tools",
       "//chrome/android/webapk/shell_apk:maps_go_webapk",
       "//third_party/breakpad:dump_syms",
       "//third_party/breakpad:minidump_dump",

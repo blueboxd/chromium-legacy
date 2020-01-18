@@ -6932,8 +6932,7 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
                     .status.HasExactlyExclusionReasonsForTesting(
                         {CanonicalCookie::CookieInclusionStatus::
                              EXCLUDE_USER_PREFERENCES}));
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::DO_NOT_WARN,
-              req->maybe_stored_cookies()[0].status.warning());
+    EXPECT_FALSE(req->maybe_stored_cookies()[0].status.ShouldWarn());
 
     // Cookie that would be included had it not been for the new SameSite rules
     // is warned about.
@@ -6943,9 +6942,10 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
                     .status.HasExactlyExclusionReasonsForTesting(
                         {CanonicalCookie::CookieInclusionStatus::
                              EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::
-                  WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
-              req->maybe_stored_cookies()[1].status.warning());
+    EXPECT_TRUE(req->maybe_stored_cookies()[1]
+                    .status.HasExactlyWarningReasonsForTesting(
+                        {CanonicalCookie::CookieInclusionStatus::
+                             WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT}));
 
     // Cookie that is blocked because of invalid Secure attribute is not warned
     // about.
@@ -6956,8 +6956,7 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
                 {CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY,
                  CanonicalCookie::CookieInclusionStatus::
                      EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::DO_NOT_WARN,
-              req->maybe_stored_cookies()[2].status.warning());
+    EXPECT_FALSE(req->maybe_stored_cookies()[2].status.ShouldWarn());
   }
 
   // Get cookies (blocked by user preference)
@@ -7000,8 +6999,7 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
                              EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
     // Cookie should not be warned about because it was blocked because of user
     // preferences.
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::DO_NOT_WARN,
-              req->maybe_sent_cookies()[0].status.warning());
+    EXPECT_FALSE(req->maybe_sent_cookies()[0].status.ShouldWarn());
   }
   network_delegate.unset_block_get_cookies();
 
@@ -7047,8 +7045,7 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
                 {CanonicalCookie::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH,
                  CanonicalCookie::CookieInclusionStatus::
                      EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::DO_NOT_WARN,
-              req->maybe_sent_cookies()[0].status.warning());
+    EXPECT_FALSE(req->maybe_sent_cookies()[0].status.ShouldWarn());
     // Cookie that was only blocked because of unspecified SameSite should be
     // warned about.
     EXPECT_EQ("cookienosamesite", req->maybe_sent_cookies()[1].cookie.Name());
@@ -7056,9 +7053,10 @@ TEST_F(URLRequestTest, NoCookieInclusionStatusWarningIfWouldBeExcludedAnyway) {
                     .status.HasExactlyExclusionReasonsForTesting(
                         {CanonicalCookie::CookieInclusionStatus::
                              EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
-    EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::
-                  WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
-              req->maybe_sent_cookies()[1].status.warning());
+    EXPECT_TRUE(
+        req->maybe_sent_cookies()[1].status.HasExactlyWarningReasonsForTesting(
+            {CanonicalCookie::CookieInclusionStatus::
+                 WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT}));
   }
 }
 

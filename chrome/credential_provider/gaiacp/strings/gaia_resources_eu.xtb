@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="eu">
+<translation id="1337778609052285767">Uneko pasahitza ez da behar bezain konplexua. Jarri administratzailearekin harremanetan.</translation>
 <translation id="1337821341856692531">Uneko Windows pasahitza idatzi gabe egiten baduzu aurrera, baliteke informazioa galtzea eta hura berreskuratu ezin izatea.</translation>
 <translation id="1383286653814676580">Google-ren Kredentzial-hornitzailean saioa hasteko orria abiarazteko erabiltzen da.</translation>
 <translation id="1894475569413661128">Hasi saioa laneko kontuarekin.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Windows-eko pasahitz okerra idatzi duzu. Saiatu berriro.</translation>
 <translation id="2831078752570172210">Kontua blokeatu egin da. Jarri sistemaren administratzailearekin harremanetan.</translation>
 <translation id="2844349213149998955">Gailu honetan ezin da kontu pertsonalik erabili saioa hasteko. Hasi saioa laneko kontu batekin.</translation>
+<translation id="2995851317559936311">Domeinu-kontrolagailuak soilik alda ditzake pasahitzak. Jarri administratzailearekin harremanetan.</translation>
 <translation id="3306357053520292004">Kontu hau dagoeneko erabili da ordenagailuko erabiltzaile bat gehitzeko. Hasi saioa beste kontu batekin.</translation>
 <translation id="3926852373333893095">G Suite Enterprise zerbitzuko erabiltzaileek soilik dute saioa hasteko baimena.</translation>
 <translation id="4057329986137569701">Barneko errore bat gertatu da.</translation>
 <translation id="4267670563222825190">Ez da aurkitu domeinuko erabiltzailerik kontuan. Jarri administratzailearekin harremanetan.</translation>
 <translation id="4300229033992784001">Aldatu da kontuaren pasahitza. Idatzi uneko Windows pasahitza Windows kontua laneko kontuarekin sinkronizatzeko.</translation>
+<translation id="4669462973597624151">Ezin izan da aldatu pasahitza. Jarri administratzailearekin harremanetan.</translation>
 <translation id="4706454071748629324">Ezin izan da gehitu beste erabiltzaile bat. Ordenagailu honetan erabiltzaile bakarra sor daiteke laneko kontu batekin.</translation>
+<translation id="5186761973554910131">Pasahitza aldatzen saiatzean emandako ordenagailu-izenak ez du balio. Jarri administratzailearekin harremanetan.</translation>
 <translation id="6033715878377252112">Windows-erako Google-ren Kredentzial-hornitzailea programaren laguntzailea</translation>
 <translation id="6149399665202317746">Windows-erako Google-ren Kredentzial-hornitzailea</translation>
 <translation id="6239180560789153226">Kontua berreskuratzeko informazioa falta da gailuan. Hasi saioa Google-ko laneko kontuarekin.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Gehitu laneko kontua</translation>
 <translation id="7811865856574012727">Gailuan saioa hasteko aukera domeinu hauetara mugatu du administratzaileak: <ph name="EMAIL_DOMAINS" />. Erabili baliozko laneko kontu bat.</translation>
 <translation id="7856245195110636219">Ezin da egin aurrera, uneko Windows pasahitza idatzi ezean. Jarri sistemaren administratzailearekin harremanetan.</translation>
+<translation id="8109730953933509335">Balio ez duen erabiltzaile batean saiatu da pasahitza aldatzen. Jarri administratzailearekin harremanetan.</translation>
 <translation id="8639729688781680518">Ahaztu Windows pasahitza</translation>
 <translation id="866458870819756755">Ezin izan da sortu erabiltzailea.</translation>
 <translation id="8875753657315897487">Hasi saioa laneko kontuarekin</translation>

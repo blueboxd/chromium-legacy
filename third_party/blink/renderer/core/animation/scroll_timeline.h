@@ -23,7 +23,7 @@ namespace blink {
 // control the conversion of scroll amount to time output.
 //
 // Spec: https://wicg.github.io/scroll-animations/#scroll-timelines
-class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
+class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

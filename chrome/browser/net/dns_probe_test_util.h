@@ -93,8 +93,8 @@ class HangingHostResolver : public network::mojom::HostResolver {
 class FakeHostResolverNetworkContext : public network::TestNetworkContext {
  public:
   FakeHostResolverNetworkContext(
-      std::vector<FakeHostResolver::SingleResult> system_result_list,
-      std::vector<FakeHostResolver::SingleResult> public_result_list);
+      std::vector<FakeHostResolver::SingleResult> current_config_result_list,
+      std::vector<FakeHostResolver::SingleResult> google_config_result_list);
   ~FakeHostResolverNetworkContext() override;
 
   void CreateHostResolver(
@@ -102,10 +102,10 @@ class FakeHostResolverNetworkContext : public network::TestNetworkContext {
       mojo::PendingReceiver<network::mojom::HostResolver> receiver) override;
 
  private:
-  std::vector<FakeHostResolver::SingleResult> system_result_list_;
-  std::vector<FakeHostResolver::SingleResult> public_result_list_;
-  std::unique_ptr<FakeHostResolver> system_resolver_;
-  std::unique_ptr<FakeHostResolver> public_resolver_;
+  std::vector<FakeHostResolver::SingleResult> current_config_result_list_;
+  std::vector<FakeHostResolver::SingleResult> google_config_result_list_;
+  std::unique_ptr<FakeHostResolver> current_config_resolver_;
+  std::unique_ptr<FakeHostResolver> google_config_resolver_;
 };
 
 class FakeDnsConfigChangeManager

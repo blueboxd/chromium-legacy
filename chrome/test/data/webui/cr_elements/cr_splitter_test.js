@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import 'chrome://resources/cr_elements/cr_splitter/cr_splitter.m.js';
-// clang-format on
+import 'chrome://resources/cr_elements/cr_splitter/cr_splitter.js';
 
 suite('cr-splitter', function() {
   let crSplitter;

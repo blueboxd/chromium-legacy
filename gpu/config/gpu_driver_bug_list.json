@@ -3490,6 +3490,30 @@
       "features": [
         "disable_dual_source_blending_support"
       ]
+    },
+    {
+      "id": 328,
+      "cr_bugs": [1041166],
+      "description": "Disable D3D11VideoDecoder due to crashes on NVIDIA",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x10de",
+      "features": [
+        "disable_d3d11_video_decoder"
+      ]
+    },
+    {
+      "id": 329,
+      "cr_bugs": [1012464],
+      "description": "Limit D3D11VideoDecoder to 11.0 due to crashes on AMD",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "limit_d3d11_video_decoder_to_11_0"
+      ]
     }
   ]
 }

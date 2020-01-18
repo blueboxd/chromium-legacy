@@ -39,6 +39,8 @@ FILES_TO_SYNC = [
     'crdtp/span_test.cc',
     'crdtp/status.cc',
     'crdtp/status.h',
+    'crdtp/status_test_support.cc',
+    'crdtp/status_test_support.h',
     'crdtp/status_test.cc',
     'crdtp/test_platform.cc',
     'crdtp/test_platform.h',

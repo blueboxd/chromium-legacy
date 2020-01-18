@@ -47,7 +47,7 @@ bool WaitForErrorText(WebState* web_state, const GURL& url) {
       testing::GetErrorText(web_state, url, "NSURLErrorDomain",
                             /*error_code=*/NSURLErrorNetworkConnectionLost,
                             /*is_post=*/false, /*is_otr=*/false,
-                            /*has_ssl_info=*/false));
+                            /*cert_status=*/0));
 }
 }  // namespace
 
@@ -305,7 +305,7 @@ TEST_F(ErrorPageTest, OtrError) {
                             "NSURLErrorDomain",
                             /*error_code=*/NSURLErrorNetworkConnectionLost,
                             /*is_post=*/false, /*is_otr=*/true,
-                            /*has_ssl_info=*/false)));
+                            /*cert_status=*/0)));
 }
 
 // Loads the URL with form which fails to submit.
@@ -323,7 +323,7 @@ TEST_F(ErrorPageTest, FormSubmissionError) {
       testing::GetErrorText(
           web_state(), server_.GetURL("/close-socket"), "NSURLErrorDomain",
           /*error_code=*/NSURLErrorNetworkConnectionLost,
-          /*is_post=*/true, /*is_otr=*/false, /*has_ssl_info=*/false)));
+          /*is_post=*/true, /*is_otr=*/false, /*cert_status=*/0)));
 }
 
 // Loads an item and checks that virtualURL and URL after displaying the error

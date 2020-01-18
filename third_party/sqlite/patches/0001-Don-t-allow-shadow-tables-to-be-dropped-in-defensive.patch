@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 19 Nov 2019 14:09:07 -0800
-Subject: [PATCH 01/22] Don't allow shadow tables to be dropped in defensive
+Subject: [PATCH 01/25] Don't allow shadow tables to be dropped in defensive
  mode.
 
 Backports https://www.sqlite.org/src/info/70390bbca49e7066
@@ -83,5 +83,5 @@ index fcbf6fb5de44..c5766e22717d 100644
    }
  }
 -- 
-2.24.1.735.g03f4e72817-goog
+2.25.0.rc1.283.g88dfdc4193-goog
 

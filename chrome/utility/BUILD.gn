@@ -104,6 +104,8 @@ static_library("utility") {
     deps += [
       "//chrome/common:mojo_bindings",
       "//chrome/common/importer:interfaces",
+      "//chrome/services/sharing",
+      "//chrome/services/sharing/public/mojom",
       "//components/autofill/core/common",
       "//services/proxy_resolver:lib",
     ]

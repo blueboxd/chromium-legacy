@@ -101,11 +101,13 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   // Node overrides
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
+  void DefaultEventHandler(Event&) override;
 
   // Element overrides
   bool IsURLAttribute(const Attribute&) const override;
   void ParseAttribute(const AttributeModificationParams&) override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
+  bool SupportsFocus() const override;
 
   // HTMLFrameOwnerElement overrides
   void DisconnectContentFrame() override;

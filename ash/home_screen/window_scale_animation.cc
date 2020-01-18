@@ -80,8 +80,7 @@ WindowScaleAnimation::~WindowScaleAnimation() {
 void WindowScaleAnimation::OnImplicitAnimationsCompleted() {
   if (scale_type_ == WindowScaleType::kScaleDownToShelf) {
     // Minimize the dragged window after transform animation is completed.
-    window_util::HideAndMaybeMinimizeWithoutAnimation({window_},
-                                                      /*minimize=*/true);
+    window_util::MinimizeAndHideWithoutAnimation({window_});
 
     // Reset its transform to identity transform and its original backdrop mode.
     window_->layer()->SetTransform(gfx::Transform());

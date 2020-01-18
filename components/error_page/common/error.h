@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "net/dns/public/resolve_error_info.h"
 #include "url/gurl.h"
 
 namespace error_page {
@@ -23,7 +24,10 @@ class Error {
   static const char kDnsProbeErrorDomain[];
 
   // Returns a kNetErrorDomain error.
-  static Error NetError(const GURL& url, int reason, bool stale_copy_in_cache);
+  static Error NetError(const GURL& url,
+                        int reason,
+                        net::ResolveErrorInfo resolve_error_info,
+                        bool stale_copy_in_cache);
   // Returns a kHttpErrorDomain error.
   static Error HttpError(const GURL& url, int status);
   // Returns a kDnsProbeErrorDomain error.
@@ -38,6 +42,10 @@ class Error {
   // Returns a numeric error code. The meaning of this code depends on the
   // domain string.
   int reason() const { return reason_; }
+  // Returns error details of the host resolution.
+  const net::ResolveErrorInfo& resolve_error_info() const {
+    return resolve_error_info_;
+  }
   // Returns true if chrome has a stale cache entry for the url.
   bool stale_copy_in_cache() const { return stale_copy_in_cache_; }
 
@@ -45,11 +53,13 @@ class Error {
   Error(const GURL& url,
         const std::string& domain,
         int reason,
+        net::ResolveErrorInfo resolve_error_info,
         bool stale_copy_in_cache);
 
   GURL url_;
   std::string domain_;
   int reason_;
+  net::ResolveErrorInfo resolve_error_info_;
   bool stale_copy_in_cache_;
 };
 

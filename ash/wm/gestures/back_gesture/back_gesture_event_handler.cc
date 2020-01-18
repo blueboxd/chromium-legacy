@@ -242,7 +242,9 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
       if (!going_back_started_)
         break;
       DCHECK(back_gesture_affordance_);
-      BackGestureEndType end_type = BackGestureEndType::kNone;
+      // Complete the back gesture if the affordance is activated or fling with
+      // large enough velocity. Note, complete can be different actions while in
+      // different scenarios, but always fading out the affordance at the end.
       if (back_gesture_affordance_->IsActivated() ||
           (event->type() == ui::ET_SCROLL_FLING_START &&
            event->details().velocity_x() >= kFlingVelocityForGoingBack)) {
@@ -252,16 +254,19 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
             WindowState::Get(TabletModeWindowManager::GetTopWindow());
         if (top_window_state && top_window_state->IsFullscreen() &&
             !Shell::Get()->overview_controller()->InOverviewSession()) {
+          // Complete as exiting the fullscreen mode of the underneath window.
           const WMEvent event(WM_EVENT_TOGGLE_FULLSCREEN);
           top_window_state->OnWMEvent(&event);
           RecordEndScenarioType(BackGestureEndScenarioType::kExitFullscreen);
-          return true;
-        }
-
-        if (TabletModeWindowManager::ShouldMinimizeTopWindowOnBack()) {
+        } else if (TabletModeWindowManager::ShouldMinimizeTopWindowOnBack()) {
+          // Complete as minimizing the underneath window.
           top_window_state->Minimize();
-          end_type = BackGestureEndType::kMinimize;
+          RecordEndScenarioType(
+              GetEndScenarioType(back_gesture_start_scenario_type_,
+                                 BackGestureEndType::kMinimize));
         } else {
+          // Complete as going back to the previous page of the underneath
+          // window.
           aura::Window* root_window =
               window_util::GetRootWindowAt(screen_location);
           ui::KeyEvent press_key_event(ui::ET_KEY_PRESSED,
@@ -272,15 +277,15 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
                                          ui::VKEY_BROWSER_BACK, ui::EF_NONE);
           ignore_result(
               root_window->GetHost()->SendEventToSink(&release_key_event));
-          end_type = BackGestureEndType::kBack;
+          RecordEndScenarioType(GetEndScenarioType(
+              back_gesture_start_scenario_type_, BackGestureEndType::kBack));
         }
         back_gesture_affordance_->Complete();
       } else {
         back_gesture_affordance_->Abort();
-        end_type = BackGestureEndType::kAbort;
+        RecordEndScenarioType(GetEndScenarioType(
+            back_gesture_start_scenario_type_, BackGestureEndType::kAbort));
       }
-      RecordEndScenarioType(
-          GetEndScenarioType(back_gesture_start_scenario_type_, end_type));
       RecordUnderneathWindowType(
           GetUnderneathWindowType(back_gesture_start_scenario_type_));
       return true;

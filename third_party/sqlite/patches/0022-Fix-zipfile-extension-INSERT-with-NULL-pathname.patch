@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 7 Jan 2020 13:43:48 -0800
-Subject: [PATCH 22/22] Fix zipfile extension INSERT with NULL pathname
+Subject: [PATCH 22/25] Fix zipfile extension INSERT with NULL pathname
 
 Backports https://sqlite.org/src/info/a80f84b511231204658304226de3e075a55afc2e3f39ac063716f7a57f585c06
 
@@ -46,5 +46,5 @@ index 25dc5d6497d1..f5c503d7f156 100644
 +
  finish_test
 -- 
-2.24.1.735.g03f4e72817-goog
+2.25.0.rc1.283.g88dfdc4193-goog
 

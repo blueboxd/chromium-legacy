@@ -73,9 +73,7 @@ source_set("content_widget") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "content_widget_view_controller_unittest.mm",
-  ]
+  sources = [ "content_widget_view_controller_unittest.mm" ]
   deps = [
     ":content_widget",
     "//testing/gtest",
@@ -89,9 +87,7 @@ repack_locales("packed_resources") {
 
   source_patterns = [ "$root_gen_dir/ios/content_widget_extension/ios_content_widget_extension_${branding_path_component}_strings_" ]
 
-  deps = [
-    "//ios/chrome/content_widget_extension/strings:ios_content_widget_extension_${branding_path_component}_strings",
-  ]
+  deps = [ "//ios/chrome/content_widget_extension/strings:ios_content_widget_extension_${branding_path_component}_strings" ]
 }
 
 generate_localizable_strings("system_strings") {

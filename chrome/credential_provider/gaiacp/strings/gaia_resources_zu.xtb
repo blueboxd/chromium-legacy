@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zu">
+<translation id="1337778609052285767">Iphasiwedi yamanje ayihlangabezani nezimfuneko zephasiwedi eyinkimbinkimbi. Sicela uxhumane nomlawuli wakho.</translation>
 <translation id="1337821341856692531">Ukuqhubeka ngaphandle kokufaka iphasiwedi yamanje ye-Windows kungabangela ukulahleka okungabuyeli emuva kolwazi.</translation>
 <translation id="1383286653814676580">Kusetshenziselwa ukuqalisa ikhasi lokungena ngemvume l-Google Credential Provider.</translation>
 <translation id="1894475569413661128">Ngena ngemvume usebenzisa i-akhawunti yakho yomsebenzi.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Ufake iphasiwedi ye-Windows engalungile. Sicela uzame futhi.</translation>
 <translation id="2831078752570172210">I-akhawunti yakho ivallwe ngaphandle. Sicela uxhumane nomlawuli wakho wesistimu.</translation>
 <translation id="2844349213149998955">Ukungena ngemvume nge-akhawunti yomuntu siqu kule divayisi akuvunyelwe. Sicela ungene ngemvume nge-akhawunti yomsebenzi.</translation>
+<translation id="2995851317559936311">Ukushintshwa kwephasiwedi kuvumeleke kusilawuli sizinda kuphela. Sicela uxhumane nomlawuli wakho.</translation>
 <translation id="3306357053520292004">Umsebenzisi kule khompuyutha ubesevele engeziwe kusetshenziswa le akhawunti. Ngena ngemvume nge-akhawunti ehlukile.</translation>
 <translation id="3926852373333893095">Abasebenzisi bebhizinisi le-G Suite kuphela abavunyelwe ukungena ngemvume.</translation>
 <translation id="4057329986137569701">Kuvele iphutha langaphakathi.</translation>
 <translation id="4267670563222825190">Akekho umsebenzisi wesizinda otholelwe i-akhawunti yakho. Sicela uxhumane nomlawuli wakho.</translation>
 <translation id="4300229033992784001">Iphasiwedi ye-akhawunti yakho iguquliwe. Sicela ufake iphasiwedi yakho yamanje ye-Windows ukuze uvumelanise i-akhawunti yakho ye-Windows ne-akhawunti yakho yomsebenzi.</translation>
+<translation id="4669462973597624151">Umzamo wokushintsha iphasiwedi uhlulekile. Sicela uxhumane nomlawuli wakho.</translation>
 <translation id="4706454071748629324">Yehlulekile ukungeza umsebenzisi omusha. Le khompuyutha ivumela kuphela umsebenzisi oyedwa ukuthi adalwe kusetshenziswa i-akhawunti yomsebenzi.</translation>
+<translation id="5186761973554910131">Kufakwe igama lekhompuyutha elingasebenzi phakathi nokuzama ukushintsha iphasiwedi. Sicela uxhumane nomlawuli wakho.</translation>
 <translation id="6033715878377252112">Umhlinzeki Wokuqinisekisa we-Google womsizi we-Windows</translation>
 <translation id="6149399665202317746">Umhlinzeki Wokuqinisekisa we-Google we-Windows</translation>
 <translation id="6239180560789153226">Idivayisi yakho ishoda ngolwazi lokutakula. Ngena ngemvume usebenzisa i-akhawunti yakho yomsebenzi ye-Google.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Engeza i-akhawunti yomsebenzi</translation>
 <translation id="7811865856574012727">Umlawuli wakho ukhawulele ukungena ngemvume kwedivayisi kuzizinda ezilandelayo: <ph name="EMAIL_DOMAINS" />. Zama futhi usebenzisa i-akhawunti yomsebenzi evumelekile.</translation>
 <translation id="7856245195110636219">Ayikwazi ukuqhubeka ngaphandle kokufaka iphasiwedi ye-Windows yamanje. Sicela uxhumane nomlawuli wesistimu.</translation>
+<translation id="8109730953933509335">Kuzanywe ukushintsha iphasiwedi kumsebenzisi ongavumelekile. Sicela uxhumane nomlawuli wakho.</translation>
 <translation id="8639729688781680518">Khohlwa iphasiwedi ye-Windows</translation>
 <translation id="866458870819756755">Umsebenzisi akakwazanga ukudalwa.</translation>
 <translation id="8875753657315897487">Ngena ngemvume usebenzisa i-akhawunti yakho yomsebenzi</translation>

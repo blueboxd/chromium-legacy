@@ -207,6 +207,7 @@ defaults = struct(
     ssd = lucicfg.var(default = _COMPUTE),
     use_clang_coverage = lucicfg.var(default = False),
     use_java_coverage = lucicfg.var(default = False),
+    should_exonerate_flaky_failures = lucicfg.var(default = False),
 
     # Provide vars for bucket and executable so users don't have to
     # unnecessarily make wrapper functions
@@ -238,6 +239,7 @@ def builder(
     goma_jobs=_DEFAULT,
     use_clang_coverage=_DEFAULT,
     use_java_coverage=_DEFAULT,
+    should_exonerate_flaky_failures=_DEFAULT,
     **kwargs):
   """Define a builder.
 
@@ -311,6 +313,8 @@ def builder(
     * use_java_coverage - a boolean indicating whether java coverage should be
       used. If True, the 'use_java_coverage" field will be set in the
       '$build/code_coverage' property. By default, considered False.
+    * should_exonerate_flaky_failures - a boolean indicathing whether the
+      builder should exonerate a test failure if it's known to be flaky on ToT.
     * kwargs - Additional keyword arguments to forward on to `luci.builder`.
   """
   # We don't have any need of an explicit dimensions dict,
@@ -400,6 +404,13 @@ def builder(
   )
   if code_coverage != None:
     properties['$build/code_coverage'] = code_coverage
+
+  should_exonerate_flaky_failures = _default('should_exonerate_flaky_failures',
+                                             should_exonerate_flaky_failures)
+  if should_exonerate_flaky_failures:
+    properties['$build/test_utils'] = {
+      'should_exonerate_flaky_failures': True,
+    }
 
   kwargs = dict(kwargs)
   bucket = _default('bucket', bucket)

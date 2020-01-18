@@ -14,10 +14,11 @@
 
 @class TabModel;
 
-@protocol SceneControllerGuts
+namespace ios {
+class ChromeBrowserState;
+}  // namespace ios
 
-- (void)closeSettingsAnimated:(BOOL)animated
-                   completion:(ProceduralBlock)completion;
+@protocol SceneControllerGuts
 
 - (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox;
@@ -50,6 +51,16 @@
 // Completes the process of dismissing the tab switcher, removing it from the
 // screen and showing the appropriate BVC.
 - (void)finishDismissingTabSwitcher;
+
+#pragma mark - AppNavigation helpers
+
+// Presents a SignedInAccountsViewController for |browserState| on the top view
+// controller.
+- (void)presentSignedInAccountsViewControllerForBrowserState:
+    (ios::ChromeBrowserState*)browserState;
+
+// Returns YES if the settings navigation controller exists.
+- (BOOL)hasSettingsNavigationController;
 
 @end
 

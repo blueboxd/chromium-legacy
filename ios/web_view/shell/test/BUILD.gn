@@ -8,16 +8,12 @@ import("//ios/third_party/features.gni")
 
 group("all_tests") {
   testonly = true
-  deps = [
-    ":ios_web_view_shell_egtests",
-  ]
+  deps = [ ":ios_web_view_shell_egtests" ]
 }
 
 ios_eg_test("ios_web_view_shell_egtests") {
   info_plist = "//ios/web_view/shell/Info.plist"
-  sources = [
-    "shell_egtest.mm",
-  ]
+  sources = [ "shell_egtest.mm" ]
 
   deps = [
     ":earl_grey_test_support",

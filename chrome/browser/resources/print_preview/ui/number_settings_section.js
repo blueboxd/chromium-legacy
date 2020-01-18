@@ -54,6 +54,12 @@ Polymer({
     hintMessage: String,
 
     disabled: Boolean,
+
+    /** @private */
+    errorMessage_: {
+      type: String,
+      computed: 'computeErrorMessage_(hintMessage, inputValue)',
+    },
   },
 
   listeners: {
@@ -126,5 +132,13 @@ Polymer({
     // Make sure value updates first, in case inputString_ was updated by JS.
     this.$.userValue.value = this.inputString_;
     return !this.$.userValue.invalid;
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeErrorMessage_() {
+    return this.inputValid ? '' : this.hintMessage;
   },
 });

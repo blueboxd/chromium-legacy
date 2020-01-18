@@ -359,22 +359,24 @@ TEST_F(D3D11VideoDecoderTest, DoesNotSupportZeroCopyWorkaround) {
       kExpectFailure);
 }
 
-TEST_F(D3D11VideoDecoderTest, SupportsZeroCopyPreferenceWithFlag) {
+TEST_F(D3D11VideoDecoderTest, IgnoreWorkaroundsIgnoresWorkaround) {
+  // k...IgnoreWorkarounds should enable the decoder even if it's turned off
+  // for gpu workarounds.
   EnableFeature(kD3D11VideoDecoderIgnoreWorkarounds);
-  gpu_preferences_.enable_zero_copy_dxgi_video = false;
+  gpu_workarounds_.disable_d3d11_video_decoder = true;
   CreateDecoder();
   InitializeDecoder(
       TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN),
       kExpectSuccess);
 }
 
-TEST_F(D3D11VideoDecoderTest, SupportsZeroCopyWorkaroundWithFlag) {
-  EnableFeature(kD3D11VideoDecoderIgnoreWorkarounds);
-  gpu_workarounds_.disable_dxgi_zero_copy_video = true;
+TEST_F(D3D11VideoDecoderTest, WorkaroundTurnsOffDecoder) {
+  //  We shouldn't be able to decode if the decoder is off via gpu workaround.
+  gpu_workarounds_.disable_d3d11_video_decoder = true;
   CreateDecoder();
   InitializeDecoder(
       TestVideoConfig::NormalCodecProfile(kCodecH264, H264PROFILE_MAIN),
-      kExpectSuccess);
+      kExpectFailure);
 }
 
 TEST_F(D3D11VideoDecoderTest, DoesNotSupportEncryptionWithFlagOn11_0) {

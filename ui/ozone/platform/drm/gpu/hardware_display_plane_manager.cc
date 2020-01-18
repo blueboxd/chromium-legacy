@@ -32,10 +32,8 @@ HardwareDisplayPlaneList::~HardwareDisplayPlaneList() {
 }
 
 HardwareDisplayPlaneList::PageFlipInfo::PageFlipInfo(uint32_t crtc_id,
-                                                     uint32_t framebuffer,
-                                                     CrtcController* crtc)
-    : crtc_id(crtc_id), framebuffer(framebuffer), crtc(crtc) {
-}
+                                                     uint32_t framebuffer)
+    : crtc_id(crtc_id), framebuffer(framebuffer) {}
 
 HardwareDisplayPlaneList::PageFlipInfo::PageFlipInfo(
     const PageFlipInfo& other) = default;
@@ -159,8 +157,7 @@ void HardwareDisplayPlaneManager::BeginFrame(
 bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
     HardwareDisplayPlaneList* plane_list,
     const DrmOverlayPlaneList& overlay_list,
-    uint32_t crtc_id,
-    CrtcController* crtc) {
+    uint32_t crtc_id) {
   int crtc_index = LookupCrtcIndex(crtc_id);
   if (crtc_index < 0) {
     LOG(ERROR) << "Cannot find crtc " << crtc_id;
@@ -193,8 +190,7 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
                                    to_fixed_point(crop_rect.height()));
     }
 
-    if (!SetPlaneData(plane_list, hw_plane, plane, crtc_id, fixed_point_rect,
-                      crtc)) {
+    if (!SetPlaneData(plane_list, hw_plane, plane, crtc_id, fixed_point_rect)) {
       ResetCurrentPlaneList(plane_list);
       return false;
     }

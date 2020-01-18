@@ -98,7 +98,7 @@ void VideoRequestAnimationFrameImpl::OnRequestAnimationFrame(
   base::TimeTicks time;
   if (presented_frame.metadata()->GetTimeTicks(
           media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, &time)) {
-    metadata->setElapsedProcessingTime(
+    metadata->setCaptureTime(
         time_converter.MonotonicTimeToZeroBasedDocumentTime(time)
             .InMillisecondsF());
   }

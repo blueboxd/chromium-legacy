@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
+<translation id="1337778609052285767">Nykyinen salasana ei vastaa monimutkaisuusvaatimuksia. Ota yhteyttä järjestelmänvalvojaasi.</translation>
 <translation id="1337821341856692531">Jos jatkat lisäämättä nykyistä Windows-salasanaa, saatat menettää joitain tietoja pysyvästi.</translation>
 <translation id="1383286653814676580">Käytetään Googlen tunnistuspalvelun kirjautumissivun käynnistämiseen.</translation>
 <translation id="1894475569413661128">Kirjaudu sisään työtililläsi.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Kirjoittamasi Windows-salasana on virheellinen. Yritä uudelleen.</translation>
 <translation id="2831078752570172210">Tilisi on lukittu. Ota yhteyttä tilisi järjestelmänvalvojaan.</translation>
 <translation id="2844349213149998955">Kirjautuminen tähän laitteeseen kuuluvalla henkilökohtaisella tilillä on estetty. Kirjaudu sisään työtilillä.</translation>
+<translation id="2995851317559936311">Salasanan muuttaminen on sallittu vain verkkotunnuksen ohjaimella. Ota yhteyttä järjestelmänvalvojaasi.</translation>
 <translation id="3306357053520292004">Tämän tietokoneen käyttäjä on jo lisätty tällä tilillä. Kirjaudu sisään toisella tilillä.</translation>
 <translation id="3926852373333893095">Vain G Suite Enterprise ‑käyttäjät voivat kirjautua sisään.</translation>
 <translation id="4057329986137569701">Tapahtui sisäinen virhe.</translation>
 <translation id="4267670563222825190">Verkkotunnuksen käyttäjää ei löytynyt tililtäsi. Ota yhteyttä järjestelmänvalvojaasi.</translation>
 <translation id="4300229033992784001">Tilisi salasana on muuttunut. Synkronoi Windows- ja työtilisi lisäämällä nykyinen Windows-salasanasi.</translation>
+<translation id="4669462973597624151">Salasanan vaihtoyritys epäonnistui. Ota yhteyttä järjestelmänvalvojaasi.</translation>
 <translation id="4706454071748629324">Uuden käyttäjän lisääminen epäonnistui. Tämä tietokone sallii vain yhden käyttäjän luomisen työtilillä.</translation>
+<translation id="5186761973554910131">Salasanan vaihtoyrityksen yhteydessä annettiin väärä tietokoneen nimi. Ota yhteyttä järjestelmänvalvojaasi.</translation>
 <translation id="6033715878377252112">Googlen tunnistuspalvelu Windowsille ‑apuri</translation>
 <translation id="6149399665202317746">Googlen tunnistuspalvelu Windowsille</translation>
 <translation id="6239180560789153226">Laitteeltasi puuttuu palautustietoja. Kirjaudu sisään Google-työtililläsi.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Lisää työtili</translation>
 <translation id="7811865856574012727">Järjestelmänvalvoja on rajoittanut laitteella kirjautumista näihin verkkotunnuksiin: <ph name="EMAIL_DOMAINS" />. Yritä uudelleen toimivalla työtilillä.</translation>
 <translation id="7856245195110636219">Jatkaminen ei onnistu lisäämättä nykyistä Windows-salasanaa. Ota yhteyttä järjestelmänvalvojaan.</translation>
+<translation id="8109730953933509335">Salasanan vaihtoa yritettiin väärällä käyttäjällä. Ota yhteyttä järjestelmänvalvojaasi.</translation>
 <translation id="8639729688781680518">Unohdin Windows-salasanan</translation>
 <translation id="866458870819756755">Käyttäjän luominen epäonnistui.</translation>
 <translation id="8875753657315897487">Kirjaudu sisään työtililläsi</translation>

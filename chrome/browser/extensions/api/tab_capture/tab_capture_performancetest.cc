@@ -277,6 +277,10 @@ class TabCapturePerformanceTest : public TabCapturePerformanceTestBase,
 }  // namespace
 
 IN_PROC_BROWSER_TEST_P(TabCapturePerformanceTest, Performance) {
+  if (!is_full_performance_run()) {
+    // TODO(crbug.com/1042457): Flaky failures across multiple CQ builders.
+    return;
+  }
   // Load the extension and test page, and tell the extension to start tab
   // capture.
   LoadExtension(GetApiTestDataDir()

@@ -9,6 +9,7 @@
 
 #include "components/autofill_assistant/browser/device_context.h"
 #include "components/autofill_assistant/browser/metrics.h"
+#include "content/public/browser/web_contents.h"
 
 namespace autofill {
 class PersonalDataManager;
@@ -61,8 +62,11 @@ class Client {
   // Returns details about the device.
   virtual DeviceContext GetDeviceContext() = 0;
 
-  // Stops autofill assistant for the current WebContents, both controller and
-  // UI.
+  // Returns current WebContents.
+  virtual content::WebContents* GetWebContents() = 0;
+
+  // Stops autofill assistant for the current WebContents, both controller
+  // and UI.
   virtual void Shutdown(Metrics::DropOutReason reason) = 0;
 
  protected:

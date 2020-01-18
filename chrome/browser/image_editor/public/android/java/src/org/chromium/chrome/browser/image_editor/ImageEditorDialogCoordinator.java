@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.image_editor;
 
-import android.support.v7.app.AppCompatActivity;
+import android.app.Activity;
 
 /**
  * Interface to interact with the image editor dialog.
  */
 public interface ImageEditorDialogCoordinator {
-    public void launchEditor(AppCompatActivity activity);
+    public void launchEditor(Activity activity);
 }

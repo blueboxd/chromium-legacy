@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">Schieberegler</translation>
 <translation id="1211441953136645838">Endnote</translation>
 <translation id="1281252709823657822">Kleines Fenster</translation>
+<translation id="1306460908038601864">Aus</translation>
 <translation id="1335095011850992622">Mitwirkende</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">Banner</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Geben Sie etwas vor dem <ph name="ATSIGN" />-Zeichen ein. Die Angabe "<ph name="INVALIDADDRESS" />" ist unvollständig.</translation>
 <translation id="5334352251556557839">Medien können nicht abgespielt werden.</translation>
+<translation id="537648784377940524">Das Mindestdatum (<ph name="MIN_DATE_OR_TIME" />) muss vor dem Maximaldatum (<ph name="MAX_DATE_OR_TIME" />) liegen.</translation>
 <translation id="5406322316791861025">Zahl</translation>
 <translation id="5453733299334684579">Baumelement</translation>
 <translation id="5466621249238537318">Wählen Sie eine oder mehrere Dateien aus.</translation>

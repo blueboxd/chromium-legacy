@@ -648,6 +648,12 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const std::string& data,
       IsClipboardPasteAllowedCallback callback) override;
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+  bool ShouldAllowPluginCreation(
+      const url::Origin& embedder_origin,
+      const content::PepperPluginInfo& plugin_info) override;
+#endif
+
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);
   static bool HandleWebUIReverse(GURL* url,

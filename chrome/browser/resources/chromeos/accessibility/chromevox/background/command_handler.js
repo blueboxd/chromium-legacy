@@ -553,7 +553,7 @@ CommandHandler.onCommand = function(command) {
         }
 
         if (EventSourceState.get() == EventSourceType.TOUCH_GESTURE &&
-            AutomationPredicate.editText(actionNode)) {
+            actionNode.state.editable) {
           // Dispatch a click to ensure the VK gets shown.
           var location = actionNode.location;
           var event = {

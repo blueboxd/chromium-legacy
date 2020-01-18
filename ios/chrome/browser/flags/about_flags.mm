@@ -601,6 +601,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"contained-browser-bvc", flag_descriptions::kContainedBVCName,
      flag_descriptions::kContainedBVCDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kContainedBVC)},
+    {"clear-synced-data", flag_descriptions::kClearSyncedDataName,
+     flag_descriptions::kClearSyncedDataDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kClearSyncedData)},
 };
 
 // Add all switches from experimental flags to |command_line|.

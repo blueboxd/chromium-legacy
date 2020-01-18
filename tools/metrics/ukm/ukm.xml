@@ -9190,6 +9190,12 @@ be describing additional metrics about the same event.
       currently visible.
     </summary>
   </metric>
+  <metric name="FailureLiveWebApp" enum="Boolean">
+    <summary>
+      Boolean indicating that the intervention was disallowed because the tab is
+      a web application window.
+    </summary>
+  </metric>
   <metric name="FailureOriginTrialOptOut" enum="Boolean">
     <summary>
       Boolean indicating that the tab explicitly opted out of the intervention

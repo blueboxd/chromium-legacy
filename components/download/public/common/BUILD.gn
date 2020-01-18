@@ -115,9 +115,7 @@ if (is_android) {
 }
 
 mojom("interfaces") {
-  sources = [
-    "download_stream.mojom",
-  ]
+  sources = [ "download_stream.mojom" ]
 
   export_class_attribute = "COMPONENTS_DOWNLOAD_EXPORT"
   export_define = "COMPONENTS_DOWNLOAD_IMPLEMENTATION=1"
@@ -151,18 +149,14 @@ source_set("test_support") {
   ]
 
   if (is_android) {
-    deps = [
-      "//components/download/internal/common:internal_java",
-    ]
+    deps = [ "//components/download/internal/common:internal_java" ]
   }
 }
 
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "auto_resumption_handler_unittest.cc",
-  ]
+  sources = [ "auto_resumption_handler_unittest.cc" ]
 
   deps = [
     ":public",

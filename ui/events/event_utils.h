@@ -134,9 +134,6 @@ void ReleaseCopiedNativeEvent(const PlatformEvent& native_event);
 EVENTS_EXPORT PointerDetails
 GetTouchPointerDetailsFromNative(const PlatformEvent& native_event);
 
-// Gets the touch id from a native event.
-EVENTS_EXPORT int GetTouchId(const PlatformEvent& native_event);
-
 // Gets the fling velocity from a native event. is_cancel is set to true if
 // this was a tap down, intended to stop an ongoing fling.
 EVENTS_EXPORT bool GetFlingData(const PlatformEvent& native_event,

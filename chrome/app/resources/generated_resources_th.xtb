@@ -948,7 +948,6 @@
 <translation id="2317842250900878657">เสร็จแล้ว <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">ขนาดกระดาษ</translation>
 <translation id="2318817390901984578">หากต้องการใช้แอป Android ให้ชาร์จและอัปเดต <ph name="DEVICE_TYPE" /></translation>
-<translation id="2318923050469484167">เซสชันไม่ระบุตัวตนปัจจุบัน (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">ส่วนหัวและส่วนท้ายกระดาษ</translation>
 <translation id="2322318151094136999">ถามเมื่อเว็บไซต์ต้องการเข้าถึงพอร์ตอนุกรม (แนะนำ)</translation>
 <translation id="2325002827435400643">ปิดสำหรับเว็บไซต์นี้</translation>
@@ -1791,6 +1790,7 @@
 <translation id="3511307672085573050">คัดลอกที่อยู่&amp;ลิงก์</translation>
 <translation id="351152300840026870">แบบอักษรที่มีความกว้างคงที่</translation>
 <translation id="3511528412952710609">น้อย</translation>
+<translation id="3513704683820682405">Augmented Reality</translation>
 <translation id="3514373592552233661">ระบบจะเลือกเครือข่ายที่ต้องการแทนเครือข่ายที่รู้จักอื่นๆ หากมีเครือข่ายที่รู้จักมากกว่า 1 เครือข่าย</translation>
 <translation id="3515983984924808886">แตะคีย์ความปลอดภัยอีกครั้งเพื่อยืนยันการรีเซ็ต ระบบจะลบข้อมูลทั้งหมดที่เก็บไว้ในคีย์ความปลอดภัย รวมถึง PIN ของคีย์ด้วย</translation>
 <translation id="3518985090088779359">ยอมรับและทำต่อ</translation>
@@ -2247,7 +2247,6 @@
 <translation id="4099874310852108874">เกิดข้อผิดพลาดเกี่ยวกับเครือข่าย</translation>
 <translation id="4100733287846229632">พื้นที่ดิสก์เกือบเต็มแล้ว</translation>
 <translation id="4100853287411968461">เวลาอยู่หน้าจอสูงสุดใหม่</translation>
-<translation id="4103091233824664032">ป้อนรหัสผ่านเพื่อกำหนดค่าการล็อกหน้าจอและการลงชื่อเข้าใช้</translation>
 <translation id="4104163789986725820">ส่ง&amp;ออก</translation>
 <translation id="4107048419833779140">ระบุและยกเลิกการต่อเชื่อมอุปกรณ์จัดเก็บข้อมูล</translation>
 <translation id="4109135793348361820">ย้ายหน้าต่างไปยัง <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
@@ -2786,6 +2785,7 @@
 <translation id="494286511941020793">ความช่วยเหลือในการกำหนดค่าพร็อกซี</translation>
 <translation id="4943368462779413526">ฟุตบอล</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" ต้องการเชื่อมต่อกับพอร์ตอนุกรม</translation>
+<translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4944310289250773232">บริการการตรวจสอบสิทธิ์นี้โฮสต์โดย <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">การทำงาน</translation>
 <translation id="4952981627953231344">อุปกรณ์นี้ไม่อนุญาตให้ใช้ Plugin VM โปรดติดต่อผู้ดูแลระบบอุปกรณ์ขององค์กร</translation>
@@ -3135,7 +3135,6 @@
 <translation id="5468173180030470402">กำลังมองหาพื้นที่แชร์ไฟล์</translation>
 <translation id="5470735824776589490">ต้องรีสตาร์ทก่อน จึงจะรีเซ็ตอุปกรณ์ของคุณด้วย Powerwash ได้ <ph name="LINK_BEGIN" />ดูข้อมูลเพิ่มเติม<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">สวัสดี นี่เป็นเสียงของระบบอ่านออกเสียงข้อความ</translation>
-<translation id="5472133193607270166">เมื่อเปิดใช้ เว็บไซต์จะใช้กิจกรรมการท่องเว็บตามเว็บไซต์ต่างๆ ของคุณเพื่อปรับโฆษณาตามโปรไฟล์ของผู้ใช้ไม่ได้ บางเว็บไซต์อาจทำงานไม่ถูกต้อง</translation>
 <translation id="5473333559083690127">ป้อน PIN ใหม่อีกครั้ง</translation>
 <translation id="5481941284378890518">เพิ่มเครื่องพิมพ์ที่อยู่ใกล้เคียง</translation>
 <translation id="5483785310822538350">เพิกถอนสิทธิ์การเข้าถึงไฟล์และอุปกรณ์</translation>
@@ -3306,7 +3305,6 @@
 <translation id="5701381305118179107">กึ่งกลาง</translation>
 <translation id="5701441174893770082">การอัปเกรด Linux อาจทำให้แบตเตอรี่หมดอย่างรวดเร็ว โปรดต่ออุปกรณ์กับที่ชาร์จแล้วลองอีกครั้ง</translation>
 <translation id="5702898740348134351">แ&amp;ก้ไขเครื่องมือค้นหา...</translation>
-<translation id="570302979952009979">ตั้งชื่อให้ลายนิ้วมือนี้</translation>
 <translation id="5704875434923668958">กำลังซิงค์กับ</translation>
 <translation id="5707185214361380026">ไม่สามารถโหลดส่วนขยายจาก:</translation>
 <translation id="5708171344853220004">ชื่อหลักของ Microsoft</translation>
@@ -3398,7 +3396,6 @@
 <translation id="5833726373896279253">เจ้าของเท่านั้นที่สามารถปรับการตั้งค่าเหล่านี้ได้:</translation>
 <translation id="5834581999798853053">เหลือเวลาอีกประมาณ <ph name="TIME" /> นาที</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - กำลังบันทึกด้วยกล้องหรือไมโครโฟน</translation>
-<translation id="5838456317242088717">เซสชันไม่ระบุตัวตนปัจจุบัน</translation>
 <translation id="5842497610951477805">เปิดใช้บลูทูธ</translation>
 <translation id="5843250171025351504">อุปกรณ์ของคุณใช้เวอร์ชันไคลเอ็นต์ที่ต่ำกว่าเวอร์ชันที่ผู้ดูแลระบบกำหนดไว้ โปรดอัปเดตเพื่อเข้าสู่ระบบ</translation>
 <translation id="5846200638699387931">ข้อผิดพลาดทางไวยากรณ์ที่แสดงความสัมพันธ์: <ph name="ERROR_LINE" /></translation>
@@ -3654,7 +3651,6 @@
 <translation id="6181431612547969857">การดาวน์โหลดถูกบล็อก</translation>
 <translation id="6185132558746749656">ตำแหน่งของอุปกรณ์</translation>
 <translation id="6195693561221576702">ตั้งค่าอุปกรณ์นี้ในโหมดสาธิตออฟไลน์ไม่ได้</translation>
-<translation id="6196640612572343990">บล็อกคุกกี้ของบุคคลที่สาม</translation>
 <translation id="6196854373336333322">ส่วนขยาย "<ph name="EXTENSION_NAME" />" ได้เข้าควบคุมการตั้งค่าพร็อกซีของคุณ ซึ่งหมายความว่าส่วนขยายนี้จะสามารถเปลี่ยนแปลง ทำให้เสียหาย หรือดักฟังทุกอย่างที่คุณทำทางออนไลน์ได้ หากคุณไม่แน่ใจว่าการเปลี่ยนแปลงนี้เกิดขึ้นได้อย่างไร คุณอาจไม่ต้องการส่วนขยายนี้</translation>
 <translation id="6198102561359457428">ออกจากระบบแล้วลงชื่อเข้าใช้อีกครั้ง...</translation>
 <translation id="6198252989419008588">เปลี่ยน PIN</translation>
@@ -4360,7 +4356,6 @@
 <translation id="7225179976675429563">ไม่มีประเภทเครือข่าย</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (ผู้ให้บริการ: <ph name="VENDOR_ID" /> ผลิตภัณฑ์: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">แก้ไขการตั้งค่าที่จะกำหนดว่าเว็บไซต์สามารถใช้ฟีเจอร์อย่างตำแหน่งทางภูมิศาสตร์ ไมโครโฟน กล้องถ่ายรูป และอื่นๆ ได้ไหม</translation>
-<translation id="7228523857728654909">ล็อกหน้าจอและการลงชื่อเข้าใช้</translation>
 <translation id="7229570126336867161">ต้องใช้ EVDO</translation>
 <translation id="7230787553283372882">กำหนดขนาดข้อความของคุณ</translation>
 <translation id="7232750842195536390">การเปลี่ยนชื่อล้มเหลว</translation>
@@ -5277,7 +5272,6 @@
 <translation id="850875081535031620">ไม่พบซอฟต์แวร์ที่เป็นอันตราย</translation>
 <translation id="8509177919508253835">รีเซ็ตคีย์ความปลอดภัยและสร้าง PIN</translation>
 <translation id="8509646642152301857">การดาวน์โหลดพจนานุกรมตรวจสอบการสะกดล้มเหลว</translation>
-<translation id="8510617356402557055">หากคิดว่ามีบางอย่างไม่ถูกต้อง <ph name="BEGIN_LINK" />ส่งความคิดเห็น<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">สิ้นสุดกระบวนการ</translation>
 <translation id="851263357009351303">อนุญาตให้ <ph name="HOST" /> แสดงภาพเสมอ</translation>
 <translation id="8513108775083588393">หมุนอัตโนมัติ</translation>

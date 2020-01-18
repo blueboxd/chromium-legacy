@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="1337778609052285767">Det nuvarande lösenordet uppfyller inte komplexitetskraven för lösenord. Kontakta administratören.</translation>
 <translation id="1337821341856692531">Om du fortsätter utan att ange lösenordet för Windows kan du förlora information som inte går att återställa.</translation>
 <translation id="1383286653814676580">Används för att köra inloggningssidan för Google Credential Provider.</translation>
 <translation id="1894475569413661128">Logga in med ditt jobbkonto.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Du angav fel lösenord för Windows. Försök igen.</translation>
 <translation id="2831078752570172210">Kontot är utelåst. Kontakta systemadministratören.</translation>
 <translation id="2844349213149998955">Det är inte tillåtet att logga in med ett personligt konto på den här enheten. Logga in med ett jobbkonto.</translation>
+<translation id="2995851317559936311">Det är bara tillåtet att byta lösenord på domänkontrollanten. Kontakta administratören.</translation>
 <translation id="3306357053520292004">En användare på den här datorn har redan lagts till med det här kontot. Logga in med ett annat konto.</translation>
 <translation id="3926852373333893095">Endast G Suite Enterprise-användare får logga in.</translation>
 <translation id="4057329986137569701">Ett internt fel uppstod.</translation>
 <translation id="4267670563222825190">Ingen domänanvändare hittades för kontot. Kontakta administratören.</translation>
 <translation id="4300229033992784001">Kontots lösenord har ändrats Ange ditt nuvarande lösenord för Windows för att synkronisera Windows-kontot med jobbkontot.</translation>
+<translation id="4669462973597624151">Ett försök att byta lösenord misslyckades. Kontakta administratören.</translation>
 <translation id="4706454071748629324">Det gick inte att lägga till en ny användare. Datorn tillåter bara att en användare skapas med ett jobbkonto.</translation>
+<translation id="5186761973554910131">Ogiltigt datornamn angavs under försöket att byta lösenord. Kontakta administratören.</translation>
 <translation id="6033715878377252112">Hjälpprogram för Googles autentiseringsprovider för Windows</translation>
 <translation id="6149399665202317746">Googles autentiseringsprovider för Windows</translation>
 <translation id="6239180560789153226">Det saknas återställningsinformation för enheten. Logga in med ditt jobbkonto på Google.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Lägg till jobbkonto</translation>
 <translation id="7811865856574012727">Adminstratören har begränsat enhetsinloggning till följande domäner: <ph name="EMAIL_DOMAINS" />. Testa igen med ett giltigt jobbkonto.</translation>
 <translation id="7856245195110636219">Det går inte att fortsätta utan att ange det nuvarande lösenordet för Windows. Kontakta systemadministratören.</translation>
+<translation id="8109730953933509335">Ett försök till lösenordsbyte gjordes av ogiltig användare. Kontakta administratören.</translation>
 <translation id="8639729688781680518">Jag har glömt lösenordet för Windows</translation>
 <translation id="866458870819756755">Det gick inte att skapa en användare.</translation>
 <translation id="8875753657315897487">Logga in med ditt jobbkonto</translation>

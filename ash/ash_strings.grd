@@ -190,7 +190,7 @@ This file contains the strings for ash.
 
       <!-- Status tray items -->
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the status tray and the information on it.">
-        Status tray, time <ph name="time">$1<ex>9:50</ex></ph>, <ph name="battery">$2<ex>Battery is full.</ex></ph>
+        Status tray, time <ph name="time">$1<ex>9:50</ex></ph>, <ph name="battery">$2<ex>Battery is full.</ex></ph> Press search + left to access the notification center.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BRAILLE_DISPLAY_CONNECTED" desc="The message shown on a notification when a braille display is connected">
         Braille display connected.
@@ -471,7 +471,7 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_ACCESSIBILITY_FEATURE_MANAGED"
                desc="The label used to indicate that, the accessibility feature is being managed by a policy.">
-        <ph name="FEATURE_NAME">$1<ex>Full-screen magnifier</ex></ph> This setting is enforced by your administrator.
+        <ph name="FEATURE_NAME">$1<ex>Full-screen magnifier</ex></ph> This setting is managed by your administrator.
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_IME_SHORT" desc="The short label used for IME button in system tray bubble.">

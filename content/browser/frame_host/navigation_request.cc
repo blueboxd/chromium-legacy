@@ -788,7 +788,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateForCommit(
           base::TimeTicks::Now(), params.method, nullptr,
           base::Optional<SourceLocation>(),
           false /* started_from_context_menu */,
-          params.gesture == NavigationGestureUser, InitiatorCSPInfo(),
+          params.gesture == NavigationGestureUser, CreateInitiatorCSPInfo(),
           std::vector<int>() /* initiator_origin_trial_features */,
           std::string() /* href_translate */,
           false /* is_history_navigation_in_new_child_frame */,
@@ -1033,10 +1033,23 @@ NavigationRequest::NavigationRequest(
 
   begin_params_->headers = headers.ToString();
 
-  initiator_csp_context_.reset(new InitiatorCSPContext(
-      common_params_->initiator_csp_info.initiator_csp,
-      common_params_->initiator_csp_info.initiator_self_source,
-      std::move(navigation_initiator)));
+  // Build the initiator_csp_context_.
+  {
+    std::vector<network::mojom::ContentSecurityPolicyPtr> mojo_policies =
+        std::move(common_params_->initiator_csp_info->initiator_csp);
+    std::vector<ContentSecurityPolicy> initiator_policies;
+    for (auto& policy : mojo_policies)
+      initiator_policies.push_back(ContentSecurityPolicy(std::move(policy)));
+
+    base::Optional<CSPSource> initiator_self;
+    if (common_params_->initiator_csp_info->initiator_self_source) {
+      initiator_self = CSPSource(
+          std::move(common_params_->initiator_csp_info->initiator_self_source));
+    }
+
+    initiator_csp_context_.reset(new InitiatorCSPContext(
+        initiator_policies, initiator_self, std::move(navigation_initiator)));
+  }
 
   navigation_entry_offset_ = EstimateHistoryOffset();
 
@@ -2627,7 +2640,7 @@ net::Error NavigationRequest::CheckContentSecurityPolicy(
   if (common_params_->url.SchemeIs(url::kAboutScheme))
     return net::OK;
 
-  if (common_params_->initiator_csp_info.should_check_main_world_csp ==
+  if (common_params_->initiator_csp_info->should_check_main_world_csp ==
       network::mojom::CSPDisposition::DO_NOT_CHECK) {
     return net::OK;
   }
@@ -3796,8 +3809,8 @@ bool NavigationRequest::RequiresSourceSiteInstance() const {
       common_params_->url.IsAboutBlank();
   const bool has_valid_initiator =
       common_params_->initiator_origin &&
-      !common_params_->initiator_origin->GetTupleOrPrecursorTupleIfOpaque()
-           .IsInvalid();
+      common_params_->initiator_origin->GetTupleOrPrecursorTupleIfOpaque()
+          .IsValid();
   return is_data_or_about && has_valid_initiator && !dest_site_instance_;
 }
 

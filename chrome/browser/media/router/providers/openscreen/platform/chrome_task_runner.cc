@@ -38,8 +38,8 @@ void ChromeTaskRunner::PostPackagedTask(TaskRunner::Task task) {
 
 void ChromeTaskRunner::PostPackagedTaskWithDelay(TaskRunner::Task task,
                                                  Clock::duration delay) {
-  auto time_delta = base::TimeDelta::FromMilliseconds(
-      std::chrono::duration_cast<std::chrono::milliseconds>(delay).count());
+  auto time_delta = base::TimeDelta::FromMicroseconds(
+      std::chrono::duration_cast<std::chrono::microseconds>(delay).count());
   task_runner_->PostDelayedTask(
       FROM_HERE, base::BindOnce(ExecuteTask, std::move(task)), time_delta);
 }

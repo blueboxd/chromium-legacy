@@ -16,13 +16,13 @@ import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
-import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditorJni;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.components.embedder_support.delegate.WebContentsDelegateAndroid;
+import org.chromium.components.find_in_page.FindMatchRectsDetails;
+import org.chromium.components.find_in_page.FindNotificationDetails;
 import org.chromium.content_public.browser.InvalidateTypes;
 import org.chromium.content_public.browser.WebContents;
 

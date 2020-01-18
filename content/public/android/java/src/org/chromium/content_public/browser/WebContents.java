@@ -17,6 +17,8 @@ import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 
+import java.util.List;
+
 /**
  * The WebContents Java wrapper to allow communicating with the native WebContents object.
  *
@@ -151,6 +153,11 @@ public interface WebContents extends Parcelable {
      */
     @Nullable
     RenderWidgetHostView getRenderWidgetHostView();
+
+    /**
+     * @return The WebContents that are nested within this one.
+     */
+    List<? extends WebContents> getInnerWebContents();
 
     /**
      * @return The title for the current visible page.

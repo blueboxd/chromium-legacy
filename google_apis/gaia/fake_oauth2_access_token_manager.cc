@@ -200,5 +200,7 @@ void FakeOAuth2AccessTokenManager::InvalidateAccessTokenImpl(
     const std::string& client_id,
     const FakeOAuth2AccessTokenManager::ScopeSet& scopes,
     const std::string& access_token) {
-  // Do nothing, as we don't have a cache from which to remove the token.
+  for (auto& observer : GetDiagnosticsObserversForTesting())
+    observer.OnAccessTokenRemoved(account_id, scopes);
+  // Do nothing else, as we don't have a cache from which to remove the token.
 }

@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
-import org.chromium.base.ObserverList;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.weblayer_private.interfaces.BrowserFragmentArgs;
 import org.chromium.weblayer_private.interfaces.IBrowser;
@@ -22,56 +21,16 @@ import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
  * Implementation of RemoteFragmentImpl which forwards logic to BrowserImpl.
  */
 public class BrowserFragmentImpl extends RemoteFragmentImpl {
-    /**
-     * Observer interface that can be implemented to observe when the first
-     * fragment requiring WebLayer is attached, and when the last such fragment
-     * is detached.
-     */
-    public static interface Observer {
-        public void onFirstBrowserFragmentAttached();
-        public void onLastBrowserFragmentDetached();
-    }
-
-    private static int sNumAttachedBrowserFragments;
-    private static final ObserverList<Observer> sLifecycleObservers = new ObserverList<Observer>();
-
     private final ProfileImpl mProfile;
 
     private BrowserImpl mBrowser;
     private Context mContext;
-
-    public static void addObserver(Observer observer) {
-        sLifecycleObservers.addObserver(observer);
-        if (sNumAttachedBrowserFragments > 0) observer.onFirstBrowserFragmentAttached();
-    }
-
-    public static void removeObserver(Observer observer) {
-        sLifecycleObservers.removeObserver(observer);
-    }
 
     public BrowserFragmentImpl(
             ProfileManager profileManager, IRemoteFragmentClient client, Bundle fragmentArgs) {
         super(client);
         mProfile =
                 profileManager.getProfile(fragmentArgs.getString(BrowserFragmentArgs.PROFILE_NAME));
-    }
-
-    private void incrementBrowserFragmentsAndNotifyObservers() {
-        assert sNumAttachedBrowserFragments >= 0;
-        sNumAttachedBrowserFragments++;
-        if (sNumAttachedBrowserFragments != 1) return;
-        for (Observer observer : sLifecycleObservers) {
-            observer.onFirstBrowserFragmentAttached();
-        }
-    }
-
-    private void decrementBrowserFragmentsAndNotifyObservers() {
-        sNumAttachedBrowserFragments--;
-        if (sNumAttachedBrowserFragments == 0) {
-            for (Observer observer : sLifecycleObservers) {
-                observer.onLastBrowserFragmentDetached();
-            }
-        }
     }
 
     @Override
@@ -81,7 +40,6 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
         mContext = ClassLoaderContextWrapperFactory.get(context);
         if (mBrowser != null) { // On first creation, onAttach is called before onCreate
             mBrowser.onFragmentAttached(mContext, new FragmentWindowAndroid(mContext, this));
-            incrementBrowserFragmentsAndNotifyObservers();
         }
     }
 
@@ -92,7 +50,6 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
         mBrowser = new BrowserImpl(mProfile, savedInstanceState);
         if (mContext != null) {
             mBrowser.onFragmentAttached(mContext, new FragmentWindowAndroid(mContext, this));
-            incrementBrowserFragmentsAndNotifyObservers();
         }
     }
 
@@ -121,7 +78,6 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
         super.onDestroy();
         mBrowser.destroy();
         mBrowser = null;
-        decrementBrowserFragmentsAndNotifyObservers();
     }
 
     @Override
@@ -130,9 +86,7 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
         super.onDetach();
         // mBrowser != null if fragment is retained, otherwise onDestroy is called first.
         if (mBrowser != null) {
-            assert sNumAttachedBrowserFragments > 0;
             mBrowser.onFragmentDetached();
-            decrementBrowserFragmentsAndNotifyObservers();
         }
         mContext = null;
     }

@@ -2382,11 +2382,12 @@ void ShelfLayoutManager::UpdateDrag(const ui::LocatedEvent& event_in_screen,
       return;
     }
     const gfx::Rect shelf_bounds = GetIdealBounds();
+    float y_position_in_root = std::min(event_in_screen.root_location_f().y(),
+                                        static_cast<float>(shelf_bounds.y()));
     Shell::Get()->app_list_controller()->UpdateYPositionAndOpacity(
-        std::min(event_in_screen.location().y(), shelf_bounds.y()),
-        GetAppListBackgroundOpacityOnShelfOpacity());
+        y_position_in_root, GetAppListBackgroundOpacityOnShelfOpacity());
     launcher_above_shelf_bottom_amount_ =
-        shelf_bounds.bottom() - event_in_screen.location().y();
+        shelf_bounds.bottom() - event_in_screen.root_location().y();
   } else {
     if (drag_start_point_in_screen_ == gfx::Point())
       drag_start_point_in_screen_ = event_in_screen.location();

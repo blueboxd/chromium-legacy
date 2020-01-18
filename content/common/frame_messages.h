@@ -453,12 +453,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::SourceLocation)
   IPC_STRUCT_TRAITS_MEMBER(column_number)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::InitiatorCSPInfo)
-  IPC_STRUCT_TRAITS_MEMBER(should_check_main_world_csp)
-  IPC_STRUCT_TRAITS_MEMBER(initiator_csp)
-  IPC_STRUCT_TRAITS_MEMBER(initiator_self_source)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(blink::ParsedFeaturePolicyDeclaration)
   IPC_STRUCT_TRAITS_MEMBER(feature)
   IPC_STRUCT_TRAITS_MEMBER(values)
@@ -561,34 +555,6 @@ IPC_STRUCT_BEGIN(FrameHostMsg_CreateChildFrame_Params_Reply)
   IPC_STRUCT_MEMBER(base::UnguessableToken, devtools_frame_token)
 IPC_STRUCT_END()
 
-IPC_STRUCT_TRAITS_BEGIN(content::CSPSource)
-  IPC_STRUCT_TRAITS_MEMBER(scheme)
-  IPC_STRUCT_TRAITS_MEMBER(host)
-  IPC_STRUCT_TRAITS_MEMBER(is_host_wildcard)
-  IPC_STRUCT_TRAITS_MEMBER(port)
-  IPC_STRUCT_TRAITS_MEMBER(is_port_wildcard)
-  IPC_STRUCT_TRAITS_MEMBER(path)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::CSPSourceList)
-  IPC_STRUCT_TRAITS_MEMBER(allow_self)
-  IPC_STRUCT_TRAITS_MEMBER(allow_star)
-  IPC_STRUCT_TRAITS_MEMBER(allow_response_redirects)
-  IPC_STRUCT_TRAITS_MEMBER(sources)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::CSPDirective)
-  IPC_STRUCT_TRAITS_MEMBER(name)
-  IPC_STRUCT_TRAITS_MEMBER(source_list)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::ContentSecurityPolicy)
-  IPC_STRUCT_TRAITS_MEMBER(header)
-  IPC_STRUCT_TRAITS_MEMBER(directives)
-  IPC_STRUCT_TRAITS_MEMBER(report_endpoints)
-  IPC_STRUCT_TRAITS_MEMBER(use_reporting_api)
-IPC_STRUCT_TRAITS_END()
-
 IPC_STRUCT_TRAITS_BEGIN(network::mojom::ContentSecurityPolicyHeader)
   IPC_STRUCT_TRAITS_MEMBER(header_value)
   IPC_STRUCT_TRAITS_MEMBER(type)
@@ -607,9 +573,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::CSPViolationParams)
   IPC_STRUCT_TRAITS_MEMBER(after_redirect)
   IPC_STRUCT_TRAITS_MEMBER(source_location)
 IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::CSPDisposition,
-                          network::mojom::CSPDisposition::kMaxValue)
 
 IPC_STRUCT_BEGIN(FrameMsg_MixedContentFound_Params)
   IPC_STRUCT_MEMBER(GURL, main_resource_url)
@@ -1020,8 +983,16 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_PluginContentOriginAllowed,
 // used to identify the proper process when the renderer notifies it that the
 // plugin is hung.
 //
+// |embedder_origin| provides the origin of the frame that embeds the plugin
+// (i.e. the origin of the document that contains the <embed> html tag).
+// |embedder_origin| needs to be included in the message payload, because the
+// message is received and handled on the IO thread in the browser process
+// (where it is not possible to consult
+// RenderFrameHostImpl::GetLastCommittedOrigin).
+//
 // On error an empty string and null handles are returned.
-IPC_SYNC_MESSAGE_CONTROL2_3(FrameHostMsg_OpenChannelToPepperPlugin,
+IPC_SYNC_MESSAGE_CONTROL3_3(FrameHostMsg_OpenChannelToPepperPlugin,
+                            url::Origin /* embedder_origin */,
                             base::FilePath /* path */,
                             base::Optional<url::Origin>, /* origin_lock */
                             IPC::ChannelHandle /* handle to channel */,

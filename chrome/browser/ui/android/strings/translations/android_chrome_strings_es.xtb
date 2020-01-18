@@ -668,6 +668,7 @@ Para cambiar esta opción, <ph name="BEGIN_LINK" />restablece la sincronización
 <translation id="605721222689873409">AA</translation>
 <translation id="6064125863973209585">Descargas completadas</translation>
 <translation id="6075798973483050474">Editar página principal</translation>
+<translation id="6092062101542170135">Para continuar, activa el NFC en los ajustes de Android.</translation>
 <translation id="60923314841986378">Quedan <ph name="HOURS" /> horas</translation>
 <translation id="6108923351542677676">Configuración en curso…</translation>
 <translation id="6111020039983847643">de datos utilizados</translation>
@@ -1047,7 +1048,7 @@ El sitio web no obtendrá acceso a la cámara. Solo tú puedes ver las imágenes
 <translation id="8912362522468806198">cuenta de Google</translation>
 <translation id="8920114477895755567">Esperando detalles de los padres.</translation>
 <translation id="8922289737868596582">Descarga páginas con el botón con el botón Más opciones para usarlas sin conexión</translation>
-<translation id="8926666909099850184">El NFC está desactivado en este dispositivo. Actívalo en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
+<translation id="8926666909099850184">La tecnología NFC está desactivada en este dispositivo. Actívala en los <ph name="BEGIN_LINK" />ajustes de Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">¿Eliminar tu actividad de Chrome de Bienestar digital?</translation>
 <translation id="8941729603749328384">www.ejemplo.com</translation>
 <translation id="8942627711005830162">Abrir en otra ventana</translation>

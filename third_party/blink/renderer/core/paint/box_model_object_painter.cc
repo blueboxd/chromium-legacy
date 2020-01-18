@@ -132,7 +132,7 @@ BoxPainterBase::FillLayerInfo BoxModelObjectPainter::GetFillLayerInfo(
       LayoutObject::ShouldRespectImageOrientation(&box_model_),
       (flow_box_ ? flow_box_->IncludeLogicalLeftEdge() : true),
       (flow_box_ ? flow_box_->IncludeLogicalRightEdge() : true),
-      box_model_.IsInline(), is_painting_scrolling_background);
+      box_model_.IsLayoutInline(), is_painting_scrolling_background);
 }
 
 bool BoxModelObjectPainter::IsPaintingScrollingBackground(

@@ -232,7 +232,9 @@ public class ContinuationDriver extends LeafFeatureDriver
     public void onError(ModelError modelError) {
         mBasicLoggingApi.onTokenFailedToComplete(mModelToken.isSynthetic(), ++mFailureCount);
         showErrorUi();
-        mSpinnerLogger.spinnerFinished();
+        if (mSpinnerLogger.isSpinnerActive()) {
+            mSpinnerLogger.spinnerFinished();
+        }
     }
 
     private void showErrorUi() {

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="1337778609052285767">Das aktuelle Passwort entspricht nicht den Anforderungen an die Komplexität des Passworts. Bitte wenden Sie sich an Ihren Administrator.</translation>
 <translation id="1337821341856692531">Wenn Sie fortfahren, ohne Ihr aktuelles Windows-Passwort einzugeben, gehen möglicherweise Informationen verloren, die nicht wiederhergestellt werden können.</translation>
 <translation id="1383286653814676580">Wird für die Anmeldeseite des Google-Anmeldeinformationsanbieters genutzt.</translation>
 <translation id="1894475569413661128">Melden Sie sich mit Ihrem Arbeitskonto an.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Sie haben ein falsches Windows-Passwort eingegeben. Bitte versuchen Sie es noch einmal.</translation>
 <translation id="2831078752570172210">Ihr Konto wurde gesperrt. Bitte wenden Sie sich an Ihren Systemadministrator.</translation>
 <translation id="2844349213149998955">Die Anmeldung mit einem privaten Konto ist auf diesem Gerät nicht zulässig. Melden Sie sich bitte mit einem Arbeitskonto an.</translation>
+<translation id="2995851317559936311">Passwortänderung nur auf dem Domain-Controller erlaubt. Bitte wenden Sie sich an Ihren Administrator.</translation>
 <translation id="3306357053520292004">Ein Nutzer dieses Computers wurde bereits über dieses Konto hinzugefügt. Bitte melden Sie sich mit einem anderen Konto an.</translation>
 <translation id="3926852373333893095">Nur G Suite Enterprise-Nutzer dürfen sich anmelden.</translation>
 <translation id="4057329986137569701">Ein interner Fehler ist aufgetreten.</translation>
 <translation id="4267670563222825190">Für Ihr Konto wurde kein Domainnutzer gefunden. Bitte wenden Sie sich an Ihren Administrator.</translation>
 <translation id="4300229033992784001">Das Passwort für Ihr Konto wurde geändert. Geben Sie Ihr aktuelles Windows-Passwort ein, um Ihr Windows-Konto mit Ihrem Arbeitskonto zu synchronisieren.</translation>
+<translation id="4669462973597624151">Der Versuch, das Passwort zu ändern, ist fehlgeschlagen. Bitte wenden Sie sich an Ihren Administrator.</translation>
 <translation id="4706454071748629324">Es konnte kein neuer Nutzer hinzugefügt werden. Auf diesem Computer kann nur ein Nutzer mit einem Arbeitskonto erstellt werden.</translation>
+<translation id="5186761973554910131">Beim Versuch, das Passwort zu ändern, wurde ein ungültiger Computername angegeben. Bitte wenden Sie sich an Ihren Administrator.</translation>
 <translation id="6033715878377252112">Hilfsdienst für den Google-Anmeldeinformationsanbieter unter Windows</translation>
 <translation id="6149399665202317746">Google-Anmeldeinformationsanbieter für Windows</translation>
 <translation id="6239180560789153226">Es fehlen Wiederstellungsinfos für Ihr Gerät. Melden Sie sich mit Ihrem Google-Arbeitskonto an.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Arbeitskonto hinzufügen</translation>
 <translation id="7811865856574012727">Ihr Administrator hat die Geräteanmeldung auf die folgenden Domains beschränkt: <ph name="EMAIL_DOMAINS" />. Versuchen Sie es noch einmal mit einem gültigen Arbeitskonto.</translation>
 <translation id="7856245195110636219">Fortfahren ohne Eingabe des aktuellen Windows-Passworts nicht möglich. Bitte setzen Sie sich mit einem Systemadministrator in Verbindung.</translation>
+<translation id="8109730953933509335">Versuchte Passwortänderung bei ungültigem Nutzer. Bitte wenden Sie sich an Ihren Administrator.</translation>
 <translation id="8639729688781680518">Windows-Passwort vergessen</translation>
 <translation id="866458870819756755">Ein Nutzer konnte nicht erstellt werden.</translation>
 <translation id="8875753657315897487">Mit Ihrem Arbeitskonto anmelden</translation>

@@ -34,9 +34,7 @@ source_set("find_in_page") {
 # TODO(crbug.com/487804): use js_compile_checked instead once the errors have
 # been fixed.
 js_compile_unchecked("injected_js") {
-  sources = [
-    "resources/find_in_page.js",
-  ]
+  sources = [ "resources/find_in_page.js" ]
 }
 
 source_set("feature_flags") {
@@ -44,9 +42,7 @@ source_set("feature_flags") {
     "features.h",
     "features.mm",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 

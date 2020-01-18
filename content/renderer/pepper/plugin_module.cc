@@ -34,6 +34,7 @@
 #include "content/renderer/pepper/ppb_var_deprecated_impl.h"
 #include "content/renderer/pepper/ppb_video_decoder_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
+#include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
@@ -143,6 +144,8 @@
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_graphics_2d_api.h"
 #include "ppapi/thunk/thunk.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/web/web_local_frame.h"
 
 using ppapi::InputEventData;
 using ppapi::PpapiGlobals;
@@ -805,7 +808,8 @@ scoped_refptr<PluginModule> PluginModule::Create(
   base::ProcessId peer_pid = 0;
   int plugin_child_id = 0;
   render_frame->Send(new FrameHostMsg_OpenChannelToPepperPlugin(
-      path, origin_lock, &channel_handle, &peer_pid, &plugin_child_id));
+      render_frame->GetWebFrame()->GetSecurityOrigin(), path, origin_lock,
+      &channel_handle, &peer_pid, &plugin_child_id));
   if (!channel_handle.is_mojo_channel_handle()) {
     // Couldn't be initialized.
     return scoped_refptr<PluginModule>();

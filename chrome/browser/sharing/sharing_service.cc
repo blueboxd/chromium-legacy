@@ -14,6 +14,8 @@
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_device_source.h"
 #include "chrome/browser/sharing/sharing_fcm_handler.h"
+#include "chrome/browser/sharing/sharing_handler_registry.h"
+#include "chrome/browser/sharing/sharing_message_handler.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sharing_utils.h"
@@ -28,6 +30,7 @@ SharingService::SharingService(
     std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
     std::unique_ptr<SharingMessageSender> message_sender,
     std::unique_ptr<SharingDeviceSource> device_source,
+    std::unique_ptr<SharingHandlerRegistry> handler_registry,
     std::unique_ptr<SharingFCMHandler> fcm_handler,
     syncer::SyncService* sync_service)
     : sync_prefs_(std::move(sync_prefs)),
@@ -35,6 +38,7 @@ SharingService::SharingService(
       sharing_device_registration_(std::move(sharing_device_registration)),
       message_sender_(std::move(message_sender)),
       device_source_(std::move(device_source)),
+      handler_registry_(std::move(handler_registry)),
       fcm_handler_(std::move(fcm_handler)),
       sync_service_(sync_service),
       backoff_entry_(&kRetryBackoffPolicy),
@@ -79,6 +83,17 @@ void SharingService::SendMessageToDevice(
   message_sender_->SendMessageToDevice(
       device, response_timeout, std::move(message),
       SharingMessageSender::DelegateType::kFCM, std::move(callback));
+}
+
+void SharingService::RegisterSharingHandler(
+    std::unique_ptr<SharingMessageHandler> handler,
+    chrome_browser_sharing::SharingMessage::PayloadCase payload_case) {
+  handler_registry_->RegisterSharingHandler(std::move(handler), payload_case);
+}
+
+void SharingService::UnregisterSharingHandler(
+    chrome_browser_sharing::SharingMessage::PayloadCase payload_case) {
+  handler_registry_->UnregisterSharingHandler(payload_case);
 }
 
 SharingDeviceSource* SharingService::GetDeviceSource() const {

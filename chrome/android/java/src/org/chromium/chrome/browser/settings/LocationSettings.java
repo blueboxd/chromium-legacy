@@ -6,14 +6,9 @@ package org.chromium.chrome.browser.settings;
 
 import android.Manifest;
 
-import androidx.annotation.VisibleForTesting;
-
 import org.chromium.base.Callback;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.settings.website.WebsitePreferenceBridge;
 import org.chromium.components.location.LocationSettingsDialogContext;
 import org.chromium.components.location.LocationSettingsDialogOutcome;
 import org.chromium.components.location.LocationUtils;
@@ -21,32 +16,10 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
- * Provides methods for querying Chrome's internal location setting and
- * combining that with the system-wide setting and permissions.
- *
- * This class should be used only on the UI thread.
+ * Provides native access to system-level location settings and permissions.
  */
 public class LocationSettings {
-
-    private static LocationSettings sInstance;
-
-    /**
-     * Don't use this; use getInstance() instead. This should be used only by the Application inside
-     * of createLocationSettings().
-     */
-    protected LocationSettings() {
-    }
-
-    /**
-     * Returns the singleton instance of LocationSettings, creating it if needed.
-     */
-    public static LocationSettings getInstance() {
-        ThreadUtils.assertOnUiThread();
-        if (sInstance == null) {
-            sInstance = AppHooks.get().createLocationSettings();
-        }
-        return sInstance;
-    }
+    private LocationSettings() {}
 
     @CalledByNative
     private static boolean hasAndroidLocationPermission() {
@@ -89,26 +62,6 @@ public class LocationSettings {
                                 nativeCallback, result);
                     }
                 });
-    }
-
-    /**
-     * Returns true if location is enabled system-wide and the Chrome location setting is enabled.
-     */
-    public boolean areAllLocationSettingsEnabled() {
-        return isChromeLocationSettingEnabled()
-                && LocationUtils.getInstance().isSystemLocationSettingEnabled();
-    }
-
-    /**
-     * Returns whether Chrome's user-configurable location setting is enabled.
-     */
-    public boolean isChromeLocationSettingEnabled() {
-        return WebsitePreferenceBridge.isAllowLocationEnabled();
-    }
-
-    @VisibleForTesting
-    public static void setInstanceForTesting(LocationSettings instance) {
-        sInstance = instance;
     }
 
     @NativeMethods

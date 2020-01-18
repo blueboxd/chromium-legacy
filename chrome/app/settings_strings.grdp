@@ -3862,6 +3862,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_DELETE_CONFIRMATION_NEW" desc="Text for the dialog that warns about clearing all storage data for a group of sites.">
     All data and cookies stored by <ph name="SITE_GROUP_NAME">$1<ex>google.co.uk</ex></ph> and any sites under it will be cleared.
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_DELETE_CONFIRMATION_INSTALLED" desc="Text for the dialog that warns about clearing all storage data for a group of sites that have one or more installed apps.">
+    All data and cookies stored by <ph name="SITE_GROUP_NAME">$1<ex>google.co.uk</ex></ph>, any sites under it, and its installed apps will be cleared.
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_DELETE_SIGN_OUT" desc="Text for the dialog that warns about being signed out when clearing all storage data.">
     You’ll be signed out of these sites, including in open tabs
   </message>
@@ -3870,6 +3873,12 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_DELETE_APPS" desc="Text for the dialog that warns about installed apps losing offline data when clearing all storage data for the site group.">
     Offline data in installed apps will also be cleared
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ORIGIN_DELETE_CONFIRMATION" desc="Text for the dialog that warns about clearing all storage data for an origin.">
+    This will clear all data and cookies stored by <ph name="ORIGIN_NAME">$1<ex>https://www.google.co.uk</ex></ph>.
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ORIGIN_DELETE_CONFIRMATION_INSTALLED" desc="Text for the dialog that warns about clearing all storage data for an origin that has an installed app.">
+    This will clear all data and cookies stored by <ph name="ORIGIN_NAME">$1<ex>https://www.google.co.uk</ex></ph> and its installed app.
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_MULTIPLE" desc="Text for the dialog that warns about deleting all site data.">
     This will delete any data stored on your device for all the sites shown. Do you want to continue?

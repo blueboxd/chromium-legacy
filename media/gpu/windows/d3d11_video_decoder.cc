@@ -246,7 +246,8 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  if (!GetD3D11FeatureLevel(device_, &usable_feature_level_)) {
+  if (!GetD3D11FeatureLevel(device_, gpu_workarounds_,
+                            &usable_feature_level_)) {
     NotifyError("D3D11 feature level not supported");
     return;
   }
@@ -805,8 +806,10 @@ void D3D11VideoDecoder::NotifyError(const char* reason) {
 }
 
 // static
-bool D3D11VideoDecoder::GetD3D11FeatureLevel(ComD3D11Device dev,
-                                             D3D_FEATURE_LEVEL* feature_level) {
+bool D3D11VideoDecoder::GetD3D11FeatureLevel(
+    ComD3D11Device dev,
+    const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
+    D3D_FEATURE_LEVEL* feature_level) {
   if (!dev || !feature_level)
     return false;
 
@@ -815,8 +818,11 @@ bool D3D11VideoDecoder::GetD3D11FeatureLevel(ComD3D11Device dev,
     return false;
 
   // TODO(tmathmeyer) should we log this to UMA?
-  if (base::FeatureList::IsEnabled(kD3D11LimitTo11_0))
+  if (gpu_workarounds.limit_d3d11_video_decoder_to_11_0 &&
+      !base::FeatureList::IsEnabled(kD3D11VideoDecoderIgnoreWorkarounds)) {
     *feature_level = D3D_FEATURE_LEVEL_11_0;
+  }
+
   return true;
 }
 
@@ -831,8 +837,8 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
   // This workaround accounts for almost half of all startup results, and it's
   // unclear that it's relevant here.  If it's off, or if we're allowed to copy
   // pictures in case binding isn't allowed, then proceed with init.
-  if (!base::FeatureList::IsEnabled(kD3D11VideoDecoderIgnoreWorkarounds) &&
-      !base::FeatureList::IsEnabled(kD3D11VideoDecoderCopyPictures)) {
+  // NOTE: experimentation showed that, yes, it does actually matter.
+  if (!base::FeatureList::IsEnabled(kD3D11VideoDecoderCopyPictures)) {
     // Must allow zero-copy of nv12 textures.
     if (!gpu_preferences.enable_zero_copy_dxgi_video) {
       UMA_HISTOGRAM_ENUMERATION(uma_name,
@@ -843,6 +849,14 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
     if (gpu_workarounds.disable_dxgi_zero_copy_video) {
       UMA_HISTOGRAM_ENUMERATION(uma_name,
                                 NotSupportedReason::kZeroCopyVideoRequired);
+      return {};
+    }
+  }
+
+  if (!base::FeatureList::IsEnabled(kD3D11VideoDecoderIgnoreWorkarounds)) {
+    // Allow all of d3d11 to be turned off by workaround.
+    if (gpu_workarounds.disable_d3d11_video_decoder) {
+      UMA_HISTOGRAM_ENUMERATION(uma_name, NotSupportedReason::kOffByWorkaround);
       return {};
     }
   }
@@ -863,7 +877,8 @@ D3D11VideoDecoder::GetSupportedVideoDecoderConfigs(
   }
 
   D3D_FEATURE_LEVEL usable_feature_level;
-  if (!GetD3D11FeatureLevel(d3d11_device, &usable_feature_level)) {
+  if (!GetD3D11FeatureLevel(d3d11_device, gpu_workarounds,
+                            &usable_feature_level)) {
     UMA_HISTOGRAM_ENUMERATION(
         uma_name, NotSupportedReason::kInsufficientD3D11FeatureLevel);
     return {};

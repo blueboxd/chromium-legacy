@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bs">
+<translation id="1337778609052285767">Trenutna lozinka nije u skladu s uslovima za kompleksnost lozinke. Kontaktirajte svog administratora.</translation>
 <translation id="1337821341856692531">Ako nastavite bez unosa trenutne Windows lozinke to može dovesti do nepovratnog gubitka informacija.</translation>
 <translation id="1383286653814676580">Koristi se za pokretanje stranice za prijavu Googleovog pružaoca akreditiva.</translation>
 <translation id="1894475569413661128">Prijavite se koristeći poslovni račun.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Unijeli ste netačnu lozinku za Windows. Pokušajte ponovo.</translation>
 <translation id="2831078752570172210">Vaš račun je zaključan. Kontaktirajte administratora sistema.</translation>
 <translation id="2844349213149998955">Prijava na ovaj uređaj s ličnim računom nije dozvoljena. Prijavite se s poslovnim računom.</translation>
+<translation id="2995851317559936311">Promjena lozinke je dozvoljena samo na kontroleru domene. Kontaktirajte svog administratora.</translation>
 <translation id="3306357053520292004">Već je dodan korisnik na ovom računaru koristeći ovaj račun. Prijavite se s drugim računom.</translation>
 <translation id="3926852373333893095">Prijava je dozvoljena samo GSuite poslovnim korisnicima.</translation>
 <translation id="4057329986137569701">Došlo je do interne greške.</translation>
 <translation id="4267670563222825190">Za vaš račun nije pronađem nijedan korisnik domene. Kontaktirajte svog administratora.</translation>
 <translation id="4300229033992784001">Vaša lozinka računa je promijenjena. Unesite trenutnu lozinku za Windows da sinhronizirate Windows račun s poslovnim računom.</translation>
+<translation id="4669462973597624151">Pokušaj promjene lozinke nije uspio. Kontaktirajte svog administratora.</translation>
 <translation id="4706454071748629324">Dodavanje novog korisnika nije uspjelo. Ovaj računar dozvoljava kreiranje samo jednog korisnika pomoću poslovnog računa.</translation>
+<translation id="5186761973554910131">Nevažeći naziv računara je pružen tokom pokušaja promjene lozinke. Kontaktirajte svog administratora.</translation>
 <translation id="6033715878377252112">Pomoćnik za Googleovog pružaoca akreditiva za Windows</translation>
 <translation id="6149399665202317746">Googleov pružalac akreditiva za Windows</translation>
 <translation id="6239180560789153226">Na vašem uređaju nedostaju podaci za oporavak. Prijavite se pomoću Google poslovnog računa.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Dodaj poslovni račun</translation>
 <translation id="7811865856574012727">Vaš administrator je ograničio prijavu uređaja na sljedeće domene: <ph name="EMAIL_DOMAINS" />. Pokušajte ponovo s važećim poslovnim računom.</translation>
 <translation id="7856245195110636219">Nije moguće nastaviti bez unošenja trenutne lozinke za Windows. Obratite se administratoru sistema.</translation>
+<translation id="8109730953933509335">Pokušali ste promijeniti lozinku za nevažećeg korisnika. Kontaktirajte svog administratora.</translation>
 <translation id="8639729688781680518">Zaboravili ste lozinku za Windows</translation>
 <translation id="866458870819756755">Korisnik nije kreiran.</translation>
 <translation id="8875753657315897487">Prijavite se pomoću poslovnog računa</translation>

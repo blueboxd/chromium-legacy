@@ -11,27 +11,35 @@ import org.chromium.net.NetworkChangeNotifierAutoDetect;
  * WebLayer is loaded in a fragment.
  */
 public class WebLayerNetworkChangeNotifierRegistrationPolicy
-        extends NetworkChangeNotifierAutoDetect.RegistrationPolicy
-        implements BrowserFragmentImpl.Observer {
+        extends NetworkChangeNotifierAutoDetect.RegistrationPolicy implements BrowserImpl.Observer {
+    private static int sBrowserCount;
+
     @Override
     protected void init(NetworkChangeNotifierAutoDetect notifier) {
         super.init(notifier);
-        BrowserFragmentImpl.addObserver(this);
+        BrowserImpl.addObserver(this);
     }
 
     @Override
     protected void destroy() {
-        BrowserFragmentImpl.removeObserver(this);
+        BrowserImpl.removeObserver(this);
     }
 
-    // BrowserFragmentImpl.Observer
+    // BrowserImpl.Observer
     @Override
-    public void onFirstBrowserFragmentAttached() {
-        register();
+    public void onBrowserCreated() {
+        if (sBrowserCount == 0) {
+            register();
+        }
+        sBrowserCount++;
     }
 
     @Override
-    public void onLastBrowserFragmentDetached() {
-        unregister();
+    public void onBrowserDestroyed() {
+        assert (sBrowserCount > 0);
+        sBrowserCount--;
+        if (sBrowserCount == 0) {
+            unregister();
+        }
     }
 }

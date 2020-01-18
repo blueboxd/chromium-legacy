@@ -102,6 +102,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         StrictModeWorkaround.apply();
         init(appContextWrapper, remoteContextWrapper);
 
+        NetworkChangeNotifier.init();
+        WebLayerNetworkChangeNotifierRegistrationPolicy registrationPolicy =
+                new WebLayerNetworkChangeNotifierRegistrationPolicy();
         final ValueCallback<Boolean> loadedCallback = (ValueCallback<Boolean>) ObjectWrapper.unwrap(
                 loadedCallbackWrapper, ValueCallback.class);
         BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
@@ -111,7 +114,7 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                             @Override
                             public void onSuccess() {
                                 CrashReporterControllerImpl.getInstance().notifyNativeInitialized();
-                                configureNetworkChangeNotifier();
+                                configureNetworkChangeNotifier(registrationPolicy);
                                 loadedCallback.onReceiveValue(true);
                             }
                             @Override
@@ -135,15 +138,15 @@ public final class WebLayerImpl extends IWebLayer.Stub {
                 .startBrowserProcessesSync(
                         /* singleProcess*/ false);
         CrashReporterControllerImpl.getInstance().notifyNativeInitialized();
-        configureNetworkChangeNotifier();
+        NetworkChangeNotifier.init();
+        configureNetworkChangeNotifier(new WebLayerNetworkChangeNotifierRegistrationPolicy());
     }
 
     // Configure NetworkChangeNotifier to auto detect changes in network
     // connectivity.
-    private void configureNetworkChangeNotifier() {
-        NetworkChangeNotifier.init();
-        NetworkChangeNotifier.setAutoDetectConnectivityState(
-                new WebLayerNetworkChangeNotifierRegistrationPolicy());
+    private void configureNetworkChangeNotifier(
+            WebLayerNetworkChangeNotifierRegistrationPolicy registrationPolicy) {
+        NetworkChangeNotifier.setAutoDetectConnectivityState(registrationPolicy);
     }
 
     private void init(IObjectWrapper appContextWrapper, IObjectWrapper remoteContextWrapper) {

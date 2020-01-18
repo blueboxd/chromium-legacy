@@ -139,9 +139,7 @@ public class OfflineNotificationBackgroundTask extends NativeBackgroundTask {
             return StartBeforeNativeResult.DONE;
         }
 
-        int offlineCounter = PrefetchPrefs.getOfflineCounter();
-        offlineCounter++;
-        PrefetchPrefs.setOfflineCounter(offlineCounter);
+        int offlineCounter = PrefetchPrefs.incrementOfflineCounter();
         if (offlineCounter < OFFLINE_POLLING_ATTEMPTS) {
             scheduleTask(DETECTION_MODE_OFFLINE);
             return StartBeforeNativeResult.DONE;

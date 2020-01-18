@@ -74,24 +74,25 @@ GURL GemDeviceDetailsManager::GetGemServiceUploadDeviceDetailsUrl() {
 // Uploads the device details into GEM database using |access_token| for
 // authentication and authorization. The GEM service would use |serial_number|
 // and |machine_guid| for identifying the device entry in GEM database.
-// TODO(rakeshsoma): Store device_resource_id on device and send that to GEM
-// service for further optimizations.
+// TODO(crbug.com/1043199): Store device_resource_id on device and send that to
+// GEM service for further optimizations.
 HRESULT GemDeviceDetailsManager::UploadDeviceDetails(
     const std::string& access_token) {
   base::string16 serial_number = GetSerialNumber();
   base::string16 machine_guid;
   HRESULT hr = GetMachineGuid(&machine_guid);
 
-  // Fetch the results and extract the |resource_id| for the key and the
-  // |public_key| to be used for encryption.
+  base::Value request_dict(base::Value::Type::DICTIONARY);
+  request_dict.SetStringKey(
+      kUploadDeviceDetailsRequestSerialNumberParameterName,
+      base::UTF16ToUTF8(serial_number));
+  request_dict.SetStringKey(kUploadDeviceDetailsRequestMachineGuidParameterName,
+                            base::UTF16ToUTF8(machine_guid));
+
   hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       GemDeviceDetailsManager::Get()->GetGemServiceUploadDeviceDetailsUrl(),
-      access_token, {},
-      {{kUploadDeviceDetailsRequestSerialNumberParameterName,
-        base::UTF16ToUTF8(serial_number)},
-       {kUploadDeviceDetailsRequestMachineGuidParameterName,
-        base::UTF16ToUTF8(machine_guid)}},
-      {}, upload_device_details_request_timeout_);
+      access_token, {}, request_dict, {},
+      upload_device_details_request_timeout_);
 
   if (FAILED(hr)) {
     LOGFN(ERROR) << "BuildRequestAndFetchResultFromHttpService hr="

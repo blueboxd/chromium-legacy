@@ -43,6 +43,8 @@ interface AssistantController {
   // Provides a reference to the underlying |assistant| service.
   SetAssistant(pending_remote<Assistant> assistant);
 
+  // All other methods may only be called after |SetAssistant| is called.
+
   // Show speaker id enrollment flow.
   StartSpeakerIdEnrollmentFlow();
 
@@ -53,6 +55,14 @@ interface AssistantController {
     bool pii_allowed,
     string feedback_description,
     string screenshot_png);
+
+  // Start Assistant text interaction.
+  // TODO(b/146074655): Move the API to appropriate module as part of the
+  // Assistant controller mojo interface cleanup effort.
+  StartTextInteraction(
+    string query,
+    bool allow_tts,
+    AssistantQuerySource source);
 };
 
 // Interface to communicate with assistant backend.
@@ -202,6 +212,7 @@ enum AssistantQuerySource {
   kWarmerWelcome = 8,
   kConversationStarter = 9,
   kWhatsOnMyScreen = 10,
+  kQuickAnswers = 11,
 };
 
 // Subscribes to Assistant's interaction event. These events are server driven

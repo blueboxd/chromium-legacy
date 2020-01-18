@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">kaydırma çubuğu</translation>
 <translation id="1211441953136645838">son not</translation>
 <translation id="1281252709823657822">iletişim kutusu</translation>
+<translation id="1306460908038601864">Kapalı</translation>
 <translation id="1335095011850992622">katkıda bulunanlar</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Lütfen başına "<ph name="ATSIGN" />" ekleyin. "<ph name="INVALIDADDRESS" />" adresi eksik.</translation>
 <translation id="5334352251556557839">Medya oynatılamıyor.</translation>
+<translation id="537648784377940524">Minimum tarih (<ph name="MIN_DATE_OR_TIME" />), Maksimum tarihten (<ph name="MAX_DATE_OR_TIME" />) önce gelmelidir.</translation>
 <translation id="5406322316791861025">figür</translation>
 <translation id="5453733299334684579">ağaç öğesi</translation>
 <translation id="5466621249238537318">Lütfen bir veya daha fazla dosya seçin.</translation>

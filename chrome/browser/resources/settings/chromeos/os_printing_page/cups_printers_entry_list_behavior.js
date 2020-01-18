@@ -81,6 +81,13 @@ const CupsPrintersEntryListBehavior = {
    * @private
    */
   onNearbyPrintersChanged_(printerList) {
+    // |printerList| consists of automatic and discovered printers that have
+    // not been saved and are available. Add all unsaved print server printers
+    // to |printerList|.
+    this.entryManager_.printServerPrinters = settings.printing.findDifference(
+        this.entryManager_.printServerPrinters, this.savedPrinters);
+    printerList = printerList.concat(this.entryManager_.printServerPrinters);
+
     this.updateList(
         'nearbyPrinters', printer => printer.printerInfo.printerId,
         printerList);

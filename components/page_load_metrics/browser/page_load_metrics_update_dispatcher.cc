@@ -154,10 +154,10 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
   }
 
   if (!EventsInOrder(timing.parse_timing->parse_start,
-                     timing.document_timing->first_layout)) {
+                     timing.paint_timing->first_paint)) {
     LOG(ERROR) << "Invalid parse_start " << timing.parse_timing->parse_start
-               << " for first_layout " << timing.document_timing->first_layout;
-    return internal::INVALID_ORDER_PARSE_START_FIRST_LAYOUT;
+               << " for first_paint " << timing.paint_timing->first_paint;
+    return internal::INVALID_ORDER_PARSE_START_FIRST_PAINT;
   }
 
   if (!EventsInOrder(timing.paint_timing->first_paint,
@@ -646,22 +646,20 @@ void PageLoadMetricsUpdateDispatcher::MaybeDispatchTimingUpdates(
 
 void PageLoadMetricsUpdateDispatcher::DispatchTimingUpdates() {
   if (pending_merged_page_timing_->paint_timing->first_paint) {
-    if (!pending_merged_page_timing_->parse_timing->parse_start ||
-        !pending_merged_page_timing_->document_timing->first_layout) {
+    if (!pending_merged_page_timing_->parse_timing->parse_start) {
       // When merging paint events across frames, we can sometimes encounter
       // cases where we've received a first paint event for a child frame before
       // receiving required earlier events in the main frame, due to buffering
       // in the render process which results in out of order delivery. For
       // example, we may receive a notification for a first paint in a child
-      // frame before we've received a notification for parse start or first
-      // layout in the main frame. In these cases, we delay sending timing
-      // updates until we've received all expected events (e.g. wait to receive
-      // a parse or layout event before dispatching a paint event), so observers
-      // can make assumptions about ordering of these events in their callbacks.
+      // frame before we've received a notification for parse start in the main
+      // frame. In these cases, we delay sending timing updates until we've
+      // received all expected events (e.g. wait to receive a parse event before
+      // dispatching a paint event), so observers can make assumptions about
+      // ordering of these events in their callbacks.
       return;
     }
   }
-
   if (current_merged_page_timing_->Equals(*pending_merged_page_timing_))
     return;
 

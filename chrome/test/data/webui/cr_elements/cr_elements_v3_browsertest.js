@@ -188,7 +188,7 @@ GEN('#endif');
 var CrElementsSplitterV3Test = class extends CrElementsV3BrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test?module=cr_elements/cr_splitter_test.m.js';
+    return 'chrome://test?module=cr_elements/cr_splitter_test.js';
   }
 };
 

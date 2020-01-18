@@ -22,6 +22,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/util/type_safety/strong_alias.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/generated_code_cache_settings.h"
@@ -36,6 +37,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/restricted_cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
@@ -57,6 +59,10 @@
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "content/public/browser/posix_file_descriptor_info.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "content/public/common/pepper_plugin_info.h"
 #endif
 
 namespace net {
@@ -1777,6 +1783,14 @@ class CONTENT_EXPORT ContentBrowserClient {
       const ui::ClipboardFormatType& data_type,
       const std::string& data,
       IsClipboardPasteAllowedCallback callback);
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+  // Returns true if |embedder_origin| is allowed to embed a plugin described by
+  // |plugin_info|.  This method allows restricting some internal plugins (like
+  // Chrome's PDF plugin) to specific origins.
+  virtual bool ShouldAllowPluginCreation(const url::Origin& embedder_origin,
+                                         const PepperPluginInfo& plugin_info);
+#endif
 };
 
 }  // namespace content

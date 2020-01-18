@@ -950,6 +950,20 @@ void ChromeLauncherController::OnAppInstalled(
   UpdateAppLaunchersFromSync();
 }
 
+void ChromeLauncherController::OnAppUpdated(
+    content::BrowserContext* browser_context,
+    const std::string& app_id) {
+  // Ensure that icon loader tracks the icon for this app - in particular, this
+  // is needed when updating chrome launcher controller after user change in
+  // multi-profile sessions, as icon loaders get reset when clearing the state
+  // from the previous profile.
+  if (IsAppPinned(app_id)) {
+    AppIconLoader* app_icon_loader = GetAppIconLoaderForApp(app_id);
+    if (app_icon_loader)
+      app_icon_loader->FetchImage(app_id);
+  }
+}
+
 void ChromeLauncherController::OnAppUninstalledPrepared(
     content::BrowserContext* browser_context,
     const std::string& app_id) {

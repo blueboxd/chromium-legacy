@@ -43,7 +43,8 @@ public class SettingsActivityTest {
     public static SettingsActivity startSettingsActivity(
             Instrumentation instrumentation, String fragmentName) {
         Context context = instrumentation.getTargetContext();
-        Intent intent = SettingsLauncher.createIntentForSettingsPage(context, fragmentName);
+        Intent intent =
+                SettingsLauncher.getInstance().createIntentForSettingsPage(context, fragmentName);
         Activity activity = instrumentation.startActivitySync(intent);
         Assert.assertTrue(activity instanceof SettingsActivity);
         return (SettingsActivity) activity;

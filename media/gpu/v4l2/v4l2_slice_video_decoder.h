@@ -153,7 +153,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder
 
   // Number of output frames requested to |frame_pool_|.
   // The default value is only used at the first time of
-  // DmabufVideoFramePool::RequestFrames() during Initialize().
+  // DmabufVideoFramePool::Initialize() during Initialize().
   size_t num_output_frames_ = 1;
   // Ratio of natural_size to visible_rect of the output frame.
   double pixel_aspect_ratio_ = 0.0;

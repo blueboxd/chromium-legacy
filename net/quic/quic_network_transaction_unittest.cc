@@ -2550,7 +2550,7 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   // Check whether this transaction is correctly marked as received a go-away
@@ -2773,7 +2773,7 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPSucceeds) {
   ExpectQuicAlternateProtocolMapping();
   // Explicitly confirm the handshake on the second connection.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   // Run message loop to execute posted tasks, which will notify JoController
   // about the orphaned job status.
   base::RunLoop().RunUntilIdle();
@@ -2915,7 +2915,7 @@ TEST_P(QuicNetworkTransactionTest,
   ExpectQuicAlternateProtocolMapping(kNetworkIsolationKey2);
   // Explicitly confirm the handshake on the second connection.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   // Run message loop to execute posted tasks, which will notify JoController
   // about the orphaned job status.
   base::RunLoop().RunUntilIdle();
@@ -3044,7 +3044,7 @@ TEST_P(QuicNetworkTransactionTest, RetryOnAlternateNetworkWhileTCPHanging) {
   ExpectQuicAlternateProtocolMapping();
   // Explicitly confirm the handshake on the second connection.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
 
   // Read the response.
   EXPECT_THAT(callback.WaitForResult(), IsOk());
@@ -3174,7 +3174,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
   base::RunLoop().RunUntilIdle();
   // Explicitly confirm the handshake.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
 
   // Run the QUIC session to completion.
   quic_task_runner_->RunUntilIdle();
@@ -3302,7 +3302,7 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
   base::RunLoop().RunUntilIdle();
   // Explicitly confirm the handshake.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
 
   // Run the QUIC session to completion.
   quic_task_runner_->RunUntilIdle();
@@ -3457,7 +3457,7 @@ TEST_P(QuicNetworkTransactionTest,
   base::RunLoop().RunUntilIdle();
   // Explicitly confirm the handshake.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
 
   // Now cancel the request.
   trans.reset();
@@ -3529,7 +3529,7 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
   base::RunLoop().RunUntilIdle();
   // Explicitly confirm the handshake.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
 
   ASSERT_FALSE(quic_data.AllReadDataConsumed());
   quic_data.Resume();
@@ -3669,7 +3669,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
   base::RunLoop().RunUntilIdle();
   // Explicitly confirm the handshake.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
 
   // Run the QUIC session to completion.
   quic_task_runner_->RunUntilIdle();
@@ -3768,7 +3768,7 @@ TEST_P(QuicNetworkTransactionTest,
   base::RunLoop().RunUntilIdle();
   // Explicitly confirm the handshake.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   quic_data.Resume();
 
   // Run the QUIC session to completion.
@@ -3886,7 +3886,7 @@ TEST_P(QuicNetworkTransactionTest,
   base::RunLoop().RunUntilIdle();
   // Explicitly confirm the handshake.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   quic_data.Resume();
 
   // Run the QUIC session to completion.
@@ -4001,7 +4001,7 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
   base::RunLoop().RunUntilIdle();
   // Explicitly confirm the handshake.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   quic_data.Resume();
 
   // Run the QUIC session to completion.
@@ -5316,7 +5316,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   CheckWasQuicResponse(&trans);
@@ -5417,7 +5417,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithTooEarlyResponse) {
   EXPECT_FALSE(callback.have_result());
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   CheckWasQuicResponse(&trans);
@@ -5528,7 +5528,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithMultipleTooEarlyResponse) {
   EXPECT_FALSE(callback.have_result());
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
 
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   const HttpResponseInfo* response = trans.GetResponseInfo();
@@ -5591,7 +5591,7 @@ TEST_P(QuicNetworkTransactionTest,
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
 
   NetErrorDetails details;
@@ -5661,7 +5661,7 @@ TEST_P(QuicNetworkTransactionTest,
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
   NetErrorDetails details;
   EXPECT_EQ(quic::QUIC_NO_ERROR, details.quic_connection_error);
@@ -5736,7 +5736,7 @@ TEST_P(QuicNetworkTransactionTest, RstStreamErrorHandling) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   // Read the headers.
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
@@ -5812,7 +5812,7 @@ TEST_P(QuicNetworkTransactionTest, RstStreamBeforeHeaders) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   // Read the headers.
   EXPECT_THAT(callback.WaitForResult(), IsError(ERR_QUIC_PROTOCOL_ERROR));
 }
@@ -6087,7 +6087,7 @@ TEST_P(QuicNetworkTransactionTest,
   base::RunLoop().RunUntilIdle();
   // Explicitly confirm the handshake so that QUIC job could succeed.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback.WaitForResult(), IsOk());
 
   CheckWasQuicResponse(&trans);

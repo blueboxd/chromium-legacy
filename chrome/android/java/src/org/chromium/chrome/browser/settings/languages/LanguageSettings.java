@@ -82,7 +82,7 @@ public class LanguageSettings
     @Override
     public void launchAddLanguage() {
         // Launch preference activity with AddLanguageFragment.
-        Intent intent = SettingsLauncher.createIntentForSettingsPage(
+        Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
                 getActivity(), AddLanguageFragment.class.getName());
         startActivityForResult(intent, REQUEST_CODE_ADD_LANGUAGES);
     }

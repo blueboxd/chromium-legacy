@@ -266,13 +266,15 @@ HRESULT EncryptUserPasswordUsingEscrowService(
 
   std::string resource_id;
   std::string public_key;
+  base::Value request_dict(base::Value::Type::DICTIONARY);
+  request_dict.SetStringKey(kGenerateKeyPairRequestDeviceIdParameterName,
+                            device_id);
 
   // Fetch the results and extract the |resource_id| for the key and the
   // |public_key| to be used for encryption.
   HRESULT hr = WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       PasswordRecoveryManager::Get()->GetEscrowServiceGenerateKeyPairUrl(),
-      access_token, {},
-      {{kGenerateKeyPairRequestDeviceIdParameterName, device_id}},
+      access_token, {}, request_dict,
       {
           {kGenerateKeyPairResponseResourceIdParameterName, &resource_id},
           {kGenerateKeyPairResponsePublicKeyParameterName, &public_key},

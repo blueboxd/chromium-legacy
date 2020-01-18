@@ -945,7 +945,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% i kryer</translation>
 <translation id="2318143611928805047">Madhësia e letrës</translation>
 <translation id="2318817390901984578">Për të përdorur aplikacionet e Android, ngarko dhe përditëso pajisjen tënde <ph name="DEVICE_TYPE" />.</translation>
-<translation id="2318923050469484167">Sesioni aktual i fshehtë (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">Titujt dhe fundet e faqeve</translation>
 <translation id="2322318151094136999">Pyet kur një sajt dëshiron të ketë qasje te portat seriale (rekomandohet)</translation>
 <translation id="2325002827435400643">Çaktivizo për këtë sajt</translation>
@@ -1788,6 +1787,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="3511307672085573050">Kopjo adr&amp;esën e lidhjes</translation>
 <translation id="351152300840026870">Shkrim me gjerësi fikse</translation>
 <translation id="3511528412952710609">E shkurtër</translation>
+<translation id="3513704683820682405">Realiteti i zgjeruar</translation>
 <translation id="3514373592552233661">Rrjetet e preferuara do të preferohen në raport me rrjetet e tjera të njohura nëse ofrohen më shumë se një</translation>
 <translation id="3515983984924808886">Prek përsëri çelësin e sigurisë për të konfirmuar rivendosjen. Të gjitha informacionet e ruajtura në çelësin e sigurisë, duke përfshirë kodin e tij PIN, do të fshihen.</translation>
 <translation id="3518985090088779359">Prano dhe vazhdo</translation>
@@ -2244,7 +2244,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4099874310852108874">Ndodhi një gabim i rrjetit.</translation>
 <translation id="4100733287846229632">Hapësira në pajisje jashtëzakonisht e ulët</translation>
 <translation id="4100853287411968461">Kufiri i ri i kohës para ekranit</translation>
-<translation id="4103091233824664032">Fut fjalëkalimin për të konfiguruar kyçjen e ekranit dhe identifikimin</translation>
 <translation id="4104163789986725820">E&amp;ksporto...</translation>
 <translation id="4107048419833779140">Identifiko dhe nxirr pajisjet e hapësirës së ruajtjes</translation>
 <translation id="4109135793348361820">Lëvize dritaren te <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
@@ -2783,6 +2782,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="494286511941020793">Ndihma për konfigurimin e përfaqësuesit</translation>
 <translation id="4943368462779413526">Futboll</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" dëshiron të lidhet me një portë serie</translation>
+<translation id="4943703118917034429">Realiteti virtual</translation>
 <translation id="4944310289250773232">Ky shërbim vërtetimi strehohet nga <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Veprimet</translation>
 <translation id="4952981627953231344">Plugin VM nuk lejohet në këtë pajisje. Kontakto me administratorin e pajisjes së organizatës.</translation>
@@ -3132,7 +3132,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5468173180030470402">Po kërkon për ndarjet e skedarëve</translation>
 <translation id="5470735824776589490">Kërkohet një rinisje para se pajisja jote të mund të rivendoset me Powerwash. <ph name="LINK_BEGIN" />Mëso më shumë<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Përshëndetje! Unë jam zëri i tekstit në ligjërim.</translation>
-<translation id="5472133193607270166">Kur është aktive, sajtet nuk mund t'i përdorin të dhënat e shfletimit nëpër sajte të ndryshme për t'i personalizuar reklamat. Disa sajte mund të mos punojnë mirë.</translation>
 <translation id="5473333559083690127">Fut përsëri kodin e ri PIN</translation>
 <translation id="5481941284378890518">Shto printerët në afërsi</translation>
 <translation id="5483785310822538350">Revoko qasjen në skedar dhe pajisje</translation>
@@ -3303,7 +3302,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5701381305118179107">Qendër</translation>
 <translation id="5701441174893770082">Përmirësimi i Linux mund ta shkarkojë në mënyrë të konsiderueshme baterinë. Lidhe pajisjen me një karikues dhe provo përsëri.</translation>
 <translation id="5702898740348134351">&amp;Redakto motorët e kërkimit...</translation>
-<translation id="570302979952009979">Zgjidh një emër për këtë gjurmë gishti</translation>
 <translation id="5704875434923668958">Po sinkronizohet në</translation>
 <translation id="5707185214361380026">Dështoi në ngarkimin e shtesës nga:</translation>
 <translation id="5708171344853220004">Microsoft Principal Name</translation>
@@ -3395,7 +3393,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5833726373896279253">Këto cilësime mund të modifikohen vetëm nga zotëruesi:</translation>
 <translation id="5834581999798853053">Rreth <ph name="TIME" /> minuta të mbetura</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - kamera ose mikrofoni po regjistron</translation>
-<translation id="5838456317242088717">Sesioni aktual i fshehtë</translation>
 <translation id="5842497610951477805">Aktivizo Bluetooth-in</translation>
 <translation id="5843250171025351504">Pajisja jote nuk është më në përputhje me versionin minimal të klientit që është specifikuar nga administratori yt. Përditësoje për t'u identifikuar.</translation>
 <translation id="5846200638699387931">Gabim i sintaksës së marrëdhënies: <ph name="ERROR_LINE" /></translation>
@@ -3651,7 +3648,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="6181431612547969857">Shkarkimi u bllokua</translation>
 <translation id="6185132558746749656">Vendndodhja e pajisjes</translation>
 <translation id="6195693561221576702">Kjo pajisje nuk mund të konfigurohet në modalitetin e demonstrimit jashtë linje.</translation>
-<translation id="6196640612572343990">Blloko kukit e palëve të treta</translation>
 <translation id="6196854373336333322">Shtesa <ph name="EXTENSION_NAME" /> ka marrë nën kontroll cilësimet e përfaqësuesit, që do të thotë se mund të ndryshojë, shkelë ose përgjojë çdo gjë që ti bën në linjë. Nëse s'je i sigurt se pse ndodhi ky ndryshim, ndoshta nuk e do.</translation>
 <translation id="6198102561359457428">Dil dhe pastaj identifikohu sërish...</translation>
 <translation id="6198252989419008588">Ndrysho kodin PIN</translation>
@@ -4357,7 +4353,6 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="7225179976675429563">Mungon lloji i rrjetit</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (Tregtuesi: <ph name="VENDOR_ID" />, Produkti: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">Manipulo cilësimet që specifikojnë nëse sajtet e uebit mund të përdorin funksione si vendndodhja gjeografike, mikrofoni, kamera etj.</translation>
-<translation id="7228523857728654909">Kyçja e ekranit dhe identifikimi</translation>
 <translation id="7229570126336867161">Nevojitet EVDO</translation>
 <translation id="7230787553283372882">Personalizo madhësinë e tekstit</translation>
 <translation id="7232750842195536390">Riemërtimi dështoi</translation>
@@ -5272,7 +5267,6 @@ Mbaje skedarin e çelësit tënd në një vend të sigurt. Do të të duhet për
 <translation id="850875081535031620">Nuk u gjet asnjë softuer i dëmshëm</translation>
 <translation id="8509177919508253835">Rivendos çelësat e sigurisë dhe krijo kodet PIN</translation>
 <translation id="8509646642152301857">Dështoi shkarkimi i fjalorit të kontrollit të drejtshkrimit.</translation>
-<translation id="8510617356402557055">Ishte e papritur kjo? <ph name="BEGIN_LINK" />Dërgo komente<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">Përfundo procesin</translation>
 <translation id="851263357009351303">Lejo gjithmonë që <ph name="HOST" /> të shfaqë imazhet</translation>
 <translation id="8513108775083588393">Rrotullim automatik</translation>

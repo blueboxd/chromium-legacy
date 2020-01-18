@@ -183,7 +183,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // enabled feature through command line. Finch experiments will need to set
     // all flags in trial config.
     if (features.IsEnabled(::features::kVizForWebView)) {
-      cl->AppendSwitch(switches::kWebViewEnableSharedImage);
+      features.EnableIfNotSet(::features::kEnableSharedImageForWebview);
       features.EnableIfNotSet(::features::kUseSkiaRenderer);
     } else {
       // Viz for WebView is required to support embedding CompositorFrameSinks
@@ -365,8 +365,7 @@ gpu::SyncPointManager* GetSyncPointManager() {
 gpu::SharedImageManager* GetSharedImageManager() {
   DCHECK(GpuServiceWebView::GetInstance());
   const bool enable_shared_image =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWebViewEnableSharedImage);
+      base::FeatureList::IsEnabled(::features::kEnableSharedImageForWebview);
   return enable_shared_image
              ? GpuServiceWebView::GetInstance()->shared_image_manager()
              : nullptr;

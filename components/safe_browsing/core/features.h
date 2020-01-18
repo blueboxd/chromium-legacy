@@ -79,6 +79,9 @@ extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 // Controls whether the real time URL lookup is enabled.
 extern const base::Feature kRealTimeUrlLookupEnabled;
 
+// Controls whether the GAIA-keyed real time URL lookup is enabled.
+extern const base::Feature kRealTimeUrlLookupEnabledWithToken;
+
 // Controls whether to send sample pings of allowlist domains on
 // the allowlist to Safe Browsing.
 extern const base::Feature kSendSampledPingsForAllowlistDomains;

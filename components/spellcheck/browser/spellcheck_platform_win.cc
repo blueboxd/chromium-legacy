@@ -31,9 +31,11 @@
 #include "base/win/scoped_hstring.h"
 #include "base/win/windows_types.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/common/spellcheck_result.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 
 namespace spellcheck_platform {
 

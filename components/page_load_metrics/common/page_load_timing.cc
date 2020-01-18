@@ -15,8 +15,7 @@ mojom::PageLoadTimingPtr CreatePageLoadTiming() {
 }
 
 bool IsEmpty(const page_load_metrics::mojom::DocumentTiming& timing) {
-  return !timing.dom_content_loaded_event_start && !timing.load_event_start &&
-         !timing.first_layout;
+  return !timing.dom_content_loaded_event_start && !timing.load_event_start;
 }
 
 bool IsEmpty(const page_load_metrics::mojom::InteractiveTiming& timing) {

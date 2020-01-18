@@ -38,12 +38,8 @@ source_set("sessions") {
 }
 
 source_set("restoration_observer") {
-  sources = [
-    "session_restoration_observer.h",
-  ]
-  deps = [
-    "//base",
-  ]
+  sources = [ "session_restoration_observer.h" ]
+  deps = [ "//base" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
@@ -166,7 +162,5 @@ bundle_data("resources_unit_tests") {
     "//ios/chrome/test/data/sessions/session_m57.plist",
     "//ios/chrome/test/data/sessions/session_m58.plist",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/ios/chrome/test/data/sessions/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/ios/chrome/test/data/sessions/{{source_file_part}}" ]
 }

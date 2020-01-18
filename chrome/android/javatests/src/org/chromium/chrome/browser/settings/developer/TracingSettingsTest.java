@@ -296,7 +296,7 @@ public class TracingSettingsTest {
             Context context = InstrumentationRegistry.getTargetContext();
             Assert.assertNotNull(categoriesPref.getExtras());
             Assert.assertFalse(categoriesPref.getExtras().isEmpty());
-            Intent intent = SettingsLauncher.createIntentForSettingsPage(
+            Intent intent = SettingsLauncher.getInstance().createIntentForSettingsPage(
                     context, TracingCategoriesSettings.class.getName(), categoriesPref.getExtras());
             SettingsActivity categoriesActivity =
                     (SettingsActivity) InstrumentationRegistry.getInstrumentation()

@@ -169,7 +169,8 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
     private void showIdentityDisc(String accountName) {
         mToolbarManager.enableExperimentalButton(view -> {
             recordIdentityDiscUsed();
-            SettingsLauncher.launchSettingsPage(mContext, SyncAndServicesPreferences.class);
+            SettingsLauncher.getInstance().launchSettingsPage(
+                    mContext, SyncAndServicesPreferences.class);
         }, getProfileImage(accountName), R.string.accessibility_toolbar_btn_identity_disc);
     }
 

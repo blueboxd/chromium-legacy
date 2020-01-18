@@ -37,9 +37,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "sc_content_suggestions_egtest.mm",
-  ]
+  sources = [ "sc_content_suggestions_egtest.mm" ]
   deps = [
     "//base",
     "//components/strings",
@@ -56,9 +54,7 @@ source_set("eg2_tests") {
 source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
-  sources = [
-    "sc_content_suggestions_egtest.mm",
-  ]
+  sources = [ "sc_content_suggestions_egtest.mm" ]
   deps = [
     ":content_suggestions",
     "//components/strings",

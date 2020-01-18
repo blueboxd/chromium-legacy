@@ -74,8 +74,9 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
   Testcase warning_testcases[] = {
     Testcase(
         "init_platform_app_csp_warning_1.json",
-        "'content_security_policy' is only allowed for extensions and legacy "
-            "packaged apps, but this is a packaged app."),
+        "'content_security_policy' is only allowed for extensions, legacy "
+            "packaged apps, and login screen extensions, but this is a "
+            "packaged app."),
     Testcase(
         "init_platform_app_csp_warning_2.json",
         "'app.content_security_policy' is not allowed for specified extension "

@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 7 Jan 2020 13:42:03 -0800
-Subject: [PATCH 21/22] Avoid invalid pointer dereference in ORDER BY
+Subject: [PATCH 21/25] Avoid invalid pointer dereference in ORDER BY
 
 Backports https://sqlite.org/src/info/1ca0bd982ab1183bbafce0d260e4dceda5eb766ed2e7793374a88d1ae0bdd2ca
 
@@ -27,5 +27,5 @@ index c251cd01974d..2d79ffe63d6d 100644
        pList = sqlite3ExprListAppend(pParse, pList, pDup);
        if( pList ) pList->a[nInit+i].sortFlags = pAppend->a[i].sortFlags;
 -- 
-2.24.1.735.g03f4e72817-goog
+2.25.0.rc1.283.g88dfdc4193-goog
 

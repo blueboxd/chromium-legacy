@@ -828,16 +828,16 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
        CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
            std::vector<
                CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
-           CanonicalCookie::CookieInclusionStatus::
-               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT)},
+           {CanonicalCookie::CookieInclusionStatus::
+                WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT})},
       {"DefaultNone=2", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::NO_RESTRICTION,
        CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
        CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
            std::vector<
                CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
-           CanonicalCookie::CookieInclusionStatus::
-               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT)},
+           {CanonicalCookie::CookieInclusionStatus::
+                WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT})},
       {"DefaultNone=3", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::NO_RESTRICTION,
        CookieOptions::SameSiteCookieContext::SAME_SITE_LAX,
@@ -866,8 +866,8 @@ TEST(CanonicalCookieTest, IncludeForRequestURLSameSite) {
        CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
            std::vector<
                CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
-           CanonicalCookie::CookieInclusionStatus::
-               WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE),
+           {CanonicalCookie::CookieInclusionStatus::
+                WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE}),
        kShortAge},
       {"DefaultLax=3", CookieSameSite::UNSPECIFIED,
        CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE,
@@ -2268,6 +2268,8 @@ TEST(CanonicalCookieTest, IsSetPermittedInContext) {
 TEST(CookieInclusionStatusTest, IncludeStatus) {
   int num_exclusion_reasons = static_cast<int>(
       CanonicalCookie::CookieInclusionStatus::NUM_EXCLUSION_REASONS);
+  int num_warning_reasons = static_cast<int>(
+      CanonicalCookie::CookieInclusionStatus::NUM_WARNING_REASONS);
   // Zero-argument constructor
   CanonicalCookie::CookieInclusionStatus status;
   EXPECT_TRUE(status.IsValid());
@@ -2276,6 +2278,10 @@ TEST(CookieInclusionStatusTest, IncludeStatus) {
     EXPECT_FALSE(status.HasExclusionReason(
         static_cast<CanonicalCookie::CookieInclusionStatus::ExclusionReason>(
             i)));
+  }
+  for (int i = 0; i < num_warning_reasons; ++i) {
+    EXPECT_FALSE(status.HasWarningReason(
+        static_cast<CanonicalCookie::CookieInclusionStatus::WarningReason>(i)));
   }
   EXPECT_FALSE(status.HasExclusionReason(
       CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR));
@@ -2305,6 +2311,8 @@ TEST(CookieInclusionStatusTest, NotValid) {
   CanonicalCookie::CookieInclusionStatus status;
   int num_exclusion_reasons = static_cast<int>(
       CanonicalCookie::CookieInclusionStatus::NUM_EXCLUSION_REASONS);
+  int num_warning_reasons = static_cast<int>(
+      CanonicalCookie::CookieInclusionStatus::NUM_WARNING_REASONS);
   status.set_exclusion_reasons(1 << num_exclusion_reasons);
   EXPECT_FALSE(status.IsInclude());
   EXPECT_FALSE(status.IsValid());
@@ -2312,12 +2320,25 @@ TEST(CookieInclusionStatusTest, NotValid) {
   status.set_exclusion_reasons(~0u);
   EXPECT_FALSE(status.IsInclude());
   EXPECT_FALSE(status.IsValid());
+
+  status.set_warning_reasons(1 << num_warning_reasons);
+  EXPECT_FALSE(status.IsInclude());
+  EXPECT_FALSE(status.IsValid());
+
+  status.set_warning_reasons(~0u);
+  EXPECT_FALSE(status.IsInclude());
+  EXPECT_FALSE(status.IsValid());
+
+  status.set_exclusion_reasons(1 << num_exclusion_reasons);
+  status.set_warning_reasons(1 << num_warning_reasons);
+  EXPECT_FALSE(status.IsInclude());
+  EXPECT_FALSE(status.IsValid());
 }
 
 TEST(CookieInclusionStatusTest, AddExclusionReason) {
   CanonicalCookie::CookieInclusionStatus status;
-  status.set_warning(CanonicalCookie::CookieInclusionStatus::
-                         WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE);
+  status.AddWarningReason(CanonicalCookie::CookieInclusionStatus::
+                              WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE);
   status.AddExclusionReason(
       CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
   EXPECT_TRUE(status.IsValid());
@@ -2326,21 +2347,46 @@ TEST(CookieInclusionStatusTest, AddExclusionReason) {
   // Adding an exclusion reason other than
   // EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX or
   // EXCLUDE_SAMESITE_NONE_INSECURE should clear any SameSite warning.
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::DO_NOT_WARN,
-            status.warning());
+  EXPECT_FALSE(status.ShouldWarn());
 
   status = CanonicalCookie::CookieInclusionStatus();
-  status.set_warning(CanonicalCookie::CookieInclusionStatus::
-                         WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT);
+  status.AddWarningReason(CanonicalCookie::CookieInclusionStatus::
+                              WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT);
   status.AddExclusionReason(CanonicalCookie::CookieInclusionStatus::
                                 EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX);
   EXPECT_TRUE(status.IsValid());
   EXPECT_TRUE(status.HasExactlyExclusionReasonsForTesting(
       {CanonicalCookie::CookieInclusionStatus::
            EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
-  EXPECT_EQ(CanonicalCookie::CookieInclusionStatus::
-                WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
-            status.warning());
+  EXPECT_TRUE(status.HasExactlyWarningReasonsForTesting(
+      {CanonicalCookie::CookieInclusionStatus::
+           WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT}));
+}
+
+TEST(CookieInclusionStatusTest, CheckEachWarningReason) {
+  CanonicalCookie::CookieInclusionStatus status;
+
+  int num_warning_reasons = static_cast<int>(
+      CanonicalCookie::CookieInclusionStatus::NUM_WARNING_REASONS);
+  EXPECT_FALSE(status.ShouldWarn());
+  for (int i = 0; i < num_warning_reasons; ++i) {
+    auto reason =
+        static_cast<CanonicalCookie::CookieInclusionStatus::WarningReason>(i);
+    status.AddWarningReason(reason);
+    EXPECT_TRUE(status.IsValid());
+    EXPECT_TRUE(status.IsInclude());
+    EXPECT_TRUE(status.ShouldWarn());
+    EXPECT_TRUE(status.HasWarningReason(reason));
+    for (int j = 0; j < num_warning_reasons; ++j) {
+      if (i == j)
+        continue;
+      EXPECT_FALSE(status.HasWarningReason(
+          static_cast<CanonicalCookie::CookieInclusionStatus::WarningReason>(
+              j)));
+    }
+    status.RemoveWarningReason(reason);
+    EXPECT_FALSE(status.ShouldWarn());
+  }
 }
 
 TEST(CookieInclusionStatusTest, RemoveExclusionReason) {
@@ -2364,6 +2410,35 @@ TEST(CookieInclusionStatusTest, RemoveExclusionReason) {
   EXPECT_TRUE(status.IsValid());
   EXPECT_FALSE(status.HasExclusionReason(
       CanonicalCookie::CookieInclusionStatus::NUM_EXCLUSION_REASONS));
+}
+
+TEST(CookieInclusionStatusTest, RemoveWarningReason) {
+  CanonicalCookie::CookieInclusionStatus status(
+      CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR,
+      CanonicalCookie::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE);
+  EXPECT_TRUE(status.IsValid());
+  EXPECT_TRUE(status.ShouldWarn());
+  ASSERT_TRUE(status.HasWarningReason(
+      CanonicalCookie::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE));
+
+  status.RemoveWarningReason(
+      CanonicalCookie::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE);
+  EXPECT_TRUE(status.IsValid());
+  EXPECT_FALSE(status.ShouldWarn());
+  EXPECT_FALSE(status.HasWarningReason(
+      CanonicalCookie::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE));
+
+  // Removing a nonexistent warning reason doesn't do anything.
+  ASSERT_FALSE(status.HasWarningReason(
+      CanonicalCookie::CookieInclusionStatus::
+          WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT));
+  status.RemoveWarningReason(CanonicalCookie::CookieInclusionStatus::
+                                 WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT);
+  EXPECT_TRUE(status.IsValid());
+  EXPECT_FALSE(status.ShouldWarn());
+  EXPECT_FALSE(status.HasWarningReason(
+      CanonicalCookie::CookieInclusionStatus::
+          WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT));
 }
 
 }  // namespace net

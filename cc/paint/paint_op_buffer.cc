@@ -363,11 +363,13 @@ PaintOp::DeserializeOptions::DeserializeOptions(
     TransferCacheDeserializeHelper* transfer_cache,
     ServicePaintCache* paint_cache,
     SkStrikeClient* strike_client,
-    std::vector<uint8_t>* scratch_buffer)
+    std::vector<uint8_t>* scratch_buffer,
+    bool is_privileged)
     : transfer_cache(transfer_cache),
       paint_cache(paint_cache),
       strike_client(strike_client),
-      scratch_buffer(scratch_buffer) {
+      scratch_buffer(scratch_buffer),
+      is_privileged(is_privileged) {
   DCHECK(scratch_buffer);
 }
 

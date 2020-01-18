@@ -1125,7 +1125,7 @@ TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
   EXPECT_FALSE(http_server_properties_->HasLastLocalAddressWhenQuicWorked());
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
 
   EXPECT_TRUE(http_server_properties_->HasLastLocalAddressWhenQuicWorked());
 
@@ -1181,7 +1181,7 @@ TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
   EXPECT_FALSE(session->require_confirmation());
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
 
   EXPECT_TRUE(http_server_properties_->HasLastLocalAddressWhenQuicWorked());
 }
@@ -2278,7 +2278,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Complete handshake. QuicStreamFactory::Job should complete and succeed.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
   EXPECT_FALSE(HasActiveJob(host_port_pair_, privacy_mode_));
@@ -2346,7 +2346,7 @@ TEST_P(QuicStreamFactoryTest, WriteErrorInCryptoConnectWithSyncHostResolution) {
 
   // Complete handshake.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
   EXPECT_FALSE(HasActiveJob(host_port_pair_, privacy_mode_));
@@ -6376,7 +6376,7 @@ void QuicStreamFactoryTestBase::
 
   // Confirm the handshake on the alternate network.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
   // Resume the data now so that data can be sent and read.
@@ -6492,7 +6492,7 @@ TEST_P(QuicStreamFactoryTest, MigrationOnWriteErrorBeforeHandshakeConfirmed) {
 
   // Complete handshake. QuicStreamFactory::Job should complete and succeed.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
   EXPECT_FALSE(HasActiveJob(host_port_pair_, privacy_mode_));
@@ -6584,7 +6584,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Confirm the handshake on the alternate network.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
 
@@ -12432,7 +12432,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Send Crypto handshake so connect will call back.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   base::RunLoop().RunUntilIdle();
 
   // Check that the racing job is running.
@@ -12514,7 +12514,7 @@ TEST_P(QuicStreamFactoryTest,
   // Finish stale connection async, and the stale connection should pass dns
   // validation.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream.get());
@@ -12675,7 +12675,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
 
   // Finish the stale connection.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HasLiveSession(host_port_pair_));
   EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));
@@ -12762,7 +12762,7 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
   host_resolver_->ResolveAllPending();
   base::RunLoop().RunUntilIdle();
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -13391,7 +13391,7 @@ TEST_P(QuicStreamFactoryTest, StaleNetworkFailedBeforeHandshake) {
   base::RunLoop().RunUntilIdle();
   // Make sure the fresh session is established.
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
@@ -13468,7 +13468,7 @@ TEST_P(QuicStreamFactoryTest, ConfigInitialRttForHandshake) {
   task_runner->FastForwardBy(handshake_timeout);
 
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-      quic::QuicSession::HANDSHAKE_CONFIRMED);
+      quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
 

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/views_export.h"
 
@@ -41,6 +42,7 @@ class View;
 class VIEWS_EXPORT Border {
  public:
   Border();
+  explicit Border(SkColor color);
   virtual ~Border();
 
   // Renders the border for the specified view.
@@ -57,7 +59,14 @@ class VIEWS_EXPORT Border {
   // content laid out relative to these images.
   virtual gfx::Size GetMinimumSize() const = 0;
 
+  SkColor color() const { return color_; }
+
+  // Sets the border color.
+  void set_color(SkColor color) { color_ = color; }
+
  private:
+  SkColor color_ = gfx::kPlaceholderColor;
+
   DISALLOW_COPY_AND_ASSIGN(Border);
 };
 

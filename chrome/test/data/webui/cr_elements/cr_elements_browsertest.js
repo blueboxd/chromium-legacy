@@ -404,28 +404,6 @@ TEST_F('CrElementsSliderTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
-function CrElementsSplitterTest() {}
-
-CrElementsSplitterTest.prototype = {
-  __proto__: CrElementsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://resources/cr_elements/cr_splitter/cr_splitter.html',
-
-  /** @override */
-  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    'cr_splitter_test.js',
-  ]),
-};
-
-TEST_F('CrElementsSplitterTest', 'All', function() {
-  mocha.run();
-});
-
-/**
- * @constructor
- * @extends {CrElementsBrowserTest}
- */
 function CrElementsToastTest() {}
 
 CrElementsToastTest.prototype = {

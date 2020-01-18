@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/ui_manager.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -504,6 +505,13 @@ TEST_F(SafeBrowsingUIManagerTest,
       MakeUnsafeResource(kBadURL, true /* is_subresource */);
   // Needed for showing the blocking page.
   resource.threat_source = safe_browsing::ThreatSource::REMOTE;
+
+  // The callback needs to be set for committed interstitials, just set it to do
+  // nothing.
+  resource.callback = base::DoNothing();
+  resource.callback_thread =
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
+
   NavigateAndCommit(GURL("http://example.test"));
 
   delegate.ClearVisibleSecurityStateChanged();

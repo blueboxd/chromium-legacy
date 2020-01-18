@@ -70,6 +70,7 @@ class ProfileImpl : public Profile {
   void OnLocaleChanged();
 
   const std::string name_;
+
   base::FilePath data_path_;
 
   std::unique_ptr<BrowserContextImpl> browser_context_;

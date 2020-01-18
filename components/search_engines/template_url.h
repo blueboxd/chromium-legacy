@@ -107,11 +107,17 @@ class TemplateURLRef {
       // The |previous_event_results| are the results of the user-interaction of
       // that previous request.
       // The "previous_xyz" parameters are documented in go/cs-sanitized.
+      // The |is_exact_search| allows the search request to be narrowed down to
+      // an "exact" search only, meaning just search for X rather than X +
+      // whatever else is in the context.  The returned search term should not
+      // be expanded, and the server will honor this along with creating a
+      // narrow Search Term.
       ContextualSearchParams(int version,
                              int contextual_cards_version,
                              const std::string& home_country,
                              int64_t previous_event_id,
-                             int previous_event_results);
+                             int previous_event_results,
+                             bool is_exact_search);
       ContextualSearchParams(const ContextualSearchParams& other);
       ~ContextualSearchParams();
 
@@ -120,11 +126,11 @@ class TemplateURLRef {
       size_t EstimateMemoryUsage() const;
 
       // The version of contextual search.
-      int version;
+      int version = -1;
 
       // The version of Contextual Cards data to request.
       // A value of 0 indicates no data needed.
-      int contextual_cards_version;
+      int contextual_cards_version = 0;
 
       // The locale of the user's home country in an ISO country code format,
       // or an empty string if not available.  This indicates where the user
@@ -133,11 +139,15 @@ class TemplateURLRef {
 
       // An EventID from a previous interaction (sent by server, recorded by
       // client).
-      int64_t previous_event_id;
+      int64_t previous_event_id = 0l;
 
       // An encoded set of booleans that represent the interaction results from
       // the previous event.
-      int previous_event_results;
+      int previous_event_results = 0;
+
+      // A flag that restricts the search to exactly match the selection rather
+      // than expanding the Search Term to include other words in the context.
+      bool is_exact_search = false;
     };
 
     // Estimates dynamic memory usage.

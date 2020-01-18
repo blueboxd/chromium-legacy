@@ -357,11 +357,8 @@ internal::ResultCode FillAntiVirusProductsFromWMI(
   return internal::ResultCode::kSuccess;
 }
 
-void MaybeAddUnregisteredAntiVirusProducts(bool report_full_names,
-                                           std::vector<AvProduct>* products) {
-  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
-                                                base::BlockingType::MAY_BLOCK);
-
+void MaybeAddTrusteerEndpointProtection(bool report_full_names,
+                                        std::vector<AvProduct>* products) {
   // Trusteer Rapport does not register with WMI or Security Center so do some
   // "best efforts" detection here.
 
@@ -401,6 +398,54 @@ void MaybeAddUnregisteredAntiVirusProducts(bool report_full_names,
   av_product.set_product_version_hash(variations::HashName(product_version));
 
   products->push_back(av_product);
+}
+
+void MaybeAddCarbonBlack(bool report_full_names,
+                         std::vector<AvProduct>* products) {
+  // Carbon Black does not register with WMI or Security Center so do some
+  // "best efforts" detection here.
+
+  // Look for driver in the Windows drivers directory.
+  base::FilePath driver_path;
+  if (!base::PathService::Get(base::DIR_SYSTEM, &driver_path))
+    return;
+
+  driver_path = driver_path.AppendASCII("drivers").AppendASCII("parity.sys");
+
+  if (!base::PathExists(driver_path))
+    return;
+
+  std::wstring mutable_path_str(driver_path.value());
+  std::string product_version;
+
+  // Note: this is full version including patch level.
+  if (!GetProductVersion(&mutable_path_str, &product_version))
+    return;
+
+  AvProduct av_product;
+
+  // Assume enabled, no easy way of knowing for sure.
+  av_product.set_product_state(metrics::SystemProfileProto::AntiVirusState::
+                                   SystemProfileProto_AntiVirusState_STATE_ON);
+
+  // This name is taken from the driver properties.
+  std::string product_name("CB Protection");
+  if (report_full_names) {
+    av_product.set_product_name(product_name);
+    av_product.set_product_version(product_version);
+  }
+  av_product.set_product_name_hash(variations::HashName(product_name));
+  av_product.set_product_version_hash(variations::HashName(product_version));
+
+  products->push_back(av_product);
+}
+
+void MaybeAddUnregisteredAntiVirusProducts(bool report_full_names,
+                                           std::vector<AvProduct>* products) {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+  MaybeAddTrusteerEndpointProtection(report_full_names, products);
+  MaybeAddCarbonBlack(report_full_names, products);
 }
 
 }  // namespace

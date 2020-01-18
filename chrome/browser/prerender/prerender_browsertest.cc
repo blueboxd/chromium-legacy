@@ -934,7 +934,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PageLoadMetricsSimple) {
   histogram_tester().ExpectTotalCount(
       "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 1);
   histogram_tester().ExpectTotalCount(
-      "PageLoad.DocumentTiming.NavigationToFirstLayout", 1);
+      "PageLoad.PaintTiming.ParseStartToFirstContentfulPaint", 1);
 
   // Histogram only emitted during a prerender, which should not happen here.
   histogram_tester().ExpectTotalCount(

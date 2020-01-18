@@ -9,7 +9,5 @@ source_set("test") {
     "fake_location_bar_consumer.h",
     "fake_location_bar_consumer.mm",
   ]
-  deps = [
-    "//ios/chrome/browser/ui/location_bar",
-  ]
+  deps = [ "//ios/chrome/browser/ui/location_bar" ]
 }

@@ -105,8 +105,13 @@ void AppendCookieLineEntry(const CanonicalCookie& cookie,
   *cookie_line += cookie.Value();
 }
 
-uint32_t GetBitmask(
+uint32_t GetExclusionBitmask(
     CanonicalCookie::CookieInclusionStatus::ExclusionReason reason) {
+  return 1u << static_cast<uint32_t>(reason);
+}
+
+uint32_t GetWarningBitmask(
+    CanonicalCookie::CookieInclusionStatus::WarningReason reason) {
   return 1u << static_cast<uint32_t>(reason);
 }
 
@@ -118,19 +123,22 @@ void ApplySameSiteCookieWarningToStatus(
     CanonicalCookie::CookieInclusionStatus* status) {
   if (samesite == CookieSameSite::UNSPECIFIED &&
       context < CookieOptions::SameSiteCookieContext::SAME_SITE_LAX) {
-    status->set_warning(CanonicalCookie::CookieInclusionStatus::
-                            WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT);
+    status->AddWarningReason(CanonicalCookie::CookieInclusionStatus::
+                                 WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT);
   }
-  // This will overwrite the previous warning but it is more specific so that
-  // is ok.
   if (effective_samesite == CookieEffectiveSameSite::LAX_MODE_ALLOW_UNSAFE &&
       context ==
           CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE) {
-    status->set_warning(CanonicalCookie::CookieInclusionStatus::
-                            WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE);
+    // This warning is more specific so remove the previous, more general,
+    // warning.
+    status->RemoveWarningReason(
+        CanonicalCookie::CookieInclusionStatus::
+            WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT);
+    status->AddWarningReason(CanonicalCookie::CookieInclusionStatus::
+                                 WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE);
   }
   if (samesite == CookieSameSite::NO_RESTRICTION && !is_secure) {
-    status->set_warning(
+    status->AddWarningReason(
         CanonicalCookie::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE);
   }
   // If there are reasons to exclude the cookie other than the new SameSite
@@ -841,17 +849,22 @@ std::string CanonicalCookie::DomainWithoutDot() const {
 }
 
 CanonicalCookie::CookieInclusionStatus::CookieInclusionStatus()
-    : exclusion_reasons_(0u), warning_(DO_NOT_WARN) {}
+    : exclusion_reasons_(0u), warning_reasons_(0u) {}
+
+CanonicalCookie::CookieInclusionStatus::CookieInclusionStatus(
+    ExclusionReason reason)
+    : exclusion_reasons_(GetExclusionBitmask(reason)) {}
 
 CanonicalCookie::CookieInclusionStatus::CookieInclusionStatus(
     ExclusionReason reason,
     WarningReason warning)
-    : exclusion_reasons_(GetBitmask(reason)), warning_(warning) {}
+    : exclusion_reasons_(GetExclusionBitmask(reason)),
+      warning_reasons_(GetWarningBitmask(warning)) {}
 
 bool CanonicalCookie::CookieInclusionStatus::operator==(
     const CookieInclusionStatus& other) const {
   return exclusion_reasons_ == other.exclusion_reasons_ &&
-         warning_ == other.warning_;
+         warning_reasons_ == other.warning_reasons_;
 }
 
 bool CanonicalCookie::CookieInclusionStatus::operator!=(
@@ -865,12 +878,12 @@ bool CanonicalCookie::CookieInclusionStatus::IsInclude() const {
 
 bool CanonicalCookie::CookieInclusionStatus::HasExclusionReason(
     ExclusionReason reason) const {
-  return exclusion_reasons_ & GetBitmask(reason);
+  return exclusion_reasons_ & GetExclusionBitmask(reason);
 }
 
 void CanonicalCookie::CookieInclusionStatus::AddExclusionReason(
     ExclusionReason reason) {
-  exclusion_reasons_ |= GetBitmask(reason);
+  exclusion_reasons_ |= GetExclusionBitmask(reason);
   // If the cookie would be excluded for reasons other than the new SameSite
   // rules, don't bother warning about it.
   MaybeClearSameSiteWarning();
@@ -878,19 +891,40 @@ void CanonicalCookie::CookieInclusionStatus::AddExclusionReason(
 
 void CanonicalCookie::CookieInclusionStatus::RemoveExclusionReason(
     ExclusionReason reason) {
-  exclusion_reasons_ &= ~(GetBitmask(reason));
+  exclusion_reasons_ &= ~(GetExclusionBitmask(reason));
 }
 
 void CanonicalCookie::CookieInclusionStatus::MaybeClearSameSiteWarning() {
   uint32_t samesite_reasons_mask =
-      GetBitmask(EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) |
-      GetBitmask(EXCLUDE_SAMESITE_NONE_INSECURE);
-  if (exclusion_reasons_ & ~samesite_reasons_mask)
-    set_warning(DO_NOT_WARN);
+      GetExclusionBitmask(EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX) |
+      GetExclusionBitmask(EXCLUDE_SAMESITE_NONE_INSECURE);
+  if (exclusion_reasons_ & ~samesite_reasons_mask) {
+    RemoveWarningReason(CanonicalCookie::CookieInclusionStatus::
+                            WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT);
+    RemoveWarningReason(
+        CanonicalCookie::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE);
+    RemoveWarningReason(CanonicalCookie::CookieInclusionStatus::
+                            WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE);
+  }
 }
 
 bool CanonicalCookie::CookieInclusionStatus::ShouldWarn() const {
-  return warning_ != DO_NOT_WARN;
+  return warning_reasons_ != 0u;
+}
+
+bool CanonicalCookie::CookieInclusionStatus::HasWarningReason(
+    WarningReason reason) const {
+  return warning_reasons_ & GetWarningBitmask(reason);
+}
+
+void CanonicalCookie::CookieInclusionStatus::AddWarningReason(
+    WarningReason reason) {
+  warning_reasons_ |= GetWarningBitmask(reason);
+}
+
+void CanonicalCookie::CookieInclusionStatus::RemoveWarningReason(
+    WarningReason reason) {
+  warning_reasons_ &= ~(GetWarningBitmask(reason));
 }
 
 std::string CanonicalCookie::CookieInclusionStatus::GetDebugString() const {
@@ -933,28 +967,30 @@ std::string CanonicalCookie::CookieInclusionStatus::GetDebugString() const {
     base::StrAppend(&out, {"EXCLUDE_INVALID_PREFIX, "});
 
   // Add warning
-  switch (warning_) {
-    case DO_NOT_WARN:
-      base::StrAppend(&out, {"DO_NOT_WARN"});
-      break;
-    case WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT:
-      base::StrAppend(&out, {"WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT"});
-      break;
-    case WARN_SAMESITE_NONE_INSECURE:
-      base::StrAppend(&out, {"WARN_SAMESITE_NONE_INSECURE"});
-      break;
-    case WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE:
-      base::StrAppend(&out, {"WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE"});
-      break;
+  if (!ShouldWarn()) {
+    base::StrAppend(&out, {"DO_NOT_WARN"});
+    return out;
   }
+
+  if (HasWarningReason(WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT))
+    base::StrAppend(&out, {"WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT, "});
+  if (HasWarningReason(WARN_SAMESITE_NONE_INSECURE))
+    base::StrAppend(&out, {"WARN_SAMESITE_NONE_INSECURE, "});
+  if (HasWarningReason(WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE))
+    base::StrAppend(&out, {"WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE, "});
+
+  // Strip trailing comma and space.
+  out.erase(out.end() - 2, out.end());
 
   return out;
 }
 
 bool CanonicalCookie::CookieInclusionStatus::IsValid() const {
   // Bit positions where there should not be any true bits.
-  uint32_t mask = ~0u << static_cast<int>(NUM_EXCLUSION_REASONS);
-  return (mask & exclusion_reasons_) == 0u;
+  uint32_t exclusion_mask = ~0u << static_cast<int>(NUM_EXCLUSION_REASONS);
+  uint32_t warning_mask = ~0u << static_cast<int>(NUM_WARNING_REASONS);
+  return (exclusion_mask & exclusion_reasons_) == 0u &&
+         (warning_mask & warning_reasons_) == 0u;
 }
 
 bool CanonicalCookie::CookieInclusionStatus::
@@ -965,16 +1001,24 @@ bool CanonicalCookie::CookieInclusionStatus::
   return expected.exclusion_reasons_ == exclusion_reasons_;
 }
 
+bool CanonicalCookie::CookieInclusionStatus::HasExactlyWarningReasonsForTesting(
+    std::vector<WarningReason> reasons) const {
+  CookieInclusionStatus expected = MakeFromReasonsForTesting({}, reasons);
+  return expected.warning_reasons_ == warning_reasons_;
+}
+
 // static
 CanonicalCookie::CookieInclusionStatus
 CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
     std::vector<ExclusionReason> reasons,
-    WarningReason warning) {
+    std::vector<WarningReason> warnings) {
   CookieInclusionStatus status;
   for (ExclusionReason reason : reasons) {
     status.AddExclusionReason(reason);
   }
-  status.set_warning(warning);
+  for (WarningReason warning : warnings) {
+    status.AddWarningReason(warning);
+  }
   return status;
 }
 

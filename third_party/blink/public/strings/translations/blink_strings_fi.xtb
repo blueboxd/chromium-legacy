@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">liukusäädin</translation>
 <translation id="1211441953136645838">loppuhuomautus</translation>
 <translation id="1281252709823657822">valintaikkuna</translation>
+<translation id="1306460908038601864">Pois päältä</translation>
 <translation id="1335095011850992622">tunnustukset</translation>
 <translation id="1342835525016946179">artikkeli</translation>
 <translation id="1359897965706325498">banneri</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> Pt</translation>
 <translation id="5307600278924710095">Lisää <ph name="ATSIGN" />-osaa ennen tuleva osa. <ph name="INVALIDADDRESS" /> on puutteellinen.</translation>
 <translation id="5334352251556557839">Mediaa ei voi toistaa.</translation>
+<translation id="537648784377940524">Vähimmäispäivämäärän (<ph name="MIN_DATE_OR_TIME" />) on oltava ennen enimmäispäivämäärää (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">kuva</translation>
 <translation id="5453733299334684579">puukohde</translation>
 <translation id="5466621249238537318">Valitse vähintään yksi tiedosto.</translation>

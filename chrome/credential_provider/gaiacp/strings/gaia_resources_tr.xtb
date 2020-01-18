@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
+<translation id="1337778609052285767">Mevcut şifre, şifrenin kolay tahmin edilemeyecek zorlukta olma gereksinimlerini karşılamıyor. Lütfen yöneticinizle görüşün.</translation>
 <translation id="1337821341856692531">Geçerli Windows şifrenizi girmeden devam etmek, geri alınamaz bilgi kaybına neden olabilir.</translation>
 <translation id="1383286653814676580">Google Kimlik Bilgisi Sağlayıcısı oturum açma sayfasını çalıştırmak için kullanılır.</translation>
 <translation id="1894475569413661128">İş hesabınızı kullanarak oturum açın.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Yanlış bir Windows şifresi girdiniz. Lütfen tekrar deneyin.</translation>
 <translation id="2831078752570172210">Hesabınız kilitlendi. Lütfen sistem yöneticinizle iletişime geçin.</translation>
 <translation id="2844349213149998955">Bu cihazda kişisel hesapla oturum açılmasına izin verilmiyor. Lütfen bir iş hesabıyla giriş yapın.</translation>
+<translation id="2995851317559936311">Parola değişikliğine yalnızca alan alanı denetleyicisinde izin verilir. Lütfen yöneticinizle görüşün.</translation>
 <translation id="3306357053520292004">Bu bilgisayardaki bir kullanıcı zaten bu hesap kullanılarak eklenmiş. Lütfen farklı bir hesapla oturum açın.</translation>
 <translation id="3926852373333893095">Sadece GSuite Enterprise kullanıcılarının giriş yapmasına izin verilir.</translation>
 <translation id="4057329986137569701">Dahili bir hata oluştu.</translation>
 <translation id="4267670563222825190">Hesabınız için hiçbir alan kullanıcısı bulunamadı. Lütfen yöneticinizle görüşün.</translation>
 <translation id="4300229033992784001">Hesap şifreniz değişti. Windows hesabınızı iş hesabınızla senkronize etmek için lütfen mevcut Windows şifrenizi girin.</translation>
+<translation id="4669462973597624151">Şifre değiştirme girişimi başarısız oldu Lütfen yöneticinizle görüşün.</translation>
 <translation id="4706454071748629324">Yeni kullanıcı eklenemedi. Bu bilgisayar yalnızca bir kullanıcının, iş hesabı kullanılarak oluşturulmasına izin verir.</translation>
+<translation id="5186761973554910131">Parola değiştirme girişimi sırasında geçersiz bilgisayar adı belirtildi. Lütfen yöneticinizle görüşün.</translation>
 <translation id="6033715878377252112">Windows için Google Kimlik Bilgisi Sağlayıcı yardımcısı</translation>
 <translation id="6149399665202317746">Windows için Google Kimlik Bilgisi Sağlayıcı</translation>
 <translation id="6239180560789153226">Cihazınızda kurtarma bilgileri eksik. Google iş hesabınızı kullanarak oturum açın.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">İş hesabı ekle</translation>
 <translation id="7811865856574012727">Yöneticiniz cihaz oturum açmayı aşağıdaki alan adlarıyla kısıtladı: <ph name="EMAIL_DOMAINS" />. Geçerli bir iş hesabı kullanarak tekrar deneyin.</translation>
 <translation id="7856245195110636219">Geçerli Windows şifresi girilmeden devam edilemiyor. Lütfen sistem yöneticisiyle iletişim kurun.</translation>
+<translation id="8109730953933509335">Geçersiz kullanıcı adıyla şifre değiştirme girişiminde bulunuldu. Lütfen yöneticinizle görüşün.</translation>
 <translation id="8639729688781680518">Windows Şifresini Unuttum</translation>
 <translation id="866458870819756755">Kullanıcı oluşturulamadı.</translation>
 <translation id="8875753657315897487">İş hesabınızı kullanarak oturum açın.</translation>

@@ -54,8 +54,9 @@ public class SharedFileCollator implements Callback<Integer> {
 
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             if (result == MojoResult.OK) {
-                ChromeActivity activity = (ChromeActivity) mParams.getWindow().getActivity().get();
-                activity.getShareDelegate().share(mParams);
+                ChromeActivity<?> activity =
+                        (ChromeActivity<?>) mParams.getWindow().getActivity().get();
+                activity.getShareDelegateSupplier().get().share(mParams);
             } else {
                 callback.call(ShareError.INTERNAL_ERROR);
             }

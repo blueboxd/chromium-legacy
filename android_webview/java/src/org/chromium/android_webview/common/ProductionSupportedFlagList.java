@@ -28,9 +28,11 @@ public final class ProductionSupportedFlagList {
                             + "compositing."),
             Flag.commandLine("webview-log-js-console-messages",
                     "Mirrors JavaScript console messages to system logs."),
-            Flag.commandLine(CommandLineUtil.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH,
+            Flag.commandLine(AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH,
                     "Used for turning on Breakpad crash reporting in a debug environment where "
                             + "crash reporting is typically compiled but disabled."),
+            Flag.commandLine("disable-gpu-rasterization",
+                    "Disables GPU rasterization, i.e. rasterizes on the CPU only."),
             Flag.baseFeature("OutOfBlinkCors",
                     "Moves CORS logic into the Network Service (rather than inside the blink "
                             + "rendering engine)."),

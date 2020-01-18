@@ -79,6 +79,16 @@ Polymer({
      * @type {!settings.SortMethod|undefined}
      */
     sortMethod: {type: String, observer: 'updateOrigins_'},
+
+    /**
+     * Represents whether or not the storage pressure UI flag is enabled
+     * @type {boolean}
+     * @private
+     */
+    storagePressureUIEnabled_: {
+      type: Boolean,
+      value: loadTimeData.getBoolean('enableStoragePressureUI'),
+    },
   },
 
   /** @private {?settings.LocalDataBrowserProxy} */
@@ -383,6 +393,8 @@ Polymer({
       target: e.target,
       index: this.listIndex,
       item: this.siteGroup,
+      origin: e.target.dataset.origin,
+      actionScope: e.target.dataset.context,
     });
   },
 

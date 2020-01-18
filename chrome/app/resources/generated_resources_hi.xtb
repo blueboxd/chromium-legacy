@@ -537,7 +537,7 @@
 <translation id="1737968601308870607">गड़बड़ी की सूचना दें</translation>
 <translation id="1741314857973421784">जारी रखें</translation>
 <translation id="1743570585616704562">उंगली की पहचान नहीं हो सकी</translation>
-<translation id="1743846852744439013">आपको सभी साइटों और खुले हुए टैब से साइन आउट कर दिया जाएगा.</translation>
+<translation id="1743846852744439013">आपको सभी साइटों से साइन आउट कर दिया जाएगा. इनमें वे साइटें भी शामिल हैं जिनका कोई टैब खुला हुआ है.</translation>
 <translation id="1743970419083351269">डाउनलोड बार बंद करें</translation>
 <translation id="1744060673522309905">डिवाइस को डोमेन से नहीं जोड़ सकते. पक्का करें कि आपने जोड़े जा सकने वाले डिवाइस की संख्या पार नहीं की है.</translation>
 <translation id="1744108098763830590">पेजभूमि पेज</translation>
@@ -948,7 +948,6 @@
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% हो गया</translation>
 <translation id="2318143611928805047">कागज़ का आकार</translation>
 <translation id="2318817390901984578">Android ऐप्लिकेशन का इस्तेमाल करने के लिए, अपना <ph name="DEVICE_TYPE" /> चार्ज करें और अपडेट करें.</translation>
-<translation id="2318923050469484167">वर्तमान गुप्त सत्र (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">शीर्षलेख और पादलेख</translation>
 <translation id="2322318151094136999">जब कोई साइट सीरियल पाेर्ट (सुझाया गया) ऐक्सेस करना चाहे, तो इसके लिए पूछें</translation>
 <translation id="2325002827435400643">इस साइट के लिए बंद करें</translation>
@@ -1791,6 +1790,7 @@
 <translation id="3511307672085573050">लिंक प&amp;ते की प्रतिलिपि बनाएं</translation>
 <translation id="351152300840026870">निश्चित-चौड़ाई फ़ॉन्ट</translation>
 <translation id="3511528412952710609">कम</translation>
+<translation id="3513704683820682405">ऑगमेंटेड रिएलिटी (AR)</translation>
 <translation id="3514373592552233661">एक से ज़्यादा नेटवर्क उपलब्ध होने पर पसंदीदा नेटवर्क को दूसरे ज्ञात नेटवर्क पर प्राथमिकता दी जाएगी</translation>
 <translation id="3515983984924808886">रीसेट की पुष्टि करने के लिए, अपनी सुरक्षा कुंजी फिर से छुएं. ऐसा करने से सुरक्षा कुंजी का पिन और उस पर मौजूद पूरी जानकारी मिट जाएगी.</translation>
 <translation id="3518985090088779359">स्‍वीकार करें और जारी रखें</translation>
@@ -2246,7 +2246,6 @@
 <translation id="4099874310852108874">नेटवर्क में गड़बड़ी हुई.</translation>
 <translation id="4100733287846229632">डिवाइस में बहुत ही कम स्थान बचा है</translation>
 <translation id="4100853287411968461">किसी डिवाइस के इस्तेमाल में बीते समय की नई सीमा</translation>
-<translation id="4103091233824664032">स्क्रीन लॉक कॉन्फ़िगर करने के लिए अपना पासवर्ड डालें और साइन इन करें</translation>
 <translation id="4104163789986725820">नि&amp;र्यात करें...</translation>
 <translation id="4107048419833779140">मेमोरी डिवाइसों की पहचान करें और उन्हें निकालें</translation>
 <translation id="4109135793348361820">विंडो को <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) पर ले जाएं</translation>
@@ -2785,6 +2784,7 @@
 <translation id="494286511941020793">प्रॉक्सी कॉन्फ़िगरेशन सहायता</translation>
 <translation id="4943368462779413526">फ़ुटबॉल</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" किसी सीरियल पोर्ट से कनेक्ट करना चाहता है</translation>
+<translation id="4943703118917034429">वर्चुअल रियलिटी</translation>
 <translation id="4944310289250773232">यह प्रमाणीकरण सेवा <ph name="SAML_DOMAIN" /> की मदद से होस्ट की गई है</translation>
 <translation id="495170559598752135">क्रियाएं</translation>
 <translation id="4952981627953231344">इस डिवाइस पर Plugin VM को अनुमति नहीं दी गई है. अपने संगठन के डिवाइस एडमिन से संपर्क करें.</translation>
@@ -3134,7 +3134,6 @@
 <translation id="5468173180030470402">फ़ाइल शेयर को ढूंढा जा रहा है</translation>
 <translation id="5470735824776589490">डिवाइस को 'पावरवॉश' से रीसेट करने से पहले रीस्टार्ट करना ज़रूरी है. <ph name="LINK_BEGIN" />ज़्यादा जानें<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">नमस्ते! मैं आपकी लिखाई को बोली में बदलने वाली आवाज़ हूं.</translation>
-<translation id="5472133193607270166">जब यह चालू होगा, तब साइटें अलग-अलग साइटों पर की गई आपकी ब्राउज़िंग गतिविधि का इस्तेमाल दर्शकों की पसंद को ध्यान में रखकर विज्ञापन दिखाने के लिए नहीं कर पाएंगी. कुछ साइटें शायद ठीक से काम नहीं करेंगी.</translation>
 <translation id="5473333559083690127">नया पिन फिर से डालें</translation>
 <translation id="5481941284378890518">आस-पास के प्रिंटर जोड़ें</translation>
 <translation id="5483785310822538350">फ़ाइल और डिवाइस के एक्सेस रद्द करें</translation>
@@ -3305,7 +3304,6 @@
 <translation id="5701381305118179107">मध्य</translation>
 <translation id="5701441174893770082">Linux को अपग्रेड करने से आपकी बैटरी जल्दी खत्म हो सकती है. कृपया अपने डिवाइस को चार्जर से कनेक्ट करें और फिर से कोशिश करें.</translation>
 <translation id="5702898740348134351">और सर्च इंजन में बदलाव करें...</translation>
-<translation id="570302979952009979">इस फ़िंगरप्रिंट के लिए कोई नाम चुनें</translation>
 <translation id="5704875434923668958">इससे सिंक हो रहा है:</translation>
 <translation id="5707185214361380026">इससे एक्सटेंशन लोड करने में विफल:</translation>
 <translation id="5708171344853220004">Microsoft Principal Name</translation>
@@ -3397,7 +3395,6 @@
 <translation id="5833726373896279253">ये सेटिंग केवल मालिक द्वारा ही संशोधित की जा सकती हैं:</translation>
 <translation id="5834581999798853053">करीब <ph name="TIME" /> मिनट शेष हैं</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - कैमरा या माइक्रोफ़ोन रिकॉर्डिंग</translation>
-<translation id="5838456317242088717">वर्तमान गुप्त सत्र</translation>
 <translation id="5842497610951477805">ब्लूटूथ चालू है</translation>
 <translation id="5843250171025351504">आपका डिवाइस अब आपके एडमिन के बताए गए कम से कम क्लाइंट वर्शन का पालन नहीं करता है. कृपया लॉगिन करने के लिए अपडेट करें.</translation>
 <translation id="5846200638699387931">रिलेशन सिंटैक्स गड़बड़ी: <ph name="ERROR_LINE" /></translation>
@@ -3653,7 +3650,6 @@
 <translation id="6181431612547969857">डाउनलोड अवरोधित किया गया</translation>
 <translation id="6185132558746749656">डिवाइस स्थान</translation>
 <translation id="6195693561221576702">यह डिवाइस ऑफ़लाइन डेमो मोड में सेट अप नहीं किया जा सकता.</translation>
-<translation id="6196640612572343990">तीसरे पक्ष की कुकी ब्लॉक करें</translation>
 <translation id="6196854373336333322">एक्सटेंशन "<ph name="EXTENSION_NAME" />" ने आपकी प्रॉक्सी सेटिंग पर नियंत्रण कर लिया है, जिसका अर्थ है कि यह   ऑनलाइन किए जाने वाले काम को बदल सकता है, रोक सकता है या उसे छिप कर सुन सकता है. अगर आप पक्का नहीं हैं कि यह बदलाव क्यों हुआ है, तो संभवत: आप उसे नहीं चाहते हैं.</translation>
 <translation id="6198102561359457428">साइन आउट करें और फिर से साइन इन करें...</translation>
 <translation id="6198252989419008588">पिन बदलें</translation>
@@ -4359,7 +4355,6 @@
 <translation id="7225179976675429563">नेटवर्क प्रकार गुम</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (विक्रेता: <ph name="VENDOR_ID" />, उत्पाद: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">ऐसी सेटिंग में बदलाव करें जो यह जानकारी देते हों कि क्‍या भौगोलिक स्‍थान, माइक्रोफ़ोन, कैमरा वगैरह जैसी सुविधाओं का इस्तेमाल वेबसाइट कर सकती हैं.</translation>
-<translation id="7228523857728654909">स्क्रीन लॉक और साइन इन करें</translation>
 <translation id="7229570126336867161">EVDO की आवश्यकता है</translation>
 <translation id="7230787553283372882">अपने लेख के आकार को पसंद के मुताबिक बनाएं</translation>
 <translation id="7232750842195536390">नाम नहीं बदला जा सका</translation>
@@ -5275,7 +5270,6 @@
 <translation id="850875081535031620">नुकसान पहुंचाने वाला कोई सॉफ़्टवेयर नहीं मिला</translation>
 <translation id="8509177919508253835">सुरक्षा कुंजी रीसेट करें और पिन बनाएं</translation>
 <translation id="8509646642152301857">वर्तनी जाँच शब्दकोश डाउनलोड नहीं हो सका.</translation>
-<translation id="8510617356402557055">क्या आपको इसकी उम्मीद नहीं थी? <ph name="BEGIN_LINK" />शिकायत करें<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">प्रक्रिया खत्म करें</translation>
 <translation id="851263357009351303"><ph name="HOST" /> को हमेशा चित्र दिखाने की अनुमति दें</translation>
 <translation id="8513108775083588393">स्क्रीन का अपने आप दिशा बदलना (ऑटो-रोटेट)</translation>

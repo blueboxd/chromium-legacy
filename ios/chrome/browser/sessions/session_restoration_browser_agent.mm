@@ -72,6 +72,7 @@ bool SessionRestorationBrowserAgent::RestoreSessionWindow(
     SessionWindowIOS* window) {
   if (!window.sessions.count)
     return NO;
+  restoring_session_ = true;
 
   for (auto& observer : observers_) {
     observer.WillStartSessionRestoration();
@@ -149,7 +150,12 @@ bool SessionRestorationBrowserAgent::RestoreSessionWindow(
   for (auto& observer : observers_) {
     observer.SessionRestorationFinished(restored_web_states);
   }
+  restoring_session_ = false;
   return closed_ntp_tab;
+}
+
+bool SessionRestorationBrowserAgent::IsRestoringSession() {
+  return restoring_session_;
 }
 
 void SessionRestorationBrowserAgent::SaveSession(bool immediately) {

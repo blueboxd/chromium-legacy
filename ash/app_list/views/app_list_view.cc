@@ -230,6 +230,13 @@ class AppListEventTargeter : public aura::WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(AppListEventTargeter);
 };
 
+float ComputeSubpixelOffset(const display::Display& display, float value) {
+  float pixel_position =
+      gfx::ToRoundedInt(display.device_scale_factor() * value);
+  float dp_position = pixel_position / display.device_scale_factor();
+  return dp_position - static_cast<int>(value);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -885,6 +892,7 @@ void AppListView::UpdateWidget() {
   // intersection.
   GetWidget()->GetNativeView()->SetBounds(
       GetPreferredWidgetBoundsForState(AppListViewState::kClosed));
+  ResetSubpixelPositionOffset(GetWidget()->GetNativeView()->layer());
 }
 
 void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
@@ -940,26 +948,21 @@ void AppListView::HandleClickOrTap(ui::LocatedEvent* event) {
   search_box_view_->ClearSearchAndDeactivateSearchBox();
 }
 
-void AppListView::StartDrag(const gfx::Point& location) {
-  // Convert drag point from widget coordinates to screen coordinates because
-  // the widget bounds changes during the dragging.
-  initial_drag_point_ = location;
-  ConvertPointToScreen(this, &initial_drag_point_);
-  initial_window_bounds_ = GetWidget()->GetWindowBoundsInScreen();
+void AppListView::StartDrag(const gfx::PointF& location_in_root) {
+  initial_drag_point_ = location_in_root;
+
+  drag_offset_ =
+      initial_drag_point_.y() - GetWidget()->GetNativeWindow()->bounds().y();
 }
 
-void AppListView::UpdateDrag(const gfx::Point& location) {
-  // Update the widget bounds based on the initial widget bounds and drag delta.
-  gfx::Point location_in_screen_coordinates = location;
-  ConvertPointToScreen(this, &location_in_screen_coordinates);
-  int new_y_position = location_in_screen_coordinates.y() -
-                       initial_drag_point_.y() + initial_window_bounds_.y();
+void AppListView::UpdateDrag(const gfx::PointF& location_in_root) {
+  float new_y_position_in_root = location_in_root.y() - drag_offset_;
 
-  UpdateYPositionAndOpacity(new_y_position,
+  UpdateYPositionAndOpacity(new_y_position_in_root,
                             GetAppListBackgroundOpacityDuringDragging());
 }
 
-void AppListView::EndDrag(const gfx::Point& location) {
+void AppListView::EndDrag(const gfx::PointF& location_in_root) {
   // |is_in_drag_| might have been cleared if the app list was dismissed while
   // drag was still in progress. Nothing to do here in that case.
   if (!is_in_drag_) {
@@ -1030,16 +1033,11 @@ void AppListView::EndDrag(const gfx::Point& location) {
 
     const int app_list_threshold =
         app_list_height / kAppListThresholdDenominator;
-    gfx::Point location_in_screen_coordinates = location;
-    ConvertPointToScreen(this, &location_in_screen_coordinates);
-    const int drag_delta =
-        initial_drag_point_.y() - location_in_screen_coordinates.y();
-    const int location_y_in_current_work_area =
-        location_in_screen_coordinates.y() -
-        GetDisplayNearestView().work_area().y();
+    const int drag_delta = initial_drag_point_.y() - location_in_root.y();
+    int display_bottom_in_root = GetDisplayNearestView().bounds().height();
     // If the drag ended near the bezel, close the app list.
-    if (location_y_in_current_work_area >=
-        (fullscreen_height - kAppListBezelMargin)) {
+    if (location_in_root.y() >=
+        (display_bottom_in_root - kAppListBezelMargin)) {
       Dismiss();
     } else {
       switch (app_list_state_) {
@@ -1084,7 +1082,7 @@ void AppListView::EndDrag(const gfx::Point& location) {
       }
     }
   }
-  initial_drag_point_ = gfx::Point();
+  initial_drag_point_ = gfx::PointF();
 }
 
 void AppListView::SetChildViewsForStateTransition(
@@ -1216,8 +1214,9 @@ void AppListView::EnsureWidgetBoundsMatchCurrentState() {
 
   // Set the widget size to fit the new display metrics.
   GetWidget()->GetNativeView()->SetBounds(new_target_bounds);
+  ResetSubpixelPositionOffset(GetWidget()->GetNativeView()->layer());
 
-  // Update the widget bounds to accomodate the new work
+  // Update the widget bounds to accommodate the new work
   // area.
   SetState(app_list_state_);
 }
@@ -1348,7 +1347,7 @@ void AppListView::OnMouseEvent(ui::MouseEvent* event) {
       event->SetHandled();
       if (is_in_drag_)
         return;
-      initial_mouse_drag_point_ = event->location();
+      initial_mouse_drag_point_ = event->root_location_f();
       break;
     case ui::ET_MOUSE_DRAGGED:
       event->SetHandled();
@@ -1357,8 +1356,8 @@ void AppListView::OnMouseEvent(ui::MouseEvent* event) {
       if (!is_in_drag_ && event->IsOnlyLeftMouseButton()) {
         // Calculate the mouse drag offset to determine whether AppListView is
         // in drag.
-        gfx::Vector2d drag_distance =
-            event->location() - initial_mouse_drag_point_;
+        gfx::Vector2dF drag_distance =
+            event->root_location_f() - initial_mouse_drag_point_;
         if (abs(drag_distance.y()) < kMouseDragThreshold)
           return;
 
@@ -1369,16 +1368,16 @@ void AppListView::OnMouseEvent(ui::MouseEvent* event) {
 
       if (!is_in_drag_)
         return;
-      UpdateDrag(event->location());
+      UpdateDrag(event->root_location_f());
       break;
     case ui::ET_MOUSE_RELEASED:
       event->SetHandled();
-      initial_mouse_drag_point_ = gfx::Point();
+      initial_mouse_drag_point_ = gfx::PointF();
       if (!is_in_drag_) {
         HandleClickOrTap(event);
         return;
       }
-      EndDrag(event->location());
+      EndDrag(event->root_location_f());
       CloseKeyboardIfVisible();
       SetIsInDrag(false);
       break;
@@ -1428,7 +1427,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       // scroll begin event occurs when the relative location changes beyond a
       // threshold. So avoid resetting the initial drag point in drag.
       if (!is_in_drag_)
-        StartDrag(event->location());
+        StartDrag(event->root_location_f());
       SetIsInDrag(true);
       event->SetHandled();
       break;
@@ -1445,7 +1444,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
         return;
       SetIsInDrag(true);
       last_fling_velocity_ = event->details().scroll_y();
-      UpdateDrag(event->location());
+      UpdateDrag(event->root_location_f());
       event->SetHandled();
       break;
     }
@@ -1461,7 +1460,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       // Avoid scrolling events for the app list in tablet mode.
       if (is_side_shelf_ || is_tablet_mode())
         return;
-      EndDrag(event->location());
+      EndDrag(event->root_location_f());
       event->SetHandled();
       break;
     }
@@ -1660,6 +1659,7 @@ void AppListView::ApplyBoundsAnimation(AppListViewState target_state,
   // to make this appear in the original location. Then set an empty transform
   // with the animation.
   layer->SetBounds(target_bounds);
+  ResetSubpixelPositionOffset(layer);
 
   gfx::Transform transform;
   const int y_offset = current_y_with_transform - target_bounds.y();
@@ -1776,7 +1776,7 @@ void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty,
   }
 }
 
-void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
+void AppListView::UpdateYPositionAndOpacity(float y_position_in_root,
                                             float background_opacity) {
   DCHECK(!is_side_shelf_);
   if (app_list_state_ == AppListViewState::kClosed)
@@ -1793,14 +1793,20 @@ void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
   presentation_time_recorder_->RequestNext();
 
   background_opacity_in_drag_ = background_opacity;
-  gfx::Rect new_widget_bounds = GetWidget()->GetWindowBoundsInScreen();
-  app_list_y_position_in_screen_ = std::min(
-      std::max(y_position_in_screen, GetDisplayNearestView().work_area().y()),
-      GetScreenBottom() - delegate_->GetShelfSize());
-  new_widget_bounds.set_y(app_list_y_position_in_screen_);
+  gfx::Rect new_window_bounds = GetWidget()->GetNativeWindow()->bounds();
+  display::Display display = GetDisplayNearestView();
+  float app_list_y_position_in_root = std::min(
+      std::max(y_position_in_root,
+               static_cast<float>(display.GetWorkAreaInsets().top())),
+      static_cast<float>(display.size().height() - delegate_->GetShelfSize()));
+
   gfx::NativeView native_view = GetWidget()->GetNativeView();
-  ::wm::ConvertRectFromScreen(native_view->parent(), &new_widget_bounds);
-  native_view->SetBounds(new_widget_bounds);
+  new_window_bounds.set_y(static_cast<int>(app_list_y_position_in_root));
+  native_view->SetBounds(new_window_bounds);
+  native_view->layer()->SetSubpixelPositionOffset(gfx::Vector2dF(
+      ComputeSubpixelOffset(display, new_window_bounds.x()),
+      ComputeSubpixelOffset(display, app_list_y_position_in_root)));
+
   UpdateChildViewsYPositionAndOpacity();
 }
 
@@ -1958,13 +1964,14 @@ AppListViewState AppListView::CalculateStateAfterShelfDrag(
               ? AppListViewState::kFullscreenAllApps
               : AppListViewState::kClosed;
     } else {
-      if (launcher_above_shelf_bottom_amount <= kDragSnapToClosedThreshold)
+      if (launcher_above_shelf_bottom_amount <= kDragSnapToClosedThreshold) {
         app_list_state = AppListViewState::kClosed;
-      else if (launcher_above_shelf_bottom_amount <=
-               kDragSnapToPeekingThreshold)
+      } else if (launcher_above_shelf_bottom_amount <=
+                 kDragSnapToPeekingThreshold) {
         app_list_state = AppListViewState::kPeeking;
-      else
+      } else {
         app_list_state = AppListViewState::kFullscreenAllApps;
+      }
     }
   }
 
@@ -2356,6 +2363,14 @@ void AppListView::EndDragFromShelf(AppListViewState app_list_state) {
     SetState(app_list_state);
   }
   UpdateChildViewsYPositionAndOpacity();
+}
+
+void AppListView::ResetSubpixelPositionOffset(ui::Layer* layer) {
+  const display::Display display = GetDisplayNearestView();
+  const gfx::Rect& bounds = layer->bounds();
+  layer->SetSubpixelPositionOffset(
+      gfx::Vector2dF(ComputeSubpixelOffset(display, bounds.x()),
+                     ComputeSubpixelOffset(display, bounds.y())));
 }
 
 }  // namespace ash

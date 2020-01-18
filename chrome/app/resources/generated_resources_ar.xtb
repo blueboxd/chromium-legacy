@@ -948,7 +948,6 @@
 <translation id="2317842250900878657">تم إكمال <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">حجم الورق</translation>
 <translation id="2318817390901984578">‏لاستخدام تطبيقات Android، اشحن جهاز <ph name="DEVICE_TYPE" /> وحدِّثه.</translation>
-<translation id="2318923050469484167">جلسة التصفح المتخفي الحالية (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">الرؤوس والتذييلات</translation>
 <translation id="2322318151094136999">طلب الإذن في حال محاولة موقع ويب الوصول إلى المنافذ التسلسلية (مُستحسَن)</translation>
 <translation id="2325002827435400643">إيقاف لهذا الموقع الإلكتروني</translation>
@@ -1791,6 +1790,7 @@
 <translation id="3511307672085573050">نسخ &amp;عنوان الرابط</translation>
 <translation id="351152300840026870">خط ثابت العرض</translation>
 <translation id="3511528412952710609">قصير</translation>
+<translation id="3513704683820682405">الواقع المعزّز</translation>
 <translation id="3514373592552233661">سيتم تفضيل الشبكات المُفضّلَة على الشبكات الأخرى المعروفة في حالة توافر أكثر من شبكة</translation>
 <translation id="3515983984924808886">يُرجى لمس مفتاح الأمان مرة أخرى لتأكيد إعادة الضبط. سيتم حذف جميع المعلومات المحفوظة في مفتاح الأمان، بما في ذلك رقم التعريف الشخصي الخاص به.</translation>
 <translation id="3518985090088779359">القبول والمتابعة</translation>
@@ -2244,7 +2244,6 @@
 <translation id="4099874310852108874">حدث خطأ في الشبكة.</translation>
 <translation id="4100733287846229632">المساحة على الجهاز منخفضة للغاية</translation>
 <translation id="4100853287411968461">حد جديد لوقت النظر إلى الشاشة</translation>
-<translation id="4103091233824664032">يُرجى إدخال كلمة مرورك لتهيئة قفل الشاشة وتسجيل الدخول</translation>
 <translation id="4104163789986725820">ت&amp;صدير...</translation>
 <translation id="4107048419833779140">تحديد أجهزة التخزين وإخراجها</translation>
 <translation id="4109135793348361820">نقل النافذة إلى <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
@@ -2783,6 +2782,7 @@
 <translation id="494286511941020793">مساعدة تهيئة الخادم الوكيل</translation>
 <translation id="4943368462779413526">كرة القدم</translation>
 <translation id="4943691134276646401">يجب ربط "<ph name="CHROME_EXTENSION_NAME" />" بمنفذ تسلسلي</translation>
+<translation id="4943703118917034429">الواقع الافتراضي</translation>
 <translation id="4944310289250773232">تتم استضافة خدمة المصادقة هذه من قِبل <ph name="SAML_DOMAIN" />.</translation>
 <translation id="495170559598752135">إجراءات</translation>
 <translation id="4952981627953231344">‏لا يُسمح باستخدام Plugin VM على هذا الجهاز. يُرجى التواصل مع مشرف أجهزة مؤسستك.</translation>
@@ -3132,7 +3132,6 @@
 <translation id="5468173180030470402">البحث عن خوادم مشاركة الملفات</translation>
 <translation id="5470735824776589490">‏يلزم إعادة تشغيل الجهاز حتى يتسنى لك إعادة ضبطه باستخدام Powerwash. <ph name="LINK_BEGIN" />مزيد من المعلومات<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">مرحبًا! هذا صوت ميزة تحويل النص إلى كلام.</translation>
-<translation id="5472133193607270166">عند التفعيل، لا يمكن للمواقع الإلكترونية استخدام نشاط التصفّح الخاص بك على المواقع الإلكترونية المختلفة لتخصيص الإعلانات. يمكن ألا تعمل بعض المواقع الإلكترونية على نحو سليم.</translation>
 <translation id="5473333559083690127">إعادة إدخال رقم التعريف الشخصي الجديد</translation>
 <translation id="5481941284378890518">إضافة طابعات مجاورة</translation>
 <translation id="5483785310822538350">إبطال الوصول للملف والجهاز</translation>
@@ -3303,7 +3302,6 @@
 <translation id="5701381305118179107">توسيط</translation>
 <translation id="5701441174893770082">‏قد تؤدي ترقية نظام التشغيل Linux إلى استهلاك البطارية بشكل كبير. يُرجى توصيل جهازك بالشاحن وإعادة المحاولة.</translation>
 <translation id="5702898740348134351">&amp;تعديل محركات البحث...</translation>
-<translation id="570302979952009979">اختيار اسم لبصمة الإصبع هذه</translation>
 <translation id="5704875434923668958">المزامنة مع</translation>
 <translation id="5707185214361380026">فشل تحميل الإضافة من:</translation>
 <translation id="5708171344853220004">‏الاسم الأساسي في Microsoft</translation>
@@ -3395,7 +3393,6 @@
 <translation id="5833726373896279253">يمكن تعديل هذه الإعدادات بواسطة المالك فقط: </translation>
 <translation id="5834581999798853053">تتبقى <ph name="TIME" /> دقيقة تقريبًا</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - تسجيل الكاميرا أو الميكروفون</translation>
-<translation id="5838456317242088717">جلسة التصفح المتخفي الحالية</translation>
 <translation id="5842497610951477805">تفعيل البلوتوث</translation>
 <translation id="5843250171025351504">لم يعد جهازك متوافقًا مع الحد الأدنى لإصدار البرنامج المحدد من قِبل مشرفك. يُرجى التحديث لتسجيل الدخول.</translation>
 <translation id="5846200638699387931">خطأ في بنية العلاقة: <ph name="ERROR_LINE" /></translation>
@@ -3652,7 +3649,6 @@
 <translation id="6181431612547969857">تم حظر التنزيل</translation>
 <translation id="6185132558746749656">موقع الجهاز</translation>
 <translation id="6195693561221576702">لا يمكن إعداد الجهاز في الوضع التجريبي بلا إنترنت.</translation>
-<translation id="6196640612572343990">حظر ملفات تعريف الارتباط للجهات الخارجية</translation>
 <translation id="6196854373336333322">أصبح بإمكان الإضافة "<ph name="EXTENSION_NAME" />" التحكم في إعدادات الخادم الوكيل التابعة لك، مما يعني أن بإمكانها تغيير أي إجراء لك على الإنترنت أو قطعه أو التجسس عليه. إذا كنت غير متيقن من سبب حدوث هذا التغيير، فأنت لا ترغب فيه على الأرجح.</translation>
 <translation id="6198102561359457428">الخروج ثم إعادة تسجيل الدخول...</translation>
 <translation id="6198252989419008588">تغيير رقم التعريف الشخصي</translation>
@@ -4358,7 +4354,6 @@
 <translation id="7225179976675429563">نوع الشبكة مفقود</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (المورّد: <ph name="VENDOR_ID" />، المنتج: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">معالجة الإعدادات التي تحدد ما إذا كان بإمكان مواقع الويب استخدام ميزات مثل المواقع الجغرافية والميكروفون والكاميرا، وغيرها</translation>
-<translation id="7228523857728654909">قفل الشاشة وتسجيل الدخول</translation>
 <translation id="7229570126336867161">‏يلزم توفر EVDO</translation>
 <translation id="7230787553283372882">تخصيص حجم النَّص</translation>
 <translation id="7232750842195536390">تعذّرت إعادة التسمية</translation>
@@ -5275,7 +5270,6 @@
 <translation id="850875081535031620">لم يتم العثور على أي برامج ضارة</translation>
 <translation id="8509177919508253835">إعادة ضبط مفاتيح الأمان وإنشاء أرقام التعريف الشخصية</translation>
 <translation id="8509646642152301857">تعذّر تنزيل قاموس التدقيق الإملائي.</translation>
-<translation id="8510617356402557055">هل كان هذا غير متوقع؟ <ph name="BEGIN_LINK" />إرسال ملاحظات<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">إنهاء العملية</translation>
 <translation id="851263357009351303">السماح للموقع <ph name="HOST" /> بعرض الصور دومًا</translation>
 <translation id="8513108775083588393">التدوير تلقائي</translation>

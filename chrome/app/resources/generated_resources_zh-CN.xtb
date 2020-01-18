@@ -945,7 +945,6 @@
 <translation id="2317842250900878657">已迁移 <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">纸张尺寸</translation>
 <translation id="2318817390901984578">要使用 Android 应用，请为您的 <ph name="DEVICE_TYPE" /> 充电并对其进行更新。</translation>
-<translation id="2318923050469484167">当前的隐身会话（<ph name="EMBEDDING" />）</translation>
 <translation id="2322193970951063277">页眉和页脚</translation>
 <translation id="2322318151094136999">在网站想访问串行端口时询问您（推荐）</translation>
 <translation id="2325002827435400643">为此网站关闭这项设置</translation>
@@ -1787,6 +1786,7 @@
 <translation id="3511307672085573050">复制链接地址(&amp;E)</translation>
 <translation id="351152300840026870">宽度固定的字体</translation>
 <translation id="3511528412952710609">短</translation>
+<translation id="3513704683820682405">增强现实</translation>
 <translation id="3514373592552233661">如果有多个网络可供使用，首选网络将优先于其他已知网络</translation>
 <translation id="3515983984924808886">请再次轻触安全密钥以确认重置。安全密钥上存储的所有信息（包括它的 PIN 码）都会被删除。</translation>
 <translation id="3518985090088779359">接受并继续</translation>
@@ -2242,7 +2242,6 @@
 <translation id="4099874310852108874">发生了网络错误。</translation>
 <translation id="4100733287846229632">设备存储空间严重不足</translation>
 <translation id="4100853287411968461">已设定新的设备使用时间上限</translation>
-<translation id="4103091233824664032">需输入您的密码，才能配置屏幕锁定和登录</translation>
 <translation id="4104163789986725820">导出(&amp;X)...</translation>
 <translation id="4107048419833779140">识别并弹出存储设备</translation>
 <translation id="4109135793348361820">将窗口移至<ph name="USER_NAME" />(<ph name="USER_EMAIL" />)</translation>
@@ -2781,6 +2780,7 @@
 <translation id="494286511941020793">代理配置帮助</translation>
 <translation id="4943368462779413526">美式足球</translation>
 <translation id="4943691134276646401">“<ph name="CHROME_EXTENSION_NAME" />”想连接到串行端口</translation>
+<translation id="4943703118917034429">虚拟实境</translation>
 <translation id="4944310289250773232">此项身份验证服务由 <ph name="SAML_DOMAIN" /> 托管</translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4952981627953231344">不允许在此设备上使用 Plugin VM。请与贵单位的设备管理员联系。</translation>
@@ -3130,7 +3130,6 @@
 <translation id="5468173180030470402">正在查找文件共享</translation>
 <translation id="5470735824776589490">必须先重启设备，然后才能通过 Powerwash 重置。<ph name="LINK_BEGIN" />了解详情<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">您好！这是文字转语音的语音。</translation>
-<translation id="5472133193607270166">当此设置处于开启状态时，网站无法根据您在各个不同网站上的浏览活动为您展示个性化广告。某些网站可能会无法正常运行。</translation>
 <translation id="5473333559083690127">请重新输入新的 PIN 码</translation>
 <translation id="5481941284378890518">添加附近的打印机</translation>
 <translation id="5483785310822538350">撤消对文件和设备的访问权限</translation>
@@ -3301,7 +3300,6 @@
 <translation id="5701381305118179107">居中</translation>
 <translation id="5701441174893770082">升级 Linux 可能会非常耗电。请将您的设备连接到充电器，然后重试。</translation>
 <translation id="5702898740348134351">修改搜索引擎(&amp;E)...</translation>
-<translation id="570302979952009979">请为此指纹选择一个名称</translation>
 <translation id="5704875434923668958">同步到</translation>
 <translation id="5707185214361380026">无法加载以下来源的扩展程序：</translation>
 <translation id="5708171344853220004">Microsoft 主体名称</translation>
@@ -3393,7 +3391,6 @@
 <translation id="5833726373896279253">这些设置的修改权仅限于所有者：</translation>
 <translation id="5834581999798853053">约剩 <ph name="TIME" /> 分钟</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - 摄像头或麦克风正在录制/录音</translation>
-<translation id="5838456317242088717">当前的隐身会话</translation>
 <translation id="5842497610951477805">蓝牙开关</translation>
 <translation id="5843250171025351504">您的设备已不再符合管理员指定的最低客户端版本的要求。请先更新操作系统，然后再登录。</translation>
 <translation id="5846200638699387931">相关语法错误：<ph name="ERROR_LINE" /></translation>
@@ -3649,7 +3646,6 @@
 <translation id="6181431612547969857">下载已被阻止</translation>
 <translation id="6185132558746749656">设备位置</translation>
 <translation id="6195693561221576702">无法在此设备上设置离线演示模式。</translation>
-<translation id="6196640612572343990">阻止第三方 Cookie</translation>
 <translation id="6196854373336333322">“<ph name="EXTENSION_NAME" />”扩展程序控制了您的代理设置，也就是说，它可以更改、中断或窃听您在网上执行的任何操作。如果您不确定出现这种变化的原因，那么这种变化可能并不是您所希望的。</translation>
 <translation id="6198102561359457428">退出后重新登录...</translation>
 <translation id="6198252989419008588">更改 PIN</translation>
@@ -4355,7 +4351,6 @@
 <translation id="7225179976675429563">缺少网络类型</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" />（供应商：<ph name="VENDOR_ID" />，产品：<ph name="PRODUCT_ID" />）</translation>
 <translation id="7228479291753472782">管理用于指定网站可否使用地理位置信息、麦克风、摄像头等功能的设置</translation>
-<translation id="7228523857728654909">屏幕锁定和登录</translation>
 <translation id="7229570126336867161">需要 EVDO</translation>
 <translation id="7230787553283372882">自定义文字大小</translation>
 <translation id="7232750842195536390">重命名失败</translation>
@@ -5271,7 +5266,6 @@
 <translation id="850875081535031620">未发现任何有害软件</translation>
 <translation id="8509177919508253835">重置安全密钥并创建 PIN 码</translation>
 <translation id="8509646642152301857">拼写检查字典下载失败。</translation>
-<translation id="8510617356402557055">不应出现这种情况？<ph name="BEGIN_LINK" />发送反馈<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">结束进程</translation>
 <translation id="851263357009351303">始终允许 <ph name="HOST" /> 显示图片</translation>
 <translation id="8513108775083588393">自动旋转屏幕</translation>

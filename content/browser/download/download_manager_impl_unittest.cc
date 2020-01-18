@@ -530,6 +530,7 @@ class DownloadManagerTest : public testing::Test {
       const base::FilePath& target_path,
       download::DownloadItem::TargetDisposition disposition,
       download::DownloadDangerType danger_type,
+      download::DownloadItem::MixedContentStatus mixed_content_status,
       const base::FilePath& intermediate_path,
       download::DownloadInterruptReason interrupt_reason) {
     callback_called_ = true;

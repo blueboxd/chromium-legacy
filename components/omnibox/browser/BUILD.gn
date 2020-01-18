@@ -297,9 +297,7 @@ if (is_android) {
 }
 
 proto_library("in_memory_url_index_cache_proto") {
-  sources = [
-    "in_memory_url_index_cache.proto",
-  ]
+  sources = [ "in_memory_url_index_cache.proto" ]
 }
 
 jumbo_static_library("test_support") {
@@ -371,10 +369,8 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/omnibox/in_memory_url_index_test_limited.sql",
     "//components/test/data/omnibox/on_device_head_test_model_index.bin",
   ]
-  outputs = [
-    "{{bundle_resources_dir}}/" +
-        "{{source_root_relative_dir}}/{{source_file_part}}",
-  ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }
 
 source_set("unit_tests") {
@@ -458,9 +454,7 @@ source_set("unit_tests") {
 }
 
 fuzzer_test("autocomplete_input_fuzzer") {
-  sources = [
-    "autocomplete_input_fuzzer.cc",
-  ]
+  sources = [ "autocomplete_input_fuzzer.cc" ]
   deps = [
     ":browser",
     ":test_support",
@@ -471,9 +465,7 @@ fuzzer_test("autocomplete_input_fuzzer") {
 }
 
 fuzzer_test("omnibox_view_fuzzer") {
-  sources = [
-    "omnibox_view_fuzzer.cc",
-  ]
+  sources = [ "omnibox_view_fuzzer.cc" ]
   deps = [
     ":browser",
     "//base",
@@ -481,9 +473,7 @@ fuzzer_test("omnibox_view_fuzzer") {
 }
 
 fuzzer_test("search_suggestion_parser_fuzzer") {
-  sources = [
-    "search_suggestion_parser_fuzzer.cc",
-  ]
+  sources = [ "search_suggestion_parser_fuzzer.cc" ]
   deps = [
     ":browser",
     ":test_support",

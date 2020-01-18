@@ -3519,7 +3519,8 @@ TEST_F(CookieMonsterTest, CookiesWithoutSameSiteMustBeSecure) {
        CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
            std::vector<
                CanonicalCookie::CookieInclusionStatus::ExclusionReason>(),
-           CanonicalCookie::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE),
+           {CanonicalCookie::CookieInclusionStatus::
+                WARN_SAMESITE_NONE_INSECURE}),
        CookieEffectiveSameSite::NO_RESTRICTION},
       // Cookie set from an insecure URL which is defaulted into Lax is not
       // rejected.

@@ -10,6 +10,7 @@ include_rules = [
   "+components/content_capture",
   "+components/download",
   "+components/favicon_base",
+  "+components/find_in_page/android",
   "+components/invalidation",
   "+components/policy",
   "+components/signin/core/browser/android",

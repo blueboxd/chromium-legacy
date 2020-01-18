@@ -93,42 +93,57 @@
           <iron-collapse id="collapseChild" no-animation>
             <div class="list-frame">
               <template is="dom-repeat" items="[[siteGroup.origins]]">
-                <div class="settings-box list-item" on-click="onOriginTap_"
-                    actionable>
-                  <site-favicon url="[[item.origin]]"></site-favicon>
-                  <div class="site-representation middle text-elide">
-                    <span id="originSiteRepresentation"
-                        class="url-directionality">
-                      [[originRepresentation_(item)]]
-                    </span>
-                    <span class="secondary"
-                        hidden$="[[!originScheme_(item)]]">
-                      &nbsp;
-                          $i18nPolymer{siteSettingsSiteRepresentationSeparator}
-                          &nbsp;
-                    </span>
-                    <span class="secondary"
-                        hidden$="[[!originScheme_(item)]]">
-                      [[originScheme_(item)]]
-                    </span>
-                    <!--Define a spacing span so that when the direction is rtl,
-                     the spacing is still showing correctly. This is because the
-                     data-unit class is set to be ltr so the padding will be in
-                     wrong place if we put padding in that span.-->
-                    <span class="spacing" hidden$="[[!item.usage]]"></span>
-                    <span class="secondary data-unit" hidden$="[[!item.usage]]">
-                      [[originUsagesItem_(originUsages_.*, index)]]
-                    </span>
-                    <span class="secondary" hidden$="[[!item.numCookies]]">
-                        &nbsp;&middot;
-                        [[originCookiesItem_(cookiesNum_.*, index)]]
-                    </span>
+                <div class="settings-box">
+                  <div class="start row-aligned two-line list-item"
+                       on-click="onOriginTap_" actionable>
+                    <site-favicon url="[[item.origin]]"></site-favicon>
+                    <div class="site-representation middle text-elide">
+                      <span id="originSiteRepresentation"
+                          class="url-directionality">
+                        [[originRepresentation_(item)]]
+                      </span>
+                      <span class="secondary"
+                          hidden$="[[!originScheme_(item)]]">
+                        &nbsp;
+                        $i18nPolymer{siteSettingsSiteRepresentationSeparator}
+                        &nbsp;
+                      </span>
+                      <span class="secondary"
+                          hidden$="[[!originScheme_(item)]]">
+                        [[originScheme_(item)]]
+                      </span>
+                      <!--Define a spacing span so that when the direction is
+                         rtl, the spacing is still showing correctly. This is
+                         because the data-unit class is set to be ltr so the
+                         padding will be in wrong place if we put padding in
+                         that span.-->
+                      <span class="spacing" hidden$="[[!item.usage]]"></span>
+                      <span class="secondary data-unit"
+                            hidden$="[[!item.usage]]">
+                        [[originUsagesItem_(originUsages_.*, index)]]
+                      </span>
+                      <span class="secondary" hidden$="[[!item.numCookies]]">
+                          &nbsp;&middot;
+                          [[originCookiesItem_(cookiesNum_.*, index)]]
+                      </span>
+                    </div>
+                    <cr-icon-button class="subpage-arrow"
+                        aria-labelledby$="originSiteRepresentation"
+                        aria-roledescription=
+                            "$i18n{subpageArrowRoleDescription}"
+                        focus-row-control focus-type="detailed-sites">
+                    </cr-icon-button>
                   </div>
-                  <cr-icon-button class="subpage-arrow"
-                      aria-labelledby$="originSiteRepresentation"
-                      aria-roledescription="$i18n{subpageArrowRoleDescription}"
-                      focus-row-control focus-type="detailed-sites">
-                  </cr-icon-button>
+                  <div class="row-aligned"
+                       hidden$="[[!storagePressureUIEnabled_]]">
+                    <div class="separator"></div>
+                    <cr-icon-button class="icon-more-vert"
+                        id="originOverflowMenuButton"
+                        data-origin$="[[item.origin]]" data-context="origin"
+                        title="$i18n{moreActions}" on-click="showOverflowMenu_"
+                        focus-row-control focus-type="more-actions">
+                    </cr-icon-button>
+                  </div>
                 </div>
               </template>
             </div>

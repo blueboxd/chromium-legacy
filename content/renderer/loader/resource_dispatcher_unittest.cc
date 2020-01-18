@@ -20,6 +20,7 @@
 #include "base/test/task_environment.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/referrer.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"

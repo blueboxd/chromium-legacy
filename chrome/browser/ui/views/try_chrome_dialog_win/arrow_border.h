@@ -67,9 +67,6 @@ class ArrowBorder : public views::Border {
   gfx::Insets GetInsets() const override;
   gfx::Size GetMinimumSize() const override;
 
-  // The color of the border.
-  const SkColor color_;
-
   // The region occupied by the border.
   const gfx::Insets insets_;
 

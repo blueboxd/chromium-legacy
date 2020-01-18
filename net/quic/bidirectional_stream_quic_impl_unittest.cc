@@ -587,7 +587,7 @@ class BidirectionalStreamQuicImplTest
 
   void ConfirmHandshake() {
     crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
-        quic::QuicSession::HANDSHAKE_CONFIRMED);
+        quic::QuicSession::EVENT_HANDSHAKE_CONFIRMED);
   }
 
   void SetRequest(const std::string& method,

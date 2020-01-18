@@ -148,6 +148,9 @@ void LogSendSharingAckMessageResult(
 // Logs to UMA the size of the selected text for Shared Clipboard.
 void LogSharedClipboardSelectedTextSize(size_t text_size);
 
+// Logs to UMA the number of retries for sending a Shared Clipboard message.
+void LogSharedClipboardRetries(int retries, SharingSendMessageResult result);
+
 // Logs to UMA the result of handling a Remote Copy message.
 void LogRemoteCopyHandleMessageResult(RemoteCopyHandleMessageResult result);
 

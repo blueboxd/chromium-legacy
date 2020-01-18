@@ -116,14 +116,14 @@ TEST_F(OriginTest, OpaqueOriginComparison) {
   EXPECT_EQ("", opaque_a.host());
   EXPECT_EQ(0, opaque_a.port());
   EXPECT_EQ(SchemeHostPort(), opaque_a.GetTupleOrPrecursorTupleIfOpaque());
-  EXPECT_TRUE(opaque_a.GetTupleOrPrecursorTupleIfOpaque().IsInvalid());
+  EXPECT_FALSE(opaque_a.GetTupleOrPrecursorTupleIfOpaque().IsValid());
 
   EXPECT_TRUE(opaque_b.opaque());
   EXPECT_EQ("", opaque_b.scheme());
   EXPECT_EQ("", opaque_b.host());
   EXPECT_EQ(0, opaque_b.port());
   EXPECT_EQ(SchemeHostPort(), opaque_b.GetTupleOrPrecursorTupleIfOpaque());
-  EXPECT_TRUE(opaque_b.GetTupleOrPrecursorTupleIfOpaque().IsInvalid());
+  EXPECT_FALSE(opaque_b.GetTupleOrPrecursorTupleIfOpaque().IsValid());
 
   // Two default-constructed Origins should always be cross origin to each
   // other.
@@ -377,7 +377,7 @@ TEST_F(OriginTest, ConstructFromGURL) {
             .DeriveNewOpaqueOrigin();
     EXPECT_TRUE(derived_opaque.opaque());
     EXPECT_NE(origin, derived_opaque);
-    EXPECT_FALSE(derived_opaque.GetTupleOrPrecursorTupleIfOpaque().IsInvalid());
+    EXPECT_TRUE(derived_opaque.GetTupleOrPrecursorTupleIfOpaque().IsValid());
     EXPECT_EQ(origin.GetTupleOrPrecursorTupleIfOpaque(),
               derived_opaque.GetTupleOrPrecursorTupleIfOpaque());
     EXPECT_EQ(derived_opaque, derived_opaque);
@@ -386,8 +386,8 @@ TEST_F(OriginTest, ConstructFromGURL) {
         Origin::Resolve(GURL("data:text/html,baz"), origin);
     EXPECT_TRUE(derived_opaque_via_data_url.opaque());
     EXPECT_NE(origin, derived_opaque_via_data_url);
-    EXPECT_FALSE(derived_opaque_via_data_url.GetTupleOrPrecursorTupleIfOpaque()
-                     .IsInvalid());
+    EXPECT_TRUE(derived_opaque_via_data_url.GetTupleOrPrecursorTupleIfOpaque()
+                    .IsValid());
     EXPECT_EQ(origin.GetTupleOrPrecursorTupleIfOpaque(),
               derived_opaque_via_data_url.GetTupleOrPrecursorTupleIfOpaque());
     EXPECT_NE(derived_opaque, derived_opaque_via_data_url);

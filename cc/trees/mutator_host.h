@@ -78,6 +78,9 @@ class MutatorHost {
   virtual void TickWorkletAnimations() = 0;
   virtual bool UpdateAnimationState(bool start_ready_animations,
                                     MutatorEvents* events) = 0;
+  // Returns TIME_UPDATED events generated in this frame to be handled by
+  // BeginMainFrame.
+  virtual void TakeTimeUpdatedEvents(MutatorEvents* events) = 0;
   virtual void PromoteScrollTimelinesPendingToActive() = 0;
 
   virtual std::unique_ptr<MutatorEvents> CreateEvents() = 0;

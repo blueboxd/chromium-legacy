@@ -20,6 +20,7 @@ let PrinterListEntry;
  */
 const PrinterType = {
   SAVED: 0,
-  AUTOMATIC: 1,
-  DISCOVERED: 2,
+  PRINTSERVER: 1,
+  AUTOMATIC: 2,
+  DISCOVERED: 3,
 };

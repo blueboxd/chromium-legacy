@@ -11,7 +11,6 @@ android_library("glue") {
   deps = [
     "//android_webview:android_webview_product_config_java",
     "//android_webview:browser_java",
-    "//android_webview:common_commandline_java",
     "//android_webview:common_java",
     "//android_webview/nonembedded:system_webview_manifest",
     "//android_webview/support_library/boundary_interfaces:boundary_interface_java",

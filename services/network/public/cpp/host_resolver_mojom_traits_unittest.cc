@@ -66,6 +66,31 @@ TEST(HostResolverMojomTraitsTest, DnsConfigOverrides_BadInt) {
       mojom::DnsConfigOverrides::Deserialize(serialized, &deserialized));
 }
 
+TEST(HostResolverMojomTraitsTest, DnsConfigOverrides_OnlyDnsOverHttpsServers) {
+  net::DnsConfigOverrides original;
+  original.dns_over_https_servers.emplace(
+      {net::DnsConfig::DnsOverHttpsServerConfig("example.com", false)});
+
+  net::DnsConfigOverrides deserialized;
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::DnsConfigOverrides>(
+      &original, &deserialized));
+
+  EXPECT_EQ(original, deserialized);
+}
+
+TEST(HostResolverMojomTraitsTest, DnsConfigOverrides_OnlyHosts) {
+  net::DnsConfigOverrides original;
+  original.hosts = net::DnsHosts(
+      {std::make_pair(net::DnsHostsKey("host", net::ADDRESS_FAMILY_IPV4),
+                      net::IPAddress(1, 1, 1, 1))});
+
+  net::DnsConfigOverrides deserialized;
+  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::DnsConfigOverrides>(
+      &original, &deserialized));
+
+  EXPECT_EQ(original, deserialized);
+}
+
 TEST(HostResolverMojomTraitsTest, DnsConfigOverrides_NonUniqueHostKeys) {
   mojom::DnsConfigOverridesPtr overrides = mojom::DnsConfigOverrides::New();
   overrides->hosts.emplace();

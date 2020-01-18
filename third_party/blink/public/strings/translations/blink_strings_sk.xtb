@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">posúvač</translation>
 <translation id="1211441953136645838">vysvetlivka</translation>
 <translation id="1281252709823657822">dialóg</translation>
+<translation id="1306460908038601864">vypnuté</translation>
 <translation id="1335095011850992622">titulky</translation>
 <translation id="1342835525016946179">článok</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Zadajte časť pred znakom <ph name="ATSIGN" />. Adresa <ph name="INVALIDADDRESS" /> je neúplná.</translation>
 <translation id="5334352251556557839">Nepodarilo sa prehrať médiá.</translation>
+<translation id="537648784377940524">Minimálny dátum (<ph name="MIN_DATE_OR_TIME" />) musí byť pred maximálnym dátumom (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">hodnota</translation>
 <translation id="5453733299334684579">položka stromu</translation>
 <translation id="5466621249238537318">Vyberte jeden alebo viac súborov.</translation>

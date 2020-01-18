@@ -173,6 +173,21 @@ TEST_F(DnsProbeRunnerTest, Probe_DnsNotRun) {
   RunTest(DnsProbeRunner::UNKNOWN);
 }
 
+TEST_F(DnsProbeRunnerTest, Probe_SecureDnsHostnameNotResolved) {
+  SetupTest(net::ERR_NAME_NOT_RESOLVED,
+            net::ResolveErrorInfo(
+                net::ERR_DNS_SECURE_RESOLVER_HOSTNAME_RESOLUTION_FAILED),
+            FakeHostResolver::kNoResponse);
+  RunTest(DnsProbeRunner::UNREACHABLE);
+}
+
+TEST_F(DnsProbeRunnerTest, Probe_SecureDnsCertificateError) {
+  SetupTest(net::ERR_NAME_NOT_RESOLVED,
+            net::ResolveErrorInfo(net::ERR_CERT_COMMON_NAME_INVALID),
+            FakeHostResolver::kNoResponse);
+  RunTest(DnsProbeRunner::UNREACHABLE);
+}
+
 TEST_F(DnsProbeRunnerTest, TwoProbes) {
   SetupTest({{net::OK, net::ResolveErrorInfo(net::OK),
               FakeHostResolver::kOneAddressResponse},

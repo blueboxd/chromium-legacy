@@ -48,15 +48,14 @@ std::string GetStrippedMessageId(const std::string& message_id) {
 
 }  // namespace
 
-SharingFCMHandler::SharingFCMHandler(
-    gcm::GCMDriver* gcm_driver,
-    SharingFCMSender* sharing_fcm_sender,
-    SharingSyncPreference* sync_preference,
-    std::unique_ptr<SharingHandlerRegistry> handler_registry)
+SharingFCMHandler::SharingFCMHandler(gcm::GCMDriver* gcm_driver,
+                                     SharingFCMSender* sharing_fcm_sender,
+                                     SharingSyncPreference* sync_preference,
+                                     SharingHandlerRegistry* handler_registry)
     : gcm_driver_(gcm_driver),
       sharing_fcm_sender_(sharing_fcm_sender),
       sync_preference_(sync_preference),
-      handler_registry_(std::move(handler_registry)) {}
+      handler_registry_(handler_registry) {}
 
 SharingFCMHandler::~SharingFCMHandler() {
   StopListening();

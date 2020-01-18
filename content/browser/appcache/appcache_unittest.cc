@@ -363,6 +363,7 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   const std::string kManifestScope = kManifestUrl.GetWithoutFilename().path();
   const GURL kInterceptUrl("http://foo.com/intercept.html");
   const GURL kFallbackUrl("http://foo.com/fallback.html");
+  const GURL kPatternWhitelistUrl("http://foo.com/patternwhitelist*");
   const GURL kWhitelistUrl("http://foo.com/whitelist");
   const std::string kData(
       "CACHE MANIFEST\r"
@@ -371,6 +372,7 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
       "FALLBACK:\r"
       "/ /fallback.html\r"
       "NETWORK:\r"
+      "/patternwhitelist* isPattern\r"
       "/whitelist\r"
       "*\r");
   MockAppCacheService service;
@@ -384,8 +386,12 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   cache->InitializeWithManifest(&manifest);
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
             cache->online_whitelist_namespaces_[0].type);
-  EXPECT_EQ(kWhitelistUrl,
+  EXPECT_EQ(kPatternWhitelistUrl,
             cache->online_whitelist_namespaces_[0].namespace_url);
+  EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
+            cache->online_whitelist_namespaces_[1].type);
+  EXPECT_EQ(kWhitelistUrl,
+            cache->online_whitelist_namespaces_[1].namespace_url);
   cache->AddEntry(kManifestUrl, AppCacheEntry(AppCacheEntry::MANIFEST,
                                               /*response_id=*/1,
                                               /*response_size=*/1000,
@@ -419,7 +425,7 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   EXPECT_EQ(3u, entries.size());
   EXPECT_EQ(1u, intercepts.size());
   EXPECT_EQ(1u, fallbacks.size());
-  EXPECT_EQ(1u, whitelists.size());
+  EXPECT_EQ(2u, whitelists.size());
   cache = nullptr;
 
   // Create a new AppCache and populate it with those records and verify.
@@ -440,8 +446,12 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   EXPECT_EQ(0 + 10 + 100, cache->padding_size());
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
             cache->online_whitelist_namespaces_[0].type);
-  EXPECT_EQ(kWhitelistUrl,
+  EXPECT_EQ(kPatternWhitelistUrl,
             cache->online_whitelist_namespaces_[0].namespace_url);
+  EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
+            cache->online_whitelist_namespaces_[1].type);
+  EXPECT_EQ(kWhitelistUrl,
+            cache->online_whitelist_namespaces_[1].namespace_url);
 }
 
 TEST_F(AppCacheTest, IsNamespaceMatch) {

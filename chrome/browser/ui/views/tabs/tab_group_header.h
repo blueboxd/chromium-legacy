@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "components/tab_groups/tab_group_id.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/widget/widget_observer.h"
 
 class TabStrip;
@@ -23,15 +24,17 @@ class View;
 class TabGroupHeader : public TabSlotView {
  public:
   TabGroupHeader(TabStrip* tab_strip, const tab_groups::TabGroupId& group);
-  ~TabGroupHeader() override = default;
+  ~TabGroupHeader() override;
 
   // TabSlotView:
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnThemeChanged() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   TabSlotView::ViewType GetTabSlotViewType() const override;
   TabSizeInfo GetTabSizeInfo() const override;
 
@@ -52,6 +55,9 @@ class TabGroupHeader : public TabSlotView {
 
   views::View* title_chip_;
   views::Label* title_;
+
+  // Focus ring for accessibility.
+  std::unique_ptr<views::FocusRing> focus_ring_;
 
   // Tracks whether our editor bubble is open. At most one can be open
   // at once.

@@ -54,6 +54,12 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /** @private */
+    hideList_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   observers: [
@@ -100,14 +106,19 @@ Polymer({
 
     const maxDisplayedItems = this.offsetHeight / DESTINATION_ITEM_HEIGHT;
     const isListFullHeight = maxDisplayedItems <= count;
-    const listHeight =
-        isListFullHeight ? this.offsetHeight : count * DESTINATION_ITEM_HEIGHT;
 
     // Update the throbber and "No destinations" message.
     this.hasDestinations_ = count > 0 || this.loadingDestinations;
     this.throbberHidden_ =
         !this.loadingDestinations || isListFullHeight || !this.hasDestinations_;
 
+    this.hideList_ = count === 0;
+    if (this.hideList_) {
+      return;
+    }
+
+    const listHeight =
+        isListFullHeight ? this.offsetHeight : count * DESTINATION_ITEM_HEIGHT;
     this.$.list.style.height = listHeight > DESTINATION_ITEM_HEIGHT ?
         `${listHeight}px` :
         `${DESTINATION_ITEM_HEIGHT}px`;
@@ -154,5 +165,15 @@ Polymer({
     }
 
     this.fire('destination-selected', e.target);
+  },
+
+  /**
+   * Returns a 1-based index for aria-rowindex.
+   * @param {number} index
+   * @return {number}
+   * @private
+   */
+  getAriaRowindex_(index) {
+    return index + 1;
   },
 });

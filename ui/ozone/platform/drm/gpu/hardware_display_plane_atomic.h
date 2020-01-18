@@ -18,8 +18,6 @@ class Rect;
 
 namespace ui {
 
-class CrtcController;
-
 class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
  public:
   HardwareDisplayPlaneAtomic(uint32_t id);
@@ -37,11 +35,10 @@ class HardwareDisplayPlaneAtomic : public HardwareDisplayPlane {
 
   bool SetPlaneCtm(drmModeAtomicReq* property_set, uint32_t ctm_blob_id);
 
-  void set_crtc(CrtcController* crtc) { crtc_ = crtc; }
-  CrtcController* crtc() const { return crtc_; }
+  uint32_t crtc_id() { return crtc_id_; }
 
  private:
-  CrtcController* crtc_ = nullptr;
+  uint32_t crtc_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneAtomic);
 };

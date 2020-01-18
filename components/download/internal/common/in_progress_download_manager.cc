@@ -159,6 +159,7 @@ void OnDownloadDisplayNamesReturned(
 
 void OnPathReserved(DownloadItemImplDelegate::DownloadTargetCallback callback,
                     DownloadDangerType danger_type,
+                    DownloadItem::MixedContentStatus mixed_content_status,
                     const InProgressDownloadManager::IntermediatePathCallback&
                         intermediate_path_cb,
                     const base::FilePath& forced_file_path,
@@ -182,7 +183,7 @@ void OnPathReserved(DownloadItemImplDelegate::DownloadTargetCallback callback,
           : BackgroudTargetDeterminationResultTypes::kSuccess);
   std::move(callback).Run(
       target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE, danger_type,
-      intermediate_path,
+      mixed_content_status, intermediate_path,
       intermediate_path.empty() ? DOWNLOAD_INTERRUPT_REASON_FILE_FAILED
                                 : DOWNLOAD_INTERRUPT_REASON_NONE);
 }
@@ -393,10 +394,10 @@ void InProgressDownloadManager::DetermineDownloadTarget(
                                    : download->GetForcedFilePath();
 #if defined(OS_ANDROID)
   if (target_path.empty()) {
-    std::move(callback).Run(target_path,
-                            DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                            download->GetDangerType(), target_path,
-                            DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+    std::move(callback).Run(
+        target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+        download->GetDangerType(), download->GetMixedContentStatus(),
+        target_path, DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
     RecordBackgroundTargetDeterminationResult(
         BackgroudTargetDeterminationResultTypes::kTargetPathMissing);
     return;
@@ -407,7 +408,8 @@ void InProgressDownloadManager::DetermineDownloadTarget(
   if (target_path.IsContentUri()) {
     std::move(callback).Run(
         target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-        download->GetDangerType(), target_path, DOWNLOAD_INTERRUPT_REASON_NONE);
+        download->GetDangerType(), download->GetMixedContentStatus(),
+        target_path, DOWNLOAD_INTERRUPT_REASON_NONE);
     RecordBackgroundTargetDeterminationResult(
         BackgroudTargetDeterminationResultTypes::kSuccess);
     return;
@@ -420,16 +422,17 @@ void InProgressDownloadManager::DetermineDownloadTarget(
           ? DownloadPathReservationTracker::UNIQUIFY
           : DownloadPathReservationTracker::OVERWRITE,
       base::BindOnce(&OnPathReserved, std::move(callback),
-                     download->GetDangerType(), intermediate_path_cb_,
+                     download->GetDangerType(),
+                     download->GetMixedContentStatus(), intermediate_path_cb_,
                      download->GetForcedFilePath()));
 #else
   // For non-android, the code below is only used by tests.
   base::FilePath intermediate_path =
       download->GetFullPath().empty() ? target_path : download->GetFullPath();
-  std::move(callback).Run(target_path,
-                          DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-                          download->GetDangerType(), intermediate_path,
-                          DOWNLOAD_INTERRUPT_REASON_NONE);
+  std::move(callback).Run(
+      target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+      download->GetDangerType(), download->GetMixedContentStatus(),
+      intermediate_path, DOWNLOAD_INTERRUPT_REASON_NONE);
 #endif  // defined(OS_ANDROID)
 }
 

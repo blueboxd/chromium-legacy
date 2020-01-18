@@ -126,7 +126,6 @@
     &lt;p&gt;Chybu odstraníte tím, že na stránce, kterou se snažíte otevřít, kliknete na &lt;strong&gt;Připojení&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1513706915089223971">Seznam položek v historii</translation>
 <translation id="1517433312004943670">Je vyžadováno telefonní číslo</translation>
-<translation id="1517500485252541695">Přijímané kreditní a debetní karty</translation>
 <translation id="1519264250979466059">Datum sestavení</translation>
 <translation id="1521655867290435174">Tabulky Google</translation>
 <translation id="1527263332363067270">Čeká se na připojení…</translation>
@@ -203,7 +202,6 @@
 <translation id="1842969606798536927">Zaplatit</translation>
 <translation id="1871208020102129563">Proxy je nastaveno na používání pevně daných serverů proxy, nikoliv adresy URL skriptu PAC.</translation>
 <translation id="1871284979644508959">Povinné pole</translation>
-<translation id="1874765382782611674">Přijímané debetní karty</translation>
 <translation id="1875512691959384712">Formuláře Google</translation>
 <translation id="187918866476621466">Otevřít počáteční stránky</translation>
 <translation id="1883255238294161206">Sbalit seznam</translation>
@@ -216,11 +214,9 @@
 <translation id="1919345977826869612">Reklamy</translation>
 <translation id="1919367280705858090">Nápověda ke konkrétní chybové zprávě</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Žádné}=1{1 web}few{# weby}many{# webu}other{# webů}}</translation>
-<translation id="1927235823738766038">Přijímané kreditní a debetní karty</translation>
 <translation id="194030505837763158">Přejít na odkaz <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Mohli byste ztratit přístup k účtu organizace nebo by mohlo dojít k odcizení vaší identity. Chromium doporučuje okamžitě změnit heslo.</translation>
 <translation id="1947454675006758438">Sponka vpravo nahoře</translation>
-<translation id="1948773908305951926">Přijímané předplacené karty</translation>
 <translation id="1962204205936693436">Záložky domény <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Chyba serializace</translation>
 <translation id="1974060860693918893">Rozšířená nastavení</translation>
@@ -297,7 +293,6 @@
 <translation id="2315864634253056100">Název tohoto webu se podobá webu <ph name="LOOKALIKE_DOMAIN" />. Útočníci někdy weby napodobují provedením snadno přehlédnutelných změn ve webové adrese.</translation>
 <translation id="2316887270356262533">Uvolní více než 1 MB. Je možné, že se některé weby při příští návštěvě budou načítat pomaleji.</translation>
 <translation id="2317259163369394535">Doména <ph name="DOMAIN" /> vyžaduje zadání uživatelského jména a hesla.</translation>
-<translation id="2317583587496011522">Obchodník přijímá debetní karty.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, platnost vyprší <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Nastavení je spravováno administrátorem</translation>
 <translation id="2346319942568447007">Obrázek, který jste zkopírovali</translation>
@@ -337,7 +332,6 @@
 <translation id="2495093607237746763">Pokud je tato možnost zaškrtnuta, prohlížeč Chromium do zařízení uloží kopii karty za účelem rychlejšího vyplňování formulářů.</translation>
 <translation id="2498091847651709837">Naskenovat novou kartu</translation>
 <translation id="2501278716633472235">Zpět</translation>
-<translation id="2503184589641749290">Přijímané debetní a předplacené karty</translation>
 <translation id="2505268675989099013">Ochránit účet</translation>
 <translation id="2515629240566999685">Zkontrolovat, zda máte dostatečně silný signál</translation>
 <translation id="2521385132275182522">Sponka vpravo dole</translation>
@@ -393,7 +387,6 @@
 <translation id="277499241957683684">Chybějící záznam zařízení</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Připojení bylo resetováno.</translation>
-<translation id="2788784517760473862">Přijímané kreditní karty</translation>
 <translation id="2792012897584536778">Administrátoři tohoto zařízení nastavili bezpečnostní certifikáty, které jim mohou umožnit zobrazit obsah webů, které navštěvujete.</translation>
 <translation id="2799020568854403057">Web, na který se chystáte přejít, obsahuje škodlivé aplikace</translation>
 <translation id="2799223571221894425">Restartovat</translation>
@@ -537,7 +530,6 @@
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Vložená stránka na webu <ph name="SITE" /> říká</translation>
 <translation id="3581089476000296252">Až bude tato stránka připravená, Chrome vás bude informovat. &lt;a&gt;Zrušit&lt;/a&gt;</translation>
-<translation id="358285529439630156">Obchodník přijímá kreditní a předplacené karty.</translation>
 <translation id="3582930987043644930">Přidejte jméno</translation>
 <translation id="3583757800736429874">&amp;Opakovat přesunutí</translation>
 <translation id="3584299510153766161">Dvě díry dole</translation>
@@ -597,7 +589,6 @@
 <translation id="3828924085048779000">Prázdná heslová fráze není povolena.</translation>
 <translation id="3831915413245941253">Z domény <ph name="ENROLLMENT_DOMAIN" />do tohoto zařízení byla nainstalována rozšíření pro dodatečné funkce. Rozšíření mají přístup k některým vašim datům.</translation>
 <translation id="3832522519263485449">Několik děr vlevo</translation>
-<translation id="3838154488026099170">Právě jste své heslo zadali na klamavém webu. Chromium doporučuje navštívit weby <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> a další weby, kde toto heslo používáte, a okamžitě jej změnit.</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3858027520442213535">Aktualizovat datum a čas</translation>
 <translation id="3884278016824448484">Konfliktní identifikátor zařízení</translation>
@@ -635,7 +626,6 @@
 <translation id="4072486802667267160">Při zpracování objednávky došlo k chybě. Zkuste to prosím znovu.</translation>
 <translation id="4075732493274867456">Klient a server nepodporují společnou verzi protokolu SSL nebo šifrovací sadu.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
-<translation id="4077092919748553596">Právě jste své heslo zadali na klamavém webu. Chrome doporučuje navštívit weby <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> a další weby, kde toto heslo používáte, a okamžitě jej změnit.</translation>
 <translation id="4079302484614802869">Proxy je nastaveno na používání adresy URL skriptu PAC, nikoliv pevně daných serverů proxy.</translation>
 <translation id="4082393374666368382">Nastavení – správa</translation>
 <translation id="4098354747657067197">Chystáte se navštívit podvodné webové stránky</translation>
@@ -732,7 +722,6 @@
 <translation id="4434045419905280838">Vyskakovací okna a přesměrování</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Využití proxy serveru je zakázáno, je však určena explicitní konfigurace proxy serveru.</translation>
-<translation id="445100540951337728">Přijímané debetní karty</translation>
 <translation id="4466881336512663640">Změny ve formuláři budou ztraceny. Opravdu chcete pokračovat?</translation>
 <translation id="4477350412780666475">Další skladba</translation>
 <translation id="4482953324121162758">Tento web se nebude překládat.</translation>
@@ -937,6 +926,7 @@
 <translation id="5457113250005438886">Neplatné</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> další}few{<ph name="CONTACT_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> další}many{<ph name="CONTACT_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> dalšího}other{<ph name="CONTACT_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> dalších}}</translation>
 <translation id="5470861586879999274">&amp;Opakovat úpravy</translation>
+<translation id="5472133193607270166">Když je tato možnost zapnutá, weby nemohou používat vaši aktivitu prohlížení na různých webech k personalizaci reklam. Některé weby nemusí fungovat správně.</translation>
 <translation id="5478437291406423475">B6/C4 (obálka)</translation>
 <translation id="5481076368049295676">Tento obsah by vám do zařízení mohl zkusit nainstalovat nebezpečný software, který odcizuje nebo maže informace. <ph name="BEGIN_LINK" />Přesto zobrazit<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Přidejte platnou adresu</translation>
@@ -990,7 +980,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="570530837424789914">Spravovat...</translation>
 <translation id="57094364128775171">Navrhnout silné heslo…</translation>
 <translation id="5710435578057952990">Identita těchto webových stránek nebyla ověřena.</translation>
-<translation id="5719499550583120431">Obchodník přijímá předplacené karty.</translation>
 <translation id="5720705177508910913">Aktuální uživatel</translation>
 <translation id="5728056243719941842">C5 (obálka)</translation>
 <translation id="5730040223043577876">Pokud jste heslo použili na jiném webu, doporučujeme vám ho resetovat.</translation>
@@ -1025,7 +1014,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5869405914158311789">Tento web není dostupný</translation>
 <translation id="5869522115854928033">Uložená hesla</translation>
 <translation id="5887400589839399685">Karta byla uložena</translation>
-<translation id="5893752035575986141">Obchodník přijímá kreditní karty.</translation>
 <translation id="5895138241574237353">Restartovat</translation>
 <translation id="5901630391730855834">Žlutá</translation>
 <translation id="5905445707201418379">Zablokováno na základě zásad webu <ph name="ORIGIN" /> ohledně původu.</translation>
@@ -1077,7 +1065,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6106989379647458772">Webová stránka <ph name="PAGE" /> může být dočasně nefunkční nebo mohla být trvale přesunuta na novou webovou adresu.</translation>
 <translation id="610911394827799129">Na stránce <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google.</translation>
 <translation id="6120179357481664955">Uložit vaše UPI ID?</translation>
-<translation id="6132597952260690497">Informace o nainstalovaných rozšířeních a pluginech</translation>
 <translation id="6146055958333702838">Zkontrolujte všechny kabely a restartujte všechny směrovače, modemy a další síťová zařízení, která používáte.</translation>
 <translation id="614940544461990577">Zkuste:</translation>
 <translation id="6150036310511284407">Tři díry vlevo</translation>
@@ -1085,6 +1072,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6157877588268064908">Chcete-li zobrazit způsoby dopravy a požadavky, vyberte adresu</translation>
 <translation id="6165508094623778733">Další informace</translation>
 <translation id="6177128806592000436">Spojení s tímto webem není bezpečné</translation>
+<translation id="6196640612572343990">Blokovat soubory cookie třetích stran</translation>
 <translation id="6203231073485539293">Zkontrolujte připojení k internetu</translation>
 <translation id="6218753634732582820">Odstranit adresu z prohlížeče Chromium?</translation>
 <translation id="622039917539443112">Paralelní přeložení</translation>
@@ -1157,7 +1145,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6476284679642588870">Správa platebních metod</translation>
 <translation id="6489534406876378309">Začít nahrávat zprávy o selhání</translation>
 <translation id="6499038740797743453">Resetovat heslo?</translation>
-<translation id="6507833130742554667">Obchodník přijímá kreditní a debetní karty.</translation>
 <translation id="6508722015517270189">Restartujte Chrome</translation>
 <translation id="6517596291481585650">Upozornění: Tato zásada nebyla podle zásady sloučena jako seznam, protože se nejedná o seznam.</translation>
 <translation id="6518133107902771759">Ověřit</translation>
@@ -1296,7 +1283,6 @@ Kontaktujte administrátora systému.</translation>
 <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">Soukromé připojení k doméně <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nelze navázat, protože máte v počítači nastaveno chybné datum a čas (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7260504762447901703">Zrušit přístup</translation>
-<translation id="7271803869921933038">Přijímané předplacené karty</translation>
 <translation id="7275334191706090484">Spravované záložky</translation>
 <translation id="7298195798382681320">Doporučeno</translation>
 <translation id="7300012071106347854">Sytě modrá</translation>
@@ -1434,7 +1420,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="785549533363645510">To neznamená, že jste neviditelní. Anonymní režim neskryje vaši aktivitu před vaším zaměstnavatelem, poskytovatelem internetových služeb ani webovými stránkami, které navštívíte.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Opustit web?</translation>
-<translation id="7878176543348854470">Obchodník přijímá debetní a předplacené karty.</translation>
 <translation id="7878562273885520351">Heslo může být prolomeno</translation>
 <translation id="7882421473871500483">Hnědá</translation>
 <translation id="7887683347370398519">Zkontrolujte kód CVC a zkuste to znovu</translation>
@@ -1597,7 +1582,6 @@ Další podrobnosti:
 <translation id="8730621377337864115">Hotovo</translation>
 <translation id="8738058698779197622">Aby bylo možné navázat zabezpečené spojení, hodiny musejí být nastaveny správně. Důvodem je, že certifikáty, pomocí kterých se weby identifikují, platí pouze pro pevně daná období. Jelikož hodiny v zařízení nejsou nastaveny správně, prohlížeč Chromium tyto certifikáty nemůže ověřit.</translation>
 <translation id="8740359287975076522">&lt;abbr id="dnsDefinition"&gt;Adresu DNS&lt;/abbr&gt; webu <ph name="HOST_NAME" /> nelze najít. Diagnostikování problému…</translation>
-<translation id="874846938927089722">Přijímané kreditní a předplacené karty</translation>
 <translation id="874918643257405732">Přidat tuto kartu do záložek</translation>
 <translation id="8751426954251315517">Zkuste to znovu později</translation>
 <translation id="8759274551635299824">Platnost této karty vypršela</translation>
@@ -1631,7 +1615,6 @@ Další podrobnosti:
 <translation id="8931333241327730545">Chcete tuto kartu uložit do účtu Google?</translation>
 <translation id="8932102934695377596">Vaše hodiny se zpožďují</translation>
 <translation id="893332455753468063">Přidání jména</translation>
-<translation id="8938939909778640821">Přijímané kreditní a předplacené karty</translation>
 <translation id="8943282376843390568">Limetková</translation>
 <translation id="8957210676456822347">Autorizace captive portálu</translation>
 <translation id="8962950042226115166">Podezřelý web</translation>
@@ -1701,7 +1684,6 @@ Další podrobnosti:
 <translation id="939736085109172342">Nová složka</translation>
 <translation id="945855313015696284">Zkontrolujte níže uvedené informace a vymažte neplatné karty</translation>
 <translation id="950736567201356821">Tři díry nahoře</translation>
-<translation id="951104842009476243">Přijímané debetní a předplacené karty</translation>
 <translation id="961663415146723894">Vazba dole</translation>
 <translation id="962484866189421427">Tento obsah by se mohl pokusit instalovat klamavé aplikace, které se vydávají za něco jiného nebo shromažďují data ke sledování vaší aktivity. <ph name="BEGIN_LINK" />Přesto zobrazit<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Oficiální sestavení</translation>

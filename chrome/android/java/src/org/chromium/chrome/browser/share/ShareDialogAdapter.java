@@ -6,11 +6,7 @@ package org.chromium.chrome.browser.share;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
-import android.content.res.Resources;
-import android.content.res.Resources.NotFoundException;
-import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +14,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
 import java.util.List;
@@ -53,22 +48,7 @@ class ShareDialogAdapter extends ArrayAdapter<ResolveInfo> {
         ImageView icon = (ImageView) view.findViewById(R.id.icon);
 
         text.setText(getItem(position).loadLabel(mManager));
-        icon.setImageDrawable(loadIconForResolveInfo(getItem(position)));
+        icon.setImageDrawable(ShareHelper.loadIconForResolveInfo(getItem(position), mManager));
         return view;
     }
-
-    private Drawable loadIconForResolveInfo(ResolveInfo info) {
-        try {
-            final int iconRes = info.getIconResource();
-            if (iconRes != 0) {
-                Resources res = mManager.getResourcesForApplication(info.activityInfo.packageName);
-                Drawable icon = ApiCompatibilityUtils.getDrawable(res, iconRes);
-                return icon;
-            }
-        } catch (NameNotFoundException | NotFoundException e) {
-            // Could not find the icon. loadIcon call below will return the default app icon.
-        }
-        return info.loadIcon(mManager);
-    }
-
 }

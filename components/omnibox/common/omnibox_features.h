@@ -65,6 +65,7 @@ extern const base::Feature kHistoryQuickProviderAllowMidwordContinuations;
 
 // Suggestions UI - these affect the UI or function of the suggestions popup.
 extern const base::Feature kConfirmOmniboxSuggestionRemovals;
+extern const base::Feature kTabKeyCanEscapeOmniboxPopup;
 
 // Flags related to new rows and managing rows in the Omnibox.
 // TODO(krb): Move more flags here.

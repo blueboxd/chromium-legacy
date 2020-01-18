@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Thu, 19 Dec 2019 14:19:06 -0800
-Subject: [PATCH 17/22] Add restrictions on shadow table changes in defensive
+Subject: [PATCH 17/25] Add restrictions on shadow table changes in defensive
  mode
 
 Backports https://www.sqlite.org/src/info/bae76a5c40703871
@@ -199,5 +199,5 @@ index c5766e22717d..c6fbbbbb3185 100644
      ALTER TABLE y1 RENAME TO z1;
    }
 --
-2.24.1.735.g03f4e72817-goog
+2.25.0.rc1.283.g88dfdc4193-goog
 

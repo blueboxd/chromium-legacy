@@ -317,7 +317,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void DidSetFramePolicyHeaders(
       WebSandboxFlags,
-      const ParsedFeaturePolicy& parsed_header) {}
+      const ParsedFeaturePolicy& feature_policy_header,
+      const DocumentPolicy::FeatureState& document_policy_header) {}
 
   // Called when a set of new Content Security Policies is added to the frame's
   // document. This can be triggered by handling of HTTP headers, handling of

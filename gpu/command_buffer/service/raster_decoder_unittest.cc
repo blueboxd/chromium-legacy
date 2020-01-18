@@ -362,7 +362,7 @@ class RasterDecoderOOPTest : public testing::Test, DecoderClient {
     auto decoder = base::WrapUnique(RasterDecoder::Create(
         this, &command_buffer_service_, &outputter_, gpu_feature_info_,
         GpuPreferences(), nullptr /* memory_tracker */, &shared_image_manager_,
-        context_state_));
+        context_state_, true /* is_privileged */));
     ContextCreationAttribs attribs;
     attribs.enable_oop_rasterization = true;
     attribs.enable_raster_interface = true;

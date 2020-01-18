@@ -50,6 +50,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.metrics.CachedMetrics.BooleanHistogramSample;
+import org.chromium.base.metrics.CachedMetrics.Count100HistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.base.task.PostTask;
@@ -57,6 +59,8 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.ResourceBundle;
+
+import java.util.Map;
 
 /**
  * Class controlling the Chromium initialization for WebView.
@@ -176,10 +180,21 @@ public class WebViewChromiumAwInit {
             finishVariationsInitLocked();
 
             String webViewPackageName = AwBrowserProcess.getWebViewPackageName();
-            if (DeveloperModeUtils.isDeveloperModeEnabled(webViewPackageName)) {
+            boolean isDeveloperModeEnabled =
+                    DeveloperModeUtils.isDeveloperModeEnabled(webViewPackageName);
+            final BooleanHistogramSample developerModeSample =
+                    new BooleanHistogramSample("Android.WebView.DevUi.DeveloperModeEnabled");
+            developerModeSample.record(isDeveloperModeEnabled);
+            if (isDeveloperModeEnabled) {
                 FlagOverrideHelper helper =
                         new FlagOverrideHelper(ProductionSupportedFlagList.sFlagList);
-                helper.applyFlagOverrides(DeveloperModeUtils.getFlagOverrides(webViewPackageName));
+                Map<String, Boolean> flagOverrides =
+                        DeveloperModeUtils.getFlagOverrides(webViewPackageName);
+                helper.applyFlagOverrides(flagOverrides);
+
+                final Count100HistogramSample flagOverrideSample =
+                        new Count100HistogramSample("Android.WebView.DevUi.ToggledFlagCount");
+                flagOverrideSample.record(flagOverrides.size());
             }
 
             AwBrowserProcess.start();

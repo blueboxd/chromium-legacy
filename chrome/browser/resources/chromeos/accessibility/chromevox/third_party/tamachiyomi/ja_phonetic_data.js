@@ -9,9 +9,67 @@
 goog.provide('JaPhoneticData');
 
 /**
+ * Some disambiguations do not specify the character-set that the character
+ * originates from. This function transforms data in phoneticMap_ to communicate
+ * this information for Hiragana, Katakana, and half-width characters.
+ */
+JaPhoneticData.init = function() {
+  for (var [char, reading] of Object.entries(
+           JaPhoneticData.phoneticMap_ || {})) {
+    if (JaPhoneticData.isHiragana(char)) {
+      JaPhoneticData.phoneticMap_[char] = reading + ' ひらがな';
+    } else if (JaPhoneticData.isKatakana(char)) {
+      JaPhoneticData.phoneticMap_[char] = reading + ' カタカナ';
+    } else if (JaPhoneticData.isHalfWidth(char)) {
+      JaPhoneticData.phoneticMap_[char] = reading + ' ハンカク';
+    }
+  }
+};
+
+/**
+ * Returns true if the character is part of the Hiragana character set.
+ * Please see the following resource detailing Hiragana unicode values:
+ * https://www.unicode.org/charts/PDF/U3040.pdf
+ * @return {boolean}
+ */
+JaPhoneticData.isHiragana = function(character) {
+  if (character >= '\u3040' && character <= '\u3096') {
+    // The range above only applies to characters あ - ゖ.
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Returns true if the character is part of the Katakana character set.
+ * Please see the following resource detailing Katakana unicode values:
+ * https://www.unicode.org/charts/PDF/U30A0.pdf
+ * @return {boolean}
+ */
+JaPhoneticData.isKatakana = function(character) {
+  if (character >= '\u30a0' && character <= '\u30fa') {
+    // The range above only applies to characters ア - ヺ.
+    return true;
+  }
+  return false;
+};
+
+/**
+ * Returns true if the character is part of the half-width kana character set.
+ * Please see the following resource detailing half-width kana unicode values:
+ * https://unicode.org/charts/PDF/UFF00.pdf
+ * @return {boolean}
+ */
+JaPhoneticData.isHalfWidth = function(character) {
+  if (character >= '\uff61' && character <= '\uff9f') {
+    return true;
+  }
+  return false;
+};
+
+/**
  * An object containing phonetic disambiguation data for Japanese.
  * @type {Object<string,string>}
- * @const
  */
 JaPhoneticData.phoneticMap_ = {
   ' ': ' スペース',

@@ -3141,6 +3141,7 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="kWarmerWelcome"/>
   <int value="9" label="kConversationStarter"/>
   <int value="10" label="kWhatsOnMyScreen"/>
+  <int value="11" label="kQuickAnswers"/>
 </enum>
 
 <enum name="AsyncDNSConfigParsePosix">
@@ -5428,6 +5429,8 @@ Unknown properties are collapsed to zero. -->
   <int value="222" label="RFPH_ADVANCE_FOCUS_INTO_PORTAL"/>
   <int value="223" label="RFH_UNEXPECTED_EMBEDDING_TOKEN"/>
   <int value="224" label="RFH_MISSING_EMBEDDING_TOKEN"/>
+  <int value="225" label="RFH_BAD_DOCUMENT_POLICY_HEADER"/>
+  <int value="226" label="RFMF_INVALID_PLUGIN_EMBEDDER_ORIGIN"/>
 </enum>
 
 <enum name="BadMessageReasonExtensions">
@@ -6306,6 +6309,11 @@ Unknown properties are collapsed to zero. -->
 <enum name="BooleanConnectionError">
   <int value="0" label="Connected"/>
   <int value="1" label="Connection error happened"/>
+</enum>
+
+<enum name="BooleanConsistent">
+  <int value="0" label="Inconsistent"/>
+  <int value="1" label="Consistent"/>
 </enum>
 
 <enum name="BooleanContainedMeCard">
@@ -13179,6 +13187,9 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="7" label="kCouldNotGetD3D11Device">
     Could not get D3D11 device.
   </int>
+  <int value="8" label="kOffByWorkaround">
+    Video decoder off by GPU workaround.
+  </int>
 </enum>
 
 <enum name="D3D12FeatureLevel">
@@ -14956,6 +14967,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="4" label="FINISHED_NO_INTERNET"/>
   <int value="5" label="FINISHED_BAD_CONFIG"/>
   <int value="6" label="FINISHED_NXDOMAIN"/>
+  <int value="7" label="FINISHED_BAD_SECURE_CONFIG"/>
 </enum>
 
 <enum name="DnsProbe.SystemIsLocalhost">
@@ -18488,6 +18500,30 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
     period. This was detected when the system clock could not be synchronized
     with the network.
   </int>
+</enum>
+
+<enum name="EnterpriseMacMDMStatusNew">
+  <summary>
+    The Mac MDM enrollment status (new API). See
+    https://blog.fleetsmith.com/what-is-user-approved-mdm-uamdm/ for more
+    details.
+  </summary>
+  <int value="0" label="API unavailable"/>
+  <int value="1" label="Unable to parse result"/>
+  <int value="2" label="No enrollment"/>
+  <int value="3" label="MDM enrollment (limited management capabilities)"/>
+  <int value="4" label="UAMDM enrollment (full management capabilities)"/>
+  <int value="5"
+      label="DEP Enrollment (automatically grants UAMDM status / full
+             management capabilities)"/>
+</enum>
+
+<enum name="EnterpriseMacMDMStatusOld">
+  <summary>The Mac MDM enrollment status (old API).</summary>
+  <int value="0" label="API unavailable"/>
+  <int value="1" label="Unable to parse result"/>
+  <int value="2" label="No enrollment"/>
+  <int value="3" label="MDM enrollment"/>
 </enum>
 
 <enum name="EnterprisePolicies">
@@ -25955,6 +25991,16 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3126" label="V8KeyframeEffect_Constructor"/>
   <int value="3127" label="WebNfcAPI"/>
   <int value="3128" label="HostCandidateAttributeGetter"/>
+  <int value="3129" label="CSPWithReasonableObjectRestrictions"/>
+  <int value="3130" label="CSPWithReasonableBaseRestrictions"/>
+  <int value="3131" label="CSPWithReasonableScriptRestrictions"/>
+  <int value="3132" label="CSPWithReasonableRestrictions"/>
+  <int value="3133" label="CSPROWithReasonableObjectRestrictions"/>
+  <int value="3134" label="CSPROWithReasonableBaseRestrictions"/>
+  <int value="3135" label="CSPROWithReasonableScriptRestrictions"/>
+  <int value="3136" label="CSPROWithReasonableRestrictions"/>
+  <int value="3137" label="CSPWithBetterThanReasonableRestrictions"/>
+  <int value="3138" label="CSPROWithBetterThanReasonableRestrictions"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -57660,35 +57706,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="PRIVACY_SECURITY_KEYS"/>
   <int value="7" label="PRIVACY_SITE_SETTINGS"/>
   <int value="8" label="PRIVACY_CLEAR_BROWSING_DATA"/>
-  <int value="9" label="PRIVACY_SAFE_BROWSING"/>
-  <int value="10" label="PRIVACY_PASSWORD_CHECK"/>
-  <int value="11" label="PRIVACY_IMPROVE_SECUITRY"/>
-  <int value="12" label="PRIVACY_SITE_SETTINGS_COOKIES"/>
-  <int value="13" label="PRIVACY_SITE_SETTINGS_LOCATION"/>
-  <int value="14" label="PRIVACY_SITE_SETTINGS_CAMERA"/>
-  <int value="15" label="PRIVACY_SITE_SETTINGS_MICROPHONE"/>
-  <int value="16" label="PRIVACY_SITE_SETTINGS_SENSORS"/>
-  <int value="17" label="PRIVACY_SITE_SETTINGS_NOTIFICATIONS"/>
-  <int value="18" label="PRIVACY_SITE_SETTINGS_JAVASCRIPT"/>
-  <int value="19" label="PRIVACY_SITE_SETTINGS_FLASH"/>
-  <int value="20" label="PRIVACY_SITE_SETTINGS_IMAGES"/>
-  <int value="21" label="PRIVACY_SITE_SETTINGS_POPUPS"/>
-  <int value="22" label="PRIVACY_SITE_SETTINGS_ADS"/>
-  <int value="23" label="PRIVACY_SITE_SETTINGS_BACKGROUND_SYNC"/>
-  <int value="24" label="PRIVACY_SITE_SETTINGS_SOUND"/>
-  <int value="25" label="PRIVACY_SITE_SETTINGS_AUTOMATIC_DOWNLOADS"/>
-  <int value="26" label="PRIVACY_SITE_SETTINGS_UNSANDBOXED_PLUGINS"/>
-  <int value="27" label="PRIVACY_SITE_SETTINGS_HANDLERS"/>
-  <int value="28" label="PRIVACY_SITE_SETTINGS_MIDI_DEVICES"/>
-  <int value="29" label="PRIVACY_SITE_SETTINGS_ZOOM_LEVELS"/>
-  <int value="30" label="PRIVACY_SITE_SETTINGS_USB_DEVICES"/>
-  <int value="31" label="PRIVACY_SITE_SETTINGS_SERIAL_PORTS"/>
-  <int value="32" label="PRIVACY_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE"/>
-  <int value="33" label="PRIVACY_SITE_SETTINGS_PDF_DOCUMENTS"/>
-  <int value="34" label="PRIVACY_SITE_SETTINGS_PROTECTED_CONTENT"/>
-  <int value="35" label="PRIVACY_SITE_SETTINGS_CLIPBOARD"/>
-  <int value="36" label="PRIVACY_SITE_SETTINGS_PAYMENT_HANDLER"/>
-  <int value="37" label="PRIVACY_SITE_SETTINGS_MIXEDSCRIPT"/>
 </enum>
 
 <enum name="SettingsResetPromptConfigError">
@@ -60874,6 +60891,34 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Renderer crash count"/>
   <int value="5" label="Extensions renderer count"/>
   <int value="16" label="Browser crash count"/>
+</enum>
+
+<enum name="StandardActions">
+  <summary>
+    Standard Activity Actions, as defined by
+    https://developer.android.com/reference/android/content/Intent.html#standard-activity-actions
+  </summary>
+  <int value="0" label="MAIN"/>
+  <int value="1" label="VIEW"/>
+  <int value="2" label="ATTACH_DATA"/>
+  <int value="3" label="EDIT"/>
+  <int value="4" label="PICK"/>
+  <int value="5" label="CHOOSER"/>
+  <int value="6" label="GET_CONTENT"/>
+  <int value="7" label="DIAL"/>
+  <int value="8" label="CALL"/>
+  <int value="9" label="SEND"/>
+  <int value="10" label="SENDTO"/>
+  <int value="11" label="ANSWER"/>
+  <int value="12" label="INSERT"/>
+  <int value="13" label="DELETE"/>
+  <int value="14" label="RUN"/>
+  <int value="15" label="SYNC"/>
+  <int value="16" label="PICK_ACTIVITY"/>
+  <int value="17" label="SEARCH"/>
+  <int value="18" label="WEB_SEARCH"/>
+  <int value="19" label="FACTORY_TEST"/>
+  <int value="20" label="OTHER"/>
 </enum>
 
 <enum name="StarsLaunchLocation">

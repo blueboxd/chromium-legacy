@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 19 Nov 2019 15:04:03 -0800
-Subject: [PATCH 03/22] Shadow Table Corruption Detection improvements in fts3
+Subject: [PATCH 03/25] Shadow Table Corruption Detection improvements in fts3
 
 Backports https://www.sqlite.org/src/info/51525f9c3235967b
 
@@ -107,5 +107,5 @@ index b7c6cd5a4be9..c28358c17479 100644
  #endif
  
 -- 
-2.24.1.735.g03f4e72817-goog
+2.25.0.rc1.283.g88dfdc4193-goog
 

@@ -246,7 +246,7 @@ public class AutofillProfileBridge {
             WebContents webContents, Class<? extends Fragment> fragment) {
         WeakReference<Activity> currentActivity =
                 webContents.getTopLevelNativeWindow().getActivity();
-        SettingsLauncher.launchSettingsPage(currentActivity.get(), fragment);
+        SettingsLauncher.getInstance().launchSettingsPage(currentActivity.get(), fragment);
     }
 
     @NativeMethods

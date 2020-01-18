@@ -53,9 +53,7 @@ source_set("side_swipe") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "side_swipe_controller_unittest.mm",
-  ]
+  sources = [ "side_swipe_controller_unittest.mm" ]
   deps = [
     ":side_swipe",
     "//base",
@@ -74,9 +72,7 @@ source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   defines = [ "CHROME_EARL_GREY_1" ]
   testonly = true
-  sources = [
-    "side_swipe_egtest.mm",
-  ]
+  sources = [ "side_swipe_egtest.mm" ]
 
   deps = [
     ":side_swipe",
@@ -101,9 +97,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "side_swipe_egtest.mm",
-  ]
+  sources = [ "side_swipe_egtest.mm" ]
   deps = [
     "//base",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",

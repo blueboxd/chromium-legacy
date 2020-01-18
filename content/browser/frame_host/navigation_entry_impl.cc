@@ -749,8 +749,8 @@ NavigationEntryImpl::ConstructCommonNavigationParams(
       should_replace_entry(), GetBaseURLForDataURL(), GetHistoryURLForDataURL(),
       previews_state, navigation_start, frame_entry.method(),
       post_body ? post_body : post_data_, base::Optional<SourceLocation>(),
-      has_started_from_context_menu(), has_user_gesture(), InitiatorCSPInfo(),
-      std::vector<int>(), std::string(),
+      has_started_from_context_menu(), has_user_gesture(),
+      CreateInitiatorCSPInfo(), std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, input_start);
 }
 

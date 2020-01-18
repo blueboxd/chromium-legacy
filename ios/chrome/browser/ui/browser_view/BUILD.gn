@@ -250,9 +250,7 @@ source_set("eg_tests") {
   defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "browser_view_controller_egtest.mm",
-  ]
+  sources = [ "browser_view_controller_egtest.mm" ]
   deps = [
     ":browser_view",
     "//base",
@@ -290,9 +288,7 @@ source_set("eg2_tests") {
     "//build/config/ios:xctest_config",
   ]
   testonly = true
-  sources = [
-    "browser_view_controller_egtest.mm",
-  ]
+  sources = [ "browser_view_controller_egtest.mm" ]
   deps = [
     "//base",
     "//base/test:test_support",

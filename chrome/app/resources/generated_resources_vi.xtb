@@ -948,7 +948,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2317842250900878657">Đã hoàn tất <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Khổ giấy</translation>
 <translation id="2318817390901984578">Để sử dụng ứng dụng Android, hãy tính phí và cập nhật <ph name="DEVICE_TYPE" /> của bạn.</translation>
-<translation id="2318923050469484167">Phiên ẩn danh hiện tại (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">Đầu trang và chân trang</translation>
 <translation id="2322318151094136999">Hỏi khi có trang web muốn truy cập vào cổng nối tiếp (khuyên dùng)</translation>
 <translation id="2325002827435400643">Tắt đối với trang web này</translation>
@@ -1791,6 +1790,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3511307672085573050">S&amp;ao chép Địa chỉ Liên kết</translation>
 <translation id="351152300840026870">Phông chữ có chiều rộng cố định</translation>
 <translation id="3511528412952710609">Độ trễ ngắn</translation>
+<translation id="3513704683820682405">Thực tế tăng cường</translation>
 <translation id="3514373592552233661">Mạng ưa thích sẽ được ưu tiên hơn so với các mạng đã biết khác nếu có nhiều mạng</translation>
 <translation id="3515983984924808886">Chạm lại vào khóa bảo mật để xác nhận đặt lại. Thao tác này sẽ xóa toàn bộ thông tin lưu trữ trên khóa bảo mật, bao gồm cả mã PIN của khóa.</translation>
 <translation id="3518985090088779359">Chấp nhận và tiếp tục</translation>
@@ -2247,7 +2247,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4099874310852108874">Đã xảy ra lỗi mạng.</translation>
 <translation id="4100733287846229632">Dung lượng của thiết bị quá thấp</translation>
 <translation id="4100853287411968461">Giới hạn mới về thời gian sử dụng thiết bị</translation>
-<translation id="4103091233824664032">Nhập mật khẩu để định cấu hình khóa màn hình rồi đăng nhập</translation>
 <translation id="4104163789986725820">X&amp;uất...</translation>
 <translation id="4107048419833779140">Nhận dạng và ngắt kết nối thiết bị lưu trữ</translation>
 <translation id="4109135793348361820">Di chuyển cửa sổ đến <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
@@ -2786,6 +2785,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="494286511941020793">Trợ giúp Cấu hình Proxy</translation>
 <translation id="4943368462779413526">Bóng đá</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" muốn kết nối với một cổng nối tiếp</translation>
+<translation id="4943703118917034429">Thực tế ảo</translation>
 <translation id="4944310289250773232">Dịch vụ xác thực này do <ph name="SAML_DOMAIN" /> lưu trữ</translation>
 <translation id="495170559598752135">Tác vụ</translation>
 <translation id="4952981627953231344">Thiết bị này không cho phép sử dụng Plugin VM. Hãy liên hệ với quản trị viên thiết bị của tổ chức bạn.</translation>
@@ -3135,7 +3135,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5468173180030470402">Đang tìm mục chia sẻ tệp</translation>
 <translation id="5470735824776589490">Bạn cần khởi động lại trước khi có thể đặt lại thiết bị của mình bằng Powerwash. <ph name="LINK_BEGIN" />Tìm hiểu thêm<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Chào bạn! Đây là giọng nói của tính năng chuyển văn bản sang lời nói.</translation>
-<translation id="5472133193607270166">Khi tùy chọn này bật, các trang web không thể dùng hoạt động duyệt web của bạn trên nhiều trang web để cá nhân hóa quảng cáo. Một số trang web có thể không hoạt động bình thường.</translation>
 <translation id="5473333559083690127">Nhập lại mã PIN mới</translation>
 <translation id="5481941284378890518">Thêm máy in lân cận</translation>
 <translation id="5483785310822538350">Thu hồi quyền truy cập vào tệp và thiết bị</translation>
@@ -3306,7 +3305,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5701381305118179107">Giữa</translation>
 <translation id="5701441174893770082">Việc nâng cấp Linux có thể làm tiêu hao pin đáng kể. Vui lòng kết nối thiết bị với bộ sạc rồi thử lại.</translation>
 <translation id="5702898740348134351">&amp;Chỉnh sửa Công cụ Tìm kiếm...</translation>
-<translation id="570302979952009979">Chọn tên cho vân tay này</translation>
 <translation id="5704875434923668958">Đồng bộ hóa với</translation>
 <translation id="5707185214361380026">Không tải được tiện ích từ:</translation>
 <translation id="5708171344853220004">Tên Chính của Microsoft</translation>
@@ -3398,7 +3396,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="5833726373896279253">Chỉ chủ sở hữu mới có thể sửa đổi các tùy chọn cài đặt này:</translation>
 <translation id="5834581999798853053">Còn khoảng <ph name="TIME" /> phút</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - Đang ghi âm hoặc quay phim</translation>
-<translation id="5838456317242088717">Phiên ẩn danh hiện tại</translation>
 <translation id="5842497610951477805">Bật Bluetooth</translation>
 <translation id="5843250171025351504">Thiết bị của bạn không còn phù hợp với phiên bản ứng dụng tối thiểu mà quản trị viên chỉ định. Vui lòng cập nhật để đăng nhập.</translation>
 <translation id="5846200638699387931">Lỗi cú pháp về mối quan hệ: <ph name="ERROR_LINE" /></translation>
@@ -3654,7 +3651,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="6181431612547969857">Tải xuống bị chặn</translation>
 <translation id="6185132558746749656">Vị trí thiết bị</translation>
 <translation id="6195693561221576702">Không thể thiết lập thiết bị này ở chế độ minh họa ngoại tuyến.</translation>
-<translation id="6196640612572343990">Chặn cookie của bên thứ ba</translation>
 <translation id="6196854373336333322">Tiện ích "<ph name="EXTENSION_NAME" />" đã chiếm quyền kiểm soát cài đặt proxy của bạn, điều đó có nghĩa là tiện ích này có thể thay đổi, làm gián đoạn hoặc nghe trộm bất kỳ điều gì bạn thực hiện trực tuyến. Nếu bạn không chắc chắn về lý do thay đổi này diễn ra, bạn có thể không cần tiện ích này.</translation>
 <translation id="6198102561359457428">Đăng xuất rồi đăng nhập lại...</translation>
 <translation id="6198252989419008588">Thay đổi mã PIN</translation>
@@ -4360,7 +4356,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="7225179976675429563">Thiếu loại mạng</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (Nhà cung cấp: <ph name="VENDOR_ID" />, Sản phẩm: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">Thực hiện cài đặt chỉ định liệu trang web có thể sử dụng các tính năng như vị trí địa lý, micrô, máy ảnh, v.v. hay không.</translation>
-<translation id="7228523857728654909">Khóa màn hình và đăng nhập</translation>
 <translation id="7229570126336867161">Cần có EVDO</translation>
 <translation id="7230787553283372882">Tùy chỉnh kích thước văn bản của bạn</translation>
 <translation id="7232750842195536390">Không đổi tên được</translation>
@@ -5277,7 +5272,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="850875081535031620">Không tìm thấy phần mềm độc hại nào</translation>
 <translation id="8509177919508253835">Đặt lại khóa bảo mật và tạo mã PIN</translation>
 <translation id="8509646642152301857">Tải xuống từ điển kiểm tra lỗi chính tả không thành công.</translation>
-<translation id="8510617356402557055">Bạn không mong muốn điều này? Hãy <ph name="BEGIN_LINK" />gửi phản hồi<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">Kết thúc quá trình</translation>
 <translation id="851263357009351303">Luôn cho phép <ph name="HOST" /> hiển thị hình ảnh</translation>
 <translation id="8513108775083588393">Tự động xoay</translation>

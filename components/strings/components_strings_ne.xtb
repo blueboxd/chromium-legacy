@@ -126,7 +126,6 @@
     &lt;p&gt;त्रुटि समाधान गर्न, तपाईंले खोल्ने प्रयास गर्नुभएको पृष्ठमा &lt;strong&gt;जडान गर्नुहोस्&lt;/strong&gt; मा क्लिक गर्नुहोस्‌।&lt;/p&gt;</translation>
 <translation id="1513706915089223971">इतिहाससम्बन्धी प्रविष्टिहरूको सूची</translation>
 <translation id="1517433312004943670">फोन नम्बर आवश्यक छ</translation>
-<translation id="1517500485252541695">स्वीकार गरिने क्रेडिट र डेबिट कार्डहरू</translation>
 <translation id="1519264250979466059">निर्माण मिति</translation>
 <translation id="1521655867290435174">Google पाना</translation>
 <translation id="1527263332363067270">जडानको लागि प्रतिक्षा गर्दै...</translation>
@@ -203,7 +202,6 @@
 <translation id="1842969606798536927">भुक्तानी गर्नुहोस्</translation>
 <translation id="1871208020102129563">प्रोक्सी निश्चित प्रोक्सी सर्भर प्रयोग गर्न सेट गरिएको छ, .pac स्क्रिप्ट युआरएल होइन।</translation>
 <translation id="1871284979644508959">आवश्यक क्षेत्र</translation>
-<translation id="1874765382782611674">स्वीकार गरिने डेबिट कार्डहरू</translation>
 <translation id="1875512691959384712">Google फारम</translation>
 <translation id="187918866476621466">सुरुवात पृष्ठहरू खोल्नुहोस्</translation>
 <translation id="1883255238294161206">संक्षिप्त सूची</translation>
@@ -216,11 +214,9 @@
 <translation id="1919345977826869612">विज्ञापनहरू</translation>
 <translation id="1919367280705858090">निर्दिष्ट त्रुटिसम्बन्धी सन्देशमार्फत मद्दत प्राप्त गर्नुहोस्।</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{कुनै पनि होइन}=1{१ साइट}other{# साइटहरू}}</translation>
-<translation id="1927235823738766038">स्वीकार गरिने क्रेडिट र डेबिट कार्डहरू</translation>
 <translation id="194030505837763158"><ph name="LINK" /> मा जानुहोस्</translation>
 <translation id="1945968466830820669">तपाईं आफ्नो सङ्गठनको खातामाथिको पहुँच गुमाउन सक्नुहुन्छ वा तपाईंको पहिचान चोरी हुन सक्छ। Chromium तपाईंलाई आफ्नो पासवर्ड अहिले नै परिवर्तन गर्न सिफारिस गर्छ।</translation>
 <translation id="1947454675006758438">सिरानको दायाँपट्टि स्टिच</translation>
-<translation id="1948773908305951926">स्वीकार गरिने प्रिपेड कार्डहरू</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> बुकमार्कहरू</translation>
 <translation id="1973335181906896915">अनुक्रमण त्रुटि</translation>
 <translation id="1974060860693918893">उन्नत</translation>
@@ -297,7 +293,6 @@
 <translation id="2315864634253056100">यो साइटको नाम <ph name="LOOKALIKE_DOMAIN" /> जस्तै देखिन्छ। आक्रमणकारीहरूले कहिलेकाहीँ वेब ठेगानाको नाममा स्पष्ट नदेखिने परिवर्तनहरू गरी नक्कली साइट सिर्जना गर्न सक्छन्।</translation>
 <translation id="2316887270356262533">१ एम.बि. भन्दा कम ठाउँ खाली गर्दछ। तपाईं अर्कोपटक आउँदा केही साइटहरू अझ ढिलोगरी लोड हुनसक्छन्।</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> लाई एक-पटके पाठ सन्देश र पासवर्ड आवश्यक हुन्छ।</translation>
-<translation id="2317583587496011522">डेबिट कार्डहरू स्वीकार गरिन्छ।</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, <ph name="EXPIRATION_DATE_ABBR" /> मा म्याद समाप्त हुन्छ</translation>
 <translation id="2337852623177822836">तपाईंको प्रशासकले नियन्त्रण गरेको सेटिङ</translation>
 <translation id="2346319942568447007">तपाईंले प्रतिलिपि गर्नुभएको छवि</translation>
@@ -337,7 +332,6 @@
 <translation id="2495093607237746763">जाँच गरिएको खण्डमा छिटो फाराम भर्नको लागि Chromium ले यस यन्त्रमा तपाईँको कार्डको प्रतिलिपि भण्डारण गर्ने छ।</translation>
 <translation id="2498091847651709837">नयाँ कार्ड स्क्यान गर्नुहोस्</translation>
 <translation id="2501278716633472235">पछाडि जानुहोस्</translation>
-<translation id="2503184589641749290">स्वीकार गरिने डेबिट र प्रिपेड कार्डहरू</translation>
 <translation id="2505268675989099013">खाता सुरक्षित गर्नुहोस्</translation>
 <translation id="2515629240566999685">आफ्नो क्षेत्रको सिग्नल जाँच गर्नुहोस्</translation>
 <translation id="2521385132275182522">फेदको दायाँपट्टि स्टिच</translation>
@@ -395,7 +389,6 @@
 <translation id="277499241957683684">हराइएको यन्त्रको रेकर्ड</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">जडान पुनः कायम भयो ।</translation>
-<translation id="2788784517760473862">स्वीकार गरिने क्रेडिट कार्डहरू</translation>
 <translation id="2792012897584536778">यस यन्त्रका प्रशासकहरूले सुरक्षासम्बन्धी प्रमाणपत्रहरू सेटअप गरिसकेका हुँदा यसले उनीहरूलाई तपाईंले भ्रमण गर्नुहुने वेबसाटइका सामग्री हेर्न दिन सक्छ।</translation>
 <translation id="2799020568854403057">अगाडिको साइटमा हानिकारक अनुप्रयोगहरू समावेश छन्</translation>
 <translation id="2799223571221894425">पुन: सुरुवात गर्नुहोस्</translation>
@@ -539,7 +532,6 @@
 <translation id="3574305903863751447"><ph name="CITY" /> , <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> मा इम्बेड गरिएको पृष्ठले यसो भन्छ</translation>
 <translation id="3581089476000296252">यो पृष्ठ तयार भएपछि Chrome ले तपाईंलाई यसबारे सूचित गर्ने छ। &lt;a&gt;रद्द गर्नुहोस्&lt;/a&gt;</translation>
-<translation id="358285529439630156">क्रेडिट र प्रिपेड कार्डहरू स्वीकार गरिन्छ।</translation>
 <translation id="3582930987043644930">नाम थप्नुहोस्</translation>
 <translation id="3583757800736429874">&amp;रिडु सार्ने</translation>
 <translation id="3584299510153766161">फेदमा दुई प्वाल</translation>
@@ -600,7 +592,6 @@
 <translation id="3828924085048779000">खाली पासफ्रेजको लागि अनुमति छैन।</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> ले अतिरिक्त कारबाहीका लागि विस्तारहरू स्थापना गरेको छ। विस्तारहरूको तपाईंको केही डेटामाथि पहुँच छ।</translation>
 <translation id="3832522519263485449">बायाँपट्टि एकभन्दा बढी प्वाल</translation>
-<translation id="3838154488026099170">तपाईंले भर्खरै कुनै भ्रामक साइटमा आफ्नो पासवर्ड प्रविष्टि गर्नुभएको छ। Chromium ले <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> र<ph name="WEBSITE_3" /> र तपाईंले यो पासवर्ड प्रयोग गर्ने अन्य साइटहरूमा गई आफ्नो पासवर्ड अहिले नै बदल्न सिफारिस गर्छ।</translation>
 <translation id="385051799172605136">पछाडि जानुहोस्</translation>
 <translation id="3858027520442213535">मिति र समय अद्यावधिक गर्नुहोस्</translation>
 <translation id="3884278016824448484">विभेदात्मक यन्त्र पहिचानकर्ता</translation>
@@ -638,7 +629,6 @@
 <translation id="4072486802667267160">तपाईंको भुक्तानीको प्रक्रियालाई अघि बढाउँदा कुनै त्रुटि भयो, कृपया फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="4075732493274867456">ग्राहक र सर्भरले एउटा साधारण SSL प्रोटोकल संस्करण वा साइफर सुइटलाई समर्थन गर्दैनन्।</translation>
 <translation id="4075941231477579656">Touch ID</translation>
-<translation id="4077092919748553596">तपाईंले भर्खरै कुनै भ्रामक साइटमा आफ्नो पासवर्ड प्रविष्टि गर्नुभएको छ। Chrome ले <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> र<ph name="WEBSITE_3" /> र तपाईंले यो पासवर्ड प्रयोग गर्ने अन्य साइटहरूमा गई आफ्नो पासवर्ड अहिले नै बदल्न सिफारिस गर्छ।</translation>
 <translation id="4079302484614802869">प्रोक्सी विन्यासले .प्याक स्क्रिप्ट युआरएल प्रयोग गर्न सेट गरिएको छ, निश्चित प्रोक्सी सर्भरहरू होइन।</translation>
 <translation id="4082393374666368382">सेटिङहरू - व्यवस्थापन</translation>
 <translation id="4098354747657067197">अगाडि धोकेबाज साइट</translation>
@@ -735,7 +725,6 @@
 <translation id="4434045419905280838">पपअप तथा रिडिरेक्टहरू</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">प्रोक्सीको प्रयोग असक्षम गरिएको छ तर एक सुस्पष्ट प्रोक्सी विन्यास तोकिएको छ।</translation>
-<translation id="445100540951337728">स्वीकार गरिने डेबिट कार्डहरू</translation>
 <translation id="4466881336512663640">फारममा गरिएका परिवर्तनहरू हराउने छन्। तपाईंले जारी राख्न खोज्नुभएकै हो?</translation>
 <translation id="4477350412780666475">अर्को ट्र्याक</translation>
 <translation id="4482953324121162758">यो साइटको अनुवाद गरिने छैन।</translation>
@@ -940,6 +929,7 @@
 <translation id="5457113250005438886">अवैध</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> र थप <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}other{<ph name="CONTACT_PREVIEW" /> र थप <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" />}}</translation>
 <translation id="5470861586879999274">सम्पादन &amp;पुन: गर्नुहोस्</translation>
+<translation id="5472133193607270166">यो सुविधा सक्रिय हुँदा साइटहरूले विज्ञापन वैयक्तीकृत गर्ने प्रयोजनका लागि विभिन्न साइटमा तपाईंको ब्राउजिङसम्बन्धी क्रियाकलाप प्रयोग गर्न सक्दैनन्। केही साइटहरूले ठिकसँग काम नगर्न सक्छन्</translation>
 <translation id="5478437291406423475">B6/C4 (Envelope)</translation>
 <translation id="5481076368049295676">यो सामग्रीले तपाईंको यन्त्रमा तपाईंको जानकारी चोर्ने वा मेट्ने खतरनाक सफ्टवेयर स्थापना गर्ने प्रयास गर्न सक्छ। <ph name="BEGIN_LINK" />जे भए पनि देखाउनुहोस्‌<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">मान्य ठेगाना थप्नुहोस्</translation>
@@ -993,7 +983,6 @@
 <translation id="570530837424789914">व्यवस्थित गर्नुहोस्...</translation>
 <translation id="57094364128775171">भरपर्दो पासवर्ड सिफारिस गर्नुहोस्…</translation>
 <translation id="5710435578057952990">यो वेबसाइटको पहिचानलाई प्रमाणित गरिएको छैन।</translation>
-<translation id="5719499550583120431">प्रिपेड कार्डहरू स्वीकार गरिन्छ।</translation>
 <translation id="5720705177508910913">हालको प्रयोगकर्ता</translation>
 <translation id="5728056243719941842">C5 (Envelope)</translation>
 <translation id="5730040223043577876">तपाईंले आफ्नो पासवर्ड अन्य साइटहरूमा प्रयोग गर्नुभएका खण्डमा Chrome ले तपाईंको पासवर्ड रिसेट गर्न सिफारिस गर्दछ।</translation>
@@ -1028,7 +1017,6 @@
 <translation id="5869405914158311789">यो साइटमा पहुँच गर्न सकिँदैन</translation>
 <translation id="5869522115854928033">बचत गरिएका पासवर्डहरू</translation>
 <translation id="5887400589839399685">कार्ड सुरक्षित गरियो</translation>
-<translation id="5893752035575986141">क्रेडिट कार्डहरू स्वीकार गरिन्छ।</translation>
 <translation id="5895138241574237353">पुन: शुरू गर्नुहोस्</translation>
 <translation id="5901630391730855834">पहेँलो</translation>
 <translation id="5905445707201418379"><ph name="ORIGIN" /> को मूल नीतिका आधारमा रोक लगाइयो।</translation>
@@ -1080,7 +1068,6 @@
 <translation id="6106989379647458772"><ph name="PAGE" /> को वेबपृष्ठ अस्थायी रूपमा बन्द भएको हुन सक्छ वा त्यो स्थायी रूपमा एउटा नयाँ वेब ठेगानामा सरेको हुन सक्छ।</translation>
 <translation id="610911394827799129">तपाईंको Google खाताको <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> मा ब्राउजिङ इतिहासका अन्य ढाँचाहरू रहेका हुनसक्छन्।</translation>
 <translation id="6120179357481664955">आफ्नो UPI ID सम्झने हो?</translation>
-<translation id="6132597952260690497">स्थापना गरिएका विस्तार र प्लगइनहरूसम्बन्धी जानकारी</translation>
 <translation id="6146055958333702838">तपाइँले प्रयोग गरिेहेको कुनै पनि केबुलहरू जाँच्नुहोस् र कुनै पनि राउटरहरू, मोडेमहरू, वा अन्य 
         नेटवर्क यन्त्रहरू रिबुट गर्नुहोस्।</translation>
 <translation id="614940544461990577">यसो गरी हेर्नुहोस्:</translation>
@@ -1089,6 +1076,7 @@
 <translation id="6157877588268064908">ढुवानीका विधि र मापदण्डहरू हेर्न, ठेगाना चयन गर्नुहोस्</translation>
 <translation id="6165508094623778733">थप जान्नुहोस्</translation>
 <translation id="6177128806592000436">यस साइटमा तपाईँको जडान सुरक्षित छैन</translation>
+<translation id="6196640612572343990">तेस्रो पक्षीय कुकीहरूमाथि रोक लगाउनुहोस्</translation>
 <translation id="6203231073485539293">तपाइँको इन्टरनेट जडान जाँच्नुहोस्</translation>
 <translation id="6218753634732582820">Chromium बाट ठेगाना हटाउने हो?</translation>
 <translation id="622039917539443112">समानान्तर फोल्ड</translation>
@@ -1161,7 +1149,6 @@
 <translation id="6476284679642588870">भुक्तानी विधिहरू व्यवस्थित गर्नुहोस्</translation>
 <translation id="6489534406876378309">क्रयासहरू अपलोड गर्न सुरु गर्नुहोस्</translation>
 <translation id="6499038740797743453">पासवर्ड रिसेट गर्ने हो?</translation>
-<translation id="6507833130742554667">क्रेडिट र डेबिट कार्डहरू स्वीकार गरिन्छ।</translation>
 <translation id="6508722015517270189">Chrome पुनः सुरु गर्नुहोस्</translation>
 <translation id="6517596291481585650">चेतावनी: यो नीति कुनै सूची नभएका कारण यसलाई नीतिले तोकेअनुसार सूचीका रूपमा गाभिएन।</translation>
 <translation id="6518133107902771759">रुजू गर्नुहोस्</translation>
@@ -1301,7 +1288,6 @@
 <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />मा एक निजी जडान स्थापना गर्न सक्दैन किनकि तपाईँको कम्प्युटरको मिति र समय (<ph name="DATE_AND_TIME" />) गलत छन्।</translation>
 <translation id="7260504762447901703">पहुँच रद्द गर्नुहोस्</translation>
-<translation id="7271803869921933038">स्वीकार गरिने प्रिपेड कार्डहरू</translation>
 <translation id="7275334191706090484">व्यवस्थित पृष्ठमञ्जूषाहरू</translation>
 <translation id="7298195798382681320">सिफारिस गरिएको</translation>
 <translation id="7300012071106347854">कोबाल्ट निलो</translation>
@@ -1439,7 +1425,6 @@
 <translation id="785549533363645510">यद्दपि, तपाईं अदृश्य हुनुहुन्न। इन्कोग्निटो हुनाले तपाईंको ब्राउजिङलाई तपाईंको रोजगारदाता, तपाईंको इन्टरनेट सेवा प्रदायक वा तपाईंले भ्रमण गर्नुभएका बेवसाइटहरूबाट लुकाउँदैन।</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">साइट छाड्ने हो?</translation>
-<translation id="7878176543348854470">डेबिट र प्रिपेड कार्डहरू स्वीकार गरिन्छ।</translation>
 <translation id="7878562273885520351">तपाईंको पासवर्ड जोखिममा पर्न सक्छ</translation>
 <translation id="7882421473871500483">खैरो</translation>
 <translation id="7887683347370398519">तपाईँको CVC जाँच गर्नुहोस् र फेरि प्रयास गर्नुहोस्</translation>
@@ -1601,7 +1586,6 @@
 <translation id="8730621377337864115">गरियो</translation>
 <translation id="8738058698779197622">सुरक्षित जडान स्थापना गर्न, तपाईँको घडी ठिक ढङ्गले सेट गर्न आवश्यक छ। यो यसकारण हो किनकि वेबसाइटहरूले आफूलाई पहिचान गर्न प्रयोग गर्ने प्रमाण पत्रहरू निश्चित समयकालका लागि मात्र वैध हुन्छन्। तपाईँको यन्त्रको घडी सही नभएका कारण क्रोमियमले यी प्रमाणपत्र प्रमाणीकरण गर्न सक्दैन।</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" />’s &lt;abbr id="dnsDefinition"&gt;DNS ठेगाना&lt;/abbr&gt; फेला पार्न सकिएन। समस्याको निदान गर्दै।</translation>
-<translation id="874846938927089722">स्वीकार गरिने क्रेडिट र प्रिपेड कार्डहरू</translation>
 <translation id="874918643257405732">यो ट्याब बुकमार्क गर्नुहोस्</translation>
 <translation id="8751426954251315517">कृपया अर्को पटक फेरि प्रयास गर्नुहोस्</translation>
 <translation id="8759274551635299824">यो कार्डको म्याद सकिएको छ</translation>
@@ -1635,7 +1619,6 @@
 <translation id="8931333241327730545">तपाईं आफ्नो Google खातामा यो कार्ड सुरक्षित गर्न चाहनुहुन्छ?</translation>
 <translation id="8932102934695377596">तपाईंको घडी ढिला छ</translation>
 <translation id="893332455753468063">नाम थप्नुहोस्</translation>
-<translation id="8938939909778640821">स्वीकार गरिने क्रेडिट र प्रिपेड कार्डहरू</translation>
 <translation id="8943282376843390568">हल्का पहेँलो</translation>
 <translation id="8957210676456822347">क्याप्टिभ पोर्टल प्राधिकरण</translation>
 <translation id="8962950042226115166">शङ्कास्पद साइट</translation>
@@ -1705,7 +1688,6 @@
 <translation id="939736085109172342">नयाँ फोल्डर</translation>
 <translation id="945855313015696284">तल दिइएको जानकारीको जाँच गर्नुहोस् र सबै अमान्य कार्ड मेट्नुहोस्</translation>
 <translation id="950736567201356821">सिरानमा तीन प्वाल</translation>
-<translation id="951104842009476243">स्वीकार गरिने डेबिट र प्रिपेड कार्डहरू</translation>
 <translation id="961663415146723894">फेदको बाइन्ड</translation>
 <translation id="962484866189421427">यो सामग्रीले आफूलाई अर्कै रूपमा प्रस्तुत गर्ने भ्रामक अनुप्रयोगहरूको स्थापना गर्न वा तपाईंलाई ट्र्याक गर्ने कार्यमा प्रयोग गर्न सकिने डेटाको सङ्कलन गर्ने प्रयास गर्न सक्छ। <ph name="BEGIN_LINK" />जे भए पनि देखाउनुहोस्<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">आधिकारिक निर्माण</translation>

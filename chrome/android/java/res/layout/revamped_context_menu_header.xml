@@ -91,6 +91,7 @@
 
           <org.chromium.ui.widget.TextViewWithLeading
               android:id="@+id/performance_info_text"
+              android:text="@string/contextmenu_performance_info_fast"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:layout_gravity="center_vertical"

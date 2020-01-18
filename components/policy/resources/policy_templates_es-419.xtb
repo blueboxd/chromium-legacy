@@ -208,6 +208,12 @@
       restricciones en los orígenes no seguros</translation>
 <translation id="1312799700549720683">Controla la configuración de visualización.</translation>
 <translation id="131353325527891113">Mostrar los nombres de usuario en la pantalla de inicio de sesión</translation>
+<translation id="1327351219049180837">Esta política controla el informe de los datos y la hora de obtención de la política.
+
+      Si se establece esta política como verdadera, o no se establece, se recopilarán los datos y la hora de obtención de la política.
+      Si se configura como falsa, no se recopilarán estos datos.
+
+      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1327466551276625742">Habilitar mensaje de configuración de red si no hay conexión</translation>
 <translation id="1330145147221172764">Habilitar el teclado en pantalla</translation>
 <translation id="13356285923490863">Nombre de la política</translation>
@@ -351,6 +357,7 @@
 <translation id="152657506688053119">Lista de las URL alternativas para el proveedor de búsqueda predeterminado</translation>
 <translation id="1530812829012954197">Siempre procesar los siguientes patrones de direcciones URL en el navegador del host</translation>
 <translation id="1541170838458414064">Restringir el tamaño de la página de impresión</translation>
+<translation id="1553532014072799546">Lista blanca de límites de tiempo por app</translation>
 <translation id="1553684822621013552">Cuando esta política se establece en true, ARC estará habilitado para el usuario
       (sujeto a verificaciones adicionales de configuraciones de políticas. ARC
       permanecerá inhabilitado si se habilita el modo efímero o el acceso
@@ -449,6 +456,14 @@
       </translation>
 <translation id="1700811900332333712">Permite que el dispositivo solicite Powerwash</translation>
 <translation id="1708496595873025510">Establece la restricción en la obtención del valor de inicialización de las variaciones.</translation>
+<translation id="1713533749396963716">Esta política especifica qué apps y URL deben incluirse en la lista blanca para las restricciones de uso por app.
+        La lista blanca configurada se aplica a las apps instaladas en <ph name="PRODUCT_OS_NAME" /> para un usuario determinado con límites de tiempo por app.
+        Solo se puede aplicar la lista blanca configurada a Cuentas de usuario de menores de edad. Cuando se configure la política <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" />, se implementará la lista blanca.
+        Como la lista blanca configurada se aplica a URL y apps, estas no se bloquearán con los límites de tiempo por app.
+        El acceso a las URL incluidas en la lista blanca no incide en el límite de tiempo para Chrome.
+        Agrega expresiones regulares de URL a |url_list| para incluir en la lista blanca URL que coincidan con cualquier expresión regular de la lista.
+        Para incluir una app en la lista blanca, agrégala con sus valores de |app_id| y |app_type| a |app_list|.
+       </translation>
 <translation id="1715151459541210849">Habilita la función de accesibilidad de dictado</translation>
 <translation id="1717817358640580294">Si no se establece, en caso de que "Limpiar Chrome" detecte software no deseado, es posible que informe metadatos sobre el análisis a Google en conformidad con la política establecida por SafeBrowsingExtendedReportingEnabled. Además, "Limpiar Chrome" le preguntará al usuario si quiere borrar el software no deseado y si desea compartir los resultados de la limpieza con Google a fin de colaborar con futuras detecciones de ese tipo de software. Estos resultados contienen metadatos de archivos, extensiones instaladas automáticamente y claves de registro, como se describe en el Informe de privacidad de Chrome.
 
@@ -960,6 +975,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           En Windows, esta política solo está disponible en instancias vinculadas a un dominio <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="247658312644322296">El destino "Guardar como PDF"</translation>
+<translation id="2478649170422995190">Esta política controla el envío de los datos de la versión, como la arquitectura, la plataforma y la versión del SO, y la versión de <ph name="PRODUCT_NAME" /> y el canal de <ph name="PRODUCT_NAME" />.
+
+      Si se establece esta política como verdadera, o no se establece, se recopilarán los datos de la versión.
+      Si se configura como falsa, no se recopilarán estos datos.
+
+      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2480971699591919564">Habilita la función Llamar con un clic, que permite que los usuarios envíen números de teléfono desde computadoras de escritorio con Chrome hacia dispositivos Android donde el usuario accedió a su cuenta. Para obtener más información, consulta el artículo del Centro de ayuda: https://support.google.com/chrome/answer/9430554?hl=en.
 
       Si se habilita esta política, el usuario de Chrome podrá enviar números de teléfono a dispositivos Android.
@@ -2775,6 +2796,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       De lo contrario, se podrá establecer como uno de los siguientes valores: "tls1.2" o "tls1.3". De esta manera, <ph name="PRODUCT_NAME" /> no usará versiones de SSL/TLS posteriores a la especificada. Se ignorarán los valores no reconocidos.</translation>
 <translation id="5330684698007383292">Permitir que <ph name="PRODUCT_FRAME_NAME" /> gestione los siguientes tipos de contenido</translation>
+<translation id="5331081760098249172">
+      Si se establece la política como verdadera, <ph name="PRODUCT_NAME" /> podrá recopilar registros de acontecimientos de WebRTC de los servicios de Google (como Hangouts Meet) y subir esos registros a Google. Estos registros incluyen información de diagnóstico que permite depurar problemas con llamadas de video o audio en <ph name="PRODUCT_NAME" />, como el momento y el tamaño de los paquetes RTP, comentarios sobre la congestión en la red, y metadatos sobre el tiempo y la calidad de los cuadros de video y audio. Estos registros no contienen contenido de audio o video de la reunión. Para simplificar la depuración, Google puede asociar estos registros, por medio de un ID de sesión, con otros registros recopilados por el servicio de Google en sí.
+
+      Si se configura la política como falsa, no se recopilarán ni subirán estos registros.
+
+      Si no se configura la política, hasta la versión M76 inclusive, <ph name="PRODUCT_NAME" /> no podrá recopilar ni subir esos registros de forma predeterminada. A partir de la versión M77, <ph name="PRODUCT_NAME" /> podrá de forma predeterminada recopilar y subir esos registros de la mayoría de los perfiles afectados por las políticas empresariales en la nube para los usuarios. En las versiones posteriores a M77 y hasta la M80 inclusive, <ph name="PRODUCT_NAME" /> también podrá recopilar y subir de forma predeterminada esos registros de los perfiles afectados por la administración local de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5331746669335642668">La política de nube de <ph name="PRODUCT_NAME" /> anula la política de la plataforma.</translation>
 <translation id="5362531528507578966">Anula el modo predeterminado de impresión de los gráficos de fondo.</translation>
 <translation id="5365476955714838841">Parámetros de la línea de comandos para el navegador alternativo</translation>
@@ -3388,6 +3415,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si esta política se establece en "False", no se informará sobre los usuarios.</translation>
 <translation id="638668187106406971">Revisar las cargas para detectar si se infringen las normas relacionadas con la protección de datos sensibles</translation>
 <translation id="6394350458541421998">Esta política se eliminó a partir de la versión 29 de <ph name="PRODUCT_OS_NAME" />. Utiliza la política PresentationScreenDimDelayScale en su lugar.</translation>
+<translation id="6399242659768117666">Esta política controla si se envía información de las extensiones y los complementos.
+
+      Si no se establece esta política o se establece como verdadera, se recopilarán datos de las extensiones y los complementos.
+      Si se establece como falsa, no se recopilará información de las extensiones ni de los complementos.
+
+      Esta política solo es válida si se habilita la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6401669939808766804">Salir de la cuenta de usuario</translation>
 <translation id="6406448383934634215">Si se selecciona "Abrir una lista de URL" como acción de inicio, esto te permitirá especificar la lista de URL que se abren. Si no se establece, no se abrirá ninguna URL en el inicio.
 
@@ -3471,6 +3504,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Esta política se puede configurar como una ruta de un archivo ejecutable o <ph name="PRODUCT_NAME_PLACEHOLDER" /> para detectar de forma automática la ubicación donde está instalado Chrome.</translation>
 <translation id="6536600139108165863">Reinicio automático cuando se apaga el dispositivo</translation>
+<translation id="6537062468544950724">Esta política controla el envío de datos que se pueden usar para identificar las máquinas, como su nombre y las direcciones de red.
+
+      Si se establece esta política como verdadera, o no se establece, se recopilará la información que permite identificar las máquinas.
+      Si se establece como falsa, no se recopilará esta información.
+
+      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6539246272469751178">Esta política no tiene efecto en las apps de Android. Estas apps siempre usan el directorio de descargas predeterminado y no pueden acceder a ningún archivo que haya descargado <ph name="PRODUCT_OS_NAME" /> en un directorio de descargas no predeterminado.</translation>
 <translation id="654303922206238013">Estrategia de migración para eCryptfs</translation>
 <translation id="6544897973797372144">Si esta política se establece en Verdadera y la política ChromeOsReleaseChannel no se especifica, los usuarios del dominio de inscripción podrán cambiar el canal de versiones del dispositivo. Si esta política se establece en Falsa, el dispositivo se bloqueará en cualquier canal que se haya establecido anteriormente.
@@ -3693,6 +3732,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se establece esta política como verdadera o no se establece, se habilitará el modelo de atenuación inteligente y se permitirá que extienda el tiempo de atenuación. Si se establece como falsa, el modelo no modificará la atenuación.</translation>
 <translation id="6972540544240464302">Selecciona la configuración del programador de tareas</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6991078864332103177">Esta política controla el envío de los datos que permiten identificar a los usuarios, como el acceso al SO, el acceso al perfil de <ph name="PRODUCT_NAME" />, el nombre de perfil de <ph name="PRODUCT_NAME" />, la ruta de acceso al perfil de <ph name="PRODUCT_NAME" /> y la ruta ejecutable de <ph name="PRODUCT_NAME" />.
+
+      Si se establece esta política como verdadera, o no se establece, se recopilará la información que permite identificar a los usuarios.
+      Si se configura como falsa, no se recopilará esta información.
+
+      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6994082778848658360">Especifica la forma en que los elementos de hardware de seguridad integrados se usan para la autenticación de dos factores, si son compatibles con esta función. El botón de encendido de la máquina se usa para detectar la presencia física del usuario.
 
 Si se selecciona "Inhabilitada", no se proporciona un segundo factor.
@@ -4196,11 +4241,20 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           Si esta configuración está inhabilitada o no está establecida, no se habilitarán los dos factores y se utilizará el comportamiento predeterminado de un PIN definido por el usuario.</translation>
 <translation id="7750991880413385988">Abrir la página Nueva pestaña</translation>
 <translation id="7754704193130578113">Preguntar ubicación antes de descargar</translation>
+<translation id="7755495228644343508">Configura las políticas relacionadas con Chrome Reporting Extension.
+
+      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Permite la autenticación ambiental para tipos de perfiles.</translation>
 <translation id="7761446981238915769">Configura la lista de apps instaladas en la pantalla de acceso</translation>
 <translation id="7763614521440615342">Mostrar sugerencias de contenido en la página Nueva pestaña</translation>
 <translation id="7765879851993224640">Permitir el acceso mediante Smart Lock</translation>
 <translation id="7774768074957326919">Usar la configuración del proxy del sistema</translation>
+<translation id="7775902646576367944">Esta política controla si se envía información de "Navegación segura", lo que incluye la cantidad de advertencias de "Navegación segura" y la cantidad de veces que se hace clic en ellas.
+
+      Si no se establece esta política o se establece como verdadera, se recopilarán los datos de "Navegación segura".
+      Si se establece como falsa, no se recopilarán los datos de "Navegación segura".
+
+      Esta política solo es válida si se habilita la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7777535871204167559">Tratar los dispositivos de almacenamiento externo como de solo lectura</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="7792973482799545782">No permitir que ningún sitio cargue contenido mixto bloqueable</translation>
@@ -4775,6 +4829,15 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8757552286070680084">Configuración de DTC wilco</translation>
 <translation id="8758831693895931466">Habilitar la inscripción obligatoria en la administración de la nube</translation>
 <translation id="8759829385824155666">Se permiten los tipos de encriptación de Kerberos</translation>
+<translation id="87635449713742708">Esta política fuerza la ejecución del código de red en el proceso de navegación.
+
+      Está inhabilitada de forma predeterminada, pero, si se habilita, deja a los usuarios desprotegidos frente a problemas de seguridad una vez que el proceso de red se encuentre en la zona de pruebas.
+
+      Esta política permite que las empresas migren a software de terceros sin necesidad de modificar las API de red. Se recomiendan los servidores Proxy antes que los LSP y la aplicación de parches de API Win32.
+
+      Si no se establece esta política, el código de red se ejecutará de forma predeterminada por fuera del proceso del navegador.
+
+      En la versión 82 de <ph name="PRODUCT_NAME" />, se quitará esta política.</translation>
 <translation id="8764119899999036911">Especifica si el SPN de Kerberos generado se basa en el nombre canónico DNS o en el nombre original introducido. Si se habilita esta configuración, se salteará la búsqueda de CNAME y se usará el nombre del servidor que se haya introducido. Si se inhabilita esta opción o si no se configura, el nombre canónico del servidor se determinará a través de una búsqueda de CNAME.</translation>
 <translation id="8764477907716150749">Esta política es para uso interno de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8777369558049831576">Muestra la casilla de verificación "Always open" en un cuadro de diálogo del protocolo externo</translation>

@@ -51,8 +51,6 @@ class DataReductionProxyMetricsObserver
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnLoadEventStart(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
-  void OnFirstLayout(
-      const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstPaintInPage(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstImagePaintInPage(

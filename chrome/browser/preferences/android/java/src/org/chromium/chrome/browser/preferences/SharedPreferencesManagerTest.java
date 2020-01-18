@@ -70,16 +70,18 @@ public class SharedPreferencesManagerTest {
     @SmallTest
     public void testIncrementInt() {
         mSubject.writeInt("int_key", 100);
-        mSubject.incrementInt("int_key");
+        int result = mSubject.incrementInt("int_key");
 
+        assertEquals(101, result);
         assertEquals(101, mSubject.readInt("int_key"));
     }
 
     @Test
     @SmallTest
     public void testIncrementIntDefault() {
-        mSubject.incrementInt("int_key");
+        int result = mSubject.incrementInt("int_key");
 
+        assertEquals(1, result);
         assertEquals(1, mSubject.readInt("int_key"));
     }
 

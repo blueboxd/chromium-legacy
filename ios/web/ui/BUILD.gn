@@ -3,13 +3,9 @@
 # found in the LICENSE file.
 
 source_set("ui") {
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
-  sources = [
-    "page_display_state.mm",
-  ]
+  sources = [ "page_display_state.mm" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

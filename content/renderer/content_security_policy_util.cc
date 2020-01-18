@@ -4,43 +4,42 @@
 
 #include "content/renderer/content_security_policy_util.h"
 #include "services/network/public/cpp/content_security_policy.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace content {
 
-CSPSource BuildCSPSource(
+network::mojom::CSPSourcePtr BuildCSPSource(
     const blink::WebContentSecurityPolicySourceExpression& source) {
-  return CSPSource(
-      source.scheme.Utf8(),  // scheme
-      source.host.Utf8(),    // host
-      source.is_host_wildcard == blink::kWebWildcardDispositionHasWildcard,
+  return network::mojom::CSPSource::New(
+      source.scheme.Utf8(),                                    // scheme
+      source.host.Utf8(),                                      // host
       source.port == 0 ? url::PORT_UNSPECIFIED : source.port,  // port
-      source.is_port_wildcard == blink::kWebWildcardDispositionHasWildcard,
-      source.path.Utf8());  // path
+      source.path.Utf8(),                                      // path
+      source.is_host_wildcard == blink::kWebWildcardDispositionHasWildcard,
+      source.is_port_wildcard == blink::kWebWildcardDispositionHasWildcard);
 }
 
-CSPSourceList BuildCSPSourceList(
+network::mojom::CSPSourceListPtr BuildCSPSourceList(
     const blink::WebContentSecurityPolicySourceList& source_list) {
-  std::vector<CSPSource> sources;
-  for (const auto& source : source_list.sources) {
+  std::vector<network::mojom::CSPSourcePtr> sources;
+  for (const auto& source : source_list.sources)
     sources.push_back(BuildCSPSource(source));
-  }
 
-  return CSPSourceList(source_list.allow_self,       // allow_self
-                       source_list.allow_star,       // allow_star
-                       source_list.allow_redirects,  // allow_redirects
-                       sources);                     // source_list
+  return network::mojom::CSPSourceList::New(
+      std::move(sources), source_list.allow_self, source_list.allow_star,
+      source_list.allow_redirects);
 }
 
-CSPDirective BuildCSPDirective(
+network::mojom::CSPDirectivePtr BuildCSPDirective(
     const blink::WebContentSecurityPolicyDirective& directive) {
-  return CSPDirective(
+  return network::mojom::CSPDirective::New(
       network::ContentSecurityPolicy::ToDirectiveName(directive.name.Utf8()),
       BuildCSPSourceList(directive.source_list));
 }
 
-ContentSecurityPolicy BuildContentSecurityPolicy(
+network::mojom::ContentSecurityPolicyPtr BuildContentSecurityPolicy(
     const blink::WebContentSecurityPolicy& policy) {
-  std::vector<CSPDirective> directives;
+  std::vector<network::mojom::CSPDirectivePtr> directives;
   for (const auto& directive : policy.directives)
     directives.push_back(BuildCSPDirective(directive));
 
@@ -48,15 +47,17 @@ ContentSecurityPolicy BuildContentSecurityPolicy(
   for (const blink::WebString& endpoint : policy.report_endpoints)
     report_endpoints.push_back(endpoint.Utf8());
 
-  return ContentSecurityPolicy(
-      network::mojom::ContentSecurityPolicyHeader(
+  return network::mojom::ContentSecurityPolicy::New(
+      std::move(directives),
+      network::mojom::ContentSecurityPolicyHeader::New(
           policy.header.Utf8(), policy.disposition, policy.source),
-      directives, report_endpoints, policy.use_reporting_api);
+      policy.use_reporting_api, std::move(report_endpoints));
 }
 
-std::vector<ContentSecurityPolicy> BuildContentSecurityPolicyList(
+std::vector<network::mojom::ContentSecurityPolicyPtr>
+BuildContentSecurityPolicyList(
     const blink::WebContentSecurityPolicyList& policies) {
-  std::vector<ContentSecurityPolicy> list;
+  std::vector<network::mojom::ContentSecurityPolicyPtr> list;
 
   for (const auto& policy : policies.policies)
     list.push_back(BuildContentSecurityPolicy(policy));

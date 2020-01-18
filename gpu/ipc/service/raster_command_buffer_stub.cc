@@ -127,7 +127,7 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
       this, command_buffer_.get(), manager->outputter(),
       manager->gpu_feature_info(), manager->gpu_preferences(),
       memory_tracker_.get(), manager->shared_image_manager(),
-      shared_context_state));
+      shared_context_state, channel()->is_gpu_host()));
 
   sync_point_client_state_ =
       channel_->sync_point_manager()->CreateSyncPointClientState(

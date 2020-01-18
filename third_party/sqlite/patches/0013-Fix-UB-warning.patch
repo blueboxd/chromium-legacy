@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Mon, 16 Dec 2019 13:45:04 -0800
-Subject: [PATCH 13/22] Fix UB warning
+Subject: [PATCH 13/25] Fix UB warning
 
 Backports https://sqlite.org/src/info/052fdf5e58b41cca
 
@@ -36,5 +36,5 @@ index 430cdb64742f..0d12b8d53a4c 100644
      int i;
      incr = 2;
 -- 
-2.24.1.735.g03f4e72817-goog
+2.25.0.rc1.283.g88dfdc4193-goog
 

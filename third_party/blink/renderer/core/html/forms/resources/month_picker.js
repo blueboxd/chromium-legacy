@@ -90,14 +90,13 @@ class MonthPicker extends HTMLElement {
   };
 
   onYearListViewDidHide_ = (sender) => {
-    const selectedValue = this.selectedMonth_.toString();
-    window.setTimeout(function() {
-      window.pagePopupController.setValueAndClosePopup(0, selectedValue);
-    }, 100);
+    window.pagePopupController.closePopup();
   };
 
   onYearListViewDidSelectMonth_ = (sender, month) => {
     this.selectedMonth_ = month;
+    const selectedValue = this.selectedMonth_.toString();
+    window.pagePopupController.setValueAndClosePopup(0, selectedValue);
   };
 
   initializeTodayButton_ = () => {
@@ -116,9 +115,7 @@ class MonthPicker extends HTMLElement {
 
   onTodayButtonClick_ = (sender) => {
     const selectedValue = Month.createFromToday().toString();
-    window.setTimeout(function() {
-      window.pagePopupController.setValueAndClosePopup(0, selectedValue);
-    }, 100);
+    window.pagePopupController.setValueAndClosePopup(0, selectedValue);
   };
 
   onWindowResize_ = (event) => {

@@ -499,6 +499,10 @@ DeviceContext ClientAndroid::GetDeviceContext() {
   return context;
 }
 
+content::WebContents* ClientAndroid::GetWebContents() {
+  return web_contents_;
+}
+
 void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
   if (!controller_)
     return;

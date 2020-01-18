@@ -1662,6 +1662,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityInputRadio) {
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityInputRadioCheckboxLabel) {
+  RunHtmlTest(FILE_PATH_LITERAL("input-radio-checkbox-label.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityInputRadioInMenu) {
   RunHtmlTest(FILE_PATH_LITERAL("input-radio-in-menu.html"));
 }

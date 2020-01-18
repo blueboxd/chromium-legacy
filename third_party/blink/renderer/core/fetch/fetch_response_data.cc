@@ -41,7 +41,8 @@ blink::CSPSourceListPtr ConvertToBlink(CSPSourceListPtr source_list) {
     sources.push_back(ConvertToBlink(std::move(it)));
 
   return blink::CSPSourceList::New(std::move(sources), source_list->allow_self,
-                                   source_list->allow_star);
+                                   source_list->allow_star,
+                                   source_list->allow_response_redirects);
 }
 
 blink::CSPDirectiveName ConvertToBlink(CSPDirectiveName name) {

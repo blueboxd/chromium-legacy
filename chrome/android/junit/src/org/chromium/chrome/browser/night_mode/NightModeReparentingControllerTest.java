@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.night_mode;
 
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
@@ -61,6 +62,7 @@ public class NightModeReparentingControllerTest {
                 // setup
                 mTabModelSelector = Mockito.mock(TabModelSelector.class);
                 doReturn(getCurrentTabModel()).when(mTabModelSelector).getCurrentModel();
+                doReturn(getCurrentTabModel()).when(mTabModelSelector).getModel(anyBoolean());
             }
 
             return mTabModelSelector;
@@ -123,6 +125,18 @@ public class NightModeReparentingControllerTest {
 
         mController.onStartWithNative();
         verify(mTask, times(1)).finish(anyObject(), anyObject());
+    }
+
+    @Test
+    public void testReparenting_singleTab_currentModelNullOnStart() {
+        createAndAddMockTab(1, 0);
+        mController.onNightModeStateChanged();
+
+        doReturn(null).when(mDelegate.getTabModelSelector()).getModel(anyBoolean());
+        mController.onStartWithNative();
+
+        AsyncTabParams params = AsyncTabParamsManager.getAsyncTabParams().get(1);
+        Assert.assertNull(params);
     }
 
     @Test

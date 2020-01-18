@@ -41,9 +41,7 @@ chrome_ios_eg_test("ios_chrome_integration_egtests") {
 }
 
 chrome_ios_eg_test("ios_chrome_autofill_automation_egtests") {
-  deps = [
-    "//ios/chrome/browser/autofill/automation:eg_tests",
-  ]
+  deps = [ "//ios/chrome/browser/autofill/automation:eg_tests" ]
 }
 
 chrome_ios_eg_test("ios_chrome_reading_list_egtests") {
@@ -54,9 +52,7 @@ chrome_ios_eg_test("ios_chrome_reading_list_egtests") {
 }
 
 chrome_ios_eg_test("ios_chrome_bookmarks_egtests") {
-  deps = [
-    "//ios/chrome/browser/ui/bookmarks:eg_tests",
-  ]
+  deps = [ "//ios/chrome/browser/ui/bookmarks:eg_tests" ]
 }
 
 chrome_ios_eg_test("ios_chrome_settings_egtests") {
@@ -102,9 +98,7 @@ chrome_ios_eg_test("ios_chrome_ui_egtests") {
 }
 
 chrome_ios_eg_test("ios_chrome_web_egtests") {
-  deps = [
-    "//ios/chrome/browser/web:eg_tests",
-  ]
+  deps = [ "//ios/chrome/browser/web:eg_tests" ]
 }
 
 chrome_ios_eg_test("ios_chrome_multitasking_egtests") {
@@ -132,16 +126,12 @@ chrome_ios_eg_test("ios_chrome_multitasking_egtests") {
 }
 
 chrome_ios_eg_test("ios_chrome_perf_egtests") {
-  deps = [
-    "//ios/chrome/test/perf:eg_tests",
-  ]
+  deps = [ "//ios/chrome/test/perf:eg_tests" ]
 }
 
 chrome_ios_eg_test("ios_chrome_device_check_egtests") {
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "device_check_egtest.mm",
-  ]
+  sources = [ "device_check_egtest.mm" ]
   deps = [
     ":test_support",
     "//ios/third_party/earl_grey:earl_grey+link",
@@ -166,9 +156,7 @@ chrome_ios_eg_test("ios_chrome_flaky_egtests") {
 
 chrome_ios_eg_test("ios_chrome_smoke_egtests") {
   configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "smoke_egtest.mm",
-  ]
+  sources = [ "smoke_egtest.mm" ]
   deps = [
     ":test_support",
     "//ios/chrome/test/app:test_support",
@@ -178,9 +166,7 @@ chrome_ios_eg_test("ios_chrome_smoke_egtests") {
 }
 
 chrome_ios_eg_test("ios_chrome_translate_egtests") {
-  deps = [
-    "//ios/chrome/browser/translate:eg_tests",
-  ]
+  deps = [ "//ios/chrome/browser/translate:eg_tests" ]
 }
 
 source_set("test_support") {
@@ -322,12 +308,8 @@ source_set("test_support") {
 source_set("hooks") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "eg_tests_hook.mm",
-  ]
-  deps = [
-    "//ios/chrome/app:tests_hook",
-  ]
+  sources = [ "eg_tests_hook.mm" ]
+  deps = [ "//ios/chrome/app:tests_hook" ]
 }
 
 source_set("eg_app_support+eg2") {

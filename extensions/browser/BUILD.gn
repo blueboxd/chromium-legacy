@@ -399,6 +399,7 @@ jumbo_source_set("browser_sources") {
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
     "//third_party/blink/public/common",
+    "//third_party/blink/public/mojom/frame",
     "//ui/display",
   ]
 
@@ -562,9 +563,8 @@ jumbo_source_set("test_support") {
     "//testing/gtest",
   ]
 
-  public_deps = [
-    "//extensions/browser/api/declarative_net_request:test_support",
-  ]
+  public_deps =
+      [ "//extensions/browser/api/declarative_net_request:test_support" ]
 }
 
 source_set("unit_tests") {

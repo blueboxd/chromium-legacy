@@ -45,12 +45,10 @@ class PageTimingMetricsSenderTest : public testing::Test {
 
 TEST_F(PageTimingMetricsSenderTest, Basic) {
   base::Time nav_start = base::Time::FromDoubleT(10);
-  base::TimeDelta first_layout = base::TimeDelta::FromMillisecondsD(2);
 
   mojom::PageLoadTiming timing;
   InitPageLoadTimingForTest(&timing);
   timing.navigation_start = nav_start;
-  timing.document_timing->first_layout = first_layout;
 
   metrics_sender_->SendSoon(timing.Clone());
 
@@ -71,13 +69,11 @@ TEST_F(PageTimingMetricsSenderTest, Basic) {
 
 TEST_F(PageTimingMetricsSenderTest, CoalesceMultipleTimings) {
   base::Time nav_start = base::Time::FromDoubleT(10);
-  base::TimeDelta first_layout = base::TimeDelta::FromMillisecondsD(2);
   base::TimeDelta load_event = base::TimeDelta::FromMillisecondsD(4);
 
   mojom::PageLoadTiming timing;
   InitPageLoadTimingForTest(&timing);
   timing.navigation_start = nav_start;
-  timing.document_timing->first_layout = first_layout;
 
   metrics_sender_->SendSoon(timing.Clone());
   ASSERT_TRUE(metrics_sender_->mock_timer()->IsRunning());
@@ -96,13 +92,11 @@ TEST_F(PageTimingMetricsSenderTest, CoalesceMultipleTimings) {
 
 TEST_F(PageTimingMetricsSenderTest, MultipleTimings) {
   base::Time nav_start = base::Time::FromDoubleT(10);
-  base::TimeDelta first_layout = base::TimeDelta::FromMillisecondsD(2);
   base::TimeDelta load_event = base::TimeDelta::FromMillisecondsD(4);
 
   mojom::PageLoadTiming timing;
   InitPageLoadTimingForTest(&timing);
   timing.navigation_start = nav_start;
-  timing.document_timing->first_layout = first_layout;
 
   metrics_sender_->SendSoon(timing.Clone());
   ASSERT_TRUE(metrics_sender_->mock_timer()->IsRunning());
@@ -125,7 +119,6 @@ TEST_F(PageTimingMetricsSenderTest, SendTimingOnSendLatest) {
   mojom::PageLoadTiming timing;
   InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(10);
-  timing.document_timing->first_layout = base::TimeDelta::FromMilliseconds(10);
 
   // This test wants to verify behavior in the PageTimingMetricsSender
   // destructor. The EXPECT_CALL will be satisfied when the |metrics_sender_|

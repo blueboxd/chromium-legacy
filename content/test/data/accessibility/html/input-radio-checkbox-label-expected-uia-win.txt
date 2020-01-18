@@ -1,0 +1,12 @@
+document
+++group IsControlElement=false
+++++radio Name='label ignored for radio button' SelectionItem.IsSelected=false
+++++checkbox Name='label ignored for checkbox' Toggle.ToggleState='Off'
+++++description Name='label exposed for radio button '
+++++++description Name='label exposed for radio button '
+++++++radio Name='label exposed for radio button' SelectionItem.IsSelected=false
+++++++description Name=' '
+++++description Name='label exposed for checkbox '
+++++++description Name='label exposed for checkbox '
+++++++checkbox Name='label exposed for checkbox' Toggle.ToggleState='Off'
+++++++description Name=' '

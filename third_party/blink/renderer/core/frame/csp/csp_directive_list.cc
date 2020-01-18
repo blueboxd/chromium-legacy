@@ -1617,6 +1617,34 @@ WebContentSecurityPolicy CSPDirectiveList::ExposeForNavigationalChecks() const {
   return policy;
 }
 
+bool CSPDirectiveList::IsObjectRestrictionReasonable() const {
+  SourceListDirective* object_src =
+      OperativeDirective(ContentSecurityPolicy::DirectiveType::kObjectSrc);
+  return object_src && object_src->IsNone();
+}
+
+bool CSPDirectiveList::IsBaseRestrictionReasonable() const {
+  return base_uri_ && (base_uri_->IsNone() || base_uri_->IsSelf());
+}
+
+bool CSPDirectiveList::IsScriptRestrictionReasonable() const {
+  SourceListDirective* script_src =
+      OperativeDirective(ContentSecurityPolicy::DirectiveType::kScriptSrc);
+
+  // If no `script-src` enforcement occurs, or it allows any and all inline
+  // script, the restriction is not reasonable.
+  if (!script_src || script_src->AllowAllInline())
+    return false;
+
+  if (script_src->IsNone())
+    return true;
+
+  // Policies containing `'strict-dynamic'` are reasonable, as that keyword
+  // ensures that host-based expressions and `'unsafe-inline'` are ignored.
+  return script_src->IsHashOrNoncePresent() &&
+         (script_src->AllowDynamic() || !script_src->AllowsURLBasedMatching());
+}
+
 void CSPDirectiveList::Trace(blink::Visitor* visitor) {
   visitor->Trace(policy_);
   visitor->Trace(plugin_types_);

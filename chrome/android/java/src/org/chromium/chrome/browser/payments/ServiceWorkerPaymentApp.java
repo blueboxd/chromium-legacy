@@ -221,11 +221,11 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     public void getInstruments(String id, Map<String, PaymentMethodData> methodDataMap,
             String origin, String iframeOrigin, byte[][] unusedCertificateChain,
             Map<String, PaymentDetailsModifier> modifiers, final InstrumentsCallback callback) {
-        // Do not send canMakePayment event when in incognito mode or basic-card is the only
-        // supported payment method or this app needs installation for the payment request or this
-        // app has not been explicitly verified.
-        if (mIsIncognito || isOnlySupportBasiccard(methodDataMap) || mNeedsInstallation
-                || !mExplicitlyVerified) {
+        // Do not send canMakePayment event when in incognito mode or only standardized payment
+        // methods are supported or this app needs installation for the payment request or this app
+        // has not been explicitly verified.
+        if (mIsIncognito || isOnlySupportStandardizedPaymentMethods(methodDataMap)
+                || mNeedsInstallation || !mExplicitlyVerified) {
             new Handler().post(() -> {
                 List<PaymentInstrument> instruments =
                         Collections.singletonList(ServiceWorkerPaymentApp.this);
@@ -244,12 +244,19 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
                 });
     }
 
-    // Returns true if 'basic-card' is the only supported payment method of this payment app in the
-    // payment request.
-    private boolean isOnlySupportBasiccard(Map<String, PaymentMethodData> methodDataMap) {
+    // Returns true if only standardized payment methods are supported.
+    private boolean isOnlySupportStandardizedPaymentMethods(
+            Map<String, PaymentMethodData> methodDataMap) {
         Set<String> requestMethods = new HashSet<>(methodDataMap.keySet());
         requestMethods.retainAll(mMethodNames);
-        return requestMethods.size() == 1 && requestMethods.contains(MethodStrings.BASIC_CARD);
+        assert !requestMethods.isEmpty();
+        Set<String> standardizedPaymentMethods = new HashSet<>();
+        standardizedPaymentMethods.add(MethodStrings.BASIC_CARD);
+        standardizedPaymentMethods.add(MethodStrings.INTERLEDGER);
+        standardizedPaymentMethods.add(MethodStrings.PAYEE_CREDIT_TRANSFER);
+        standardizedPaymentMethods.add(MethodStrings.PAYER_CREDIT_TRANSFER);
+        standardizedPaymentMethods.add(MethodStrings.TOKENIZED_CARD);
+        return standardizedPaymentMethods.containsAll(requestMethods);
     }
 
     // Matches ||requestMethodData|.supportedNetwokrs for 'basic-card' payment method with the

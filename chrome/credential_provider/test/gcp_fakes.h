@@ -15,6 +15,8 @@
 #include "base/win/scoped_handle.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/chrome_availability_checker.h"
+#include "chrome/credential_provider/gaiacp/event_logging_api_manager.h"
+#include "chrome/credential_provider/gaiacp/event_logs_upload_manager.h"
 #include "chrome/credential_provider/gaiacp/gem_device_details_manager.h"
 #include "chrome/credential_provider/gaiacp/internet_availability_checker.h"
 #include "chrome/credential_provider/gaiacp/os_process_manager.h"
@@ -444,6 +446,96 @@ class FakeGemDeviceDetailsManager : public GemDeviceDetailsManager {
 
  private:
   GemDeviceDetailsManager* original_manager_ = nullptr;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class FakeEventLoggingApiManager : public EventLoggingApiManager {
+ public:
+  typedef EventLogsUploadManager::EventLogEntry EventLogEntry;
+
+  EVT_HANDLE EvtQuery(EVT_HANDLE session,
+                      LPCWSTR path,
+                      LPCWSTR query,
+                      DWORD flags) override;
+
+  EVT_HANDLE EvtOpenPublisherMetadata(EVT_HANDLE session,
+                                      LPCWSTR publisher_id,
+                                      LPCWSTR log_file_path,
+                                      LCID locale,
+                                      DWORD flags) override;
+
+  EVT_HANDLE EvtCreateRenderContext(DWORD value_paths_count,
+                                    LPCWSTR* value_paths,
+                                    DWORD flags) override;
+
+  BOOL EvtNext(EVT_HANDLE result_set,
+               DWORD events_size,
+               PEVT_HANDLE events,
+               DWORD timeout,
+               DWORD flags,
+               PDWORD num_returned) override;
+
+  BOOL EvtGetQueryInfo(EVT_HANDLE query,
+                       EVT_QUERY_PROPERTY_ID property_id,
+                       DWORD value_buffer_size,
+                       PEVT_VARIANT value_buffer,
+                       PDWORD value_buffer_used) override;
+
+  BOOL EvtRender(EVT_HANDLE context,
+                 EVT_HANDLE evt_handle,
+                 DWORD flags,
+                 DWORD buffer_size,
+                 PVOID buffer,
+                 PDWORD buffer_used,
+                 PDWORD property_count) override;
+
+  BOOL EvtFormatMessage(EVT_HANDLE publisher_metadata,
+                        EVT_HANDLE event,
+                        DWORD message_id,
+                        DWORD value_count,
+                        PEVT_VARIANT values,
+                        DWORD flags,
+                        DWORD buffer_size,
+                        LPWSTR buffer,
+                        PDWORD buffer_used) override;
+
+  BOOL EvtClose(EVT_HANDLE handle) override;
+
+  DWORD GetLastError() override;
+
+  explicit FakeEventLoggingApiManager(const std::vector<EventLogEntry>& logs);
+
+  ~FakeEventLoggingApiManager() override;
+
+ private:
+  EventLoggingApiManager* original_manager_ = nullptr;
+
+  const std::vector<EventLogEntry>& logs_;
+  EVT_HANDLE query_handle_, publisher_metadata_, render_context_;
+  DWORD last_error_;
+  size_t next_event_idx_;
+  std::vector<EVT_HANDLE> event_handles_;
+  std::unordered_map<EVT_HANDLE, size_t> handle_to_index_map_;
+};
+
+class FakeEventLogsUploadManager : public EventLogsUploadManager {
+ public:
+  typedef EventLogsUploadManager::EventLogEntry EventLogEntry;
+
+  // Construct with the logs that should be present in the fake event log.
+  explicit FakeEventLogsUploadManager(const std::vector<EventLogEntry>& logs);
+  ~FakeEventLogsUploadManager() override;
+
+  // Get the last upload status of the call to UploadEventViewerLogs.
+  HRESULT GetUploadStatus();
+
+  // Get the number of successfully uploaded event logs.
+  uint64_t GetNumLogsUploaded();
+
+ private:
+  EventLogsUploadManager* original_manager_ = nullptr;
+  FakeEventLoggingApiManager api_manager_;
 };
 
 }  // namespace credential_provider

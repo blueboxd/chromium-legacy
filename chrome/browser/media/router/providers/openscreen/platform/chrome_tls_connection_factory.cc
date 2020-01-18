@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "chrome/browser/media/router/providers/openscreen/platform/chrome_tls_client_connection.h"
-#include "chrome/browser/media/router/providers/openscreen/platform/mojo_data_pump.h"
 #include "chrome/browser/media/router/providers/openscreen/platform/network_util.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "net/base/host_port_pair.h"
@@ -199,13 +198,10 @@ void ChromeTlsConnectionFactory::OnTlsUpgrade(
     return;
   }
 
-  auto data_pump = std::make_unique<MojoDataPump>(std::move(receive_stream),
-                                                  std::move(send_stream));
-
   auto tls_connection = std::make_unique<ChromeTlsClientConnection>(
       task_runner_, request.local_address, request.remote_address,
-      std::move(data_pump), std::move(request.tcp_socket),
-      std::move(request.tls_socket));
+      std::move(receive_stream), std::move(send_stream),
+      std::move(request.tcp_socket), std::move(request.tls_socket));
 
   // TODO(crbug.com/1017903): populate X509 certificate field when it is
   // migrated to a CRYPTO_BUFFER. For motivation, see:

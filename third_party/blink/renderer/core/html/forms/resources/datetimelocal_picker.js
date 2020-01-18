@@ -46,7 +46,14 @@ class DateTimeLocalPicker extends HTMLElement {
   onKeyDown_ = (event) => {
     switch (event.key) {
       case 'Enter':
-        window.pagePopupController.setValueAndClosePopup(0, this.selectedValue);
+        // Submit the popup for an Enter keypress except when the user is
+        // hitting Enter to activate the month switcher button, Today button,
+        // or previous/next month arrows.
+        if (!event.target.matches(
+                '.calendar-navigation-button, .month-popup-button')) {
+          window.pagePopupController.setValueAndClosePopup(
+              0, this.selectedValue);
+        }
         break;
       case 'Escape':
         if (this.selectedValue === this.initialSelectedValue_) {
@@ -68,7 +75,8 @@ class DateTimeLocalPicker extends HTMLElement {
   };
 
   onClick_ = (event) => {
-    if (this.hasSelectedDate) {
+    if (event.target.matches('.day-cell, .time-cell, .today-button-refresh') &&
+        this.hasSelectedDate) {
       window.pagePopupController.setValue(this.selectedValue);
     }
   };

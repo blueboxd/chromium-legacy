@@ -209,6 +209,7 @@ mac_builder(
     name = 'mac-rel',
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
+    should_exonerate_flaky_failures = True,
 )
 
 def mac_ios_builder(*, name, executable=luci.recipe(name = 'ios/try'), **kwargs):

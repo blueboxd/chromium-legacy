@@ -131,7 +131,7 @@ public class PermissionInfoBar
         Bundle fragmentArguments = new Bundle();
         fragmentArguments.putString(SingleCategorySettings.EXTRA_CATEGORY,
                 SiteSettingsCategory.preferenceKey(SiteSettingsCategory.Type.NOTIFICATIONS));
-        SettingsLauncher.launchSettingsPage(
+        SettingsLauncher.getInstance().launchSettingsPage(
                 getContext(), SingleCategorySettings.class, fragmentArguments);
     }
 

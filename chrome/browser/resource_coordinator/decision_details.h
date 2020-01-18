@@ -86,6 +86,8 @@ enum class DecisionFailureReason : int32_t {
   // The tab is opted out of the intervention as it has the permission to use
   // notifications.
   LIVE_STATE_HAS_NOTIFICATIONS_PERMISSION,
+  // The tab is a standalone desktop PWA window.
+  LIVE_WEB_APP,
   // This must remain last.
   MAX,
 };

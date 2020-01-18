@@ -17,6 +17,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabPanel;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
@@ -53,7 +54,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     private static final String TAG = "CCMenuPopulator";
     private final ContextMenuItemDelegate mDelegate;
     private final @ContextMenuMode int mMode;
-    private final ShareDelegate mShareDelegate;
+    private final Supplier<ShareDelegate> mShareDelegateSupplier;
     private boolean mEnableLensWithSearchByImageText;
 
     // True when the tracker indicates IPH in the form of "new" label needs to be shown.
@@ -250,14 +251,14 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      * Builds a {@link ChromeContextMenuPopulator}.
      * @param delegate The {@link ContextMenuItemDelegate} that will be notified with actions
      *                 to perform when menu items are selected.
-     * @param shareDelegate The {@link ShareDelegate} that will be notified when a share action is
-     *                      performed.
+     * @param shareDelegate The Supplier of {@link ShareDelegate} that will be notified when a share
+     *                      action is performed.
      * @param mode Defines the context menu mode
      */
-    public ChromeContextMenuPopulator(ContextMenuItemDelegate delegate, ShareDelegate shareDelegate,
-            @ContextMenuMode int mode) {
+    public ChromeContextMenuPopulator(ContextMenuItemDelegate delegate,
+            Supplier<ShareDelegate> shareDelegate, @ContextMenuMode int mode) {
         mDelegate = delegate;
-        mShareDelegate = shareDelegate;
+        mShareDelegateSupplier = shareDelegate;
         mMode = mode;
     }
 
@@ -583,7 +584,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                             .setShareDirectly(false)
                             .setSaveLastUsed(true)
                             .build();
-            mShareDelegate.share(linkShareParams);
+            mShareDelegateSupplier.get().share(linkShareParams);
         } else if (itemId == R.id.contextmenu_search_with_google_lens) {
             ContextMenuUma.record(params, ContextMenuUma.Action.SEARCH_WITH_GOOGLE_LENS);
             helper.searchWithGoogleLens(mDelegate.isIncognito());

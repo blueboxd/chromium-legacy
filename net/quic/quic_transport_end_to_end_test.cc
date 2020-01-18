@@ -31,7 +31,7 @@ class MockVisitor : public QuicTransportClient::Visitor {
 
   MOCK_METHOD0(OnIncomingBidirectionalStreamAvailable, void());
   MOCK_METHOD0(OnIncomingUnidirectionalStreamAvailable, void());
-  MOCK_METHOD0(OnIncomingDatagramAvailable, void());
+  MOCK_METHOD1(OnDatagramReceived, void(base::StringPiece));
   MOCK_METHOD0(OnCanCreateNewOutgoingBidirectionalStream, void());
   MOCK_METHOD0(OnCanCreateNewOutgoingUnidirectionalStream, void());
 };

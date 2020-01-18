@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">glyer</translation>
 <translation id="1211441953136645838">eindnota</translation>
 <translation id="1281252709823657822">dialoog</translation>
+<translation id="1306460908038601864">Af</translation>
 <translation id="1335095011850992622">erkennings</translation>
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1359897965706325498">banier</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Voer asseblief 'n deel gevolg deur "<ph name="ATSIGN" />" in. "<ph name="INVALIDADDRESS" />" is onvolledig.</translation>
 <translation id="5334352251556557839">Kan nie media speel nie.</translation>
+<translation id="537648784377940524">Minimum datum (<ph name="MIN_DATE_OR_TIME" />) moet voor maksimum datum (<ph name="MAX_DATE_OR_TIME" />) wees.</translation>
 <translation id="5406322316791861025">figuur</translation>
 <translation id="5453733299334684579">boomitem</translation>
 <translation id="5466621249238537318">Kies asseblief een of meer lêers.</translation>

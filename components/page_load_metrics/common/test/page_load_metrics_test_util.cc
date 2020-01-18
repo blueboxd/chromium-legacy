@@ -32,20 +32,10 @@ void PopulateRequiredTimingFields(
         OptionalMin(inout_timing->paint_timing->first_image_paint,
                     inout_timing->paint_timing->first_contentful_paint);
   }
-  if (inout_timing->paint_timing->first_paint &&
-      !inout_timing->document_timing->first_layout) {
-    inout_timing->document_timing->first_layout =
-        inout_timing->paint_timing->first_paint;
-  }
   if (inout_timing->document_timing->load_event_start &&
       !inout_timing->document_timing->dom_content_loaded_event_start) {
     inout_timing->document_timing->dom_content_loaded_event_start =
         inout_timing->document_timing->load_event_start;
-  }
-  if (inout_timing->document_timing->first_layout &&
-      !inout_timing->parse_timing->parse_start) {
-    inout_timing->parse_timing->parse_start =
-        inout_timing->document_timing->first_layout;
   }
   if (inout_timing->document_timing->dom_content_loaded_event_start &&
       !inout_timing->parse_timing->parse_stop) {

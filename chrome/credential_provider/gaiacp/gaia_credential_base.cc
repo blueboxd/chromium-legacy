@@ -36,6 +36,7 @@
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/associated_user_validator.h"
 #include "chrome/credential_provider/gaiacp/auth_utils.h"
+#include "chrome/credential_provider/gaiacp/event_logs_upload_manager.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
@@ -1820,8 +1821,9 @@ HRESULT CGaiaCredentialBase::ForkGaiaLogonStub(
   return S_OK;
 }
 
-HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(const base::Value& dict,
-                                                     BSTR* status_text) {
+HRESULT CGaiaCredentialBase::ForkPerformPostSigninActionsStub(
+    const base::Value& dict,
+    BSTR* status_text) {
   LOGFN(INFO);
   DCHECK(status_text);
 
@@ -1837,8 +1839,8 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(const base::Value& dict,
   }
 
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  hr = GetCommandLineForEntrypoint(CURRENT_MODULE(), L"SaveAccountInfo",
-                                   &command_line);
+  hr = GetCommandLineForEntrypoint(CURRENT_MODULE(),
+                                   L"PerformPostSigninActions", &command_line);
   if (hr == S_FALSE) {
     // This happens in tests.  It means this code is running inside the
     // unittest exe and not the credential provider dll.  Just ignore saving
@@ -1867,9 +1869,9 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(const base::Value& dict,
   }
 
   // Write account info to stdin of child process.  This buffer is read by
-  // SaveAccountInfoW() in dllmain.cpp.  If this fails, chrome won't pick up
-  // the credentials from the credential provider and will need to sign in
-  // manually.
+  // PerformPostSigninActionsW() in dllmain.cpp.  If this fails, chrome won't
+  // pick up the credentials from the credential provider and will need to sign
+  // in manually.
   std::string json;
   if (base::JSONWriter::Write(dict, &json)) {
     const DWORD buffer_size = json.length() + 1;
@@ -2018,6 +2020,43 @@ HRESULT CGaiaCredentialBase::SaveAccountInfo(const base::Value& properties) {
   return hr;
 }
 
+// static
+HRESULT CGaiaCredentialBase::PerformPostSigninActions(
+    const base::Value& properties,
+    bool com_initialized) {
+  LOGFN(INFO);
+  HRESULT hr = S_OK;
+
+  if (com_initialized) {
+    hr = credential_provider::CGaiaCredentialBase::SaveAccountInfo(properties);
+    if (FAILED(hr))
+      LOGFN(ERROR) << "SaveAccountInfo hr=" << putHR(hr);
+
+    // Try to enroll the machine to MDM here. MDM requires a user to be signed
+    // on to an interactive session to succeed and when we call this function
+    // the user should have been successfully signed on at that point and able
+    // to finish the enrollment.
+    hr = credential_provider::EnrollToGoogleMdmIfNeeded(properties);
+    if (FAILED(hr))
+      LOGFN(ERROR) << "EnrollToGoogleMdmIfNeeded hr=" << putHR(hr);
+  }
+
+  // TODO(crbug.com/976744): Use the down scoped kKeyMdmAccessToken instead
+  // of login scoped token.
+  std::string access_token = GetDictStringUTF8(properties, kKeyAccessToken);
+
+  // Finally upload event logs to cloud storage.
+  if (!access_token.empty()) {
+    hr = EventLogsUploadManager::Get()->UploadEventViewerLogs(access_token);
+    if (FAILED(hr) && hr != E_NOTIMPL)
+      LOGFN(ERROR) << "UploadEventViewerLogs hr=" << putHR(hr);
+  } else {
+    LOGFN(ERROR) << "Access token is empty. Cannot upload logs.";
+  }
+
+  return hr;
+}
+
 // Registers OS user - gaia user association in HKEY_LOCAL_MACHINE registry
 // hive.
 HRESULT RegisterAssociation(const base::string16& sid,
@@ -2058,8 +2097,8 @@ HRESULT CGaiaCredentialBase::ReportResult(
   if (status == STATUS_SUCCESS && authentication_results_) {
     // Update the sid, domain, username and password in
     // |authentication_results_| with the real Windows information for the user
-    // so that the SaveAccountInfo process can correctly sign in to the user
-    // account.
+    // so that the PerformPostSigninActions process can correctly sign in to the
+    // user account.
     authentication_results_->SetKey(
         kKeySID, base::Value(base::UTF16ToUTF8((BSTR)user_sid_)));
     authentication_results_->SetKey(
@@ -2094,11 +2133,12 @@ HRESULT CGaiaCredentialBase::ReportResult(
 
     // At this point the user and password stored in authentication_results_
     // should match what is stored in username_ and password_ so the
-    // SaveAccountInfo process can be forked.
+    // PerformPostSigninActions process can be forked.
     CComBSTR status_text;
-    hr = ForkSaveAccountInfoStub(*authentication_results_, &status_text);
+    hr = ForkPerformPostSigninActionsStub(*authentication_results_,
+                                          &status_text);
     if (FAILED(hr))
-      LOGFN(ERROR) << "ForkSaveAccountInfoStub hr=" << putHR(hr);
+      LOGFN(ERROR) << "ForkPerformPostSigninActionsStub hr=" << putHR(hr);
   }
 
   *ppszOptionalStatusText = nullptr;
@@ -2282,7 +2322,7 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
   logon_ui_process_ = INVALID_HANDLE_VALUE;
 
   // Convert the string to a base::Dictionary and add the calculated username
-  // to it to be passed to the SaveAccountInfo process.
+  // to it to be passed to the PerformPostSigninActions process.
   std::string json_string;
   base::UTF16ToUTF8(OLE2CW(authentication_info),
                     ::SysStringLen(authentication_info), &json_string);

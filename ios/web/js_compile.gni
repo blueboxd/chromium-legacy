@@ -47,9 +47,7 @@ template("js_compile_bundle") {
     forward_variables_from(invoker, [ "testonly" ])
     script = closure_compiler_path
     sources = invoker.sources
-    outputs = [
-      "$target_gen_dir/$_target_name.js",
-    ]
+    outputs = [ "$target_gen_dir/$_target_name.js" ]
 
     args = [
              "--compilation_level",
@@ -78,9 +76,7 @@ template("js_compile_bundle") {
     }
     public_deps += [ ":$compile_js_target_name" ]
     sources = get_target_outputs(":$compile_js_target_name")
-    outputs = [
-      "{{bundle_resources_dir}}/{{source_file_part}}",
-    ]
+    outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
   }
 }
 
@@ -128,9 +124,7 @@ template("js_compile_checked") {
         _js_modules += invoker.js_modules
       }
       inputs = _js_modules
-      outputs = [
-        "$target_gen_dir/{{source_file_part}}",
-      ]
+      outputs = [ "$target_gen_dir/{{source_file_part}}" ]
 
       args = [
         "--compilation_level",
@@ -190,9 +184,7 @@ template("js_compile_checked") {
       }
       public_deps += [ ":$compile_js_target_name" ]
       sources = get_target_outputs(":$compile_js_target_name")
-      outputs = [
-        "{{bundle_resources_dir}}/{{source_file_part}}",
-      ]
+      outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
     }
   } else {
     bundle_data(target_name) {
@@ -207,9 +199,7 @@ template("js_compile_checked") {
                              ])
 
       sources = invoker.sources
-      outputs = [
-        "{{bundle_resources_dir}}/{{source_file_part}}",
-      ]
+      outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
     }
   }
 }
@@ -242,9 +232,7 @@ template("js_compile_unchecked") {
       forward_variables_from(invoker, [ "testonly" ])
       script = closure_compiler_path
       sources = invoker.sources
-      outputs = [
-        "$target_gen_dir/{{source_file_part}}",
-      ]
+      outputs = [ "$target_gen_dir/{{source_file_part}}" ]
 
       args = [
         "--compilation_level",
@@ -271,9 +259,7 @@ template("js_compile_unchecked") {
       }
       public_deps += [ ":$compile_js_target_name" ]
       sources = get_target_outputs(":$compile_js_target_name")
-      outputs = [
-        "{{bundle_resources_dir}}/{{source_file_part}}",
-      ]
+      outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
     }
   } else {
     bundle_data(target_name) {
@@ -287,9 +273,7 @@ template("js_compile_unchecked") {
                              ])
 
       sources = invoker.sources
-      outputs = [
-        "{{bundle_resources_dir}}/{{source_file_part}}",
-      ]
+      outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
     }
   }
 }

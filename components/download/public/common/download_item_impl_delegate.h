@@ -39,12 +39,13 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImplDelegate {
   void Attach();
   void Detach();
 
-  using DownloadTargetCallback =
-      base::OnceCallback<void(const base::FilePath& target_path,
-                              DownloadItem::TargetDisposition disposition,
-                              DownloadDangerType danger_type,
-                              const base::FilePath& intermediate_path,
-                              DownloadInterruptReason interrupt_reason)>;
+  using DownloadTargetCallback = base::OnceCallback<void(
+      const base::FilePath& target_path,
+      DownloadItem::TargetDisposition disposition,
+      DownloadDangerType danger_type,
+      DownloadItem::MixedContentStatus mixed_content_status,
+      const base::FilePath& intermediate_path,
+      DownloadInterruptReason interrupt_reason)>;
   // Request determination of the download target from the delegate.
   virtual void DetermineDownloadTarget(DownloadItemImpl* download,
                                        DownloadTargetCallback callback);

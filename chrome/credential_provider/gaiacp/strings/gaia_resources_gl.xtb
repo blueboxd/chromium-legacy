@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gl">
+<translation id="1337778609052285767">O contrasinal actual non cumpre cos requisitos de complexidade correspondentes. Ponte en contacto co teu administrador.</translation>
 <translation id="1337821341856692531">Se continúas sen introducir o teu contrasinal actual de Windows, poderíase perder información de forma irreversible.</translation>
 <translation id="1383286653814676580">Utilízase para executar a páxina de inicio de sesión do provedor de credenciais de Google.</translation>
 <translation id="1894475569413661128">Inicia sesión utilizando a túa conta do traballo.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Introduciches un contrasinal de Windows incorrecto. Téntao de novo.</translation>
 <translation id="2831078752570172210">Bloqueouse a túa conta. Ponte en contacto co teu administrador do sistema.</translation>
 <translation id="2844349213149998955">Non se permite iniciar sesión cunha conta persoal neste dispositivo. Faino cunha do traballo.</translation>
+<translation id="2995851317559936311">O cambio do contrasinal só se permite no controlador de dominios. Ponte en contacto co teu administrador.</translation>
 <translation id="3306357053520292004">Xa se engadiu un usuario neste ordenador que utilizaba esta conta. Inicia sesión cunha conta diferente.</translation>
 <translation id="3926852373333893095">Só se lles permite iniciar sesión aos usuarios de GSuite Enterprise.</translation>
 <translation id="4057329986137569701">Produciuse un erro interno.</translation>
 <translation id="4267670563222825190">Non se puido atopar ningún usuario do dominio para a túa conta. Ponte en contacto co teu administrador.</translation>
 <translation id="4300229033992784001">O contrasinal da conta cambiou. Insire o contrasinal actual de Windows actual para sincronizar a conta de Windows coa conta do traballo.</translation>
+<translation id="4669462973597624151">Produciuse un erro ao tentar cambiar o contrasinal. Ponte en contacto co teu administrador.</translation>
 <translation id="4706454071748629324">Non se puido engadir un usuario novo. Este ordenador só permite crear un usuario mediante unha conta do traballo.</translation>
+<translation id="5186761973554910131">Escribiuse un nome de ordenador non válido durante o intento de cambio do contrasinal. Ponte en contacto co teu administrador.</translation>
 <translation id="6033715878377252112">Asistente do provedor de credenciais de Google para Windows</translation>
 <translation id="6149399665202317746">Provedor de credenciais de Google para Windows</translation>
 <translation id="6239180560789153226">O teu dispositivo non ten información de recuperación. Inicia sesión utilizando a túa conta de Google do traballo.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Engadir conta do traballo</translation>
 <translation id="7811865856574012727">O teu administrador restrinxiu o inicio de sesión no dispositivo nos seguintes dominios: <ph name="EMAIL_DOMAINS" />. Téntao de novo cunha conta do traballo válida.</translation>
 <translation id="7856245195110636219">Non se pode continuar sen introducir o contrasinal actual de Windows. Ponte en contacto cun administrador do sistema.</translation>
+<translation id="8109730953933509335">Tentouse realizar un cambio de contrasinal nun usuario non válido. Ponte en contacto co teu administrador.</translation>
 <translation id="8639729688781680518">Esquecín o contrasinal de Windows</translation>
 <translation id="866458870819756755">Non se puido crear un usuario.</translation>
 <translation id="8875753657315897487">Inicia sesión utilizando a túa conta do traballo</translation>

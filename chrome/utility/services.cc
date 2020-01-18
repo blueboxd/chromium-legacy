@@ -33,6 +33,8 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/common/importer/profile_import.mojom.h"
+#include "chrome/services/sharing/public/mojom/sharing.mojom.h"
+#include "chrome/services/sharing/sharing_impl.h"
 #include "chrome/utility/importer/profile_import_impl.h"
 #include "components/mirroring/service/features.h"
 #include "components/mirroring/service/mirroring_service.h"
@@ -128,6 +130,10 @@ auto RunMirroringService(
   DCHECK(base::FeatureList::IsEnabled(mirroring::features::kMirroringService));
   return std::make_unique<mirroring::MirroringService>(
       std::move(receiver), content::UtilityThread::Get()->GetIOTaskRunner());
+}
+
+auto RunSharing(mojo::PendingReceiver<sharing::mojom::Sharing> receiver) {
+  return std::make_unique<sharing::SharingImpl>(std::move(receiver));
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -234,6 +240,7 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 #if !defined(OS_ANDROID)
     RunProfileImporter,
     RunMirroringService,
+    RunSharing,
 #endif
 
 #if defined(OS_WIN)

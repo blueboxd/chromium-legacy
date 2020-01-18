@@ -64,7 +64,7 @@ class AssistantTextfield : public views::Textfield {
 };
 
 void HideKeyboard() {
-  keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyBySystem();
+  keyboard::KeyboardUIController::Get()->HideKeyboardImplicitlyByUser();
 }
 
 }  // namespace
@@ -248,6 +248,7 @@ void AssistantDialogPlate::OnUiVisibilityChanged(
     base::Optional<AssistantExitPoint> exit_point) {
   if (new_visibility == AssistantVisibility::kVisible) {
     UpdateModalityVisibility();
+    UpdateKeyboardVisibility();
   } else {
     // When the Assistant UI is no longer visible we need to clear the dialog
     // plate so that text does not persist across Assistant launches.

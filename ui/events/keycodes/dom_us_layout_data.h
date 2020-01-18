@@ -417,6 +417,10 @@ const struct DomCodeToKeyboardCodeEntry {
     // DomCode::SUSPEND                            0x000014 Suspend
     // DomCode::RESUME                             0x000015 Resume
     // DomCode::TURBO                              0x000016 Turbo
+#if defined(OS_POSIX)
+    {DomCode::PRIVACY_SCREEN_TOGGLE,
+     VKEY_PRIVACY_SCREEN_TOGGLE},               // 0x000017 PrivacyScreenToggle
+#endif
     {DomCode::SLEEP, VKEY_SLEEP},               // 0x010082 Sleep
     // DomCode::WAKE_UP                            0x010083 WakeUp
     {DomCode::US_A, VKEY_A},                   // 0x070004 KeyA

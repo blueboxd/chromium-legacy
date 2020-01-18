@@ -757,7 +757,7 @@ bool AppCacheDatabase::FindNamespacesForOrigin(
     return false;
 
   static const char kSql[] =
-      "SELECT cache_id, origin, type, namespace_url, target_url, is_pattern"
+      "SELECT cache_id, origin, type, namespace_url, target_url"
       "  FROM Namespaces WHERE origin = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -778,7 +778,7 @@ bool AppCacheDatabase::FindNamespacesForCache(
     return false;
 
   static const char kSql[] =
-      "SELECT cache_id, origin, type, namespace_url, target_url, is_pattern"
+      "SELECT cache_id, origin, type, namespace_url, target_url"
       "  FROM Namespaces WHERE cache_id = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));

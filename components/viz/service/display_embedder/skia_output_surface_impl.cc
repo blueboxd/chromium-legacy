@@ -411,6 +411,24 @@ void SkiaOutputSurfaceImpl::SkiaSwapBuffers(OutputSurfaceFrame frame) {
   RecreateRootRecorder();
 }
 
+void SkiaOutputSurfaceImpl::SwapBuffersSkipped() {
+  if (deferred_framebuffer_draw_closure_) {
+    // Run the task to draw the root RenderPass on the GPU thread. If we aren't
+    // going to swap buffers and there are no CopyOutputRequests on the root
+    // RenderPass we don't strictly need to draw. However, we still need to
+    // PostTask to the GPU thread to deal with freeing resources and running
+    // callbacks. This is infrequent and all the work is already done in
+    // FinishPaintCurrentFrame() so use the same path.
+    auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SwapBuffersSkipped,
+                               base::Unretained(impl_on_gpu_.get()),
+                               std::move(deferred_framebuffer_draw_closure_));
+    ScheduleGpuTask(std::move(task), std::move(resource_sync_tokens_));
+
+    // TODO(vasilyt): reuse root recorder
+    RecreateRootRecorder();
+  }
+}
+
 void SkiaOutputSurfaceImpl::ScheduleOutputSurfaceAsOverlay(
     OverlayProcessorInterface::OutputSurfaceOverlayPlane output_surface_plane) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -456,14 +474,6 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
 
   auto ddl = current_paint_->recorder()->detach();
   DCHECK(ddl);
-  std::unique_ptr<SkDeferredDisplayList> overdraw_ddl;
-  if (renderer_settings_.show_overdraw_feedback && !painting_render_pass) {
-    overdraw_ddl = overdraw_surface_recorder_->detach();
-    DCHECK(overdraw_ddl);
-    overdraw_canvas_.reset();
-    nway_canvas_.reset();
-    overdraw_surface_recorder_.reset();
-  }
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
@@ -483,6 +493,15 @@ gpu::SyncToken SkiaOutputSurfaceImpl::SubmitPaint(
         resource_sync_tokens_, sync_fence_release_);
     ScheduleGpuTask(std::move(closure), std::move(resource_sync_tokens_));
   } else {
+    std::unique_ptr<SkDeferredDisplayList> overdraw_ddl;
+    if (renderer_settings_.show_overdraw_feedback) {
+      overdraw_ddl = overdraw_surface_recorder_->detach();
+      DCHECK(overdraw_ddl);
+      overdraw_canvas_.reset();
+      nway_canvas_.reset();
+      overdraw_surface_recorder_.reset();
+    }
+
     deferred_framebuffer_draw_closure_ = base::BindOnce(
         &SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame,
         base::Unretained(impl_on_gpu_.get()), std::move(ddl),

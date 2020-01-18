@@ -69,11 +69,6 @@ PlatformEvent CopyNativeEvent(const PlatformEvent& event) {
 
 void ReleaseCopiedNativeEvent(const PlatformEvent& event) {}
 
-int GetTouchId(const PlatformEvent& native_event) {
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 PointerDetails GetTouchPointerDetailsFromNative(
     const PlatformEvent& native_event) {
   NOTIMPLEMENTED();

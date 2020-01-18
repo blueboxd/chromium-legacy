@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 19 Nov 2019 15:17:18 -0800
-Subject: [PATCH 05/22] Better % corruption detection in fts3.
+Subject: [PATCH 05/25] Better % corruption detection in fts3.
 
 Backports https://www.sqlite.org/src/info/1e449687881f4d38
 
@@ -226,5 +226,5 @@ index 095c522026f6..c516c34d564a 100644
 +
  finish_test
 -- 
-2.24.1.735.g03f4e72817-goog
+2.25.0.rc1.283.g88dfdc4193-goog
 

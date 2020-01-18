@@ -114,6 +114,9 @@ enum DnsProbeStatus {
   // The DNS servers are working fine, so the domain must not exist.
   DNS_PROBE_FINISHED_NXDOMAIN,
 
+  // The secure DNS configuration is wrong, or the servers are down or broken.
+  DNS_PROBE_FINISHED_BAD_SECURE_CONFIG,
+
   DNS_PROBE_MAX
 };
 

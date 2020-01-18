@@ -139,6 +139,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
                     new PageLoadProgressObserver(), mActivity, mIsIncognito,
                     mActivity.getResources().getDimensionPixelSize(
                             R.dimen.toolbar_height_no_shadow));
+            mPanelContent.setReuseWebContents(true);
         }
         return mPanelContent;
     }

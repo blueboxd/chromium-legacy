@@ -309,7 +309,7 @@ bool V4L2SliceVideoDecoder::SetupOutputFormat(const gfx::Size& size,
   // created by VideoFramePool.
   DmabufVideoFramePool* pool = client_->GetVideoFramePool();
   if (pool) {
-    base::Optional<GpuBufferLayout> layout = pool->RequestFrames(
+    base::Optional<GpuBufferLayout> layout = pool->Initialize(
         *fourcc, adjusted_size, visible_rect,
         GetNaturalSize(visible_rect, pixel_aspect_ratio_), num_output_frames_);
     if (!layout) {

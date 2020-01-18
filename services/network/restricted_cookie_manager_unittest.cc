@@ -459,9 +459,7 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
   EXPECT_THAT(recorded_activity()[0].cookie,
               net::MatchesCookieLine("cookie-name=cookie-value"));
   EXPECT_TRUE(recorded_activity()[0].status.IsInclude());
-  EXPECT_EQ(
-      net::CanonicalCookie::CookieInclusionStatus::WarningReason::DO_NOT_WARN,
-      recorded_activity()[0].status.warning());
+  EXPECT_FALSE(recorded_activity()[0].status.ShouldWarn());
 
   // Disabing getting third-party cookies works correctly.
   cookie_settings_.set_block_third_party_cookies(true);
@@ -669,9 +667,7 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
   EXPECT_EQ(recorded_activity()[0].site_for_cookies, "https://notexample.com/");
   EXPECT_THAT(recorded_activity()[0].cookie, net::MatchesCookieLine("A=B"));
   EXPECT_TRUE(recorded_activity()[0].status.IsInclude());
-  EXPECT_EQ(
-      net::CanonicalCookie::CookieInclusionStatus::WarningReason::DO_NOT_WARN,
-      recorded_activity()[0].status.warning());
+  EXPECT_FALSE(recorded_activity()[0].status.ShouldWarn());
 
   service_->OverrideSiteForCookiesForTesting(
       net::SiteForCookies::FromUrl(GURL("https://otherexample.com")));

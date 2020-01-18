@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="1337778609052285767">Trenutačna zaporka ne udovoljava zahtjevima za složenost zaporke. Obratite se administratoru.</translation>
 <translation id="1337821341856692531">Ako nastavite bez unošenja svoje trenutačne zaporke za Windows, možete nepovratno izgubiti informacije.</translation>
 <translation id="1383286653814676580">Upotrebljava se za pokretanje stranice za prijavu na Google davatelj vjerodajnica.</translation>
 <translation id="1894475569413661128">Prijavite se radnim računom.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Unijeli ste netočnu zaporku za Windows. Pokušajte ponovo.</translation>
 <translation id="2831078752570172210">Izgubili ste pristup računu. Obratite se administratoru sustava.</translation>
 <translation id="2844349213149998955">Na ovom uređaju nije dopuštena prijava osobnim računom. Prijavite se poslovnim računom.</translation>
+<translation id="2995851317559936311">Promjena zaporke dopuštena je samo na kontroleru domene. Obratite se administratoru.</translation>
 <translation id="3306357053520292004">Na ovom je računalu već dodan korisnik pomoću tog. Prijavite se nekim drugim računom.</translation>
 <translation id="3926852373333893095">Prijava je dopuštena samo poslovnim korisnicima GSuitea.</translation>
 <translation id="4057329986137569701">Došlo je do interne pogreške.</translation>
 <translation id="4267670563222825190">Za vaš račun nije pronađen nijedan korisnik domene. Obratite se administratoru.</translation>
 <translation id="4300229033992784001">Promijenjena je zaporka vašeg računa. Unesite svoju trenutačnu zaporku za Windows kako biste sinkronizirali svoj Windows račun s radnim računom.</translation>
+<translation id="4669462973597624151">Pokušaj promjene zaporke nije uspio. Obratite se administratoru.</translation>
 <translation id="4706454071748629324">Dodavanje novog korisnika nije uspjelo. Ovo računalo dopušta izradu samo jednog korisnika s radnim računom.</translation>
+<translation id="5186761973554910131">Pri pokušaju promjene zaporke naveden je nevažeći naziv računala. Obratite se administratoru.</translation>
 <translation id="6033715878377252112">Pomoć za Google davatelj vjerodajnica za Windows</translation>
 <translation id="6149399665202317746">Google davatelj vjerodajnica za Windows</translation>
 <translation id="6239180560789153226">Na uređaju nema podataka za oporavak. Prijavite se poslovnim računom za Google.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Dodaj radni račun</translation>
 <translation id="7811865856574012727">Vaš administrator ograničio je prijavu uređaja na sljedećim domenama: <ph name="EMAIL_DOMAINS" />. Pokušajte ponovo putem valjanog poslovnog računa.</translation>
 <translation id="7856245195110636219">Ne možete nastaviti bez unošenja trenutačne zaporke za Windows. Obratite se administratoru sustava.</translation>
+<translation id="8109730953933509335">Došlo je do pokušaja promjene zaporke za nevažećeg korisnika. Obratite se administratoru.</translation>
 <translation id="8639729688781680518">Zaboravili ste zaporku za Windows</translation>
 <translation id="866458870819756755">Izrada korisnika nije uspjela</translation>
 <translation id="8875753657315897487">Prijavite se radnim računom</translation>

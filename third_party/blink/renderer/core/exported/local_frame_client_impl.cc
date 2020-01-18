@@ -874,10 +874,12 @@ void LocalFrameClientImpl::DidChangeFramePolicy(
 
 void LocalFrameClientImpl::DidSetFramePolicyHeaders(
     WebSandboxFlags sandbox_flags,
-    const ParsedFeaturePolicy& parsed_header) {
+    const ParsedFeaturePolicy& feature_policy_header,
+    const DocumentPolicy::FeatureState& document_policy_header) {
   if (web_frame_->Client()) {
     web_frame_->Client()->DidSetFramePolicyHeaders(
-        static_cast<WebSandboxFlags>(sandbox_flags), parsed_header);
+        static_cast<WebSandboxFlags>(sandbox_flags), feature_policy_header,
+        document_policy_header);
   }
 }
 

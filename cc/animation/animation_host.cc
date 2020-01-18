@@ -472,6 +472,17 @@ bool AnimationHost::UpdateAnimationState(bool start_ready_animations,
   return true;
 }
 
+void AnimationHost::TakeTimeUpdatedEvents(MutatorEvents* events) {
+  auto* animation_events = static_cast<AnimationEvents*>(events);
+  if (!animation_events->needs_time_updated_events())
+    return;
+
+  for (auto& it : ticking_animations_)
+    it->TakeTimeUpdatedEvent(animation_events);
+
+  animation_events->set_needs_time_updated_events(false);
+}
+
 void AnimationHost::PromoteScrollTimelinesPendingToActive() {
   for (auto& animation : ticking_animations_) {
     animation->PromoteScrollTimelinePendingToActive();

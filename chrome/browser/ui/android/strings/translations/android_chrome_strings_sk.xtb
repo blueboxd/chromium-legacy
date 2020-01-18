@@ -301,6 +301,7 @@
 <translation id="3282568296779691940">Prihlásenie do prehliadača Chrome</translation>
 <translation id="3288003805934695103">Opätovne načítať stránku</translation>
 <translation id="32895400574683172">Upozornenia sú povolené</translation>
+<translation id="3290926146403723641">Chrome odošle Googlu webovú adresu a obsah webu spolu s relevantnými osobnými údajmi, aby ste mohli pomocou Asistenta Google vykonávať úlohy na webe</translation>
 <translation id="3295530008794733555">Prehliadajte rýchlejšie. Využívajte menej dát.</translation>
 <translation id="3298243779924642547">Zjednoduš.</translation>
 <translation id="3303414029551471755">Pokračovať a stiahnuť obsah?</translation>
@@ -667,6 +668,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="605721222689873409">RR</translation>
 <translation id="6064125863973209585">Sťahovanie bolo dokončené</translation>
 <translation id="6075798973483050474">Úprava domovskej stránky</translation>
+<translation id="6092062101542170135">Ak chcete pokračovať, zapnite NFC v nastaveniach Androidu</translation>
 <translation id="60923314841986378">Zostáva: <ph name="HOURS" /> h</translation>
 <translation id="6108923351542677676">Inštaluje sa...</translation>
 <translation id="6111020039983847643">využité dáta</translation>

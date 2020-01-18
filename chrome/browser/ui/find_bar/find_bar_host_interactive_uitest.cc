@@ -7,12 +7,12 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
-#include "chrome/browser/ui/find_bar/find_tab_helper.h"
-#include "chrome/browser/ui/find_bar/find_types.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/find_in_page/find_tab_helper.h"
+#include "components/find_in_page/find_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -40,8 +40,8 @@ class FindInPageInteractiveTest : public InProcessBrowserTest {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
     browser->GetFindBarController()->find_bar()->SetFindTextAndSelectedRange(
         search_str16, gfx::Range());
-    return ui_test_utils::FindInPage(
-        web_contents, search_str16, forward, case_sensitive, ordinal, NULL);
+    return ui_test_utils::FindInPage(web_contents, search_str16, forward,
+                                     case_sensitive, ordinal, nullptr);
   }
 };
 
@@ -74,9 +74,9 @@ IN_PROC_BROWSER_TEST_F(FindInPageInteractiveTest, FindInPageEndState) {
 
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(NULL != web_contents);
-  FindTabHelper* find_tab_helper =
-      FindTabHelper::FromWebContents(web_contents);
+  ASSERT_TRUE(web_contents);
+  find_in_page::FindTabHelper* find_tab_helper =
+      find_in_page::FindTabHelper::FromWebContents(web_contents);
 
   // Verify that nothing has focus.
   std::string result;
@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageInteractiveTest, FindInPageEndState) {
   EXPECT_EQ(1, ordinal);
 
   // End the find session, which should set focus to the link.
-  find_tab_helper->StopFinding(FindOnPageSelectionAction::kKeep);
+  find_tab_helper->StopFinding(find_in_page::SelectionAction::kKeep);
 
   // Verify that the link is focused.
   ASSERT_TRUE(FocusedOnPage(web_contents, &result));
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageInteractiveTest, FindInPageEndState) {
       &result));
 
   // End the find session.
-  find_tab_helper->StopFinding(FindOnPageSelectionAction::kKeep);
+  find_tab_helper->StopFinding(find_in_page::SelectionAction::kKeep);
 
   // Verify that link2 is not focused.
   ASSERT_TRUE(FocusedOnPage(web_contents, &result));

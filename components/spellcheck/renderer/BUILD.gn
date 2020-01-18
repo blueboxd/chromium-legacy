@@ -43,9 +43,7 @@ source_set("renderer") {
     ]
   }
 
-  public_deps = [
-    "//components/spellcheck:buildflags",
-  ]
+  public_deps = [ "//components/spellcheck:buildflags" ]
   deps = [
     "//base:i18n",
     "//components/spellcheck/common",
@@ -74,9 +72,7 @@ source_set("unit_tests") {
     "spellcheck_provider_unittest.cc",
     "spellcheck_worditerator_unittest.cc",
   ]
-  data = [
-    "//third_party/hunspell_dictionaries/",
-  ]
+  data = [ "//third_party/hunspell_dictionaries/" ]
 
   if (!is_android) {
     sources += [ "spellcheck_unittest.cc" ]

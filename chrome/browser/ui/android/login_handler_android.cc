@@ -47,18 +47,21 @@ class LoginHandlerAndroid : public LoginHandler {
                      LoginModelData* login_model_data) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+    content::WebContents* contents =
+        web_contents()->GetResponsibleWebContents();
+
     // Get pointer to TabAndroid
-    CHECK(web_contents());
+    CHECK(contents);
     ViewAndroidHelper* view_helper =
-        ViewAndroidHelper::FromWebContents(web_contents());
+        ViewAndroidHelper::FromWebContents(contents);
 
     if (vr::VrTabHelper::IsUiSuppressedInVr(
-            web_contents(), vr::UiSuppressedElement::kHttpAuth)) {
+            contents, vr::UiSuppressedElement::kHttpAuth)) {
       CancelAuth();
       return;
     }
 
-    TabAndroid* tab = TabAndroid::FromWebContents(web_contents());
+    TabAndroid* tab = TabAndroid::FromWebContents(contents);
     // Notify WindowAndroid that HTTP authentication is required.
     if (tab && view_helper->GetViewAndroid() &&
         view_helper->GetViewAndroid()->GetWindowAndroid()) {

@@ -25,7 +25,8 @@ namespace content {
 class RenderWidgetTest : public RenderViewTest {
  protected:
   RenderWidget* widget() {
-    return static_cast<RenderViewImpl*>(view_)->GetWidget();
+    auto* view_impl = static_cast<RenderViewImpl*>(view_);
+    return view_impl->GetMainRenderFrame()->GetLocalRootRenderWidget();
   }
 
   void OnSynchronizeVisualProperties(

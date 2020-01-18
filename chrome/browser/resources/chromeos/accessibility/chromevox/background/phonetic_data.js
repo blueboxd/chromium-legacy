@@ -23,6 +23,7 @@ PhoneticData.phoneticMap_ = {};
  * Initialization function for PhoneticData.
  */
 PhoneticData.init = function() {
+  JaPhoneticData.init();
   try {
     // The UI language of the browser. This corresponds to the system language
     // set by the user. Behind the scenes, the getUIlanguage() API retrieves the

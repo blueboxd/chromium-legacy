@@ -948,7 +948,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2317842250900878657">Finalizat: <ph name="PROGRESS_PERCENT" />%</translation>
 <translation id="2318143611928805047">Dimensiunea hârtiei</translation>
 <translation id="2318817390901984578">Ca să folosești aplicații Android, încarcă și actualizează dispozitivul <ph name="DEVICE_TYPE" />.</translation>
-<translation id="2318923050469484167">Sesiunea incognito actuală (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">Anteturi și subsoluri</translation>
 <translation id="2322318151094136999">Anunță-mă dacă un site vrea să acceseze porturile seriale (recomandat)</translation>
 <translation id="2325002827435400643">Dezactivează pentru acest site</translation>
@@ -1791,6 +1790,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3511307672085573050">Copiază adre&amp;sa linkului</translation>
 <translation id="351152300840026870">Font cu lățime fixă</translation>
 <translation id="3511528412952710609">Scurtă</translation>
+<translation id="3513704683820682405">Realitate augmentată</translation>
 <translation id="3514373592552233661">Dacă sunt disponibile mai multe rețele, vor fi folosite cele preferate</translation>
 <translation id="3515983984924808886">Atinge cheia de securitate din nou pentru a confirma resetarea. Toate informațiile stocate pe cheia de securitate, inclusiv codul său PIN, vor fi șterse.</translation>
 <translation id="3518985090088779359">Acceptă și continuă</translation>
@@ -2247,7 +2247,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4099874310852108874">A apărut o eroare de rețea.</translation>
 <translation id="4100733287846229632">Spațiul de pe dispozitiv este foarte redus</translation>
 <translation id="4100853287411968461">Limită nouă pentru durata de folosire a dispozitivului</translation>
-<translation id="4103091233824664032">Introdu parola pentru a configura blocarea ecranului și conectarea</translation>
 <translation id="4104163789986725820">E&amp;xportă...</translation>
 <translation id="4107048419833779140">Identifică și elimină dispozitivele de stocare</translation>
 <translation id="4109135793348361820">Mutați fereastra la <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
@@ -2786,6 +2785,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="494286511941020793">Ajutor de configurare pentru proxy</translation>
 <translation id="4943368462779413526">Minge de fotbal</translation>
 <translation id="4943691134276646401">„<ph name="CHROME_EXTENSION_NAME" />” dorește să se conecteze la un port serial</translation>
+<translation id="4943703118917034429">Realitate virtuală</translation>
 <translation id="4944310289250773232">Acest serviciu de autentificare este găzduit de <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Acțiuni</translation>
 <translation id="4952981627953231344">Plugin VM nu este permis pe acest dispozitiv. Contactează administratorul dispozitivului din organizație.</translation>
@@ -3135,7 +3135,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5468173180030470402">Se caută dispozitive de stocare în rețea</translation>
 <translation id="5470735824776589490">Trebuie să repornești dispozitivul înainte de a fi resetat folosind Powerwash. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Bună! Eu sunt vocea pentru redarea vocală a textului.</translation>
-<translation id="5472133193607270166">Dacă opțiunea este activată, site-urile nu pot folosi activitatea ta de navigare de pe diferite site-uri pentru a personaliza anunțurile. Unele site-uri pot să nu funcționeze corect.</translation>
 <translation id="5473333559083690127">Reintrodu noul cod PIN</translation>
 <translation id="5481941284378890518">Adaugă imprimantele din apropiere</translation>
 <translation id="5483785310822538350">Revocă accesul la fișiere și la dispozitive</translation>
@@ -3306,7 +3305,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5701381305118179107">Pe centru</translation>
 <translation id="5701441174893770082">Upgrade-ul la Linux îți poate descărca rapid bateria. Conectează dispozitivul la încărcător și încearcă din nou.</translation>
 <translation id="5702898740348134351">&amp;Editează motoarele de căutare...</translation>
-<translation id="570302979952009979">Alege un nume pentru amprenta digitală</translation>
 <translation id="5704875434923668958">Se sincronizează cu</translation>
 <translation id="5707185214361380026">Nu s-a încărcat extensia de la:</translation>
 <translation id="5708171344853220004">Nume unic Microsoft</translation>
@@ -3398,7 +3396,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5833726373896279253">Aceste setări pot fi modificate numai de proprietar:</translation>
 <translation id="5834581999798853053">Au mai rămas aproape <ph name="TIME" /> min.</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – camera foto sau microfonul înregistrează</translation>
-<translation id="5838456317242088717">Sesiunea incognito actuală</translation>
 <translation id="5842497610951477805">Activează Bluetooth</translation>
 <translation id="5843250171025351504">Dispozitivul nu mai este compatibil cu versiunea de client minimă specificată de administrator. Actualizează-l pentru a te conecta.</translation>
 <translation id="5846200638699387931">Eroare de sintaxă a relației: <ph name="ERROR_LINE" /></translation>
@@ -3654,7 +3651,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6181431612547969857">Descărcarea a fost blocată</translation>
 <translation id="6185132558746749656">Locația dispozitivului</translation>
 <translation id="6195693561221576702">Acest dispozitiv nu poate fi configurat în modul demo offline.</translation>
-<translation id="6196640612572343990">Blochează cookie-urile terță parte</translation>
 <translation id="6196854373336333322">Extensia „<ph name="EXTENSION_NAME" />” a preluat controlul asupra setărilor de proxy, ceea ce înseamnă că poate modifica, întrerupe sau intercepta tot ceea ce faci online. Dacă nu știi sigur de ce a apărut această modificare, probabil că nu ai aprobat-o.</translation>
 <translation id="6198102561359457428">Deconectați-vă, apoi conectați-vă din nou...</translation>
 <translation id="6198252989419008588">Schimbă codul PIN</translation>
@@ -4360,7 +4356,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7225179976675429563">Lipsește tipul de rețea</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (Furnizor: <ph name="VENDOR_ID" />, Produs: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">Controlează setările care precizează dacă site-urile pot utiliza funcții, cum ar fi localizarea geografică, microfonul, camera foto etc.</translation>
-<translation id="7228523857728654909">Blocarea ecranului și conectarea</translation>
 <translation id="7229570126336867161">Este necesar EVDO</translation>
 <translation id="7230787553283372882">Personalizează dimensiunea textului</translation>
 <translation id="7232750842195536390">Redenumirea nu a reușit</translation>
@@ -5277,7 +5272,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="850875081535031620">Nu s-a găsit software dăunător</translation>
 <translation id="8509177919508253835">Resetează cheile de securitate și creează coduri PIN</translation>
 <translation id="8509646642152301857">Descărcarea dicționarului de verificare ortografică nu a reușit.</translation>
-<translation id="8510617356402557055">A fost ceva neașteptat? <ph name="BEGIN_LINK" />Trimite feedback<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">Opriți procesul</translation>
 <translation id="851263357009351303">Permite întotdeauna afișarea de imagini de la <ph name="HOST" /></translation>
 <translation id="8513108775083588393">Rotire automată</translation>

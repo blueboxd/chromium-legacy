@@ -25,9 +25,7 @@ source_set("manual_fill") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "passwords_fetcher_unittest.mm",
-  ]
+  sources = [ "passwords_fetcher_unittest.mm" ]
   deps = [
     ":manual_fill",
     "//base/test:test_support",

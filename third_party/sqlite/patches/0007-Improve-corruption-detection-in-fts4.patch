@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 19 Nov 2019 15:34:00 -0800
-Subject: [PATCH 07/22] Improve corruption detection in fts4
+Subject: [PATCH 07/25] Improve corruption detection in fts4
 
 Backports https://www.sqlite.org/src/info/10f8a3b718e0f47b
 
@@ -51,5 +51,5 @@ index ddb6c177cf0a..ac477f4706dc 100644
  db close
  sqlite3 db :memory:
 -- 
-2.24.1.735.g03f4e72817-goog
+2.25.0.rc1.283.g88dfdc4193-goog
 

@@ -584,7 +584,7 @@ TEST_F(WebStateTest, LoadChromeThenHTML) {
       testing::GetErrorText(web_state(), app_specific_url, "NSURLErrorDomain",
                             /*error_code=*/NSURLErrorUnsupportedURL,
                             /*is_post=*/false, /*is_otr=*/false,
-                            /*has_ssl_info=*/false)));
+                            /*cert_status=*/0)));
   NSString* data_html = @(kTestPageHTML);
   web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
                         @"text/html", GURL("https://www.chromium.org"));
@@ -620,7 +620,7 @@ TEST_F(WebStateTest, LoadChromeThenWaitThenHTMLThenReload) {
       testing::GetErrorText(web_state(), app_specific_url, "NSURLErrorDomain",
                             /*error_code=*/NSURLErrorUnsupportedURL,
                             /*is_post=*/false, /*is_otr=*/false,
-                            /*has_ssl_info=*/false)));
+                            /*cert_status=*/0)));
   NSString* data_html = @(kTestPageHTML);
   web_state()->LoadData([data_html dataUsingEncoding:NSUTF8StringEncoding],
                         @"text/html", echo_url);

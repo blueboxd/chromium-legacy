@@ -317,6 +317,8 @@ bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
       base::FeatureList::IsEnabled(kContentComplianceEnabled) &&
       (state == CHECK_UPLOADS || state == CHECK_UPLOADS_AND_DOWNLOADS);
 
+  if (url.is_valid())
+    data->url = url.spec();
   if (data->do_dlp_scan &&
       g_browser_process->local_state()->HasPrefPath(
           prefs::kURLsToNotCheckComplianceOfUploadedContent)) {
@@ -600,6 +602,7 @@ void DeepScanningDialogDelegate::PrepareRequest(
   if (data_.do_dlp_scan) {
     DlpDeepScanningClientRequest dlp_request;
     dlp_request.set_content_source(trigger);
+    dlp_request.set_url(data_.url);
     request->set_request_dlp_scan(std::move(dlp_request));
   }
 

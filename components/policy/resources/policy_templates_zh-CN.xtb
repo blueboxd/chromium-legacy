@@ -194,6 +194,12 @@
 <translation id="1307454923744766368">针对不安全来源的安全性限制不适用于哪些来源或主机名模式</translation>
 <translation id="1312799700549720683">控制显示设置。</translation>
 <translation id="131353325527891113">在登录屏幕上显示用户名</translation>
+<translation id="1327351219049180837">此政策旨在控制是否报告政策数据和政策提取时间。
+
+      当此政策设为 True 或未设置时，系统会收集政策数据和政策提取时间。
+      当此政策设为 False 时，系统不会收集政策数据和政策提取时间。
+
+      仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="1327466551276625742">离线时，弹出网络配置提示</translation>
 <translation id="1330145147221172764">启用屏幕键盘</translation>
 <translation id="13356285923490863">政策名称</translation>
@@ -330,6 +336,7 @@
 <translation id="152657506688053119">默认搜索服务提供商的备选网址列表</translation>
 <translation id="1530812829012954197">总是通过托管浏览器呈现以下网址格式</translation>
 <translation id="1541170838458414064">限制打印页面大小</translation>
+<translation id="1553532014072799546">应用级使用时间限制白名单</translation>
 <translation id="1553684822621013552">如果将这项政策设为 true，系统会为用户启用 ARC（需要经过额外的政策设置检查；如果目前的用户会话中已启用暂存模式或多帐号登录功能，则用户仍然无法使用 ARC）。
 
 如果停用或未配置此设置，那么企业用户将无法使用 ARC。</translation>
@@ -420,6 +427,14 @@
       </translation>
 <translation id="1700811900332333712">允许设备请求 Powerwash</translation>
 <translation id="1708496595873025510">对变体种子的提取设置限制条件</translation>
+<translation id="1713533749396963716">此政策用于指定应针对应用级使用限制将哪些应用和网址列入白名单。
+        所配置的白名单会应用于在 <ph name="PRODUCT_OS_NAME" />上为给定用户安装的且设有应用级使用时间限制的应用。
+        所配置的白名单只能应用于未成年用户帐号，并且仅当已设置 <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> 政策后才会生效。
+        所配置的白名单会应用于相符的应用和网址，以使它们不受应用级使用时间限制的约束。
+        对白名单所含网址的访问时长不会计入 Chrome 使用时间限制。
+        将网址正则表达式添加到 |url_list| 中，即可将与该列表中的任何正则表达式匹配的网址列入白名单。
+        将应用及其 |app_id| 和 |app_type| 添加到 |app_list| 中，即可将该应用列入白名单。
+       </translation>
 <translation id="1715151459541210849">启用“语音输入”无障碍功能</translation>
 <translation id="1717817358640580294">如果此政策未设置，当 Chrome 清理功能检测到垃圾软件时，它可能会按照 SafeBrowsingExtendedReportingEnabled 设置的政策向 Google 报告与此项扫描相关的元数据。然后，Chrome 清理功能会询问用户是否要清理垃圾软件。用户可以选择与 Google 分享清理结果，以协助 Google 日后更好地检测垃圾软件。这些结果包括文件元数据、自动安装的扩展程序以及注册表项（如《Chrome 隐私权白皮书》中所述）。
 
@@ -925,6 +940,12 @@
 
           在 Windows 上，此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="247658312644322296">“另存为 PDF”目的地</translation>
+<translation id="2478649170422995190">此政策旨在控制是否报告版本信息，例如操作系统版本、操作系统平台、操作系统架构、<ph name="PRODUCT_NAME" /> 版本号和 <ph name="PRODUCT_NAME" /> 版本类型。
+
+      当此政策设为 True 或未设置时，系统会收集版本信息。
+      当此政策设为 False 时，系统不会收集版本信息。
+
+      仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="2480971699591919564">启用“点击通话”功能，以允许已登录的 Chrome 用户从桌面设备向 Android 设备发送电话号码。若想了解详情，请参阅这篇帮助中心文章：https://support.google.com/chrome/answer/9430554?hl=zh-CN。
 
       如果启用了此政策，即意味着允许 Chrome 用户向 Android 设备发送电话号码。
@@ -2725,6 +2746,12 @@
 
       如果您想配置此政策，则可将其设为“tls1.2”或“tls1.3”。如果您设置了此政策，<ph name="PRODUCT_NAME" /> 将不会使用任何高于指定版本的 SSL/TLS 版本。无法识别的值会被忽略。</translation>
 <translation id="5330684698007383292">允许 <ph name="PRODUCT_FRAME_NAME" />处理以下内容类型</translation>
+<translation id="5331081760098249172">
+      将此政策设为 True 后，<ph name="PRODUCT_NAME" /> 便可从 Google 服务（例如 Hangouts Meet）收集 WebRTC 事件日志并将它们上传到 Google。这些日志包含一些诊断信息，例如 RTP 数据包的时间和大小、网络拥堵情况反馈，以及与语音帧和视频帧的时间和质量相关的元数据。在调试 <ph name="PRODUCT_NAME" /> 中的语音会议或视频会议问题时，这些信息非常有用。这些日志不包含会议的任何音频或视频内容。为了更便于进行调试，Google 可能会利用会话 ID 将这些日志与 Google 服务自身收集的其他日志关联起来。
+
+      将此政策设为 False 会导致系统不收集并上传此类日志。
+
+      在 M76 或更早版本中，不设置此政策意味着 <ph name="PRODUCT_NAME" /> 默认无法收集并上传这些日志。从 M77 开始，<ph name="PRODUCT_NAME" /> 默认能够从受基于云的用户级企业政策影响的大多数个人资料中收集并上传这些日志。从 M77 到 M80（含），<ph name="PRODUCT_NAME" /> 默认还能从受 <ph name="PRODUCT_NAME" /> 本地管理功能影响的个人资料中收集并上传这些日志。</translation>
 <translation id="5331746669335642668"><ph name="PRODUCT_NAME" /> 云政策会替换平台政策。</translation>
 <translation id="5362531528507578966">覆盖默认背景图片打印模式。</translation>
 <translation id="5365476955714838841">用于启动替代浏览器的命令行参数。</translation>
@@ -3319,6 +3346,12 @@
       如果此政策设为False，则不报告这些用户。</translation>
 <translation id="638668187106406971">检查上传内容是否违反敏感数据保护规则</translation>
 <translation id="6394350458541421998">此政策从 <ph name="PRODUCT_OS_NAME" />版本 29 起开始弃用。请改用 PresentationScreenDimDelayScale 政策。</translation>
+<translation id="6399242659768117666">此政策旨在控制是否报告扩展程序和插件信息。
+
+      如果此政策设为 True 或未设置，系统会收集扩展程序和插件数据。
+      如果此政策设为 False，系统不会收集扩展程序和插件数据。
+
+      仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="6401669939808766804">使用户退出</translation>
 <translation id="6406448383934634215">如果选择“打开网址列表”作为启动时的操作，您就可以指定要打开的网址的列表。如果此政策未设置，启动时将不会打开任何网址。
 
@@ -3402,6 +3435,12 @@
 
       此政策可设为一个可执行文件路径，也可设为 <ph name="PRODUCT_NAME_PLACEHOLDER" /> 以自动检测 Chrome 的安装位置。</translation>
 <translation id="6536600139108165863">设备关机后自动重新启动</translation>
+<translation id="6537062468544950724">此政策旨在控制是否报告可用于识别设备的信息，例如设备名称和网络地址。
+
+      当此政策设为 True 或未设置时，系统会收集可用于识别设备的信息。
+      当此政策设为 False 时，系统不会收集可用于识别设备的信息。
+
+      仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="6539246272469751178">此政策对 Android 应用没有任何影响。Android 应用始终都会使用默认下载目录，并且无法访问由 <ph name="PRODUCT_OS_NAME" />下载到非默认下载目录中的任何文件。</translation>
 <translation id="654303922206238013">ecryptfs 迁移策略</translation>
 <translation id="6544897973797372144">如果该策略设置为 True，且未指定 ChromeOsReleaseChannel 策略，那么注册域的用户将可以更改设备的发布版。如果该策略设置为 False，那么设备就会锁定最后设置的任何版本。
@@ -3620,6 +3659,12 @@
       如果此政策设为 True 或未设置，则系统将启用智能调暗模式，并允许其最大限度地推迟屏幕变暗时间。如果此政策设为 False，则智能调暗模式将不会影响屏幕变暗时间。</translation>
 <translation id="6972540544240464302">选择任务调度程序配置</translation>
 <translation id="6979158407327259162">Google 云端硬盘</translation>
+<translation id="6991078864332103177">此政策旨在控制是否报告可用于识别用户身份的信息，例如操作系统登录、<ph name="PRODUCT_NAME" /> 个人资料登录、<ph name="PRODUCT_NAME" /> 个人资料名称、<ph name="PRODUCT_NAME" /> 个人资料路径和 <ph name="PRODUCT_NAME" /> 可执行文件路径。
+
+      当此政策设为 True 或未设置时，系统会收集可用于识别用户身份的信息。
+      当此政策设为 False 时，系统不会收集可用于识别用户身份的信息。
+
+      仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="6994082778848658360">指定如何使用板载安全元件硬件提供双重身份验证（如果该硬件与此功能兼容的话）。使用机器电源按钮检测用户是否真实存在。
 
       如果选择“停用”，系统将不会提供任何双重身份验证。
@@ -4123,11 +4168,20 @@
           如果停用或不设置该设置，那么系统将不启用双重身份验证，并采用由用户定义 PIN 这一默认行为。</translation>
 <translation id="7750991880413385988">打开新标签页</translation>
 <translation id="7754704193130578113">下载前询问每个文件的保存位置</translation>
+<translation id="7755495228644343508">配置与 Chrome Reporting Extension 相关的政策。
+
+      仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="7758378441185523981">为个人资料类型启用静默身份验证。</translation>
 <translation id="7761446981238915769">配置登录屏幕上已安装应用的列表</translation>
 <translation id="7763614521440615342">在“打开新的标签页”页面上显示内容建议</translation>
 <translation id="7765879851993224640">允许使用 Smart Lock 登录功能。</translation>
 <translation id="7774768074957326919">使用系统代理设置</translation>
+<translation id="7775902646576367944">此政策旨在控制是否报告安全浏览信息，包括安全浏览警告次数和安全浏览警告点击次数。
+
+      如果此政策设为 True 或未设置，系统会收集安全浏览数据。
+      如果此政策设为 False，系统不会收集安全浏览数据。
+
+      仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="7777535871204167559">以只读模式处理外部存储设备</translation>
 <translation id="7788511847830146438">根据个人资料</translation>
 <translation id="7792973482799545782">不允许任何网站加载可屏蔽的混合内容</translation>
@@ -4668,6 +4722,15 @@
 <translation id="8757552286070680084">Wilco DTC 配置</translation>
 <translation id="8758831693895931466">启用强制性云管理注册</translation>
 <translation id="8759829385824155666">允许的 Kerberos 加密类型</translation>
+<translation id="87635449713742708">此政策会强制网络代码在浏览器进程中运行。
+
+      此政策默认处于停用状态；若被启用，则会在网络进程被沙盒化后使用户面临安全问题的威胁。
+
+      此政策旨在使企业有机会迁移到不依靠与网络 API 挂钩来运行的第三方软件。我们建议通过 LSP 和 Win32 API 修补来使用代理服务器。
+
+      如果此政策未设置，网络代码默认会在浏览器进程之外运行。
+
+      在 <ph name="PRODUCT_NAME" /> 版本 82 中，此政策将被移除。</translation>
 <translation id="8764119899999036911">指定 Kerberos SPN 是基于规范 DNS 名称还是基于输入的原始名称。如果您启用了此设置，系统将跳过 CNAME 查找步骤，并使用输入的服务器名称。如果您停用或未配置此设置，系统将通过 CNAME 查找来确定服务器的规范名称。</translation>
 <translation id="8764477907716150749">此政策仅供 <ph name="PRODUCT_NAME" /> 在内部使用。</translation>
 <translation id="8777369558049831576">在外部协议对话框中显示“始终打开”复选框。</translation>

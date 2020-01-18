@@ -301,7 +301,7 @@
 <translation id="3282568296779691940">Skráðu þig inn á Chrome</translation>
 <translation id="3288003805934695103">Endurhlaða síðuna</translation>
 <translation id="32895400574683172">Tilkynningar eru leyfðar</translation>
-<translation id="3290926146403723641">Til að ljúka við verkefni á vefnum með Google hjálparanum sendir Chrome slóð vefsvæðis, efni vefsvæðis og tengdar persónuupplýsingar til Google</translation>
+<translation id="3290926146403723641">Til að ljúka við verkefni á vefnum með Google hjálparanum sendir Chrome slóð vefsvæðis, efni vefsvæðis og nauðsynlegar persónuupplýsingar til Google</translation>
 <translation id="3295530008794733555">Vafraðu hraðar. Með minna gagnamagni.</translation>
 <translation id="3298243779924642547">Léttútgáfa</translation>
 <translation id="3303414029551471755">Viltu halda áfram og sækja efnið?</translation>
@@ -668,6 +668,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="605721222689873409">ÁÁ</translation>
 <translation id="6064125863973209585">Niðurhali lokið</translation>
 <translation id="6075798973483050474">Breyta heimasíðu</translation>
+<translation id="6092062101542170135">Kveiktu á NFC í stillingum Android til að halda áfram</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> klst. eftir</translation>
 <translation id="6108923351542677676">Uppsetning fer fram…</translation>
 <translation id="6111020039983847643">gagnanotkun</translation>
@@ -1047,7 +1048,7 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="8912362522468806198">Google reikningur</translation>
 <translation id="8920114477895755567">Bíður eftir upplýsingum um foreldra.</translation>
 <translation id="8922289737868596582">Náðu í síður með hnappnum „Fleiri valkostir“ til að nota þær án nettengingar</translation>
-<translation id="8926666909099850184">Slökkt er á NFC fyrir þetta tæki Kveiktu á því í <ph name="BEGIN_LINK" />stillingum Android<ph name="END_LINK" />.</translation>
+<translation id="8926666909099850184">Slökkt er á NFC fyrir þetta tæki. Kveiktu á því í <ph name="BEGIN_LINK" />stillingum Android<ph name="END_LINK" />.</translation>
 <translation id="8937772741022875483">Viltu fjarlægja það sem þú gerir í Chrome úr stafrænni vellíðan?</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8942627711005830162">Opna í öðrum glugga</translation>

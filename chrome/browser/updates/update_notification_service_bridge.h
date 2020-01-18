@@ -32,6 +32,9 @@ void UpdateUserDismissCount(int count);
 // Returns persisted count from Android SharedPreferences.
 int GetUserDismissCount();
 
+// Launches Chrome activity after user clicked the notification.
+void LaunchChromeActivity();
+
 }  // namespace updates
 
 #endif  // CHROME_BROWSER_UPDATES_UPDATE_NOTIFICATION_SERVICE_BRIDGE_H_

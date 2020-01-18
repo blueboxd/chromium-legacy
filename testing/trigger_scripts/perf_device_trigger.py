@@ -54,6 +54,7 @@ import subprocess
 import sys
 import tempfile
 import urllib
+import logging
 
 import base_test_triggerer
 
@@ -304,6 +305,10 @@ class PerfDeviceTriggerer(base_test_triggerer.BaseTestTriggerer):
         return args[i+1]
 
 def main():
+  logging.basicConfig(
+      level=logging.INFO,
+      format='(%(levelname)s) %(asctime)s pid=%(process)d'
+             '  %(module)s.%(funcName)s:%(lineno)d  %(message)s')
   # Setup args for common contract of base class
   parser = base_test_triggerer.BaseTestTriggerer.setup_parser_contract(
       argparse.ArgumentParser(description=__doc__))

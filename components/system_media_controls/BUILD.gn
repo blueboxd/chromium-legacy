@@ -32,9 +32,7 @@ component("system_media_controls") {
     "//ui/gfx",
   ]
 
-  public_deps = [
-    "//skia",
-  ]
+  public_deps = [ "//skia" ]
 
   # TODO(https://crbug.com/949596): Move MPRIS and Now Playing here.
   if (is_win) {
@@ -75,9 +73,7 @@ component("system_media_controls") {
     # directly or indirectly carry the weak_link on the framework.
     all_dependent_configs = [ ":media_player_weak_link" ]
   } else {
-    sources = [
-      "system_media_controls_stub.cc",
-    ]
+    sources = [ "system_media_controls_stub.cc" ]
   }
 }
 
@@ -85,9 +81,7 @@ source_set("unit_tests") {
   testonly = true
 
   if (use_mpris) {
-    sources = [
-      "linux/system_media_controls_linux_unittest.cc",
-    ]
+    sources = [ "linux/system_media_controls_linux_unittest.cc" ]
     deps = [
       ":system_media_controls",
       "//base",

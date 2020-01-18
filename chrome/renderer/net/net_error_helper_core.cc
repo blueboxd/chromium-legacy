@@ -130,7 +130,7 @@ base::TimeDelta GetAutoReloadTime(size_t reload_count) {
 // the tab helper should start a DNS probe after receiving it).
 bool IsNetDnsError(const error_page::Error& error) {
   return error.domain() == error_page::Error::kNetErrorDomain &&
-         net::IsDnsError(error.reason());
+         net::IsHostnameResolutionError(error.reason());
 }
 
 GURL SanitizeURL(const GURL& url) {

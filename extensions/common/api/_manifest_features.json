@@ -111,7 +111,9 @@
     // Platform apps have a restricted content security policy that cannot be
     // overriden (except for a whitelist of exceptions, see the
     // app.content_security_policy whitelist).
-    "extension_types": ["extension", "legacy_packaged_app"]
+    "extension_types": [
+      "extension", "legacy_packaged_app", "login_screen_extension"
+    ]
   },
   "current_locale": {
     "channel": "stable",

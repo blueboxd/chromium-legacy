@@ -5,9 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("common") {
-  sources = [
-    "translate.mojom",
-  ]
+  sources = [ "translate.mojom" ]
 
   public_deps = [
     "//mojo/public/mojom/base",

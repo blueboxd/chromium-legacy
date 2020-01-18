@@ -285,10 +285,12 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
     contextual_cards_version = field_trial_->GetContextualCardsVersion();
   }
 
+  // TODO(donnd): use a passed-in value for is_search_exact ASAP (CL pending).
+  bool is_exact_search = false;
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
       kContextualSearchRequestVersion, contextual_cards_version,
       context->GetHomeCountry(), context->GetPreviousEventId(),
-      context->GetPreviousEventResults());
+      context->GetPreviousEventResults(), is_exact_search);
 
   search_terms_args.contextual_search_params = params;
 

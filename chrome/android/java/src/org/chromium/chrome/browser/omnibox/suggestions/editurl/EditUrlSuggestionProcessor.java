@@ -253,7 +253,11 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
             mLocationBarDelegate.clearOmniboxFocus();
             // TODO(mdjones): This should only share the displayed URL instead of the background
             //                tab.
-            ((TabImpl) activityTab).getActivity().getShareDelegate().share(activityTab, false);
+            ((TabImpl) activityTab)
+                    .getActivity()
+                    .getShareDelegateSupplier()
+                    .get()
+                    .share(activityTab, false);
         } else if (R.id.url_edit_icon == view.getId()) {
             ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.EDIT);
             ACTION_EDIT_URL_SUGGESTION_EDIT.record();

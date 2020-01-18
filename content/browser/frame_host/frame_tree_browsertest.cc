@@ -1029,8 +1029,8 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
                             ->GetFrameTree()
                             ->root();
   EXPECT_TRUE(root->current_origin().opaque());
-  EXPECT_TRUE(
-      root->current_origin().GetTupleOrPrecursorTupleIfOpaque().IsInvalid());
+  EXPECT_FALSE(
+      root->current_origin().GetTupleOrPrecursorTupleIfOpaque().IsValid());
   EXPECT_EQ(1UL, root->child_count());
   FrameTreeNode* child = root->child_at(0);
 

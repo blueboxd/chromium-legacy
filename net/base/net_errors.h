@@ -47,8 +47,8 @@ NET_EXPORT bool IsCertificateError(int error);
 // certificate.
 NET_EXPORT bool IsClientCertificateError(int error);
 
-// Returns true if |error| is a DNS error.
-NET_EXPORT bool IsDnsError(int error);
+// Returns true if |error| is an error from hostname resolution.
+NET_EXPORT bool IsHostnameResolutionError(int error);
 
 // Map system error code to Error.
 NET_EXPORT Error MapSystemError(logging::SystemErrorCode os_error);

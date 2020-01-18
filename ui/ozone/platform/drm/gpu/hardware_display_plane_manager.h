@@ -40,13 +40,12 @@ struct HardwareDisplayPlaneList {
   std::vector<HardwareDisplayPlane*> old_plane_list;
 
   struct PageFlipInfo {
-    PageFlipInfo(uint32_t crtc_id, uint32_t framebuffer, CrtcController* crtc);
+    PageFlipInfo(uint32_t crtc_id, uint32_t framebuffer);
     PageFlipInfo(const PageFlipInfo& other);
     ~PageFlipInfo();
 
     uint32_t crtc_id;
     uint32_t framebuffer;
-    CrtcController* crtc;
   };
   // In the case of non-atomic operation, this info will be used for
   // pageflipping.
@@ -86,8 +85,7 @@ class HardwareDisplayPlaneManager {
   // |crtc_id| will be used. |overlay_list| must be sorted bottom-to-top.
   virtual bool AssignOverlayPlanes(HardwareDisplayPlaneList* plane_list,
                                    const DrmOverlayPlaneList& overlay_list,
-                                   uint32_t crtc_id,
-                                   CrtcController* crtc);
+                                   uint32_t crtc_id);
 
   // Commit the plane states in |plane_list|.
   //
@@ -173,8 +171,7 @@ class HardwareDisplayPlaneManager {
                             HardwareDisplayPlane* hw_plane,
                             const DrmOverlayPlane& overlay,
                             uint32_t crtc_id,
-                            const gfx::Rect& src_rect,
-                            CrtcController* crtc) = 0;
+                            const gfx::Rect& src_rect) = 0;
 
   virtual std::unique_ptr<HardwareDisplayPlane> CreatePlane(uint32_t plane_id);
 

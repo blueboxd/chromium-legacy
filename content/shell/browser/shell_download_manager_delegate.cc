@@ -75,6 +75,7 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
         download->GetForcedFilePath(),
         download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        download::DownloadItem::MixedContentStatus::UNKNOWN,
         download->GetForcedFilePath(),
         download::DOWNLOAD_INTERRUPT_REASON_NONE);
     return true;
@@ -140,6 +141,7 @@ void ShellDownloadManagerDelegate::OnDownloadPathGenerated(
     std::move(callback).Run(
         suggested_path, download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        download::DownloadItem::MixedContentStatus::UNKNOWN,
         suggested_path.AddExtension(FILE_PATH_LITERAL(".crdownload")),
         download::DOWNLOAD_INTERRUPT_REASON_NONE);
     return;
@@ -190,8 +192,9 @@ void ShellDownloadManagerDelegate::ChooseDownloadPath(
 
   std::move(callback).Run(result,
                           download::DownloadItem::TARGET_DISPOSITION_PROMPT,
-                          download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, result,
-                          download::DOWNLOAD_INTERRUPT_REASON_NONE);
+                          download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                          download::DownloadItem::MixedContentStatus::UNKNOWN,
+                          result, download::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 void ShellDownloadManagerDelegate::SetDownloadBehaviorForTesting(

@@ -41,6 +41,7 @@ class FromGWSPageLoadMetricsObserverTest
   void SimulateTimingWithFirstPaint() {
     page_load_metrics::mojom::PageLoadTiming timing;
     page_load_metrics::InitPageLoadTimingForTest(&timing);
+    timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(0);
     timing.navigation_start = base::Time::FromDoubleT(1);
     timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(0);
     PopulateRequiredTimingFields(&timing);
@@ -252,6 +253,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl1) {
 TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl2) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1);
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
@@ -280,6 +282,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl2) {
 TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl3) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1);
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
@@ -308,6 +311,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl3) {
 TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl4) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1);
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
@@ -337,6 +341,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchToNonSearchToOtherPage) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1);
   timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   page_load_metrics::mojom::PageLoadTiming timing2;
   page_load_metrics::InitPageLoadTimingForTest(&timing2);
@@ -373,6 +378,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchToNonSearchToSearch) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1);
   timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   page_load_metrics::mojom::PageLoadTiming timing2;
   page_load_metrics::InitPageLoadTimingForTest(&timing2);
@@ -410,15 +416,18 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1);
   timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   page_load_metrics::mojom::PageLoadTiming timing2;
   page_load_metrics::InitPageLoadTimingForTest(&timing2);
   timing2.navigation_start = base::Time::FromDoubleT(2);
+  timing2.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(100);
   timing2.paint_timing->first_image_paint =
       base::TimeDelta::FromMilliseconds(100);
   page_load_metrics::mojom::PageLoadTiming timing3;
   page_load_metrics::InitPageLoadTimingForTest(&timing3);
   timing3.navigation_start = base::Time::FromDoubleT(3);
+  timing3.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1000);
   timing3.paint_timing->first_image_paint =
       base::TimeDelta::FromMilliseconds(1000);
   PopulateRequiredTimingFields(&timing);
@@ -458,6 +467,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1);
   timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   page_load_metrics::mojom::PageLoadTiming timing2;
   page_load_metrics::InitPageLoadTimingForTest(&timing2);
@@ -504,6 +514,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(1);
   timing.paint_timing->first_image_paint = base::TimeDelta::FromMilliseconds(1);
   PopulateRequiredTimingFields(&timing);
   NavigateAndCommit(GURL("https://www.google.com/search#q=test"));
@@ -554,6 +565,7 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
        SearchPreviousCommittedUrlBackgroundLater) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.parse_timing->parse_start = base::TimeDelta::FromMicroseconds(1);
   timing.navigation_start = base::Time::FromDoubleT(1);
   timing.paint_timing->first_image_paint = base::TimeDelta::FromMicroseconds(1);
   PopulateRequiredTimingFields(&timing);

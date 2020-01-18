@@ -178,10 +178,10 @@ struct DownloadTestCase {
 class MockDownloadTargetDeterminerDelegate
     : public DownloadTargetDeterminerDelegate {
  public:
-  MOCK_METHOD3(ShouldBlockDownload,
+  MOCK_METHOD3(GetMixedContentStatus,
                void(download::DownloadItem*,
                     const base::FilePath&,
-                    const ShouldBlockDownloadCallback&));
+                    const GetMixedContentStatusCallback&));
   MOCK_METHOD3(CheckDownloadUrl,
                void(download::DownloadItem*,
                     const base::FilePath&,
@@ -217,8 +217,9 @@ class MockDownloadTargetDeterminerDelegate
                     const GetFileMimeTypeCallback&));
 
   void SetupDefaults() {
-    ON_CALL(*this, ShouldBlockDownload(_, _, _))
-        .WillByDefault(WithArg<2>(ScheduleCallback(false)));
+    ON_CALL(*this, GetMixedContentStatus(_, _, _))
+        .WillByDefault(WithArg<2>(ScheduleCallback(
+            download::DownloadItem::MixedContentStatus::UNKNOWN)));
     ON_CALL(*this, CheckDownloadUrl(_, _, _))
         .WillByDefault(WithArg<2>(
             ScheduleCallback(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)));
@@ -1527,7 +1528,7 @@ TEST_F(DownloadTargetDeterminerTest, ManagedPath) {
                              base::size(kManagedPathTestCases));
 }
 
-// Test basic blocking functionality via ShouldBlockDownloads.
+// Test basic blocking functionality via GetMixedContentStatus.
 TEST_F(DownloadTargetDeterminerTest, BlockDownloads) {
   const DownloadTestCase kBlockDownloadsTestCases[] = {
       {AUTOMATIC, download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
@@ -1536,8 +1537,9 @@ TEST_F(DownloadTargetDeterminerTest, BlockDownloads) {
        DownloadItem::TARGET_DISPOSITION_OVERWRITE, EXPECT_EMPTY},
   };
 
-  ON_CALL(*delegate(), ShouldBlockDownload(_, _, _))
-      .WillByDefault(WithArg<2>(ScheduleCallback(true)));
+  ON_CALL(*delegate(), GetMixedContentStatus(_, _, _))
+      .WillByDefault(WithArg<2>(ScheduleCallback(
+          download::DownloadItem::MixedContentStatus::SILENT_BLOCK)));
   RunTestCasesWithActiveItem(kBlockDownloadsTestCases,
                              base::size(kBlockDownloadsTestCases));
 }

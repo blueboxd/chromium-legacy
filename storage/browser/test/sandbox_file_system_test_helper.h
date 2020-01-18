@@ -17,14 +17,9 @@
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
-#include "url/gurl.h"
 
 namespace base {
 class FilePath;
-}
-
-namespace storage {
-class QuotaManagerProxy;
 }
 
 namespace storage {
@@ -33,6 +28,11 @@ class FileSystemFileUtil;
 class FileSystemOperationContext;
 class FileSystemOperationRunner;
 class ObfuscatedFileUtilDelegate;
+class QuotaManagerProxy;
+}  // namespace storage
+
+namespace url {
+class Origin;
 }
 
 namespace content {
@@ -42,7 +42,8 @@ namespace content {
 // file systems (Temporary or Persistent).
 class SandboxFileSystemTestHelper {
  public:
-  SandboxFileSystemTestHelper(const GURL& origin, storage::FileSystemType type);
+  SandboxFileSystemTestHelper(const url::Origin& origin,
+                              storage::FileSystemType type);
   SandboxFileSystemTestHelper();
   ~SandboxFileSystemTestHelper();
 
@@ -86,7 +87,7 @@ class SandboxFileSystemTestHelper {
     return file_system_context_.get();
   }
 
-  const GURL& origin() const { return origin_; }
+  const url::Origin& origin() const { return origin_; }
   storage::FileSystemType type() const { return type_; }
   blink::mojom::StorageType storage_type() const {
     return storage::FileSystemTypeToQuotaStorageType(type_);
@@ -101,7 +102,7 @@ class SandboxFileSystemTestHelper {
 
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 
-  const GURL origin_;
+  const url::Origin origin_;
   const storage::FileSystemType type_;
   storage::FileSystemFileUtil* file_util_;
 };

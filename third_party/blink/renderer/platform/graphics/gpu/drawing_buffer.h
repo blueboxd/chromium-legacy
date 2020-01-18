@@ -500,7 +500,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   bool ReallocateMultisampleRenderbuffer(const IntSize&);
 
   // Presents swap chain if swap chain is being used and contents have changed.
-  void PresentSwapChainIfNeeded();
+  void ResolveAndPresentSwapChainIfNeeded();
 
   // Weak, reset by beginDestruction.
   Client* client_ = nullptr;

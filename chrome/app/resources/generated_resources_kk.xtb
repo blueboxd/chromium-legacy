@@ -945,7 +945,6 @@
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% көшірілді</translation>
 <translation id="2318143611928805047">Қағаз өлшемі</translation>
 <translation id="2318817390901984578">Android қолданбаларын пайдалану үшін <ph name="DEVICE_TYPE" /> құрылғысын зарядтаңыз және жаңартыңыз.</translation>
-<translation id="2318923050469484167">Ағымдағы инкогнито сеансы (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">Үстіңгі және астыңғы деректеме</translation>
 <translation id="2322318151094136999">Сайт серия порттарын пайдаланғысы келгенде, рұқсат сұралсын (ұсынылады).</translation>
 <translation id="2325002827435400643">Осы сайт үшін өшіру</translation>
@@ -1788,6 +1787,7 @@
 <translation id="3511307672085573050">Сілтеме мекен&amp;жайын көшіру</translation>
 <translation id="351152300840026870">Ені бірыңғай қаріп</translation>
 <translation id="3511528412952710609">Қысқа</translation>
+<translation id="3513704683820682405">Толықтырылған шындық</translation>
 <translation id="3514373592552233661">Егер бірнеше сақталған желі қолжетімді болса, алдымен таңдаулы желілер алынады</translation>
 <translation id="3515983984924808886">Бастапқы күйге қайтаруды растау үшін қауіпсіздік кілтін қайта түртіңіз. Қауіпсіздік кілтінде сақталған барлық ақпарат, оның ішінде PIN коды жойылатын болады.</translation>
 <translation id="3518985090088779359">Қабылдап, жалғастыру</translation>
@@ -2244,7 +2244,6 @@
 <translation id="4099874310852108874">Желіде қате орын алды.</translation>
 <translation id="4100733287846229632">Құрылғыда бос орын өте аз</translation>
 <translation id="4100853287411968461">Пайдалану уақытының жаңа шектеуі</translation>
-<translation id="4103091233824664032">Экранды құлыптау және есептік жазбаға кіру параметрлерін конфигурациялау үшін құпия сөзіңізді енгізіңіз</translation>
 <translation id="4104163789986725820">Э&amp;кспорттау…</translation>
 <translation id="4107048419833779140">Жад құрылғыларын анықтау және шығару</translation>
 <translation id="4109135793348361820">Терезені <ph name="USER_NAME" /> пайдаланушысына (<ph name="USER_EMAIL" />) жылжыту</translation>
@@ -2783,6 +2782,7 @@
 <translation id="494286511941020793">Прокси конфигурация анықтамасы</translation>
 <translation id="4943368462779413526">Футбол</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" сериялық портқа қосылғысы келеді</translation>
+<translation id="4943703118917034429">Виртуалды шындық</translation>
 <translation id="4944310289250773232">Бұл аутентификация қызметі <ph name="SAML_DOMAIN" /> кеңейтімінде орналасқан.</translation>
 <translation id="495170559598752135">Әрекеттер</translation>
 <translation id="4952981627953231344">Бұл құрылғыда Plugin VM пайдалануға тыйым салынған. Ұйымыңыздың құрылғы әкімшісіне хабарласыңыз.</translation>
@@ -3132,7 +3132,6 @@
 <translation id="5468173180030470402">Ортақ каталогтер ізделіп жатыр.</translation>
 <translation id="5470735824776589490">Powerwash арқылы қалпына келтіру үшін құрылғыңызды қайта іске қосу қажет. <ph name="LINK_BEGIN" />Толығырақ<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Сәлеметсіз бе! Мен сізге мәтінді дыбыстап беремін.</translation>
-<translation id="5472133193607270166">Бұл параметр қосулы кезде, жарнамаларды жеке қажеттіліктерге бейімдеу үшін сайттар браузерді қолдану мәліметін пайдалана алмайды. Кейбір сайттар дұрыс жұмыс істемеуі мүмкін.</translation>
 <translation id="5473333559083690127">Жаңа PIN кодын қайта енгізіңіз</translation>
 <translation id="5481941284378890518">Маңайдағы принтерлерді енгізу</translation>
 <translation id="5483785310822538350">Файл мен құрылғыға кіру құқығын қайтарып алу</translation>
@@ -3303,7 +3302,6 @@
 <translation id="5701381305118179107">Ортаға</translation>
 <translation id="5701441174893770082">Linux жүйесінің жаңа нұсқасын орнату кезінде батарея заряды едәуір азаяды. Құрылғыны зарядтау құрылғысына қосып, әрекетті қайталаңыз.</translation>
 <translation id="5702898740348134351">&amp;Іздеу жүйесін өзгерту…</translation>
-<translation id="570302979952009979">Осы саусақ ізінің атауын таңдаңыз.</translation>
 <translation id="5704875434923668958">Синхрондалуда:</translation>
 <translation id="5707185214361380026">Келесіден кеңейтімді жүктеу сәтсіз аяқталды:</translation>
 <translation id="5708171344853220004">Microsoft Principal Name</translation>
@@ -3395,7 +3393,6 @@
 <translation id="5833726373896279253">Бұл параметрлерді тек иеленуші ғана өзгерте алады:</translation>
 <translation id="5834581999798853053">Шамамен <ph name="TIME" /> минут қалды</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – камерадан не микрофоннан жазу</translation>
-<translation id="5838456317242088717">Ағымдағы инкогнито сеансы</translation>
 <translation id="5842497610951477805">Bluetooth қосу</translation>
 <translation id="5843250171025351504">Құрылғыңыз бұдан былай әкімші көрсеткен минималды клиент нұсқасына сәйкес келмейді. Жүйеге кіру үшін жаңартыңыз.</translation>
 <translation id="5846200638699387931">Қатынас синтаксисінің қатесі: <ph name="ERROR_LINE" /></translation>
@@ -3651,7 +3648,6 @@
 <translation id="6181431612547969857">Жүктеуге тыйым салынған</translation>
 <translation id="6185132558746749656">Құрылғының орналасқан жері</translation>
 <translation id="6195693561221576702">Бұл құрылғы офлайн демо режимінде реттелмейді.</translation>
-<translation id="6196640612572343990">Үшінші тарап cookie файлдарын бөгеу</translation>
 <translation id="6196854373336333322">«<ph name="EXTENSION_NAME" />» кеңейтімі прокси-сервер параметрлерін бақылауға алды, яғни сіздің онлайн орындайтын кез келген әрекетіңізді өзгерте, бұза немесе ұстап қала алады. Ондай бақылаудың жасалуын қаламасаңыз, кеңейтімді өшіргеніңіз жөн болар.</translation>
 <translation id="6198102561359457428">Шығып, қайта кіріңіз…</translation>
 <translation id="6198252989419008588">PIN кодын өзгерту</translation>
@@ -4357,7 +4353,6 @@
 <translation id="7225179976675429563">Желі түрі жоқ</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (жеткізуші: <ph name="VENDOR_ID" />, өнім: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">Вебсайттардың геолокация, микрофон, камера, т.б. сияқты функцияларды пайдалануын реттейтін параметрлерді басқару.</translation>
-<translation id="7228523857728654909">Экран құлпы және есептік жазбаға кіру</translation>
 <translation id="7229570126336867161">EVDO технологиясы қажет</translation>
 <translation id="7230787553283372882">Мәтін өлшемін реттеу</translation>
 <translation id="7232750842195536390">Аты өзгертілмеді</translation>
@@ -5273,7 +5268,6 @@
 <translation id="850875081535031620">Зиянды бағдарлама табылған жоқ</translation>
 <translation id="8509177919508253835">Қауіпсіздік кілтін бастапқы күйге қайтару және PIN кодтарын жасау</translation>
 <translation id="8509646642152301857">Емлені тексеру сөздігін жүктеу сәтсіз аяқталды.</translation>
-<translation id="8510617356402557055">Мұны күтпедіңіз бе? <ph name="BEGIN_LINK" />Пікір жіберу<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">Процесті аяқтау</translation>
 <translation id="851263357009351303"><ph name="HOST" /> хостына кескіндерді әрқашан көрсету мүмкіндігін беру</translation>
 <translation id="8513108775083588393">Автоматты бұру</translation>

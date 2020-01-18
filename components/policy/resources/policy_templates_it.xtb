@@ -195,6 +195,12 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="1307454923744766368">Origini o schemi di nomi host a cui non dovrebbero essere applicate limitazioni previste per le origini non sicure.</translation>
 <translation id="1312799700549720683">Consente di gestire le impostazioni di visualizzazione.</translation>
 <translation id="131353325527891113">Mostra nomi utente nella schermata di accesso</translation>
+<translation id="1327351219049180837">Questo criterio consente di stabilire se segnalare o meno i dati dei criteri e data/ora del recupero dei criteri.
+
+      Se questo criterio non viene impostato o viene impostato su True, i dati dei criteri e data/ora del recupero dei criteri vengono raccolti.
+      Se questo criterio viene impostato su False, i dati dei criteri e data/ora del recupero dei criteri non vengono raccolti.
+
+      Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1327466551276625742">Attivazione richiesta di configurazione della rete offline</translation>
 <translation id="1330145147221172764">Attiva tastiera sullo schermo</translation>
 <translation id="13356285923490863">Nome criterio</translation>
@@ -341,6 +347,7 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 <translation id="152657506688053119">Elenco di URL alternativi per il fornitore del servizio di ricerca predefinito</translation>
 <translation id="1530812829012954197">Visualizza sempre i seguenti schemi URL nel browser host</translation>
 <translation id="1541170838458414064">Limita le dimensioni delle pagine di stampa</translation>
+<translation id="1553532014072799546">Whitelist limiti di utilizzo per app</translation>
 <translation id="1553684822621013552">Quando questo criterio è impostato su true, ARC è attivato (soggetto ad altri controlli delle impostazioni dei criteri - ARC continuerà a essere disattivato se nella sessione utente corrente è attivata la modalità temporanea o l'accesso simultaneo).
 
 Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendali non potranno utilizzare ARC.</translation>
@@ -431,6 +438,14 @@ Avviso. Non è consigliato delegare il controllo della versione di <ph name="PRO
       </translation>
 <translation id="1700811900332333712">Consenti al dispositivo di richiedere il powerwash</translation>
 <translation id="1708496595873025510">Imposta la limitazione sul recupero del numero di inizializzazione delle varianti</translation>
+<translation id="1713533749396963716">Questo criterio consente di specificare le applicazioni e gli URL da autorizzare per i limiti di utilizzo per app.
+        La whitelist configurata viene applicata alle app installate su <ph name="PRODUCT_OS_NAME" /> per l'utente in questione con limiti di utilizzo per app.
+        La whitelist configurata può essere applicata soltanto per gli account utente dei bambini e diventa effettiva quando viene impostato il criterio <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" />.
+        La whitelist configurata viene applicata alle applicazioni e agli URL affinché non vengano bloccati da limiti di utilizzo per app.
+        L'accesso agli URL autorizzati non viene considerato per il limite di utilizzo di Chrome.
+        Aggiungi espressioni regolari degli URL a |url_list| per autorizzare gli URL corrispondenti alle espressioni regolari nell'elenco.
+        Aggiungi all'elenco |app_list| un'applicazione con i relativi valori |app_id| e |app_type| per autorizzare l'applicazione.
+       </translation>
 <translation id="1715151459541210849">Attiva la funzione di accessibilità di dettatura</translation>
 <translation id="1717817358640580294">Se questa norma non viene impostata, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google potrebbero essere segnalati metadati relativi alla scansione in base alla norma stabilita da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà poi all'utente se vuole ripulire il software indesiderato. L'utente può scegliere se condividere i risultati della pulizia con Google per facilitare l'identificazione di software indesiderato in futuro. Questi risultati contengono metadati di file, estensioni installate automaticamente e chiavi del registro di sistema, come spiegato nel Whitepaper sulla privacy di Chrome.
 
@@ -944,6 +959,12 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
           Su Windows, questo criterio è disponibile solo per le istanze che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="247658312644322296">La destinazione "Salva come PDF"</translation>
+<translation id="2478649170422995190">Questo criterio consente di stabilire se segnalare o meno informazioni sulla versione, ad esempio la versione del sistema operativo, la piattaforma e l'architettura del sistema operativo, la versione di <ph name="PRODUCT_NAME" /> e il canale di <ph name="PRODUCT_NAME" />.
+
+      Se questo criterio non viene impostato o viene impostato su True, le informazioni sulla versione vengono raccolte.
+      Se questo criterio viene impostato su False, le informazioni sulla versione non vengono raccolte.
+
+      Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2480971699591919564">Consente di attivare la funzionalità Click-to-call che permette agli utenti di inviare numeri di telefono dai computer desktop Chrome ai dispositivi Android se eseguono l'accesso. Per ulteriori informazioni, leggi l'articolo del Centro assistenza all'indirizzo https://support.google.com/chrome/answer/9430554?hl=it.
 
       Se questo criterio viene attivato, la funzionalità di invio di numeri di telefono ai dispositivi Android verrà attivata per gli utenti di Chrome.
@@ -2748,6 +2769,12 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 
       . In caso contrario, potrebbe essere impostato uno dei seguenti valori: "tls1.2" o "tls1.3". Se questa norma viene impostata, <ph name="PRODUCT_NAME" /> non utilizzerà versioni SSL/TLS successive a quella specificata. I valori non riconosciuti verranno ignorati.</translation>
 <translation id="5330684698007383292">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i seguenti tipi di contenuti</translation>
+<translation id="5331081760098249172">
+      Se viene impostato su True, il criterio consente a <ph name="PRODUCT_NAME" /> di raccogliere i log eventi WebRTC di servizi Google come Hangouts Meet e di caricarli su Google. Questi log hanno informazioni diagnostiche utili per il debug dei problemi relativi a riunioni audio e video in <ph name="PRODUCT_NAME" />, ad esempio data/ora e dimensioni dei pacchetti RTP, feedback sulla congestione della rete, nonché metadati su durata e qualità dei frame audio e video. Questi log non contengono l'audio o i video delle riunioni. Google potrebbe associare questi log tramite un ID sessione ad altri log raccolti dal servizio Google stesso al fine di facilitare il debug.
+
+      Se il criterio viene impostato su False, tali log non vengono raccolti o caricati.
+
+      Se il criterio non viene impostato su versioni fino alla M76 inclusa, per impostazione predefinita <ph name="PRODUCT_NAME" /> non può raccogliere e caricare questi log. A partire dalla versione M77, per impostazione predefinita <ph name="PRODUCT_NAME" /> può raccogliere e caricare questi log dalla maggior parte dei profili interessati dai criteri aziendali a livello di utente basati sul cloud. Dalla versione M77 fino alla M80 inclusa, <ph name="PRODUCT_NAME" /> può anche raccogliere e caricare questi log per impostazione predefinita dai profili soggetti alla gestione on-premise di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5331746669335642668">La norma relativa alla cloud <ph name="PRODUCT_NAME" /> esegue l'override della norma relativa alla piattaforma.</translation>
 <translation id="5362531528507578966">Consente di sostituire la modalità di stampa predefinita delle immagini di sfondo.</translation>
 <translation id="5365476955714838841">Parametri della riga di comando per il browser alternativo.</translation>
@@ -3360,6 +3387,12 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="637934607141010488">Consente di indicare un elenco di utenti del dispositivo che hanno eseguito l'accesso di recente. Se la norma è impostata su False, gli utenti non vengono indicati.</translation>
 <translation id="638668187106406971">Verifica eventuali violazioni delle regole relative alla protezione dei dati sensibili dei caricamenti</translation>
 <translation id="6394350458541421998">La norma non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_OS_NAME" />. Utilizza la norma PresentationScreenDimDelayScale.</translation>
+<translation id="6399242659768117666">Questo criterio consente di stabilire se segnalare o meno i dati delle estensioni e dei plug-in.
+
+      Se questo criterio non viene impostato o viene impostato su True, i dati delle estensioni e dei plug-in vengono raccolti.
+      Se questo criterio viene impostato su False, i dati delle estensioni e dei plug-in non vengono raccolti.
+
+      Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6401669939808766804">Disconnetti l'utente</translation>
 <translation id="6406448383934634215">Se come azione all'avvio è stato impostato "Apri un elenco di URL", puoi specificare l'elenco degli URL che vengono aperti. Se questa norma non viene impostata, all'avvio non verrà aperto alcun URL.
 
@@ -3443,6 +3476,12 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Questo criterio può essere impostato su un percorso file eseguibile oppure su <ph name="PRODUCT_NAME_PLACEHOLDER" /> per rilevare automaticamente il percorso di installazione di Chrome.</translation>
 <translation id="6536600139108165863">Riavvia automaticamente allo spegnimento del dispositivo</translation>
+<translation id="6537062468544950724">Questo criterio consente di stabilire se segnalare o meno informazioni che possono essere usate per identificare i computer, ad esempio il nome del computer e gli indirizzi di rete.
+
+      Se questo criterio non viene impostato o viene impostato su True, vengono raccolte informazioni che possono essere usate per identificare i computer.
+      Se questo criterio viene impostato su False, non vengono raccolte informazioni che possono essere usate per identificare i computer.
+
+      Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6539246272469751178">Questa norma non influisce sulle app Android, che utilizzano sempre la directory per i download predefinita e non possono accedere ai file scaricati da <ph name="PRODUCT_OS_NAME" /> in una directory per i download non predefinita.</translation>
 <translation id="654303922206238013">Strategia di migrazione per ecryptfs</translation>
 <translation id="6544897973797372144">Se questa norma è impostata su True e non è specificata la norma ChromeOsReleaseChannel, gli utenti del dominio di registrazione avranno la facoltà di modificare il canale della versione del dispositivo. Se questa norma è impostata su False, il dispositivo risulterà bloccato in qualunque canale in cui è stato impostato per ultimo.
@@ -3664,6 +3703,12 @@ Quando lo schermo sta per essere oscurato, il modello di oscuramento smart valut
 Se questa norma è impostata su True o non è impostata, il modello di oscuramento smart verrà attivato e la quantità di tempo prima che lo schermo venga oscurato verrà estesa. Se questa norma è impostata su False, il modello di oscuramento smart non inciderà sull'oscuramento dello schermo.</translation>
 <translation id="6972540544240464302">Seleziona configurazione programma di pianificazione attività</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6991078864332103177">Questo criterio consente di stabilire se segnalare o meno informazioni che possono essere usate per identificare gli utenti, ad esempio i dati di accesso al sistema operativo, i dati di accesso del profilo <ph name="PRODUCT_NAME" />, il nome del profilo <ph name="PRODUCT_NAME" />, il percorso del profilo <ph name="PRODUCT_NAME" /> e il percorso eseguibile di <ph name="PRODUCT_NAME" />.
+
+      Se questo criterio non viene impostato o viene impostato su True, vengono raccolte informazioni che possono essere usate per identificare gli utenti.
+      Se questo criterio viene impostato su False, non vengono raccolte informazioni che possono essere usate per identificare gli utenti.
+
+      Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6994082778848658360">Consente di specificare in che modo è possibile usare l'hardware degli elementi di sicurezza su scheda per fornire l'autenticazione a due fattori, se compatibile con questa funzione. Il tasto di accensione del computer viene usato per rilevare la presenza fisica dell'utente.
 
        Se selezioni l'opzione "Disabilitata", non viene fornita l'autenticazione a due fattori.
@@ -4168,11 +4213,20 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
           Se questa impostazione è disabilitata o non è impostata, l'autenticazione a due fattori non sarà attiva e verrà utilizzato il comportamento predefinito che prevede l'uso di un PIN definito dall'utente.</translation>
 <translation id="7750991880413385988">Apri pagina Nuova scheda</translation>
 <translation id="7754704193130578113">Chiedi dove salvare il file prima di scaricarlo</translation>
+<translation id="7755495228644343508">Consente di configurare i criteri relativi all'estensione Chrome Reporting Extension.
+
+      Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Attiva l'autenticazione ambientale in base ai tipi di profilo.</translation>
 <translation id="7761446981238915769">Configura l'elenco di app installate nella schermata di accesso</translation>
 <translation id="7763614521440615342">Mostra suggerimenti di contenuti nella pagina Nuova scheda</translation>
 <translation id="7765879851993224640">Consenti l'uso dell'accesso tramite Smart Lock.</translation>
 <translation id="7774768074957326919">Utilizza le impostazioni proxy di sistema</translation>
+<translation id="7775902646576367944">Questo criterio consente di stabilire se segnalare o meno dati di Navigazione sicura, incluso il numero dell'avviso di Navigazione sicura e il numero del relativo click-through.
+
+      Se questo criterio non viene impostato o viene impostato su True, i dati di Navigazione sicura vengono raccolti.
+      Se questo criterio viene impostato su False, i dati di Navigazione sicura non vengono raccolti.
+
+      Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7777535871204167559">Considera i dispositivi di archiviazione esterni come di sola lettura</translation>
 <translation id="7788511847830146438">Per profilo</translation>
 <translation id="7792973482799545782">Non consentire il caricamento di contenuti misti bloccabili in nessun sito</translation>
@@ -4713,6 +4767,15 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 <translation id="8757552286070680084">Configurazione di DTC wilco</translation>
 <translation id="8758831693895931466">Attiva la registrazione alla gestione della cloud obbligatoria</translation>
 <translation id="8759829385824155666">Tipi di crittografia Kerberos consentiti</translation>
+<translation id="87635449713742708">Questo criterio consente di forzare l'esecuzione del codice di networking nel processo del browser.
+
+      Questo criterio è disattivato per impostazione predefinita e, se attivato, rende gli utenti vulnerabili ai problemi di sicurezza dopo che il processo di networking viene limitato tramite sandbox.
+
+      Questo criterio è pensato per offrire alle aziende la possibilità di eseguire la migrazione a programmi software di terze parti che non dipendono dalla combinazione delle API di networking. È consigliabile usare i server proxy anziché LSP e patch di API Win32.
+
+      Se questo criterio non viene impostato, il codice di networking verrà eseguito per impostazione predefinita fuori dal processo del browser.
+
+      Questo criterio verrà rimosso nella versione 82 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8764119899999036911">Consente di specificare se il Kerberos SPN generato si basa sul nome canonico DNS o sul nome originale inserito. Se attivi questa impostazione, la ricerca CNAME verrà saltata e verrà utilizzato il nome del server inserito. Se disattivi l'impostazione o non la imposti, il nome canonico del server sarà determinato tramite ricerca CNAME.</translation>
 <translation id="8764477907716150749">Questa norma è per uso interno di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8777369558049831576">Mostra una casella di controllo "Apri sempre" nella finestra di dialogo relativa ai protocolli esterni</translation>

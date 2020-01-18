@@ -90,6 +90,8 @@ class FakeDownloadItem : public download::DownloadItem {
   download::DownloadFile* GetDownloadFile() override;
   bool IsDangerous() const override;
   download::DownloadDangerType GetDangerType() const override;
+  download::DownloadItem::MixedContentStatus GetMixedContentStatus()
+      const override;
   bool TimeRemaining(base::TimeDelta* remaining) const override;
   int64_t CurrentSpeed() const override;
   int PercentComplete() const override;

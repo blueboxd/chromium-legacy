@@ -269,11 +269,19 @@ public class OverlayPanelContent {
     }
 
     /**
+     * Whether we should reuse any existing WebContents instead of deleting and recreating.
+     * @param reuse {@code true} if we want to reuse the WebContents.
+     */
+    public void setReuseWebContents(boolean reuse) {
+        mShouldReuseWebContents = reuse;
+    }
+
+    /**
      * Call this when a loadUrl request has failed to notify the panel that the WebContents can
      * be reused.  See crbug.com/682953 for details.
      */
     void onLoadUrlFailed() {
-        mShouldReuseWebContents = true;
+        setReuseWebContents(true);
     }
 
     /**

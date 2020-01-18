@@ -14,7 +14,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="../clear_browsing_data_dialog/clear_browsing_data_dialog.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
-<link rel="import" href="../metrics_browser_proxy.html">
 <link rel="import" href="../people_page/sync_browser_proxy.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
@@ -84,9 +83,7 @@
               class="settings-box first"
               pref="{{prefs.safebrowsing.enabled}}"
               label="$i18n{safeBrowsingEnableProtection}"
-              sub-label="$i18n{safeBrowsingEnableProtectionDesc}"
-              on-settings-boolean-control-change=
-                  "onSafeBrowsingToggleChange_">
+              sub-label="$i18n{safeBrowsingEnableProtectionDesc}">
           </settings-toggle-button>
           <template is="dom-if" if="[[passwordsLeakDetectionEnabled_]]">
             <settings-passwords-leak-detection-toggle

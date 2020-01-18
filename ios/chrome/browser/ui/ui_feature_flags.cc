@@ -36,3 +36,6 @@ const base::Feature kForceUnstackedTabstrip{"ForceUnstackedTabstrip",
 
 const base::Feature kContainedBVC{"ContainedBVC",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kClearSyncedData{"ClearSyncedData",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};

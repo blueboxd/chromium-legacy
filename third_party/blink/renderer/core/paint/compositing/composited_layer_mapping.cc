@@ -435,35 +435,30 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
     }
   }
 
-  if (WebPluginContainerImpl* plugin = GetPluginContainer(layout_object)) {
-    graphics_layer_->SetContentsToCcLayer(
-        plugin->CcLayer(), plugin->PreventContentsOpaqueChangesToCcLayer());
-  } else {
-    auto* frame_owner =
-        DynamicTo<HTMLFrameOwnerElement>(layout_object.GetNode());
-    if (frame_owner && frame_owner->ContentFrame()) {
-      Frame* frame = frame_owner->ContentFrame();
-      if (auto* remote = DynamicTo<RemoteFrame>(frame)) {
-        cc::Layer* layer = remote->GetCcLayer();
-        graphics_layer_->SetContentsToCcLayer(
-            layer, remote->WebLayerHasFixedContentsOpaque());
-      }
-    } else if (layout_object.IsVideo()) {
-      auto* media_element = To<HTMLMediaElement>(layout_object.GetNode());
-      graphics_layer_->SetContentsToCcLayer(
-          media_element->CcLayer(),
-          /*prevent_contents_opaque_changes=*/true);
-    } else if (layout_object.IsCanvas()) {
-      graphics_layer_->SetContentsToCcLayer(
-          To<HTMLCanvasElement>(layout_object.GetNode())->ContentsCcLayer(),
-          /*prevent_contents_opaque_changes=*/false);
-      layer_config_changed = true;
-    }
-  }
   if (layout_object.IsLayoutEmbeddedContent()) {
+    if (WebPluginContainerImpl* plugin = GetPluginContainer(layout_object)) {
+      graphics_layer_->SetContentsToCcLayer(
+          plugin->CcLayer(), plugin->PreventContentsOpaqueChangesToCcLayer());
+    } else if (auto* frame_owner =
+                   DynamicTo<HTMLFrameOwnerElement>(layout_object.GetNode())) {
+      if (auto* remote = DynamicTo<RemoteFrame>(frame_owner->ContentFrame())) {
+        graphics_layer_->SetContentsToCcLayer(
+            remote->GetCcLayer(), remote->WebLayerHasFixedContentsOpaque());
+      }
+    }
     if (PaintLayerCompositor::AttachFrameContentLayersToIframeLayer(
             ToLayoutEmbeddedContent(layout_object)))
       layer_config_changed = true;
+  } else if (layout_object.IsVideo()) {
+    auto* media_element = To<HTMLMediaElement>(layout_object.GetNode());
+    graphics_layer_->SetContentsToCcLayer(
+        media_element->CcLayer(),
+        /*prevent_contents_opaque_changes=*/true);
+  } else if (layout_object.IsCanvas()) {
+    graphics_layer_->SetContentsToCcLayer(
+        To<HTMLCanvasElement>(layout_object.GetNode())->ContentsCcLayer(),
+        /*prevent_contents_opaque_changes=*/false);
+    layer_config_changed = true;
   }
 
   if (layer_config_changed) {

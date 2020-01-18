@@ -31,6 +31,7 @@
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/ui/authentication/signed_in_accounts_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -42,6 +43,7 @@
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
+#import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -96,6 +98,7 @@ enum class EnterTabSwitcherSnapshotResult {
 @end
 
 @implementation SceneController
+@synthesize settingsNavigationController;  //< From AppNavigation protocol.
 
 - (instancetype)initWithSceneState:(SceneState*)sceneState {
   self = [super init];
@@ -145,6 +148,12 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)initializeUI {
   self.hasInitializedUI = YES;
+}
+
+#pragma mark - Guts
+
+- (BOOL)hasSettingsNavigationController {
+  return self.settingsNavigationController != nil;
 }
 
 #pragma mark - ApplicationCommands
@@ -223,17 +232,16 @@ enum class EnterTabSwitcherSnapshotResult {
     (UIViewController*)baseViewController {
   DCHECK(!self.mainController.signinInteractionCoordinator
               .isSettingsViewPresented);
-  if (self.mainController.settingsNavigationController)
+  if (self.settingsNavigationController)
     return;
 
   Browser* browser = self.mainInterface.browser;
-  self.mainController.settingsNavigationController =
+  self.settingsNavigationController =
       [SettingsNavigationController autofillProfileControllerForBrowser:browser
                                                                delegate:self];
-  [baseViewController
-      presentViewController:self.mainController.settingsNavigationController
-                   animated:YES
-                 completion:nil];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
 }
 
 - (void)showReportAnIssueFromViewController:
@@ -244,18 +252,17 @@ enum class EnterTabSwitcherSnapshotResult {
   dispatch_async(dispatch_get_main_queue(), ^{
     DCHECK(!self.mainController.signinInteractionCoordinator
                 .isSettingsViewPresented);
-    if (self.mainController.settingsNavigationController)
+    if (self.settingsNavigationController)
       return;
     Browser* browser = self.mainInterface.browser;
-    self.mainController.settingsNavigationController =
+    self.settingsNavigationController =
         [SettingsNavigationController userFeedbackControllerForBrowser:browser
                                                               delegate:self
                                                     feedbackDataSource:self
                                                             dispatcher:self];
-    [baseViewController
-        presentViewController:self.mainController.settingsNavigationController
-                     animated:YES
-                   completion:nil];
+    [baseViewController presentViewController:self.settingsNavigationController
+                                     animated:YES
+                                   completion:nil];
   });
 }
 
@@ -353,20 +360,19 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)showSettingsFromViewController:(UIViewController*)baseViewController {
   DCHECK(!self.mainController.signinInteractionCoordinator
               .isSettingsViewPresented);
-  if (self.mainController.settingsNavigationController)
+  if (self.settingsNavigationController)
     return;
   [[DeferredInitializationRunner sharedInstance]
       runBlockIfNecessary:kPrefObserverInit];
 
   Browser* browser = self.mainInterface.browser;
 
-  self.mainController.settingsNavigationController =
+  self.settingsNavigationController =
       [SettingsNavigationController mainSettingsControllerForBrowser:browser
                                                             delegate:self];
-  [baseViewController
-      presentViewController:self.mainController.settingsNavigationController
-                   animated:YES
-                 completion:nil];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
 }
 
 #pragma mark - ApplicationSettingsCommands
@@ -386,20 +392,19 @@ enum class EnterTabSwitcherSnapshotResult {
     NOTREACHED();
     return;
   }
-  if (self.mainController.settingsNavigationController) {
-    [self.mainController.settingsNavigationController
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController
         showAccountsSettingsFromViewController:baseViewController];
     return;
   }
 
   Browser* browser = self.mainInterface.browser;
-  self.mainController.settingsNavigationController =
+  self.settingsNavigationController =
       [SettingsNavigationController accountsControllerForBrowser:browser
                                                         delegate:self];
-  [baseViewController
-      presentViewController:self.mainController.settingsNavigationController
-                   animated:YES
-                 completion:nil];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
 }
 
 // TODO(crbug.com/779791) : Remove Google services settings from MainController.
@@ -413,23 +418,22 @@ enum class EnterTabSwitcherSnapshotResult {
     baseViewController = self.mainController.currentBVC;
   }
 
-  if (self.mainController.settingsNavigationController) {
+  if (self.settingsNavigationController) {
     // Navigate to the Google services settings if the settings dialog is
     // already opened.
-    [self.mainController.settingsNavigationController
+    [self.settingsNavigationController
         showGoogleServicesSettingsFromViewController:baseViewController];
     return;
   }
 
   Browser* browser = self.mainInterface.browser;
-  self.mainController.settingsNavigationController =
+  self.settingsNavigationController =
       [SettingsNavigationController googleServicesControllerForBrowser:browser
                                                               delegate:self];
 
-  [baseViewController
-      presentViewController:self.mainController.settingsNavigationController
-                   animated:YES
-                 completion:nil];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
 }
 
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
@@ -437,20 +441,19 @@ enum class EnterTabSwitcherSnapshotResult {
     (UIViewController*)baseViewController {
   DCHECK(!self.mainController.signinInteractionCoordinator
               .isSettingsViewPresented);
-  if (self.mainController.settingsNavigationController) {
-    [self.mainController.settingsNavigationController
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController
         showSyncPassphraseSettingsFromViewController:baseViewController];
     return;
   }
 
   Browser* browser = self.mainInterface.browser;
-  self.mainController.settingsNavigationController =
+  self.settingsNavigationController =
       [SettingsNavigationController syncPassphraseControllerForBrowser:browser
                                                               delegate:self];
-  [baseViewController
-      presentViewController:self.mainController.settingsNavigationController
-                   animated:YES
-                 completion:nil];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
 }
 
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
@@ -458,19 +461,18 @@ enum class EnterTabSwitcherSnapshotResult {
     (UIViewController*)baseViewController {
   DCHECK(!self.mainController.signinInteractionCoordinator
               .isSettingsViewPresented);
-  if (self.mainController.settingsNavigationController) {
-    [self.mainController.settingsNavigationController
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController
         showSavedPasswordsSettingsFromViewController:baseViewController];
     return;
   }
   Browser* browser = self.mainInterface.browser;
-  self.mainController.settingsNavigationController =
+  self.settingsNavigationController =
       [SettingsNavigationController savePasswordsControllerForBrowser:browser
                                                              delegate:self];
-  [baseViewController
-      presentViewController:self.mainController.settingsNavigationController
-                   animated:YES
-                 completion:nil];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
 }
 
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
@@ -478,20 +480,19 @@ enum class EnterTabSwitcherSnapshotResult {
     (UIViewController*)baseViewController {
   DCHECK(!self.mainController.signinInteractionCoordinator
               .isSettingsViewPresented);
-  if (self.mainController.settingsNavigationController) {
-    [self.mainController.settingsNavigationController
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController
         showProfileSettingsFromViewController:baseViewController];
     return;
   }
   Browser* browser = self.mainInterface.browser;
 
-  self.mainController.settingsNavigationController =
+  self.settingsNavigationController =
       [SettingsNavigationController autofillProfileControllerForBrowser:browser
                                                                delegate:self];
-  [baseViewController
-      presentViewController:self.mainController.settingsNavigationController
-                   animated:YES
-                 completion:nil];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
 }
 
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
@@ -499,21 +500,19 @@ enum class EnterTabSwitcherSnapshotResult {
     (UIViewController*)baseViewController {
   DCHECK(!self.mainController.signinInteractionCoordinator
               .isSettingsViewPresented);
-  if (self.mainController.settingsNavigationController) {
-    [self.mainController.settingsNavigationController
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController
         showCreditCardSettingsFromViewController:baseViewController];
     return;
   }
 
   Browser* browser = self.mainInterface.browser;
-  self.mainController.settingsNavigationController =
-      [SettingsNavigationController
-          autofillCreditCardControllerForBrowser:browser
-                                        delegate:self];
-  [baseViewController
-      presentViewController:self.mainController.settingsNavigationController
-                   animated:YES
-                 completion:nil];
+  self.settingsNavigationController = [SettingsNavigationController
+      autofillCreditCardControllerForBrowser:browser
+                                    delegate:self];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
 }
 
 #pragma mark - ApplicationCommandsHelpers
@@ -581,8 +580,8 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)settingsWasDismissed {
-  [self.mainController.settingsNavigationController cleanUpSettings];
-  self.mainController.settingsNavigationController = nil;
+  [self.settingsNavigationController cleanUpSettings];
+  self.settingsNavigationController = nil;
 }
 
 - (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {
@@ -1045,37 +1044,6 @@ enum class EnterTabSwitcherSnapshotResult {
   }
 }
 
-- (void)closeSettingsAnimated:(BOOL)animated
-                   completion:(ProceduralBlock)completion {
-  if (self.mainController.settingsNavigationController) {
-    [self.mainController.settingsNavigationController cleanUpSettings];
-    UIViewController* presentingViewController =
-        [self.mainController
-                .settingsNavigationController presentingViewController];
-    // If presentingViewController is nil it means the VC was already dismissed
-    // by some other action like swiping down.
-    DCHECK(presentingViewController);
-    [presentingViewController dismissViewControllerAnimated:animated
-                                                 completion:completion];
-    self.mainController.settingsNavigationController = nil;
-    return;
-  }
-  // |self.signinInteractionCoordinator| can also present settings, like
-  // the advanced sign-in settings navigation controller. If the settings has
-  // to be cloase, it is thus the responsibility of the main controller to
-  // dismiss the the advanced sign-in settings by dismssing the settings
-  // presented by |self.signinInteractionCoordinator|.
-  // To reproduce this case:
-  //  - open Bookmark view
-  //  - start sign-in
-  //  - tap on "Settings" to open the advanced sign-in settings
-  //  - tap on "Manage Your Google Account"
-  DCHECK(
-      self.mainController.signinInteractionCoordinator.isSettingsViewPresented);
-  [self.mainController.signinInteractionCoordinator
-      abortAndDismissSettingsViewAnimated:animated
-                               completion:completion];
-}
 
 // Checks the target BVC's current tab's URL. If this URL is chrome://newtab,
 // loads |urlLoadParams| in this tab. Otherwise, open |urlLoadParams| in a new
@@ -1129,6 +1097,58 @@ enum class EnterTabSwitcherSnapshotResult {
   if (tabOpenedCompletion) {
     tabOpenedCompletion();
   }
+}
+
+#pragma mark - AppNavigation
+
+- (void)presentSignedInAccountsViewControllerForBrowserState:
+    (ios::ChromeBrowserState*)browserState {
+  UIViewController* accountsViewController =
+      [[SignedInAccountsViewController alloc]
+          initWithBrowserState:browserState
+                    dispatcher:self.mainController.mainBVC.dispatcher];
+  [[self topPresentedViewController]
+      presentViewController:accountsViewController
+                   animated:YES
+                 completion:nil];
+}
+
+- (void)closeSettingsAnimated:(BOOL)animated
+                   completion:(ProceduralBlock)completion {
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController cleanUpSettings];
+    UIViewController* presentingViewController =
+        [self.settingsNavigationController presentingViewController];
+    // If presentingViewController is nil it means the VC was already dismissed
+    // by some other action like swiping down.
+    DCHECK(presentingViewController);
+    [presentingViewController dismissViewControllerAnimated:animated
+                                                 completion:completion];
+    self.settingsNavigationController = nil;
+    return;
+  }
+  // |self.signinInteractionCoordinator| can also present settings, like
+  // the advanced sign-in settings navigation controller. If the settings has
+  // to be cloase, it is thus the responsibility of the main controller to
+  // dismiss the the advanced sign-in settings by dismssing the settings
+  // presented by |self.signinInteractionCoordinator|.
+  // To reproduce this case:
+  //  - open Bookmark view
+  //  - start sign-in
+  //  - tap on "Settings" to open the advanced sign-in settings
+  //  - tap on "Manage Your Google Account"
+  DCHECK(
+      self.mainController.signinInteractionCoordinator.isSettingsViewPresented);
+  [self.mainController.signinInteractionCoordinator
+      abortAndDismissSettingsViewAnimated:animated
+                               completion:completion];
+}
+
+- (UIViewController*)topPresentedViewController {
+  // TODO(crbug.com/754642): Implement TopPresentedViewControllerFrom()
+  // privately.
+  return top_view_controller::TopPresentedViewControllerFrom(
+      self.mainController.mainCoordinator.viewController);
 }
 
 @end

@@ -23,6 +23,7 @@
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/display/types/display_constants.h"
 
 namespace arc {
 
@@ -301,13 +302,13 @@ int32_t GetLcdDensityForDeviceScaleFactor(float device_scale_factor) {
   // TODO(b/131884992): Remove the logic to update default lcd density once
   // per-display-density is supported.
   constexpr float kEpsilon = 0.001;
-  if (std::abs(device_scale_factor - 2.25f) < kEpsilon)
+  if (std::abs(device_scale_factor - display::kDsf_2_252) < kEpsilon)
     return 280;
   if (std::abs(device_scale_factor - 1.6f) < kEpsilon)
     return 213;  // TVDPI
-  if (std::abs(device_scale_factor - 1.777f) < kEpsilon)
+  if (std::abs(device_scale_factor - display::kDsf_1_777) < kEpsilon)
     return 240;  // HDPI
-  if (std::abs(device_scale_factor - 2.666f) < kEpsilon)
+  if (std::abs(device_scale_factor - display::kDsf_2_666) < kEpsilon)
     return 320;  // XHDPI
 
   constexpr float kChromeScaleToAndroidScaleRatio = 0.75f;

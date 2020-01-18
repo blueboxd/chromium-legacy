@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/values.h"
 #include "chrome/credential_provider/gaiacp/scoped_handle.h"
 #include "url/gurl.h"
 
@@ -20,11 +21,24 @@ class FakeWinHttpUrlFetcherFactory;
 class WinHttpUrlFetcher {
  public:
   static std::unique_ptr<WinHttpUrlFetcher> Create(const GURL& url);
+
+  // Builds the required json request to be sent to the http service and fetches
+  // the json response from the service (if any). Returns S_OK if
+  // |needed_outputs| can be filled correctly with the requested data, otherwise
+  // returns an error code and clears |needed_outputs|.
+  // |request_url| is the full query url from which to fetch a response.
+  // |headers| are all the header key value pairs to be sent with the request.
+  // |request_dict| is a dictionary of json parameters to be sent with the
+  // request. This argument will be converted to a json string and sent as the
+  // body of the request.
+  // |request_timeout| is the maximum time to wait for a response.
+  // |needed_outputs| is the mapping of the desired result key to an address
+  // where the result can be stored.
   static HRESULT BuildRequestAndFetchResultFromHttpService(
       const GURL& request_url,
       std::string access_token,
       const std::vector<std::pair<std::string, std::string>>& headers,
-      const std::vector<std::pair<std::string, std::string>>& parameters,
+      const base::Value& request_dict,
       const std::vector<std::pair<std::string, std::string*>>& needed_outputs,
       const base::TimeDelta& request_timeout);
 

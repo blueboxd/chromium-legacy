@@ -72,6 +72,17 @@ void PolicyLoaderMac::InitOnBackgroundThread() {
                             managed_policy_file_exists);
   base::UmaHistogramBoolean("EnterpriseCheck.IsEnterpriseUser",
                             base::IsMachineExternallyManaged());
+
+  base::UmaHistogramEnumeration("EnterpriseCheck.Mac.IsDeviceMDMEnrolledOld",
+                                base::IsDeviceRegisteredWithManagementOld());
+  base::UmaHistogramEnumeration("EnterpriseCheck.Mac.IsDeviceMDMEnrolledNew",
+                                base::IsDeviceRegisteredWithManagementNew());
+  base::DeviceUserDomainJoinState state =
+      base::AreDeviceAndUserJoinedToDomain();
+  base::UmaHistogramBoolean("EnterpriseCheck.Mac.IsDeviceDomainJoined",
+                            state.device_joined);
+  base::UmaHistogramBoolean("EnterpriseCheck.Mac.IsCurrentUserDomainUser",
+                            state.user_joined);
 }
 
 std::unique_ptr<PolicyBundle> PolicyLoaderMac::Load() {

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "content/public/common/referrer.h"
 #include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/resource_load_stats.h"
 #include "content/renderer/loader/web_url_loader_impl.h"

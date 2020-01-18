@@ -14,8 +14,10 @@
 #include "android_webview/common/aw_switches.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "components/viz/common/features.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/init/gl_factory.h"
@@ -43,7 +45,7 @@ OutputSurfaceProviderWebview::OutputSurfaceProviderWebview() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
   enable_vulkan_ = command_line->HasSwitch(switches::kWebViewEnableVulkan);
   enable_shared_image_ =
-      command_line->HasSwitch(switches::kWebViewEnableSharedImage);
+      base::FeatureList::IsEnabled(features::kEnableSharedImageForWebview);
   LOG_IF(FATAL, enable_vulkan_ && !enable_shared_image_)
       << "--webview-enable-vulkan only works with shared image "
          "(--webview-enable-shared-image).";

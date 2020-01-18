@@ -65,6 +65,7 @@ struct CSPSourceList {
   // on the source list itself.
   bool allow_self = false;
   bool allow_star = false;
+  bool allow_response_redirects = false;
 };
 
 enum CSPDirectiveName {

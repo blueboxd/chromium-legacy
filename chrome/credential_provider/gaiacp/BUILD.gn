@@ -67,6 +67,10 @@ source_set("gaiacp_lib") {
     "auth_utils.h",
     "chrome_availability_checker.cc",
     "chrome_availability_checker.h",
+    "event_logging_api_manager.cc",
+    "event_logging_api_manager.h",
+    "event_logs_upload_manager.cc",
+    "event_logs_upload_manager.h",
     "gaia_credential.cc",
     "gaia_credential.h",
     "gaia_credential_base.cc",
@@ -123,6 +127,7 @@ source_set("gaiacp_lib") {
   } else {
     deps += [ "//content/public/common:static_switches" ]
   }
+  libs = [ "wevtapi.lib" ]
 }
 
 config("gaiacp_config") {

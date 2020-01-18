@@ -1,0 +1,99 @@
+// Copyright 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/sessions/core/snapshotting_command_storage_backend.h"
+
+#include "base/bind.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+
+namespace sessions {
+namespace {
+
+// File names (current and previous) for a type of TAB.
+static const char* kCurrentTabSessionFileName = "Current Tabs";
+static const char* kLastTabSessionFileName = "Last Tabs";
+
+// File names (current and previous) for a type of SESSION.
+static const char* kCurrentSessionFileName = "Current Session";
+static const char* kLastSessionFileName = "Last Session";
+
+base::FilePath GetCurrentFilePath(
+    SnapshottingCommandStorageManager::SessionType type,
+    const base::FilePath& base_path) {
+  base::FilePath path = base_path;
+  if (type == SnapshottingCommandStorageManager::TAB_RESTORE)
+    path = path.AppendASCII(kCurrentTabSessionFileName);
+  else
+    path = path.AppendASCII(kCurrentSessionFileName);
+  return path;
+}
+
+base::FilePath GetLastFilePath(
+    SnapshottingCommandStorageManager::SessionType type,
+    const base::FilePath& base_path) {
+  base::FilePath path = base_path;
+  if (type == SnapshottingCommandStorageManager::TAB_RESTORE)
+    path = path.AppendASCII(kLastTabSessionFileName);
+  else
+    path = path.AppendASCII(kLastSessionFileName);
+  return path;
+}
+
+}  // namespace
+
+SnapshottingCommandStorageBackend::SnapshottingCommandStorageBackend(
+    scoped_refptr<base::SequencedTaskRunner> owning_task_runner,
+    SnapshottingCommandStorageManager::SessionType type,
+    const base::FilePath& path_to_dir)
+    : CommandStorageBackend(std::move(owning_task_runner),
+                            GetCurrentFilePath(type, path_to_dir)),
+      last_file_path_(GetLastFilePath(type, path_to_dir)) {
+  // NOTE: this is invoked on the main thread, don't do file access here.
+}
+
+void SnapshottingCommandStorageBackend::ReadLastSessionCommands(
+    const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
+    GetCommandsCallback callback) {
+  if (is_canceled.Run())
+    return;
+
+  InitIfNecessary();
+
+  std::vector<std::unique_ptr<sessions::SessionCommand>> commands;
+  ReadCommandsFromFile(last_file_path_, &commands);
+  std::move(callback).Run(std::move(commands));
+}
+
+void SnapshottingCommandStorageBackend::DeleteLastSession() {
+  InitIfNecessary();
+  base::DeleteFile(last_file_path_, false);
+}
+
+void SnapshottingCommandStorageBackend::MoveCurrentSessionToLastSession() {
+  InitIfNecessary();
+  CloseFile();
+
+  if (base::PathExists(last_file_path_))
+    base::DeleteFile(last_file_path_, false);
+  if (base::PathExists(path()))
+    last_session_valid_ = base::Move(path(), last_file_path_);
+
+  if (base::PathExists(path()))
+    base::DeleteFile(path(), false);
+
+  // Create and open the file for the current session.
+  TruncateFile();
+}
+
+void SnapshottingCommandStorageBackend::DoInit() {
+  // Create the directory for session info.
+  base::CreateDirectory(last_file_path_.DirName());
+  MoveCurrentSessionToLastSession();
+}
+
+SnapshottingCommandStorageBackend::~SnapshottingCommandStorageBackend() =
+    default;
+
+}  // namespace sessions

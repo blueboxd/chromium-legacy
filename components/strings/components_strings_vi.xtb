@@ -126,7 +126,6 @@
     &lt;p&gt;Để khắc phục lỗi này, hãy nhấp vào &lt;strong&gt;Kết nối&lt;/strong&gt; trên trang mà bạn đang cố mở.&lt;/p&gt;</translation>
 <translation id="1513706915089223971">Danh sách các mục lịch sử</translation>
 <translation id="1517433312004943670">Phải có số điện thoại</translation>
-<translation id="1517500485252541695">Thẻ tín dụng và thẻ ghi nợ được chấp nhận</translation>
 <translation id="1519264250979466059">Ngày tạo</translation>
 <translation id="1521655867290435174">Google Trang tính</translation>
 <translation id="1527263332363067270">Đang chờ kết nối…</translation>
@@ -203,7 +202,6 @@
 <translation id="1842969606798536927">Thanh toán</translation>
 <translation id="1871208020102129563">Proxy được đặt để sử dụng máy chủ proxy cố định chứ không phải URL tập lệnh .pac.</translation>
 <translation id="1871284979644508959">Trường bắt buộc</translation>
-<translation id="1874765382782611674">Thẻ ghi nợ được chấp nhận</translation>
 <translation id="1875512691959384712">Google Biểu mẫu</translation>
 <translation id="187918866476621466">Mở trang khởi động</translation>
 <translation id="1883255238294161206">Thu gọn danh sách</translation>
@@ -216,11 +214,9 @@
 <translation id="1919345977826869612">Quảng cáo</translation>
 <translation id="1919367280705858090">Nhận trợ giúp về thông báo lỗi cụ thể</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Không có}=1{1 trang web}other{# trang web}}</translation>
-<translation id="1927235823738766038">Thẻ tín dụng và thẻ ghi nợ được chấp nhận</translation>
 <translation id="194030505837763158">Truy cập <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Bạn có thể mất quyền truy cập vào tài khoản của tổ chức mình hoặc bị đánh cắp danh tính. Chromium khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>
 <translation id="1947454675006758438">Dập ghim trên cùng bên phải</translation>
-<translation id="1948773908305951926">Thẻ trả trước được chấp nhận</translation>
 <translation id="1962204205936693436">Dấu trang của <ph name="DOMAIN" /></translation>
 <translation id="1973335181906896915">Lỗi nối tiếp hóa</translation>
 <translation id="1974060860693918893">Nâng cao</translation>
@@ -297,7 +293,6 @@
 <translation id="2315864634253056100">Tên trang web này trông giống với <ph name="LOOKALIKE_DOMAIN" />. Kẻ tấn công đôi khi bắt chước các trang web bằng cách thực hiện các thay đổi đối với địa chỉ web mà bạn khó nhận ra.</translation>
 <translation id="2316887270356262533">Bộ nhớ đệm còn chưa đầy 1 MB. Một số trang web có thể tải chậm hơn vào lần tới bạn truy cập.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> yêu cầu tên người dùng và mật khẩu.</translation>
-<translation id="2317583587496011522">Thẻ ghi nợ được chấp nhận.</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, hết hạn vào <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Cài đặt do quản trị viên kiểm soát</translation>
 <translation id="2346319942568447007">Hình ảnh bạn đã sao chép</translation>
@@ -337,7 +332,6 @@
 <translation id="2495093607237746763">Nếu được chọn, Chromium sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền biểu mẫu nhanh hơn.</translation>
 <translation id="2498091847651709837">Quét thẻ mới</translation>
 <translation id="2501278716633472235">Quay lại</translation>
-<translation id="2503184589641749290">Thẻ ghi nợ và thẻ trả trước được chấp nhận</translation>
 <translation id="2505268675989099013">Bảo vệ tài khoản</translation>
 <translation id="2515629240566999685">Kiểm tra tín hiệu trong khu vực của bạn</translation>
 <translation id="2521385132275182522">Dập ghim dưới cùng bên phải</translation>
@@ -403,7 +397,6 @@
 <translation id="277499241957683684">Thiếu hồ sơ thiết bị</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Kết nối đã được đặt lại.</translation>
-<translation id="2788784517760473862">Thẻ tín dụng được chấp nhận</translation>
 <translation id="2792012897584536778">Các quản trị viên của thiết bị này đã thiết lập các chứng chỉ bảo mật có thể cho phép họ xem nội dung của những trang web bạn truy cập.</translation>
 <translation id="2799020568854403057">Trang web bạn sắp truy cập chứa ứng dụng có hại</translation>
 <translation id="2799223571221894425">Chạy lại</translation>
@@ -550,7 +543,6 @@
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Một trang được nhúng tại <ph name="SITE" /> cho biết</translation>
 <translation id="3581089476000296252">Chrome sẽ cho bạn biết thời điểm trang này sẵn sàng. &lt;a&gt;Hủy&lt;/a&gt;</translation>
-<translation id="358285529439630156">Thẻ tín dụng và thẻ trả trước được chấp nhận.</translation>
 <translation id="3582930987043644930">Thêm tên</translation>
 <translation id="3583757800736429874">&amp;Làm lại di chuyển</translation>
 <translation id="3584299510153766161">Đục 2 lỗ dưới cùng</translation>
@@ -616,7 +608,6 @@
 <translation id="3828924085048779000">Không cho phép cụm mật khẩu trống.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> đã cài đặt các tiện ích để bổ sung thêm chức năng. Các tiện ích có quyền truy cập vào một số dữ liệu của bạn.</translation>
 <translation id="3832522519263485449">Đục nhiều lỗ bên trái</translation>
-<translation id="3838154488026099170">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chromium khuyên bạn nên truy cập vào <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và <ph name="WEBSITE_3" /> cũng như các trang web khác mà bạn dùng mật khẩu này rồi đổi mật khẩu ngay bây giờ.</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3858027520442213535">Cập nhật ngày và giờ</translation>
 <translation id="3884278016824448484">Số nhận dạng thiết bị xung đột</translation>
@@ -654,7 +645,6 @@
 <translation id="4072486802667267160">Đã xảy ra lỗi khi xử lý đơn đặt hàng của bạn. Vui lòng thử lại.</translation>
 <translation id="4075732493274867456">Ứng dụng và máy chủ không hỗ trợ bộ mã hóa hoặc phiên bản giao thức SSL thông thường.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
-<translation id="4077092919748553596">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chrome khuyên bạn nên truy cập vào <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và <ph name="WEBSITE_3" /> cũng như các trang web khác mà bạn dùng mật khẩu này rồi đổi mật khẩu ngay bây giờ.</translation>
 <translation id="4079302484614802869">Cấu hình proxy được đặt để sử dụng URL tập lệnh .pac chứ không phải máy chủ proxy cố định.</translation>
 <translation id="4082393374666368382">Cài đặt – Quản lý</translation>
 <translation id="4098354747657067197">Bạn sắp truy cập trang web lừa đảo</translation>
@@ -751,7 +741,6 @@
 <translation id="4434045419905280838">Cửa sổ bật lên và liên kết chuyển hướng</translation>
 <translation id="4435702339979719576">Bưu thiếp)</translation>
 <translation id="443673843213245140">Đã tắt sử dụng proxy nhưng cấu hình proxy rõ ràng được chỉ định.</translation>
-<translation id="445100540951337728">Thẻ ghi nợ được chấp nhận</translation>
 <translation id="4466881336512663640">Các thay đổi đối với biểu mẫu sẽ bị mất. Bạn có chắc chắn muốn tiếp tục không?</translation>
 <translation id="4477350412780666475">Bản nhạc tiếp theo</translation>
 <translation id="4482953324121162758">Trang web này sẽ không được dịch.</translation>
@@ -957,6 +946,7 @@
 <translation id="5457113250005438886">Không hợp lệ</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> liên hệ khác}other{<ph name="CONTACT_PREVIEW" /> và <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> liên hệ khác}}</translation>
 <translation id="5470861586879999274">&amp;Làm lại chỉnh sửa</translation>
+<translation id="5472133193607270166">Khi tùy chọn này bật, các trang web không thể dùng hoạt động duyệt web của bạn trên nhiều trang web để cá nhân hóa quảng cáo. Một số trang web có thể không hoạt động bình thường.</translation>
 <translation id="5478437291406423475">B6/C4 (Phong bì)</translation>
 <translation id="5481076368049295676">Nội dung này có thể tìm cách cài đặt phần mềm nguy hiểm trên thiết bị của bạn để lấy cắp hoặc xóa thông tin. <ph name="BEGIN_LINK" />Vẫn hiển thị<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Thêm địa chỉ hợp lệ</translation>
@@ -1010,7 +1000,6 @@
 <translation id="570530837424789914">Quản lý...</translation>
 <translation id="57094364128775171">Đề xuất mật khẩu mạnh…</translation>
 <translation id="5710435578057952990">Nhận dạng trang web này chưa được xác minh.</translation>
-<translation id="5719499550583120431">Thẻ trả trước được chấp nhận.</translation>
 <translation id="5720705177508910913">Người dùng hiện tại</translation>
 <translation id="5728056243719941842">C5 (Phong bì)</translation>
 <translation id="5730040223043577876">Chrome khuyên bạn nên đặt lại mật khẩu của mình nếu đã sử dụng lại mật khẩu này trên các trang web khác.</translation>
@@ -1045,7 +1034,6 @@
 <translation id="5869405914158311789">Không thể truy cập trang web này</translation>
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
 <translation id="5887400589839399685">Đã lưu thẻ</translation>
-<translation id="5893752035575986141">Thẻ tín dụng được chấp nhận.</translation>
 <translation id="5895138241574237353">Khởi động lại</translation>
 <translation id="5901630391730855834">Vàng</translation>
 <translation id="5905445707201418379">Bị chặn theo chính sách nguồn gốc của <ph name="ORIGIN" />.</translation>
@@ -1097,7 +1085,6 @@
 <translation id="6106989379647458772">Trang web tại <ph name="PAGE" /> có thể tạm thời không hoạt động hoặc có thể đã được chuyển vĩnh viễn sang địa chỉ web mới.</translation>
 <translation id="610911394827799129">Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
 <translation id="6120179357481664955">Ghi nhớ mã nhận dạng sản phẩm duy nhất (UPI) của bạn?</translation>
-<translation id="6132597952260690497">Thông tin về các tiện ích và plugin đã cài đặt</translation>
 <translation id="6146055958333702838">Kiểm tra mọi dây cáp rồi khởi động lại bộ định tuyến, modem hoặc các thiết bị
     mạng khác mà bạn có thể đang sử dụng.</translation>
 <translation id="614940544461990577">Hãy thử:</translation>
@@ -1106,6 +1093,7 @@
 <translation id="6157877588268064908">Để xem các yêu cầu và phương thức giao hàng, hãy chọn một địa chỉ</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
 <translation id="6177128806592000436">Kết nối của bạn tới trang web này không an toàn</translation>
+<translation id="6196640612572343990">Chặn cookie của bên thứ ba</translation>
 <translation id="6203231073485539293">Kiểm tra kết nối Internet của bạn</translation>
 <translation id="6218753634732582820">Bạn muốn xóa địa chỉ khỏi Chromium?</translation>
 <translation id="622039917539443112">Gấp kiểu song song</translation>
@@ -1178,7 +1166,6 @@
 <translation id="6476284679642588870">Quản lý phương thức thanh toán</translation>
 <translation id="6489534406876378309">Bắt đầu tải lên sự cố</translation>
 <translation id="6499038740797743453">Đặt lại mật khẩu?</translation>
-<translation id="6507833130742554667">Thẻ tín dụng và thẻ ghi nợ được chấp nhận.</translation>
 <translation id="6508722015517270189">Khởi động lại Chrome</translation>
 <translation id="6517596291481585650">Cảnh báo: Chính sách này không phải là danh sách nên không được hợp nhất dưới dạng danh sách như chỉ định trong chính sách.</translation>
 <translation id="6518133107902771759">Xác minh</translation>
@@ -1318,7 +1305,6 @@ Thông tin chi tiết bổ sung:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">Không thể thiết lập kết nối riêng tư với <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> vì ngày và giờ (<ph name="DATE_AND_TIME" />) trên máy tính của bạn không đúng.</translation>
 <translation id="7260504762447901703">Thu hồi quyền truy cập</translation>
-<translation id="7271803869921933038">Thẻ trả trước được chấp nhận</translation>
 <translation id="7275334191706090484">Dấu trang được quản lý</translation>
 <translation id="7298195798382681320">Được đề xuất</translation>
 <translation id="7300012071106347854">Xanh thẩm</translation>
@@ -1456,7 +1442,6 @@ Thông tin chi tiết bổ sung:
 <translation id="785549533363645510">Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ không ẩn thao tác duyệt của bạn với chủ lao động, nhà cung cấp dịch vụ internet hoặc các trang web bạn truy cập.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Rời khỏi trang web?</translation>
-<translation id="7878176543348854470">Thẻ ghi nợ và thẻ trả trước được chấp nhận.</translation>
 <translation id="7878562273885520351">Mật khẩu của bạn có thể bị xâm phạm</translation>
 <translation id="7882421473871500483">Nâu</translation>
 <translation id="7887683347370398519">Kiểm tra CVC của bạn và thử lại</translation>
@@ -1619,7 +1604,6 @@ Thông tin chi tiết bổ sung:
 <translation id="8730621377337864115">Xong</translation>
 <translation id="8738058698779197622">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chromium không thể xác minh các chứng chỉ này.</translation>
 <translation id="8740359287975076522">Không thể tìm thấy &lt;abbr id="dnsDefinition"&gt;địa chỉ DNS&lt;/abbr&gt; của <ph name="HOST_NAME" />. Đang chẩn đoán sự cố.</translation>
-<translation id="874846938927089722">Thẻ tín dụng và thẻ trả trước được chấp nhận</translation>
 <translation id="874918643257405732">Đánh dấu tab này</translation>
 <translation id="8751426954251315517">Vui lòng thử lại vào lần tiếp theo</translation>
 <translation id="8759274551635299824">Thẻ này đã hết hạn</translation>
@@ -1653,7 +1637,6 @@ Thông tin chi tiết bổ sung:
 <translation id="8931333241327730545">Bạn có muốn lưu thẻ này vào Tài khoản Google của mình không?</translation>
 <translation id="8932102934695377596">Đồng hồ của bạn chạy chậm</translation>
 <translation id="893332455753468063">Thêm tên</translation>
-<translation id="8938939909778640821">Thẻ tín dụng và thẻ trả trước được chấp nhận</translation>
 <translation id="8943282376843390568">Vàng chanh</translation>
 <translation id="8957210676456822347">Ủy quyền cổng bị khóa</translation>
 <translation id="8962950042226115166">Trang web đáng ngờ</translation>
@@ -1723,7 +1706,6 @@ Thông tin chi tiết bổ sung:
 <translation id="939736085109172342">Thư mục mới</translation>
 <translation id="945855313015696284">Kiểm tra thông tin bên dưới và xóa mọi thẻ không hợp lệ</translation>
 <translation id="950736567201356821">Đục 3 lỗ trên cùng</translation>
-<translation id="951104842009476243">Thẻ ghi nợ và thẻ trả trước được chấp nhận</translation>
 <translation id="961663415146723894">Đóng gáy dưới cùng</translation>
 <translation id="962484866189421427">Nội dung này có thể tìm cách cài đặt ứng dụng lừa đảo giả mạo nội dung khác hoặc thu thập dữ liệu có thể được dùng để theo dõi bạn. <ph name="BEGIN_LINK" />Vẫn hiển thị<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Phiên bản Chính thức</translation>

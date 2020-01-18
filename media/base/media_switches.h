@@ -106,7 +106,6 @@ MEDIA_EXPORT extern const base::Feature kAutoplayDisableSettings;
 MEDIA_EXPORT extern const base::Feature kAutoplayWhitelistSettings;
 MEDIA_EXPORT extern const base::Feature kBackgroundVideoPauseOptimization;
 MEDIA_EXPORT extern const base::Feature kBresenhamCadence;
-MEDIA_EXPORT extern const base::Feature kD3D11LimitTo11_0;
 MEDIA_EXPORT extern const base::Feature kD3D11PrintCodecOnCrash;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoder;
 MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoderIgnoreWorkarounds;

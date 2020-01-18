@@ -396,6 +396,7 @@
 <translation id="1545177026077493356">自動キオスク モード</translation>
 <translation id="1545775234664667895">テーマ「<ph name="THEME_NAME" />」をインストールしました</translation>
 <translation id="1546280085599573572">この拡張機能により、ホームボタンをクリックしたときに表示されるページが変更されました。</translation>
+<translation id="1549275686094429035">ARC は有効になっています</translation>
 <translation id="1549788673239553762">「<ph name="APP_NAME" />」が <ph name="VOLUME_NAME" /> へのアクセスを求めています。ファイルが変更または削除される可能性があります。</translation>
 <translation id="1553538517812678578">無制限</translation>
 <translation id="1554390798506296774"><ph name="HOST" /> でサンドボックスの無効化プラグインを常に許可する</translation>
@@ -650,6 +651,7 @@
 <translation id="1879000426787380528">次のアカウントでログイン</translation>
 <translation id="1880905663253319515">証明書「<ph name="CERTIFICATE_NAME" />」を削除しますか？</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、接続</translation>
+<translation id="1884930769492918228">カメラの位置を追跡して室内をマッピングする</translation>
 <translation id="1886996562706621347">サイトからのプロトコルのデフォルト ハンドラとしての登録要求を許可する（推奨）</translation>
 <translation id="1887442540531652736">ログインエラー</translation>
 <translation id="1887597546629269384">もう一度「OK Google」と話しかけてください</translation>
@@ -732,6 +734,7 @@
 <translation id="2018352199541442911">お使いの外部ストレージ デバイスは現在サポートされていません。</translation>
 <translation id="2019718679933488176">オーディオを新しいタブで開く(&amp;O)</translation>
 <translation id="2020183425253392403">ネットワーク アドレス設定を表示</translation>
+<translation id="2020225359413970060">ファイルをスキャン</translation>
 <translation id="2022953316617983419">QR コード</translation>
 <translation id="2023167225947895179">推測されやすい PIN です</translation>
 <translation id="202352106777823113">ダウンロードは時間がかかりすぎたため、ネットワークによって停止されました。</translation>
@@ -761,6 +764,7 @@
 <translation id="2059913712424898428">タイムゾーン</translation>
 <translation id="2065405795449409761">Chrome は自動テスト ソフトウェアによって制御されています。</translation>
 <translation id="2071393345806050157">ローカルのログ ファイルがありません。</translation>
+<translation id="2073148037220830746">{NUM_EXTENSIONS,plural, =1{この拡張機能をインストールするには、クリックしてください}other{これらの拡張機能をインストールするには、クリックしてください}}</translation>
 <translation id="2075474481720804517">バッテリー残量: <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="2075959085554270910">タップによるクリックとタップによるドラッグを有効化または無効化します</translation>
 <translation id="2076269580855484719">このプラグインを表示しない</translation>
@@ -856,6 +860,7 @@
 <translation id="219008588003277019">ネイティブ クライアント モジュール: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(なし)</translation>
 <translation id="2191223688506386601">最後の手順</translation>
+<translation id="2191754378957563929">オン</translation>
 <translation id="2192505247865591433">取得先:</translation>
 <translation id="2193365732679659387">信頼の設定</translation>
 <translation id="2195331105963583686">この期限を過ぎても <ph name="DEVICE_TYPE" /> は使用できますが、ソフトウェアとセキュリティは自動更新されなくなります。</translation>
@@ -948,7 +953,6 @@
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% 完了</translation>
 <translation id="2318143611928805047">用紙サイズ</translation>
 <translation id="2318817390901984578">Android アプリを使用するには、<ph name="DEVICE_TYPE" /> を充電し、アップデートを行ってください。</translation>
-<translation id="2318923050469484167">現在のシークレット モード セッション（<ph name="EMBEDDING" />）</translation>
 <translation id="2322193970951063277">ヘッダーとフッター</translation>
 <translation id="2322318151094136999">サイトからシリアルポートへのアクセス許可を求められたときに確認する（推奨）</translation>
 <translation id="2325002827435400643">このサイトではオフにする</translation>
@@ -1368,6 +1372,7 @@
 <translation id="2875698561019555027">（Chrome エラーページ）</translation>
 <translation id="2876336351874743617">指 2</translation>
 <translation id="2876369937070532032">セキュリティ上のリスクがある場合に、アクセスした一部のページの URL が Google に送信されます</translation>
+<translation id="2877030408509021795">スキャンが完了し、準備が整いました。</translation>
 <translation id="2878782256107578644">スキャン中です。ファイルを今すぐ開きますか？</translation>
 <translation id="288042212351694283">U2F（Universal 2nd Factor）デバイスにアクセスできませんでした。</translation>
 <translation id="2881076733170862447">拡張機能をクリックしたとき</translation>
@@ -1699,6 +1704,7 @@
 <translation id="3382073616108123819">このデバイスのデバイス識別子を特定できませんでした。</translation>
 <translation id="3382086682569279540">管理対象のアカウントはまもなく削除されます</translation>
 <translation id="3382200254148930874">管理機能を停止しています...</translation>
+<translation id="3383210070657133526"><ph name="URL" /> がバーチャル リアリティ セッションを開始する許可を求めています</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">セパレータ</translation>
 <translation id="338691029516748599"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="SECURITY_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、管理者によって管理、接続</translation>
@@ -1791,6 +1797,7 @@
 <translation id="3511307672085573050">リンクのアドレスをコピー(&amp;E)</translation>
 <translation id="351152300840026870">固定幅フォント</translation>
 <translation id="3511528412952710609">短い</translation>
+<translation id="3513704683820682405">拡張現実（AR）</translation>
 <translation id="3514373592552233661">複数のネットワークを利用できる場合に、優先ネットワークを他の既知のネットワークより優先します</translation>
 <translation id="3515983984924808886">リセットを確定するには、セキュリティ キーをもう一度タップしてください。セキュリティ キーに保存されているすべての情報（PIN を含む）が削除されます。</translation>
 <translation id="3518985090088779359">同意して続行</translation>
@@ -2034,6 +2041,7 @@
 <translation id="3819800052061700452">全画面表示(&amp;F)</translation>
 <translation id="3820172043799983114">無効な PIN です。</translation>
 <translation id="3820749202859700794">SECG 楕円曲線 secp521r1（別名 NIST P-521）</translation>
+<translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{1 個の拡張機能が承認されました}other{# 個の拡張機能が承認されました}}</translation>
 <translation id="3822559385185038546">このプロキシは管理者によって制御されています</translation>
 <translation id="3826440694796503677">Google アカウントをさらに追加するオプションは、管理者によって無効にされています</translation>
 <translation id="3827306204503227641">サンドボックスの無効化プラグインを引き続き許可する</translation>
@@ -2247,7 +2255,6 @@
 <translation id="4099874310852108874">ネットワークエラーが発生しました。</translation>
 <translation id="4100733287846229632">デバイスの空き領域が非常に少なくなっています</translation>
 <translation id="4100853287411968461">利用時間の上限が変更されました</translation>
-<translation id="4103091233824664032">画面ロックとログインを設定するにはパスワードを入力します</translation>
 <translation id="4104163789986725820">エクスポート(&amp;X)</translation>
 <translation id="4107048419833779140">ストレージ デバイスの認識と取り外し</translation>
 <translation id="4109135793348361820"><ph name="USER_NAME" />（<ph name="USER_EMAIL" />）にウィンドウを移動</translation>
@@ -2393,6 +2400,7 @@
 <translation id="4353114845960720315">VR の使用中、このサイトで次の情報が把握される場合があります。</translation>
 <translation id="4354344420232759511">アクセスしたサイトがここに表示されます</translation>
 <translation id="435527878592612277">写真を選択</translation>
+<translation id="4357784477082216550"><ph name="URL" /> があなたのカメラの位置を追跡して室内をマッピングする許可を求めています</translation>
 <translation id="4358313196493694334">クリック位置のぶれを補正する</translation>
 <translation id="4359408040881008151">依存関係にある拡張機能によってインストールされました。</translation>
 <translation id="4359717112757026264">Cityscape</translation>
@@ -2633,6 +2641,7 @@
 <translation id="4720185134442950733">モバイルデータ ネットワーク</translation>
 <translation id="4722735765955348426"><ph name="USERNAME" /> のパスワード</translation>
 <translation id="4722920479021006856"><ph name="APP_NAME" /> が画面を共有しています。</translation>
+<translation id="4723140812774948886">次と交換</translation>
 <translation id="4724450788351008910">アフィリエーションが変更された</translation>
 <translation id="4725511304875193254">コーギー</translation>
 <translation id="4726710629007580002">この拡張機能をインストールしようとしたときに、次の警告がありました。</translation>
@@ -2786,6 +2795,7 @@
 <translation id="494286511941020793">プロキシ設定ヘルプ</translation>
 <translation id="4943368462779413526">フットボール</translation>
 <translation id="4943691134276646401">「<ph name="CHROME_EXTENSION_NAME" />」がシリアルポートへの接続を要求しています</translation>
+<translation id="4943703118917034429">バーチャル リアリティ</translation>
 <translation id="4944310289250773232">この認証サービスは <ph name="SAML_DOMAIN" /> でホストされています</translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4952981627953231344">Plugin VM はこのデバイスで許可されていません。組織のデバイス管理者にお問い合わせください。</translation>
@@ -2946,6 +2956,7 @@
 <translation id="51918995459521422"><ph name="ORIGIN" /> で複数のファイルがダウンロードされようとしています</translation>
 <translation id="5192062846343383368">管理設定を確認するにはファミリー リンク アプリを開いてください</translation>
 <translation id="5193988420012215838">クリップボードにコピーされました</translation>
+<translation id="5203920255089865054">{NUM_EXTENSIONS,plural, =1{この拡張機能を確認するには、クリックしてください}other{これらの拡張機能を確認するには、クリックしてください}}</translation>
 <translation id="5204673965307125349">デバイスで Powerwash を実行してもう一度お試しください。</translation>
 <translation id="5206215183583316675">「<ph name="CERTIFICATE_NAME" />」を削除しますか？</translation>
 <translation id="520621735928254154">証明書のインポート エラー</translation>
@@ -3028,6 +3039,7 @@
 <translation id="5310281978693206542">リンクをデバイスに送信</translation>
 <translation id="5311304534597152726">次のユーザーとしてログイン:</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" />もう一度お試しください。</translation>
+<translation id="5313628438272378649">このアップロードは、組織のセキュリティ ポリシーに違反しているため完了できません。</translation>
 <translation id="5315738755890845852">余分な中かっこがあります: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">ID</translation>
 <translation id="5317780077021120954">保存</translation>
@@ -3083,6 +3095,7 @@
 <translation id="5398772614898833570">広告がブロックされました</translation>
 <translation id="5402815541704507626">モバイルデータ接続でのアップデートのダウンロード</translation>
 <translation id="540296380408672091"><ph name="HOST" /> の Cookie を常にブロックする</translation>
+<translation id="540495485885201800">前と交換</translation>
 <translation id="5405146885510277940">設定のリセット</translation>
 <translation id="5408750356094797285">ズーム: <ph name="PERCENT" /></translation>
 <translation id="5411472733320185105">以下のホストとドメインにはプロキシ設定を使用しない:</translation>
@@ -3120,6 +3133,7 @@
 <translation id="5449588825071916739">すべてのタブをブックマークに追加する</translation>
 <translation id="5449716055534515760">ウィンドウを閉じる(&amp;D)</translation>
 <translation id="5454166040603940656">- <ph name="PROVIDER" /></translation>
+<translation id="5454360575035671759">Plugin VM を削除すると、VM が削除されます。これにはアプリケーション、設定、データも含まれます。続行してもよろしいですか？</translation>
 <translation id="5457113250005438886">無効</translation>
 <translation id="5457459357461771897">パソコンからの写真、音楽、その他のメディアの読み取りと削除</translation>
 <translation id="5457599981699367932">ゲストとしてブラウジング</translation>
@@ -3135,8 +3149,8 @@
 <translation id="5468173180030470402">ファイル共有を探しています</translation>
 <translation id="5470735824776589490">デバイスを Powerwash でリセットするにはまず再起動が必要です。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">こんにちは。テキスト読み上げの音声です。</translation>
-<translation id="5472133193607270166">オンにすると、サイトはあなたが別のサイトで閲覧した内容に基づいて広告をカスタマイズできなくなります。一部のサイトは適切に機能しなくなる可能性があります。</translation>
 <translation id="5473333559083690127">新しい PIN を再入力</translation>
+<translation id="548137908954174608">自動字幕起こしを有効にする</translation>
 <translation id="5481941284378890518">近くのプリンタを追加</translation>
 <translation id="5483785310822538350">ファイルとデバイスのアクセスを取り消す</translation>
 <translation id="5485080380723335835"><ph name="DEVICE_TYPE" /> は安全のためロックされています。続行するにはパスワードを手動で入力してください。</translation>
@@ -3173,6 +3187,7 @@
 <translation id="5518584115117143805">メール暗号化証明書</translation>
 <translation id="5521078259930077036">このホーム ページでよろしいですか？</translation>
 <translation id="5522156646677899028">この拡張機能にはセキュリティ上の重大な問題があります。</translation>
+<translation id="5523149538118225875">{NUM_EXTENSIONS,plural, =1{管理者が 1 個の拡張機能をインストールしました}other{管理者が # 個の拡張機能をインストールしました}}</translation>
 <translation id="5525677322972469346">新しい監視対象ユーザーを作成</translation>
 <translation id="5526701598901867718">すべて（安全ではありません）</translation>
 <translation id="5526745900034778153">同期を再開するにはもう一度ログインしてください</translation>
@@ -3306,7 +3321,6 @@
 <translation id="5701381305118179107">中央揃え</translation>
 <translation id="5701441174893770082">Linux のアップグレードを行うと、電池を大幅に消耗します。デバイスを電源に接続してから、もう一度お試しください。</translation>
 <translation id="5702898740348134351">検索エンジンの編集(&amp;E)...</translation>
-<translation id="570302979952009979">このフィンガープリントの名前を指定してください</translation>
 <translation id="5704875434923668958">同期しています:</translation>
 <translation id="5707185214361380026">次の場所から拡張機能を読み込むことができませんでした:</translation>
 <translation id="5708171344853220004">Microsoft プリンシパル名</translation>
@@ -3398,7 +3412,6 @@
 <translation id="5833726373896279253">これらの設定を変更できるのは所有者だけです:</translation>
 <translation id="5834581999798853053">あと約 <ph name="TIME" /> 分</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - カメラまたはマイクで記録中です</translation>
-<translation id="5838456317242088717">現在のシークレット モード セッション</translation>
 <translation id="5842497610951477805">Bluetooth 有効</translation>
 <translation id="5843250171025351504">お使いのデバイスは、管理者が指定した最小クライアント バージョンの要件を満たしていません。ログインするにはアップデートしてください。</translation>
 <translation id="5846200638699387931">関係を表す構文にエラーがあります: <ph name="ERROR_LINE" /></translation>
@@ -3654,7 +3667,6 @@
 <translation id="6181431612547969857">ダウンロードがブロックされました</translation>
 <translation id="6185132558746749656">デバイスの位置情報</translation>
 <translation id="6195693561221576702">このデバイスはオフライン デモモードで設定できません。</translation>
-<translation id="6196640612572343990">サードパーティの Cookie をブロックする</translation>
 <translation id="6196854373336333322">拡張機能「<ph name="EXTENSION_NAME" />」によってプロキシ設定が制御されています。オンラインで行う操作は、この拡張機能によって変更、遮断、傍受される可能性があります。この変更が行われた理由に心当たりがない場合、これは不正な変更と考えられます。</translation>
 <translation id="6198102561359457428">ログアウトしてから再度ログイン...</translation>
 <translation id="6198252989419008588">PIN を変更</translation>
@@ -3842,6 +3854,7 @@
 <translation id="6459799433792303855">アクティブなウィンドウが別のディスプレイに移動しました。</translation>
 <translation id="6460601847208524483">次を検索</translation>
 <translation id="6461170143930046705">ネットワークの検索中...</translation>
+<translation id="6462438303393708881">アップロードをキャンセル</translation>
 <translation id="6463795194797719782">編集(&amp;E)</translation>
 <translation id="6466988389784393586">すべてのブックマークを開く(&amp;O)</translation>
 <translation id="6467304607960172345">動画の全画面表示を最適化</translation>
@@ -3889,6 +3902,7 @@
 <translation id="6531282281159901044">危険なファイルを保存</translation>
 <translation id="6532101170117367231">Google ドライブに保存</translation>
 <translation id="6532106788206463496">変更を保存</translation>
+<translation id="6532663472409656417">企業登録済み</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />注:<ph name="END_BOLD" /> データの収集によりパフォーマンスが低下する場合があるため、意図的に行う場合、または指示された場合のみ有効にしてください。</translation>
 <translation id="6541638731489116978">このサイトではモーション センサーへのアクセスがブロックされています。</translation>
 <translation id="6545665334409411530">リピート回数 / 秒</translation>
@@ -4030,6 +4044,7 @@
 <translation id="6758056191028427665">アンケートにご協力ください。</translation>
 <translation id="6759193508432371551">初期状態へのリセット</translation>
 <translation id="6762833852331690540">オン</translation>
+<translation id="6767115174726603949">バーチャル リアリティ デバイスとデータにアクセスする</translation>
 <translation id="6767566652486411142">別の言語を選択...</translation>
 <translation id="6767639283522617719">ドメインを追加できません。組織部門の設定が正しいことをご確認ください。</translation>
 <translation id="6769712124046837540">プリンタの追加...</translation>
@@ -4042,6 +4057,7 @@
 <translation id="677965093459947883">極小</translation>
 <translation id="6781284683813954823">Doodle リンク</translation>
 <translation id="6781978626986383437">Linux のバックアップがキャンセルされました</translation>
+<translation id="6785915470941880363">逆スクロール（<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" />）</translation>
 <translation id="6786747875388722282">拡張機能</translation>
 <translation id="6787839852456839824">キーボード ショートカット</translation>
 <translation id="6788210894632713004">パッケージ化されていない拡張機能</translation>
@@ -4148,6 +4164,7 @@
 <translation id="6923132443355966645">スクロール / クリック</translation>
 <translation id="6923633482430812883">共有フォルダのマウントエラー。接続先のファイル サーバーが SMBv2 以降に対応しているか確認してください。</translation>
 <translation id="6930036377490597025">外部セキュリティ キーまたは内蔵センサー</translation>
+<translation id="6930161297841867798">{NUM_EXTENSIONS,plural, =1{1 個の拡張機能が拒否されました}other{# 個の拡張機能が拒否されました}}</translation>
 <translation id="6935286146439255109">用紙トレイが見つかりません</translation>
 <translation id="693807610556624488">「<ph name="DEVICE_NAME" />」での書き込み操作で属性の長さが上限を超えています。</translation>
 <translation id="6938386202199793006">保存済みのプリンタは 1 件です。</translation>
@@ -4236,6 +4253,7 @@
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="7055152154916055070">リダイレクトがブロックされました</translation>
 <translation id="7056526158851679338">デバイスを検証(&amp;I)</translation>
+<translation id="7057767408836081338">アプリのデータを取得できませんでした。引き続きアプリの実行を試みています...</translation>
 <translation id="7059858479264779982">自動起動に設定する</translation>
 <translation id="7059893117020417984">シークレット モードを使うには、その他アイコンのメニューからシークレット ウィンドウを開きます</translation>
 <translation id="7062222374113411376">最近閉じたサイトがデータの送受信を完了できるようにする（推奨）</translation>
@@ -4289,6 +4307,7 @@
 <translation id="7120865473764644444">同期サーバーに接続できませんでした。再試行しています...</translation>
 <translation id="7121362699166175603">アドレスバーの履歴とオートコンプリートを削除します。お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります。</translation>
 <translation id="7121389946694989825">使用状況データや診断データを送信します。このデバイスは現在、診断データやデバイスとアプリの使用状況データを Google に自動送信するように設定されています。この情報を使ってお子様個人が特定されることはありません。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。お子様の [その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータはお子様の Google アカウントに保存されます。<ph name="BEGIN_LINK1" />詳細<ph name="END_LINK1" /></translation>
+<translation id="7121438501124788993">デベロッパー モード</translation>
 <translation id="7121728544325372695">スマート ダッシュ</translation>
 <translation id="7123360114020465152">サポートが終了しています</translation>
 <translation id="7127980134843952133">ダウンロード履歴</translation>
@@ -4360,7 +4379,6 @@
 <translation id="7225179976675429563">ネットワークの種類が指定されていません</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" />（ベンダー: <ph name="VENDOR_ID" />、プロダクト: <ph name="PRODUCT_ID" />）</translation>
 <translation id="7228479291753472782">ウェブサイトが位置情報やマイク、カメラなどの機能を使用できるかどうかの設定の操作</translation>
-<translation id="7228523857728654909">画面ロックとログイン</translation>
 <translation id="7229570126336867161">EVDO が必要です</translation>
 <translation id="7230787553283372882">テキストサイズをカスタマイズします</translation>
 <translation id="7232750842195536390">名前を変更できませんでした</translation>
@@ -4453,6 +4471,7 @@
 <translation id="7352651011704765696">問題が発生しました</translation>
 <translation id="735361434055555355">Linux をインストールしています...</translation>
 <translation id="7353887511974462734">既存のグループに追加</translation>
+<translation id="7354341762311560488">指紋認証センサーはキーボードの左下のキーに搭載されています。いずれかの指で軽く触れてください。</translation>
 <translation id="735745346212279324">VPN が切断されました</translation>
 <translation id="7359588939039777303">広告がブロックされました。</translation>
 <translation id="7360183604634508679">ブックマーク メニュー</translation>
@@ -4753,6 +4772,7 @@
 <translation id="7792388396321542707">共有を停止</translation>
 <translation id="779308894558717334">明るい緑</translation>
 <translation id="7793098747275782155">暗い青</translation>
+<translation id="7797571222998226653">オフ</translation>
 <translation id="7799299114731150374">壁紙の設定が完了しました</translation>
 <translation id="7800518121066352902">反時計回りに回転(&amp;O)</translation>
 <translation id="780301667611848630">いいえ</translation>
@@ -5089,6 +5109,7 @@
 <translation id="8227119283605456246">添付ファイル</translation>
 <translation id="8230134520748321204"><ph name="ORIGIN" /> のパスワードを保存しますか？</translation>
 <translation id="8234795456569844941">問題解決の手がかりとして、具体的にどのような操作を行ったときにプロフィール エラーのメッセージが表示されたかをお知らせください。</translation>
+<translation id="8236123533334037984">このアップロードをスキャンして、組織のセキュリティ ポリシーと照合しています。</translation>
 <translation id="8236917170563564587">代わりにこのタブを共有</translation>
 <translation id="8237647586961940482">暗いピンクと赤</translation>
 <translation id="8241040075392580210">シェイディ</translation>
@@ -5277,7 +5298,6 @@
 <translation id="850875081535031620">有害なソフトウェアは見つかりませんでした</translation>
 <translation id="8509177919508253835">セキュリティ キーをリセットして PIN を作成します</translation>
 <translation id="8509646642152301857">スペルチェック辞書をダウンロードできませんでした。</translation>
-<translation id="8510617356402557055">この処理は想定と異なるものでしたか？<ph name="BEGIN_LINK" />フィードバックを送信<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">プロセスを終了</translation>
 <translation id="851263357009351303"><ph name="HOST" /> の画像を常に表示する</translation>
 <translation id="8513108775083588393">自動回転</translation>
@@ -5546,6 +5566,7 @@
 <translation id="8863753581171631212">新しい <ph name="APP" /> でリンクを開く</translation>
 <translation id="8864055848767439877"><ph name="TAB_NAME" /> を <ph name="APP_NAME" /> に共有しています</translation>
 <translation id="8864458770072227512"><ph name="EMAIL" /> はこのデバイスから削除されました</translation>
+<translation id="8867228703146808825">ビルドの詳細をクリップボードにコピーします</translation>
 <translation id="8868626022555786497">使用中</translation>
 <translation id="8870318296973696995">ホームページ</translation>
 <translation id="8870413625673593573">最近閉じたタブ</translation>

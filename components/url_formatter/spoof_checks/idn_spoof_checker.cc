@@ -243,6 +243,15 @@ IDNSpoofChecker::IDNSpoofChecker() {
        "[[:Taml:]]", "[டப௦]"},
       {// Telugu
        "[[:Telu:]]", "[౦౧]"},
+      {// Myanmar. Shan digits (႐႑႕႖႗) are already blocked from mixing with
+       // other Myanmar characters. However, they can still be used to form
+       // WSC spoofs, so they are included here (they are encoded because macOS
+       // doesn't display them properly).
+       // U+104A (၊) and U+U+104A(။) are excluded as they are signs and are
+       // blocked.
+       "[[:Mymr:]]",
+       "[ခဂငထပဝ၀၂ၔၜ\u1090\u1091\u1095\u1096\u1097]",
+       {"mm"}},
   };
   for (const WholeScriptConfusableData& data : kWholeScriptConfusables) {
     auto all_letters = std::make_unique<icu::UnicodeSet>(

@@ -107,11 +107,6 @@ void AssistantViewDelegateImpl::DownloadImage(
   return Shell::Get()->cursor_manager();
 }
 
-void AssistantViewDelegateImpl::GetNavigableContentsFactoryForView(
-    mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {
-  assistant_controller_->GetNavigableContentsFactory(std::move(receiver));
-}
-
 aura::Window* AssistantViewDelegateImpl::GetRootWindowForDisplayId(
     int64_t display_id) {
   return Shell::Get()->GetRootWindowForDisplayId(display_id);

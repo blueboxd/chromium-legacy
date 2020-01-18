@@ -63,15 +63,15 @@ class PlatformVideoFramePoolTest
     pool_->set_parent_task_runner(base::ThreadTaskRunnerHandle::Get());
   }
 
-  void RequestFrames(const Fourcc& fourcc) {
+  void Initialize(const Fourcc& fourcc) {
     constexpr gfx::Size kCodedSize(320, 240);
     constexpr size_t kNumFrames = 10;
 
     visible_rect_.set_size(kCodedSize);
     natural_size_ = kCodedSize;
 
-    layout_ = pool_->RequestFrames(fourcc, kCodedSize, visible_rect_,
-                                   natural_size_, kNumFrames);
+    layout_ = pool_->Initialize(fourcc, kCodedSize, visible_rect_,
+                                natural_size_, kNumFrames);
     EXPECT_TRUE(layout_);
   }
 
@@ -111,7 +111,7 @@ INSTANTIATE_TEST_SUITE_P(All,
 TEST_P(PlatformVideoFramePoolTest, SingleFrameReuse) {
   const auto fourcc = Fourcc::FromVideoPixelFormat(GetParam());
   ASSERT_TRUE(fourcc.has_value());
-  RequestFrames(fourcc.value());
+  Initialize(fourcc.value());
   scoped_refptr<VideoFrame> frame = GetFrame(10);
   DmabufId id = DmabufVideoFramePool::GetDmabufId(*frame);
 
@@ -127,7 +127,7 @@ TEST_P(PlatformVideoFramePoolTest, SingleFrameReuse) {
 TEST_P(PlatformVideoFramePoolTest, MultipleFrameReuse) {
   const auto fourcc = Fourcc::FromVideoPixelFormat(GetParam());
   ASSERT_TRUE(fourcc.has_value());
-  RequestFrames(fourcc.value());
+  Initialize(fourcc.value());
   scoped_refptr<VideoFrame> frame1 = GetFrame(10);
   scoped_refptr<VideoFrame> frame2 = GetFrame(20);
   DmabufId id1 = DmabufVideoFramePool::GetDmabufId(*frame1);
@@ -149,10 +149,10 @@ TEST_P(PlatformVideoFramePoolTest, MultipleFrameReuse) {
   CheckPoolSize(2u);
 }
 
-TEST_P(PlatformVideoFramePoolTest, RequestFramesWithDifferentFourcc) {
+TEST_P(PlatformVideoFramePoolTest, InitializeWithDifferentFourcc) {
   const auto fourcc = Fourcc::FromVideoPixelFormat(GetParam());
   ASSERT_TRUE(fourcc.has_value());
-  RequestFrames(fourcc.value());
+  Initialize(fourcc.value());
   scoped_refptr<VideoFrame> frame_a = GetFrame(10);
   scoped_refptr<VideoFrame> frame_b = GetFrame(10);
 
@@ -168,7 +168,7 @@ TEST_P(PlatformVideoFramePoolTest, RequestFramesWithDifferentFourcc) {
   // to get drained.
   const Fourcc different_fourcc(Fourcc::NV21);
   ASSERT_NE(fourcc, different_fourcc);
-  RequestFrames(different_fourcc);
+  Initialize(different_fourcc);
   scoped_refptr<VideoFrame> new_frame = GetFrame(10);
   CheckPoolSize(0u);
 }
@@ -176,7 +176,7 @@ TEST_P(PlatformVideoFramePoolTest, RequestFramesWithDifferentFourcc) {
 TEST_P(PlatformVideoFramePoolTest, UnwrapVideoFrame) {
   const auto fourcc = Fourcc::FromVideoPixelFormat(GetParam());
   ASSERT_TRUE(fourcc.has_value());
-  RequestFrames(fourcc.value());
+  Initialize(fourcc.value());
   scoped_refptr<VideoFrame> frame_1 = GetFrame(10);
   scoped_refptr<VideoFrame> frame_2 = VideoFrame::WrapVideoFrame(
       frame_1, frame_1->format(), frame_1->visible_rect(),
@@ -189,10 +189,10 @@ TEST_P(PlatformVideoFramePoolTest, UnwrapVideoFrame) {
   EXPECT_FALSE(frame_1->IsSameDmaBufsAs(*frame_3));
 }
 
-TEST_P(PlatformVideoFramePoolTest, RequestFramesWithSameFourcc) {
+TEST_P(PlatformVideoFramePoolTest, InitializeWithSameFourcc) {
   const auto fourcc = Fourcc::FromVideoPixelFormat(GetParam());
   ASSERT_TRUE(fourcc.has_value());
-  RequestFrames(fourcc.value());
+  Initialize(fourcc.value());
   scoped_refptr<VideoFrame> frame1 = GetFrame(10);
   DmabufId id1 = DmabufVideoFramePool::GetDmabufId(*frame1);
 
@@ -201,14 +201,14 @@ TEST_P(PlatformVideoFramePoolTest, RequestFramesWithSameFourcc) {
   task_environment_.RunUntilIdle();
 
   // Request frame with the same format. The pool should not request new frames.
-  RequestFrames(fourcc.value());
+  Initialize(fourcc.value());
 
   scoped_refptr<VideoFrame> frame2 = GetFrame(20);
   DmabufId id2 = DmabufVideoFramePool::GetDmabufId(*frame2);
   EXPECT_EQ(id1, id2);
 }
 
-// TODO(akahuang): Add a testcase to verify calling RequestFrames() only with
+// TODO(akahuang): Add a testcase to verify calling Initialize() only with
 // different |max_num_frames|.
 
 }  // namespace media

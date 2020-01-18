@@ -75,7 +75,10 @@ using url::Origin;
 namespace content {
 
 namespace {
-const Origin kFileOrigin = Origin::Create(GURL("file:///"));
+
+Origin FileOrigin() {
+  return Origin::Create(GURL("file:///"));
+}
 }
 
 // This browser test is aimed towards exercising the IndexedDB bindings and
@@ -511,10 +514,10 @@ class IndexedDBBrowserTestWithVersion123456Schema : public
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion123456Schema,
                        DestroyTest) {
-  int64_t original_size = RequestUsage(kFileOrigin);
+  int64_t original_size = RequestUsage(FileOrigin());
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
-  int64_t new_size = RequestUsage(kFileOrigin);
+  int64_t new_size = RequestUsage(FileOrigin());
   EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
@@ -526,10 +529,10 @@ class IndexedDBBrowserTestWithVersion987654SSVData : public
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithVersion987654SSVData,
                        DestroyTest) {
-  int64_t original_size = RequestUsage(kFileOrigin);
+  int64_t original_size = RequestUsage(FileOrigin());
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
-  int64_t new_size = RequestUsage(kFileOrigin);
+  int64_t new_size = RequestUsage(FileOrigin());
   EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
@@ -541,10 +544,10 @@ class IndexedDBBrowserTestWithCorruptLevelDB : public
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithCorruptLevelDB,
                        DestroyTest) {
-  int64_t original_size = RequestUsage(kFileOrigin);
+  int64_t original_size = RequestUsage(FileOrigin());
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_bad_db.html"));
-  int64_t new_size = RequestUsage(kFileOrigin);
+  int64_t new_size = RequestUsage(FileOrigin());
   EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
@@ -556,10 +559,10 @@ class IndexedDBBrowserTestWithMissingSSTFile : public
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithMissingSSTFile,
                        DestroyTest) {
-  int64_t original_size = RequestUsage(kFileOrigin);
+  int64_t original_size = RequestUsage(FileOrigin());
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "open_missing_table.html"));
-  int64_t new_size = RequestUsage(kFileOrigin);
+  int64_t new_size = RequestUsage(FileOrigin());
   EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
@@ -575,10 +578,10 @@ class IndexedDBBrowserTestWithCrbug899446
 };
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithCrbug899446, StableTest) {
-  int64_t original_size = RequestUsage(kFileOrigin);
+  int64_t original_size = RequestUsage(FileOrigin());
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "crbug899446.html"));
-  int64_t new_size = RequestUsage(kFileOrigin);
+  int64_t new_size = RequestUsage(FileOrigin());
   EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
@@ -589,10 +592,10 @@ class IndexedDBBrowserTestWithCrbug899446Noai
 };
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTestWithCrbug899446Noai, StableTest) {
-  int64_t original_size = RequestUsage(kFileOrigin);
+  int64_t original_size = RequestUsage(FileOrigin());
   EXPECT_GT(original_size, 0);
   SimpleTest(GetTestUrl("indexeddb", "crbug899446_noai.html"));
-  int64_t new_size = RequestUsage(kFileOrigin);
+  int64_t new_size = RequestUsage(FileOrigin());
   EXPECT_GT(new_size, 0);
   EXPECT_NE(original_size, new_size);
 }
@@ -614,7 +617,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, LevelDBLogFileTest) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
   SimpleTest(GetTestUrl("indexeddb", "fill_up_5k.html"));
-  int64_t size = RequestUsage(kFileOrigin);
+  int64_t size = RequestUsage(FileOrigin());
   const int kQuotaKilobytes = 2;
   EXPECT_GT(size, kQuotaKilobytes * 1024);
   SetQuota(kQuotaKilobytes);
@@ -623,8 +626,9 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, CanDeleteWhenOverQuotaTest) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, EmptyBlob) {
   // First delete all IDB's for the test origin
-  DeleteForOrigin(kFileOrigin);
-  EXPECT_EQ(0, RequestBlobFileCount(kFileOrigin));  // Start with no blob files.
+  DeleteForOrigin(FileOrigin());
+  EXPECT_EQ(0,
+            RequestBlobFileCount(FileOrigin()));  // Start with no blob files.
   const GURL test_url = GetTestUrl("indexeddb", "empty_blob.html");
   // For some reason Android's futimes fails (EPERM) in this test. Do not assert
   // file times on Android, but do so on other platforms. crbug.com/467247
@@ -636,7 +640,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, EmptyBlob) {
 #endif
   // As both of these files are empty, they do not create BlobDataItems.
   // As they can't be read, the backing files are immediately released.
-  EXPECT_EQ(0, RequestBlobFileCount(kFileOrigin));
+  EXPECT_EQ(0, RequestBlobFileCount(FileOrigin()));
 }
 
 // Very flaky on many bots. See crbug.com/459835
@@ -675,11 +679,11 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, BlobsCountAgainstQuota) {
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginDeletesBlobs) {
   SimpleTest(GetTestUrl("indexeddb", "write_4mb_blob.html"));
-  int64_t size = RequestUsage(kFileOrigin);
+  int64_t size = RequestUsage(FileOrigin());
   // This assertion assumes that we do not compress blobs.
   EXPECT_GT(size, 4 << 20 /* 4 MB */);
-  DeleteForOrigin(kFileOrigin);
-  EXPECT_EQ(0, RequestUsage(kFileOrigin));
+  DeleteForOrigin(FileOrigin());
+  EXPECT_EQ(0, RequestUsage(FileOrigin()));
 }
 
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteForOriginIncognito) {
@@ -942,7 +946,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteCompactsBackingStore) {
     GetContext()->IDBTaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
     loop.Run();
   }
-  int64_t after_filling = RequestUsage(kFileOrigin);
+  int64_t after_filling = RequestUsage(FileOrigin());
   EXPECT_GT(after_filling, 0);
 
   SimpleTest(GURL(test_url.spec() + "#purge"));
@@ -953,7 +957,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, DeleteCompactsBackingStore) {
     GetContext()->IDBTaskRunner()->PostTask(FROM_HERE, loop.QuitClosure());
     loop.Run();
   }
-  int64_t after_deleting = RequestUsage(kFileOrigin);
+  int64_t after_deleting = RequestUsage(FileOrigin());
   EXPECT_LT(after_deleting, after_filling);
 
   // The above tests verify basic assertions - that filling writes data and
@@ -1052,7 +1056,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, ForceCloseEventTest) {
   NavigateAndWaitForTitle(shell(), "force_close_event.html", nullptr,
                           "connection ready");
-  DeleteForOrigin(kFileOrigin);
+  DeleteForOrigin(FileOrigin());
   base::string16 expected_title16(ASCIIToUTF16("connection closed"));
   TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("connection closed with error"));

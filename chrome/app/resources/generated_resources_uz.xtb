@@ -78,7 +78,7 @@
 <translation id="1108600514891325577">&amp;To‘xtatish</translation>
 <translation id="1110155001042129815">Kutish</translation>
 <translation id="1112420131909513020">Fondagi varaq Bluetooth aloqasidan foydalanmoqda</translation>
-<translation id="1113042067630273625">Bunda <ph name="TOTAL_USAGE" /> saqlangan sayt maʼlumotlari tozalab tashlaniladi.</translation>
+<translation id="1113042067630273625">Bunda <ph name="TOTAL_USAGE" /> saqlangan sayt maʼlumotlari tozalab tashlanadi.</translation>
 <translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamond</translation>
 <translation id="1114335938027186412">Kompyuter ishonch platformasi modulining (TPM) xavfsizlik qurilmasi bilan jihozlangan. Undan Chrome OS platformasida ko‘plab jiddiy xavfsizlik funksiyalarini amalga oshirishda foydalanialdi. Batafsil ma’lumotni Chromebook yordam markazidan olishingiz mumkin: https://support.google.com/chromebook/?p=tpm</translation>
@@ -946,7 +946,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% bajarildi</translation>
 <translation id="2318143611928805047">Qog‘oz hajmi</translation>
 <translation id="2318817390901984578">Android ilovalardan foydalanish uchun <ph name="DEVICE_TYPE" /> qurilmasini quvvatlang va uning tizimini yangilang.</translation>
-<translation id="2318923050469484167">Joriy inkognito seans (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">Sarlavha va taglavhalar</translation>
 <translation id="2322318151094136999">Sayt ketma-ket portlardan foydalanish oldidan ruxsat olinsin (tavsiya etiladi)</translation>
 <translation id="2325002827435400643">Bu saytni istisno qilish</translation>
@@ -1789,6 +1788,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3511307672085573050">Havola manzilini &amp;nusxalash</translation>
 <translation id="351152300840026870">Monokenglikdagi shrift</translation>
 <translation id="3511528412952710609">Qisqa</translation>
+<translation id="3513704683820682405">Boyitilgan reallik</translation>
 <translation id="3514373592552233661">Agar bir nechta saqlangan tarmoqlar mavjud bo‘lsa, avval afzal tarmoqlar tanlanadi</translation>
 <translation id="3515983984924808886">Sozlamalarni asliga qaytarishni tasdiqlash uchun elektron kalit tugmasini qayta bosing. Bunda elektron kalitdagi barcha maʼlumotlar, jumladan, PIN kodlar ham tozalab tashlanadi.</translation>
 <translation id="3518985090088779359">Davom etish</translation>
@@ -1998,7 +1998,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="3780211714699334884">Bu varaq yopilmaguncha <ph name="ORIGIN" /> sayti <ph name="FOLDERNAME" /> jildidagi barcha fayllarni tahrirlay oladi</translation>
 <translation id="3780827508782506612">Bu sahifa tarjima qilindi</translation>
 <translation id="378312418865624974">Bu kompyuterning alohida identifikatorini ko‘rish</translation>
-<translation id="3784472333786002075">Cookie fayllar — veb-saytlar tomonidan yaratilgan fayllar. Cookie fayllar ikki xil boʻladi: Ichkilari saytlarga kirganingizda yaratiladi. Saytlar manzillar qatorida chiqadi. Tashqi cookie fayllar boshqa saytlar tomonidan yaratiladi. Bunday saytlarga ochilgan sahifadagi kontent, reklama yoki rasmlar tegishli boʻlishi mumkin.</translation>
+<translation id="3784472333786002075">Cookie fayllar — veb-saytlar tomonidan yaratilgan fayllar. Cookie fayllar ikki xil boʻladi: Ichki cookielar saytlarga kirganingizda yaratiladi. Saytlar manzillar qatorida chiqadi. Tashqi cookie fayllar boshqa saytlar tomonidan yaratiladi. Bunday saytlarga ochilgan sahifadagi kontent, reklama yoki rasmlar tegishli boʻlishi mumkin.</translation>
 <translation id="3785308913036335955">Ilovalar yorlig‘ini ko‘rsatish</translation>
 <translation id="3785727820640310185">Bu sayt uchun saqlangan parollar</translation>
 <translation id="3788401245189148511">Ruxsatlar:</translation>
@@ -2245,7 +2245,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4099874310852108874">Tarmoqda xatolik yuz berdi.</translation>
 <translation id="4100733287846229632">Qurilmada bo‘sh joy deyarli qolmadi</translation>
 <translation id="4100853287411968461">Yangi ruxsat berilgan foydalanish vaqti</translation>
-<translation id="4103091233824664032">Ekran qulfi va kirishni sozlash uchun parolingizni kiriting</translation>
 <translation id="4104163789986725820">&amp;Eksport qilish...</translation>
 <translation id="4107048419833779140">Xotira qurilmalarini aniqlash va uzib qo‘yish</translation>
 <translation id="4109135793348361820">Oynani <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) foydalanuvchisi ish stoliga ko‘chirish</translation>
@@ -2784,6 +2783,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="494286511941020793">Proksi-server sozlamalari yuzasidan yordam</translation>
 <translation id="4943368462779413526">Futbol</translation>
 <translation id="4943691134276646401">“<ph name="CHROME_EXTENSION_NAME" />” seriyali portga ulanmoqchi</translation>
+<translation id="4943703118917034429">Virtual reallik</translation>
 <translation id="4944310289250773232">Bu autentifikatsiya xizmati <ph name="SAML_DOMAIN" /> domenida joylashgan.</translation>
 <translation id="495170559598752135">Harakatlar</translation>
 <translation id="4952981627953231344">Bu qurilmada Plugin VM ishlatish taqiqlangan. Tashkilotingizning qurilma boʻyicha administratoriga murojaat qiling.</translation>
@@ -3133,7 +3133,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5468173180030470402">Umumiy jildlar qidirilmoqda</translation>
 <translation id="5470735824776589490">Powerwash yordamida dastlabki sozlamarini tiklashdan oldin qurilmani qaytadan ishga tushirish kerak. <ph name="LINK_BEGIN" />Batafsil<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Salom! Men sizga matnni nutqqa aylantirib beraman.</translation>
-<translation id="5472133193607270166">Agar yoqilsa, saytlar reklamalarni sizga moslashtirish uchun brauzerdagi faoliyatingizni kuzata olmaydi. Ayrim saytlar nosoz ishlashi mumkin.</translation>
 <translation id="5473333559083690127">Yangi PIN kodni qayta kiriting</translation>
 <translation id="5481941284378890518">Yaqin-atrofdagi printerlarni qo‘shish</translation>
 <translation id="5483785310822538350">Fayl va qurilmadan ruxsatni olib qo‘yish</translation>
@@ -3304,7 +3303,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5701381305118179107">Markaz bo‘yicha tartiblash</translation>
 <translation id="5701441174893770082">Linux yangilanganda batareya ortiqcha sarflanishi mumkin. Qurilmani quvvatlash moslamasiga ulab, qayta urining.</translation>
 <translation id="5702898740348134351">&amp;Qidiruv tizimlarini tahrirlash</translation>
-<translation id="570302979952009979">Bu barmoq izini nomlang</translation>
 <translation id="5704875434923668958">Sinxronlanmoqda</translation>
 <translation id="5707185214361380026">Kengaytmani bu yerdan yuklab bo‘lmadi:</translation>
 <translation id="5708171344853220004">Microsoft qatnashchisining ismi</translation>
@@ -3396,7 +3394,6 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5833726373896279253">Bu sozlashlarni faqat egasi o‘zgartirishi mumkin.</translation>
 <translation id="5834581999798853053">Taxminan <ph name="TIME" /> daqiqa qoldi</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> – kamera yoki mikrofon yozib olmoqda</translation>
-<translation id="5838456317242088717">Joriy inkognito seans</translation>
 <translation id="5842497610951477805">Bluetooth yoniq</translation>
 <translation id="5843250171025351504">Qurilmangizdagi operatsion tizim versiyasi administratoringiz ko‘rsatgan minimal talablarga javob bermaydi. Hisobingizga kirish uchun operatsion tizimni yangilang.</translation>
 <translation id="5846200638699387931">Konfiguratsiya bilan bogʻliq imloviy xato: <ph name="ERROR_LINE" /></translation>
@@ -3652,7 +3649,6 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="6181431612547969857">Yuklash olish taqiqlangan</translation>
 <translation id="6185132558746749656">Qurilma joylashuvi</translation>
 <translation id="6195693561221576702">Bu qurilmani oflayn demo rejimda sozlab boʻlmaydi.</translation>
-<translation id="6196640612572343990">Tashqi cookie-fayllarni bloklash.</translation>
 <translation id="6196854373336333322">“<ph name="EXTENSION_NAME" />” kengaytmasi proksi-server sozlamalarini nazorat qiladi. U internetda bajargan ishlaringizni o‘zgartirishi, buzishi yoki bildirmasdan eshitishi mumkin. Agar bu haqda eshitmagan bo‘lsangiz, uni o‘chirib qo‘yganingiz yaxshi.</translation>
 <translation id="6198102561359457428">Chiqish va qaytadan kirish...</translation>
 <translation id="6198252989419008588">PIN-kodni o‘zgartirish</translation>
@@ -4358,7 +4354,6 @@ Ochiq eksponenta (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bit):
 <translation id="7225179976675429563">Tarmoq turi ko‘rsatilmagan</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (Firma: <ph name="VENDOR_ID" />, Mahsulot: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">Saytlarning geo-ma’lumotlar, mikrofon, kamera va boshqa funksiyalarga ruxsat boshqaruvi sozlamalarni o‘zgartirish</translation>
-<translation id="7228523857728654909">Ekran qulfi va kirish</translation>
 <translation id="7229570126336867161">EVDO bo‘lishi lozim</translation>
 <translation id="7230787553283372882">Matn hajmini sozlash</translation>
 <translation id="7232750842195536390">Nom o‘zgarmadi</translation>
@@ -5273,7 +5268,6 @@ Kalit faylini ishonchli joyda saqlang. U kengaytmaning yangi versiyalarini yarat
 <translation id="850875081535031620">Birorta ham zararli dastur topilmadi</translation>
 <translation id="8509177919508253835">Elektron kalitlarni asliga qaytarish va PIN kodlar yaratish</translation>
 <translation id="8509646642152301857">Imlo lug‘atini yuklab olish amalga oshmadi.</translation>
-<translation id="8510617356402557055">Kutilmagan xato yuz berdimi? <ph name="BEGIN_LINK" />Bizga xabar qiling<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">Jarayonni yakunlash</translation>
 <translation id="851263357009351303"><ph name="HOST" /> rasmlarni doim ko‘rsatsin</translation>
 <translation id="8513108775083588393">Avtomatik burilish</translation>

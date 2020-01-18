@@ -1113,8 +1113,7 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           GURL() /* client_side_redirect_url */,
           base::nullopt /* detools_initiator_info */,
           false /* attach_same_site_cookies */);
-  mojom::CommonNavigationParamsPtr common_params =
-      mojom::CommonNavigationParams::New();
+  auto common_params = CreateCommonNavigationParams();
   common_params->navigation_start = base::TimeTicks::Now();
   common_params->url = navigation_url_;
   common_params->initiator_origin = url::Origin();
@@ -1126,9 +1125,9 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
           ? mojom::NavigationType::RELOAD
           : mojom::NavigationType::DIFFERENT_DOCUMENT;
   common_params->has_user_gesture = has_user_gesture_;
-  common_params->initiator_csp_info =
-      InitiatorCSPInfo(should_check_main_world_csp_,
-                       std::vector<ContentSecurityPolicy>(), base::nullopt);
+  common_params->initiator_csp_info = mojom::InitiatorCSPInfo::New(
+      should_check_main_world_csp_,
+      std::vector<network::mojom::ContentSecurityPolicyPtr>(), nullptr);
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
       navigation_client_remote;

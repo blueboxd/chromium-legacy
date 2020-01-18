@@ -97,7 +97,7 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
   // handler returns COMPLETE.
   enum State {
     STATE_GENERATE_TARGET_PATH,
-    STATE_CHECK_IF_DOWNLOAD_BLOCKED,
+    STATE_SET_MIXED_CONTENT_STATUS,
     STATE_NOTIFY_EXTENSIONS,
     STATE_RESERVE_VIRTUAL_PATH,
     STATE_PROMPT_USER_FOR_DOWNLOAD_PATH,
@@ -159,20 +159,21 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
   // the download item.
   // Next state:
   // - STATE_NONE : If the download is not in progress, returns COMPLETE.
-  // - STATE_CHECK_IF_DOWNLOAD_BLOCKED : All other downloads.
+  // - STATE_SET_MIXED_CONTENT_STATUS : All other downloads.
   Result DoGenerateTargetPath();
 
-  // Determines whether the download ought to be blocked before a user is
-  // prompted for file path. Used for active mixed content blocking. This
-  // function relies on the delegate for the actual determination.
+  // Determines the mixed content status of the download, so as to block it
+  // prior to prompting the user for the file path.  This function relies on the
+  // delegate for the actual determination.
   //
   // Next state:
   // - STATE_NOTIFY_EXTENSIONS
-  Result DoCheckIfDownloadBlocked();
+  Result DoSetMixedContentStatus();
 
-  // Callback invoked by delegate after blocking is determined. Does the actual
-  // cancellation of the download if necessary.
-  void CheckIfDownloadBlockedDone(bool should_block);
+  // Callback invoked by delegate after mixed content status is determined.
+  // Cancels the download if status indicates blocking is necessary.
+  void GetMixedContentStatusDone(
+      download::DownloadItem::MixedContentStatus status);
 
   // Notifies downloads extensions. If any extension wishes to override the
   // download filename, it will respond to the OnDeterminingFilename()
@@ -340,6 +341,7 @@ class DownloadTargetDeterminer : public download::DownloadItem::Observer {
   base::FilePath intermediate_path_;
   std::string mime_type_;
   bool is_filetype_handled_safely_;
+  download::DownloadItem::MixedContentStatus mixed_content_status_;
 #if defined(OS_ANDROID)
   bool is_checking_dialog_confirmed_path_;
 #endif

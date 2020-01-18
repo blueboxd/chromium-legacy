@@ -947,7 +947,6 @@
 <translation id="2317842250900878657"><ph name="PROGRESS_PERCENT" />% पूर्ण झाले</translation>
 <translation id="2318143611928805047">कागदाचा आकार</translation>
 <translation id="2318817390901984578">Android अ‍ॅप्स वापरण्यासाठी, तुमचे <ph name="DEVICE_TYPE" /> चार्ज करा आणि अपडेट करा.</translation>
-<translation id="2318923050469484167">वर्तमान गुप्त सेशन (<ph name="EMBEDDING" />)</translation>
 <translation id="2322193970951063277">शीर्षक आणि अधोलेख</translation>
 <translation id="2322318151094136999">साइटला सीरियल पोर्ट अ‍ॅक्सेस करायची असतील तेव्हा विचारा (शिफारस केलेले)</translation>
 <translation id="2325002827435400643">या साइटसाठी बंद करा</translation>
@@ -1790,6 +1789,7 @@
 <translation id="3511307672085573050">लिंक पत्ता कॉपी करा</translation>
 <translation id="351152300840026870">निश्चित-रुंदीचा फॉन्ट</translation>
 <translation id="3511528412952710609">लहान</translation>
+<translation id="3513704683820682405">ऑगमेंटेड रिअ‍ॅलिटी</translation>
 <translation id="3514373592552233661">एका पेक्षा जास्त नेटवर्क उपलब्ध असल्यास इतर ज्ञात नेटवर्क ऐवजी प्राधान्यीकृत नेटवर्कना प्राधान्य दिले जाईल</translation>
 <translation id="3515983984924808886">रीसेटची खात्री करण्यासाठी तुमच्या सिक्युरिटी कीला पुन्हा स्पर्श करा. सिक्युरिटी कीवर स्टोअर केलेली सर्व माहिती, तिच्या पिनसह, हटवली जाईल.</translation>
 <translation id="3518985090088779359">स्वीकारा आणि सुरु ठेवा</translation>
@@ -2244,7 +2244,6 @@
 <translation id="4099874310852108874">नेटवर्क एरर आली.</translation>
 <translation id="4100733287846229632">डिव्हाइस वरील स्थान खूप कमी आहे</translation>
 <translation id="4100853287411968461">नवीन स्क्रीन वेळ मर्यादा</translation>
-<translation id="4103091233824664032">स्क्रीन लॉक कॉन्फिगर करण्यासाठी तुमचा पासवर्ड एंटर करा आणि साइन इन करा</translation>
 <translation id="4104163789986725820">नि&amp;र्यात करा...</translation>
 <translation id="4107048419833779140">स्टोरेज डिव्हाइस ओळखा आणि बाहेर काढून टाका</translation>
 <translation id="4109135793348361820"><ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) वर विंडो हलवा</translation>
@@ -2783,6 +2782,7 @@
 <translation id="494286511941020793">प्रॉक्सी कॉन्फिगरेशन मदत</translation>
 <translation id="4943368462779413526">फूटबॉल</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" ना सिरीअल पोर्टशी कनेक्ट करायचे आहे</translation>
+<translation id="4943703118917034429">आभासी वास्तविकता</translation>
 <translation id="4944310289250773232">ही ऑथेंटिकेशन सेवा <ph name="SAML_DOMAIN" /> द्वारे होस्ट केली जाते</translation>
 <translation id="495170559598752135">क्रिया</translation>
 <translation id="4952981627953231344">या डिव्हाइसवर Plugin VM ला अनुमती नाही. तुमच्या संस्थेच्या डिव्हाइस अ‍ॅडमिनिस्ट्रेटरशी संपर्क साधा.</translation>
@@ -3132,7 +3132,6 @@
 <translation id="5468173180030470402">फाइल शेअर शोधत आहात का</translation>
 <translation id="5470735824776589490">Powerwash सह तुमचा डिव्हाइस रीसेट केला जाण्यापूर्वी तो रीस्टार्ट करणे आवश्यक आहे. <ph name="LINK_BEGIN" />अधिक जाणून घ्या<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">हाय! मी तुमचा टेक्‍स्‍ट टू स्‍पीच व्हॉइस आहे.</translation>
-<translation id="5472133193607270166">सुरू केलेली असेल तेव्हा जाहिराती पर्सनलाइझ करण्यासाठी साइट तुमची ब्राउझिंग ॲक्टिव्हिटी विविध साइटवर वापरू शकत नाहीत. काही साइट कदाचित योग्यप्रकारे काम करणार नाहीत.</translation>
 <translation id="5473333559083690127">नवीन पिन पुन्हा प्रविष्‍ट करा</translation>
 <translation id="5481941284378890518">जवळपासचे प्रिंटर जोडा</translation>
 <translation id="5483785310822538350">फाइल आणि डिव्हाइस ॲक्सेस रद्द करा</translation>
@@ -3303,7 +3302,6 @@
 <translation id="5701381305118179107">मध्यभागी</translation>
 <translation id="5701441174893770082">Linux अपग्रेड केल्याने तुमची बॅटरी बऱ्यापैकी संपते. कृपया तुमचे डिव्हाइस चार्जरशी कनेक्ट करा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="5702898740348134351">शोध इंजिने &amp;संपादित करा...</translation>
-<translation id="570302979952009979">या फिंगरप्रिंटसाठी एखादे निवडा</translation>
 <translation id="5704875434923668958">याच्याशी सिंक करत आहे</translation>
 <translation id="5707185214361380026">यावरून एक्स्टेंशन लोड करण्यात अयशस्वी:</translation>
 <translation id="5708171344853220004">Microsoft Principal Name</translation>
@@ -3395,7 +3393,6 @@
 <translation id="5833726373896279253">ही सेटिंग्ज फक्त मालकाद्वारे सुधारित केली जाऊ शकतात:</translation>
 <translation id="5834581999798853053">सुमारे <ph name="TIME" /> मिनिटे बाकी</translation>
 <translation id="5835486486592033703"><ph name="WINDOW_TITLE" /> - कॅमेरा किंवा मायक्रोफोन रेकॉर्डिंग</translation>
-<translation id="5838456317242088717">वर्तमान गुप्त सेशन</translation>
 <translation id="5842497610951477805">ब्लूटूथ सक्षम आहे</translation>
 <translation id="5843250171025351504">तुमच्या ॲडमिनिस्ट्रेटरने नमूद केलेल्या किमान क्लायंट आवृत्तीसह तुमचे डिव्हाइस आता सुसंगत नाही. कृपया लॉग इन करण्यासाठी अपडेट करा.</translation>
 <translation id="5846200638699387931">रिलेशन सिंटॅक्स एरर: <ph name="ERROR_LINE" /></translation>
@@ -3652,7 +3649,6 @@
 <translation id="6181431612547969857">डाउनलोड ब्लॉक केले</translation>
 <translation id="6185132558746749656">डिव्‍हाइस स्‍थान</translation>
 <translation id="6195693561221576702">हे डिव्हाइस ऑफलाइन डेमो मोडमध्ये सेट केले जाऊ शकत नाही.</translation>
-<translation id="6196640612572343990">तृतीय-पक्ष कुकीज अवरोधित करा</translation>
 <translation id="6196854373336333322">"<ph name="EXTENSION_NAME" />" एक्स्टेंशनने तुमच्या प्रॉक्सी सेटिंग्जचे नियंत्रण घेतले आहे, याचा अर्थ हे तुम्ही ऑनलाइन करता ती कोणतीही गोष्ट बदलू शकते, खंडित करू शकते किंवा चोरून ऐकू शकते. हा बदल का झाला, याबद्दल तुम्ही खात्री नसल्यास, तुम्हाला कदाचित तो नको आहे.</translation>
 <translation id="6198102561359457428">साइन आउट करा नंतर पुन्हा साइन इन करा...</translation>
 <translation id="6198252989419008588">पिन बदला</translation>
@@ -4358,7 +4354,6 @@
 <translation id="7225179976675429563">नेटवर्क प्रकार गहाळ</translation>
 <translation id="7227028316978186866"><ph name="DEVICE_NAME" /> (विक्रेता : <ph name="VENDOR_ID" />, उत्पादन: <ph name="PRODUCT_ID" />)</translation>
 <translation id="7228479291753472782">वेबसाइट भौगोलिक स्थान, मायक्रोफोन, कॅमेरा, इ. वैशिष्‍ट्ये वापरू शकतात किंवा नाही ते नमूद करणार्‍या सेटिंग्ज कुशलतेने हाताळा.</translation>
-<translation id="7228523857728654909">स्क्रीन लॉक आणि साइन इन</translation>
 <translation id="7229570126336867161">EVDO आवश्यक आहे</translation>
 <translation id="7230787553283372882">आपला मजकूर आकार कस्टमाइझ करा</translation>
 <translation id="7232750842195536390">नाव बदलण्यात अयशस्वी</translation>
@@ -5273,7 +5268,6 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="850875081535031620">कोणतेही हानिकारक सॉफ्टवेअर आढळले नाही</translation>
 <translation id="8509177919508253835">सिक्युरिटी की रीसेट करा आणि पिन तयार करा</translation>
 <translation id="8509646642152301857">स्पेल चेक शब्दकोश डाउनलोड करणे अयशस्वी.</translation>
-<translation id="8510617356402557055">हे अनपेक्षित होते का? <ph name="BEGIN_LINK" />फीडबॅक पाठवा<ph name="END_LINK" /></translation>
 <translation id="8512476990829870887">प्रक्रिया समाप्त करा</translation>
 <translation id="851263357009351303"> <ph name="HOST" />  ना इमेज दर्शविण्यासाठी नेहमी परवानगी द्या </translation>
 <translation id="8513108775083588393">ऑटो-रोटेट</translation>

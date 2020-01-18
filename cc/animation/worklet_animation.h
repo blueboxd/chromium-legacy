@@ -66,6 +66,7 @@ class CC_ANIMATION_EXPORT WorkletAnimation final : public Animation {
   void UpdateState(bool start_ready_animations,
                    AnimationEvents* events) override;
 
+  void TakeTimeUpdatedEvent(AnimationEvents* events) override;
   void UpdateInputState(MutatorInputState* input_state,
                         base::TimeTicks monotonic_time,
                         const ScrollTree& scroll_tree,

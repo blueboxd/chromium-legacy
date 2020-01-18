@@ -126,7 +126,6 @@
     &lt;p&gt;Սխալը շտկելու համար սեղմեք &lt;strong&gt;Միանալ&lt;/strong&gt; այն էջում, որը փորձում եք բացել։&lt;/p&gt;</translation>
 <translation id="1513706915089223971">Պատմության գրառումների ցանկ</translation>
 <translation id="1517433312004943670">Անհրաժեշտ է մուտքագրել հեռախոսահամար</translation>
-<translation id="1517500485252541695">Ընդունելի վարկային ու դեբետային քարտեր</translation>
 <translation id="1519264250979466059">Կառույցի ամսաթիվ</translation>
 <translation id="1521655867290435174">Google Աղյուսակներ</translation>
 <translation id="1527263332363067270">Կապի վերականգնում...</translation>
@@ -203,7 +202,6 @@
 <translation id="1842969606798536927">Վճարել</translation>
 <translation id="1871208020102129563">Ընտրված է ֆիքսված պրոքսի-սերվերների, այլ ոչ PAC սկրիպտի URL-ի օգտագործումը:</translation>
 <translation id="1871284979644508959">Պարտադիր դաշտ</translation>
-<translation id="1874765382782611674">Դեբետային քարտեր, որոնցով կարելի է վճարել</translation>
 <translation id="1875512691959384712">Google Ձևաթղթեր</translation>
 <translation id="187918866476621466">Բացել մեկնարկի էջերը</translation>
 <translation id="1883255238294161206">Կոծկել ցանկը</translation>
@@ -216,11 +214,9 @@
 <translation id="1919345977826869612">Գովազդ</translation>
 <translation id="1919367280705858090">Որոշակի սխալների վերացման օգնություն</translation>
 <translation id="192020519938775529">{COUNT,plural, =0{Ոչինչ չկա}=1{1 կայք}one{# sites}other{# կայք}}</translation>
-<translation id="1927235823738766038">Վարկային ու դեբետային քարտեր, որոնցով կարելի է վճարել</translation>
 <translation id="194030505837763158">Անցեք <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Հնարավոր է՝ չկարողանաք օգտագործել ձեր կազմակերպության հաշիվը, կամ ինչ-որ մեկը կարող է գողանալ ձեր անձնական տվյալները։ Խորհուրդ ենք տալիս փոխել գաղտնաբառը։</translation>
 <translation id="1947454675006758438">Ամրակ վերևի աջ կողմում</translation>
-<translation id="1948773908305951926">Ընդունելի կանխավճարային քարտեր</translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> տիրույթի էջանիշներ</translation>
 <translation id="1973335181906896915">Serialization error</translation>
 <translation id="1974060860693918893">Լրացուցիչ</translation>
@@ -297,7 +293,6 @@
 <translation id="2315864634253056100">Այս կայքի անունը նման է <ph name="LOOKALIKE_DOMAIN" /> տիրույթի անվանը: Հաքերները երբեմն ստեղծում են կայքերի կրկնօրինակներ՝ փոքր-ինչ փոփոխելով դրանց տիրույթի հասցեները, ինչը հնարավոր չէ միանգամից նկատել։</translation>
 <translation id="2316887270356262533">Կազատվի մինչև 1 ՄԲ տարածք։ Դրանից հետո որոշ կայքեր հնարավոր է՝ ավելի դանդաղ բեռնվեն։</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> տիրույթը պահանջում է օգտանուն և գաղտնաբառ:</translation>
-<translation id="2317583587496011522">Ընդունվում են դեբետային քարտեր։</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, վավեր է մինչև <ph name="EXPIRATION_DATE_ABBR" /></translation>
 <translation id="2337852623177822836">Կարգավորումը վերահսկվում է ձեր ադմինիստրատորի կողմից</translation>
 <translation id="2346319942568447007">Ձեր պատճենած պատկերը</translation>
@@ -337,7 +332,6 @@
 <translation id="2495093607237746763">Եթե նշված է, Chromium-ն այս սարքում կպահի ձեր քարտի կրկնօրինակը՝ ձևն արագ լրացնելու համար:</translation>
 <translation id="2498091847651709837">Որոնել նոր քարտ</translation>
 <translation id="2501278716633472235">Վերադառնալ</translation>
-<translation id="2503184589641749290">Ընդունելի դեբետային ու կանխավճարային քարտեր</translation>
 <translation id="2505268675989099013">Պաշտպանել հաշիվը</translation>
 <translation id="2515629240566999685">Ստուգել ազդանշանը ձեր տարածքում</translation>
 <translation id="2521385132275182522">Ամրակ ներքևի աջ կողմում</translation>
@@ -403,7 +397,6 @@
 <translation id="277499241957683684">Սարքի գրանցված չէ</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Կապակցումը վերակայվել է:</translation>
-<translation id="2788784517760473862">Ընդունելի վարկային քարտեր</translation>
 <translation id="2792012897584536778">Այս սարքի ադմինիստրատորները կարգավորել են անվտանգության հավաստագրեր, որոնց շնորհիվ նրանք կարող են տեսնել ձեր այցելած կայքերի բովանդակությունը:</translation>
 <translation id="2799020568854403057">Կայքը, որը պատրաստվում եք այցելել, պարունակում է վնասարար հավելվածներ</translation>
 <translation id="2799223571221894425">Վերագործարկել</translation>
@@ -550,7 +543,6 @@
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Հաղորդագրություն <ph name="SITE" /> կայքում ներկառուցված էջից</translation>
 <translation id="3581089476000296252">Chrome-ը ձեզ կտեղեկացնի, երբ այս էջը պատրաստ լինի: &lt;a&gt;Չեղարկել&lt;/a&gt;</translation>
-<translation id="358285529439630156">Ընդունվում են վարկային ու կանխավճարային քարտեր։</translation>
 <translation id="3582930987043644930">Ավելացրեք անուն</translation>
 <translation id="3583757800736429874">&amp;Վերարկել տեղափոխումը</translation>
 <translation id="3584299510153766161">Երկու անցք ներքևում</translation>
@@ -615,7 +607,6 @@
 <translation id="3828924085048779000">Անցաբառի դաշտը չի կարող դատարկ լինել:</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> կայքը լրացուցիչ գործառույթների համար ընդլայնումներ է տեղադրել: Ձեր տվյալների մի մասը հասանելի է այդ ընդլայնումներին:</translation>
 <translation id="3832522519263485449">Մի քանի անցք ձախ կողմում</translation>
-<translation id="3838154488026099170">Դուք հենց նոր մուտքագրեցիք ձեր գաղտնաբառը կասկածելի կայքում։ Խորհուրդ ենք տալիս փոխել ձեր գաղտնաբառը, որն օգտագործում եք <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> և այլ կայքերում։</translation>
 <translation id="385051799172605136">Հետ</translation>
 <translation id="3858027520442213535">Թարմացնել ամսաթիվը և ժամը</translation>
 <translation id="3884278016824448484">Սարքերի նույնացուցիչների ընդհարում</translation>
@@ -653,7 +644,6 @@
 <translation id="4072486802667267160">Վճարումը մշակելու ընթացքում սխալ առաջացավ: Նորից փորձեք:</translation>
 <translation id="4075732493274867456">Սպասառուն և սերվերը չեն աջակցում SSL հաղորդակարգի միևնույն տարբերակը կամ ծածկագրման լրակազմը:</translation>
 <translation id="4075941231477579656">Touch ID</translation>
-<translation id="4077092919748553596">Դուք հենց նոր մուտքագրեցիք ձեր գաղտնաբառը կասկածելի կայքում։ Խորհուրդ ենք տալիս փոխել ձեր գաղտնաբառը, որն օգտագործում եք <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> և այլ կայքերում։</translation>
 <translation id="4079302484614802869">Պրոքսի-սերվերի կազմաձևումը նախատեսում է PAC սկրիպտների URL-ների օգտագործում՝ ֆիքսված պրոքսի-սերվերների փոխարեն:</translation>
 <translation id="4082393374666368382">Կարգավորումներ – Կառավարում</translation>
 <translation id="4098354747657067197">Դուք պատրաստվում եք խաբուսիկ կայք այցելել</translation>
@@ -750,7 +740,6 @@
 <translation id="4434045419905280838">Ելնող պատուհաններ և վերահղում</translation>
 <translation id="4435702339979719576">Postcard)</translation>
 <translation id="443673843213245140">Պրոքսի-սերվերի օգտագործումն անջատված է, բայց հատկորոշված է ուղղակի կազմաձևում:</translation>
-<translation id="445100540951337728">Ընդունելի դեբետային քարտեր</translation>
 <translation id="4466881336512663640">Ձևում արված բոլոր փոփոխությունները կկորեն: Շարունակե՞լ։</translation>
 <translation id="4477350412780666475">Հաջորդ կատարումը</translation>
 <translation id="4482953324121162758">Այս կայքը չի թարգմանվի:</translation>
@@ -956,6 +945,7 @@
 <translation id="5457113250005438886">Անվավեր</translation>
 <translation id="5458150163479425638">{CONTACT,plural, =0{<ph name="CONTACT_PREVIEW" />}=1{<ph name="CONTACT_PREVIEW" /> ու ևս <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> կոնտակտ}one{<ph name="CONTACT_PREVIEW" /> ու ևս <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> կոնտակտ}other{<ph name="CONTACT_PREVIEW" /> ու ևս <ph name="NUMBER_OF_ADDITIONAL_CONTACTS" /> կոնտակտ}}</translation>
 <translation id="5470861586879999274">&amp;Վերարկել փոփոխումը</translation>
+<translation id="5472133193607270166">Երբ այս կարգավորումը միացված է, կայքերը չեն կարող օգտագործել ձեր այցելությունների պատմությունը՝ գովազդն անհատականացնելու նպատակով: Որոշ կայքեր կարող են սխալներով աշխատել:</translation>
 <translation id="5478437291406423475">B6/C4 (ծրար)</translation>
 <translation id="5481076368049295676">Այս բովանդակությունը կարող է փորձել ձեր սարքում վնասարար ծրագիր տեղադրել, որը գողանում կամ ջնջում է ձեր տեղեկությունները։ <ph name="BEGIN_LINK" />Միևնույն է ցուցադրել<ph name="END_LINK" /></translation>
 <translation id="54817484435770891">Ավելացրեք վավեր հասցե</translation>
@@ -1009,7 +999,6 @@
 <translation id="570530837424789914">Կառավարել...</translation>
 <translation id="57094364128775171">Ստեղծել հուսալի գաղտնաբառ…</translation>
 <translation id="5710435578057952990">Այս վեբկայքի նույնությունը չի հաստատվել:</translation>
-<translation id="5719499550583120431">Ընդունվում են կանխավճարային քարտեր։</translation>
 <translation id="5720705177508910913">ընթացիկ օգտատիրոջը</translation>
 <translation id="5728056243719941842">C5 (ծրար)</translation>
 <translation id="5730040223043577876">Խորհուրդ ենք տալիս վերակայել ձեր գաղտնաբառը, եթե այն օգտագործել եք այլ կայքերում:</translation>
@@ -1044,7 +1033,6 @@
 <translation id="5869405914158311789">Կայքն անհասանելի է</translation>
 <translation id="5869522115854928033">Պահված գաղտնաբառեր</translation>
 <translation id="5887400589839399685">Քարտը պահվեց</translation>
-<translation id="5893752035575986141">Ընդունվում են վարկային քարտեր։</translation>
 <translation id="5895138241574237353">Վերագործարկել</translation>
 <translation id="5901630391730855834">Դեղին</translation>
 <translation id="5905445707201418379">Արգելափակված է՝ համաձայն <ph name="ORIGIN" />-ի անվտանգության կանոնի:</translation>
@@ -1096,7 +1084,6 @@
 <translation id="6106989379647458772">Հնարավոր է, որ <ph name="PAGE" /> կայքէջը ժամանակավորապես անհասանելի է կամ մշտապես տեղափոխվել է նոր հասցե:</translation>
 <translation id="610911394827799129">Ձեր Google հաշվում կարող են լինել այցելությունների պատմության այլ ձևեր ևս: Դրանք կարող եք գտնել <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> էջում:</translation>
 <translation id="6120179357481664955">Հիշո՞ւմ եք ձեր UPI ID-ն</translation>
-<translation id="6132597952260690497">Տեղեկություններ տեղադրված ընդլայնումների և փլագինների մասին</translation>
 <translation id="6146055958333702838">Ստուգեք բոլոր մալուխները և վերաբեռնեք երթուղիչները, մոդեմները կամ օգտագործվող
     այլ ցանցային սարքերը:</translation>
 <translation id="614940544461990577">Փորձեք՝</translation>
@@ -1105,6 +1092,7 @@
 <translation id="6157877588268064908">Ուղարկման եղանակներն ու պայմանները տեսնելու համար ընտրեք հասցե</translation>
 <translation id="6165508094623778733">Իմանալ ավելին</translation>
 <translation id="6177128806592000436">Կայքին կապակցումը պաշտպանված չէ</translation>
+<translation id="6196640612572343990">Արգելափակել երրորդ կողմի քուքիները</translation>
 <translation id="6203231073485539293">Ստուգեք համացանցի կապակցումը</translation>
 <translation id="6218753634732582820">Հեռացնե՞լ հասցեն Chromium-ից:</translation>
 <translation id="622039917539443112">Զուգահեռ ծալում</translation>
@@ -1177,7 +1165,6 @@
 <translation id="6476284679642588870">Կառավարել վճարման եղանակները</translation>
 <translation id="6489534406876378309">Սկսել խափանումների մասին տեղեկությունների վերբեռնումը</translation>
 <translation id="6499038740797743453">Վերակայե՞լ գաղտնաբառը</translation>
-<translation id="6507833130742554667">Ընդունվում են վարկային ու դեբետային քարտեր։</translation>
 <translation id="6508722015517270189">Վերագործարկեք Chrome-ը</translation>
 <translation id="6517596291481585650">Ուշադրություն: Այս կանոնը չի միավորվել որպես ցուցակ, ինչպես նշված է կանոնում, քանի որ այն ցուցակ չէ:</translation>
 <translation id="6518133107902771759">Ստուգել</translation>
@@ -1317,7 +1304,6 @@
 <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198">Չհաջողվեց մասնավոր կապակցում հաստատել <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> տիրույթի հետ, քանի որ ձեր համակարգչի ամսաթիվը և ժամը (<ph name="DATE_AND_TIME" />) սխալ են:</translation>
 <translation id="7260504762447901703">Արգելել սարքի օգտագործումը</translation>
-<translation id="7271803869921933038">Կանխավճարային քարտեր, որոնցով կարելի է վճարել</translation>
 <translation id="7275334191706090484">Կառավարվող էջանիշներ</translation>
 <translation id="7298195798382681320">Հանձնարարելի</translation>
 <translation id="7300012071106347854">Կոբալտե կապույտ</translation>
@@ -1455,7 +1441,6 @@
 <translation id="785549533363645510">Այնուամենայնիվ, դուք անտեսանելի չեք: Ինկոգնիտո ռեժիմը չի թաքցնում ձեր դիտարկման պատմությունը ձեր գործատուից, ինտերնետային ծառայությունների մատուցողից կամ ձեր այցելած կայքերից:</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7862185352068345852">Փակե՞լ կայքը</translation>
-<translation id="7878176543348854470">Ընդունվում են դեբետային ու կանխավճարային քարտեր։</translation>
 <translation id="7878562273885520351">Ձեր գաղտնաբառը կարող են գողանալ</translation>
 <translation id="7882421473871500483">Շագանակագույն</translation>
 <translation id="7887683347370398519">Ստուգեք ձեր CVC կոդը և նորից փորձեք</translation>
@@ -1617,7 +1602,6 @@
 <translation id="8730621377337864115">Պատրաստ է</translation>
 <translation id="8738058698779197622">Անվտանգ կապակցում հաստատելու համար ձեր ժամացույցը պետք է ճիշտ կարգավորված լինի: Պատճառն այն է, որ վկայագրերը, որոնք կայքերն օգտագործում են իրենց նույնականացնելու համար, վավեր են լինում միայն որոշակի ժամանակահատվածի ընթացքում: Քանի որ ձեր սարքի ժամացույցը սխալ է, Chromium-ը չի կարող ստուգել այս վկայագրերը:</translation>
 <translation id="8740359287975076522"><ph name="HOST_NAME" />-ի &lt;abbr id="dnsDefinition"&gt;DNS հասցեն&lt;/abbr&gt; չհաջողվեց գտնել: Կատարվում է խնդրի ախտորոշում:</translation>
-<translation id="874846938927089722">Վարկային ու կանխավճարային քարտեր, որոնցով կարելի է վճարել</translation>
 <translation id="874918643257405732">Էջանշել այս ներդիրը</translation>
 <translation id="8751426954251315517">Փորձեք ավելի ուշ</translation>
 <translation id="8759274551635299824">Քարտի ժամկետը սպառվել է</translation>
@@ -1651,7 +1635,6 @@
 <translation id="8931333241327730545">Ուզո՞ւմ եք պահել այս քարտը ձեր Google հաշվում:</translation>
 <translation id="8932102934695377596">Ձեր ժամացույցը հետ է ընկել</translation>
 <translation id="893332455753468063">Ավելացրեք անունը</translation>
-<translation id="8938939909778640821">Ընդունելի վարկային ու կանխավճարային քարտեր</translation>
 <translation id="8943282376843390568">Լայմ</translation>
 <translation id="8957210676456822347">Գրավող կայքէջի նույնականացում</translation>
 <translation id="8962950042226115166">Կասկածելի կայք</translation>
@@ -1721,7 +1704,6 @@
 <translation id="939736085109172342">Նոր պանակ</translation>
 <translation id="945855313015696284">Ստուգեք ստորև ներկայացված տեղեկությունները և ջնջեք անվավեր քարտերը</translation>
 <translation id="950736567201356821">Երեք անցք վերևում</translation>
-<translation id="951104842009476243">Դեբետային ու կանխավճարային քարտեր, որոնցով կարելի է վճարել</translation>
 <translation id="961663415146723894">Ամրակար ներքևում</translation>
 <translation id="962484866189421427">Այս բովանդակությունը կարող է փորձել կեղծ հավելվածներ տեղադրել կամ տվյալներ հավաքել՝ ձեզ հետևելու համար։ <ph name="BEGIN_LINK" />Միևնույն է ցուցադրել<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Պաշտոնական տարբերակ</translation>

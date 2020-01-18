@@ -39,9 +39,7 @@ CSPSourceList::CSPSourceList(bool allow_self,
 CSPSourceList::CSPSourceList(network::mojom::CSPSourceListPtr csp_source_list)
     : allow_self(csp_source_list->allow_self),
       allow_star(csp_source_list->allow_star),
-      // TODO(arthursonzogni): Add the allow_response_redirect to the network
-      // CSPSourceList struct.
-      allow_response_redirects(true) {
+      allow_response_redirects(csp_source_list->allow_response_redirects) {
   for (auto& source : csp_source_list->sources)
     sources.push_back(CSPSource(std::move(source)));
 }
@@ -58,11 +56,6 @@ bool CSPSourceList::Allow(const CSPSourceList& source_list,
   // If the source list allows all redirects, the decision can't be made until
   // the response is received.
   if (source_list.allow_response_redirects && !is_response_check)
-    return true;
-
-  // If the source list does not allow all redirects, the decision has already
-  // been made when checking the request.
-  if (!source_list.allow_response_redirects && is_response_check)
     return true;
 
   // Wildcards match network schemes ('http', 'https', 'ftp', 'ws', 'wss'), and

@@ -11,3 +11,14 @@ android_resources("java_resources") {
   resource_dirs = [ "java/res" ]
   custom_package = "org.chromium.chrome.browser.share.qrcode"
 }
+
+android_library("screenshot_java") {
+  sources = [ "java/src/org/chromium/chrome/browser/share/screenshot/ScreenshotCoordinator.java" ]
+
+  deps = [
+    "//chrome/android/modules/image_editor/provider:java",
+    "//chrome/android/modules/image_editor/public:java",
+    "//chrome/browser/image_editor/public:java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
+  ]
+}

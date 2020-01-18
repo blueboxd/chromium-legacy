@@ -74,13 +74,13 @@ void ConfigureGcpCrashReporting(const base::CommandLine& command_line) {
   }
 
   // Check if this is the initial client for the crashpad handler or a sub
-  // process started by the GCPW dll (e.g. the SaveAccountInfo process). Only
-  // the initial client should start the crashpad handler process. Once this
-  // process is started it will communicate via a named pipe (name is saved in a
-  // process level environment variable) with all processes that wish to report
-  // a crash. Subsequent child processes that are started should specify a
-  // "process-type" flag so that they can re-use the shared named pipe without
-  // having to start another crash handler process.
+  // process started by the GCPW dll (e.g. the PerformPostSigninActions
+  // process). Only the initial client should start the crashpad handler
+  // process. Once this process is started it will communicate via a named pipe
+  // (name is saved in a process level environment variable) with all processes
+  // that wish to report a crash. Subsequent child processes that are started
+  // should specify a "process-type" flag so that they can re-use the shared
+  // named pipe without having to start another crash handler process.
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
 

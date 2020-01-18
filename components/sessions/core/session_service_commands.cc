@@ -15,7 +15,7 @@
 #include "base/pickle.h"
 #include "base/token.h"
 #include "components/sessions/core/base_session_service_commands.h"
-#include "components/sessions/core/base_session_service_delegate.h"
+#include "components/sessions/core/command_storage_manager_delegate.h"
 #include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_types.h"
 #include "components/tab_groups/tab_group_color.h"
@@ -986,7 +986,7 @@ std::unique_ptr<SessionCommand> CreateSetWindowAppNameCommand(
                                        app_name);
 }
 
-bool ReplacePendingCommand(BaseSessionService* base_session_service,
+bool ReplacePendingCommand(CommandStorageManager* command_storage_manager,
                            std::unique_ptr<SessionCommand>* command) {
   // We optimize page navigations, which can happen quite frequently and
   // is expensive. And activation is like Highlander, there can only be one!
@@ -994,8 +994,8 @@ bool ReplacePendingCommand(BaseSessionService* base_session_service,
       (*command)->id() != kCommandSetActiveWindow) {
     return false;
   }
-  for (auto i = base_session_service->pending_commands().rbegin();
-       i != base_session_service->pending_commands().rend(); ++i) {
+  for (auto i = command_storage_manager->pending_commands().rbegin();
+       i != command_storage_manager->pending_commands().rend(); ++i) {
     SessionCommand* existing_command = i->get();
     if ((*command)->id() == kCommandUpdateTabNavigation &&
         existing_command->id() == kCommandUpdateTabNavigation) {
@@ -1027,16 +1027,16 @@ bool ReplacePendingCommand(BaseSessionService* base_session_service,
         // existing_command is an update for the same tab/index pair. Replace
         // it with the new one. We need to add to the end of the list just in
         // case there is a prune command after the update command.
-        base_session_service->EraseCommand((i.base() - 1)->get());
-        base_session_service->AppendRebuildCommand(std::move(*command));
+        command_storage_manager->EraseCommand((i.base() - 1)->get());
+        command_storage_manager->AppendRebuildCommand(std::move(*command));
         return true;
       }
       return false;
     }
     if ((*command)->id() == kCommandSetActiveWindow &&
         existing_command->id() == kCommandSetActiveWindow) {
-      base_session_service->SwapCommand(existing_command,
-                                        (std::move(*command)));
+      command_storage_manager->SwapCommand(existing_command,
+                                           (std::move(*command)));
       return true;
     }
   }

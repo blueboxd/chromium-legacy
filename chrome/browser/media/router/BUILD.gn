@@ -185,9 +185,6 @@ if (enable_openscreen) {
       "providers/openscreen/platform/chrome_udp_socket.cc",
       "providers/openscreen/platform/chrome_udp_socket.h",
       "providers/openscreen/platform/logging.cc",
-      "providers/openscreen/platform/mojo_data_pump.cc",
-      "providers/openscreen/platform/mojo_data_pump.h",
-      "providers/openscreen/platform/network_data_pump.h",
       "providers/openscreen/platform/network_util.cc",
       "providers/openscreen/platform/network_util.h",
       "providers/openscreen/platform/time.cc",
@@ -318,7 +315,6 @@ source_set("unittests") {
       "providers/openscreen/network_service_quic_packet_writer_unittest.cc",
       "providers/openscreen/platform/chrome_tls_client_connection_unittest.cc",
       "providers/openscreen/platform/chrome_tls_connection_factory_unittest.cc",
-      "providers/openscreen/platform/mojo_data_pump_unittest.cc",
     ]
   }
 

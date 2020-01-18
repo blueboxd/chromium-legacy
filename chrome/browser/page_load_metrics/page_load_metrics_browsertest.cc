@@ -254,7 +254,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPage) {
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
-  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramParseDuration, 1);
   histogram_tester_.ExpectTotalCount(
@@ -427,14 +426,12 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NoPaintForEmptyDocument) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
-  waiter->AddPageExpectation(TimingField::kFirstLayout);
   waiter->AddPageExpectation(TimingField::kLoadEvent);
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/empty.html"));
   waiter->Wait();
   EXPECT_FALSE(waiter->DidObserveInPage(TimingField::kFirstPaint));
 
-  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 0);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstContentfulPaint,
@@ -457,15 +454,12 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       embedded_test_server()->GetURL("/page_load_metrics/empty_iframe.html"));
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
-  waiter->AddPageExpectation(TimingField::kFirstLayout);
   waiter->AddPageExpectation(TimingField::kLoadEvent);
-  waiter->AddSubFrameExpectation(TimingField::kFirstLayout);
   waiter->AddSubFrameExpectation(TimingField::kLoadEvent);
   ui_test_utils::NavigateToURL(browser(), a_url);
   waiter->Wait();
   EXPECT_FALSE(waiter->DidObserveInPage(TimingField::kFirstPaint));
 
-  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 0);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstContentfulPaint,
@@ -477,7 +471,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInChildFrame) {
 
   GURL a_url(embedded_test_server()->GetURL("/page_load_metrics/iframe.html"));
   auto waiter = CreatePageLoadMetricsTestWaiter();
-  waiter->AddPageExpectation(TimingField::kFirstLayout);
   waiter->AddPageExpectation(TimingField::kLoadEvent);
   waiter->AddPageExpectation(TimingField::kFirstPaint);
   waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
@@ -486,7 +479,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInChildFrame) {
   ui_test_utils::NavigateToURL(browser(), a_url);
   waiter->Wait();
 
-  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 1);
 }
@@ -495,7 +487,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInDynamicChildFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
-  waiter->AddPageExpectation(TimingField::kFirstLayout);
   waiter->AddPageExpectation(TimingField::kLoadEvent);
   waiter->AddPageExpectation(TimingField::kFirstPaint);
   waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
@@ -506,7 +497,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInDynamicChildFrame) {
       embedded_test_server()->GetURL("/page_load_metrics/dynamic_iframe.html"));
   waiter->Wait();
 
-  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 1);
 }
@@ -517,7 +507,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInMultipleChildFrames) {
   GURL a_url(embedded_test_server()->GetURL("/page_load_metrics/iframes.html"));
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
-  waiter->AddPageExpectation(TimingField::kFirstLayout);
   waiter->AddPageExpectation(TimingField::kLoadEvent);
 
   waiter->AddSubFrameExpectation(TimingField::kFirstPaint);
@@ -529,7 +518,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInMultipleChildFrames) {
   ui_test_utils::NavigateToURL(browser(), a_url);
   waiter->Wait();
 
-  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 1);
 }
@@ -541,7 +529,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInMainAndChildFrame) {
       "/page_load_metrics/main_frame_with_iframe.html"));
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
-  waiter->AddPageExpectation(TimingField::kFirstLayout);
   waiter->AddPageExpectation(TimingField::kLoadEvent);
   waiter->AddPageExpectation(TimingField::kFirstPaint);
   waiter->AddPageExpectation(TimingField::kFirstContentfulPaint);
@@ -550,7 +537,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PaintInMainAndChildFrame) {
   ui_test_utils::NavigateToURL(browser(), a_url);
   waiter->Wait();
 
-  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 1);
 }
@@ -559,7 +545,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameDocumentNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
-  waiter->AddPageExpectation(TimingField::kFirstLayout);
   waiter->AddPageExpectation(TimingField::kLoadEvent);
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
@@ -567,7 +552,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameDocumentNavigation) {
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
-  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
 
   // Perform a same-document navigation. No additional metrics should be logged.
   ui_test_utils::NavigateToURL(
@@ -576,14 +560,12 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameDocumentNavigation) {
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
-  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameUrlNavigation) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
-  waiter->AddPageExpectation(TimingField::kFirstLayout);
   waiter->AddPageExpectation(TimingField::kLoadEvent);
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
@@ -591,10 +573,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameUrlNavigation) {
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 1);
-  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 1);
 
   waiter = CreatePageLoadMetricsTestWaiter();
-  waiter->AddPageExpectation(TimingField::kFirstLayout);
   waiter->AddPageExpectation(TimingField::kLoadEvent);
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
@@ -603,7 +583,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, SameUrlNavigation) {
   // We expect one histogram sample for each navigation to title1.html.
   histogram_tester_.ExpectTotalCount(internal::kHistogramDomContentLoaded, 2);
   histogram_tester_.ExpectTotalCount(internal::kHistogramLoad, 2);
-  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 2);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NonHtmlMainResource) {
@@ -817,7 +796,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DISABLED_BadXhtml) {
       embedded_test_server()->GetURL("/page_load_metrics/badxml.xhtml"));
   NavigateToUntrackedUrl();
 
-  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstLayout, 0);
   histogram_tester_.ExpectTotalCount(internal::kHistogramFirstPaint, 0);
 
   histogram_tester_.ExpectBucketCount(
@@ -828,7 +806,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, DISABLED_BadXhtml) {
       page_load_metrics::internal::kPageLoadTimingStatus, 1);
   histogram_tester_.ExpectBucketCount(
       page_load_metrics::internal::kPageLoadTimingStatus,
-      page_load_metrics::internal::INVALID_ORDER_FIRST_LAYOUT_FIRST_PAINT, 1);
+      page_load_metrics::internal::INVALID_ORDER_PARSE_START_FIRST_PAINT, 1);
 }
 
 // Test code that aborts provisional navigations.

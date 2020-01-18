@@ -100,6 +100,7 @@ android_library("test_java") {
 
 generate_jni("jni") {
   sources = [
+    "org/chromium/weblayer_private/BrowserImpl.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
     "org/chromium/weblayer_private/DownloadCallbackProxy.java",
     "org/chromium/weblayer_private/DownloadImpl.java",

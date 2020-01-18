@@ -10,6 +10,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.android_webview.proto.AwVariationsSeedOuterClass.AwVariationsSeed;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
@@ -153,6 +154,13 @@ public class VariationsUtils {
             return false;
         } finally {
             closeSafely(out);
+        }
+    }
+
+    // Logs an INFO message if running in a debug build of Android.
+    public static void debugLog(String message) {
+        if (BuildInfo.isDebugAndroid()) {
+            Log.i(TAG, message);
         }
     }
 }

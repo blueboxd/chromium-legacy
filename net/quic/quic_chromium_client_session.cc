@@ -1538,7 +1538,7 @@ void QuicChromiumClientSession::OnConfigNegotiated() {
 void QuicChromiumClientSession::OnCryptoHandshakeEvent(
     CryptoHandshakeEvent event) {
   if (!callback_.is_null() &&
-      (!require_confirmation_ || event == HANDSHAKE_CONFIRMED ||
+      (!require_confirmation_ || event == EVENT_HANDSHAKE_CONFIRMED ||
        event == ENCRYPTION_ESTABLISHED)) {
     // TODO(rtenneti): Currently for all CryptoHandshakeEvent events, callback_
     // could be called because there are no error events in CryptoHandshakeEvent
@@ -1546,7 +1546,7 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
     // following code needs to changed.
     std::move(callback_).Run(OK);
   }
-  if (event == HANDSHAKE_CONFIRMED) {
+  if (event == EVENT_HANDSHAKE_CONFIRMED) {
     OnCryptoHandshakeComplete();
   }
   quic::QuicSpdySession::OnCryptoHandshakeEvent(event);

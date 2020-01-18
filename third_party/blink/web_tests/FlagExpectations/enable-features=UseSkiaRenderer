@@ -6,8 +6,5 @@
 # One portion of the image is offset.
 crbug.com/1002522 fast/canvas/canvas-toDataURL-webp.html [ Skip ]
 
-crbug.com/1027772 media/video-controls-visibility-multimodal-mouse-after-touch.html [ Failure Pass ]
-crbug.com/1027772 [ Win10 ] media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Failure Pass ]
-
 # Needs rebaseline.
 crbug.com/1039401 [ Linux ] css3/filters/effect-blur-hw.html [ Failure Pass ]

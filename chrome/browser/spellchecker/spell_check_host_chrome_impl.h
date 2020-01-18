@@ -9,6 +9,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "build/build_config.h"
 #include "components/spellcheck/browser/spell_check_host_impl.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
 #if BUILDFLAG(ENABLE_SPELLING_SERVICE)

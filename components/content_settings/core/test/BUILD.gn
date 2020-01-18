@@ -13,9 +13,7 @@ jumbo_static_library("test_support") {
     "content_settings_test_utils.h",
   ]
 
-  public_deps = [
-    "//components/content_settings/core/browser",
-  ]
+  public_deps = [ "//components/content_settings/core/browser" ]
   deps = [
     "//base",
     "//components/content_settings/core/common",

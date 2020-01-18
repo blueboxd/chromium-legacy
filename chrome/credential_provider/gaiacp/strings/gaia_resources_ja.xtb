@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="1337778609052285767">現在のパスワードは、パスワードの複雑さの要件を満たしていません。管理者にお問い合わせください。</translation>
 <translation id="1337821341856692531">現在の Windows パスワードを入力しないで続行すると、情報が永久的に失われる可能性があります。</translation>
 <translation id="1383286653814676580">Google 認証プロバイダのログインページを実行するために使用します。</translation>
 <translation id="1894475569413661128">仕事用アカウントを使用してログインしてください。</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">入力した Windows パスワードが正しくありません。もう一度お試しください。</translation>
 <translation id="2831078752570172210">お使いのアカウントはロックアウトされています。システム管理者にお問い合わせください。</translation>
 <translation id="2844349213149998955">このデバイスで個人用アカウントでログインすることはできません。仕事用アカウントでログインしてください。</translation>
+<translation id="2995851317559936311">パスワードの変更はドメイン コントローラ上でのみ許可されます。管理者にお問い合わせください。</translation>
 <translation id="3306357053520292004">このパソコンのユーザーはこのアカウントですでに追加されています。別のアカウントでログインしてください。</translation>
 <translation id="3926852373333893095">ログインできるのは G Suite Enterprise のユーザーのみです。</translation>
 <translation id="4057329986137569701">内部エラーが発生しました。</translation>
 <translation id="4267670563222825190">ドメイン ユーザーがお使いのアカウントで見つかりませんでした。管理者にお問い合わせください。</translation>
 <translation id="4300229033992784001">アカウントのパスワードが変更されました。Windows アカウントと仕事用アカウントを同期するには、現在の Windows のパスワードを入力してください。</translation>
+<translation id="4669462973597624151">パスワードを変更できませんでした。管理者にお問い合わせください。</translation>
 <translation id="4706454071748629324">新しいユーザーを追加できませんでした。このパソコンで仕事用アカウントを使用して作成できるユーザーは 1 人のみです。</translation>
+<translation id="5186761973554910131">パスワードの変更中に無効なコンピュータ名が指定されました。管理者にお問い合わせください。</translation>
 <translation id="6033715878377252112">Windows 用 Google 認証情報プロバイダ ヘルパー</translation>
 <translation id="6149399665202317746">Windows 用 Google 認証情報プロバイダ</translation>
 <translation id="6239180560789153226">デバイスに復元用の情報がありません。Google 仕事用アカウントでログインします。</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">仕事用アカウントを追加</translation>
 <translation id="7811865856574012727">管理者が、デバイスへのログインを次のドメインに制限しています: <ph name="EMAIL_DOMAINS" />。有効な仕事用アカウントを使用して、もう一度お試しください。</translation>
 <translation id="7856245195110636219">続行するには現在の Windows パスワードを入力する必要があります。システム管理者にお問い合わせください。</translation>
+<translation id="8109730953933509335">無効なユーザーに対してパスワードの変更が試行されました。管理者にお問い合わせください。</translation>
 <translation id="8639729688781680518">Windows パスワードをお忘れの場合</translation>
 <translation id="866458870819756755">ユーザーを作成できませんでした。</translation>
 <translation id="8875753657315897487">仕事用アカウントを使用してログイン</translation>

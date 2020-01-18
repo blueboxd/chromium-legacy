@@ -80,6 +80,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
+#include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
@@ -1083,7 +1084,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(crbug.com/977040): Remove when no longer needed.
   void AddSameSiteCookieDeprecationMessage(
       const std::string& cookie_url,
-      net::CanonicalCookie::CookieInclusionStatus::WarningReason warning,
+      net::CanonicalCookie::CookieInclusionStatus status,
       bool is_lax_by_default_enabled,
       bool is_none_requires_secure_enabled);
 
@@ -1589,7 +1590,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
                      const std::string& unique_name) override;
   void DidSetFramePolicyHeaders(
       blink::WebSandboxFlags sandbox_flags,
-      const blink::ParsedFeaturePolicy& parsed_header) override;
+      const blink::ParsedFeaturePolicy& feature_policy_header,
+      const blink::DocumentPolicy::FeatureState& document_policy_header)
+      override;
   void CancelInitialHistoryLoad() override;
   void UpdateEncoding(const std::string& encoding) override;
   void FrameSizeChanged(const gfx::Size& frame_size) override;
@@ -1607,7 +1610,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
   void DidAddContentSecurityPolicies(
-      const std::vector<ContentSecurityPolicy>& policies) override;
+      std::vector<network::mojom::ContentSecurityPolicyPtr> policies) override;
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif
@@ -2347,6 +2350,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // this RenderFrameHost, but may diverge if this RenderFrameHost is pending
   // deletion.
   blink::WebSandboxFlags active_sandbox_flags_;
+
+  // Tracks the document policy which has been set on this frame.
+  std::unique_ptr<blink::DocumentPolicy> document_policy_;
 
 #if defined(OS_ANDROID)
   // An InterfaceProvider for Java-implemented interfaces that are scoped to

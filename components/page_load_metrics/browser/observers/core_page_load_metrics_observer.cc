@@ -62,10 +62,6 @@ const char kHistogramLoad[] =
     "PageLoad.DocumentTiming.NavigationToLoadEventFired";
 const char kBackgroundHistogramLoad[] =
     "PageLoad.DocumentTiming.NavigationToLoadEventFired.Background";
-const char kHistogramFirstLayout[] =
-    "PageLoad.DocumentTiming.NavigationToFirstLayout";
-const char kBackgroundHistogramFirstLayout[] =
-    "PageLoad.DocumentTiming.NavigationToFirstLayout.Background";
 const char kHistogramFirstPaint[] =
     "PageLoad.PaintTiming.NavigationToFirstPaint";
 const char kBackgroundHistogramFirstPaint[] =
@@ -322,18 +318,6 @@ void CorePageLoadMetricsObserver::OnLoadEventStart(
   } else {
     PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramLoad,
                         timing.document_timing->load_event_start.value());
-  }
-}
-
-void CorePageLoadMetricsObserver::OnFirstLayout(
-    const page_load_metrics::mojom::PageLoadTiming& timing) {
-  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing->first_layout, GetDelegate())) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFirstLayout,
-                        timing.document_timing->first_layout.value());
-  } else {
-    PAGE_LOAD_HISTOGRAM(internal::kBackgroundHistogramFirstLayout,
-                        timing.document_timing->first_layout.value());
   }
 }
 

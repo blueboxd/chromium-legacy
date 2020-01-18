@@ -1264,4 +1264,110 @@ TEST_F(CSPDirectiveListTest, ReportEndpointsProperlyParsed) {
   }
 }
 
+TEST_F(CSPDirectiveListTest, ReasonableObjectRestriction) {
+  struct TestCase {
+    const char* list;
+    bool expected;
+  } cases[] = {// Insufficient restriction!
+               {"img-src *", false},
+               {"object-src *", false},
+               {"object-src https://very.safe.test/", false},
+               {"object-src https:", false},
+               {"script-src *", false},
+               {"script-src https://very.safe.test/", false},
+               {"script-src https:", false},
+               {"script-src 'none'; object-src *", false},
+               {"script-src 'none'; object-src https://very.safe.test/", false},
+               {"script-src 'none'; object-src https:", false},
+
+               // Sufficient restrictions!
+               {"default-src 'none'", true},
+               {"object-src 'none'", true},
+               {"object-src 'none'; script-src 'unsafe-inline'", true},
+               {"object-src 'none'; script-src *", true}};
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(testing::Message() << "List: `" << test.list << "`");
+    Member<CSPDirectiveList> directive_list =
+        CreateList(test.list, ContentSecurityPolicyType::kReport);
+    EXPECT_EQ(test.expected, directive_list->IsObjectRestrictionReasonable());
+    directive_list = CreateList(test.list, ContentSecurityPolicyType::kEnforce);
+    EXPECT_EQ(test.expected, directive_list->IsObjectRestrictionReasonable());
+  }
+}
+
+TEST_F(CSPDirectiveListTest, ReasonableBaseRestriction) {
+  struct TestCase {
+    const char* list;
+    bool expected;
+  } cases[] = {// Insufficient restriction!
+               {"default-src 'none'", false},
+               {"base-uri https://very.safe.test/", false},
+               {"base-uri *", false},
+               {"base-uri https:", false},
+
+               // Sufficient restrictions!
+               {"base-uri 'none'", true},
+               {"base-uri 'self'", true}};
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(testing::Message() << "List: `" << test.list << "`");
+    Member<CSPDirectiveList> directive_list =
+        CreateList(test.list, ContentSecurityPolicyType::kReport);
+    EXPECT_EQ(test.expected, directive_list->IsBaseRestrictionReasonable());
+    directive_list = CreateList(test.list, ContentSecurityPolicyType::kEnforce);
+    EXPECT_EQ(test.expected, directive_list->IsBaseRestrictionReasonable());
+  }
+}
+
+TEST_F(CSPDirectiveListTest, ReasonableScriptRestriction) {
+  struct TestCase {
+    const char* list;
+    bool expected;
+  } cases[] = {
+      // Insufficient restriction!
+      {"img-src *", false},
+      {"script-src *", false},
+      {"script-src https://very.safe.test/", false},
+      {"script-src https:", false},
+      {"default-src 'none'; script-src *", false},
+      {"default-src 'none'; script-src https://very.safe.test/", false},
+      {"default-src 'none'; script-src https:", false},
+
+      // Sufficient restrictions!
+      {"default-src 'none'", true},
+      {"script-src 'none'", true},
+      {"script-src 'nonce-abc'", true},
+      {"script-src 'sha256-abc'", true},
+      {"script-src 'nonce-abc' 'unsafe-inline'", true},
+      {"script-src 'sha256-abc' 'unsafe-inline'", true},
+      {"script-src 'nonce-abc' 'strict-dynamic'", true},
+      {"script-src 'sha256-abc' 'strict-dynamic'", true},
+      {"script-src 'nonce-abc' 'unsafe-inline' 'strict-dynamic'", true},
+      {"script-src 'sha256-abc' 'unsafe-inline' 'strict-dynamic'", true},
+      {"script-src 'nonce-abc' 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes'",
+       true},
+      {"script-src 'sha256-abc' 'unsafe-inline' 'unsafe-eval' 'unsafe-hashes'",
+       true},
+      {"script-src 'nonce-abc' 'strict-dynamic' 'unsafe-eval' 'unsafe-hashes'",
+       true},
+      {"script-src 'sha256-abc' 'strict-dynamic' 'unsafe-eval' 'unsafe-hashes'",
+       true},
+      {"script-src 'nonce-abc' 'unsafe-inline' 'strict-dynamic' 'unsafe-eval' "
+       "'unsafe-hashes'",
+       true},
+      {"script-src 'sha256-abc' 'unsafe-inline' 'strict-dynamic' 'unsafe-eval' "
+       "'unsafe-hashes'",
+       true}};
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(testing::Message() << "List: `" << test.list << "`");
+    Member<CSPDirectiveList> directive_list =
+        CreateList(test.list, ContentSecurityPolicyType::kReport);
+    EXPECT_EQ(test.expected, directive_list->IsScriptRestrictionReasonable());
+    directive_list = CreateList(test.list, ContentSecurityPolicyType::kEnforce);
+    EXPECT_EQ(test.expected, directive_list->IsScriptRestrictionReasonable());
+  }
+}
+
 }  // namespace blink

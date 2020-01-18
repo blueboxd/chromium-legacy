@@ -101,7 +101,7 @@ bool OpenURLParams::Valid() const {
       url.IsAboutBlank() || url.SchemeIs(url::kDataScheme);
   const bool has_valid_initiator =
       initiator_origin.has_value() &&
-      !initiator_origin->GetTupleOrPrecursorTupleIfOpaque().IsInvalid();
+      initiator_origin->GetTupleOrPrecursorTupleIfOpaque().IsValid();
   if (is_data_or_about && has_valid_initiator && !source_site_instance)
     return false;
 

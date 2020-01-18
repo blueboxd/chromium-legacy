@@ -320,13 +320,12 @@ void RenderViewTest::LoadHTMLWithUrlOverride(const char* html,
 }
 
 PageState RenderViewTest::GetCurrentPageState() {
-  RenderViewImpl* view_impl = static_cast<RenderViewImpl*>(view_);
+  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
 
   // This returns a PageState object for the main frame, excluding subframes.
   // This could be extended to all local frames if needed by tests, but it
   // cannot include out-of-process frames.
-  TestRenderFrame* frame =
-      static_cast<TestRenderFrame*>(view_impl->GetMainRenderFrame());
+  auto* frame = static_cast<TestRenderFrame*>(view->GetMainRenderFrame());
   return SingleHistoryItemToPageState(frame->current_history_item());
 }
 
@@ -441,17 +440,19 @@ void RenderViewTest::SetUp() {
   view_params->never_composited = false;
   view_params->visual_properties = InitialVisualProperties();
 
-  RenderViewImpl* view_impl = RenderViewImpl::Create(
+  RenderViewImpl* view = RenderViewImpl::Create(
       compositor_deps_.get(), std::move(view_params),
       RenderWidget::ShowCallback(), base::ThreadTaskRunnerHandle::Get());
+  RenderWidget* render_widget =
+      view->GetMainRenderFrame()->GetLocalRootRenderWidget();
 
-  WidgetMsg_WasShown msg(view_impl->GetWidget()->routing_id(),
+  WidgetMsg_WasShown msg(render_widget->routing_id(),
                          /* show_request_timestamp=*/base::TimeTicks(),
                          /* was_evicted=*/false,
                          /*record_tab_switch_time_request=*/base::nullopt);
-  view_impl->GetWidget()->OnMessageReceived(msg);
+  render_widget->OnMessageReceived(msg);
 
-  view_ = view_impl;
+  view_ = view;
 }
 
 void RenderViewTest::TearDown() {
@@ -527,7 +528,8 @@ void RenderViewTest::SendNativeKeyEvent(
 }
 
 void RenderViewTest::SendInputEvent(const blink::WebInputEvent& input_event) {
-  RenderWidget* widget = static_cast<RenderViewImpl*>(view_)->GetWidget();
+  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
+  RenderWidget* widget = view->GetMainRenderFrame()->GetLocalRootRenderWidget();
   widget->HandleInputEvent(blink::WebCoalescedInputEvent(input_event),
                            ui::LatencyInfo(), HandledEventCallback());
 }
@@ -610,7 +612,8 @@ void RenderViewTest::SimulatePointClick(const gfx::Point& point) {
   mouse_event.button = WebMouseEvent::Button::kLeft;
   mouse_event.SetPositionInWidget(point.x(), point.y());
   mouse_event.click_count = 1;
-  RenderWidget* widget = static_cast<RenderViewImpl*>(view_)->GetWidget();
+  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
+  RenderWidget* widget = view->GetMainRenderFrame()->GetLocalRootRenderWidget();
   widget->HandleInputEvent(blink::WebCoalescedInputEvent(mouse_event),
                            ui::LatencyInfo(), HandledEventCallback());
   mouse_event.SetType(WebInputEvent::kMouseUp);
@@ -633,7 +636,8 @@ void RenderViewTest::SimulatePointRightClick(const gfx::Point& point) {
   mouse_event.button = WebMouseEvent::Button::kRight;
   mouse_event.SetPositionInWidget(point.x(), point.y());
   mouse_event.click_count = 1;
-  RenderWidget* widget = static_cast<RenderViewImpl*>(view_)->GetWidget();
+  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
+  RenderWidget* widget = view->GetMainRenderFrame()->GetLocalRootRenderWidget();
   widget->HandleInputEvent(blink::WebCoalescedInputEvent(mouse_event),
                            ui::LatencyInfo(), HandledEventCallback());
   mouse_event.SetType(WebInputEvent::kMouseUp);
@@ -649,15 +653,16 @@ void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
   gesture_event.data.tap.tap_count = 1;
   gesture_event.data.tap.width = rect.width();
   gesture_event.data.tap.height = rect.height();
-  RenderWidget* widget = static_cast<RenderViewImpl*>(view_)->GetWidget();
+  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
+  RenderWidget* widget = view->GetMainRenderFrame()->GetLocalRootRenderWidget();
   widget->HandleInputEvent(blink::WebCoalescedInputEvent(gesture_event),
                            ui::LatencyInfo(), HandledEventCallback());
   widget->FocusChangeComplete();
 }
 
 void RenderViewTest::SetFocused(const blink::WebElement& element) {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->FocusedElementChanged(blink::WebElement(), element);
+  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
+  view->FocusedElementChanged(blink::WebElement(), element);
 }
 
 void RenderViewTest::Reload(const GURL& url) {
@@ -667,11 +672,11 @@ void RenderViewTest::Reload(const GURL& url) {
       NavigationDownloadPolicy(), false, GURL(), GURL(), PREVIEWS_UNSPECIFIED,
       base::TimeTicks::Now(), "GET", nullptr, base::Optional<SourceLocation>(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
-      InitiatorCSPInfo(), std::vector<int>(), std::string(),
+      CreateInitiatorCSPInfo(), std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
-      static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
+      static_cast<TestRenderFrame*>(view->GetMainRenderFrame());
   FrameLoadWaiter waiter(frame);
   frame->Navigate(std::move(common_params), CreateCommitNavigationParams());
   waiter.Wait();
@@ -682,7 +687,8 @@ void RenderViewTest::Reload(const GURL& url) {
 void RenderViewTest::Resize(gfx::Size new_size,
                             bool is_fullscreen_granted) {
   RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
-  RenderWidget* render_widget = view->GetWidget();
+  RenderWidget* render_widget =
+      view->GetMainRenderFrame()->GetLocalRootRenderWidget();
 
   VisualProperties visual_properties;
   visual_properties.screen_info = ScreenInfo();
@@ -748,17 +754,17 @@ void RenderViewTest::SimulateUserInputChangeForElement(
 
 void RenderViewTest::OnSameDocumentNavigation(blink::WebLocalFrame* frame,
                                               bool is_new_navigation) {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
   blink::WebHistoryItem item;
   item.Initialize();
 
   // Set the document sequence number to be the same as the current page.
   const blink::WebHistoryItem& current_item =
-      impl->GetMainRenderFrame()->current_history_item();
+      view->GetMainRenderFrame()->current_history_item();
   DCHECK(!current_item.IsNull());
   item.SetDocumentSequenceNumber(current_item.DocumentSequenceNumber());
 
-  impl->GetMainRenderFrame()->DidFinishSameDocumentNavigation(
+  view->GetMainRenderFrame()->DidFinishSameDocumentNavigation(
       item,
       is_new_navigation ? blink::kWebStandardCommit
                         : blink::kWebHistoryInertCommit,
@@ -770,8 +776,8 @@ void RenderViewTest::SetUseZoomForDSFEnabled(bool enabled) {
 }
 
 blink::WebWidget* RenderViewTest::GetWebWidget() {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  return impl->GetWidget()->GetWebWidget();
+  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
+  return view->GetMainRenderFrame()->GetLocalRootRenderWidget()->GetWebWidget();
 }
 
 ContentClient* RenderViewTest::CreateContentClient() {
@@ -802,11 +808,11 @@ RenderViewTest::CreateCompositorDependencies() {
 void RenderViewTest::GoToOffset(int offset,
                                 const GURL& url,
                                 const PageState& state) {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
+  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
 
   int history_list_length =
-      impl->HistoryBackListCount() + impl->HistoryForwardListCount() + 1;
-  int pending_offset = offset + impl->history_list_offset_;
+      view->HistoryBackListCount() + view->HistoryForwardListCount() + 1;
+  int pending_offset = offset + view->history_list_offset_;
 
   auto common_params = mojom::CommonNavigationParams::New(
       url, base::nullopt, blink::mojom::Referrer::New(),
@@ -815,17 +821,16 @@ void RenderViewTest::GoToOffset(int offset,
       NavigationDownloadPolicy(), false, GURL(), GURL(), PREVIEWS_UNSPECIFIED,
       base::TimeTicks::Now(), "GET", nullptr, base::Optional<SourceLocation>(),
       false /* started_from_context_menu */, false /* has_user_gesture */,
-      InitiatorCSPInfo(), std::vector<int>(), std::string(),
+      CreateInitiatorCSPInfo(), std::vector<int>(), std::string(),
       false /* is_history_navigation_in_new_child_frame */, base::TimeTicks());
   auto commit_params = CreateCommitNavigationParams();
   commit_params->page_state = state;
   commit_params->nav_entry_id = pending_offset + 1;
   commit_params->pending_history_list_offset = pending_offset;
-  commit_params->current_history_list_offset = impl->history_list_offset_;
+  commit_params->current_history_list_offset = view->history_list_offset_;
   commit_params->current_history_list_length = history_list_length;
 
-  TestRenderFrame* frame =
-      static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
+  auto* frame = static_cast<TestRenderFrame*>(view->GetMainRenderFrame());
   FrameLoadWaiter waiter(frame);
   frame->Navigate(std::move(common_params), std::move(commit_params));
   // The load may actually happen asynchronously, so we pump messages to process
@@ -836,9 +841,10 @@ void RenderViewTest::GoToOffset(int offset,
 }
 
 void RenderViewTest::CreateFakeWebURLLoaderFactory() {
-  auto* frame_impl = static_cast<RenderViewImpl*>(view_)->GetMainRenderFrame();
-  DCHECK(frame_impl);
-  frame_impl->SetWebURLLoaderFactoryOverrideForTest(
+  RenderViewImpl* view = static_cast<RenderViewImpl*>(view_);
+  RenderFrameImpl* main_frame = view->GetMainRenderFrame();
+  DCHECK(main_frame);
+  main_frame->SetWebURLLoaderFactoryOverrideForTest(
       std::make_unique<FakeWebURLLoaderFactory>());
 }
 

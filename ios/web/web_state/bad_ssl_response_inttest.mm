@@ -224,11 +224,11 @@ TEST_P(BadSslResponseTest, ShowSSLErrorPageCommittedInterstitial) {
     return !web_state()->IsLoading();
   }));
   ASSERT_TRUE(test::WaitForWebViewContainingText(
-      web_state(),
-      testing::GetErrorText(web_state(), url, "NSURLErrorDomain",
-                            /*error_code=*/NSURLErrorServerCertificateUntrusted,
-                            /*is_post=*/false, /*is_otr=*/false,
-                            /*has_ssl_info=*/true)));
+      web_state(), testing::GetErrorText(
+                       web_state(), url, "NSURLErrorDomain",
+                       /*error_code=*/NSURLErrorServerCertificateUntrusted,
+                       /*is_post=*/false, /*is_otr=*/false,
+                       /*cert_status=*/net::CERT_STATUS_AUTHORITY_INVALID)));
   ASSERT_TRUE(security_state_info());
   ASSERT_TRUE(security_state_info()->visible_ssl_status);
   EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN,

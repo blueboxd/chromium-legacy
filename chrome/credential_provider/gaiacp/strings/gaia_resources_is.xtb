@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="is">
+<translation id="1337778609052285767">Núverandi aðgangsorð uppfyllir ekki kröfur um samsetningu aðgangsorða. Hafðu samband við kerfisstjórann þinn.</translation>
 <translation id="1337821341856692531">Ef þú heldur áfram án þess að slá inn núverandi Windows aðgangsorð getur það leitt til þess að upplýsingar glatist sem ekki er hægt að endurheimta.</translation>
 <translation id="1383286653814676580">Notað til að keyra innskráningarsíðu skilríkjaveitu Google.</translation>
 <translation id="1894475569413661128">Skráðu þig inn með vinnureikningnum þínum.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Þú færðir inn rangt Windows-aðgangsorð. Reyndu aftur.</translation>
 <translation id="2831078752570172210">Reikningnum þínum hefur verið læst. Hafðu samband við kerfisstjórann þinn.</translation>
 <translation id="2844349213149998955">Ekki er leyfilegt að skrá sig inn í þetta tæki með persónulegum reikningi. Skráðu þig inn með vinnureikningi.</translation>
+<translation id="2995851317559936311">Breyting á aðgangsorði er aðeins leyfð á lénsstýringu. Hafðu samband við kerfisstjórann þinn.</translation>
 <translation id="3306357053520292004">Notanda í þessari tölvu hefur þegar verið bætt við með þessum reikningi. Skráðu þig inn með öðrum reikningi.</translation>
 <translation id="3926852373333893095">Aðeins fyrirtækjanotendur GSuite hafa heimild til að skrá sig inn.</translation>
 <translation id="4057329986137569701">Innri villa kom upp.</translation>
 <translation id="4267670563222825190">Enginn lénsnotandi fannst fyrir reikninginn þinn. Hafðu samband við kerfisstjórann þinn.</translation>
 <translation id="4300229033992784001">Aðgangsorð reikningsins hefur breyst. Sláðu inn núverandi Windows-aðgangsorð til að samstilla Windows-reikninginn þinn við vinnureikninginn.</translation>
+<translation id="4669462973597624151">Ekki tókst að breyta aðgangsorði. Hafðu samband við kerfisstjórann þinn.</translation>
 <translation id="4706454071748629324">Ekki tókst að bæta nýjum notanda við. Þessi tölva leyfir aðeins stofnun eins notanda með vinnureikningi.</translation>
+<translation id="5186761973554910131">Ógilt tölvuheiti var gefið upp þegar reynt var að breyta aðgangsorði. Hafðu samband við kerfisstjórann þinn.</translation>
 <translation id="6033715878377252112">Hjálp skilríkjaveitu Google fyrir Windows</translation>
 <translation id="6149399665202317746">Skilríkjaveita Google fyrir Windows</translation>
 <translation id="6239180560789153226">Endurheimtarupplýsingar vantar fyrir tækið þitt. Skráðu þig inn með Google vinnureikningnum.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Bæta vinnureikningi við</translation>
 <translation id="7811865856574012727">Stjórnandi þinn hefur takmarkað innskráningu tækisins við eftirfarandi lén: <ph name="EMAIL_DOMAINS" />. Reyndu aftur með gildum vinnureikningi.</translation>
 <translation id="7856245195110636219">Ekki er hægt að halda áfram nema núverandi Windows aðgangsorð sé slegið inn. Hafðu samband við kerfisstjóra.</translation>
+<translation id="8109730953933509335">Reynt var að breyta aðgangsorði fyrir ógildan notanda. Hafðu samband við kerfisstjórann þinn.</translation>
 <translation id="8639729688781680518">Gleymt Windows-aðgangsorð</translation>
 <translation id="866458870819756755">Ekki tókst að búa til notanda.</translation>
 <translation id="8875753657315897487">Innskráning með vinnureikningi</translation>

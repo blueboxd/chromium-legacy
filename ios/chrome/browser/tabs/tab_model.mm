@@ -440,20 +440,16 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
       ->IsWebUsageEnabled();
 }
 
+- (BOOL)isRestoringSession {
+  return _sessionRestorationBrowserAgent->IsRestoringSession();
+}
+
 - (BOOL)restoreSessionWindow:(SessionWindowIOS*)window
            forInitialRestore:(BOOL)initialRestore {
   DCHECK(_browserState);
 
   // It is only ok to pass a nil |window| during the initial restore.
   DCHECK(window || initialRestore);
-
-  // Setting the sesion progress to |YES|, so BVC can check it to work around
-  // crbug.com/763964.
-  _restoringSession = YES;
-  base::ScopedClosureRunner updateSessionRestorationProgress(base::BindOnce(^{
-    _restoringSession = NO;
-  }));
-
   return _sessionRestorationBrowserAgent->RestoreSessionWindow(window);
 }
 

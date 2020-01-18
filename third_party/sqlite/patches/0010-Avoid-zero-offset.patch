@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 3 Dec 2019 13:59:19 -0800
-Subject: [PATCH 10/22] Avoid zero offset
+Subject: [PATCH 10/25] Avoid zero offset
 
 Backports https://www.sqlite.org/src/info/3ce804e99bbef83d
 
@@ -25,5 +25,5 @@ index 4a39db0523f5..1689ccee8356 100644
    }else{
      return 0;
 -- 
-2.24.1.735.g03f4e72817-goog
+2.25.0.rc1.283.g88dfdc4193-goog
 

@@ -401,7 +401,8 @@ void DownloadManagerImpl::DetermineDownloadTarget(
     // TODO(asanka): Determine a useful path if |target_path| is empty.
     std::move(callback).Run(
         target_path, download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS, target_path,
+        download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        download::DownloadItem::MixedContentStatus::UNKNOWN, target_path,
         download::DOWNLOAD_INTERRUPT_REASON_NONE);
   }
 }

@@ -284,7 +284,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   base::WeakPtr<PasswordManagerDriver> driver_;
 
   // Id of |driver_|. Cached since |driver_| might become null when frame is
-  // close..
+  // close.
   int driver_id_ = 0;
 
   // TODO(https://crbug.com/943045): use std::variant for keeping

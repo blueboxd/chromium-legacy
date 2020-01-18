@@ -124,6 +124,12 @@ bool SourceListDirective::IsNone() const {
          !allow_dynamic_ && !nonces_.size() && !hashes_.size();
 }
 
+bool SourceListDirective::IsSelf() const {
+  return allow_self_ && !list_.size() && !allow_star_ && !allow_inline_ &&
+         !allow_unsafe_hashes_ && !allow_eval_ && !allow_wasm_eval_ &&
+         !allow_dynamic_ && !nonces_.size() && !hashes_.size();
+}
+
 uint8_t SourceListDirective::HashAlgorithmsUsed() const {
   return hash_algorithms_used_;
 }
@@ -131,6 +137,10 @@ uint8_t SourceListDirective::HashAlgorithmsUsed() const {
 bool SourceListDirective::IsHashOrNoncePresent() const {
   return !nonces_.IsEmpty() ||
          hash_algorithms_used_ != kContentSecurityPolicyHashAlgorithmNone;
+}
+
+bool SourceListDirective::AllowsURLBasedMatching() const {
+  return !allow_dynamic_ && (list_.size() || allow_star_ || allow_self_);
 }
 
 // source-list       = *WSP [ source *( 1*WSP source ) *WSP ]

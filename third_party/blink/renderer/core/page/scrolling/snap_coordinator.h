@@ -49,6 +49,12 @@ class CORE_EXPORT SnapCoordinator final
   cc::SnapAreaData CalculateSnapAreaData(const LayoutBox& snap_area,
                                          const LayoutBox& snap_container);
 
+  bool SnapContainerDataNeedsUpdate() const {
+    return snap_container_data_needs_update_;
+  }
+  void SetSnapContainerDataNeedsUpdate(bool needs_update) {
+    snap_container_data_needs_update_ = needs_update;
+  }
   // Called by Document::PerformScrollSnappingTasks() whenever a style or layout
   // change happens. This will update all snap container data that was affected
   // by the style/layout change.
@@ -71,6 +77,7 @@ class CORE_EXPORT SnapCoordinator final
   friend class SnapCoordinatorTest;
 
   HashSet<LayoutBox*> snap_containers_;
+  bool snap_container_data_needs_update_{false};
 
   // Used for reporting to UMA when snapping on the initial layout affects the
   // initial scroll position.

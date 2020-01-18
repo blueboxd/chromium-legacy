@@ -119,6 +119,10 @@ class CORE_EXPORT HTMLElement : public Element {
   virtual bool IsInteractiveContent() const;
   void DefaultEventHandler(Event&) override;
 
+  // Used to handle return/space key events and simulate clicks. Returns true
+  // if the event is handled.
+  bool HandleKeyboardActivation(Event& event);
+
   static const AtomicString& EventNameForAttributeName(
       const QualifiedName& attr_name);
 

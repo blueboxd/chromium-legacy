@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
+<translation id="1337778609052285767">Praegune parool pole piisavalt keerukas. Võtke ühendust administraatoriga.</translation>
 <translation id="1337821341856692531">Kui jätkate ilma Windowsi praegust parooli sisestamata, võib teave jäädavalt kaotsi minna.</translation>
 <translation id="1383286653814676580">Kasutatakse Google'i mandaadipakkuja sisselogimislehe käitamiseks.</translation>
 <translation id="1894475569413661128">Logige sisse oma töökontoga.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Sisestasite Windowsi jaoks vale parooli. Proovige uuesti.</translation>
 <translation id="2831078752570172210">Teie konto on lukustatud. Võtke ühendust süsteemiadministraatoriga.</translation>
 <translation id="2844349213149998955">Isikliku kontoga sisselogimine pole selles seadmes lubatud. Logige sisse töökontoga.</translation>
+<translation id="2995851317559936311">Parooli muutmine on lubatud ainult domeeni kontrolleris. Võtke ühendust administraatoriga.</translation>
 <translation id="3306357053520292004">Arvutis lisati juba selle kontoga kasutaja. Logige sisse teise kontoga.</translation>
 <translation id="3926852373333893095">Sisse saavad logida ainult GSuite Enterprise'i kasutajad.</translation>
 <translation id="4057329986137569701">Ilmnes sisemine viga.</translation>
 <translation id="4267670563222825190">Teie konto puhul ühtegi domeenikasutajat ei leitud. Võtke ühendust administraatoriga.</translation>
 <translation id="4300229033992784001">Teie konto parool on muutunud. Sisestage oma praegune Windowsi parool, et sünkroonida Windowsi konto töökontoga.</translation>
+<translation id="4669462973597624151">Parooli muutmise katse ebaõnnestus. Võtke ühendust administraatoriga.</translation>
 <translation id="4706454071748629324">Uue kasutaja lisamine nurjus. Arvuti lubab töökontoga luua ainult ühe kasutada.</translation>
+<translation id="5186761973554910131">Parooli muutmise katsel esitati arvuti vale nimi. Võtke ühendust administraatoriga.</translation>
 <translation id="6033715878377252112">Windowsi jaoks mõeldud Google'i identimisteabe teenuste pakkuja abi</translation>
 <translation id="6149399665202317746">Windowsi jaoks mõeldud Google'i identimisteabe teenuste pakkuja</translation>
 <translation id="6239180560789153226">Teie seadmes puudub taasteteave. Logige sisse oma Google'i töökontoga.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Lisa töökonto</translation>
 <translation id="7811865856574012727">Administraator piiras järgmiste domeenide jaoks seadmesse sisselogimist: <ph name="EMAIL_DOMAINS" />. Proovige kasutada kehtivat töökontot.</translation>
 <translation id="7856245195110636219">Ei saa jätkata enne, kui sisestatakse praegune Windowsi parool. Võtke ühendust süsteemiadministraatoriga.</translation>
+<translation id="8109730953933509335">Üritati muuta kehtetu kasutaja parooli. Võtke ühendust administraatoriga.</translation>
 <translation id="8639729688781680518">Unustasin Windowsi parooli</translation>
 <translation id="866458870819756755">Kasutajat ei saanud luua.</translation>
 <translation id="8875753657315897487">Logige sisse oma töökontoga</translation>

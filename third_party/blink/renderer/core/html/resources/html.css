@@ -248,7 +248,8 @@ table {
     display: table;
     border-collapse: separate;
     border-spacing: 2px;
-    border-color: gray
+    border-color: gray;
+    box-sizing: border-box
 }
 
 thead {

@@ -83,8 +83,10 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   bool OutputResult(const CodecPicture* picture,
                     D3D11PictureBuffer* picture_buffer) override;
 
-  static bool GetD3D11FeatureLevel(ComD3D11Device dev,
-                                   D3D_FEATURE_LEVEL* feature_level);
+  static bool GetD3D11FeatureLevel(
+      ComD3D11Device dev,
+      const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
+      D3D_FEATURE_LEVEL* feature_level);
 
   // Return the set of video decoder configs that we support.
   static std::vector<SupportedVideoDecoderConfig>
@@ -159,10 +161,13 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
     // Call to get the D3D11 device failed.
     kCouldNotGetD3D11Device = 7,
 
+    // GPU workarounds has turned this off.
+    kOffByWorkaround = 8,
+
     // For UMA. Must be the last entry. It should be initialized to the
     // numerically largest value above; if you add more entries, then please
     // update this to the last one.
-    kMaxValue = kCouldNotGetD3D11Device
+    kMaxValue = kOffByWorkaround
   };
 
   enum class D3D11LifetimeProgression {

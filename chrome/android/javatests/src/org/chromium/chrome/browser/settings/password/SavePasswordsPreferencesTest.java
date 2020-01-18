@@ -241,7 +241,8 @@ public class SavePasswordsPreferencesTest {
                     getSavedPasswordEntry(index).getUserName());
             fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_PASSWORD,
                     getSavedPasswordEntry(index).getPassword());
-            SettingsLauncher.launchSettingsPage(context, PasswordEntryEditor.class, fragmentArgs);
+            SettingsLauncher.getInstance().launchSettingsPage(
+                    context, PasswordEntryEditor.class, fragmentArgs);
         }
     }
 
@@ -779,7 +780,7 @@ public class SavePasswordsPreferencesTest {
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_URL, "https://example.com");
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_NAME, "test user");
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_PASSWORD, "test password");
-        SettingsLauncher.launchSettingsPage(
+        SettingsLauncher.getInstance().launchSettingsPage(
                 InstrumentationRegistry.getContext(), PasswordEntryEditor.class, fragmentArgs);
 
         Espresso.onView(withId(R.id.site_edit)).check(matches(withText("https://example.com")));
@@ -866,7 +867,7 @@ public class SavePasswordsPreferencesTest {
         fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_NAME, "test user");
         fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_URL, "https://example.com");
         fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_PASSWORD, "test password");
-        SettingsLauncher.launchSettingsPage(
+        SettingsLauncher.getInstance().launchSettingsPage(
                 InstrumentationRegistry.getContext(), PasswordEntryEditor.class, fragmentArgs);
 
         ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);

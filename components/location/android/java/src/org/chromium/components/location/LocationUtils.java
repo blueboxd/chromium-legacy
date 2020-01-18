@@ -12,7 +12,6 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Process;
 import android.provider.Settings;
-import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -37,7 +36,7 @@ public class LocationUtils {
     protected LocationUtils() {}
 
     /**
-     * Returns the singleton instance of LocationSettings, creating it if needed.
+     * Returns the singleton instance of LocationUtils, creating it if needed.
      */
     public static LocationUtils getInstance() {
         ThreadUtils.assertOnUiThread();
@@ -80,14 +79,11 @@ public class LocationUtils {
             LocationManager locationManager =
                     (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
             return locationManager != null && ApiHelperForP.isLocationEnabled(locationManager);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            return Settings.Secure.getInt(context.getContentResolver(),
-                           Settings.Secure.LOCATION_MODE, Settings.Secure.LOCATION_MODE_OFF)
-                    != Settings.Secure.LOCATION_MODE_OFF;
-        } else {
-            return !TextUtils.isEmpty(Settings.Secure.getString(
-                    context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED));
         }
+
+        return Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE,
+                       Settings.Secure.LOCATION_MODE_OFF)
+                != Settings.Secure.LOCATION_MODE_OFF;
     }
 
     /**
@@ -103,19 +99,11 @@ public class LocationUtils {
             return locationManager != null && ApiHelperForP.isLocationEnabled(locationManager)
                     && locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
                     && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            return Settings.Secure.getInt(context.getContentResolver(),
-                           Settings.Secure.LOCATION_MODE, Settings.Secure.LOCATION_MODE_OFF)
-                    == Settings.Secure.LOCATION_MODE_SENSORS_ONLY;
-        } else {
-            // Before Android K, location provider settings were stored as a comma-delimited list
-            // containing the names of enabled providers. In sensors-only mode, the GPS provider is
-            // present and the network provider is absent.
-            String locationProviders = Settings.Secure.getString(
-                    context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-            return locationProviders.contains(LocationManager.GPS_PROVIDER)
-                    && !locationProviders.contains(LocationManager.NETWORK_PROVIDER);
         }
+
+        return Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE,
+                       Settings.Secure.LOCATION_MODE_OFF)
+                == Settings.Secure.LOCATION_MODE_SENSORS_ONLY;
     }
 
     /**

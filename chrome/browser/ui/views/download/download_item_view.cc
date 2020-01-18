@@ -120,7 +120,7 @@ constexpr int kDangerIconOffset = 8;
 class SeparatorBorder : public views::Border {
  public:
   explicit SeparatorBorder(SkColor separator_color)
-      : separator_color_(separator_color) {}
+      : views::Border(separator_color) {}
   ~SeparatorBorder() override {}
 
   void Paint(const views::View& view, gfx::Canvas* canvas) override {
@@ -130,7 +130,7 @@ class SeparatorBorder : public views::Border {
     int end_x = base::i18n::IsRTL() ? 0 : view.width() - 1;
     canvas->DrawLine(gfx::Point(end_x, kTopBottomPadding),
                      gfx::Point(end_x, view.height() - kTopBottomPadding),
-                     separator_color_);
+                     color());
   }
 
   gfx::Insets GetInsets() const override { return gfx::Insets(0, 0, 0, 1); }
@@ -138,9 +138,6 @@ class SeparatorBorder : public views::Border {
   gfx::Size GetMinimumSize() const override {
     return gfx::Size(1, 2 * kTopBottomPadding + 1);
   }
-
- private:
-  SkColor separator_color_;
 
   DISALLOW_COPY_AND_ASSIGN(SeparatorBorder);
 };

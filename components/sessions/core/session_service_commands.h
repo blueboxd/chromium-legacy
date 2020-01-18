@@ -14,7 +14,7 @@
 #include "base/optional.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/token.h"
-#include "components/sessions/core/base_session_service.h"
+#include "components/sessions/core/command_storage_manager.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/sessions_export.h"
 #include "components/tab_groups/tab_group_id.h"
@@ -89,12 +89,12 @@ SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetWindowWorkspaceCommand(
     const SessionID& window_id,
     const std::string& workspace);
 
-// Searches for a pending command using |base_session_service| that can be
+// Searches for a pending command using |command_storage_manager| that can be
 // replaced with |command|. If one is found, pending command is removed, the
 // command is added to the pending commands (taken ownership) and true is
 // returned.
 SESSIONS_EXPORT bool ReplacePendingCommand(
-    BaseSessionService* base_session_service,
+    CommandStorageManager* command_storage_manager,
     std::unique_ptr<SessionCommand>* command);
 
 // Returns true if provided |command| either closes a window or a tab.

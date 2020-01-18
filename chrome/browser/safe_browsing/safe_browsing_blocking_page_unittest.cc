@@ -972,6 +972,8 @@ TEST_F(SafeBrowsingBlockingPageTest, MalwareReportsToggling) {
 // Test that extended reporting option is not shown in incognito window.
 TEST_F(SafeBrowsingBlockingPageIncognitoTest,
        ExtendedReportingNotShownInIncognito) {
+  if (base::FeatureList::IsEnabled(kCommittedSBInterstitials))
+    return;
   // Enable malware details.
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());

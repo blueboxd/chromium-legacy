@@ -33,6 +33,8 @@ class SyncService;
 }  // namespace syncer
 
 class SharingFCMHandler;
+class SharingHandlerRegistry;
+class SharingMessageHandler;
 class SharingSyncPreference;
 class VapidKeyManager;
 class SharingDeviceSource;
@@ -61,6 +63,7 @@ class SharingService : public KeyedService, public syncer::SyncServiceObserver {
       std::unique_ptr<SharingDeviceRegistration> sharing_device_registration,
       std::unique_ptr<SharingMessageSender> message_sender,
       std::unique_ptr<SharingDeviceSource> device_source,
+      std::unique_ptr<SharingHandlerRegistry> handler_registry,
       std::unique_ptr<SharingFCMHandler> fcm_handler,
       syncer::SyncService* sync_service);
   SharingService(const SharingService&) = delete;
@@ -88,6 +91,15 @@ class SharingService : public KeyedService, public syncer::SyncServiceObserver {
       base::TimeDelta response_timeout,
       chrome_browser_sharing::SharingMessage message,
       SharingMessageSender::ResponseCallback callback);
+
+  // Register SharingMessageHandler for |payload_cases|.
+  void RegisterSharingHandler(
+      std::unique_ptr<SharingMessageHandler> handler,
+      chrome_browser_sharing::SharingMessage::PayloadCase payload_case);
+
+  // Unregister SharingMessageHandler for |payload_case|.
+  void UnregisterSharingHandler(
+      chrome_browser_sharing::SharingMessage::PayloadCase payload_case);
 
   // Used to register devices with required capabilities in tests.
   void RegisterDeviceInTesting(
@@ -129,6 +141,7 @@ class SharingService : public KeyedService, public syncer::SyncServiceObserver {
   std::unique_ptr<SharingDeviceRegistration> sharing_device_registration_;
   std::unique_ptr<SharingMessageSender> message_sender_;
   std::unique_ptr<SharingDeviceSource> device_source_;
+  std::unique_ptr<SharingHandlerRegistry> handler_registry_;
   std::unique_ptr<SharingFCMHandler> fcm_handler_;
 
   syncer::SyncService* sync_service_;

@@ -45,6 +45,8 @@ constexpr FrameSinkId kAnotherArbitraryFrameSinkId(2, 2);
 
 const base::UnguessableToken kArbitraryToken =
     base::UnguessableToken::Deserialize(1, 2);
+const base::UnguessableToken kAnotherArbitraryToken =
+    base::UnguessableToken::Deserialize(2, 2);
 const base::UnguessableToken kArbitrarySourceId1 =
     base::UnguessableToken::Deserialize(0xdead, 0xbeef);
 const base::UnguessableToken kArbitrarySourceId2 =
@@ -1168,6 +1170,37 @@ TEST_F(CompositorFrameSinkSupportTest,
   EXPECT_CALL(frame_sink_manager_client_, OnFirstSurfaceActivation(_));
   EXPECT_CALL(frame_sink_manager_client_, OnFrameTokenChanged(_, frame_token));
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+}
+
+// Verify that FrameToken is sent to the client if and only if the frame is
+// active.
+TEST_F(CompositorFrameSinkSupportTest, OnFrameTokenUpdate) {
+  LocalSurfaceId child_local_surface_id(1, kAnotherArbitraryToken);
+  SurfaceId child_id(kAnotherArbitraryFrameSinkId, child_local_surface_id);
+
+  auto frame = CompositorFrameBuilder()
+                   .AddDefaultRenderPass()
+                   .SetSendFrameTokenToEmbedder(true)
+                   .SetActivationDependencies({child_id})
+                   .Build();
+  uint32_t frame_token = frame.metadata.frame_token;
+  ASSERT_NE(frame_token, 0u);
+
+  LocalSurfaceId local_surface_id(1, kArbitraryToken);
+  support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
+
+  Surface* surface = support_->GetLastCreatedSurfaceForTesting();
+  EXPECT_TRUE(surface->has_deadline());
+  EXPECT_FALSE(surface->HasActiveFrame());
+  EXPECT_TRUE(surface->HasPendingFrame());
+
+  // Since the frame is not activated, |frame_token| is not sent to the client.
+  EXPECT_CALL(frame_sink_manager_client_, OnFrameTokenChanged(_, _)).Times(0);
+  testing::Mock::VerifyAndClearExpectations(&frame_sink_manager_client_);
+
+  // Since the frame is now activated, |frame_token| is sent to the client.
+  EXPECT_CALL(frame_sink_manager_client_, OnFrameTokenChanged(_, frame_token));
+  surface->ActivatePendingFrameForDeadline();
 }
 
 // This test verifies that it is not possible to reuse the same embed token in

@@ -80,16 +80,15 @@ class BaseDialogContainer : public views::DialogDelegateView {
   BaseDialogContainer(std::unique_ptr<views::View> dialog_body,
                       const base::Closure& close_callback)
       : dialog_body_(AddChildView(std::move(dialog_body))),
-        close_callback_(close_callback) {}
+        close_callback_(close_callback) {
+    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  }
   ~BaseDialogContainer() override {}
 
  protected:
   views::View* dialog_body() { return dialog_body_; }
 
  private:
-  // Overridden from views::DialogDelegate:
-  int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
-
   // Overridden from views::WidgetDelegate:
   ui::ModalType GetModalType() const override { return kModalType; }
   void WindowClosing() override {

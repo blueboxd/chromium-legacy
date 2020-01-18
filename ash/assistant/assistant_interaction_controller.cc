@@ -950,9 +950,11 @@ void AssistantInteractionController::StartScreenContextInteraction(
 }
 
 void AssistantInteractionController::StartTextInteraction(
-    const std::string text,
+    const std::string& text,
     bool allow_tts,
     AssistantQuerySource query_source) {
+  DCHECK(assistant_);
+
   StopActiveInteraction(false);
 
   model_.SetPendingQuery(

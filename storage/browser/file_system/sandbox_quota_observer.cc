@@ -82,12 +82,12 @@ void SandboxQuotaObserver::OnAccess(const FileSystemURL& url) {
   }
 }
 
-void SandboxQuotaObserver::SetUsageCacheEnabled(const GURL& origin,
+void SandboxQuotaObserver::SetUsageCacheEnabled(const url::Origin& origin,
                                                 FileSystemType type,
                                                 bool enabled) {
   if (quota_manager_proxy_.get()) {
     quota_manager_proxy_->SetUsageCacheEnabled(
-        storage::QuotaClient::kFileSystem, url::Origin::Create(origin),
+        storage::QuotaClient::kFileSystem, origin,
         FileSystemTypeToQuotaStorageType(type), enabled);
   }
 }

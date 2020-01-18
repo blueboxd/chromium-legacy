@@ -319,7 +319,8 @@ base::Optional<float> PredictionManager::GetValueForClientFeature(
     }
     case proto::
         CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_PREVIOUS_PAGE_LOAD: {
-      return previous_load_fcp_ms_.value_or(0.0);
+      return previous_load_fcp_ms_.value_or(static_cast<float>(
+          pref_service_->GetDouble(prefs::kSessionStatisticFCPMean)));
     }
     default: {
       return base::nullopt;

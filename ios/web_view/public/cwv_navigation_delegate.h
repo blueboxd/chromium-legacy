@@ -12,7 +12,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@protocol CRIWVTranslateDelegate;
 @class CWVDownloadTask;
 @class CWVSSLStatus;
 @class CWVWebView;

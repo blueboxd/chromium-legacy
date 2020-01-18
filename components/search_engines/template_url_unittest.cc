@@ -1741,7 +1741,7 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
   // Test the current common case, which uses no home country or previous
   // event.
   TemplateURLRef::SearchTermsArgs::ContextualSearchParams params(
-      2, 1, std::string(), 0, 0);
+      2, 1, std::string(), 0, 0, false);
   search_terms_args.contextual_search_params = params;
   result = url.url_ref().ReplaceSearchTerms(search_terms_args,
                                             search_terms_data_);
@@ -1753,8 +1753,8 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
 
   // Test the home country and non-zero event data case.
   search_terms_args.contextual_search_params =
-      TemplateURLRef::SearchTermsArgs::ContextualSearchParams(2, 2, "CH",
-                                                              1657713458, 5);
+      TemplateURLRef::SearchTermsArgs::ContextualSearchParams(
+          2, 2, "CH", 1657713458, 5, false);
   result =
       url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
 
@@ -1766,6 +1766,17 @@ TEST_F(TemplateURLTest, ContextualSearchParameters) {
       "ctxsl_pid=1657713458&"
       "ctxsl_per=5",
       result);
+
+  // Test exact-search.
+  search_terms_args.contextual_search_params =
+      TemplateURLRef::SearchTermsArgs::ContextualSearchParams(
+          2, 1, std::string(), 0, 0, true);
+  result =
+      url.url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data_);
+
+  // Find our param.
+  size_t found_pos = result.find("ctxsl_exact=1");
+  EXPECT_NE(found_pos, std::string::npos);
 }
 
 TEST_F(TemplateURLTest, GenerateKeyword) {

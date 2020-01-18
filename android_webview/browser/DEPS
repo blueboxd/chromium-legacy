@@ -65,6 +65,9 @@ include_rules = [
   "+services/resource_coordinator/public/cpp",
   "+services/service_manager/public/cpp",
 
+  # This is needed for AwPacResolver
+  "+services/proxy_resolver",
+
   # network service related unit tests
   "+services/network/test",
   "+mojo/core/embedder/embedder.h",

@@ -15,7 +15,7 @@ js_type_check("closure_compile") {
 js_library("change_picture") {
   deps = [
     ":change_picture_browser_proxy",
-    "../..:route",
+    "..:os_route",
     "//third_party/polymer/v1_0/components-chromium/iron-selector:iron-selector-extracted",
     "//ui/webui/resources/cr_elements/chromeos/cr_picture:cr_picture_list",
     "//ui/webui/resources/cr_elements/chromeos/cr_picture:cr_picture_pane",
@@ -35,7 +35,7 @@ js_library("change_picture_browser_proxy") {
 js_library("personalization_page") {
   deps = [
     ":wallpaper_browser_proxy",
-    "../..:route",
+    "..:os_route",
     "../..:router",
     "../../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:cr",

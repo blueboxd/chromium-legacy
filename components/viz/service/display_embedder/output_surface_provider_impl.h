@@ -56,6 +56,8 @@ class VIZ_SERVICE_EXPORT OutputSurfaceProviderImpl
       mojom::DisplayClient* display_client,
       const RendererSettings& renderer_settings) override;
 
+  gpu::SharedImageManager* GetSharedImageManager() override;
+
  private:
   std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceForPlatform(
       gpu::SurfaceHandle surface_handle,

@@ -16,7 +16,6 @@ js_type_check("closure_compile") {
 js_library("main_page_behavior") {
   deps = [
     ":settings_section",
-    "..:route",
     "..:router",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:util",

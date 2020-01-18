@@ -147,8 +147,10 @@ class DeviceTarget(target.Target):
                  '-device-limit', '1',  # Exit early as soon as a host is found.
                  self._node_name]
     else:
-      command = [dev_finder_path, 'list', '-full',
-                 '-timeout', str(_LIST_DEVICES_TIMEOUT_SECS * 1000)]
+      command = [
+          dev_finder_path, 'list', '-full', '-timeout',
+          "%ds" % _LIST_DEVICES_TIMEOUT_SECS
+      ]
 
     proc = subprocess.Popen(command,
                             stdout=subprocess.PIPE,

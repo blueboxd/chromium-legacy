@@ -65,7 +65,7 @@ js_library("cups_printers") {
     ":cups_printers_browser_proxy",
     ":cups_printers_entry_manager",
     ":cups_saved_printers",
-    "../..:route",
+    "..:os_route",
     "../..:router",
     "../localized_link:localized_link",
     "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
@@ -121,7 +121,7 @@ js_library("cups_saved_printers") {
 
 js_library("os_printing_page") {
   deps = [
-    "../..:route",
+    "..:os_route",
     "../..:router",
     "../../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:assert",

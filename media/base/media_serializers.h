@@ -137,6 +137,14 @@ struct MediaSerializer<media::AudioCodec> {
 
 // Enum (simple)
 template <>
+struct MediaSerializer<media::AudioCodecProfile> {
+  static inline base::Value Serialize(media::AudioCodecProfile value) {
+    return base::Value(GetProfileName(value));
+  }
+};
+
+// Enum (simple)
+template <>
 struct MediaSerializer<media::VideoCodec> {
   static inline base::Value Serialize(media::VideoCodec value) {
     return base::Value(GetCodecName(value));
@@ -227,6 +235,7 @@ struct MediaSerializer<media::AudioDecoderConfig> {
   static base::Value Serialize(const media::AudioDecoderConfig& value) {
     base::Value result(base::Value::Type::DICTIONARY);
     FIELD_SERIALIZE("codec", value.codec());
+    FIELD_SERIALIZE("profile", value.profile());
     FIELD_SERIALIZE("bytes per channel", value.bytes_per_channel());
     FIELD_SERIALIZE("channel layout", value.channel_layout());
     FIELD_SERIALIZE("channels", value.channels());

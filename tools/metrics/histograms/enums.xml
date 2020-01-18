@@ -3346,6 +3346,11 @@ Unknown properties are collapsed to zero. -->
   <int value="16" label="kCodecAC3"/>
 </enum>
 
+<enum name="AudioCodecProfile">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="xHE-AAC"/>
+</enum>
+
 <enum name="AudioDevicePropertyResult">
   <int value="0" label="Other"/>
   <int value="1" label="Device has changed"/>

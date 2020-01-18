@@ -29,6 +29,7 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/overlay_processor_stub.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -79,11 +80,12 @@ SurfacesInstance::SurfacesInstance()
   auto scheduler = std::make_unique<viz::DisplayScheduler>(
       begin_frame_source_.get(), nullptr /* current_task_runner */,
       output_surface->capabilities().max_frames_pending);
+  auto overlay_processor = std::make_unique<viz::OverlayProcessorStub>();
   display_ = std::make_unique<viz::Display>(
       nullptr /* shared_bitmap_manager */,
       output_surface_provider_.renderer_settings(), frame_sink_id_,
-      std::move(output_surface), std::move(scheduler),
-      nullptr /* current_task_runner */);
+      std::move(output_surface), std::move(overlay_processor),
+      std::move(scheduler), nullptr /* current_task_runner */);
   display_->Initialize(this, frame_sink_manager_->surface_manager(),
                        output_surface_provider_.enable_shared_image());
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),

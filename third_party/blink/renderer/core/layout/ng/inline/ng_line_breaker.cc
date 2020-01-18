@@ -1313,6 +1313,21 @@ void NGLineBreaker::HandleAtomicInline(
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
 
+  const LayoutUnit remaining_width = RemainingAvailableWidth();
+  bool ignore_overflow_if_negative_margin = false;
+  if (state_ == LineBreakState::kContinue && remaining_width < 0) {
+    const unsigned item_index = item_index_;
+    DCHECK_EQ(item_index, static_cast<unsigned>(&item - Items().begin()));
+    DCHECK(!line_info->HasOverflow());
+    HandleOverflow(line_info);
+    if (!line_info->HasOverflow() || item_index != item_index_)
+      return;
+    // Compute margins if this line overflows. Negative margins can put the
+    // position back.
+    DCHECK_NE(state_, LineBreakState::kContinue);
+    ignore_overflow_if_negative_margin = true;
+  }
+
   // Compute margins before computing overflow, because even when the current
   // position is beyond the end, negative margins can bring this item back to on
   // the current line.
@@ -1320,13 +1335,18 @@ void NGLineBreaker::HandleAtomicInline(
   item_result->margins =
       ComputeLineMarginsForVisualContainer(constraint_space_, style);
   LayoutUnit inline_margins = item_result->margins.InlineSum();
-  LayoutUnit remaining_width = RemainingAvailableWidth();
-  bool is_overflow_before =
-      state_ == LineBreakState::kContinue && remaining_width < 0;
-  if (UNLIKELY(is_overflow_before && inline_margins > remaining_width)) {
-    RemoveLastItem(line_info);
-    HandleOverflow(line_info);
-    return;
+  if (UNLIKELY(ignore_overflow_if_negative_margin)) {
+    DCHECK_LT(remaining_width, 0);
+    // The margin isn't negative, or the negative margin isn't large enough to
+    // put the position back. Break this line before this item.
+    if (inline_margins >= remaining_width) {
+      RemoveLastItem(line_info);
+      return;
+    }
+    // This line once overflowed, but the negative margin puts the position
+    // back.
+    state_ = LineBreakState::kContinue;
+    line_info->SetHasOverflow(false);
   }
 
   // When we're just computing min/max content sizes, we can skip the full

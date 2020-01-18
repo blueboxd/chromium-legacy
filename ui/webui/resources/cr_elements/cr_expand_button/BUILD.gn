@@ -17,9 +17,6 @@ polymer_modulizer("cr_expand_button") {
   js_file = "cr_expand_button.js"
   html_file = "cr_expand_button.html"
   html_type = "dom-module"
-  namespace_rewrites = [ "cr.ui.focusWithoutInk|focusWithoutInk" ]
-  auto_imports =
-      [ "ui/webui/resources/html/cr/ui/focus_without_ink.html|focusWithoutInk" ]
 }
 
 js_type_check("closure_compile_module") {

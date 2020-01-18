@@ -20,7 +20,7 @@ js_library("plugin_vm_browser_proxy") {
 
 js_library("plugin_vm_page") {
   deps = [
-    "../..:route",
+    "..:os_route",
     "../..:router",
     "//ui/webui/resources/js:i18n_behavior",
   ]
@@ -36,7 +36,7 @@ js_library("plugin_vm_shared_paths") {
 
 js_library("plugin_vm_subpage") {
   deps = [
-    "../..:route",
+    "..:os_route",
     "../..:router",
   ]
 }

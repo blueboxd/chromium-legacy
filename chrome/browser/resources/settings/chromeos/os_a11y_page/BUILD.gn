@@ -18,7 +18,7 @@ js_type_check("closure_compile") {
 
 js_library("os_a11y_page") {
   deps = [
-    "../..:route",
+    "..:os_route",
     "../../:router",
     "../../settings_page:settings_animated_pages",
     "//ui/webui/resources/js:load_time_data",
@@ -28,8 +28,8 @@ js_library("os_a11y_page") {
 
 js_library("manage_a11y_page") {
   deps = [
+    "..:os_route",
     "..:route_origin_behavior",
-    "../..:route",
     "../..:router",
     "../device_page:device_page_browser_proxy",
     "//ui/webui/resources/js:load_time_data",

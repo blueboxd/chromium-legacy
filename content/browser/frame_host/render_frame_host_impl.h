@@ -1322,6 +1322,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const GURL& blocked_url,
       const GURL& initiator_url,
       blink::mojom::NavigationBlockedReason reason) override;
+  void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override;
 
  protected:
   friend class RenderFrameHostFactory;

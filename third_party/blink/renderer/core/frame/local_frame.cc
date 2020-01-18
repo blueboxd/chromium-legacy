@@ -273,7 +273,9 @@ void LocalFrame::Navigate(FrameLoadRequest& request,
     // create a new back/forward item. The spec only explicitly mentions this in
     // the context of navigating an iframe.
     if (!GetDocument()->LoadEventFinished() &&
-        !HasTransientUserActivation(this)) {
+        !HasTransientUserActivation(this) &&
+        request.ClientRedirectReason() !=
+            ClientNavigationReason::kAnchorClick) {
       frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
     }
   }

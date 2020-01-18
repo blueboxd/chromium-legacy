@@ -48,7 +48,7 @@ public class CloseButtonNavigator {
             BrowserServicesIntentDataProvider intentDataProvider) {
         mTabController = tabController;
         mTabProvider = tabProvider;
-        mButtonClosesChildTab = (intentDataProvider.getWebappExtras() != null);
+        mButtonClosesChildTab = intentDataProvider.isWebappOrWebApkActivity();
     }
 
     // TODO(peconn): Replace with Predicate<T> when we can use Java 8 libraries.

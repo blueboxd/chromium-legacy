@@ -8,6 +8,7 @@ cr.define('settings_people_page_sync_controls', function() {
     let browserProxy = null;
 
     setup(function() {
+      sync_test_util.setupRouterWithSyncRoutes();
       browserProxy = new TestSyncBrowserProxy();
       settings.SyncBrowserProxyImpl.instance_ = browserProxy;
 

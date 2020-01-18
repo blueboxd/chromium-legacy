@@ -16,6 +16,7 @@
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/output_surface.h"
+#include "components/viz/service/display/overlay_processor_stub.h"
 #include "components/viz/service/display/skia_output_surface.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -100,10 +101,11 @@ bool TestLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
         display_output_surface->capabilities().max_frames_pending);
   }
 
+  auto overlay_processor = std::make_unique<viz::OverlayProcessorStub>();
   display_ = std::make_unique<viz::Display>(
       shared_bitmap_manager_.get(), renderer_settings_, frame_sink_id_,
-      std::move(display_output_surface), std::move(scheduler),
-      compositor_task_runner_);
+      std::move(display_output_surface), std::move(overlay_processor),
+      std::move(scheduler), compositor_task_runner_);
 
   constexpr bool is_root = true;
   support_ = std::make_unique<viz::CompositorFrameSinkSupport>(

@@ -48,7 +48,7 @@ namespace blink {
 // a v8::Object and toScriptWrappable() converts a v8::Object back to
 // a ScriptWrappable.  v8::Object as platform object is called "wrapper object".
 // The wrapper object for the main world is stored in ScriptWrappable.  Wrapper
-// objects for other worlds are stored in DOMWrapperMap.
+// objects for other worlds are stored in DOMDataStore.
 class PLATFORM_EXPORT ScriptWrappable
     : public GarbageCollected<ScriptWrappable>,
       public NameClient {

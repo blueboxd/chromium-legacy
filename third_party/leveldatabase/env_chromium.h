@@ -28,12 +28,6 @@
 #include "port/port_chromium.h"
 #include "util/mutexlock.h"
 
-#if defined(OS_WIN) && defined(DeleteFile)
-// See comment in env.h.
-#undef DeleteFile
-#define ENV_CHROMIUM_DELETEFILE_UNDEFINED
-#endif  // defined(OS_WIN) && defined(DeleteFile)
-
 namespace base {
 namespace trace_event {
 class MemoryAllocatorDump;
@@ -56,9 +50,9 @@ enum MethodID {
   kNewSequentialFile,
   kNewRandomAccessFile,
   kNewWritableFile,
-  kDeleteFile,
+  kObsoleteDeleteFile,
   kCreateDir,
-  kDeleteDir,
+  kObsoleteDeleteDir,
   kGetFileSize,
   kRenameFile,
   kLockFile,
@@ -68,6 +62,8 @@ enum MethodID {
   kSyncParent,
   kGetChildren,
   kNewAppendableFile,
+  kRemoveFile,
+  kRemoveDir,
   kNumEntries
 };
 
@@ -170,9 +166,9 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
   bool FileExists(const std::string& fname) override;
   leveldb::Status GetChildren(const std::string& dir,
                               std::vector<std::string>* result) override;
-  leveldb::Status DeleteFile(const std::string& fname) override;
+  leveldb::Status RemoveFile(const std::string& fname) override;
   leveldb::Status CreateDir(const std::string& name) override;
-  leveldb::Status DeleteDir(const std::string& name) override;
+  leveldb::Status RemoveDir(const std::string& name) override;
   leveldb::Status GetFileSize(const std::string& fname,
                               uint64_t* size) override;
   leveldb::Status RenameFile(const std::string& src,
@@ -209,7 +205,7 @@ class LEVELDB_EXPORT ChromiumEnv : public leveldb::Env,
   void RecordBytesRead(int amount) const override;
   void RecordBytesWritten(int amount) const override;
   base::HistogramBase* GetOSErrorHistogram(MethodID method, int limit) const;
-  void DeleteBackupFiles(const base::FilePath& dir);
+  void RemoveBackupFiles(const base::FilePath& dir);
 
   // File locks may not be exclusive within a process (e.g. on POSIX). Track
   // locks held by the ChromiumEnv to prevent access within the process.
@@ -385,10 +381,5 @@ LEVELDB_EXPORT leveldb::Slice MakeSlice(const base::StringPiece& s);
 LEVELDB_EXPORT leveldb::Slice MakeSlice(base::span<const uint8_t> s);
 
 }  // namespace leveldb_env
-
-// Redefine DeleteFile if necessary.
-#if defined(OS_WIN) && defined(ENV_CHROMIUM_DELETEFILE_UNDEFINED)
-#define DeleteFile DeleteFileW
-#endif
 
 #endif  // THIRD_PARTY_LEVELDATABASE_ENV_CHROMIUM_H_

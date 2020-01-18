@@ -42,13 +42,6 @@
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
 #include "third_party/re2/src/re2/re2.h"
 
-#if defined(OS_WIN)
-#undef DeleteFile
-#define base_DeleteFile base::DeleteFileW
-#else  // defined(OS_WIN)
-#define base_DeleteFile base::DeleteFile
-#endif  // defined(OS_WIN)
-
 using base::FilePath;
 using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpArgs;
@@ -248,7 +241,7 @@ class ChromiumSequentialFile : public leveldb::SequentialFile {
   DISALLOW_COPY_AND_ASSIGN(ChromiumSequentialFile);
 };
 
-void DeleteFile(const Slice& key, void* value) {
+void RemoveFile(const Slice& key, void* value) {
   delete static_cast<base::File*>(value);
 };
 
@@ -279,7 +272,7 @@ Status ReadFromFileToScratch(uint64_t offset,
 // object destructor should synchronously delete the file from the cache. This
 // ensures that pointer location re-use won't re-use an entry in the cache as
 // the entry at |this| will always have been deleted.
-// Files are always cleaned up with |DeleteFile|, which will be called when the
+// Files are always cleaned up with |RemoveFile|, which will be called when the
 // ChromiumEvictableRandomAccessFile is deleted, the cache is deleted, or the
 // file is evicted.
 class ChromiumEvictableRandomAccessFile : public leveldb::RandomAccessFile {
@@ -300,7 +293,7 @@ class ChromiumEvictableRandomAccessFile : public leveldb::RandomAccessFile {
     // A |charge| of '1' is used because the capacity is the file handle limit,
     // and each entry is one file.
     file_cache_->Release(file_cache_->Insert(cache_key_, heap_file,
-                                             1 /* charge */, &DeleteFile));
+                                             1 /* charge */, &RemoveFile));
   }
 
   virtual ~ChromiumEvictableRandomAccessFile() {
@@ -322,7 +315,7 @@ class ChromiumEvictableRandomAccessFile : public leveldb::RandomAccessFile {
                            kRandomAccessFileRead);
       }
       handle = file_cache_->Insert(cache_key_, new_file.release(),
-                                   sizeof(base::File), &DeleteFile);
+                                   sizeof(base::File), &RemoveFile);
     }
     base::File* file = static_cast<base::File*>(file_cache_->Value(handle));
     Status status = ReadFromFileToScratch(offset, n, result, scratch, file,
@@ -606,12 +599,8 @@ const char* MethodIDToString(MethodID method) {
       return "NewWritableFile";
     case kNewAppendableFile:
       return "NewAppendableFile";
-    case kDeleteFile:
-      return "DeleteFile";
     case kCreateDir:
       return "CreateDir";
-    case kDeleteDir:
-      return "DeleteDir";
     case kGetFileSize:
       return "GetFileSize";
     case kRenameFile:
@@ -628,9 +617,15 @@ const char* MethodIDToString(MethodID method) {
       return "SyncParent";
     case kGetChildren:
       return "GetChildren";
+    case kRemoveFile:
+      return "RemoveFile";
+    case kRemoveDir:
+      return "RemoveDir";
+    case kObsoleteDeleteFile:
+    case kObsoleteDeleteDir:
     case kNumEntries:
       NOTREACHED();
-      return "kNumEntries";
+      return "Unknown";
   }
   NOTREACHED();
   return "Unknown";
@@ -868,7 +863,7 @@ const char* ChromiumEnv::FileErrorString(base::File::Error error) {
 // Delete unused table backup files - a feature no longer supported.
 // TODO(cmumford): Delete this function once found backup files drop below some
 //                 very small (TBD) number.
-void ChromiumEnv::DeleteBackupFiles(const FilePath& dir) {
+void ChromiumEnv::RemoveBackupFiles(const FilePath& dir) {
   base::HistogramBase* histogram = base::BooleanHistogram::FactoryGet(
       "LevelDBEnv.DeleteTableBackupFile",
       base::Histogram::kUmaTargetedHistogramFlag);
@@ -877,7 +872,7 @@ void ChromiumEnv::DeleteBackupFiles(const FilePath& dir) {
                                   FILE_PATH_LITERAL("*.bak"));
   for (base::FilePath fname = dir_reader.Next(); !fname.empty();
        fname = dir_reader.Next()) {
-    histogram->AddBoolean(base_DeleteFile(fname, false));
+    histogram->AddBoolean(base::DeleteFile(fname, false));
   }
 }
 
@@ -890,7 +885,7 @@ void ChromiumEnv::SetReadOnlyFileLimitForTesting(int max_open_files) {
 Status ChromiumEnv::GetChildren(const std::string& dir,
                                 std::vector<std::string>* result) {
   FilePath dir_path = FilePath::FromUTF8Unsafe(dir);
-  DeleteBackupFiles(dir_path);
+  RemoveBackupFiles(dir_path);
 
   std::vector<FilePath> entries;
   base::File::Error error = GetDirectoryEntries(dir_path, &entries);
@@ -907,13 +902,13 @@ Status ChromiumEnv::GetChildren(const std::string& dir,
   return Status::OK();
 }
 
-Status ChromiumEnv::DeleteFile(const std::string& fname) {
+Status ChromiumEnv::RemoveFile(const std::string& fname) {
   Status result;
   FilePath fname_filepath = FilePath::FromUTF8Unsafe(fname);
   // TODO(jorlow): Should we assert this is a file?
-  if (!base_DeleteFile(fname_filepath, false)) {
-    result = MakeIOError(fname, "Could not delete file.", kDeleteFile);
-    RecordErrorAt(kDeleteFile);
+  if (!base::DeleteFile(fname_filepath, false)) {
+    result = MakeIOError(fname, "Could not delete file.", kRemoveFile);
+    RecordErrorAt(kRemoveFile);
   }
   return result;
 }
@@ -932,12 +927,12 @@ Status ChromiumEnv::CreateDir(const std::string& name) {
   return result;
 }
 
-Status ChromiumEnv::DeleteDir(const std::string& name) {
+Status ChromiumEnv::RemoveDir(const std::string& name) {
   Status result;
   // TODO(jorlow): Should we assert this is a directory?
-  if (!base_DeleteFile(FilePath::FromUTF8Unsafe(name), false)) {
-    result = MakeIOError(name, "Could not delete directory.", kDeleteDir);
-    RecordErrorAt(kDeleteDir);
+  if (!base::DeleteFile(FilePath::FromUTF8Unsafe(name), false)) {
+    result = MakeIOError(name, "Could not delete directory.", kRemoveDir);
+    RecordErrorAt(kRemoveDir);
   }
   return result;
 }

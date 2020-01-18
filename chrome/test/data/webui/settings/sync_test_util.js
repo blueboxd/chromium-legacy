@@ -39,6 +39,21 @@ cr.define('sync_test_util', function() {
     };
   }
 
+  function setupRouterWithSyncRoutes() {
+    const routes = {
+      BASIC: new settings.Route('/'),
+    };
+    routes.PEOPLE = routes.BASIC.createSection('/people', 'people');
+    routes.SYNC = routes.PEOPLE.createChild('/syncSetup');
+    routes.SYNC_ADVANCED = routes.SYNC.createChild('/syncSetup/advanced');
+
+    routes.SIGN_OUT = routes.BASIC.createChild('/signOut');
+    routes.SIGN_OUT.isNavigableDialog = true;
+
+    settings.Router.resetInstanceForTesting(new settings.Router(routes));
+    settings.routes = routes;
+  }
+
   /** @param {!settings.SyncStatus} */
   function simulateSyncStatus(status) {
     cr.webUIListenerCallback('sync-status-changed', status);
@@ -53,6 +68,7 @@ cr.define('sync_test_util', function() {
 
   return {
     getSyncAllPrefs: getSyncAllPrefs,
+    setupRouterWithSyncRoutes: setupRouterWithSyncRoutes,
     simulateSyncStatus: simulateSyncStatus,
     simulateStoredAccounts: simulateStoredAccounts,
   };

@@ -1618,11 +1618,6 @@
     "expiry_milestone": 80
   },
   {
-    "name": "enable-new-print-preview-layout",
-    "owners": [ "//printing/OWNERS" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "enable-noscript-previews",
     "owners": [ "//components/data_reduction_proxy/OWNERS" ],
     // This flag is used for frequent manual testing and should not be removed.
@@ -2365,7 +2360,7 @@
   {
     "name": "form-controls-refresh",
     "owners": [ "iopopesc@microsoft.com", "//third_party/blink/renderer/core/OWNERS" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 84
   },
   {
     "name": "fractional-scroll-offsets",

@@ -88,7 +88,7 @@ public class CustomTabActivityTabFactory {
     }
 
     private ChromeTabCreator createTabCreator(boolean incognito) {
-        if (mIntentDataProvider.getWebappExtras() != null) {
+        if (mIntentDataProvider.isWebappOrWebApkActivity()) {
             return new WebappTabDelegate((WebappActivity) mActivity, mActivityWindowAndroid.get(),
                     mStartupTabPreloader, mCustomTabDelegateFactory::get, incognito);
         }

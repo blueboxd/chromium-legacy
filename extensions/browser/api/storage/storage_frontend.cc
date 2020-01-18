@@ -159,9 +159,7 @@ StorageFrontend::~StorageFrontend() {
 
 ValueStoreCache* StorageFrontend::GetValueStoreCache(
     settings_namespace::Namespace settings_namespace) const {
-  // TODO(crbug.com/933874): We should DCHECK for BrowserThread::UI here, but
-  // currently that breaks ExtensionSettingsSyncTest which calls this on the
-  // backend sequence.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto it = caches_.find(settings_namespace);
   if (it != caches_.end())
     return it->second;

@@ -9,6 +9,10 @@
 
 #include "components/viz/service/display_embedder/output_surface_provider.h"
 
+namespace gpu {
+class SharedImageManager;
+}
+
 namespace viz {
 
 // Test implementation that creates a FakeOutputSurface.
@@ -23,6 +27,8 @@ class TestOutputSurfaceProvider : public OutputSurfaceProvider {
       bool gpu_compositing,
       mojom::DisplayClient* display_client,
       const RendererSettings& renderer_settings) override;
+
+  gpu::SharedImageManager* GetSharedImageManager() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestOutputSurfaceProvider);

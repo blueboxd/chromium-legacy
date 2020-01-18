@@ -264,16 +264,16 @@ Polymer({
     this.addWebUIListener(
         'sync-prefs-changed', this.handleSyncPrefsChanged_.bind(this));
 
-    if (settings.Router.getInstance().getCurrentRoute() ==
-        settings.routes.SYNC) {
+    const router = settings.Router.getInstance();
+    if (router.getCurrentRoute() == router.getRoutes().SYNC) {
       this.onNavigateToPage_();
     }
   },
 
   /** @override */
   detached() {
-    if (settings.routes.SYNC.contains(
-            settings.Router.getInstance().getCurrentRoute())) {
+    const router = settings.Router.getInstance();
+    if (router.getRoutes().SYNC.contains(router.getCurrentRoute())) {
       this.onNavigateAwayFromPage_();
     }
 
@@ -335,8 +335,8 @@ Polymer({
    * @private
    */
   fetchSWAA_() {
-    if (settings.Router.getInstance().getCurrentRoute() !==
-        settings.routes.SYNC) {
+    const router = settings.Router.getInstance();
+    if (router.getCurrentRoute() !== router.getRoutes().SYNC) {
       return;
     }
 
@@ -436,7 +436,9 @@ Polymer({
   onSetupCancelDialogConfirm_() {
     this.setupCancelConfirmed_ = true;
     this.$$('#setupCancelDialog').close();
-    settings.Router.getInstance().navigateTo(settings.routes.BASIC);
+    const router = settings.Router.getInstance();
+    router.navigateTo(
+        /** @type {!settings.Route} */ (router.getRoutes().BASIC));
     chrome.metricsPrivate.recordUserAction(
         'Signin_Signin_ConfirmCancelAdvancedSyncSettings');
   },
@@ -448,14 +450,13 @@ Polymer({
 
   /** @protected */
   currentRouteChanged() {
-    if (settings.Router.getInstance().getCurrentRoute() ==
-        settings.routes.SYNC) {
+    const router = settings.Router.getInstance();
+    if (router.getCurrentRoute() == router.getRoutes().SYNC) {
       this.onNavigateToPage_();
       return;
     }
 
-    if (settings.routes.SYNC.contains(
-            settings.Router.getInstance().getCurrentRoute())) {
+    if (router.getRoutes().SYNC.contains(router.getCurrentRoute())) {
       return;
     }
 
@@ -479,7 +480,8 @@ Polymer({
       // firing). Triggering navigation from within an observer leads to some
       // undefined behavior and runtime errors.
       requestAnimationFrame(() => {
-        settings.Router.getInstance().navigateTo(settings.routes.SYNC);
+        router.navigateTo(
+            /** @type {!settings.Route} */ (router.getRoutes().SYNC));
         this.showSetupCancelDialog_ = true;
         // Flush to make sure that the setup cancel dialog is attached.
         Polymer.dom.flush();
@@ -521,9 +523,8 @@ Polymer({
 
   /** @private */
   onNavigateToPage_() {
-    assert(
-        settings.Router.getInstance().getCurrentRoute() ==
-        settings.routes.SYNC);
+    const router = settings.Router.getInstance();
+    assert(router.getCurrentRoute() == router.getRoutes().SYNC);
     this.sWAA_ = sWAAState.NOT_FETCHED;
     this.fetchSWAA_();
     if (this.beforeunloadCallback_) {
@@ -681,6 +682,7 @@ Polymer({
    * @private
    */
   handlePageStatusChanged_(pageStatus) {
+    const router = settings.Router.getInstance();
     switch (pageStatus) {
       case settings.PageStatus.SPINNER:
       case settings.PageStatus.TIMEOUT:
@@ -688,9 +690,9 @@ Polymer({
         this.pageStatus_ = pageStatus;
         return;
       case settings.PageStatus.DONE:
-        if (settings.Router.getInstance().getCurrentRoute() ==
-            settings.routes.SYNC) {
-          settings.Router.getInstance().navigateTo(settings.routes.PEOPLE);
+        if (router.getCurrentRoute() == router.getRoutes().SYNC) {
+          router.navigateTo(
+              /** @type {!settings.Route} */ (router.getRoutes().PEOPLE));
         }
         return;
       case settings.PageStatus.PASSPHRASE_FAILED:
@@ -812,7 +814,9 @@ Polymer({
 
   /** @private */
   onSyncAdvancedTap_() {
-    settings.Router.getInstance().navigateTo(settings.routes.SYNC_ADVANCED);
+    const router = settings.Router.getInstance();
+    router.navigateTo(
+        /** @type {!settings.Route} */ (router.getRoutes().SYNC_ADVANCED));
   },
 
   /**
@@ -830,7 +834,9 @@ Polymer({
       chrome.metricsPrivate.recordUserAction(
           'Signin_Signin_CancelAdvancedSyncSettings');
     }
-    settings.Router.getInstance().navigateTo(settings.routes.BASIC);
+    const router = settings.Router.getInstance();
+    router.navigateTo(
+        /** @type {!settings.Route} */ (router.getRoutes().BASIC));
   },
 
   /**
@@ -841,9 +847,9 @@ Polymer({
   focusPassphraseInput_() {
     const passphraseInput =
         /** @type {!CrInputElement} */ (this.$$('#existingPassphraseInput'));
+    const router = settings.Router.getInstance();
     if (passphraseInput &&
-        settings.Router.getInstance().getCurrentRoute() ==
-            settings.routes.SYNC) {
+        router.getCurrentRoute() === router.getRoutes().SYNC) {
       passphraseInput.focus();
     }
   },

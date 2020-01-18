@@ -372,13 +372,15 @@ Polymer({
 
   /** @private */
   onErrorButtonTap_() {
+    const router = settings.Router.getInstance();
     switch (this.syncStatus.statusAction) {
       case settings.StatusAction.REAUTHENTICATE:
         this.syncBrowserProxy_.startSignIn();
         break;
       case settings.StatusAction.SIGNOUT_AND_SIGNIN:
         if (this.syncStatus.domain) {
-          settings.Router.getInstance().navigateTo(settings.routes.SIGN_OUT);
+          router.navigateTo(
+              /** @type {!settings.Route} */ (router.getRoutes().SIGN_OUT));
         } else {
           // Silently sign the user out without deleting their profile and
           // prompt them to sign back in.
@@ -387,7 +389,8 @@ Polymer({
         }
         break;
       case settings.StatusAction.UPGRADE_CLIENT:
-        settings.Router.getInstance().navigateTo(settings.routes.ABOUT);
+        router.navigateTo(
+            /** @type {!settings.Route} */ (router.getRoutes().ABOUT));
         break;
       case settings.StatusAction.RETRIEVE_TRUSTED_VAULT_KEYS:
         this.syncBrowserProxy_.startKeyRetrieval();
@@ -395,7 +398,8 @@ Polymer({
       case settings.StatusAction.ENTER_PASSPHRASE:
       case settings.StatusAction.CONFIRM_SYNC_SETTINGS:
       default:
-        settings.Router.getInstance().navigateTo(settings.routes.SYNC);
+        router.navigateTo(
+            /** @type {!settings.Route} */ (router.getRoutes().SYNC));
     }
   },
 
@@ -428,7 +432,9 @@ Polymer({
   /** @private */
   onTurnOffButtonTap_() {
     /* This will route to people_page's disconnect dialog. */
-    settings.Router.getInstance().navigateTo(settings.routes.SIGN_OUT);
+    const router = settings.Router.getInstance();
+    router.navigateTo(
+        /** @type {!settings.Route} */ (router.getRoutes().SIGN_OUT));
   },
 
   /** @private */

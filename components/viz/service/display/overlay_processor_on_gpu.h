@@ -18,6 +18,11 @@
 #include "components/viz/service/display/ca_layer_overlay.h"
 #endif
 
+namespace gpu {
+class SharedImageManager;
+class SharedImageRepresentationFactory;
+}  // namespace gpu
+
 namespace viz {
 // This class defines the gpu thread side functionalities of overlay processing.
 // This class would receive a list of overlay candidates and schedule to present
@@ -34,7 +39,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorOnGpu {
   using CandidateList = OverlayCandidateList;
 #endif
 
-  OverlayProcessorOnGpu();
+  explicit OverlayProcessorOnGpu(gpu::SharedImageManager* shared_image_manager);
   ~OverlayProcessorOnGpu();
 
   // This function takes the overlay candidates, and schedule them for
@@ -42,6 +47,11 @@ class VIZ_SERVICE_EXPORT OverlayProcessorOnGpu {
   void ScheduleOverlays(CandidateList&& overlay_candidates);
 
  private:
+  // TODO(weiliangc): Figure out how to share MemoryTracker with OutputSurface.
+  // For now this class is only used for Android classic code path, which only
+  // reads the shared images created elsewhere.
+  std::unique_ptr<gpu::SharedImageRepresentationFactory>
+      shared_image_representation_factory_;
   THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(OverlayProcessorOnGpu);

@@ -76,10 +76,5 @@ polymer_modulizer("add_smb_share_dialog") {
   html_file = "add_smb_share_dialog.html"
   html_type = "dom-module"
   namespace_rewrites = [ "smb_shares.SmbBrowserProxy|SmbBrowserProxy" ]
-  auto_imports = [
-    "ui/webui/resources/cr_components/chromeos/smb_shares/smb_browser_proxy.html|SmbAuthMethod,SmbBrowserProxy,SmbBrowserProxyImpl,SmbMountResult",
-    "ui/webui/resources/html/i18n_behavior.html|I18nBehavior",
-    "ui/webui/resources/html/load_time_data.html|loadTimeData",
-    "ui/webui/resources/html/web_ui_listener_behavior.html|WebUIListenerBehavior",
-  ]
+  auto_imports = [ "ui/webui/resources/cr_components/chromeos/smb_shares/smb_browser_proxy.html|SmbAuthMethod,SmbBrowserProxy,SmbBrowserProxyImpl,SmbMountResult" ]
 }

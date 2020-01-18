@@ -68,6 +68,14 @@ export let TabData;
 /** @typedef {!Tab} */
 let ExtensionsApiTab;
 
+/**
+ * @typedef {{
+ *   color: string,
+ *   title: string,
+ * }}
+ */
+export let TabGroupVisualData;
+
 export class TabsApiProxy {
   /**
    * @param {number} tabId
@@ -81,6 +89,14 @@ export class TabsApiProxy {
 
   createNewTab() {
     chrome.send('createNewTab');
+  }
+
+  /**
+   * @return {!Promise<!Object<!TabGroupVisualData>>} Object of group IDs as
+   *     strings mapped to their visual data.
+   */
+  getGroupVisualData() {
+    return sendWithPromise('getGroupVisualData');
   }
 
   /**

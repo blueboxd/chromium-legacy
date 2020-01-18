@@ -253,5 +253,4 @@ scoped_refptr<gpu::GpuTaskSchedulerHelper>
 GLOutputSurface::GetGpuTaskSchedulerHelper() {
   return viz_context_provider_->GetGpuTaskSchedulerHelper();
 }
-
 }  // namespace viz

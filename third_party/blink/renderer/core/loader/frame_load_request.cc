@@ -78,12 +78,15 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
 }
 
 ClientRedirectPolicy FrameLoadRequest::ClientRedirect() const {
-  // Form submissions have not historically been reported to the extensions API
-  // as client redirects.
+  // Form submissions and anchor clicks have not historically been reported
+  // to the extensions API as client redirects.
   if (client_navigation_reason_ == ClientNavigationReason::kNone ||
       client_navigation_reason_ == ClientNavigationReason::kFormSubmissionGet ||
-      client_navigation_reason_ == ClientNavigationReason::kFormSubmissionPost)
+      client_navigation_reason_ ==
+          ClientNavigationReason::kFormSubmissionPost ||
+      client_navigation_reason_ == ClientNavigationReason::kAnchorClick) {
     return ClientRedirectPolicy::kNotClientRedirect;
+  }
   return ClientRedirectPolicy::kClientRedirect;
 }
 

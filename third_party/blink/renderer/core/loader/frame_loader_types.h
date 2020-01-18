@@ -74,6 +74,7 @@ enum SinglePageAppNavigationType {
 enum class ClientNavigationReason {
   kFormSubmissionGet,
   kFormSubmissionPost,
+  kAnchorClick,
   kHttpHeaderRefresh,
   kFrameNavigation,
   kMetaTagRefresh,

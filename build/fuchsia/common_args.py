@@ -12,15 +12,22 @@ from qemu_target import QemuTarget
 
 def AddCommonArgs(arg_parser):
   """Adds command line arguments to |arg_parser| for options which are shared
-  across test and executable target types."""
+  across test and executable target types.
+
+  Args:
+    arg_parser: an ArgumentParser object."""
+
+  package_args = arg_parser.add_argument_group('package', 'Fuchsia Packages')
+  package_args.add_argument(
+      '--package',
+      action='append',
+      help='Paths of the packages to install, including '
+      'all dependencies.')
+  package_args.add_argument(
+      '--package-name',
+      help='Name of the package to execute, defined in ' + 'package metadata.')
 
   common_args = arg_parser.add_argument_group('common', 'Common arguments')
-  common_args.add_argument('--package', action='append', required=True,
-                           help='Paths of the packages to install, including '
-                                'all dependencies.')
-  common_args.add_argument('--package-name', required=True,
-                           help='Name of the package to execute, defined in ' +
-                                'package metadata.')
   common_args.add_argument('--output-directory',
                            type=os.path.realpath, required=True,
                            help=('Path to the directory in which build files '
@@ -63,13 +70,18 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--verbose', '-v', default=False,
                            action='store_true',
                            help='Enable debug-level logging.')
-  common_args.add_argument('--qemu-cpu-cores', type=int, default=4,
-                           help='Sets the number of CPU cores to provide if '
-                           'launching in a VM.'),
+  common_args.add_argument(
+      '--qemu-cpu-cores',
+      type=int,
+      default=4,
+      help='Sets the number of CPU cores to provide if launching in a VM.')
   common_args.add_argument('--memory', type=int, default=2048,
                            help='Sets the RAM size (MB) if launching in a VM'),
-  common_args.add_argument('--no-kvm', action='store_true', default=False,
-                           help='Disable KVM virtualization'),
+  common_args.add_argument(
+      '--no-kvm',
+      action='store_true',
+      default=False,
+      help='Disable KVM virtualization.')
   common_args.add_argument(
       '--os_check', choices=['check', 'update', 'ignore'],
       default='update',
@@ -77,6 +89,18 @@ def AddCommonArgs(arg_parser):
            'deployment process will halt if the target\'s version doesn\'t '
            'match. If \'update\', then the target device will automatically '
            'be repaved. If \'ignore\', then the OS version won\'t be checked.')
+
+  aemu_args = arg_parser.add_argument_group('aemu', 'AEMU Arguments')
+  aemu_args.add_argument(
+      '--enable-graphics',
+      action='store_true',
+      default=False,
+      help='Start AEMU with graphics instead of headless.')
+  aemu_args.add_argument(
+      '--hardware-gpu',
+      action='store_true',
+      default=False,
+      help='Use local GPU hardware instead of Swiftshader.')
 
 
 def ConfigureLogging(args):
@@ -129,4 +153,8 @@ def GetDeploymentTargetForArgs(args, require_kvm=False):
     if args.device == 'qemu':
       return QemuTarget(**target_args)
     else:
+      target_args.update({
+          'enable_graphics': args.enable_graphics,
+          'hardware_gpu': args.hardware_gpu
+      })
       return AemuTarget(**target_args)

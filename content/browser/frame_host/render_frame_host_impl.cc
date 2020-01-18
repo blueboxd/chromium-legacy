@@ -3619,6 +3619,11 @@ void RenderFrameHostImpl::DidBlockNavigation(
   delegate_->OnDidBlockNavigation(blocked_url, initiator_url, reason);
 }
 
+void RenderFrameHostImpl::GoToEntryAtOffset(int32_t offset,
+                                            bool has_user_gesture) {
+  delegate_->OnGoToEntryAtOffset(this, offset, has_user_gesture);
+}
+
 void RenderFrameHostImpl::OnForwardResourceTimingToParent(
     const ResourceTimingInfo& resource_timing) {
   // Don't forward the resource timing if this RFH is pending deletion. This can

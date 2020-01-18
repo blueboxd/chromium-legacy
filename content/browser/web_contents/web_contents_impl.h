@@ -667,6 +667,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                  const std::string& protocol,
                                  const GURL& url,
                                  bool user_gesture) override;
+  void OnGoToEntryAtOffset(RenderFrameHostImpl* source,
+                           int32_t offset,
+                           bool has_user_gesture) override;
   void IsClipboardPasteAllowed(
       const GURL& url,
       const ui::ClipboardFormatType& data_type,
@@ -1349,9 +1352,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnDidDisplayContentWithCertificateErrors(RenderFrameHostImpl* source);
   void OnDidRunContentWithCertificateErrors(RenderFrameHostImpl* source);
   void OnDidFinishLoad(RenderFrameHostImpl* source, const GURL& url);
-  void OnGoToEntryAtOffset(RenderFrameHostImpl* source,
-                           int offset,
-                           bool has_user_gesture);
   void OnUpdateZoomLimits(RenderViewHostImpl* source,
                           int minimum_percent,
                           int maximum_percent);

@@ -69,6 +69,7 @@ if (optimize_webui) {
 group("closure_compile") {
   deps = [
     ":os_page_visibility",
+    ":os_route",
     ":route_origin_behavior",
     "bluetooth_page:closure_compile",
     "crostini_page:closure_compile",
@@ -104,9 +105,18 @@ js_library("os_page_visibility") {
   ]
 }
 
+js_library("os_route") {
+  deps = [
+    "..:router",
+    "..:settings_routes",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:load_time_data",
+  ]
+}
+
 js_library("route_origin_behavior") {
   deps = [
-    "..:route",
+    ":os_route",
     "//ui/webui/resources/js:cr",
   ]
 }

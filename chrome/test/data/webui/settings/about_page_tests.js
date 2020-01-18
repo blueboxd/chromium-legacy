@@ -3,6 +3,15 @@
 // found in the LICENSE file.
 
 cr.define('settings_about_page', function() {
+  function setupRouter() {
+    const routes = {
+      BASIC: new settings.Route('/'),
+      ABOUT: new settings.Route('/help'),
+    };
+    settings.Router.resetInstanceForTesting(new settings.Router(routes));
+    settings.routes = routes;
+  }
+
   function registerAboutPageTests() {
     /**
      * @param {!UpdateStatus} status
@@ -36,6 +45,8 @@ cr.define('settings_about_page', function() {
           aboutObsoleteNowOrSoon: false,
           aboutObsoleteEndOfTheLine: false,
         });
+
+        setupRouter();
         lifetimeBrowserProxy = new settings.TestLifetimeBrowserProxy();
         settings.LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
 
@@ -263,6 +274,7 @@ cr.define('settings_about_page', function() {
       let browserProxy = null;
 
       setup(function() {
+        setupRouter();
         browserProxy = new TestAboutPageBrowserProxy();
         settings.AboutPageBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();

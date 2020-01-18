@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_handler.h"
+#include <memory>
 
 #include "base/base64.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/values.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/favicon/favicon_utils.h"
@@ -22,6 +24,7 @@
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_embedder.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_metrics.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -227,7 +230,11 @@ void TabStripUIHandler::OnTabGroupChanged(const TabGroupChange& change) {
     }
 
     case TabGroupChange::kVisualsChanged: {
-      // TODO(johntlee): Send visuals to front-end.
+      FireWebUIListener(
+          "tab-group-visuals-changed", base::Value(change.group.ToString()),
+          GetTabGroupData(
+              browser_->tab_strip_model()->group_model()->GetTabGroup(
+                  change.group)));
       break;
     }
 
@@ -361,6 +368,10 @@ void TabStripUIHandler::RegisterMessages() {
       "getTabs",
       base::Bind(&TabStripUIHandler::HandleGetTabs, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "getGroupVisualData",
+      base::Bind(&TabStripUIHandler::HandleGetGroupVisualData,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "getThemeColors", base::Bind(&TabStripUIHandler::HandleGetThemeColors,
                                    base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
@@ -450,6 +461,24 @@ base::DictionaryValue TabStripUIHandler::GetTabData(
   return tab_data;
 }
 
+base::DictionaryValue TabStripUIHandler::GetTabGroupData(TabGroup* group) {
+  const tab_groups::TabGroupVisualData* visual_data = group->visual_data();
+
+  base::DictionaryValue visual_data_dict;
+  visual_data_dict.SetString("title", visual_data->title());
+
+  bool is_dark_frame = color_utils::IsDark(
+      embedder_->GetThemeProvider()->GetColor(ThemeProperties::COLOR_FRAME));
+  const tab_groups::TabGroupColor tab_group_color =
+      tab_groups::GetTabGroupColorSet().at(visual_data->color());
+  visual_data_dict.SetString(
+      "color", color_utils::SkColorToRgbaString(
+                   is_dark_frame ? tab_group_color.dark_theme_color
+                                 : tab_group_color.light_theme_color));
+
+  return visual_data_dict;
+}
+
 void TabStripUIHandler::HandleGetTabs(const base::ListValue* args) {
   AllowJavascript();
   const base::Value& callback_id = args->GetList()[0];
@@ -460,6 +489,22 @@ void TabStripUIHandler::HandleGetTabs(const base::ListValue* args) {
     tabs.Append(GetTabData(tab_strip_model->GetWebContentsAt(i), i));
   }
   ResolveJavascriptCallback(callback_id, tabs);
+}
+
+void TabStripUIHandler::HandleGetGroupVisualData(const base::ListValue* args) {
+  AllowJavascript();
+  const base::Value& callback_id = args->GetList()[0];
+
+  base::DictionaryValue group_visual_datas;
+  std::vector<tab_groups::TabGroupId> groups =
+      browser_->tab_strip_model()->group_model()->ListTabGroups();
+  for (const tab_groups::TabGroupId group : groups) {
+    group_visual_datas.SetDictionary(
+        group.ToString(),
+        std::make_unique<base::DictionaryValue>(GetTabGroupData(
+            browser_->tab_strip_model()->group_model()->GetTabGroup(group))));
+  }
+  ResolveJavascriptCallback(callback_id, group_visual_datas);
 }
 
 void TabStripUIHandler::HandleGetThemeColors(const base::ListValue* args) {

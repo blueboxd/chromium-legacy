@@ -2252,12 +2252,15 @@ void WebMediaPlayerImpl::OnAudioConfigChange(const AudioDecoderConfig& config) {
 
   const bool codec_change =
       pipeline_metadata_.audio_decoder_config.codec() != config.codec();
+  const bool codec_profile_change =
+      pipeline_metadata_.audio_decoder_config.profile() != config.profile();
+
   pipeline_metadata_.audio_decoder_config = config;
 
   if (observer_)
     observer_->OnMetadataChanged(pipeline_metadata_);
 
-  if (codec_change)
+  if (codec_change || codec_profile_change)
     UpdateSecondaryProperties();
 }
 
@@ -2275,7 +2278,7 @@ void WebMediaPlayerImpl::OnVideoConfigChange(const VideoDecoderConfig& config) {
   if (observer_)
     observer_->OnMetadataChanged(pipeline_metadata_);
 
-  if (codec_change)
+  if (codec_change || codec_profile_change)
     UpdateSecondaryProperties();
 
   if (video_decode_stats_reporter_ && codec_profile_change)
@@ -3210,6 +3213,7 @@ void WebMediaPlayerImpl::UpdateSecondaryProperties() {
       mojom::SecondaryPlaybackProperties::New(
           pipeline_metadata_.audio_decoder_config.codec(),
           pipeline_metadata_.video_decoder_config.codec(),
+          pipeline_metadata_.audio_decoder_config.profile(),
           pipeline_metadata_.video_decoder_config.profile(),
           audio_decoder_name_, video_decoder_name_,
           pipeline_metadata_.audio_decoder_config.encryption_scheme(),

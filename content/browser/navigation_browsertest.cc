@@ -58,6 +58,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/fake_network_url_loader_factory.h"
+#include "content/test/test_render_frame_host_factory.h"
 #include "ipc/ipc_security_test_util.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -134,27 +135,42 @@ class InterceptAndCancelDidCommitProvisionalLoad
   std::unique_ptr<base::RunLoop> loop_;
 };
 
-// Used to wait for an observed IPC to be received.
-class BrowserMessageObserver : public content::BrowserMessageFilter {
+class RenderFrameHostImplForHistoryBackInterceptor
+    : public RenderFrameHostImpl {
  public:
-  BrowserMessageObserver(uint32_t observed_message_class,
-                         uint32_t observed_message_type)
-      : content::BrowserMessageFilter(observed_message_class),
-        observed_message_type_(observed_message_type) {}
+  using RenderFrameHostImpl::RenderFrameHostImpl;
 
-  bool OnMessageReceived(const IPC::Message& message) override {
-    if (message.type() == observed_message_type_)
-      loop.Quit();
-    return false;
+  void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override {
+    if (quit_handler_)
+      std::move(quit_handler_).Run();
   }
 
-  void Wait() { loop.Run(); }
+  void set_quit_handler(base::OnceClosure handler) {
+    quit_handler_ = std::move(handler);
+  }
 
  private:
-  ~BrowserMessageObserver() override {}
-  uint32_t observed_message_type_;
-  base::RunLoop loop;
-  DISALLOW_COPY_AND_ASSIGN(BrowserMessageObserver);
+  friend class RenderFrameHostFactoryForHistoryBackInterceptor;
+  base::OnceClosure quit_handler_;
+};
+
+class RenderFrameHostFactoryForHistoryBackInterceptor
+    : public TestRenderFrameHostFactory {
+ protected:
+  std::unique_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
+      SiteInstance* site_instance,
+      scoped_refptr<RenderViewHostImpl> render_view_host,
+      RenderFrameHostDelegate* delegate,
+      FrameTree* frame_tree,
+      FrameTreeNode* frame_tree_node,
+      int32_t routing_id,
+      int32_t widget_routing_id,
+      bool renderer_initiated_creation) override {
+    return base::WrapUnique(new RenderFrameHostImplForHistoryBackInterceptor(
+        site_instance, std::move(render_view_host), delegate, frame_tree,
+        frame_tree_node, routing_id, widget_routing_id,
+        renderer_initiated_creation));
+  }
 };
 
 // Simulate embedders of content/ keeping track of the current visible URL using
@@ -213,6 +229,19 @@ class NavigationBrowserTest : public NavigationBaseBrowserTest {
     NavigationBaseBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
   }
+};
+
+class NavigationGoToEntryAtOffsetBrowserTest : public NavigationBrowserTest {
+ public:
+  void SetQuitHandlerForGoToEntryAtOffset(base::OnceClosure handler) {
+    RenderFrameHostImplForHistoryBackInterceptor* render_frame_host =
+        static_cast<RenderFrameHostImplForHistoryBackInterceptor*>(
+            shell()->web_contents()->GetMainFrame());
+    render_frame_host->set_quit_handler(std::move(handler));
+  }
+
+ private:
+  RenderFrameHostFactoryForHistoryBackInterceptor render_frame_host_factory_;
 };
 
 class NetworkIsolationNavigationBrowserTest
@@ -1324,7 +1353,7 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, HistoryBackInBeforeUnload) {
 // window.setTimeout(). Thus it is executed "outside" of its beforeunload
 // handler and thus avoid basic navigation circumventions.
 // Regression test for: https://crbug.com/879965.
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationGoToEntryAtOffsetBrowserTest,
                        HistoryBackInBeforeUnloadAfterSetTimeout) {
   GURL url_1(embedded_test_server()->GetURL("/title1.html"));
   GURL url_2(embedded_test_server()->GetURL("/title2.html"));
@@ -1337,14 +1366,12 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
                                       "  setTimeout(()=>history.back());"
                                       "};"));
   TestNavigationManager navigation(shell()->web_contents(), url_2);
-  auto ipc_observer = base::MakeRefCounted<BrowserMessageObserver>(
-      FrameMsgStart, FrameHostMsg_GoToEntryAtOffset::ID);
-  static_cast<RenderFrameHostImpl*>(shell()->web_contents()->GetMainFrame())
-      ->GetProcess()
-      ->AddFilter(ipc_observer.get());
 
+  base::RunLoop run_loop;
+  SetQuitHandlerForGoToEntryAtOffset(run_loop.QuitClosure());
   shell()->LoadURL(url_2);
-  ipc_observer->Wait();
+  run_loop.Run();
+
   navigation.WaitForNavigationFinished();
 
   EXPECT_TRUE(navigation.was_successful());

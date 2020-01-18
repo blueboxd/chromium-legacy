@@ -18,7 +18,7 @@ import {TabElement} from './tab.js';
 import {TabGroupElement} from './tab_group.js';
 import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
 import {tabStripOptions} from './tab_strip_options.js';
-import {TabData, TabsApiProxy} from './tabs_api_proxy.js';
+import {TabData, TabGroupVisualData, TabsApiProxy} from './tabs_api_proxy.js';
 
 /**
  * The amount of padding to leave between the edge of the screen and the active
@@ -155,7 +155,10 @@ class TabListElement extends CustomElement {
 
     this.addWebUIListener_(
         'layout-changed', layout => this.applyCSSDictionary_(layout));
-    this.addWebUIListener_('theme-changed', () => this.fetchAndUpdateColors_());
+    this.addWebUIListener_('theme-changed', () => {
+      this.fetchAndUpdateColors_();
+      this.fetchAndUpdateGroupData_();
+    });
     this.tabStripEmbedderProxy_.observeThemeChanges();
 
     this.addWebUIListener_(
@@ -274,6 +277,7 @@ class TabListElement extends CustomElement {
 
       const createTabsStartTimestamp = Date.now();
       tabs.forEach(tab => this.onTabCreated_(tab));
+      this.fetchAndUpdateGroupData_();
       this.tabStripEmbedderProxy_.reportTabCreationDuration(
           tabs.length, Date.now() - createTabsStartTimestamp);
 
@@ -295,6 +299,10 @@ class TabListElement extends CustomElement {
       this.addWebUIListener_(
           'tab-group-moved',
           (groupId, index) => this.onTabGroupMoved_(groupId, index));
+      this.addWebUIListener_(
+          'tab-group-visuals-changed',
+          (groupId, visualData) =>
+              this.onTabGroupVisualsChanged_(groupId, visualData));
     });
   }
 
@@ -344,6 +352,18 @@ class TabListElement extends CustomElement {
   fetchAndUpdateColors_() {
     this.tabStripEmbedderProxy_.getColors().then(
         colors => this.applyCSSDictionary_(colors));
+  }
+
+  /** @private */
+  fetchAndUpdateGroupData_() {
+    const tabGroupElements =
+        this.shadowRoot.querySelectorAll('tabstrip-tab-group');
+    this.tabsApi_.getGroupVisualData().then(data => {
+      tabGroupElements.forEach(tabGroupElement => {
+        tabGroupElement.updateVisuals(
+            assert(data[tabGroupElement.dataset.groupId]));
+      });
+    });
   }
 
   /**
@@ -618,6 +638,16 @@ class TabListElement extends CustomElement {
     tabElement.tab = /** @type {!TabData} */ (
         Object.assign({}, tabElement.tab, {groupId: groupId}));
     this.insertTabOrMoveTo_(tabElement, index);
+  }
+
+  /**
+   * @param {string} groupId
+   * @param {!TabGroupVisualData} visualData
+   * @private
+   */
+  onTabGroupVisualsChanged_(groupId, visualData) {
+    const tabGroupElement = this.findTabGroupElement_(groupId);
+    tabGroupElement.updateVisuals(visualData);
   }
 
   /**

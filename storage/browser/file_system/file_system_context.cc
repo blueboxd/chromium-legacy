@@ -41,6 +41,7 @@
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 using storage::QuotaClient;
 
@@ -503,7 +504,8 @@ void FileSystemContext::OpenPluginPrivateFileSystem(
     StatusCallback callback) {
   DCHECK(plugin_private_backend_);
   plugin_private_backend_->OpenPrivateFileSystem(
-      origin_url, type, filesystem_id, plugin_id, mode, std::move(callback));
+      url::Origin::Create(origin_url), type, filesystem_id, plugin_id, mode,
+      std::move(callback));
 }
 
 FileSystemContext::~FileSystemContext() {

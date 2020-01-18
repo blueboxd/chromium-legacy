@@ -54,6 +54,61 @@ using appropriate smart pointers and handles (`std::unique_ptr`, `scoped_refptr`
 and strong Blink GC references, respectively). See [How Blink Works](https://docs.google.com/document/d/1aitSOucL0VHZa9Z2vbRJSyAIsAz24kX8LFByQ5xQnUg/edit#heading=h.ekwf97my4bgf)
 for more information.
 
+## Don't mix Create() factory methods and public constructors in one class.
+
+A class only can have either Create() factory functions or public constructors.
+In case you want to call MakeGarbageCollected<> from a Create() method, a
+PassKey pattern can be used. Note that the auto-generated binding classes keep
+using Create() methods consistently.
+
+**Good:**
+```c++
+class HistoryItem {
+ public:
+  HistoryItem();
+  ~HistoryItem();
+  ...
+}
+
+void DocumentLoader::SetHistoryItemStateForCommit() {
+  history_item_ = MakeGarbageCollected<HistoryItem>();
+  ...
+}
+```
+
+**Good:**
+```c++
+class BodyStreamBuffer {
+ public:
+  using PassKey = util::PassKey<BodyStreamBuffer>;
+  static BodyStreamBuffer* Create();
+
+  BodyStreamBuffer(PassKey);
+  ...
+}
+
+BodyStreamBuffer* BodyStreamBuffer::Create() {
+  auto* buffer = MakeGarbageCollected<BodyStreamBuffer>(PassKey());
+  buffer->Init();
+  return buffer;
+}
+
+BodyStreamBuffer::BodyStreamBuffer(PassKey) {}
+```
+
+**Bad:**
+```c++
+class HistoryItem {
+ public:
+  // Create() and a public constructor should not be mixed.
+  static HistoryItem* Create() { return MakeGarbageCollected<HistoryItem>(); }
+
+  HistoryItem();
+  ~HistoryItem();
+  ...
+}
+```
+
 ## Naming
 
 ### Use `CamelCase` for all function names

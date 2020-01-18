@@ -7,17 +7,23 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_embedder.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_layout.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "components/tab_groups/tab_group_color.h"
 #include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/test_web_ui.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/default_theme_provider.h"
 #include "ui/base/theme_provider.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace {
@@ -34,13 +40,18 @@ class TestTabStripUIHandler : public TabStripUIHandler {
 
 class MockTabStripUIEmbedder : public TabStripUIEmbedder {
  public:
-  MockTabStripUIEmbedder() {}
+  MockTabStripUIEmbedder() : theme_provider_(new ui::DefaultThemeProvider()) {}
   MOCK_CONST_METHOD0(GetAcceleratorProvider, const ui::AcceleratorProvider*());
   MOCK_METHOD0(CloseContainer, void());
   MOCK_METHOD2(ShowContextMenuAtPoint,
                void(gfx::Point, std::unique_ptr<ui::MenuModel>));
   MOCK_METHOD0(GetLayout, TabStripUILayout());
-  MOCK_METHOD0(GetThemeProvider, const ui::ThemeProvider*());
+  const ui::ThemeProvider* GetThemeProvider() override {
+    return theme_provider_.get();
+  }
+
+ private:
+  const std::unique_ptr<ui::ThemeProvider> theme_provider_;
 };
 
 }  // namespace
@@ -58,6 +69,21 @@ class TabStripUIHandlerTest : public BrowserWithTestWindowTest {
 
   TabStripUIHandler* handler() { return handler_.get(); }
   content::TestWebUI* web_ui() { return web_ui_.get(); }
+
+  void ExpectVisualDataDictionary(
+      const tab_groups::TabGroupVisualData visual_data,
+      const base::DictionaryValue* visual_data_dict) {
+    std::string group_title;
+    ASSERT_TRUE(visual_data_dict->GetString("title", &group_title));
+    EXPECT_EQ(base::UTF16ToASCII(visual_data.title()), group_title);
+
+    std::string group_color;
+    ASSERT_TRUE(visual_data_dict->GetString("color", &group_color));
+    EXPECT_EQ(color_utils::SkColorToRgbaString(tab_groups::GetTabGroupColorSet()
+                                                   .at(visual_data.color())
+                                                   .light_theme_color),
+              group_color);
+  }
 
  protected:
   ::testing::NiceMock<MockTabStripUIEmbedder> mock_embedder_;
@@ -190,4 +216,81 @@ TEST_F(TabStripUIHandlerTest, GroupMovedEvents) {
   EXPECT_EQ(expected_group_id.ToString(), actual_group_id);
   ASSERT_TRUE(grouped_data2.arg3()->GetAsInteger(&actual_index));
   EXPECT_EQ(expected_index, actual_index);
+}
+
+TEST_F(TabStripUIHandlerTest, GetGroupVisualData) {
+  AddTab(browser(), GURL("http://foo/1"));
+  AddTab(browser(), GURL("http://foo/2"));
+  tab_groups::TabGroupId group1 =
+      browser()->tab_strip_model()->AddToNewGroup({0});
+  const tab_groups::TabGroupVisualData group1_visuals(
+      base::ASCIIToUTF16("Group 1"), tab_groups::TabGroupColorId::kGreen);
+  browser()
+      ->tab_strip_model()
+      ->group_model()
+      ->GetTabGroup(group1)
+      ->SetVisualData(group1_visuals);
+  tab_groups::TabGroupId group2 =
+      browser()->tab_strip_model()->AddToNewGroup({1});
+  const tab_groups::TabGroupVisualData group2_visuals(
+      base::ASCIIToUTF16("Group 2"), tab_groups::TabGroupColorId::kCyan);
+  browser()
+      ->tab_strip_model()
+      ->group_model()
+      ->GetTabGroup(group2)
+      ->SetVisualData(group2_visuals);
+
+  base::ListValue args;
+  args.AppendString("callback-id");
+  handler()->HandleGetGroupVisualData(&args);
+
+  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIResponse", data.function_name());
+
+  std::string callback_id;
+  ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
+  EXPECT_EQ("callback-id", callback_id);
+
+  bool success = false;
+  ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
+  EXPECT_TRUE(success);
+
+  const base::DictionaryValue* returned_data;
+  ASSERT_TRUE(data.arg3()->GetAsDictionary(&returned_data));
+
+  const base::DictionaryValue* group1_dict;
+  ASSERT_TRUE(returned_data->GetDictionary(group1.ToString(), &group1_dict));
+  ExpectVisualDataDictionary(group1_visuals, group1_dict);
+
+  const base::DictionaryValue* group2_dict;
+  ASSERT_TRUE(returned_data->GetDictionary(group2.ToString(), &group2_dict));
+  ExpectVisualDataDictionary(group2_visuals, group2_dict);
+}
+
+TEST_F(TabStripUIHandlerTest, GroupVisualDataChangedEvent) {
+  AddTab(browser(), GURL("http://foo"));
+  tab_groups::TabGroupId expected_group_id =
+      browser()->tab_strip_model()->AddToNewGroup({0});
+  const tab_groups::TabGroupVisualData new_visual_data(
+      base::ASCIIToUTF16("My new title"), tab_groups::TabGroupColorId::kGreen);
+  browser()
+      ->tab_strip_model()
+      ->group_model()
+      ->GetTabGroup(expected_group_id)
+      ->SetVisualData(new_visual_data);
+
+  const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+  EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
+
+  std::string event_name;
+  ASSERT_TRUE(data.arg1()->GetAsString(&event_name));
+  EXPECT_EQ("tab-group-visuals-changed", event_name);
+
+  std::string actual_group_id;
+  ASSERT_TRUE(data.arg2()->GetAsString(&actual_group_id));
+  EXPECT_EQ(expected_group_id.ToString(), actual_group_id);
+
+  const base::DictionaryValue* visual_data;
+  ASSERT_TRUE(data.arg3()->GetAsDictionary(&visual_data));
+  ExpectVisualDataDictionary(new_visual_data, visual_data);
 }

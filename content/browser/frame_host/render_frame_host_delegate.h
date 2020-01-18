@@ -501,6 +501,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                          const GURL& url,
                                          bool user_gesture) {}
 
+  // Go to the session history entry at the given offset (ie, -1 will return the
+  // "back" item).
+  virtual void OnGoToEntryAtOffset(RenderFrameHostImpl* source,
+                                   int32_t offset,
+                                   bool has_user_gesture) {}
+
   virtual media::MediaMetricsProvider::RecordAggregateWatchTimeCallback
   GetRecordAggregateWatchTimeCallback();
 

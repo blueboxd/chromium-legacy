@@ -22,9 +22,19 @@ js_type_check("closure_compile") {
 }
 
 js_library("alert_indicator") {
+  deps = [
+    ":custom_element",
+    ":tabs_api_proxy",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
 }
 
 js_library("alert_indicators") {
+  deps = [
+    ":alert_indicator",
+    ":custom_element",
+    ":tabs_api_proxy",
+  ]
 }
 
 js_library("custom_element") {
@@ -32,11 +42,20 @@ js_library("custom_element") {
 
 js_library("tabs_api_proxy") {
   deps = [ "//ui/webui/resources/js:cr.m" ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+  externs_list = [
+    "$externs_path/chrome_extensions.js",
+    "$externs_path/metrics_private.js",
+  ]
 }
 
 js_library("tab") {
   deps = [
+    ":alert_indicators",
+    ":custom_element",
+    ":tab_strip_embedder_proxy",
+    ":tab_strip_options",
+    ":tab_swiper",
+    ":tabs_api_proxy",
     "//ui/webui/resources/js:icon.m",
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:util.m",
@@ -45,10 +64,22 @@ js_library("tab") {
 }
 
 js_library("tab_group") {
+  deps = [
+    ":custom_element",
+    ":tabs_api_proxy",
+  ]
 }
 
 js_library("tab_list") {
   deps = [
+    ":custom_element",
+    ":tab",
+    ":tab_group",
+    ":tab_strip_embedder_proxy",
+    ":tab_strip_options",
+    ":tabs_api_proxy",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js:util.m",
     "//ui/webui/resources/js/cr/ui:focus_outline_manager.m",
   ]

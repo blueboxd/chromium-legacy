@@ -14,8 +14,8 @@ js_type_check("closure_compile") {
 
 js_library("os_about_page") {
   deps = [
+    "..:os_route",
     "../..:lifetime_browser_proxy",
-    "../..:route",
     "../..:router",
     "../../about_page:about_page_browser_proxy",
     "../../settings_page:main_page_behavior",

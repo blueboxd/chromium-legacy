@@ -26,6 +26,7 @@ struct PlaybackProperties {
 struct SecondaryPlaybackProperties {
   AudioCodec audio_codec;  // Note: We may not know the codec during all
   VideoCodec video_codec;  // playbacks (HLS, remoting, etc).
+  AudioCodecProfile audio_codec_profile;
   VideoCodecProfile video_codec_profile;
   string audio_decoder_name;
   string video_decoder_name;

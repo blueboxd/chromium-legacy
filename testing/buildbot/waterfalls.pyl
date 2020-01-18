@@ -3143,7 +3143,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_optional_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_optional_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_optional_mac_telemetry_tests',
         },
       },
       'Optional Mac Retina Release (AMD)': {
@@ -3154,7 +3154,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_optional_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_optional_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_optional_mac_telemetry_tests',
         },
       },
       'Optional Mac Retina Release (NVIDIA)': {
@@ -3165,6 +3165,8 @@
         ],
         'test_suites': {
           'gtest_tests': 'gpu_fyi_mac_optional_gtests',
+          # Not currently running passthrough WebGL tests on this
+          # configuration due to concerns about machine capacity.
           'gpu_telemetry_tests': 'gpu_fyi_optional_telemetry_tests',
         },
       },

@@ -10,11 +10,13 @@
 #include "components/viz/service/display/overlay_processor_on_gpu.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/service/display/skia_output_surface.h"
+#include "gpu/ipc/scheduler_sequence.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
 OverlayProcessorAndroid::OverlayProcessorAndroid(
     SkiaOutputSurface* skia_output_surface,
+    gpu::SharedImageManager* shared_image_manager,
     scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
     bool enable_overlay)
     : OverlayProcessorUsingStrategy(),
@@ -25,12 +27,14 @@ OverlayProcessorAndroid::OverlayProcessorAndroid(
     return;
 
   if (gpu_task_scheduler_) {
+    gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
     // TODO(weiliangc): Eventually move the on gpu initialization to another
     // static function.
     auto callback = base::BindOnce(
         &OverlayProcessorAndroid::InitializeOverlayProcessorOnGpu,
-        base::Unretained(this));
+        base::Unretained(this), shared_image_manager);
     gpu_task_scheduler_->ScheduleGpuTask(std::move(callback), {});
+    able_to_create_processor_on_gpu_ = true;
   }
 
   // For Android, we do not have the ability to skip an overlay, since the
@@ -47,7 +51,8 @@ OverlayProcessorAndroid::OverlayProcessorAndroid(
 }
 
 OverlayProcessorAndroid::~OverlayProcessorAndroid() {
-  if (gpu_task_scheduler_ && overlay_enabled_) {
+  if (able_to_create_processor_on_gpu_) {
+    gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
     // If we have a |gpu_task_scheduler_|, we must have started initializing
     // a |processor_on_gpu_| on the |gpu_task_scheduler_|.
     base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
@@ -60,8 +65,10 @@ OverlayProcessorAndroid::~OverlayProcessorAndroid() {
   }
 }
 
-void OverlayProcessorAndroid::InitializeOverlayProcessorOnGpu() {
-  processor_on_gpu_ = std::make_unique<OverlayProcessorOnGpu>();
+void OverlayProcessorAndroid::InitializeOverlayProcessorOnGpu(
+    gpu::SharedImageManager* shared_image_manager) {
+  processor_on_gpu_ =
+      std::make_unique<OverlayProcessorOnGpu>(shared_image_manager);
 }
 
 void OverlayProcessorAndroid::DestroyOverlayProcessorOnGpu(

@@ -422,6 +422,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
   const AtomicString& target = FastGetAttribute(html_names::kTargetAttr);
   FrameLoadRequest frame_request(&GetDocument(), request);
   frame_request.SetNavigationPolicy(NavigationPolicyFromEvent(&event));
+  frame_request.SetClientRedirectReason(ClientNavigationReason::kAnchorClick);
   if (HasRel(kRelationNoReferrer)) {
     frame_request.SetNoReferrer();
     frame_request.SetNoOpener();

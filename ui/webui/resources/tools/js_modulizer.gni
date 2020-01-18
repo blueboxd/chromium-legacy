@@ -16,6 +16,7 @@ common_namespace_rewrites = [
   "cr.removeWebUIListener|removeWebUIListener",
   "cr.sendWithPromise|sendWithPromise",
   "cr.ui.FocusOutlineManager|FocusOutlineManager",
+  "cr.ui.focusWithoutInk|focusWithoutInk",
   "Polymer.dom.flush|flush",
   "Polymer.RenderStatus.afterNextRender|afterNextRender",
   "Polymer.RenderStatus.beforeNextRender|beforeNextRender",

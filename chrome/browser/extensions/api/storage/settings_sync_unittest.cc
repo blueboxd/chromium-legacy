@@ -198,6 +198,12 @@ class ExtensionSettingsSyncTest : public testing::Test {
 
     EventRouterFactory::GetInstance()->SetTestingFactory(
         profile_.get(), base::BindRepeating(&BuildEventRouter));
+
+    // Hold a pointer to SyncValueStoreCache in the main thread, such that
+    // GetSyncableService() can be called from the backend sequence.
+    sync_cache_ = static_cast<SyncValueStoreCache*>(
+        frontend_->GetValueStoreCache(settings_namespace::SYNC));
+    ASSERT_NE(sync_cache_, nullptr);
   }
 
   void TearDown() override {
@@ -219,9 +225,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
 
   // Gets the syncer::SyncableService for the given sync type.
   syncer::SyncableService* GetSyncableService(syncer::ModelType model_type) {
-    SyncValueStoreCache* sync_cache = static_cast<SyncValueStoreCache*>(
-        frontend_->GetValueStoreCache(settings_namespace::SYNC));
-    return sync_cache->GetSyncableService(model_type);
+    return sync_cache_->GetSyncableService(model_type);
   }
 
   // Gets all the sync data from the SyncableService for a sync type as a map
@@ -272,6 +276,7 @@ class ExtensionSettingsSyncTest : public testing::Test {
   std::unique_ptr<MockSyncChangeProcessor> sync_processor_;
   std::unique_ptr<syncer::SyncChangeProcessorWrapperForTest>
       sync_processor_wrapper_;
+  SyncValueStoreCache* sync_cache_;
 };
 
 // Get a semblance of coverage for both EXTENSION_SETTINGS and APP_SETTINGS

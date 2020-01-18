@@ -118,6 +118,14 @@ cr.define('settings', function() {
       routerInstance = instance;
     }
 
+    /** @param {!settings.Router} instance */
+    static resetInstanceForTesting(instance) {
+      if (routerInstance) {
+        instance.routeObservers_ = routerInstance.routeObservers_;
+      }
+      routerInstance = instance;
+    }
+
     /** @param {!SettingsRoutes} availableRoutes */
     constructor(availableRoutes) {
       /**

@@ -28,10 +28,6 @@
 
 #define FPL FILE_PATH_LITERAL
 
-#if defined(OS_WIN) && defined(DeleteFile)
-#undef DeleteFile
-#endif
-
 using base::trace_event::MemoryDumpArgs;
 using base::trace_event::MemoryDumpLevelOfDetail;
 using base::trace_event::ProcessMemoryDump;
@@ -117,7 +113,7 @@ bool GetFirstLDBFile(const base::FilePath& dir, base::FilePath* ldb_file) {
   return false;
 }
 
-TEST(ChromiumEnv, DeleteBackupTables) {
+TEST(ChromiumEnv, RemoveBackupTables) {
   Options options;
   options.create_if_missing = true;
   options.env = Env::Default();
@@ -264,7 +260,7 @@ TEST(ChromiumEnvTest, TestOpenOnRead) {
   for (int i = 0; i < kNumFiles; i++) {
     delete files[i];
   }
-  ASSERT_TRUE(env->DeleteFile(tmp_file_path.AsUTF8Unsafe()).ok());
+  ASSERT_TRUE(env->RemoveFile(tmp_file_path.AsUTF8Unsafe()).ok());
 }
 
 class ChromiumEnvDBTrackerTest : public ::testing::Test {
@@ -519,7 +515,7 @@ TEST_F(ChromiumEnvDBTrackerTest, MemEnvMemoryDumpCreation) {
   EXPECT_EQ(size_with_file, mad->GetSizeInternal());
 
   // Now delete and size should go down.
-  s = memenv->DeleteFile("xxxxx_file.txt");
+  s = memenv->RemoveFile("xxxxx_file.txt");
   EXPECT_TRUE(s.ok()) << s.ToString();
 
   base::trace_event::ProcessMemoryDump dump3(dump_args);

@@ -27,6 +27,7 @@
 #include "components/viz/service/display/display_scheduler.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
+#include "components/viz/service/display/overlay_processor_stub.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -261,6 +262,8 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
         std::make_unique<DirectOutputSurface>(context_provider);
   }
 
+  auto overlay_processor = std::make_unique<viz::OverlayProcessorStub>();
+
   std::unique_ptr<viz::BeginFrameSource> begin_frame_source;
   if (disable_vsync_) {
     begin_frame_source = std::make_unique<viz::BackToBackBeginFrameSource>(
@@ -282,8 +285,8 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
 
   data->display = std::make_unique<viz::Display>(
       &shared_bitmap_manager_, renderer_settings_, compositor->frame_sink_id(),
-      std::move(display_output_surface), std::move(scheduler),
-      compositor->task_runner());
+      std::move(display_output_surface), std::move(overlay_processor),
+      std::move(scheduler), compositor->task_runner());
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source.get(),
                                                 compositor->frame_sink_id());
   // Note that we are careful not to destroy a prior |data->begin_frame_source|

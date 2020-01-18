@@ -28,6 +28,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
  public:
   OverlayProcessorAndroid(
       SkiaOutputSurface* skia_output_surface,
+      gpu::SharedImageManager* shared_image_manager,
       scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
       bool enable_overlay);
   ~OverlayProcessorAndroid() override;
@@ -52,7 +53,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
   // OverlayProcessor needs to send overlay candidate information to the gpu
   // thread. These two methods are scheduled on the gpu thread to setup and
   // teardown the gpu side receiver.
-  void InitializeOverlayProcessorOnGpu();
+  void InitializeOverlayProcessorOnGpu(
+      gpu::SharedImageManager* shared_image_manager);
   void DestroyOverlayProcessorOnGpu(base::WaitableEvent* event);
   void NotifyOverlayPromotion(
       DisplayResourceProvider* display_resource_provider,
@@ -77,6 +79,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
   SkiaOutputSurface* const skia_output_surface_;
   scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler_;
   const bool overlay_enabled_;
+  bool able_to_create_processor_on_gpu_ = false;
   // This class is created, accessed, and destroyed on the gpu thread.
   std::unique_ptr<OverlayProcessorOnGpu> processor_on_gpu_;
 

@@ -6,10 +6,18 @@
 # WebGPU tests are only run on GPU bots, so they are skipped by default and run
 # separately from other Web Tests, with this expectations file.
 #
-# Expectations in this file must apply to wpt_internal/webgpu/cts.html, NOT
-# external/wpt/webgpu/cts.html, as the latter is not run.
+# *********************************** NOTE ***********************************
+# The contents of this file affect the way tests are broken down in
+# web_tests/wpt_internal/webgpu/cts.html.
+# You can add expectations which are at a finer granularity than the list of
+# "variants" already in that file: just edit this file, then run
+# third_party/blink/web_tests/webgpu/regenerate_internal_cts_html.sh.
 #
 # Expectations in this file must not (currently) use wildcards.
+#
+# Expectations in this file must apply to wpt_internal/webgpu/cts.html, NOT
+# external/wpt/webgpu/cts.html, as the latter is not run.
+# ****************************************************************************
 
 #
 # Test bugs

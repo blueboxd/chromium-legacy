@@ -128,16 +128,22 @@ class _TargetHost(object):
     def __init__(self, build_path, ports_to_forward, target_device):
         try:
             self._target = None
-            target_args = { 'output_dir':build_path,
-                            'target_cpu':'x64',
-                            'system_log_file':None,
-                            'cpu_cores':CPU_CORES,
-                            'require_kvm':True,
-                            'emu_type':target_device,
-                            'ram_size_mb':8192}
+            target_args = {
+                'output_dir': build_path,
+                'target_cpu': 'x64',
+                'system_log_file': None,
+                'cpu_cores': CPU_CORES,
+                'require_kvm': True,
+                'emu_type': target_device,
+                'ram_size_mb': 8192
+            }
             if target_device == 'qemu':
                 self._target = qemu_target.QemuTarget(**target_args)
             else:
+                target_args.update({
+                    'enable_graphics': False,
+                    'hardware_gpu': False
+                })
                 self._target = aemu_target.AemuTarget(**target_args)
             self._target.Start()
             self._setup_target(build_path, ports_to_forward)

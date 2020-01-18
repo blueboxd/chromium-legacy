@@ -16,7 +16,6 @@
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "components/viz/common/display/renderer_settings.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
@@ -169,6 +168,7 @@ Display::Display(
     const RendererSettings& settings,
     const FrameSinkId& frame_sink_id,
     std::unique_ptr<OutputSurface> output_surface,
+    std::unique_ptr<OverlayProcessorInterface> overlay_processor,
     std::unique_ptr<DisplaySchedulerBase> scheduler,
     scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
     : bitmap_manager_(bitmap_manager),
@@ -176,6 +176,7 @@ Display::Display(
       frame_sink_id_(frame_sink_id),
       output_surface_(std::move(output_surface)),
       skia_output_surface_(output_surface_->AsSkiaOutputSurface()),
+      overlay_processor_(std::move(overlay_processor)),
       scheduler_(std::move(scheduler)),
       current_task_runner_(std::move(current_task_runner)),
       swapped_trace_id_(GetStartingTraceId()),
@@ -241,19 +242,6 @@ void Display::Initialize(DisplayClient* client,
   output_surface_->BindToClient(this);
   if (output_surface_->software_device())
     output_surface_->software_device()->BindToClient(this);
-
-  gpu::SharedImageInterface* sii = nullptr;
-
-  if (features::ShouldUseRealBuffersForPageFlipTest()) {
-    CHECK(output_surface_->context_provider());
-    sii = output_surface_->context_provider()->SharedImageInterface();
-    CHECK(sii);
-  }
-
-  overlay_processor_ = OverlayProcessorInterface::CreateOverlayProcessor(
-      skia_output_surface_, output_surface_->GetSurfaceHandle(),
-      output_surface_->capabilities(), settings_,
-      output_surface_->GetGpuTaskSchedulerHelper(), sii);
 
   frame_rate_decider_ =
       std::make_unique<FrameRateDecider>(surface_manager_, this);

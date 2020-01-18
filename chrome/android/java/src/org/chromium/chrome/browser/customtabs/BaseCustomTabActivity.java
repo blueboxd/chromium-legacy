@@ -177,7 +177,7 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
         };
         BrowserServicesIntentDataProvider intentDataProvider = getIntentDataProvider();
         if (intentDataProvider.isTrustedWebActivity()
-                || intentDataProvider.getWebappExtras() != null) {
+                || intentDataProvider.isWebappOrWebApkActivity()) {
             // TODO(pshmakov): extract all finishing logic from BaseCustomTabActivity.
             // In addition to TwaFinishHandler, create DefaultFinishHandler, PaymentsFinishHandler,
             // and SeparateTaskActivityFinishHandler, all implementing

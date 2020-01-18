@@ -30,7 +30,8 @@ cr.define('settings', function() {
     if (!route) {
       return RouteState.INITIAL;
     }
-    if (route === settings.routes.BASIC || route === settings.routes.ABOUT) {
+    if (route === settings.Router.getInstance().getRoutes().BASIC ||
+        route === settings.Router.getInstance().getRoutes().ABOUT) {
       return RouteState.TOP_LEVEL;
     }
     if (route.isSubpage()) {

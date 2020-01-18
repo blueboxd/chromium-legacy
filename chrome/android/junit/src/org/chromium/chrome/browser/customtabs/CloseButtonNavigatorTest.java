@@ -78,6 +78,7 @@ public class CloseButtonNavigatorTest {
             mWebappExtras = null;
         }
         doReturn(mWebappExtras).when(mIntentDataProvider).getWebappExtras();
+        doReturn(mIsWebapp).when(mIntentDataProvider).isWebappOrWebApkActivity();
 
         mCloseButtonNavigator =
                 new CloseButtonNavigator(mTabController, mTabProvider, mIntentDataProvider);

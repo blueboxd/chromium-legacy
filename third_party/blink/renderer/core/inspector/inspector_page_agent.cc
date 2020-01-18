@@ -91,9 +91,10 @@ using protocol::Response;
 namespace {
 
 String ClientNavigationReasonToProtocol(ClientNavigationReason reason) {
-  using ReasonEnum =
-      protocol::Page::FrameScheduledNavigationNotification::ReasonEnum;
+  namespace ReasonEnum = protocol::Page::ClientNavigationReasonEnum;
   switch (reason) {
+    case ClientNavigationReason::kAnchorClick:
+      return ReasonEnum::AnchorClick;
     case ClientNavigationReason::kFormSubmissionGet:
       return ReasonEnum::FormSubmissionGet;
     case ClientNavigationReason::kFormSubmissionPost:

@@ -18,7 +18,7 @@ js_library("date_time_page") {
     ":date_time_types",
     ":timezone_selector",
     ":timezone_subpage",
-    "../..:route",
+    "..:os_route",
     "../..:router",
     "../../prefs:prefs_behavior",
     "//ui/webui/resources/cr_elements/policy:cr_policy_indicator_behavior",

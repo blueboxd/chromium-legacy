@@ -46,7 +46,7 @@ js_library("fingerprint_browser_proxy") {
 js_library("fingerprint_list") {
   deps = [
     ":fingerprint_browser_proxy",
-    "../..:route",
+    "..:os_route",
     "../..:router",
     "//third_party/polymer/v1_0/components-chromium/iron-resizable-behavior:iron-resizable-behavior-extracted",
     "//third_party/polymer/v1_0/components-chromium/paper-ripple:paper-ripple-extracted",
@@ -89,7 +89,7 @@ js_library("lock_screen") {
     ":fingerprint_browser_proxy",
     ":lock_screen_password_prompt_dialog",
     ":lock_state_behavior",
-    "../..:route",
+    "..:os_route",
     "../..:router",
     "../../controls:settings_dropdown_menu",
     "../../controls:settings_toggle_button",
@@ -127,7 +127,7 @@ js_library("os_people_page") {
     ":lock_state_behavior",
     ":os_sync_controls",
     "..:os_page_visibility",
-    "../..:route",
+    "..:os_route",
     "../..:router",
     "../../settings_page:settings_animated_pages",
     "../localized_link:localized_link",
@@ -183,7 +183,7 @@ js_library("setup_pin_dialog") {
 
 js_library("user_list") {
   deps = [
-    "../..:route",
+    "..:os_route",
     "../..:router",
     "//ui/webui/resources/cr_elements:cr_scrollable_behavior",
     "//ui/webui/resources/js:i18n_behavior",

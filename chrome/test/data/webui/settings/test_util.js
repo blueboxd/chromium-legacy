@@ -202,6 +202,18 @@ cr.define('test_util', function() {
     }
   }
 
+  function setupPopstateListener() {
+    window.addEventListener('popstate', function(event) {
+      // On pop state, do not push the state onto the window.history again.
+      const routerInstance = settings.Router.getInstance();
+      routerInstance.setCurrentRoute(
+          /** @type {!settings.Route} */ (
+              routerInstance.getRouteForPath(window.location.pathname) ||
+              routerInstance.getRoutes().BASIC),
+          new URLSearchParams(window.location.search), true);
+    });
+  }
+
   return {
     createContentSettingTypeToValuePair: createContentSettingTypeToValuePair,
     createDefaultContentSetting: createDefaultContentSetting,
@@ -212,5 +224,6 @@ cr.define('test_util', function() {
     createSiteSettingsPrefs: createSiteSettingsPrefs,
     getContentSettingsTypeFromChooserType:
         getContentSettingsTypeFromChooserType,
+    setupPopstateListener: setupPopstateListener,
   };
 });

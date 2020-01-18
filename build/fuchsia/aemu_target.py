@@ -13,7 +13,8 @@ from common import GetEmuRootForPlatform
 
 class AemuTarget(qemu_target.QemuTarget):
   def __init__(self, output_dir, target_cpu, system_log_file, emu_type,
-               cpu_cores, require_kvm, ram_size_mb):
+               cpu_cores, require_kvm, ram_size_mb, enable_graphics,
+               hardware_gpu):
     super(AemuTarget, self).__init__(output_dir, target_cpu, system_log_file,
                                      emu_type, cpu_cores, require_kvm,
                                      ram_size_mb)
@@ -21,6 +22,8 @@ class AemuTarget(qemu_target.QemuTarget):
     # TODO(crbug.com/1000907): Enable AEMU for arm64.
     if platform.machine() == 'aarch64':
       raise Exception('AEMU does not support arm64 hosts.')
+    self._enable_graphics = enable_graphics
+    self._hardware_gpu = hardware_gpu
 
   # TODO(bugs.fuchsia.dev/p/fuchsia/issues/detail?id=37301): Remove
   # once aemu is part of default fuchsia build
@@ -31,12 +34,10 @@ class AemuTarget(qemu_target.QemuTarget):
           '   "checkout_aemu": True\n\n' % (self._emu_type)
 
   def _BuildCommand(self):
-    aemu_exec = 'emulator-headless'
-
     aemu_folder = GetEmuRootForPlatform(self._emu_type)
 
     self._EnsureEmulatorExists(aemu_folder)
-    aemu_path = os.path.join(aemu_folder, aemu_exec)
+    aemu_path = os.path.join(aemu_folder, 'emulator')
 
     # `VirtioInput` is needed for touch input device support on Fuchsia.
     # `RefCountPipe` is needed for proper cleanup of resources when a process
@@ -52,13 +53,19 @@ class AemuTarget(qemu_target.QemuTarget):
       if self._target_cpu != 'arm64':
         aemu_features += ',-GLDirectMem'
 
+    # Use Swiftshader for Vulkan if requested
+    gpu_target = 'swiftshader_indirect'
+    if self._hardware_gpu:
+      gpu_target = 'host'
+
+    aemu_command = [aemu_path]
+    if not self._enable_graphics:
+      aemu_command.append('-no-window')
     # All args after -fuchsia flag gets passed to QEMU
-    aemu_command = [aemu_path,
-        '-feature', aemu_features,
-        '-window-size', '1024x600',
-        '-gpu', 'swiftshader_indirect',
-        '-fuchsia'
-    ]
+    aemu_command.extend([
+        '-feature', aemu_features, '-window-size', '1024x600', '-gpu',
+        gpu_target, '-fuchsia'
+    ])
 
     aemu_command.extend(self._BuildQemuConfig())
 

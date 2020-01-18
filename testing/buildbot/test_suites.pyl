@@ -4042,6 +4042,15 @@
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
     ],
 
+    'gpu_fyi_optional_mac_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
+      'gpu_webgl2_conformance_validating_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
+      # Not currently running
+      # gpu_webgl2_conformance_gl_passthrough_telemetry_tests here due
+      # to concerns about machine capacity.
+    ],
+
     'gpu_fyi_optional_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_webgl2_conformance_validating_telemetry_tests',

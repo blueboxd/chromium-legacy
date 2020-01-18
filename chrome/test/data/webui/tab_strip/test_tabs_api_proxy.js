@@ -10,11 +10,13 @@ export class TestTabsApiProxy extends TestBrowserProxy {
       'activateTab',
       'closeTab',
       'createNewTab',
+      'getGroupVisualData',
       'getTabs',
       'moveTab',
       'setThumbnailTracked',
     ]);
 
+    this.groupVisualData_;
     this.tabs_;
   }
 
@@ -32,6 +34,11 @@ export class TestTabsApiProxy extends TestBrowserProxy {
     this.methodCalled('createNewTab');
   }
 
+  getGroupVisualData() {
+    this.methodCalled('getGroupVisualData');
+    return Promise.resolve(this.groupVisualData_);
+  }
+
   getTabs() {
     this.methodCalled('getTabs');
     return Promise.resolve(this.tabs_.slice());
@@ -40,6 +47,10 @@ export class TestTabsApiProxy extends TestBrowserProxy {
   moveTab(tabId, newIndex) {
     this.methodCalled('moveTab', [tabId, newIndex]);
     return Promise.resolve();
+  }
+
+  setGroupVisualData(groupVisualData) {
+    this.groupVisualData_ = groupVisualData;
   }
 
   setTabs(tabs) {

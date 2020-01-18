@@ -26,4 +26,7 @@ std::unique_ptr<OutputSurface> TestOutputSurfaceProvider::CreateOutputSurface(
   }
 }
 
+gpu::SharedImageManager* TestOutputSurfaceProvider::GetSharedImageManager() {
+  return nullptr;
+}
 }  // namespace viz

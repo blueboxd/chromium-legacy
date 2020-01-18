@@ -5,12 +5,21 @@
 cr.define('settings_subpage', function() {
   suite('SettingsSubpage', function() {
     setup(function() {
-      const whenReady = settings.routes !== undefined ?
-          Promise.resolve() :
-          PolymerTest.importHtml('chrome://settings/route.html');
-      return whenReady.then(() => {
-        PolymerTest.clearBody();
-      });
+      const routes = {
+        BASIC: new settings.Route('/'),
+      };
+      routes.SEARCH = routes.BASIC.createSection('/search', 'search');
+      routes.SEARCH_ENGINES = routes.SEARCH.createChild('/searchEngines');
+      routes.PEOPLE = routes.BASIC.createSection('/people', 'people');
+      routes.SYNC = routes.PEOPLE.createChild('/syncSetup');
+      routes.PRIVACY = routes.BASIC.createSection('/privacy', 'privacy');
+      routes.CERTIFICATES = routes.PRIVACY.createChild('/certificates');
+
+      settings.Router.resetInstanceForTesting(new settings.Router(routes));
+      settings.routes = routes;
+      test_util.setupPopstateListener();
+
+      PolymerTest.clearBody();
     });
 
     test('clear search (event)', function() {
@@ -75,7 +84,7 @@ cr.define('settings_subpage', function() {
 
       window.addEventListener('popstate', function(event) {
         assertEquals(
-            settings.routes.BASIC,
+            settings.Router.getInstance().getRoutes().BASIC,
             settings.Router.getInstance().getCurrentRoute());
         done();
       });

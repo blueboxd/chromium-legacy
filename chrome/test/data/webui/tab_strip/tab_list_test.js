@@ -173,6 +173,40 @@ suite('TabList', () => {
     assertEquals(tabList.style.getPropertyValue('--width'), '10px');
   });
 
+  test('GroupVisualDataOnInit', async () => {
+    testTabsApiProxy.reset();
+    testTabsApiProxy.setTabs([{
+      active: true,
+      alertStates: [],
+      groupId: 'group0',
+      id: 0,
+      index: 0,
+      title: 'New tab',
+    }]);
+    testTabsApiProxy.setGroupVisualData({
+      group0: {
+        title: 'My group',
+        color: 'rgba(255, 0, 0, 1)',
+      },
+    });
+    // Remove and reinsert into DOM to retrigger connectedCallback();
+    tabList.remove();
+    document.body.appendChild(tabList);
+    await testTabsApiProxy.whenCalled('getGroupVisualData');
+  });
+
+  test('GroupVisualDataOnThemeChange', async () => {
+    testTabsApiProxy.reset();
+    testTabsApiProxy.setGroupVisualData({
+      group0: {
+        title: 'My group',
+        color: 'rgba(255, 0, 0, 1)',
+      },
+    });
+    webUIListenerCallback('theme-changed');
+    await testTabsApiProxy.whenCalled('getGroupVisualData');
+  });
+
   test('calculates the correct unpinned tab width and height', async () => {
     webUIListenerCallback('layout-changed', {
       '--tabstrip-tab-thumbnail-height': '132px',

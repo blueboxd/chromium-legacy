@@ -19,7 +19,7 @@ js_library("android_apps_browser_proxy") {
 js_library("android_apps_subpage") {
   deps = [
     ":android_apps_browser_proxy",
-    "../..:route",
+    "..:os_route",
     "../..:router",
     "../../prefs:prefs_behavior",
     "//ui/webui/resources/js:assert",
@@ -32,7 +32,7 @@ js_library("os_apps_page") {
   deps = [
     ":android_apps_browser_proxy",
     ":android_apps_subpage",
-    "../../:route",
+    "..:os_route",
     "../../:router",
     "../../prefs:prefs_behavior",
     "../../settings_page:settings_animated_pages",

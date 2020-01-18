@@ -3153,6 +3153,21 @@
             ]
         }
     ],
+    "IOSEmbedderBlockRestoreUrl": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EmbedderBlockRestoreUrl"
+                    ]
+                }
+            ]
+        }
+    ],
     "IOSSettingsAddPaymentMethod": [
         {
             "platforms": [

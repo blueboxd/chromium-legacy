@@ -40,6 +40,7 @@ CrSettingsSyncPageTest.prototype = {
   /** @override */
   extraLibraries: CrSettingsInteractiveUITest.prototype.extraLibraries.concat([
     '../test_browser_proxy.js',
+    'sync_test_util.js',
     'test_sync_browser_proxy.js',
     'people_page_sync_page_interactive_test.js',
   ]),
@@ -63,6 +64,7 @@ CrSettingsAnimatedPagesTest.prototype = {
   browsePreload: 'chrome://settings/settings_page/settings_animated_pages.html',
 
   extraLibraries: CrSettingsInteractiveUITest.prototype.extraLibraries.concat([
+    'test_util.js',
     'settings_animated_pages_test.js',
   ]),
 };

@@ -21,11 +21,6 @@ polymer_modulizer("managed_footnote") {
   js_file = "managed_footnote.js"
   html_file = "managed_footnote.html"
   html_type = "dom-module"
-  auto_imports = [
-    "ui/webui/resources/html/web_ui_listener_behavior.html|WebUIListenerBehavior",
-    "ui/webui/resources/html/i18n_behavior.html|I18nBehavior",
-    "ui/webui/resources/html/load_time_data.html|loadTimeData",
-  ]
 }
 
 js_type_check("closure_compile_module") {

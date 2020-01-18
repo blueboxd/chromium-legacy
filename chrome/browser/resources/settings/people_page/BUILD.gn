@@ -99,7 +99,6 @@ js_library("sync_page") {
     ":sync_account_control",
     ":sync_browser_proxy",
     "..:page_visibility",
-    "..:route",
     "..:router",
     "../settings_page:settings_animated_pages",
     "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button",
@@ -121,10 +120,7 @@ js_library("sync_browser_proxy") {
 }
 
 js_library("sync_controls") {
-  deps = [
-    "..:route",
-    "..:router",
-  ]
+  deps = [ "..:router" ]
 }
 
 js_library("import_data_dialog") {
@@ -141,7 +137,6 @@ js_library("sync_account_control") {
   deps = [
     ":profile_info_browser_proxy",
     ":sync_browser_proxy",
-    "..:route",
     "..:router",
     "../prefs:prefs_behavior",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",

@@ -4438,6 +4438,12 @@ be describing additional metrics about the same event.
       is true because we don't always know the codec.
     </summary>
   </metric>
+  <metric name="AudioCodecProfile">
+    <summary>
+      media::AudioCodecProfile enum value. Can be AudioCodecProfile::kUnknown
+      even when HasAudio is true because we don't always know the codec profile.
+    </summary>
+  </metric>
   <metric name="AudioDecoderName">
     <summary>
       Enumeration of audio decoder names, zero if none or unknown (Cast, HLS,

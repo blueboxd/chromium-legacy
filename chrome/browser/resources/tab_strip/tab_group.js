@@ -3,10 +3,18 @@
 // found in the LICENSE file.
 
 import {CustomElement} from './custom_element.js';
+import {TabGroupVisualData} from './tabs_api_proxy.js';
 
 export class TabGroupElement extends CustomElement {
   static get template() {
     return `{__html_template__}`;
+  }
+
+  /**
+   * @param {!TabGroupVisualData} visualData
+   */
+  updateVisuals(visualData) {
+    // TODO(johntlee): Update the HTML with the visual data.
   }
 }
 

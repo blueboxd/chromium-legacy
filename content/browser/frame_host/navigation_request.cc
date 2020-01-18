@@ -699,8 +699,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
   // - Renderer-initiated same document navigations never start in the browser.
   // - Restore-navigations are always browser-initiated.
   // - History-navigations use the browser-initiated path, even the ones that
-  //   are initiated by a javascript script, please see the IPC message
-  //   FrameHostMsg_GoToEntryAtOffset.
+  //   are initiated by a javascript script.
   DCHECK(NavigationTypeUtils::IsReload(common_params->navigation_type) ||
          common_params->navigation_type ==
              mojom::NavigationType::DIFFERENT_DOCUMENT);

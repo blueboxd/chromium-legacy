@@ -723,13 +723,6 @@
       <structure name="IDR_OS_SETTINGS_OS_PAGE_VISIBILITY_JS"
                  file="chromeos/os_page_visibility.js"
                  type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_PAGE_VISIBILITY_HTML"
-                 file="page_visibility.html"
-                 type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_PAGE_VISIBILITY_JS"
-                 file="page_visibility.js"
-                 type="chrome_html"
-                 preprocess="true" />
       <!-- TODO(jamescook): Remove after sync settings is forked. -->
       <structure name="IDR_OS_SETTINGS_PERSONALIZATION_OPTIONS_HTML"
                  file="privacy_page/personalization_options.html"
@@ -755,13 +748,12 @@
       <structure name="IDR_OS_SETTINGS_OS_PRIVACY_PAGE_JS"
                  file="chromeos/os_privacy_page/os_privacy_page.js"
                  type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_ROUTE_HTML"
-                 file="route.html"
+      <structure name="IDR_OS_SETTINGS_OS_ROUTE_HTML"
+                 file="chromeos/os_route.html"
                  type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_ROUTE_JS"
-                 file="route.js"
-                 type="chrome_html"
-                 preprocess="true" />
+      <structure name="IDR_OS_SETTINGS_OS_ROUTE_JS"
+                 file="chromeos/os_route.js"
+                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_ROUTER_HTML"
                  file="router.html"
                  type="chrome_html" />

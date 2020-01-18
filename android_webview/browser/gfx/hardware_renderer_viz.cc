@@ -37,6 +37,7 @@
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/overlay_processor_stub.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -110,11 +111,12 @@ HardwareRendererViz::OnViz::OnViz(
   auto scheduler = std::make_unique<viz::DisplayScheduler>(
       stub_begin_frame_source_.get(), nullptr,
       output_surface->capabilities().max_frames_pending);
+  auto overlay_processor = std::make_unique<viz::OverlayProcessorStub>();
   display_ = std::make_unique<viz::Display>(
       nullptr /* shared_bitmap_manager */,
       output_surface_provider->renderer_settings(), frame_sink_id_,
-      std::move(output_surface), std::move(scheduler),
-      nullptr /* current_task_runner */);
+      std::move(output_surface), std::move(overlay_processor),
+      std::move(scheduler), nullptr /* current_task_runner */);
   display_->Initialize(this, GetFrameSinkManager()->surface_manager(),
                        output_surface_provider->enable_shared_image());
 

@@ -76,8 +76,8 @@ Polymer({
     this.addWebUIListener(
         'sync-prefs-changed', this.handleSyncPrefsChanged_.bind(this));
 
-    if (settings.Router.getInstance().getCurrentRoute() ==
-        settings.routes.SYNC_ADVANCED) {
+    const router = settings.Router.getInstance();
+    if (router.getCurrentRoute() === router.getRoutes().SYNC_ADVANCED) {
       this.browserProxy_.didNavigateToSyncPage();
     }
   },
@@ -161,10 +161,11 @@ Polymer({
 
   /** @private */
   syncStatusChanged_() {
-    if (settings.Router.getInstance().getCurrentRoute() ==
-            settings.routes.SYNC_ADVANCED &&
+    const router = settings.Router.getInstance();
+    if (router.getCurrentRoute() == router.getRoutes().SYNC_ADVANCED &&
         this.syncControlsHidden_()) {
-      settings.Router.getInstance().navigateTo(settings.routes.SYNC);
+      router.navigateTo(
+          /** @type {!settings.Route} */ (router.getRoutes().SYNC));
     }
   },
 

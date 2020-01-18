@@ -36,6 +36,7 @@ cr.define('settings_sync_account_control', function() {
     });
 
     setup(function() {
+      sync_test_util.setupRouterWithSyncRoutes();
       browserProxy = new TestSyncBrowserProxy();
       settings.SyncBrowserProxyImpl.instance_ = browserProxy;
 

@@ -644,7 +644,8 @@ bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
 
   bool has_user_gesture =
       LocalFrame::HasTransientUserActivation(web_frame_->GetFrame());
-  web_frame_->Client()->NavigateBackForwardSoon(offset, has_user_gesture);
+  web_frame_->GetFrame()->GetLocalFrameHostRemote().GoToEntryAtOffset(
+      offset, has_user_gesture);
   return true;
 }
 

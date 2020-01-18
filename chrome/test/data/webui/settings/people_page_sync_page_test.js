@@ -22,14 +22,15 @@ cr.define('settings_people_page_sync_page', function() {
     });
 
     setup(function() {
+      sync_test_util.setupRouterWithSyncRoutes();
       browserProxy = new TestSyncBrowserProxy();
       settings.SyncBrowserProxyImpl.instance_ = browserProxy;
 
       PolymerTest.clearBody();
       syncPage = document.createElement('settings-sync-page');
       settings.Router.getInstance().navigateTo(settings.routes.SYNC);
-      // Preferences should exist for embedded 'personalization_options.html'.
-      // We don't perform tests on them.
+      // Preferences should exist for embedded
+      // 'personalization_options.html'. We don't perform tests on them.
       syncPage.prefs = {
         profile: {password_manager_leak_detection: {value: true}},
         signin: {
@@ -48,8 +49,9 @@ cr.define('settings_people_page_sync_page', function() {
       assertTrue(syncPage.$$('#' + settings.PageStatus.TIMEOUT).hidden);
       assertTrue(syncPage.$$('#' + settings.PageStatus.SPINNER).hidden);
 
-      // Start with Sync All with no encryption selected. Also, ensure that
-      // this is not a supervised user, so that Sync Passphrase is enabled.
+      // Start with Sync All with no encryption selected. Also, ensure
+      // that this is not a supervised user, so that Sync Passphrase is
+      // enabled.
       cr.webUIListenerCallback(
           'sync-prefs-changed', sync_test_util.getSyncAllPrefs());
       syncPage.set('syncStatus', {supervisedUser: false});

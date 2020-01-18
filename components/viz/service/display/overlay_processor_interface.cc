@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/common/features.h"
 
 #if defined(OS_MACOSX)
 #include "components/viz/service/display/overlay_processor_mac.h"
@@ -78,6 +79,7 @@ OverlayProcessorInterface::CreateOverlayProcessor(
     gpu::SurfaceHandle surface_handle,
     const OutputSurface::Capabilities& capabilities,
     const RendererSettings& renderer_settings,
+    gpu::SharedImageManager* shared_image_manager,
     scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
     gpu::SharedImageInterface* shared_image_interface) {
 #if defined(OS_MACOSX)
@@ -104,6 +106,13 @@ OverlayProcessorInterface::CreateOverlayProcessor(
     overlay_candidates =
         overlay_manager->CreateOverlayCandidates(surface_handle);
   }
+
+  if (features::ShouldUseRealBuffersForPageFlipTest()) {
+    CHECK(shared_image_interface);
+  } else {
+    shared_image_interface = nullptr;
+  }
+
   return std::make_unique<OverlayProcessorOzone>(
       overlay_enabled, std::move(overlay_candidates),
       std::move(renderer_settings.overlay_strategies), shared_image_interface);
@@ -121,7 +130,8 @@ OverlayProcessorInterface::CreateOverlayProcessor(
     // overlay processing for this OutputSurface.
     overlay_enabled &= !capabilities.android_surface_control_feature_enabled;
     return std::make_unique<OverlayProcessorAndroid>(
-        skia_output_surface, gpu_task_scheduler, overlay_enabled);
+        skia_output_surface, shared_image_manager, gpu_task_scheduler,
+        overlay_enabled);
   }
 #else  // Default
   return std::make_unique<OverlayProcessorStub>();

@@ -1481,6 +1481,7 @@ CrSettingsSubpageTest.prototype = {
 
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../test_util.js',
+    'test_util.js',
     'settings_subpage_test.js',
   ]),
 };

@@ -38,7 +38,11 @@ mojom::blink::CookieChangeSubscriptionPtr ToBackendSubscription(
 
   if (subscription->hasURL()) {
     KURL subscription_url(default_cookie_url, subscription->url());
-    // TODO(crbug.com/729800): Check that the URL is under default_cookie_url.
+    if (!subscription_url.GetString().StartsWith(
+            default_cookie_url.GetString())) {
+      exception_state.ThrowTypeError("URL must be within ServiceWorker scope");
+      return nullptr;
+    }
     backend_subscription->url = subscription_url;
   } else {
     backend_subscription->url = default_cookie_url;

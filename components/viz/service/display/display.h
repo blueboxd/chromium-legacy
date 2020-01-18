@@ -82,6 +82,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
           const RendererSettings& settings,
           const FrameSinkId& frame_sink_id,
           std::unique_ptr<OutputSurface> output_surface,
+          std::unique_ptr<OverlayProcessorInterface> overlay_processor,
           std::unique_ptr<DisplaySchedulerBase> scheduler,
           scoped_refptr<base::SingleThreadTaskRunner> current_task_runner);
 

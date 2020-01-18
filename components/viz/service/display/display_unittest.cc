@@ -26,6 +26,7 @@
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "components/viz/service/display/overlay_processor_stub.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -166,9 +167,11 @@ class DisplayTest : public testing::Test {
       const FrameSinkId& frame_sink_id,
       std::unique_ptr<DisplayScheduler> scheduler,
       std::unique_ptr<OutputSurface> output_surface) {
+    auto overlay_processor = std::make_unique<OverlayProcessorStub>();
     auto display = std::make_unique<Display>(
         &shared_bitmap_manager_, settings, frame_sink_id,
-        std::move(output_surface), std::move(scheduler), task_runner_);
+        std::move(output_surface), std::move(overlay_processor),
+        std::move(scheduler), task_runner_);
     display->SetVisible(true);
     return display;
   }

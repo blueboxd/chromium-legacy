@@ -6,8 +6,8 @@ suite('sync-page-test', function() {
   /** @type {SyncPageElement} */ let syncPage;
 
   setup(function() {
+    sync_test_util.setupRouterWithSyncRoutes();
     PolymerTest.clearBody();
-
     settings.SyncBrowserProxyImpl.instance_ = new TestSyncBrowserProxy();
     settings.Router.getInstance().navigateTo(settings.routes.SYNC);
     syncPage = document.createElement('settings-sync-page');

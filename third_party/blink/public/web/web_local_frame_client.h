@@ -473,12 +473,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void SetEffectiveConnectionTypeForTesting(
       WebEffectiveConnectionType) {}
 
-  // Tells the embedder to navigate back or forward in session history by
-  // the given offset (relative to the current position in session
-  // history). |has_user_gesture| tells whether or not this is the consequence
-  // of a user action.
-  virtual void NavigateBackForwardSoon(int offset, bool has_user_gesture) {}
-
   // Returns token to be used as a frame id in the devtools protocol.
   // It is derived from the content's devtools_frame_token, is
   // defined by the browser and passed into Blink upon frame creation.

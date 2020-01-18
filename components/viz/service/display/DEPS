@@ -34,6 +34,8 @@ include_rules = [
   "+gpu/ipc/common/vulkan_ycbcr_info.h",
   "+gpu/ipc/gpu_task_scheduler_helper.h",
   "+gpu/ipc/scheduler_sequence.h",
+  "+gpu/command_buffer/service/shared_image_factory.h",
+  "+gpu/command_buffer/service/shared_image_manager.h",
   "+gpu/config/gpu_driver_bug_workaround_type.h",
 ]
 

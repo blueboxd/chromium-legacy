@@ -19,6 +19,7 @@
 #include "storage/browser/file_system/file_system_quota_util.h"
 #include "storage/browser/file_system/plugin_private_file_system_backend.h"
 #include "storage/common/file_system/file_system_types.h"
+#include "url/origin.h"
 
 using content::BrowserThread;
 
@@ -107,7 +108,8 @@ void BrowsingDataMediaLicenseHelperImpl::FetchMediaLicenseInfoOnFileTaskRunner(
 
     int64_t size;
     base::Time last_modified_time;
-    backend->GetOriginDetailsOnFileTaskRunner(filesystem_context_.get(), origin,
+    backend->GetOriginDetailsOnFileTaskRunner(filesystem_context_.get(),
+                                              url::Origin::Create(origin),
                                               &size, &last_modified_time);
     result.push_back(MediaLicenseInfo(origin, size, last_modified_time));
   }

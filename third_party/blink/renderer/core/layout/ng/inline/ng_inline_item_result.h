@@ -216,7 +216,7 @@ class CORE_EXPORT NGLineInfo {
 
   // True if this line has overflow, excluding preserved trailing spaces.
   bool HasOverflow() const { return has_overflow_; }
-  void SetHasOverflow() { has_overflow_ = true; }
+  void SetHasOverflow(bool value = true) { has_overflow_ = value; }
 
   void SetBfcOffset(const NGBfcOffset& bfc_offset) { bfc_offset_ = bfc_offset; }
   void SetWidth(LayoutUnit available_width, LayoutUnit width) {

@@ -83,4 +83,7 @@ void FakeLocalFrameHost::BindFrameHostReceiver(
       std::move(handle)));
 }
 
+void FakeLocalFrameHost::GoToEntryAtOffset(int32_t offset,
+                                           bool has_user_gesture) {}
+
 }  // namespace blink

@@ -32,6 +32,7 @@
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/output_surface_client.h"
+#include "components/viz/service/display/overlay_processor_stub.h"
 #include "components/viz/service/display/skia_renderer.h"
 #include "components/viz/service/display_embedder/gl_output_surface_offscreen.h"
 #include "components/viz/service/display_embedder/in_process_gpu_memory_buffer_manager.h"
@@ -286,10 +287,10 @@ class RendererPerfTest : public testing::Test {
     auto output_surface = CreateOutputSurface(gpu_service);
     // WaitForSwapDisplayClient depends on this.
     output_surface->SetNeedsSwapSizeNotifications(true);
-
+    auto overlay_processor = std::make_unique<OverlayProcessorStub>();
     display_ = std::make_unique<Display>(
         &shared_bitmap_manager_, renderer_settings_, kArbitraryFrameSinkId,
-        std::move(output_surface),
+        std::move(output_surface), std::move(overlay_processor),
         /*display_scheduler=*/nullptr, base::ThreadTaskRunnerHandle::Get());
     display_->SetVisible(true);
     display_->Initialize(&client_, manager_.surface_manager());

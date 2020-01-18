@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
+#include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/tab_strip/thumbnail_tracker.h"
 #include "content/public/browser/web_contents.h"
@@ -48,9 +49,12 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   void RegisterMessages() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, GetGroupVisualData);
   void HandleCreateNewTab(const base::ListValue* args);
   base::DictionaryValue GetTabData(content::WebContents* contents, int index);
+  base::DictionaryValue GetTabGroupData(TabGroup* group);
   void HandleGetTabs(const base::ListValue* args);
+  void HandleGetGroupVisualData(const base::ListValue* args);
   void HandleGetThemeColors(const base::ListValue* args);
   void HandleCloseContainer(const base::ListValue* args);
   void HandleShowBackgroundContextMenu(const base::ListValue* args);

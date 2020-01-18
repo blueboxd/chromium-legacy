@@ -264,7 +264,6 @@ js_modulizer("modulize") {
     "cr.ui.DragWrapperDelegate|DragWrapperDelegate",
     "cr.ui.FocusRowDelegate|FocusRowDelegate",
     "cr.ui.FocusRow|FocusRow",
-    "cr.ui.focusWithoutInk|focusWithoutInk",
     "cr.ui.StoreObserver|StoreObserver",
     "cr.ui.VirtualFocusRow|VirtualFocusRow",
   ]

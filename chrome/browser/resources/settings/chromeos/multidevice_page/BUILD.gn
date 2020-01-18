@@ -39,8 +39,8 @@ js_library("multidevice_feature_item") {
   deps = [
     ":multidevice_constants",
     ":multidevice_feature_behavior",
+    "..:os_route",
     "..:route_origin_behavior",
-    "../..:route",
     "../..:router",
     "../localized_link:localized_link",
     "//ui/webui/resources/js:cr",
@@ -59,7 +59,7 @@ js_library("multidevice_page") {
     ":multidevice_browser_proxy",
     ":multidevice_constants",
     ":multidevice_feature_behavior",
-    "../..:route",
+    "..:os_route",
     "../..:router",
     "../../controls:password_prompt_dialog",
     "../localized_link:localized_link",
@@ -80,7 +80,7 @@ js_library("multidevice_smartlock_subpage") {
   deps = [
     ":multidevice_constants",
     ":multidevice_feature_behavior",
-    "../..:route",
+    "..:os_route",
     "../..:settings_routes",
     "../../prefs:prefs_behavior",
     "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button",
@@ -92,7 +92,7 @@ js_library("multidevice_subpage") {
   deps = [
     ":multidevice_constants",
     ":multidevice_feature_behavior",
-    "../..:route",
+    "..:os_route",
     "../..:settings_routes",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
   ]
@@ -103,7 +103,7 @@ js_library("multidevice_subpage") {
 js_library("multidevice_tether_item") {
   deps = [
     ":multidevice_feature_behavior",
-    "../..:route",
+    "..:os_route",
     "../..:settings_routes",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",

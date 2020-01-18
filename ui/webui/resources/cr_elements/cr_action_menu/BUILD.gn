@@ -35,7 +35,6 @@ polymer_modulizer("cr_action_menu") {
     "ui/webui/resources/html/assert.html|assert",
     "ui/webui/resources/html/cr.html|isMac, isWindows",
     "ui/webui/resources/html/cr/ui/focus_row.html|FocusRow",
-    "ui/webui/resources/html/cr/ui/focus_without_ink.html|focusWithoutInk",
     "ui/webui/resources/html/util.html|getDeepActiveElement, hasKeyModifiers",
   ]
 }

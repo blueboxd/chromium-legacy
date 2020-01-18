@@ -24,6 +24,7 @@
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
+#include "components/viz/service/display/overlay_processor_stub.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "components/viz/service/display/texture_deleter.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -235,6 +236,8 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
       std::make_unique<SoftwareDevice>(&current_sw_canvas_));
   software_output_surface_ = output_surface.get();
 
+  auto overlay_processor = std::make_unique<viz::OverlayProcessorStub>();
+
   // The gpu_memory_buffer_manager here is null as the Display is only used for
   // resourcesless software draws, where no resources are included in the frame
   // swapped from the compositor. So there is no need for it.
@@ -244,8 +247,8 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
   // process so there is no reason for it to use a SharedBitmapManager.
   display_ = std::make_unique<viz::Display>(
       &shared_bitmap_manager_, software_renderer_settings, kRootFrameSinkId,
-      std::move(output_surface), nullptr /* scheduler */,
-      nullptr /* current_task_runner */);
+      std::move(output_surface), std::move(overlay_processor),
+      nullptr /* scheduler */, nullptr /* current_task_runner */);
   display_->Initialize(&display_client_,
                        frame_sink_manager_->surface_manager());
   display_->SetVisible(true);

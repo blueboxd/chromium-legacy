@@ -312,6 +312,13 @@ public class BrowserServicesIntentDataProvider {
     }
 
     /**
+     * @return Whether the Activity is either a Webapp or a WebAPK activity.
+     */
+    public boolean isWebappOrWebApkActivity() {
+        return false;
+    }
+
+    /**
      * @return Whether the Activity should attempt to load a dynamic module.
      *
      * Will return false if native is not initialized.

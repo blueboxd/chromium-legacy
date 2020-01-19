@@ -254,11 +254,11 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
     gfx::SizeF scrolling_size(scroll_node->bounds);
     gfx::Size bounds_size(scroll_tree.container_bounds(scroll_node->id));
 
-    bool is_viewport_scrollbar = scroll_node->scrolls_inner_viewport ||
-                                 scroll_node->scrolls_outer_viewport;
+    bool is_viewport_scrollbar = scroll_node == InnerViewportScrollNode() ||
+                                 scroll_node == OuterViewportScrollNode();
     if (is_viewport_scrollbar) {
       gfx::SizeF viewport_bounds(bounds_size);
-      if (scroll_node->scrolls_inner_viewport) {
+      if (scroll_node == InnerViewportScrollNode()) {
         DCHECK_EQ(scroll_node, InnerViewportScrollNode());
         auto* outer_scroll_node = OuterViewportScrollNode();
         DCHECK(outer_scroll_node);

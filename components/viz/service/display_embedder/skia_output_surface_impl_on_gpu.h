@@ -200,10 +200,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate,
   GpuVSyncCallback GetGpuVSyncCallback() override;
   base::TimeDelta GetGpuBlockedTimeSinceLastSwap() override;
 
-  void SendOverlayPromotionNotification(
-      base::flat_set<gpu::Mailbox> promotion_denied,
-      base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions);
-
 #if defined(OS_ANDROID)
   void RenderToOverlay(const OverlayCandidate& overlay);
 #endif

@@ -480,9 +480,8 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node, int parent_index) {
                                                   &pseudo_type)) {
         SetRare(nodes->getPseudoType(nullptr), index, pseudo_type);
       }
-    } else {
-      VisitPseudoElements(element, index);
     }
+    VisitPseudoElements(element, index);
 
     auto* image_element = DynamicTo<HTMLImageElement>(node);
     if (image_element) {

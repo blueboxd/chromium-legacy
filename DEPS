@@ -181,7 +181,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'ee3216d8f8358d8cbb43427b4f421cca5ea1ad20',
+  'skia_revision': 'f0b7edf6cd9442558fc71cbdf614afb8e3ee6ec5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -197,7 +197,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': 'd6d0edc24fdf84546f45705b4f7bf10616f57d6a',
+  'swiftshader_revision': '11cb891a01a2b47cc2135ef19ca18046662476e0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -544,7 +544,7 @@ deps = {
   },
 
   'src/ios/third_party/material_font_disk_loader_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-foundation/material-font-disk-loader-ios.git' + '@' + '93acc021e3034898716028822cb802a3a816be7e',
+      'url': Var('chromium_git') + '/external/github.com/material-foundation/material-font-disk-loader-ios.git' + '@' + '8e30188777b016182658fbaa0a4a020a48183224',
       'condition': 'checkout_ios',
   },
 
@@ -1571,7 +1571,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@7e355c350b0fd7cabd077badb8410047afb3809a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a88ea0799692a9bfa3fb2a4eaaf97255519d625d',
     'condition': 'checkout_src_internal',
   },
 

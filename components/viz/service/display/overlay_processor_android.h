@@ -27,7 +27,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
     : public OverlayProcessorUsingStrategy {
  public:
   OverlayProcessorAndroid(
-      SkiaOutputSurface* skia_output_surface,
       gpu::SharedImageManager* shared_image_manager,
       scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
       bool enable_overlay);
@@ -72,11 +71,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessorAndroid
   // that use them.
   ResourceIdSet promotion_hint_requestor_set_;
 
-  void NotifyOverlayPromotionUsingSkiaOutputSurface(
-      DisplayResourceProvider* display_resource_provider,
-      const OverlayCandidateList& candidate_list);
-
-  SkiaOutputSurface* const skia_output_surface_;
   scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler_;
   const bool overlay_enabled_;
   bool able_to_create_processor_on_gpu_ = false;

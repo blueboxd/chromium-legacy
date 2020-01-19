@@ -97,6 +97,7 @@
 #include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
+#include "ash/system/machine_learning/user_settings_event_logger.h"
 #include "ash/system/message_center/message_center_controller.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/model/virtual_keyboard_model.h"
@@ -665,6 +666,10 @@ Shell::~Shell() {
   tablet_mode_controller_->Shutdown();
   tablet_mode_controller_.reset();
 
+  // Destroy UserSettingsEventLogger before |system_tray_model_| and
+  // |video_detector_| which it observes.
+  ml::UserSettingsEventLogger::DeleteInstance();
+
   toast_manager_.reset();
 
   tray_bluetooth_helper_.reset();
@@ -1151,6 +1156,10 @@ void Shell::Init(
   snap_controller_ = std::make_unique<SnapControllerImpl>();
   key_accessibility_enabler_ = std::make_unique<KeyAccessibilityEnabler>();
 
+  // Create UserSettingsEventLogger after |system_tray_model_| and
+  // |video_detector_| which it observes.
+  ml::UserSettingsEventLogger::CreateInstance();
+
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop
   // is started.
@@ -1176,7 +1185,6 @@ void Shell::Init(
 }
 
 void Shell::InitializeDisplayManager() {
-
   display_manager_->InitConfigurator(
       ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate());
   display_configuration_controller_ =

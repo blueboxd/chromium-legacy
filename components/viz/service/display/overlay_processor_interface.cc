@@ -75,7 +75,6 @@ void OverlayProcessorInterface::RecordOverlayDamageRectHistograms(
 
 std::unique_ptr<OverlayProcessorInterface>
 OverlayProcessorInterface::CreateOverlayProcessor(
-    SkiaOutputSurface* skia_output_surface,
     gpu::SurfaceHandle surface_handle,
     const OutputSurface::Capabilities& capabilities,
     const RendererSettings& renderer_settings,
@@ -130,8 +129,7 @@ OverlayProcessorInterface::CreateOverlayProcessor(
     // overlay processing for this OutputSurface.
     overlay_enabled &= !capabilities.android_surface_control_feature_enabled;
     return std::make_unique<OverlayProcessorAndroid>(
-        skia_output_surface, shared_image_manager, gpu_task_scheduler,
-        overlay_enabled);
+        shared_image_manager, gpu_task_scheduler, overlay_enabled);
   }
 #else  // Default
   return std::make_unique<OverlayProcessorStub>();

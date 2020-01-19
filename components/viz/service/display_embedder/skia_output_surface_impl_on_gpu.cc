@@ -1654,33 +1654,6 @@ void SkiaOutputSurfaceImplOnGpu::BufferPresented(
   // Handled by SkiaOutputDevice already.
 }
 
-void SkiaOutputSurfaceImplOnGpu::SendOverlayPromotionNotification(
-    base::flat_set<gpu::Mailbox> promotion_denied,
-    base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) {
-#if defined(OS_ANDROID)
-  for (auto& denied : promotion_denied) {
-    auto shared_image_overlay =
-        shared_image_representation_factory_->ProduceOverlay(denied);
-    // When display is re-opened, the first few frames might not have video
-    // resource ready. Possible investigation crbug.com/1023971.
-    if (!shared_image_overlay)
-      continue;
-
-    shared_image_overlay->NotifyOverlayPromotion(false, gfx::Rect());
-  }
-  for (auto& possible : possible_promotions) {
-    auto shared_image_overlay =
-        shared_image_representation_factory_->ProduceOverlay(possible.first);
-    // When display is re-opened, the first few frames might not have video
-    // resource ready. Possible investigation crbug.com/1023971.
-    if (!shared_image_overlay)
-      continue;
-
-    shared_image_overlay->NotifyOverlayPromotion(true, possible.second);
-  }
-#endif
-}
-
 #if defined(OS_ANDROID)
 void SkiaOutputSurfaceImplOnGpu::RenderToOverlay(
     const OverlayCandidate& overlay) {

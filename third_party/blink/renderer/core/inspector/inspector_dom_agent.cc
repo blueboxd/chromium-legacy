@@ -1557,14 +1557,14 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
                                                   &pseudo_type))
         value->setPseudoType(pseudo_type);
     } else {
-      std::unique_ptr<protocol::Array<protocol::DOM::Node>> pseudo_elements =
-          BuildArrayForPseudoElements(element, nodes_map);
-      if (pseudo_elements) {
-        value->setPseudoElements(std::move(pseudo_elements));
-        force_push_children = true;
-      }
       if (!element->ownerDocument()->xmlVersion().IsEmpty())
         value->setXmlVersion(element->ownerDocument()->xmlVersion());
+    }
+    std::unique_ptr<protocol::Array<protocol::DOM::Node>> pseudo_elements =
+        BuildArrayForPseudoElements(element, nodes_map);
+    if (pseudo_elements) {
+      value->setPseudoElements(std::move(pseudo_elements));
+      force_push_children = true;
     }
 
     if (auto* insertion_point = DynamicTo<V0InsertionPoint>(element)) {

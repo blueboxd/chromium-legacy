@@ -15,12 +15,10 @@
 
 namespace viz {
 OverlayProcessorAndroid::OverlayProcessorAndroid(
-    SkiaOutputSurface* skia_output_surface,
     gpu::SharedImageManager* shared_image_manager,
     scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
     bool enable_overlay)
     : OverlayProcessorUsingStrategy(),
-      skia_output_surface_(skia_output_surface),
       gpu_task_scheduler_(std::move(gpu_task_scheduler)),
       overlay_enabled_(enable_overlay) {
   if (!overlay_enabled_)
@@ -178,23 +176,10 @@ void OverlayProcessorAndroid::NotifyOverlayPromotion(
     promotion_hint_requestor_set_.insert(id);
   }
 
-  if (skia_output_surface_) {
-    NotifyOverlayPromotionUsingSkiaOutputSurface(resource_provider, candidates);
-  } else {
-    resource_provider->SendPromotionHints(promotion_hint_info_map_,
-                                          promotion_hint_requestor_set_);
-  }
-  promotion_hint_info_map_.clear();
-  promotion_hint_requestor_set_.clear();
-}
-
-void OverlayProcessorAndroid::NotifyOverlayPromotionUsingSkiaOutputSurface(
-    DisplayResourceProvider* resource_provider,
-    const OverlayCandidateList& candidate_list) {
   base::flat_set<gpu::Mailbox> promotion_denied;
   base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions;
 
-  DCHECK(candidate_list.empty() || candidate_list.size() == 1u);
+  DCHECK(candidates.empty() || candidates.size() == 1u);
 
   std::vector<
       std::unique_ptr<DisplayResourceProvider::ScopedReadLockSharedImage>>
@@ -202,8 +187,7 @@ void OverlayProcessorAndroid::NotifyOverlayPromotionUsingSkiaOutputSurface(
   for (auto& request : promotion_hint_requestor_set_) {
     // If we successfully promote one candidate, then that promotion hint
     // should be sent later when we schedule the overlay.
-    if (!candidate_list.empty() &&
-        candidate_list.front().resource_id == request)
+    if (!candidates.empty() && candidates.front().resource_id == request)
       continue;
 
     locks.emplace_back(
@@ -223,9 +207,15 @@ void OverlayProcessorAndroid::NotifyOverlayPromotionUsingSkiaOutputSurface(
   for (auto& read_lock : locks)
     locks_sync_tokens.push_back(read_lock->sync_token());
 
-  skia_output_surface_->SendOverlayPromotionNotification(
-      std::move(locks_sync_tokens), std::move(promotion_denied),
-      std::move(possible_promotions));
+  if (gpu_task_scheduler_) {
+    auto task = base::BindOnce(&OverlayProcessorOnGpu::NotifyOverlayPromotions,
+                               base::Unretained(processor_on_gpu_.get()),
+                               std::move(promotion_denied),
+                               std::move(possible_promotions));
+    gpu_task_scheduler_->ScheduleGpuTask(std::move(task), locks_sync_tokens);
+  }
+  promotion_hint_info_map_.clear();
+  promotion_hint_requestor_set_.clear();
 }
 
 }  // namespace viz

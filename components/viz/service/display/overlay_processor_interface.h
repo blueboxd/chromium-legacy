@@ -91,7 +91,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
       bool has_alpha);
 
   static std::unique_ptr<OverlayProcessorInterface> CreateOverlayProcessor(
-      SkiaOutputSurface* skia_output_surface,
       gpu::SurfaceHandle surface_handle,
       const OutputSurface::Capabilities& capabilities,
       const RendererSettings& renderer_settings,

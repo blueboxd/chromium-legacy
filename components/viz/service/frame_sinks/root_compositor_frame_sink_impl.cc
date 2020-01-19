@@ -115,8 +115,8 @@ RootCompositorFrameSinkImpl::Create(
     sii = output_surface->context_provider()->SharedImageInterface();
 
   auto overlay_processor = OverlayProcessorInterface::CreateOverlayProcessor(
-      output_surface->AsSkiaOutputSurface(), output_surface->GetSurfaceHandle(),
-      output_surface->capabilities(), params->renderer_settings,
+      output_surface->GetSurfaceHandle(), output_surface->capabilities(),
+      params->renderer_settings,
       output_surface_provider->GetSharedImageManager(),
       output_surface->GetGpuTaskSchedulerHelper(), sii);
 

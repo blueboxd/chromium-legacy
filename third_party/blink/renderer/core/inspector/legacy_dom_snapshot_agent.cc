@@ -261,11 +261,10 @@ int LegacyDOMSnapshotAgent::VisitNode(Node* node,
                                                   &pseudo_type)) {
         value->setPseudoType(pseudo_type);
       }
-    } else {
-      value->setPseudoElementIndexes(
-          VisitPseudoElements(element, index, include_event_listeners,
-                              include_user_agent_shadow_tree));
     }
+    value->setPseudoElementIndexes(
+        VisitPseudoElements(element, index, include_event_listeners,
+                            include_user_agent_shadow_tree));
 
     auto* image_element = DynamicTo<HTMLImageElement>(node);
     if (image_element)

@@ -848,11 +848,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Indicates whether the AppsGridView is in mouse drag.
   bool is_in_mouse_drag_ = false;
 
-  // The initial mouse drag location in screen coordinate. Updates when drag
-  // on AppsGridView starts.
+  // The initial mouse drag location in root window coordinate. Updates when
+  // drag on AppsGridView starts.
   gfx::PointF mouse_drag_start_point_;
 
-  // The last mouse drag location in screen coordinate. Different from
+  // The last mouse drag location in root window coordinate. Different from
   // |last_drag_point_|, |last_mouse_drag_point_| is the location of the most
   // recent drag on AppsGridView instead of the app icon.
   gfx::PointF last_mouse_drag_point_;

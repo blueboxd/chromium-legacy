@@ -620,19 +620,6 @@ void SkiaOutputSurfaceImpl::SetCapabilitiesForTesting(
   ScheduleGpuTask(std::move(callback), {});
 }
 
-void SkiaOutputSurfaceImpl::SendOverlayPromotionNotification(
-    std::vector<gpu::SyncToken> sync_tokens,
-    base::flat_set<gpu::Mailbox> promotion_denied,
-    base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) {
-#if defined(OS_ANDROID)
-  auto callback = base::BindOnce(
-      &SkiaOutputSurfaceImplOnGpu::SendOverlayPromotionNotification,
-      base::Unretained(impl_on_gpu_.get()), std::move(promotion_denied),
-      std::move(possible_promotions));
-  ScheduleGpuTask(std::move(callback), std::move(sync_tokens));
-#endif
-}
-
 bool SkiaOutputSurfaceImpl::Initialize() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 

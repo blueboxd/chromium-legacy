@@ -26,4 +26,31 @@ void OverlayProcessorOnGpu::ScheduleOverlays(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // TODO(weiliangc): Use shared image to schedule overlays.
 }
+
+#if defined(OS_ANDROID)
+void OverlayProcessorOnGpu::NotifyOverlayPromotions(
+    base::flat_set<gpu::Mailbox> promotion_denied,
+    base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) {
+  for (auto& denied : promotion_denied) {
+    auto shared_image_overlay =
+        shared_image_representation_factory_->ProduceOverlay(denied);
+    // When display is re-opened, the first few frames might not have video
+    // resource ready. Possible investigation crbug.com/1023971.
+    if (!shared_image_overlay)
+      continue;
+
+    shared_image_overlay->NotifyOverlayPromotion(false, gfx::Rect());
+  }
+  for (auto& possible : possible_promotions) {
+    auto shared_image_overlay =
+        shared_image_representation_factory_->ProduceOverlay(possible.first);
+    // When display is re-opened, the first few frames might not have video
+    // resource ready. Possible investigation crbug.com/1023971.
+    if (!shared_image_overlay)
+      continue;
+
+    shared_image_overlay->NotifyOverlayPromotion(true, possible.second);
+  }
+}
+#endif
 }  // namespace viz

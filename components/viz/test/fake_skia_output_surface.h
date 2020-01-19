@@ -120,11 +120,6 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
       base::OnceClosure callback,
       std::vector<gpu::SyncToken> sync_tokens) override;
 
-  void SendOverlayPromotionNotification(
-      std::vector<gpu::SyncToken> sync_tokens,
-      base::flat_set<gpu::Mailbox> promotion_denied,
-      base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) override;
-
   scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
       override;
 

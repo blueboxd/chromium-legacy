@@ -174,13 +174,6 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
       base::OnceClosure callback,
       std::vector<gpu::SyncToken> sync_tokens) = 0;
 
-  // Only used for the Android pre-SurfaceControl overlay code path to pass all
-  // promotion hints.
-  virtual void SendOverlayPromotionNotification(
-      std::vector<gpu::SyncToken> sync_tokens,
-      base::flat_set<gpu::Mailbox> promotion_denied,
-      base::flat_map<gpu::Mailbox, gfx::Rect> possible_promotions) = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurface);
 };

@@ -1104,18 +1104,15 @@ void AppsGridView::OnMouseEvent(ui::MouseEvent* event) {
       !event->IsLeftMouseButton()) {
     return;
   }
-  gfx::PointF point_in_screen = event->root_location_f();
-  auto* view_target = static_cast<views::View*>(event->target());
-  wm::ConvertPointToScreen(view_target->GetWidget()->GetNativeWindow(),
-                           &point_in_screen);
+  gfx::PointF point_in_root = event->root_location_f();
 
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED:
       if (!EventIsBetweenOccupiedTiles(event))
         break;
       event->SetHandled();
-      mouse_drag_start_point_ = point_in_screen;
-      last_mouse_drag_point_ = point_in_screen;
+      mouse_drag_start_point_ = point_in_root;
+      last_mouse_drag_point_ = point_in_root;
       break;
     case ui::ET_MOUSE_DRAGGED:
       if (!ShouldHandleDragEvent(*event)) {
@@ -1145,11 +1142,11 @@ void AppsGridView::OnMouseEvent(ui::MouseEvent* event) {
       }
       event->SetHandled();
       if (!is_in_mouse_drag_) {
-        if (abs(point_in_screen.y() - mouse_drag_start_point_.y()) <
+        if (abs(point_in_root.y() - mouse_drag_start_point_.y()) <
             kMouseDragThreshold) {
           break;
         }
-        pagination_controller_->StartMouseDrag(point_in_screen -
+        pagination_controller_->StartMouseDrag(point_in_root -
                                                mouse_drag_start_point_);
         is_in_mouse_drag_ = true;
       }
@@ -1158,8 +1155,8 @@ void AppsGridView::OnMouseEvent(ui::MouseEvent* event) {
         break;
 
       pagination_controller_->UpdateMouseDrag(
-          point_in_screen - last_mouse_drag_point_, GetContentsBounds());
-      last_mouse_drag_point_ = point_in_screen;
+          point_in_root - last_mouse_drag_point_, GetContentsBounds());
+      last_mouse_drag_point_ = point_in_root;
       break;
     case ui::ET_MOUSE_RELEASED: {
       // Calculate |should_handle| before resetting |mouse_drag_start_point_|
@@ -3527,10 +3524,8 @@ bool AppsGridView::ShouldHandleDragEvent(const ui::LocatedEvent& event) {
   auto calculate_offset = [this](const ui::LocatedEvent& event) -> int {
     if (event.IsGestureEvent())
       return event.AsGestureEvent()->details().scroll_y_hint();
-    gfx::Point screen_location = event.location();
-    ConvertPointToScreen(static_cast<views::View*>(event.target()),
-                         &screen_location);
-    return screen_location.y() - mouse_drag_start_point_.y();
+    gfx::PointF root_location = event.root_location_f();
+    return root_location.y() - mouse_drag_start_point_.y();
   };
   if (!folder_delegate_ &&
       (event.IsMouseEvent() || event.type() == ui::ET_GESTURE_SCROLL_BEGIN) &&

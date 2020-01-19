@@ -19,7 +19,6 @@ class RTCError final : public DOMException {
 
  public:
   static RTCError* Create(const RTCErrorInit* init, String message);
-  static RTCError* Create(webrtc::RTCError);
   RTCError(const RTCErrorInit* init, String message);
   RTCError(webrtc::RTCError);
 

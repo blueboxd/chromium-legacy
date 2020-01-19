@@ -156,12 +156,6 @@ class WebRemoteFrame : public WebFrame {
 
   virtual WebRect GetCompositingRect() = 0;
 
-  // When a cross-process navigation or loading fails, the browser notifies the
-  // parent process to render its own fallback content if any. This only occurs
-  // if the owner element is capable of rendering its own fallback (e.g.,
-  // <object>).
-  virtual void RenderFallbackContent() const = 0;
-
  protected:
   explicit WebRemoteFrame(WebTreeScopeType scope) : WebFrame(scope) {}
 

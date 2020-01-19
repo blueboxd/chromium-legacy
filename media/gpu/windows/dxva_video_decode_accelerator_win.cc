@@ -575,6 +575,7 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
       config.profile == H264PROFILE_HIGH10PROFILE) {
     // Input file has more than 8 bits per channel.
     use_fp16_ = true;
+    decoder_output_p010_or_p016_ = true;
   }
 
   // Unfortunately, the profile is currently unreliable for
@@ -2986,7 +2987,10 @@ DXVAVideoDecodeAccelerator::PictureBufferMechanism
 DXVAVideoDecodeAccelerator::GetPictureBufferMechanism() const {
   if (use_fp16_)
     return PictureBufferMechanism::COPY_TO_RGB;
-  if (support_share_nv12_textures_)
+  // In Intel platform, VideoProcessor cannot convert P010/P016 into FP16.
+  // It works fine dealing P010/P016 with BIND mode.
+  if (support_share_nv12_textures_ ||
+      (decoder_output_p010_or_p016_ && !use_fp16_))
     return PictureBufferMechanism::BIND;
   if (support_delayed_copy_nv12_textures_ && support_copy_nv12_textures_)
     return PictureBufferMechanism::DELAYED_COPY_TO_NV12;

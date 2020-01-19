@@ -546,8 +546,6 @@ void FakeSessionManagerClient::StorePolicy(
     policy_[GetMemoryStorageKey(descriptor)] = policy_blob;
 
     if (IsChromeDevicePolicy(descriptor)) {
-      // TODO(ljusten): For historical reasons, this code path only stores keys
-      // for device policy. Should this be extended to other policy?
       if (response.has_new_public_key()) {
         base::FilePath key_path;
         GetStubPolicyFilePath(descriptor, &key_path);

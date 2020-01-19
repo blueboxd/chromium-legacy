@@ -1998,6 +1998,14 @@ void LocalFrame::ReportBlinkFeatureUsage(
     document->CountUse(feature);
 }
 
+void LocalFrame::RenderFallbackContent() {
+  // TODO(ekaramad): If the owner renders its own content, then the current
+  // ContentFrame() should detach (see https://crbug.com/850223).
+  auto* owner = DeprecatedLocalOwner();
+  DCHECK(IsA<HTMLObjectElement>(owner));
+  owner->RenderFallbackContent(this);
+}
+
 void LocalFrame::BindToReceiver(
     blink::LocalFrame* frame,
     mojo::PendingAssociatedReceiver<mojom::blink::LocalFrame> receiver) {

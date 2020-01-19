@@ -811,11 +811,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_MediaPlayerActionAt,
                     gfx::PointF /* location */,
                     blink::MediaPlayerAction)
 
-// Sent to the proxy or frame in parent frame's process to ask for rendering
-// fallback contents. This only happens for frame owners which render their own
-// fallback contents (i.e., <object>).
-IPC_MESSAGE_ROUTED0(FrameMsg_RenderFallbackContent)
-
 // Tell the renderer to add a property to the WebUI binding object.  This
 // only works if we allowed WebUI bindings.
 IPC_MESSAGE_ROUTED2(FrameMsg_SetWebUIProperty,
@@ -1233,10 +1228,6 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_FrameDidCallFocus)
 IPC_MESSAGE_ROUTED2(FrameHostMsg_PrintCrossProcessSubframe,
                     gfx::Rect /* rect area of the frame content */,
                     int /* rendered document cookie */)
-
-// Asks the frame host to notify the owner element in parent process that it
-// should render fallback content.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_RenderFallbackContentInParentProcess)
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 

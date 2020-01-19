@@ -46,6 +46,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void SaveImageAt(const gfx::Point& window_point) override;
   void ReportBlinkFeatureUsage(
       const std::vector<blink::mojom::WebFeature>&) override;
+  void RenderFallbackContent() override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

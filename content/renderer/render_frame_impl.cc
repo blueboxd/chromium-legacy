@@ -1474,6 +1474,9 @@ void RenderFrameImpl::CreateFrame(
     // which would allow removing this branch altogether.  See
     // https://crbug.com/756790.
 
+    // In https://crbug.com/1006814 we are seeing FromRoutingID return
+    // nullptr. This helps determine why.
+    CHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
     RenderFrameProxy* parent_proxy =
         RenderFrameProxy::FromRoutingID(parent_routing_id);
     // If the browser is sending a valid parent routing id, it should already
@@ -1539,9 +1542,9 @@ void RenderFrameImpl::CreateFrame(
     DCHECK_EQ(proxy_is_main_frame, !web_frame->Parent());
   }
 
-  DCHECK(render_view);
-  DCHECK(render_frame);
-  DCHECK(web_frame);
+  CHECK(render_view);
+  CHECK(render_frame);
+  CHECK(web_frame);
 
   const bool is_main_frame = !web_frame->Parent();
 
@@ -2211,7 +2214,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetOverlayRoutingToken,
                         OnSetOverlayRoutingToken)
     IPC_MESSAGE_HANDLER(FrameMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
-    IPC_MESSAGE_HANDLER(FrameMsg_RenderFallbackContent, OnRenderFallbackContent)
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
@@ -4804,10 +4806,6 @@ base::UnguessableToken RenderFrameImpl::GetDevToolsFrameToken() {
   return devtools_frame_token_;
 }
 
-void RenderFrameImpl::RenderFallbackContentInParentProcess() {
-  Send(new FrameHostMsg_RenderFallbackContentInParentProcess(routing_id_));
-}
-
 void RenderFrameImpl::AbortClientNavigation() {
   browser_side_navigation_pending_ = false;
   sync_navigation_callback_.Cancel();
@@ -6240,10 +6238,6 @@ void RenderFrameImpl::OnMediaPlayerActionAt(
   GetLocalRootRenderWidget()->ConvertWindowToViewport(&viewport_position);
   frame_->PerformMediaPlayerAction(
       WebPoint(viewport_position.x, viewport_position.y), action);
-}
-
-void RenderFrameImpl::OnRenderFallbackContent() const {
-  frame_->RenderFallbackContent();
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)

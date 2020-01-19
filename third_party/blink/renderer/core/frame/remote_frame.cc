@@ -215,6 +215,15 @@ bool RemoteFrame::BubbleLogicalScrollFromChildFrame(
   return false;
 }
 
+void RemoteFrame::RenderFallbackContent() {
+  // TODO(ekaramad): If the owner renders its own content, then the current
+  // ContentFrame() should detach and free-up the OOPIF process (see
+  // https://crbug.com/850223).
+  auto* owner = DeprecatedLocalOwner();
+  DCHECK(IsA<HTMLObjectElement>(owner));
+  owner->RenderFallbackContent(this);
+}
+
 void RemoteFrame::DidFocus() {
   GetRemoteFrameHostRemote().DidFocusFrame();
 }

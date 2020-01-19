@@ -559,6 +559,9 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Copy video to FP16 scRGB textures.
   bool use_fp16_ = false;
 
+  // True if decoder's output is P010/P016.
+  bool decoder_output_p010_or_p016_ = false;
+
   // When converting YUV to RGB, make sure we tell the blitter about the input
   // color space so that it can convert it correctly.
   bool use_color_info_ = true;

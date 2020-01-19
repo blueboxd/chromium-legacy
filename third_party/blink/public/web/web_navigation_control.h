@@ -70,11 +70,6 @@ class WebNavigationControl : public WebLocalFrame {
   virtual FallbackContentResult MaybeRenderFallbackContent(
       const WebURLError&) const = 0;
 
-  // When load failure is in a cross-process frame this notifies the frame here
-  // that its owner should render fallback content if any. Only called on owners
-  // that render their own content (i.e., <object>).
-  virtual void RenderFallbackContent() const = 0;
-
   // Override the normal rules for whether a load has successfully committed
   // in this frame. Used to propagate state when this frame has navigated
   // cross process.

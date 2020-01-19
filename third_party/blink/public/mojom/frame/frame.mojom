@@ -144,6 +144,10 @@ interface LocalFrameHost {
   // history). |has_user_gesture| tells whether or not this is the consequence
   // of a user action.
   GoToEntryAtOffset(int32 offset, bool has_user_gesture);
+
+  // Asks the frame host to notify the owner element in parent process that it
+  // should render fallback content.
+  RenderFallbackContentInParentProcess();
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -208,6 +212,11 @@ interface LocalFrame {
   // Blink features used, performed or encountered by the browser during the
   // current page load happening on the frame.
   ReportBlinkFeatureUsage(array<blink.mojom.WebFeature> features);
+
+  // Sent to this frame in parent frame's process to ask for rendering fallback
+  // contents. This only happens for frame owners which render their own
+  // fallback contents (i.e., <object>).
+  RenderFallbackContent();
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that
@@ -314,4 +323,9 @@ interface RemoteFrame {
 
   // Sets page-level focus and notifies FocusController.
   SetPageFocus(bool is_focused);
+
+  // Sent to the remote frame in parent frame's process to ask for rendering fallback
+  // contents. This only happens for frame owners which render their own
+  // fallback contents (i.e., <object>).
+  RenderFallbackContent();
 };

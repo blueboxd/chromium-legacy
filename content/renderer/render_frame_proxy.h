@@ -247,7 +247,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnDidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
   void OnEnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
   void OnDisableAutoResize();
-  void OnRenderFallbackContent() const;
 
   // ChildFrameCompositor:
   cc::Layer* GetLayer() override;

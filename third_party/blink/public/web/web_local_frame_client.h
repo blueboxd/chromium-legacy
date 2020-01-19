@@ -480,11 +480,6 @@ class BLINK_EXPORT WebLocalFrameClient {
     return base::UnguessableToken::Create();
   }
 
-  // When a same-site load fails and the original frame in parent process is
-  // owned by an <object> element, this call notifies the owner element that it
-  // should render fallback content of its own.
-  virtual void RenderFallbackContentInParentProcess() {}
-
   // PlzNavigate
   // Called to abort a navigation that is being handled by the browser process.
   virtual void AbortClientNavigation() {}

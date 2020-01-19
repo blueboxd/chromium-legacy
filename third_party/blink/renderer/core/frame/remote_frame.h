@@ -112,6 +112,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void SetEmbeddingToken(
       const base::UnguessableToken& embedding_token) override;
   void SetPageFocus(bool is_focused) override;
+  void RenderFallbackContent() override;
 
  private:
   // Frame protected overrides:

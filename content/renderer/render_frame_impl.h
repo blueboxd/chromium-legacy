@@ -739,7 +739,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebResourceTimingInfo& info) override;
   void DispatchLoad() override;
   base::UnguessableToken GetDevToolsFrameToken() override;
-  void RenderFallbackContentInParentProcess() override;
   void AbortClientNavigation() override;
   void DidChangeSelection(bool is_empty_selection) override;
   bool HandleCurrentKeyboardEvent() override;
@@ -1098,7 +1097,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSetOverlayRoutingToken(const base::UnguessableToken& token);
   void OnMediaPlayerActionAt(const gfx::PointF&,
                              const blink::MediaPlayerAction&);
-  void OnRenderFallbackContent() const;
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)

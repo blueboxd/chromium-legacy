@@ -435,7 +435,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_TransferUserActivationFrom,
                         OnTransferUserActivationFrom)
     IPC_MESSAGE_HANDLER(FrameMsg_ScrollRectToVisible, OnScrollRectToVisible)
-    IPC_MESSAGE_HANDLER(FrameMsg_RenderFallbackContent, OnRenderFallbackContent)
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_DeleteProxy, OnDeleteProxy)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -639,10 +638,6 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
       "FrameHostMsg_SynchronizeVisualProperties", "local_surface_id",
       pending_visual_properties_.local_surface_id_allocation.local_surface_id()
           .ToString());
-}
-
-void RenderFrameProxy::OnRenderFallbackContent() const {
-  web_frame_->RenderFallbackContent();
 }
 
 void RenderFrameProxy::FrameDetached(DetachType type) {

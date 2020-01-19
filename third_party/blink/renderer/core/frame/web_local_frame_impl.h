@@ -335,7 +335,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void LoadJavaScriptURL(const WebURL&) override;
   FallbackContentResult MaybeRenderFallbackContent(
       const WebURLError&) const override;
-  void RenderFallbackContent() const override;
   void SetCommittedFirstRealLoad() override;
   bool HasCommittedFirstRealLoad() override;
   bool WillStartNavigation(

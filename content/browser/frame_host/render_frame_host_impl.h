@@ -1323,6 +1323,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const GURL& initiator_url,
       blink::mojom::NavigationBlockedReason reason) override;
   void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override;
+  void RenderFallbackContentInParentProcess() override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1521,7 +1522,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const gfx::Rect& rect_to_scroll,
       const blink::WebScrollIntoViewParams& params);
   void OnFrameDidCallFocus();
-  void OnRenderFallbackContentInParentProcess();
   void OnDownloadUrl(const FrameHostMsg_DownloadUrl_Params& params);
   void OnSaveImageFromDataURL(const std::string& url_str);
 

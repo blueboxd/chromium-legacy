@@ -53,6 +53,8 @@ void FakeRemoteFrame::SetEmbeddingToken(
 
 void FakeRemoteFrame::SetPageFocus(bool is_focused) {}
 
+void FakeRemoteFrame::RenderFallbackContent() {}
+
 void FakeRemoteFrame::FakeRemoteFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<blink::mojom::RemoteFrame>(

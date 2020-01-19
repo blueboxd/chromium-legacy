@@ -2,8 +2,12 @@
 # structural changes, use usual OWNERS rules.
 per-file BUILD.gn=*
 
+# Current owners (prefer)
 fsandrade@chromium.org
-ljusten@chromium.org
 tomdobro@chromium.org
+
+# Previous owners (ask if current owners are not available)
+# Commented out so automatic tools don't prefer.
+# ljusten@chromium.org
 
 # COMPONENT: Enterprise>ActiveDirectory

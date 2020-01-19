@@ -2179,14 +2179,6 @@ WebLocalFrameImpl::MaybeRenderFallbackContent(const WebURLError& error) const {
                                                            : NoLoadInProgress;
 }
 
-void WebLocalFrameImpl::RenderFallbackContent() const {
-  // TODO(ekaramad): If the owner renders its own content, then the current
-  // ContentFrame() should detach (see https://crbug.com/850223).
-  auto* owner = frame_->DeprecatedLocalOwner();
-  DCHECK(IsA<HTMLObjectElement>(owner));
-  owner->RenderFallbackContent(frame_);
-}
-
 // Called when a navigation is blocked because a Content Security Policy (CSP)
 // is infringed.
 void WebLocalFrameImpl::ReportContentSecurityPolicyViolation(

@@ -73,9 +73,7 @@ void RemoteFrameOwner::RenderFallbackContent(Frame* failed_frame) {
   DCHECK(failed_frame->IsLocalFrame());
   LocalFrame* local_frame = To<LocalFrame>(failed_frame);
   DCHECK(local_frame->IsProvisional() || ContentFrame() == local_frame);
-  WebLocalFrameImpl::FromFrame(local_frame)
-      ->Client()
-      ->RenderFallbackContentInParentProcess();
+  local_frame->GetLocalFrameHostRemote().RenderFallbackContentInParentProcess();
 }
 
 void RemoteFrameOwner::IntrinsicSizingInfoChanged() {

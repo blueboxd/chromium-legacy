@@ -181,11 +181,6 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
         }
 
         @Override
-        public boolean isOnCustomTab() {
-            return mActivityType == ActivityType.CUSTOM_TAB;
-        }
-
-        @Override
         public int applyWebappScopePolicyForUrl(String url) {
             int scopePolicy = super.applyWebappScopePolicyForUrl(url);
             if (scopePolicy != WebappScopePolicy.NavigationDirective.NORMAL_BEHAVIOR) {
@@ -227,7 +222,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
 
         @Override
         public boolean shouldResumeRequestsForCreatedWindow() {
-            return !isWebappOrWebApk(mActivityType);
+            return true;
         }
 
         @Override
@@ -455,12 +450,7 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
     @Override
     public ExternalNavigationHandler createExternalNavigationHandler(Tab tab) {
         if (mIsOpenedByChrome) {
-            mNavigationDelegate = new ExternalNavigationDelegateImpl(tab) {
-                @Override
-                public boolean isOnCustomTab() {
-                    return mActivityType == ActivityType.CUSTOM_TAB;
-                }
-            };
+            mNavigationDelegate = new ExternalNavigationDelegateImpl(tab);
         } else {
             mNavigationDelegate = new CustomTabNavigationDelegate(
                     tab, mExternalAuthUtils, mExternalIntentsPolicyProvider, mActivityType);

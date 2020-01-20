@@ -59,8 +59,7 @@ class CustomThemeSupplier
 
   // Returns the theme image for |id|. Returns an empty image if no image is
   // found for |id|.
-  // TODO(estade): Remove this function; it's not used in Material Design.
-  virtual gfx::Image GetImageNamed(int id);
+  virtual gfx::Image GetImageNamed(int id) const;
 
   // Returns the raw PNG encoded data for IDR_THEME_NTP_*. This method only
   // works for the NTP attribution and background resources.

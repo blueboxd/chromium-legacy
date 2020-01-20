@@ -18,11 +18,7 @@ class WebUIDataSource;
 struct GritResourceMap;
 
 namespace webui {
-
-struct LocalizedString {
-  const char* name;
-  int id;
-};
+struct LocalizedString;
 
 struct ResourcePath {
   const char* path;

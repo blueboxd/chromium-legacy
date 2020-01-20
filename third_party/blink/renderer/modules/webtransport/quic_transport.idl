@@ -19,5 +19,5 @@
   ReadableStream receiveDatagrams();
 
   // From WebTransport mixin
-  void close(optional WebTransportCloseInfo closeInfo);
+  void close(optional WebTransportCloseInfo closeInfo = {});
 };

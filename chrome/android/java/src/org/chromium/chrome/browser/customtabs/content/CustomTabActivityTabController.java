@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.customtabs.content;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.provider.Browser;
 import android.text.TextUtils;
 import android.view.Window;
 
@@ -28,8 +27,6 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabCon
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.LaunchSourceType;
 import org.chromium.chrome.browser.customtabs.CustomTabNavigationEventObserver;
 import org.chromium.chrome.browser.customtabs.CustomTabObserver;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
@@ -373,15 +370,7 @@ public class CustomTabActivityTabController
     private Tab createTab() {
         WebContents webContents = takeWebContents();
         Tab tab = mTabFactory.createTab(webContents, mCustomTabDelegateFactory.get());
-        int launchSource = mIntent.getIntExtra(
-                CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE, LaunchSourceType.OTHER);
-        if (launchSource == LaunchSourceType.WEBAPK) {
-            String webapkPackageName = mIntent.getStringExtra(Browser.EXTRA_APPLICATION_ID);
-            TabAssociatedApp.from(tab).setAppId(webapkPackageName);
-        } else {
-            TabAssociatedApp.from(tab).setAppId(
-                    mConnection.getClientPackageNameForSession(mSession));
-        }
+        TabAssociatedApp.from(tab).setAppId(mConnection.getClientPackageNameForSession(mSession));
 
         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {
             if (tab.getWebContents() != null) tab.getWebContents().notifyRendererPreferenceUpdate();

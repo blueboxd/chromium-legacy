@@ -10,5 +10,5 @@
   RuntimeEnabled=SmsReceiver
 ] interface SMSReceiver {
   [CallWith=ScriptState, RaisesException, MeasureAs=SMSReceiverStart]
-  Promise<SMS> receive(optional SMSReceiverOptions options);
+  Promise<SMS> receive(optional SMSReceiverOptions options = {});
 };

@@ -13,15 +13,15 @@
   [CallWith=ScriptState, Measure, RaisesException] Promise<CookieListItem?> get(
       USVString name);
   [CallWith=ScriptState, Measure, RaisesException] Promise<CookieListItem?> get(
-      optional CookieStoreGetOptions options);
+      optional CookieStoreGetOptions options = {});
   [CallWith=ScriptState, Measure, RaisesException] Promise<CookieList> getAll(
       USVString name);
   [CallWith=ScriptState, Measure, RaisesException] Promise<CookieList> getAll(
-      optional CookieStoreGetOptions options);
+      optional CookieStoreGetOptions options = {});
 
   // https://wicg.github.io/cookie-store/explainer.html#the-modifications-api
   [CallWith=ScriptState, Measure, RaisesException] Promise<void> set(
-      USVString name, USVString value, optional CookieStoreSetOptions options);
+      USVString name, USVString value, optional CookieStoreSetOptions options = {});
   [CallWith=ScriptState, Measure, RaisesException] Promise<void> set(
       CookieStoreSetExtraOptions options);
   [CallWith=ScriptState, ImplementedAs=Delete, Measure, RaisesException]

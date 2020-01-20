@@ -210,7 +210,7 @@ declare_args() {
 # official builders.
 strip_absolute_paths_from_debug_symbols_default =
     is_android || is_fuchsia || is_nacl || (is_win && use_lld) || is_linux ||
-    (is_mac && !enable_dsyms)
+    (is_mac && !enable_dsyms) || ios_use_goma_rbe
 
 # If the platform uses stripped absolute paths by default, then we don't expose
 # it as a configuration option. If this is causing problems, please file a bug.

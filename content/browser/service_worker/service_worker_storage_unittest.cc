@@ -290,7 +290,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       scoped_refptr<ServiceWorkerVersion> version) {
     base::Optional<blink::ServiceWorkerStatusCode> result;
     base::RunLoop loop;
-    storage()->StoreRegistration(
+    registry()->StoreRegistration(
         registration.get(), version.get(),
         base::BindOnce(&StatusCallback, loop.QuitClosure(), &result));
     EXPECT_FALSE(result.has_value());  // always async
@@ -303,7 +303,7 @@ class ServiceWorkerStorageTest : public testing::Test {
       const GURL& origin) {
     base::Optional<blink::ServiceWorkerStatusCode> result;
     base::RunLoop loop;
-    storage()->DeleteRegistration(
+    registry()->DeleteRegistration(
         registration, origin,
         base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
           result = status;

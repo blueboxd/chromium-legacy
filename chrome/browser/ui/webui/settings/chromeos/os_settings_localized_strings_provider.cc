@@ -15,6 +15,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_switches.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/base/webui/web_ui_util.h"
 
 namespace chromeos {
 namespace settings {

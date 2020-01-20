@@ -8,5 +8,5 @@
     ImplementedAs=DOMScheduler,
     RuntimeEnabled=WebScheduler
 ] interface Scheduler {
-    [CallWith=ScriptState, RaisesException] Promise<any> postTask(Function callback, optional SchedulerPostTaskOptions options, any... arguments);
+    [CallWith=ScriptState, RaisesException] Promise<any> postTask(Function callback, optional SchedulerPostTaskOptions options = {}, any... arguments);
 };

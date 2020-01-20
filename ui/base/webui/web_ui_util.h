@@ -20,6 +20,11 @@ class SkBitmap;
 
 namespace webui {
 
+struct LocalizedString {
+  const char* name;
+  int id;
+};
+
 // Convenience routine to convert SkBitmap object to data url
 // so that it can be used in WebUI.
 UI_BASE_EXPORT std::string GetBitmapDataUrl(const SkBitmap& bitmap);

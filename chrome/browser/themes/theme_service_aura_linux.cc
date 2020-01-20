@@ -26,7 +26,7 @@ class SystemThemeX11 : public CustomThemeSupplier {
   bool GetTint(int id, color_utils::HSL* hsl) const override;
   bool GetColor(int id, SkColor* color) const override;
   bool GetDisplayProperty(int id, int* result) const override;
-  gfx::Image GetImageNamed(int id) override;
+  gfx::Image GetImageNamed(int id) const override;
   bool HasCustomImage(int id) const override;
 
  private:
@@ -69,7 +69,7 @@ bool SystemThemeX11::GetDisplayProperty(int id, int* result) const {
   return linux_ui_ && linux_ui_->GetDisplayProperty(id, result);
 }
 
-gfx::Image SystemThemeX11::GetImageNamed(int id) {
+gfx::Image SystemThemeX11::GetImageNamed(int id) const {
   return gfx::Image();
 }
 

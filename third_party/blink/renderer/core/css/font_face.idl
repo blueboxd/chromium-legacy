@@ -42,7 +42,7 @@ enum FontFaceLoadStatus {
     Exposed=(Window,Worker)
 ] interface FontFace {
     // FIXME: This should be (DOMString or BinaryData), where BinaryData is typedef of (ArrayBuffer or ArrayBufferView)
-    [CallWith=ExecutionContext, MeasureAs=FontFaceConstructor] constructor(DOMString family, (DOMString or ArrayBuffer or ArrayBufferView) source, optional FontFaceDescriptors descriptors);
+    [CallWith=ExecutionContext, MeasureAs=FontFaceConstructor] constructor(DOMString family, (DOMString or ArrayBuffer or ArrayBufferView) source, optional FontFaceDescriptors descriptors = {});
     [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString family;
     [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString style;
     [RaisesException=Setter, SetterCallWith=ExecutionContext] attribute DOMString weight;

@@ -63,6 +63,7 @@ def blink_type_info(idl_type):
                      const_ref_fmt="{}",
                      value_fmt="{}",
                      has_null_value=False):
+            self.typename = typename
             self.member_t = member_fmt.format(typename)
             self.ref_t = ref_fmt.format(typename)
             self.const_ref_t = const_ref_fmt.format(typename)
@@ -133,7 +134,7 @@ def blink_type_info(idl_type):
             or real_type.is_variadic):
         element_type = blink_type_info(real_type.element_type)
         return TypeInfo(
-            "VectorOf<{}>".format(element_type.value_t),
+            "VectorOf<{}>".format(element_type.typename),
             ref_fmt="{}&",
             const_ref_fmt="const {}&")
 
@@ -141,8 +142,8 @@ def blink_type_info(idl_type):
         key_type = blink_type_info(real_type.key_type)
         value_type = blink_type_info(real_type.value_type)
         return TypeInfo(
-            "VectorOfPairs<{}, {}>".format(key_type.value_t,
-                                           value_type.value_t),
+            "VectorOfPairs<{}, {}>".format(key_type.typename,
+                                           value_type.typename),
             ref_fmt="{}&",
             const_ref_fmt="const {}&")
 
@@ -181,13 +182,12 @@ def native_value_tag(idl_type):
             return "IDL{}".format(idl_type.identifier)
 
     real_type = idl_type.unwrap(typedef=True)
-    non_null_real_type = real_type.unwrap(nullable=True)
 
     if (real_type.is_boolean or real_type.is_numeric or real_type.is_any
             or real_type.is_object):
         return "IDL{}".format(real_type.type_name)
 
-    if non_null_real_type.is_string:
+    if real_type.is_string:
         return "IDL{}V2".format(real_type.type_name)
 
     if real_type.is_buffer_source_type:
@@ -199,8 +199,8 @@ def native_value_tag(idl_type):
     if real_type.is_void:
         assert False, "Blink does not support/accept IDL void type."
 
-    if non_null_real_type.type_definition_object:
-        return blink_class_name(non_null_real_type.type_definition_object)
+    if real_type.type_definition_object:
+        return blink_class_name(real_type.type_definition_object)
 
     if real_type.is_sequence:
         return "IDLSequence<{}>".format(
@@ -366,12 +366,12 @@ def make_v8_to_blink_value(blink_var_name,
         nodes = []
         type_info = blink_type_info(idl_type)
         default_expr = make_default_value_expr(idl_type, default_value)
-        if default_expr.initializer is None:
-            nodes.append(F("{} ${{{}}};", type_info.value_t, blink_var_name))
-        elif default_expr.is_initializer_lightweight:
+        if default_expr.is_initializer_lightweight:
             nodes.append(
                 F("{} ${{{}}} = {};", type_info.value_t, blink_var_name,
                   default_expr.initializer))
+        else:
+            nodes.append(F("{} ${{{}}};", type_info.value_t, blink_var_name))
         assignment = [
             F("${{{}}} = {};", blink_var_name, blink_value_expr),
             CxxUnlikelyIfNode(

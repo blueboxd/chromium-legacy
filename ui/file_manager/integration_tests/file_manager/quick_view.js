@@ -1352,6 +1352,7 @@
       const getTextContent = 'window.document.body.textContent';
       const text = await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
+      // Check: the content of ENTRIES.hello should be shown.
       if (!text || !text[0].includes('This is a sample file')) {
         return pending(caller, 'Waiting for <webview> content.');
       }
@@ -1367,6 +1368,7 @@
       const getTextContent = 'window.document.body.textContent';
       const text = await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
+      // Check: the content of ENTRIES.tallText should be shown.
       if (!text || !text[0].includes('42 tall text')) {
         return pending(caller, 'Waiting for <webview> content.');
       }
@@ -1450,6 +1452,7 @@
       const getTextContent = 'window.document.body.textContent';
       const text = await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
+      // Check: the content of ENTRIES.hello should be shown.
       if (!text || !text[0].includes('This is a sample file')) {
         return pending(caller, 'Waiting for <webview> content.');
       }
@@ -1465,6 +1468,7 @@
       const getTextContent = 'window.document.body.textContent';
       const text = await remoteCall.callRemoteTestUtil(
           'deepExecuteScriptInWebView', appId, [webView, getTextContent]);
+      // Check: the content of ENTRIES.tallText should be shown.
       if (!text || !text[0].includes('42 tall text')) {
         return pending(caller, 'Waiting for <webview> content.');
       }

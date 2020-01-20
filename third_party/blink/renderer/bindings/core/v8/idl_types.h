@@ -104,16 +104,12 @@ template <bindings::IDLStringConvMode mode>
 struct IDLByteStringBaseV2 final : public IDLBaseHelper<String> {};
 using IDLByteStringV2 =
     IDLByteStringBaseV2<bindings::IDLStringConvMode::kDefault>;
-using IDLByteStringOrNullV2 =
-    IDLByteStringBaseV2<bindings::IDLStringConvMode::kNullable>;
 
 // DOMString
 template <bindings::IDLStringConvMode mode>
 struct IDLStringBaseV2 final : public IDLBaseHelper<String> {};
 using IDLStringV2 = IDLStringBaseV2<bindings::IDLStringConvMode::kDefault>;
-using IDLStringOrNullV2 =
-    IDLStringBaseV2<bindings::IDLStringConvMode::kNullable>;
-using IDLStringTreatNullAsEmptyStringV2 =
+using IDLStringTreatNullAsV2 =
     IDLStringBaseV2<bindings::IDLStringConvMode::kTreatNullAsEmptyString>;
 
 // USVString
@@ -121,8 +117,6 @@ template <bindings::IDLStringConvMode mode>
 struct IDLUSVStringBaseV2 final : public IDLBaseHelper<String> {};
 using IDLUSVStringV2 =
     IDLUSVStringBaseV2<bindings::IDLStringConvMode::kDefault>;
-using IDLUSVStringOrNullV2 =
-    IDLUSVStringBaseV2<bindings::IDLStringConvMode::kNullable>;
 
 // Double
 struct IDLDouble final : public IDLBaseHelper<double> {};
@@ -131,10 +125,6 @@ struct IDLUnrestrictedDouble final : public IDLBaseHelper<double> {};
 // Float
 struct IDLFloat final : public IDLBaseHelper<float> {};
 struct IDLUnrestrictedFloat final : public IDLBaseHelper<float> {};
-
-// Nullable Date
-struct IDLDateOrNull final : public IDLBaseHelper<base::Optional<base::Time>> {
-};
 
 // object
 struct IDLObject final : public IDLBaseHelper<ScriptValue> {};
@@ -145,7 +135,8 @@ struct IDLPromise final : public IDLBaseHelper<ScriptPromise> {};
 // Sequence
 template <typename T>
 struct IDLSequence final : public IDLBase {
-  using ImplType = VectorOf<typename NativeValueTraits<T>::ImplType>;
+  using ImplType =
+      VectorOf<std::remove_pointer_t<typename NativeValueTraits<T>::ImplType>>;
 };
 
 // Frozen array types
@@ -155,34 +146,34 @@ using IDLArray = IDLSequence<T>;
 // Record
 template <typename Key, typename Value>
 struct IDLRecord final : public IDLBase {
-  static_assert(std::is_same<Key, IDLByteString>::value ||
-                    std::is_same<Key, IDLString>::value ||
-                    std::is_same<Key, IDLUSVString>::value,
+  static_assert(std::is_same<typename Key::ImplType, String>::value,
                 "IDLRecord keys must be of a WebIDL string type");
+  static_assert(
+      std::is_same<typename NativeValueTraits<Key>::ImplType, String>::value,
+      "IDLRecord keys must be of a WebIDL string type");
 
-  using ImplType =
-      VectorOfPairs<String, typename NativeValueTraits<Value>::ImplType>;
+  using ImplType = VectorOfPairs<
+      String,
+      std::remove_pointer_t<typename NativeValueTraits<Value>::ImplType>>;
 };
 
 // Nullable
-template <typename InnerType, typename SFINAEHelper = void>
-struct IDLNullable final : public IDLBase {
-  using ImplType =
-      base::Optional<typename NativeValueTraits<InnerType>::ImplType>;
-};
 template <typename InnerType>
-struct IDLNullable<
-    InnerType,
-    base::void_t<decltype(NativeValueTraits<InnerType>::NullValue)>>
-    final : public IDLBase {
-  using ImplType = typename NativeValueTraits<InnerType>::ImplType;
+struct IDLNullable final : public IDLBase {
+  using ImplType = std::conditional_t<
+      NativeValueTraits<InnerType>::has_null_value,
+      typename NativeValueTraits<InnerType>::ImplType,
+      base::Optional<typename NativeValueTraits<InnerType>::ImplType>>;
 };
 
+// Date
+struct IDLDate final : public IDLBaseHelper<base::Time> {};
+
 // EventHandler types
-struct IDLEventHandler final : public IDLBaseHelper<EventListener> {};
+struct IDLEventHandler final : public IDLBaseHelper<EventListener*> {};
 struct IDLOnBeforeUnloadEventHandler final
-    : public IDLBaseHelper<EventListener> {};
-struct IDLOnErrorEventHandler final : public IDLBaseHelper<EventListener> {};
+    : public IDLBaseHelper<EventListener*> {};
+struct IDLOnErrorEventHandler final : public IDLBaseHelper<EventListener*> {};
 
 }  // namespace blink
 

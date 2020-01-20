@@ -70,13 +70,10 @@ import java.util.regex.Pattern;
 public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvider {
     private static final String TAG = "CustomTabIntentData";
 
-    @IntDef({LaunchSourceType.OTHER, LaunchSourceType.WEBAPP, LaunchSourceType.WEBAPK,
-            LaunchSourceType.MEDIA_LAUNCHER_ACTIVITY})
+    @IntDef({LaunchSourceType.OTHER, LaunchSourceType.MEDIA_LAUNCHER_ACTIVITY})
     @Retention(RetentionPolicy.SOURCE)
     public @interface LaunchSourceType {
         int OTHER = -1;
-        int WEBAPP = 0;
-        int WEBAPK = 1;
         int MEDIA_LAUNCHER_ACTIVITY = 3;
     }
 
@@ -129,8 +126,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
             "org.chromium.chrome.browser.customtabs.EXTRA_IS_OPENED_BY_WEBAPK";
 
     /**
-     * Indicates the source where the Custom Tab is launched. This is only used for
-     * WebApp/WebAPK/TrustedWebActivity. The value is defined as
+     * Indicates the source where the Custom Tab is launched. The value is defined as
      * {@link LaunchSourceType}.
      */
     public static final String EXTRA_BROWSER_LAUNCH_SOURCE =

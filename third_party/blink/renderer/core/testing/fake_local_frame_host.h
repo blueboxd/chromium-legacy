@@ -56,6 +56,9 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
                           mojom::NavigationBlockedReason reason) override;
   void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override;
   void RenderFallbackContentInParentProcess() override;
+  void HandleAccessibilityFindInPageResult(
+      mojom::blink::FindInPageResultAXParamsPtr params) override;
+  void HandleAccessibilityFindInPageTermination() override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

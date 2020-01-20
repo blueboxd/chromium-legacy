@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "third_party/blink/public/mojom/payments/payment_request.mojom-blink.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_details_modifier.h"

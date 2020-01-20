@@ -13,7 +13,6 @@ from .code_node_cxx import CxxClassDefNode
 from .code_node_cxx import CxxNamespaceNode
 from .codegen_accumulator import CodeGenAccumulator
 from .codegen_context import CodeGenContext
-from .codegen_utils import collect_include_headers
 from .codegen_utils import component_export
 from .codegen_utils import enclose_with_header_guard
 from .codegen_utils import enclose_with_namespace
@@ -59,7 +58,6 @@ def generate_union(union):
     header_node = ListNode(tail="\n")
     header_node.set_accumulator(CodeGenAccumulator())
     header_node.set_renderer(MakoRenderer())
-    header_node.accumulator.add_include_headers(collect_include_headers(union))
 
     header_blink_ns = CxxNamespaceNode(name_style.namespace("blink"))
 

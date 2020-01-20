@@ -28,6 +28,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "v8/include/v8-version-string.h"
 
 #if defined(OS_ANDROID)

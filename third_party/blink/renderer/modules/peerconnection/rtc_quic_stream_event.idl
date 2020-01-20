@@ -7,6 +7,6 @@
    RuntimeEnabled=RTCQuicTransport,
    Exposed=Window
 ] interface RTCQuicStreamEvent : Event {
-    constructor(DOMString type, optional RTCQuicStreamEventInit eventInitDict);
+    constructor(DOMString type, optional RTCQuicStreamEventInit eventInitDict = {});
     readonly attribute RTCQuicStream stream;
 };

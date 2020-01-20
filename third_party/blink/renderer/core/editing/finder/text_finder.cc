@@ -327,9 +327,9 @@ void TextFinder::StopFindingAndClearSelection() {
 }
 
 void TextFinder::ReportFindInPageTerminationToAccessibility() {
-  if (OwnerFrame().Client()) {
-    OwnerFrame().Client()->HandleAccessibilityFindInPageTermination();
-  }
+  GetFrame()
+      ->GetLocalFrameHostRemote()
+      .HandleAccessibilityFindInPageTermination();
 }
 
 void TextFinder::ReportFindInPageResultToAccessibility(int identifier) {
@@ -345,12 +345,14 @@ void TextFinder::ReportFindInPageResultToAccessibility(int identifier) {
   Node* end_node = active_match_->endContainer();
   ax_object_cache->HandleTextMarkerDataAdded(start_node, end_node);
 
-  if (OwnerFrame().Client()) {
-    OwnerFrame().Client()->HandleAccessibilityFindInPageResult(
-        identifier, active_match_index_ + 1, blink::WebNode(start_node),
-        active_match_->startOffset(), blink::WebNode(end_node),
-        active_match_->endOffset());
-  }
+  int32_t start_id = ax_object_cache->GetAXID(start_node);
+  int32_t end_id = ax_object_cache->GetAXID(end_node);
+
+  auto params = mojom::blink::FindInPageResultAXParams::New(
+      identifier, active_match_index_ + 1, start_id,
+      active_match_->startOffset(), end_id, active_match_->endOffset());
+  GetFrame()->GetLocalFrameHostRemote().HandleAccessibilityFindInPageResult(
+      std::move(params));
 }
 
 void TextFinder::StartScopingStringMatches(

@@ -176,9 +176,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   void SetErrorState(Error error);
 
   //
-  // Other utility functions.  Called on encoder_thread_, unless
-  // encoder_thread_ is not yet started, in which case the child thread can call
-  // these (e.g. in Initialize() or Destroy()).
+  // Other utility functions.  Called on the |encoder_task_runner_|.
   //
 
   // Create image processor that will process input_layout to output_layout. The
@@ -194,7 +192,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   void RequestEncodingParametersChangeTask(uint32_t bitrate,
                                            uint32_t framerate);
 
-  // Do several initializations (e.g. set up format) on |encoder_thread_|.
+  // Do several initializations (e.g. set up format) on |encoder_task_runner_|.
   void InitializeTask(const Config& config,
                       bool* result,
                       base::WaitableEvent* done);
@@ -227,9 +225,6 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // Destroy these buffers.
   void DestroyInputBuffers();
   void DestroyOutputBuffers();
-
-  // Set controls in |ctrls| and return true if successful.
-  bool SetExtCtrls(std::vector<struct v4l2_ext_control> ctrls);
 
   // Allocates |count| video frames with |visible_size| for image processor's
   // output buffers. Returns false if there's something wrong.
@@ -270,14 +265,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   size_t output_buffer_byte_size_;
   uint32_t output_format_fourcc_;
 
-  //
-  // Encoder state, owned and operated by encoder_thread_.
-  // Before encoder_thread_ has started, the encoder state is managed by
-  // the child (main) thread.  After encoder_thread_ has started, the encoder
-  // thread should be the only one managing these.
-  //
-
-  // Encoder state.
+  // Encoder state, owned and operated by |encoder_task_runner_|.
   State encoder_state_;
 
   // For H264, for resilience, we prepend each IDR with SPS and PPS. Some

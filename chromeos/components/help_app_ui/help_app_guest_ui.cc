@@ -20,7 +20,7 @@ content::WebUIDataSource* CreateHelpAppGuestDataSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIHelpAppGuestHost);
   source->AddResourcePath("app.html", IDR_HELP_APP_APP_HTML);
-  // source->AddResourcePath("app_bin.js", IDR_HELP_APP_APP_BIN_JS);
+  source->AddResourcePath("app_bin.js", IDR_HELP_APP_APP_BIN_JS);
   source->AddResourcePath("load_time_data.js", IDR_WEBUI_JS_LOAD_TIME_DATA);
 
   // Add all resources from chromeos_media_app_bundle.pak.

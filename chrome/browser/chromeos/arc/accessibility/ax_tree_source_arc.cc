@@ -91,8 +91,8 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
         std::make_unique<AccessibilityWindowInfoDataWrapper>(this, window);
 
     std::vector<int32_t> children;
-    if (GetIntListProperty(window, AXWindowIntListProperty::CHILD_WINDOW_IDS,
-                           &children)) {
+    if (GetProperty(window->int_list_properties,
+                    AXWindowIntListProperty::CHILD_WINDOW_IDS, &children)) {
       for (const int32_t child : children) {
         DCHECK(child != root_id_);
         parent_map_[child] = window_id;
@@ -106,19 +106,21 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     int32_t node_id = event_data->node_data[i]->id;
     node_data_index_map[node_id] = i;
     std::vector<int32_t> children;
-    if (GetIntListProperty(event_data->node_data[i].get(),
-                           AXIntListProperty::CHILD_NODE_IDS, &children)) {
+    if (GetProperty(event_data->node_data[i].get()->int_list_properties,
+                    AXIntListProperty::CHILD_NODE_IDS, &children)) {
       for (const int32_t child : children)
         parent_map_[child] = node_id;
     }
   }
-  for (size_t i = 0; i < event_data->node_data.size(); ++i) {
+  std::map<int32_t, bool> important_map;
+  BuildImportantMap(event_data->node_data, node_data_index_map, important_map);
+  for (int i = event_data->node_data.size() - 1; i >= 0; --i) {
     int32_t id = event_data->node_data[i]->id;
     AXNodeInfoData* node = event_data->node_data[i].get();
     bool is_clickable_leaf =
-        ComputeIsClickableLeaf(i, event_data->node_data, node_data_index_map);
+        ComputeIsClickableLeaf(event_data->node_data, i, node_data_index_map);
     tree_map_[id] = std::make_unique<AccessibilityNodeInfoDataWrapper>(
-        this, node, is_clickable_leaf);
+        this, node, is_clickable_leaf, important_map[i]);
   }
 
   // Assuming |nodeData| is in pre-order, compute cached bounds in post-order to
@@ -141,8 +143,8 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
       // Sometimes Android sets focus on unfocusable node, e.g. ListView.
       AccessibilityInfoDataWrapper* adjusted_node =
           FindFirstFocusableNode(focused_node);
-      focused_id_ = IsValid(adjusted_node) ? adjusted_node->GetId()
-                                           : event_data->source_id;
+      android_focused_id_ = IsValid(adjusted_node) ? adjusted_node->GetId()
+                                                   : event_data->source_id;
     }
   } else if (event_data->event_type == AXEventType::WINDOW_STATE_CHANGED) {
     // When accessibility window changed, a11y event of WINDOW_CONTENT_CHANGED
@@ -154,25 +156,25 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     AccessibilityInfoDataWrapper* new_focus =
         FindFirstFocusableNode(focused_node);
     if (IsValid(new_focus))
-      focused_id_ = new_focus->GetId();
+      android_focused_id_ = new_focus->GetId();
 
     if (event_data->eventText)
       UpdateAXNameCache(focused_node, *event_data->eventText);
   }
-  if (!focused_id_.has_value()) {
+  if (!android_focused_id_.has_value()) {
     AccessibilityInfoDataWrapper* root = GetRoot();
     // TODO (sarakato): Add proper fix once cause of invalid node is known.
     if (!IsValid(root)) {
       return;
     } else if (root->IsNode()) {
-      focused_id_ = root_id_;
+      android_focused_id_ = root_id_;
     } else {
       std::vector<AccessibilityInfoDataWrapper*> children;
       root->GetChildren(&children);
       if (!children.empty()) {
         for (size_t i = 0; i < children.size(); ++i) {
           if (children[i]->IsNode()) {
-            focused_id_ = children[i]->GetId();
+            android_focused_id_ = children[i]->GetId();
             break;
           }
         }
@@ -191,11 +193,27 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   // When the focused node exists, give it as a hint to decide a Chrome
   // automation event type.
   AXNodeInfoData* focused_node = nullptr;
-  if (focused_id_.has_value() &&
-      tree_map_.find(*focused_id_) != tree_map_.end())
-    focused_node = tree_map_[*focused_id_]->GetNode();
+  if (android_focused_id_.has_value() &&
+      tree_map_.find(*android_focused_id_) != tree_map_.end())
+    focused_node = tree_map_[*android_focused_id_]->GetNode();
   event.event_type = ToAXEvent(event_data->event_type, focused_node);
   event.id = event_data->source_id;
+
+  if ((event_data->event_type == AXEventType::WINDOW_CONTENT_CHANGED ||
+       event_data->event_type == AXEventType::VIEW_SCROLLED) &&
+      chrome_focused_id_ && chrome_focused_bounds_) {
+    AccessibilityInfoDataWrapper* chrome_focused_node =
+        GetFromId(*chrome_focused_id_);
+    if (chrome_focused_node &&
+        chrome_focused_bounds_ != chrome_focused_node->GetBounds()) {
+      // Notify ChromeVox that the accessibility focus location changed.
+      event_bundle.events.emplace_back();
+      ui::AXEvent& additional_event = event_bundle.events.back();
+      additional_event.event_type = ax::mojom::Event::kLocationChanged;
+      additional_event.id = *chrome_focused_id_;
+      chrome_focused_bounds_ = chrome_focused_node->GetBounds();
+    }
+  }
 
   event_bundle.updates.emplace_back();
 
@@ -219,6 +237,14 @@ void AXTreeSourceArc::NotifyGetTextLocationDataResult(
     const ui::AXActionData& data,
     const base::Optional<gfx::Rect>& rect) {
   GetAutomationEventRouter()->DispatchGetTextLocationDataResult(data, rect);
+}
+
+void AXTreeSourceArc::UpdateAccessibilityFocusLocation(int32_t id) {
+  AccessibilityInfoDataWrapper* node = GetFromId(id);
+  if (!IsValid(node))
+    return;
+  chrome_focused_id_ = id;
+  chrome_focused_bounds_ = node->GetBounds();
 }
 
 const gfx::Rect AXTreeSourceArc::GetBounds(
@@ -283,8 +309,8 @@ bool AXTreeSourceArc::IsRootOfNodeTree(int32_t id) const {
 
 bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
   data->tree_id = ax_tree_id();
-  if (focused_id_.has_value())
-    data->focus_id = *focused_id_;
+  if (android_focused_id_.has_value())
+    data->focus_id = *android_focused_id_;
   return true;
 }
 
@@ -360,15 +386,16 @@ void AXTreeSourceArc::ComputeEnclosingBoundsInternal(
 }
 
 bool AXTreeSourceArc::ComputeIsClickableLeaf(
-    int32_t root_index,
     const std::vector<AXNodeInfoDataPtr>& nodes,
-    const std::map<int32_t, int32_t>& node_id_to_array_index) const {
-  AXNodeInfoData* node = nodes[root_index].get();
+    int32_t node_index,
+    const std::map<int32_t, int32_t>& node_id_to_nodes_index) const {
+  AXNodeInfoData* node = nodes[node_index].get();
   if (!GetBooleanProperty(node, AXBooleanProperty::CLICKABLE))
     return false;
 
   std::vector<int32_t> children;
-  if (!GetIntListProperty(node, AXIntListProperty::CHILD_NODE_IDS, &children))
+  if (!GetProperty(node->int_list_properties, AXIntListProperty::CHILD_NODE_IDS,
+                   &children))
     return true;
 
   std::stack<int32_t, std::vector<int32_t>> stack(children);
@@ -376,16 +403,51 @@ bool AXTreeSourceArc::ComputeIsClickableLeaf(
     int32_t parent_id = stack.top();
     stack.pop();
     AXNodeInfoData* parent_node =
-        nodes[node_id_to_array_index.at(parent_id)].get();
+        nodes[node_id_to_nodes_index.at(parent_id)].get();
     if (GetBooleanProperty(parent_node, AXBooleanProperty::CLICKABLE))
       return false;
-    if (GetIntListProperty(parent_node, AXIntListProperty::CHILD_NODE_IDS,
-                           &children)) {
+    if (GetProperty(parent_node->int_list_properties,
+                    AXIntListProperty::CHILD_NODE_IDS, &children)) {
       for (const int32_t child : children)
         stack.push(child);
     }
   }
   return true;
+}
+
+void AXTreeSourceArc::BuildImportantMap(
+    const std::vector<AXNodeInfoDataPtr>& nodes,
+    const std::map<int32_t, int32_t>& node_id_to_nodes_index,
+    std::map<int32_t, bool>& out_map) const {
+  // nodes can be empty only in tests.
+  if (nodes.size() > 0)
+    BuildImportantMapInternal(0, nodes, node_id_to_nodes_index, out_map);
+}
+
+bool AXTreeSourceArc::BuildImportantMapInternal(
+    int32_t nodes_index,
+    const std::vector<AXNodeInfoDataPtr>& nodes,
+    const std::map<int32_t, int32_t>& node_id_to_nodes_index,
+    std::map<int32_t, bool>& is_important_cache) const {
+  AXNodeInfoData* node = nodes[nodes_index].get();
+
+  bool is_important = IsImportantInAndroid(node) &&
+                      (HasImportantProperty(node) ||
+                       cached_names_.find(node->id) != cached_names_.end());
+
+  // If any child node has importance, this node is also important.
+  std::vector<int32_t> children;
+  if (GetProperty(node->int_list_properties, AXIntListProperty::CHILD_NODE_IDS,
+                  &children)) {
+    for (const int32_t child : children) {
+      is_important |=
+          BuildImportantMapInternal(node_id_to_nodes_index.at(child), nodes,
+                                    node_id_to_nodes_index, is_important_cache);
+    }
+  }
+
+  is_important_cache[nodes_index] = is_important;
+  return is_important;
 }
 
 AccessibilityInfoDataWrapper* AXTreeSourceArc::FindFirstFocusableNode(
@@ -461,7 +523,7 @@ void AXTreeSourceArc::Reset() {
   current_tree_serializer_.reset(new AXTreeArcSerializer(this));
   root_id_.reset();
   window_id_.reset();
-  focused_id_.reset();
+  android_focused_id_.reset();
   extensions::AutomationEventRouterInterface* router =
       GetAutomationEventRouter();
   if (!router)

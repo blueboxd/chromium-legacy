@@ -43,6 +43,28 @@ struct NativeValueTraits;
 //   NativeValue(v8::Isolate*, v8::Local<v8::Value>, ExceptionState&);
 // };
 
+namespace bindings {
+
+template <typename T, typename = void>
+struct NativeValueTraitsHasIsNull : std::false_type {};
+
+template <typename T>
+struct NativeValueTraitsHasIsNull<
+    T,
+    base::void_t<decltype(std::declval<T>().IsNull())>> : std::true_type {};
+
+template <typename T>
+struct NativeValueTraitsHasNullValue {
+  // true if |T| supports IDL null value.
+  static constexpr bool value =
+      // ScriptValue, String, and union types have IsNull member function.
+      bindings::NativeValueTraitsHasIsNull<T>::value ||
+      // Pointer types have nullptr as IDL null value.
+      std::is_pointer<T>::value;
+};
+
+}  // namespace bindings
+
 // NativeValueTraitsBase is supposed to be inherited by NativeValueTraits
 // classes. They serve as a way to hold the ImplType typedef without requiring
 // all NativeValueTraits specializations to declare it.
@@ -62,11 +84,15 @@ struct NativeValueTraitsBase {
 
   using ImplType = T;
 
+  static constexpr bool has_null_value =
+      bindings::NativeValueTraitsHasNullValue<ImplType>::value;
+
   static decltype(auto) ArgumentValue(v8::Isolate* isolate,
                                       int argument_index,
                                       v8::Local<v8::Value> value,
                                       ExceptionState& exception_state) {
-    return NativeValueTraits<T>::NativeValue(isolate, value, exception_state);
+    return NativeValueTraits<std::remove_pointer_t<T>>::NativeValue(
+        isolate, value, exception_state);
   }
 };
 
@@ -78,11 +104,15 @@ struct NativeValueTraitsBase<
 
   using ImplType = typename T::ImplType;
 
+  static constexpr bool has_null_value =
+      bindings::NativeValueTraitsHasNullValue<ImplType>::value;
+
   static decltype(auto) ArgumentValue(v8::Isolate* isolate,
                                       int argument_index,
                                       v8::Local<v8::Value> value,
                                       ExceptionState& exception_state) {
-    return NativeValueTraits<T>::NativeValue(isolate, value, exception_state);
+    return NativeValueTraits<std::remove_pointer_t<T>>::NativeValue(
+        isolate, value, exception_state);
   }
 };
 

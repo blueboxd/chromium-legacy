@@ -9,7 +9,7 @@ interface PortalHost : EventTarget {
   [RaisesException, CallWith=ScriptState, Measure] void postMessage(any message, DOMString targetOrigin,
                                                                     optional sequence<object> transfer = []);
   [RaisesException, CallWith=ScriptState, Measure] void postMessage(any message,
-                                                                    optional WindowPostMessageOptions options);
+                                                                    optional WindowPostMessageOptions options = {});
 
   attribute EventHandler onmessage;
   attribute EventHandler onmessageerror;

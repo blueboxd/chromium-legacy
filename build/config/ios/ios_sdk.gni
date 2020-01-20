@@ -54,8 +54,8 @@ declare_args() {
   # using the syntax --args='additional_target_cpus=["arm"] target_cpu="arm64"'.
   additional_target_cpus = []
 
-  # TODO(crbug.com/1015730): true if use_goma = true.
-  ios_enable_relative_sdk_path = false
+  # TODO(crbug.com/1015730): remove this flag because ios_use_goma_rbe covers.
+  ios_enable_relative_sdk_path = ios_use_goma_rbe
 }
 
 # Official builds may not use goma.
@@ -104,6 +104,9 @@ if (ios_sdk_path == "") {
       "--developer_dir",
       ios_sdk_developer_dir,
     ]
+  }
+  if (ios_use_goma_rbe) {
+    ios_sdk_info_args += [ "--create_symlink_under_src" ]
   }
   script_name = "//build/config/mac/sdk_info.py"
   _ios_sdk_result = exec_script(script_name, ios_sdk_info_args, "scope")

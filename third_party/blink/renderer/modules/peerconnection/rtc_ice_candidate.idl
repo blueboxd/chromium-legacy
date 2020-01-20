@@ -59,7 +59,7 @@ enum RTCIceTcpCandidateType {
 [
     Exposed=Window
 ] interface RTCIceCandidate {
-    [CallWith=ExecutionContext, RaisesException] constructor(optional RTCIceCandidateInit candidateInitDict);
+    [CallWith=ExecutionContext, RaisesException] constructor(optional RTCIceCandidateInit candidateInitDict = {});
     readonly attribute DOMString candidate;
     readonly attribute DOMString? sdpMid;
     readonly attribute unsigned short? sdpMLineIndex;

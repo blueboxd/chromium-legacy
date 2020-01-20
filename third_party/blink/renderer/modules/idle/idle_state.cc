@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/idle/idle_state.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"

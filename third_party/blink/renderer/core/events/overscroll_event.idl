@@ -7,7 +7,7 @@
 [
     RuntimeEnabled=OverscrollCustomization
 ] interface OverscrollEvent : Event {
-    constructor(DOMString type, boolean bubbles, optional OverscrollEventInit eventInitDict);
+    constructor(DOMString type, boolean bubbles, optional OverscrollEventInit eventInitDict = {});
     readonly attribute double deltaX;
     readonly attribute double deltaY;
 };

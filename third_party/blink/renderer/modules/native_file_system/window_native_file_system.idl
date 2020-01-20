@@ -10,5 +10,5 @@
 ] partial interface Window {
     [CallWith=ScriptState, Measure, RaisesException]
     Promise<(FileSystemHandle or sequence<FileSystemHandle>)>
-        chooseFileSystemEntries(optional ChooseFileSystemEntriesOptions options);
+        chooseFileSystemEntries(optional ChooseFileSystemEntriesOptions options = {});
 };

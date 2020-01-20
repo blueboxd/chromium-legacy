@@ -54,7 +54,7 @@
     [Affects=Nothing, PerWorldBindings] readonly attribute Node? lastChild;
     [Affects=Nothing, PerWorldBindings] readonly attribute Node? previousSibling;
     [Affects=Nothing, PerWorldBindings] readonly attribute Node? nextSibling;
-    [MeasureAs=NodeGetRootNode] Node getRootNode(optional GetRootNodeOptions options);
+    [MeasureAs=NodeGetRootNode] Node getRootNode(optional GetRootNodeOptions options = {});
 
     [Affects=Nothing, CEReactions, CustomElementCallbacks] attribute DOMString? nodeValue;
 

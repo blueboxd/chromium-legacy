@@ -1217,7 +1217,7 @@ void HTMLInputElement::setValueAsDate(ScriptState* script_state,
                                       ExceptionState& exception_state) {
   UseCounter::Count(GetDocument(), WebFeature::kInputElementValueAsDateSetter);
   base::Optional<base::Time> date =
-      NativeValueTraits<IDLDateOrNull>::NativeValue(
+      NativeValueTraits<IDLNullable<IDLDate>>::NativeValue(
           script_state->GetIsolate(), value.V8Value(), exception_state);
   if (exception_state.HadException())
     return;

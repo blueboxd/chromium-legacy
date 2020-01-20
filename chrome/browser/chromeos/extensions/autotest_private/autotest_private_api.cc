@@ -3172,6 +3172,9 @@ AutotestPrivateGetAppWindowListFunction::Run() {
         ash::DesksHelper::Get()->BelongsToActiveDesk(window);
     window_info.is_active = wm::IsActiveWindow(window);
     window_info.has_capture = window->HasCapture();
+    window_info.can_resize =
+        (window->GetProperty(aura::client::kResizeBehaviorKey) &
+         aura::client::kResizeBehaviorCanResize) != 0;
 
     if (window->GetProperty(aura::client::kAppType) ==
         static_cast<int>(ash::AppType::ARC_APP)) {

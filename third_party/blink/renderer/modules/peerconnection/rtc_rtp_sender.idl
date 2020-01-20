@@ -9,7 +9,7 @@ interface RTCRtpSender {
     [RuntimeEnabled=RTCDtlsTransport] readonly attribute RTCDtlsTransport? transport;
     [RuntimeEnabled=RTCDtlsTransport] readonly attribute RTCDtlsTransport? rtcpTransport;
     static RTCRtpCapabilities? getCapabilities(DOMString kind);
-    [CallWith=ScriptState] Promise<void> setParameters(optional RTCRtpSendParameters parameters);
+    [CallWith=ScriptState] Promise<void> setParameters(optional RTCRtpSendParameters parameters = {});
     RTCRtpSendParameters getParameters();
     [Measure, CallWith=ScriptState] Promise<void> replaceTrack(MediaStreamTrack? withTrack);
     [Measure] readonly attribute RTCDTMFSender? dtmf;

@@ -104,6 +104,11 @@ class PathManager(object):
         self._impl_dir = self._component_reldirs[self._impl_component]
         self._v8_bind_basename = name_style.file("v8",
                                                  idl_definition.identifier)
+        # TODO(peria, yukishiino): Add "v8" prefix to union's files.  Trying to
+        # produce the same filepaths with the old bindings generator for the
+        # time being.
+        if isinstance(idl_definition, web_idl.Union):
+            self._v8_bind_basename = name_style.file(idl_definition.identifier)
 
     @property
     def is_cross_components(self):

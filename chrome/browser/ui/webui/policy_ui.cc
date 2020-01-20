@@ -14,6 +14,7 @@
 #include "components/grit/dev_ui_components_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
+#include "ui/base/webui/web_ui_util.h"
 
 namespace {
 

@@ -362,7 +362,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
     registration_->set_last_update_check(base::Time::Now());
     base::Optional<blink::ServiceWorkerStatusCode> status;
     base::RunLoop run_loop;
-    storage()->StoreRegistration(
+    registry()->StoreRegistration(
         registration_.get(), version_.get(),
         ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
     run_loop.Run();
@@ -378,6 +378,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
             helper_.get(), client);
   }
 
+  ServiceWorkerRegistry* registry() { return helper_->context()->registry(); }
   ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
 
   // Starts a request. After calling this, the request is ongoing and the

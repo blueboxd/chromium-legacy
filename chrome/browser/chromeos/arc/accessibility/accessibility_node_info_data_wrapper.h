@@ -18,7 +18,8 @@ class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
  public:
   AccessibilityNodeInfoDataWrapper(AXTreeSourceArc* tree_source,
                                    mojom::AccessibilityNodeInfoData* node,
-                                   bool is_clickable_leaf);
+                                   bool is_clickable_leaf,
+                                   bool is_important);
 
   ~AccessibilityNodeInfoDataWrapper() override;
 
@@ -59,13 +60,12 @@ class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
   void ComputeNameFromContents(const AccessibilityNodeInfoDataWrapper* data,
                                std::vector<std::string>* names) const;
 
-  bool IsFocusableNativeWeb(ax::mojom::Role role) const;
-
   bool IsInterestingLeaf() const;
 
   mojom::AccessibilityNodeInfoData* node_ptr_ = nullptr;
 
   bool is_clickable_leaf_;
+  bool is_important_;
 
   base::Optional<ax::mojom::Role> role_;
   base::Optional<std::string> cached_name_;

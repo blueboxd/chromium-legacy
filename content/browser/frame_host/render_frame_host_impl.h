@@ -136,7 +136,6 @@
 
 class GURL;
 struct AccessibilityHostMsg_EventBundleParams;
-struct AccessibilityHostMsg_FindInPageResultParams;
 struct AccessibilityHostMsg_LocationChangeParams;
 struct FrameHostMsg_DownloadUrl_Params;
 struct FrameHostMsg_OpenURL_Params;
@@ -1324,6 +1323,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::NavigationBlockedReason reason) override;
   void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override;
   void RenderFallbackContentInParentProcess() override;
+  void HandleAccessibilityFindInPageResult(
+      blink::mojom::FindInPageResultAXParamsPtr params) override;
+  void HandleAccessibilityFindInPageTermination() override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1496,9 +1498,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int ack_token);
   void OnAccessibilityLocationChanges(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
-  void OnAccessibilityFindInPageResult(
-      const AccessibilityHostMsg_FindInPageResultParams& params);
-  void OnAccessibilityFindInPageTermination();
   void OnAccessibilityChildFrameHitTestResult(
       int action_request_id,
       const gfx::Point& point,

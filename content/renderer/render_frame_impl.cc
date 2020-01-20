@@ -175,7 +175,6 @@
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -5252,25 +5251,6 @@ void RenderFrameImpl::MarkWebAXObjectDirty(const blink::WebAXObject& obj,
                                            bool subtree) {
   if (render_accessibility_)
     render_accessibility_->MarkWebAXObjectDirty(obj, subtree);
-}
-
-void RenderFrameImpl::HandleAccessibilityFindInPageResult(
-    int identifier,
-    int match_index,
-    const blink::WebNode& start_node,
-    int start_offset,
-    const blink::WebNode& end_node,
-    int end_offset) {
-  if (render_accessibility_) {
-    render_accessibility_->HandleAccessibilityFindInPageResult(
-        identifier, match_index, blink::WebAXObject::FromWebNode(start_node),
-        start_offset, blink::WebAXObject::FromWebNode(end_node), end_offset);
-  }
-}
-
-void RenderFrameImpl::HandleAccessibilityFindInPageTermination() {
-  if (render_accessibility_)
-    render_accessibility_->HandleAccessibilityFindInPageTermination();
 }
 
 void RenderFrameImpl::DidSerializeDataForFrame(

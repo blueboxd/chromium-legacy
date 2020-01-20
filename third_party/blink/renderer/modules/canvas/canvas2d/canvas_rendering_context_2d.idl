@@ -59,7 +59,7 @@ interface CanvasRenderingContext2D {
     void translate(unrestricted double x, unrestricted double y);
     void transform(unrestricted double a, unrestricted double b, unrestricted double c, unrestricted double d, unrestricted double e, unrestricted double f);
     void setTransform(unrestricted double a, unrestricted double b, unrestricted double c, unrestricted double d, unrestricted double e, unrestricted double f);
-    [RaisesException] void setTransform(optional DOMMatrix2DInit transform);
+    [RaisesException] void setTransform(optional DOMMatrix2DInit transform = {});
     DOMMatrix getTransform();
     void resetTransform();
 
@@ -119,7 +119,7 @@ interface CanvasRenderingContext2D {
     [CallWith=ScriptState, RaisesException] void drawImage(CanvasImageSource image, unrestricted double sx, unrestricted double sy, unrestricted double sw, unrestricted double sh, unrestricted double dx, unrestricted double dy, unrestricted double dw, unrestricted double dh);
 
     // hit regions
-    [RuntimeEnabled=CanvasHitRegion, RaisesException] void addHitRegion(optional HitRegionOptions options);
+    [RuntimeEnabled=CanvasHitRegion, RaisesException] void addHitRegion(optional HitRegionOptions options = {});
     [RuntimeEnabled=CanvasHitRegion] void removeHitRegion(DOMString id);
     [RuntimeEnabled=CanvasHitRegion] void clearHitRegions();
 
@@ -132,7 +132,7 @@ interface CanvasRenderingContext2D {
 
     // https://github.com/WICG/canvas-color-space/blob/master/CanvasColorSpaceProposal.md
     [RuntimeEnabled=CanvasColorManagement, RaisesException] ImageData createImageData(unsigned long sw, unsigned long sh, ImageDataColorSettings imageDataColorSettings);
-    [RuntimeEnabled=CanvasColorManagement, RaisesException] ImageData createImageData(ImageDataArray data, unsigned long sw, unsigned long sh, optional ImageDataColorSettings imageDataColorSettings);
+    [RuntimeEnabled=CanvasColorManagement, RaisesException] ImageData createImageData(ImageDataArray data, unsigned long sw, unsigned long sh, optional ImageDataColorSettings imageDataColorSettings = {});
 
     // Context state
     // Should be merged with WebGL counterpart in CanvasRenderingContext, once no-longer experimental

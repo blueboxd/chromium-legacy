@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.customtabs.content;
 
 import androidx.annotation.NonNull;
 
+import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
@@ -16,6 +17,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -31,7 +33,7 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
     private final Set<TabObserver> mTabObservers = new HashSet<>();
 
     /** Observers for active tab. */
-    private final Set<CustomTabTabObserver> mActivityTabObservers = new HashSet<>();
+    private final ObserverList<CustomTabTabObserver> mActivityTabObservers = new ObserverList<>();
 
     /**
      * Caches the {@link CustomTabActivityTabProvider}'s active tab so that TabObservers can be
@@ -90,7 +92,7 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
      * Differs from {@link #registerTabObserver()} which observes all newly created tabs.
      */
     public void registerActivityTabObserver(CustomTabTabObserver observer) {
-        mActivityTabObservers.add(observer);
+        mActivityTabObservers.addObserver(observer);
         Tab activeTab = mTabProvider.getTab();
         if (activeTab != null) {
             activeTab.addObserver(observer);
@@ -99,7 +101,7 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
     }
 
     public void unregisterActivityTabObserver(CustomTabTabObserver observer) {
-        mActivityTabObservers.remove(observer);
+        mActivityTabObservers.removeObserver(observer);
         Tab activeTab = mTabProvider.getTab();
         if (activeTab != null) {
             activeTab.removeObserver(observer);
@@ -130,7 +132,7 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
     @Override
     public void tabRemoved(Tab tab) {
         removePageLoadMetricsObservers();
-        removeTabObservers(tab, mTabObservers);
+        removeTabObservers(tab, mTabObservers.iterator());
     }
 
     /**
@@ -139,7 +141,7 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
      */
     public void addObserversForTab(Tab tab) {
         addPageLoadMetricsObservers();
-        addTabObservers(tab, mTabObservers);
+        addTabObservers(tab, mTabObservers.iterator());
     }
 
     private void addPageLoadMetricsObservers() {
@@ -159,23 +161,23 @@ public class TabObserverRegistrar extends EmptyTabModelObserver implements Destr
      */
     private void onTabProviderTabUpdated() {
         if (mTabProviderTab != null) {
-            removeTabObservers(mTabProviderTab, mActivityTabObservers);
+            removeTabObservers(mTabProviderTab, mActivityTabObservers.iterator());
         }
         mTabProviderTab = mTabProvider.getTab();
         if (mTabProviderTab != null) {
-            addTabObservers(mTabProviderTab, mActivityTabObservers);
+            addTabObservers(mTabProviderTab, mActivityTabObservers.iterator());
         }
     }
 
-    private void addTabObservers(Tab tab, Set<? extends TabObserver> tabObservers) {
-        for (TabObserver observer : tabObservers) {
-            tab.addObserver(observer);
+    private void addTabObservers(Tab tab, Iterator<? extends TabObserver> tabObserversIterator) {
+        while (tabObserversIterator.hasNext()) {
+            tab.addObserver(tabObserversIterator.next());
         }
     }
 
-    private void removeTabObservers(Tab tab, Set<? extends TabObserver> tabObservers) {
-        for (TabObserver observer : tabObservers) {
-            tab.removeObserver(observer);
+    private void removeTabObservers(Tab tab, Iterator<? extends TabObserver> tabObserversIterator) {
+        while (tabObserversIterator.hasNext()) {
+            tab.removeObserver(tabObserversIterator.next());
         }
     }
 

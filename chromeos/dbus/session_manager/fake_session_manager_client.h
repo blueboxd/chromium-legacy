@@ -258,6 +258,10 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
     force_state_keys_missing_ = force_state_keys_missing;
   }
 
+  void set_adb_sideload_enabled(bool adb_sideload_enabled) {
+    adb_sideload_enabled_ = adb_sideload_enabled;
+  }
+
   bool session_stopped() const { return session_stopped_; }
 
   const SessionManagerClient::ActiveSessionsMap& user_sessions() const {
@@ -316,6 +320,8 @@ class COMPONENT_EXPORT(SESSION_MANAGER) FakeSessionManagerClient
   base::TimeTicks arc_start_time_;
 
   bool container_running_ = false;
+
+  bool adb_sideload_enabled_ = false;
 
   std::string login_password_;
 

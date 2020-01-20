@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#waveshapernode
+// https://webaudio.github.io/web-audio-api/#waveshapernode
 enum OverSampleType {
     "none",
     "2x",
@@ -33,7 +33,7 @@ enum OverSampleType {
 [
     Exposed=Window
 ] interface WaveShaperNode : AudioNode {
-    [RaisesException, Measure] constructor(BaseAudioContext context, optional WaveShaperOptions options);
+    [RaisesException, Measure] constructor(BaseAudioContext context, optional WaveShaperOptions options = {});
     [RaisesException=Setter] attribute Float32Array? curve;
     attribute OverSampleType oversample;
 };

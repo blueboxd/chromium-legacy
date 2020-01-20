@@ -28,5 +28,11 @@ declare_args() {
   }
 }
 
+declare_args() {
+  # Auto-configure for Goma RBE backend.
+  # TODO(crbug.com/1015730): true if use_goma = true in the future.
+  ios_use_goma_rbe = false
+}
+
 assert(!is_win || !use_goma || is_clang,
        "cl.exe does not work on goma, use clang")

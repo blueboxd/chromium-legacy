@@ -20,10 +20,12 @@
     [
       CallWith = ScriptState, RaisesException, MeasureAs = GetUserMediaPromise
     ] Promise<MediaStream>
-    getUserMedia(optional MediaStreamConstraints constraints);
+    getUserMedia(optional MediaStreamConstraints constraints = {});
+
+    // https://w3c.github.io/mediacapture-screen-share/#dom-mediadevices-getdisplaymedia
     [
       RuntimeEnabled = GetDisplayMedia, CallWith = ScriptState, RaisesException,
       MeasureAs = GetDisplayMedia
     ] Promise<MediaStream>
-    getDisplayMedia(optional MediaStreamConstraints constraints);
+    getDisplayMedia(optional MediaStreamConstraints constraints = {});
 };

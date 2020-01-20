@@ -59,6 +59,7 @@ class ServiceWorkerContextWrapperTest : public testing::Test {
   }
 
   ServiceWorkerContextCore* context() { return wrapper_->context(); }
+  ServiceWorkerRegistry* registry() { return context()->registry(); }
   ServiceWorkerStorage* storage() { return context()->storage(); }
 
  protected:
@@ -83,7 +84,7 @@ TEST_F(ServiceWorkerContextWrapperTest, HasRegistration) {
 
   // Store it.
   base::RunLoop loop;
-  storage()->StoreRegistration(
+  registry()->StoreRegistration(
       registration.get(), registration->waiting_version(),
       base::BindLambdaForTesting(
           [&loop](blink::ServiceWorkerStatusCode status) {

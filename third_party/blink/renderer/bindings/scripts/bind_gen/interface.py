@@ -35,7 +35,6 @@ from .codegen_expr import CodeGenExpr
 from .codegen_expr import expr_from_exposure
 from .codegen_expr import expr_or
 from .codegen_format import format_template as _format
-from .codegen_utils import collect_include_headers
 from .codegen_utils import component_export
 from .codegen_utils import component_export_header
 from .codegen_utils import enclose_with_header_guard
@@ -716,6 +715,8 @@ def make_log_activity(cg_context):
         CodeGenAccumulator.require_include_headers([
             "third_party/blink/renderer/"
             "platform/bindings/v8_dom_activity_logger.h",
+            "third_party/blink/renderer/"
+            "platform/bindings/v8_per_context_data.h",
         ]))
     return node
 
@@ -1252,7 +1253,8 @@ def make_v8_set_return_value(cg_context):
 
     if return_type.is_frozen_array:
         return T("bindings::V8SetReturnValue(${info}, FreezeV8Object(ToV8("
-                 "${return_value}, ${creation_context_object}, ${isolate})));")
+                 "${return_value}, ${creation_context_object}, ${isolate}), "
+                 "${isolate}));")
 
     if return_type.is_promise:
         return T("bindings::V8SetReturnValue"
@@ -2697,6 +2699,39 @@ static_assert(
 # ----------------------------------------------------------------------------
 
 
+def _collect_include_headers(interface):
+    headers = set(interface.code_generator_info.blink_headers)
+
+    def collect_from_idl_type(idl_type):
+        idl_type = idl_type.unwrap()
+        if idl_type.is_enumeration:
+            return
+        type_def_obj = idl_type.type_definition_object
+        if type_def_obj is not None:
+            headers.add(PathManager(type_def_obj).api_path(ext="h"))
+            return
+        union_def_obj = idl_type.union_definition_object
+        if union_def_obj is not None:
+            headers.add(PathManager(union_def_obj).api_path(ext="h"))
+            return
+
+    for attribute in interface.attributes:
+        collect_from_idl_type(attribute.idl_type)
+    for constructor in interface.constructors:
+        for argument in constructor.arguments:
+            collect_from_idl_type(argument.idl_type)
+    for operation in interface.operations:
+        collect_from_idl_type(operation.return_type)
+        for argument in operation.arguments:
+            collect_from_idl_type(argument.idl_type)
+
+    path_manager = PathManager(interface)
+    headers.discard(path_manager.api_path(ext="h"))
+    headers.discard(path_manager.impl_path(ext="h"))
+
+    return headers
+
+
 def generate_interface(interface):
     path_manager = PathManager(interface)
     api_component = path_manager.api_component
@@ -3016,7 +3051,7 @@ def generate_interface(interface):
         "third_party/blink/renderer/platform/bindings/v8_binding.h",
     ])
     impl_source_node.accumulator.add_include_headers(
-        collect_include_headers(interface))
+        _collect_include_headers(interface))
 
     # Assemble the parts.
     api_header_blink_ns.body.append(api_class_def)

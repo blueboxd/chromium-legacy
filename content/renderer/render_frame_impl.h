@@ -787,13 +787,6 @@ class CONTENT_EXPORT RenderFrameImpl
                               ax::mojom::EventFrom event_from) override;
   void MarkWebAXObjectDirty(const blink::WebAXObject& obj,
                             bool subtree) override;
-  void HandleAccessibilityFindInPageResult(int identifier,
-                                           int match_index,
-                                           const blink::WebNode& start_node,
-                                           int start_offset,
-                                           const blink::WebNode& end_node,
-                                           int end_offset) override;
-  void HandleAccessibilityFindInPageTermination() override;
   void CheckIfAudioSinkExistsAndIsAuthorized(
       const blink::WebString& sink_id,
       blink::WebSetSinkIdCompleteCallback callback) override;

@@ -9,10 +9,10 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/browser/ui/webui/webui_util.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_types.h"
+#include "ui/base/webui/web_ui_util.h"
 
 class Profile;
 

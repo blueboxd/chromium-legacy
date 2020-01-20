@@ -115,7 +115,7 @@ class ServiceWorkerVersionTest : public testing::Test {
     // Make the registration findable via storage functions.
     base::Optional<blink::ServiceWorkerStatusCode> status;
     base::RunLoop run_loop;
-    helper_->context()->storage()->StoreRegistration(
+    helper_->context()->registry()->StoreRegistration(
         registration_.get(), version_.get(),
         ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
     run_loop.Run();
@@ -345,7 +345,7 @@ TEST_F(ServiceWorkerVersionTest, StartUnregisteredButStillLiveWorker) {
   // Delete the registration.
   base::Optional<blink::ServiceWorkerStatusCode> status;
   base::RunLoop run_loop;
-  helper_->context()->storage()->DeleteRegistration(
+  helper_->context()->registry()->DeleteRegistration(
       registration_, registration_->scope().GetOrigin(),
       ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
   run_loop.Run();

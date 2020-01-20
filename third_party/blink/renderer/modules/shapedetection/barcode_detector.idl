@@ -9,7 +9,7 @@
     SecureContext,
     RuntimeEnabled=ShapeDetection
 ] interface BarcodeDetector {
-    [CallWith=ExecutionContext, RaisesException, MeasureAs=ShapeDetection_BarcodeDetectorConstructor] constructor(optional BarcodeDetectorOptions barcodeDetectorOptions);
+    [CallWith=ExecutionContext, RaisesException, MeasureAs=ShapeDetection_BarcodeDetectorConstructor] constructor(optional BarcodeDetectorOptions barcodeDetectorOptions = {});
     [CallWith=ScriptState] static Promise<sequence<BarcodeFormat>> getSupportedFormats();
     [CallWith=ScriptState, MeasureAs=ShapeDetectionAPI] Promise<sequence<DetectedBarcode>> detect(ImageBitmapSource image);
 };

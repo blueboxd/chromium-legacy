@@ -67,9 +67,9 @@ enum RTCPeerConnectionState {
     Exposed=Window
 ] interface RTCPeerConnection : EventTarget {
     // TODO(guidou): There should only be one constructor argument.
-    [CallWith=ExecutionContext, RaisesException] constructor(optional RTCConfiguration configuration, optional Dictionary mediaConstraints);
-    [CallWith=ScriptState, RaisesException] Promise<RTCSessionDescription> createOffer(optional RTCOfferOptions options);
-    [CallWith=ScriptState, RaisesException] Promise<RTCSessionDescription> createAnswer(optional RTCAnswerOptions options);
+    [CallWith=ExecutionContext, RaisesException] constructor(optional RTCConfiguration configuration = {}, optional Dictionary mediaConstraints = {});
+    [CallWith=ScriptState, RaisesException] Promise<RTCSessionDescription> createOffer(optional RTCOfferOptions options = {});
+    [CallWith=ScriptState, RaisesException] Promise<RTCSessionDescription> createAnswer(optional RTCAnswerOptions options = {});
     [CallWith=ScriptState, RaisesException] Promise<void> setLocalDescription(optional RTCSessionDescriptionInit description = {});
     readonly attribute RTCSessionDescription? localDescription;
     readonly attribute RTCSessionDescription? currentLocalDescription;
@@ -147,8 +147,8 @@ enum RTCPeerConnectionState {
     [Measure] sequence<RTCRtpReceiver> getReceivers();
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-addtransceiver
     [Measure, RaisesException] RTCRtpTransceiver addTransceiver(
-        (MediaStreamTrack or DOMString) track_or_kind,
-        optional RTCRtpTransceiverInit init);
+        (MediaStreamTrack or DOMString) trackOrKind,
+        optional RTCRtpTransceiverInit init = {});
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-addtrack
     [Measure, RaisesException] RTCRtpSender addTrack(MediaStreamTrack track, MediaStream... streams);
     // https://w3c.github.io/webrtc-pc/#dom-rtcpeerconnection-removetrack
@@ -158,7 +158,7 @@ enum RTCPeerConnectionState {
 
     // https://w3c.github.io/webrtc-pc/#peer-to-peer-data-api
     [RuntimeEnabled=RTCSctpTransport] readonly attribute RTCSctpTransport? sctp;
-    [CallWith=ScriptState, RaisesException] RTCDataChannel createDataChannel(USVString label, optional RTCDataChannelInit dataChannelDict);
+    [CallWith=ScriptState, RaisesException] RTCDataChannel createDataChannel(USVString label, optional RTCDataChannelInit dataChannelDict = {});
     attribute EventHandler ondatachannel;
 
     // Certificate management

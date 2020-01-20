@@ -30,6 +30,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/url_constants.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/resources/grit/webui_resources.h"
 

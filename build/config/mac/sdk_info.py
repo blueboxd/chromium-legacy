@@ -12,6 +12,11 @@ import plistlib
 import subprocess
 import sys
 
+# src/build/xcode_links
+XCODE_LINK_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.realpath(__file__)))), "xcode_links")
+
 # This script prints information about the build system, the operating
 # system and the iOS or Mac SDK (depending on the platform "iphonesimulator",
 # "iphoneos" or "macosx" generally).
@@ -83,6 +88,20 @@ def FillSDKPathAndVersion(settings, platform, xcode_version):
     settings['sdk_build'] = settings['sdk_version']
 
 
+def CreateXcodeSymlinkUnderChromiumSource(src):
+  """Create symlink to Xcode directory under Chromium source."""
+
+  if not os.path.isdir(XCODE_LINK_DIR):
+    os.makedirs(XCODE_LINK_DIR)
+
+  dst = os.path.join(XCODE_LINK_DIR, os.path.basename(src))
+  # Update the symlink if exist.
+  if os.path.islink(dst):
+    os.unlink(dst)
+  os.symlink(src, dst)
+  return dst
+
+
 if __name__ == '__main__':
   doctest.testmod()
 
@@ -91,6 +110,12 @@ if __name__ == '__main__':
   parser.add_argument("--get_sdk_info",
                     action="store_true", dest="get_sdk_info", default=False,
                     help="Returns SDK info in addition to xcode/machine info.")
+  parser.add_argument("--create_symlink_under_src",
+                      action="store_true", dest="create_symlink_under_src",
+                      default=False,
+                      help="Create symlink of SDK under Chromium source "
+                      "and returns the symlinked paths as SDK info instead "
+                      "of the original location.")
   args, unknownargs = parser.parse_known_args()
   if args.developer_dir:
     os.environ['DEVELOPER_DIR'] = args.developer_dir
@@ -109,6 +134,8 @@ if __name__ == '__main__':
 
   for key in sorted(settings):
     value = settings[key]
+    if args.create_symlink_under_src and '_path' in key:
+      value = CreateXcodeSymlinkUnderChromiumSource(value)
     if isinstance(value, str):
       value = '"%s"' % value
     print('%s=%s' % (key, value))

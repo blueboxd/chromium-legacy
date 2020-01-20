@@ -12,6 +12,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "media/base/media_switches.h"
+#include "ui/base/webui/web_ui_util.h"
 
 namespace settings {
 namespace {

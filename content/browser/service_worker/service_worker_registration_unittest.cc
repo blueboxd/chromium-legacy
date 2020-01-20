@@ -418,7 +418,7 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
     base::Optional<blink::ServiceWorkerStatusCode> status;
     base::RunLoop run_loop;
-    context()->storage()->StoreRegistration(
+    context()->registry()->StoreRegistration(
         registration_.get(), version_1.get(),
         ReceiveServiceWorkerStatus(&status, run_loop.QuitClosure()));
     run_loop.Run();
@@ -922,7 +922,7 @@ class ServiceWorkerRegistrationObjectHostTest
     bool called = false;
     blink::ServiceWorkerStatusCode status =
         blink::ServiceWorkerStatusCode::kErrorFailed;
-    storage()->StoreRegistration(
+    registry()->StoreRegistration(
         registration.get(), version.get(),
         base::BindOnce(&SaveStatusCallback, &called, &status));
     base::RunLoop().RunUntilIdle();

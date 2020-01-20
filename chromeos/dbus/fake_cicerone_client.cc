@@ -301,6 +301,16 @@ void FakeCiceroneClient::ApplyAnsiblePlaybook(
       base::BindOnce(std::move(callback), apply_ansible_playbook_response_));
 }
 
+void FakeCiceroneClient::ConfigureForArcSideload(
+    const vm_tools::cicerone::ConfigureForArcSideloadRequest& request,
+    DBusMethodCallback<vm_tools::cicerone::ConfigureForArcSideloadResponse>
+        callback) {
+  configure_for_arc_sideload_called_ = true;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), enable_arc_sideload_response_));
+}
+
 void FakeCiceroneClient::UpgradeContainer(
     const vm_tools::cicerone::UpgradeContainerRequest& request,
     DBusMethodCallback<vm_tools::cicerone::UpgradeContainerResponse> callback) {

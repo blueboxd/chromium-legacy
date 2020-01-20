@@ -106,6 +106,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       const vm_tools::cicerone::ApplyAnsiblePlaybookRequest& request,
       DBusMethodCallback<vm_tools::cicerone::ApplyAnsiblePlaybookResponse>
           callback) override;
+  void ConfigureForArcSideload(
+      const vm_tools::cicerone::ConfigureForArcSideloadRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::ConfigureForArcSideloadResponse>
+          callback) override;
   void UpgradeContainer(
       const vm_tools::cicerone::UpgradeContainerRequest& request,
       DBusMethodCallback<vm_tools::cicerone::UpgradeContainerResponse> callback)
@@ -257,6 +261,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
           apply_ansible_playbook_response) {
     apply_ansible_playbook_response_ = apply_ansible_playbook_response;
   }
+  void set_enable_arc_sideload_response(
+      const vm_tools::cicerone::ConfigureForArcSideloadResponse& response) {
+    enable_arc_sideload_response_ = response;
+  }
   void set_upgrade_container_response(
       vm_tools::cicerone::UpgradeContainerResponse upgrade_container_response) {
     upgrade_container_response_ = std::move(upgrade_container_response);
@@ -266,6 +274,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
           cancel_upgrade_container_response) {
     cancel_upgrade_container_response_ =
         std::move(cancel_upgrade_container_response);
+  }
+
+  // Returns true if the method has been invoked at least once, false otherwise.
+  bool configure_for_arc_sideload_called() {
+    return configure_for_arc_sideload_called_;
   }
 
   // Additional functions to allow tests to trigger Signals.
@@ -315,6 +328,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   std::string last_container_username_;
   bool send_container_started_signal_ = true;
 
+  bool configure_for_arc_sideload_called_ = false;
+
   vm_tools::cicerone::LxdContainerCreatedSignal_Status
       lxd_container_created_signal_status_ =
           vm_tools::cicerone::LxdContainerCreatedSignal::CREATED;
@@ -352,6 +367,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
       cancel_import_lxd_container_response_;
   vm_tools::cicerone::ApplyAnsiblePlaybookResponse
       apply_ansible_playbook_response_;
+  vm_tools::cicerone::ConfigureForArcSideloadResponse
+      enable_arc_sideload_response_;
   vm_tools::cicerone::UpgradeContainerResponse upgrade_container_response_;
   vm_tools::cicerone::CancelUpgradeContainerResponse
       cancel_upgrade_container_response_;

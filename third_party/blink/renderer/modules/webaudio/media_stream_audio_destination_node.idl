@@ -23,10 +23,10 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#mediastreamaudiodestinationnode
+// https://webaudio.github.io/web-audio-api/#mediastreamaudiodestinationnode
 [
     Exposed=Window
 ] interface MediaStreamAudioDestinationNode : AudioNode {
-    [RaisesException, Measure] constructor(AudioContext context, optional AudioNodeOptions options);
+    [RaisesException, Measure] constructor(AudioContext context, optional AudioNodeOptions options = {});
     readonly attribute MediaStream stream;
 };

@@ -146,7 +146,7 @@ static_assert(std::is_base_of<IDLBase, IDLNullable<IDLDouble>>::value,
 static_assert(std::is_same<IDLNullable<IDLDouble>::ImplType,
                            base::Optional<double>>::value,
               "double? corresponds to base::Optional<double>");
-static_assert(std::is_same<IDLNullable<Element>::ImplType, Element>::value,
+static_assert(std::is_same<IDLNullable<Element>::ImplType, Element*>::value,
               "Element? doesn't require a base::Optional<> wrapper");
 static_assert(std::is_same<IDLNullable<IDLString>::ImplType, String>::value,
               "DOMString? doesn't require a base::Optional<> wrapper");

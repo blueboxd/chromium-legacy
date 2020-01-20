@@ -10,7 +10,7 @@
 
 typedef object SerializedScriptValue;
 
-typedef object? Dictionary;
+dictionary Dictionary {};
 
 typedef EventHandlerNonNull? EventHandler;
 

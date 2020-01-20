@@ -103,62 +103,6 @@ def enclose_with_namespace(code_node, namespace):
     ])
 
 
-def traverse_idl_types(idl_definition, callback):
-    """
-    Traverses in the given |idl_definition| to find all the web_idl.IdlType used
-    in the IDL definition.  Invokes |callback| with each web_idl.IdlType.
-    """
-    assert callable(callback)
-
-    def get(obj, attr):
-        try:
-            return getattr(obj, attr)
-        except:
-            return ()
-
-    xs = (get(idl_definition, "attributes") + get(idl_definition, "constants")
-          + get(idl_definition, "own_members") + (idl_definition, ))
-    for x in xs:
-        idl_type = get(x, "idl_type")
-        if idl_type:
-            callback(idl_type)
-
-    xs = (get(idl_definition, "constructors") + get(idl_definition,
-                                                    "operations"))
-    for x in xs:
-        for argument in x.arguments:
-            callback(argument.idl_type)
-        if x.return_type is not None:
-            callback(x.return_type)
-
-    xs = get(idl_definition, "flattened_member_types")
-    for x in xs:
-        callback(x)
-
-
-def collect_include_headers(idl_definition):
-    """
-    Returns a list of include headers that are required by generated bindings of
-    |idl_definition|.
-    """
-    type_def_objs = set()
-
-    def collect_type_def_obj(idl_type):
-        type_def_obj = idl_type.unwrap().type_definition_object
-        if type_def_obj is not None:
-            type_def_objs.add(type_def_obj)
-
-    traverse_idl_types(idl_definition, collect_type_def_obj)
-
-    header_paths = set(idl_definition.code_generator_info.blink_headers or [])
-    for type_def_obj in type_def_objs:
-        if isinstance(type_def_obj, web_idl.Enumeration):
-            continue
-        header_paths.add(PathManager(type_def_obj).api_path(ext="h"))
-
-    return header_paths
-
-
 def collect_include_headers_of_idl_types(idl_types):
     """
     Returns a set of header paths that are required by |idl_types|.
@@ -197,8 +141,8 @@ def collect_include_headers_of_idl_types(idl_types):
             header_paths.add("third_party/blink/renderer/"
                              "bindings/core/v8/script_promise.h")
         elif idl_type.is_union:
-            type_def_obj = idl_type.union_definition_object
-            header_paths.add(PathManager(type_def_obj).api_path(ext="h"))
+            union_def_obj = idl_type.union_definition_object
+            header_paths.add(PathManager(union_def_obj).api_path(ext="h"))
         elif idl_type.is_nullable:
             if not blink_type_info(idl_type.inner_type).has_null_value:
                 header_paths.add("base/optional.h")

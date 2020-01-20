@@ -184,11 +184,8 @@ V4L2VP9Accelerator::V4L2VP9Accelerator(
     : surface_handler_(surface_handler), device_(device) {
   DCHECK(surface_handler_);
 
-  struct v4l2_queryctrl query_ctrl;
-  memset(&query_ctrl, 0, sizeof(query_ctrl));
-  query_ctrl.id = V4L2_CID_MPEG_VIDEO_VP9_ENTROPY;
   device_needs_frame_context_ =
-      (device_->Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) == 0);
+      device_->IsCtrlExposed(V4L2_CID_MPEG_VIDEO_VP9_ENTROPY);
 
   DVLOG_IF(1, device_needs_frame_context_)
       << "Device requires frame context parsing";

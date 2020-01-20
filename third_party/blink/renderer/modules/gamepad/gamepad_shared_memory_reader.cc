@@ -10,7 +10,6 @@
 #include "device/gamepad/public/mojom/gamepad_hardware_buffer.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad_listener.h"
 

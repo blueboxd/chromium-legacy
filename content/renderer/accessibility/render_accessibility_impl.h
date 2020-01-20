@@ -125,19 +125,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl
                                    ax::mojom::EventFrom event_from);
   void MarkWebAXObjectDirty(const blink::WebAXObject& obj, bool subtree);
 
-  // Called when a new find in page result is highlighted.
-  void HandleAccessibilityFindInPageResult(
-      int identifier,
-      int match_index,
-      const blink::WebAXObject& start_object,
-      int start_offset,
-      const blink::WebAXObject& end_object,
-      int end_offset);
-
-  // Called when a find in page result is terminated and all results are
-  // cleared.
-  void HandleAccessibilityFindInPageTermination();
-
   void HandleAXEvent(
       const blink::WebAXObject& obj,
       ax::mojom::Event event,

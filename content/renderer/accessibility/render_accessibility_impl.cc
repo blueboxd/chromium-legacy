@@ -332,27 +332,6 @@ void RenderAccessibilityImpl::MarkWebAXObjectDirty(const WebAXObject& obj,
   ScheduleSendAccessibilityEventsIfNeeded();
 }
 
-void RenderAccessibilityImpl::HandleAccessibilityFindInPageResult(
-    int identifier,
-    int match_index,
-    const WebAXObject& start_object,
-    int start_offset,
-    const WebAXObject& end_object,
-    int end_offset) {
-  AccessibilityHostMsg_FindInPageResultParams params;
-  params.request_id = identifier;
-  params.match_index = match_index;
-  params.start_id = start_object.AxID();
-  params.start_offset = start_offset;
-  params.end_id = end_object.AxID();
-  params.end_offset = end_offset;
-  Send(new AccessibilityHostMsg_FindInPageResult(routing_id(), params));
-}
-
-void RenderAccessibilityImpl::HandleAccessibilityFindInPageTermination() {
-  Send(new AccessibilityHostMsg_FindInPageTermination(routing_id()));
-}
-
 void RenderAccessibilityImpl::HandleAXEvent(const WebAXObject& obj,
                                             ax::mojom::Event event,
                                             ax::mojom::EventFrom event_from,

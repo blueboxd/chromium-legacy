@@ -8,7 +8,7 @@
 [
     RuntimeEnabled=GamepadButtonAxisEvents
 ] interface GamepadAxisEvent : GamepadEvent {
-    constructor(DOMString type, optional GamepadAxisEventInit eventInitDict);
+    constructor(DOMString type, optional GamepadAxisEventInit eventInitDict = {});
     [ImplementedAs=getAxis] readonly attribute unsigned long axis;
     [ImplementedAs=getValue] readonly attribute double value;
 };

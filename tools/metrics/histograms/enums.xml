@@ -32708,6 +32708,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="79" label="NEAR_OOM_INFOBAR_ANDROID"/>
   <int value="80" label="INSTALLABLE_AMBIENT_BADGE_INFOBAR_DELEGATE"/>
   <int value="81" label="PAGE_LOAD_CAPPING_INFOBAR_DELEGATE"/>
+  <int value="82" label="DOWNLOAD_PROGRESS_INFOBAR_ANDROID"/>
   <int value="83" label="AR_CORE_UPGRADE_ANDROID"/>
   <int value="84" label="BLOATED_RENDERER_INFOBAR_DELEGATE"/>
   <int value="85" label="SUPERVISED_USERS_DEPRECATED_INFOBAR_DELEGATE"/>

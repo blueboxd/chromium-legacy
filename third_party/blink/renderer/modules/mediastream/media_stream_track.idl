@@ -30,6 +30,7 @@ enum MediaStreamTrackState {
     "ended"
 };
 
+// https://w3c.github.io/mediacapture-main/#media-stream-track-interface-definition
 [
     Exposed=Window,
     ActiveScriptWrappable
@@ -50,5 +51,5 @@ enum MediaStreamTrackState {
     MediaTrackCapabilities getCapabilities();
     MediaTrackConstraints getConstraints();
     MediaTrackSettings getSettings();
-    [CallWith=ScriptState] Promise<void> applyConstraints(optional MediaTrackConstraints constraints);
+    [CallWith=ScriptState] Promise<void> applyConstraints(optional MediaTrackConstraints constraints = {});
 };

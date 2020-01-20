@@ -80,8 +80,16 @@ class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
         for idl_type in flattened_members:
             idl_type.apply_to_all_composing_elements(collect_components)
 
-        type_names = sorted(
-            [idl_type.type_name for idl_type in flattened_members])
+        # TODO(peria, yukishiino): Produce unique union names.  Trying to
+        # produce the names compatible to the old bindings generator for the
+        # time being.
+        #
+        # type_names = sorted(
+        #     [idl_type.type_name for idl_type in flattened_members])
+        type_names = [
+            idl_type.type_name for idl_type in union_types[0].
+            flattened_member_types_in_original_order
+        ]
         if does_include_nullable_type:
             type_names.append('Null')
         identifier = Identifier('Or'.join(type_names))

@@ -96,7 +96,7 @@ callback ScrollStateCallback = void (ScrollState scrollState);
 
     // Pointer Lock
     // https://w3c.github.io/pointerlock/#extensions-to-the-element-interface
-    [MeasureAs=ElementRequestPointerLock] void requestPointerLock(optional PointerLockOptions options);
+    [MeasureAs=ElementRequestPointerLock] void requestPointerLock(optional PointerLockOptions options = {});
 
     // CSSOM View Module
     // https://drafts.csswg.org/cssom-view/#extension-to-the-element-interface
@@ -105,12 +105,12 @@ callback ScrollStateCallback = void (ScrollState scrollState);
 
     // TODO(sunyunjia): Add default value for scrollIntoView() once
     // crbug.com/734599 is fixed.
-    void scrollIntoView(optional (ScrollIntoViewOptions or boolean) arg);
-    [ImplementedAs=scrollTo] void scroll(optional ScrollToOptions options);
+    void scrollIntoView(optional (ScrollIntoViewOptions or boolean) arg = {});
+    [ImplementedAs=scrollTo] void scroll(optional ScrollToOptions options = {});
     [ImplementedAs=scrollTo] void scroll(unrestricted double x, unrestricted double y);
-    void scrollTo(optional ScrollToOptions options);
+    void scrollTo(optional ScrollToOptions options = {});
     void scrollTo(unrestricted double x, unrestricted double y);
-    void scrollBy(optional ScrollToOptions options);
+    void scrollBy(optional ScrollToOptions options = {});
     void scrollBy(unrestricted double x, unrestricted double y);
     [Affects=Nothing] attribute unrestricted double scrollTop;
     [Affects=Nothing] attribute unrestricted double scrollLeft;

@@ -696,18 +696,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // dirty.
   virtual void MarkWebAXObjectDirty(const WebAXObject&, bool subtree) {}
 
-  // Provides accessibility information about a find in page result.
-  virtual void HandleAccessibilityFindInPageResult(int identifier,
-                                                   int match_index,
-                                                   const WebNode& start_node,
-                                                   int start_offset,
-                                                   const WebNode& end_node,
-                                                   int end_offset) {}
-
-  // Provides accessibility information about the termination of a find
-  // in page operation.
-  virtual void HandleAccessibilityFindInPageTermination() {}
-
   // Audio Output Devices API --------------------------------------------
 
   // Checks that the given audio sink exists and is authorized. The result is

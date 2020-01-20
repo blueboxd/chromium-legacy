@@ -424,7 +424,7 @@ void V4L2SliceVideoDecodeAccelerator::DestroyTask() {
   while (!decoder_input_queue_.empty())
     decoder_input_queue_.pop_front();
 
-  // Stop streaming and the device_poll_thread_.
+  // Stop streaming and the V4L2 device poller.
   StopDevicePoll();
 
   DestroyInputBuffers();

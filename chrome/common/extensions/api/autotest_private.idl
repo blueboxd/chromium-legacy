@@ -397,6 +397,7 @@ namespace autotestPrivate {
     boolean hasFocus;
     boolean onActiveDesk;
     boolean hasCapture;
+    boolean canResize;
 
     // Window frame info
     FrameMode frameMode;

@@ -653,7 +653,7 @@ void ServiceWorkerRegisterJob::OnInstallFinished(
       has_fetch_handler
           ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS
           : ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST);
-  context_->storage()->StoreRegistration(
+  context_->registry()->StoreRegistration(
       registration(), new_version(),
       base::BindOnce(&ServiceWorkerRegisterJob::OnStoreRegistrationComplete,
                      weak_factory_.GetWeakPtr()));
@@ -746,7 +746,7 @@ void ServiceWorkerRegisterJob::CompleteInternal(
       if (!registration()->newest_installed_version()) {
         registration()->NotifyRegistrationFailed();
         if (!registration()->is_deleted()) {
-          context_->storage()->DeleteRegistration(
+          context_->registry()->DeleteRegistration(
               registration(), registration()->scope().GetOrigin(),
               base::DoNothing());
           context_->registry()->NotifyDoneUninstallingRegistration(

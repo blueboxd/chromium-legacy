@@ -12,7 +12,7 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredire
 ] interface Response {
     // TODO(yhirano): We use "any" for body because the IDL processor doesn't
     // recognize ReadableStream implemented with V8 extras. Fix it.
-    [CallWith=ScriptState, RaisesException] constructor(optional any body, optional ResponseInit init);
+    [CallWith=ScriptState, RaisesException] constructor(optional any body, optional ResponseInit init = {});
     [CallWith=ScriptState, NewObject] static Response error();
     [CallWith=ScriptState, NewObject, RaisesException] static Response redirect(USVString url, optional unsigned short status = 302);
     readonly attribute ResponseType type;

@@ -289,7 +289,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // using VIDIOC_DQEVENT, but this should never happen for the slice API.
   void ServiceDeviceTask(bool event);
 
-  // Attempt to start/stop device_poll_thread_.
+  // Attempt to start/stop the V4L2 device poller.
   bool StartDevicePoll();
   bool StopDevicePoll();
   void OnPollError();

@@ -23,7 +23,7 @@
 [
     Exposed=(Window,Worker,AudioWorklet)
 ] interface Event {
-    constructor(DOMString type, optional EventInit eventInitDict);
+    constructor(DOMString type, optional EventInit eventInitDict = {});
     readonly attribute DOMString type;
     readonly attribute EventTarget? target;
     readonly attribute EventTarget? currentTarget;

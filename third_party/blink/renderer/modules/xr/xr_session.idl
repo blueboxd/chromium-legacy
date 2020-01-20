@@ -41,7 +41,7 @@ enum XRVisibilityState {
   attribute EventHandler onselectend;
   attribute EventHandler onvisibilitychange;
 
-  [RaisesException] void updateRenderState(optional XRRenderStateInit init);
+  [RaisesException] void updateRenderState(optional XRRenderStateInit init = {});
 
   [CallWith=ScriptState, RaisesException] Promise<XRReferenceSpace> requestReferenceSpace(XRReferenceSpaceType type);
 
@@ -52,7 +52,7 @@ enum XRVisibilityState {
 
   // https://github.com/immersive-web/real-world-geometry/blob/master/plane-detection-explainer.md
   [RuntimeEnabled=WebXRIncubations] readonly attribute XRWorldTrackingState worldTrackingState;
-  [RuntimeEnabled=WebXRIncubations, RaisesException] void updateWorldTrackingState(optional XRWorldTrackingStateInit state);
+  [RuntimeEnabled=WebXRIncubations, RaisesException] void updateWorldTrackingState(optional XRWorldTrackingStateInit state = {});
 
   [RuntimeEnabled=WebXRIncubations] readonly attribute XRAnchorSet trackedAnchors;
   [RuntimeEnabled=WebXRIncubations, CallWith=ScriptState, RaisesException] Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose, XRSpace space);

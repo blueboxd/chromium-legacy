@@ -304,7 +304,7 @@ void ServiceWorkerRegistration::ClearWhenReady() {
     // already cleared.
     return;
   }
-  context_->storage()->DeleteRegistration(
+  context_->registry()->DeleteRegistration(
       this, scope().GetOrigin(),
       AdaptCallbackForRepeating(
           base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, this)));
@@ -335,7 +335,7 @@ void ServiceWorkerRegistration::AbortPendingClear(StatusCallback callback) {
       waiting_version() ? waiting_version() : active_version();
   DCHECK(most_recent_version.get());
   context_->registry()->NotifyInstallingRegistration(this);
-  context_->storage()->StoreRegistration(
+  context_->registry()->StoreRegistration(
       this, most_recent_version.get(),
       base::BindOnce(&ServiceWorkerRegistration::OnRestoreFinished, this,
                      std::move(callback), most_recent_version));
@@ -543,7 +543,7 @@ void ServiceWorkerRegistration::ForceDelete() {
 
   // Delete the registration and its state from storage.
   if (status() == Status::kIntact) {
-    context_->storage()->DeleteRegistration(
+    context_->registry()->DeleteRegistration(
         this, scope().GetOrigin(),
         base::BindOnce(&ServiceWorkerRegistration::OnDeleteFinished, protect));
   }

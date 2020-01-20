@@ -29,6 +29,7 @@
 #include "chromeos/dbus/fake_anomaly_detector_client.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/disks/mock_disk_mount_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -157,7 +158,8 @@ class CrostiniManagerTest : public testing::Test {
   ~CrostiniManagerTest() override { chromeos::DBusThreadManager::Shutdown(); }
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures({features::kCrostini}, {});
+    scoped_feature_list_.InitWithFeatures(
+        {features::kCrostini, features::kCrostiniArcSideload}, {});
     run_loop_ = std::make_unique<base::RunLoop>();
     profile_ = std::make_unique<TestingProfile>();
     crostini_manager_ = CrostiniManager::GetForProfile(profile_.get());
@@ -1255,6 +1257,44 @@ TEST_F(CrostiniManagerRestartTest, VmStoppedDuringRestart) {
   crostini_manager()->OnVmStopped(vm_stopped_signal);
   EXPECT_FALSE(crostini_manager()->IsRestartPending(restart_id_));
   EXPECT_EQ(1, restart_crostini_callback_count_);
+}
+
+TEST_F(CrostiniManagerRestartTest, RestartTriggersArcSideloadIfEnabled) {
+  chromeos::SessionManagerClient::InitializeFake();
+  chromeos::FakeSessionManagerClient::Get()->set_adb_sideload_enabled(true);
+
+  vm_tools::cicerone::ConfigureForArcSideloadResponse fake_response;
+  fake_response.set_status(
+      vm_tools::cicerone::ConfigureForArcSideloadResponse::SUCCEEDED);
+  fake_cicerone_client_->set_enable_arc_sideload_response(fake_response);
+
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(fake_cicerone_client_->configure_for_arc_sideload_called());
+}
+
+TEST_F(CrostiniManagerRestartTest, RestartDoesNotTriggerArcSideloadIfDisabled) {
+  chromeos::SessionManagerClient::InitializeFake();
+  chromeos::FakeSessionManagerClient::Get()->set_adb_sideload_enabled(false);
+
+  vm_tools::cicerone::ConfigureForArcSideloadResponse fake_response;
+  fake_response.set_status(
+      vm_tools::cicerone::ConfigureForArcSideloadResponse::SUCCEEDED);
+  fake_cicerone_client_->set_enable_arc_sideload_response(fake_response);
+
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(fake_cicerone_client_->configure_for_arc_sideload_called());
 }
 
 class CrostiniManagerEnterpriseReportingTest

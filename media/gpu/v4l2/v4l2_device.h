@@ -65,6 +65,13 @@ class V4L2BuffersList;
 class V4L2DecodeSurface;
 class V4L2RequestRef;
 
+// Wrapper for the 'v4l2_ext_control' structure.
+struct V4L2ExtCtrl {
+  V4L2ExtCtrl(uint32_t id);
+  V4L2ExtCtrl(uint32_t id, int32_t val);
+  struct v4l2_ext_control ctrl;
+};
+
 // A unique reference to a buffer for clients to prepare and submit.
 //
 // Clients can prepare a buffer for queuing using the methods of this class, and
@@ -692,6 +699,9 @@ class MEDIA_GPU_EXPORT V4L2Device
 
   // Check whether the V4L2 control with specified |ctrl_id| is supported.
   bool IsCtrlExposed(uint32_t ctrl_id);
+  // Set the specified list of |ctrls| for the specified |ctrl_class|, returns
+  // whether the operation succeeded.
+  bool SetExtCtrls(uint32_t ctrl_class, std::vector<V4L2ExtCtrl> ctrls);
 
  protected:
   friend class base::RefCountedThreadSafe<V4L2Device>;

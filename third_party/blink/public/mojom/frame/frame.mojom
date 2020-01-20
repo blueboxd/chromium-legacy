@@ -22,6 +22,26 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
+struct FindInPageResultAXParams {
+  // The find in page request id.
+  int32 request_id;
+
+  // The index of the result match.
+  int32 match_index;
+
+  // The id of the accessibility object for the start of the match range.
+  int32 start_id;
+
+  // The character offset into the text of the start object.
+  int32 start_offset;
+
+  // The id of the accessibility object for the end of the match range.
+  int32 end_id;
+
+  // The character offset into the text of the end object.
+  int32 end_offset;
+};
+
 // Implemented in Browser, this interface defines frame-specific methods that
 // will be invoked from the render process (e.g. content::RenderFrameHostImpl).
 //
@@ -31,7 +51,6 @@ import "url/mojom/url.mojom";
 // Onion Soup project advances, which can potentially lead to the removal of
 // content/common/frame.mojom if enough code is moved to Blink.
 interface LocalFrameHost {
-
   // Request to the browser that the frame wishes to enter fullscreen mode.
   EnterFullscreen(FullscreenOptions options);
 
@@ -148,6 +167,13 @@ interface LocalFrameHost {
   // Asks the frame host to notify the owner element in parent process that it
   // should render fallback content.
   RenderFallbackContentInParentProcess();
+
+  // Provides accessibility information about a find in page result.
+  HandleAccessibilityFindInPageResult(FindInPageResultAXParams params);
+
+  // Provides accessibility information about the termination of a find
+  // in page operation.
+  HandleAccessibilityFindInPageTermination();
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

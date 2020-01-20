@@ -162,6 +162,10 @@ class AXTreeSourceArcTest : public testing::Test,
     tree_source_->NotifyAccessibilityEvent(event_data);
   }
 
+  void CallUpdateAccessibilityFocusLocation(int32_t id) {
+    tree_source_->UpdateAccessibilityFocusLocation(id);
+  }
+
   void CallGetChildren(
       AXNodeInfoData* node,
       std::vector<AccessibilityInfoDataWrapper*>* out_children) const {
@@ -248,6 +252,7 @@ TEST_F(AXTreeSourceArcTest, ReorderChildrenByLayout) {
   SetProperty(button1, AXBooleanProperty::VISIBLE_TO_USER, true);
   SetProperty(button1, AXBooleanProperty::FOCUSABLE, true);
   SetProperty(button1, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(button1, AXStringProperty::CONTENT_DESCRIPTION, "button1");
 
   // Add another child button.
   event->node_data.push_back(AXNodeInfoData::New());
@@ -257,6 +262,7 @@ TEST_F(AXTreeSourceArcTest, ReorderChildrenByLayout) {
   SetProperty(button2, AXBooleanProperty::VISIBLE_TO_USER, true);
   SetProperty(button2, AXBooleanProperty::FOCUSABLE, true);
   SetProperty(button2, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(button2, AXStringProperty::CONTENT_DESCRIPTION, "button2");
 
   // Non-overlapping, bottom to top.
   button1->bounds_in_screen = gfx::Rect(100, 100, 100, 100);
@@ -366,9 +372,9 @@ TEST_F(AXTreeSourceArcTest, ReorderChildrenByLayout) {
       "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
       "modal=true child_ids=1,2\n"
       "    id=1 button FOCUSABLE (100, 100)-(100, 100) restriction=disabled "
-      "class_name=android.widget.Button\n"
+      "class_name=android.widget.Button name=button1\n"
       "    id=2 button FOCUSABLE (100, 100)-(10, 100) restriction=disabled "
-      "class_name=android.widget.Button\n");
+      "class_name=android.widget.Button name=button2\n");
 }
 
 TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
@@ -1076,8 +1082,8 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));
   ExpectTree(
       "id=100 window (0, 0)-(0, 0) child_ids=10\n"
-      "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
-      "modal=true child_ids=1\n"
+      "  id=10 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
+      "restriction=disabled modal=true child_ids=1\n"
       "    id=1 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
       "restriction=disabled child_ids=2\n"
       "      id=2 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
@@ -1100,9 +1106,9 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
       "id=100 window (0, 0)-(0, 0) child_ids=10\n"
       "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
       "modal=true child_ids=1\n"
-      "    id=1 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
-      "restriction=disabled child_ids=2\n"
-      "      id=2 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
+      "    id=1 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
+      "child_ids=2\n"
+      "      id=2 genericContainer INVISIBLE (0, 0)-(0, 0) "
       "restriction=disabled child_ids=3\n"
       "        id=3 genericContainer INVISIBLE (0, 0)-(0, 0) "
       "restriction=disabled name=some text\n");
@@ -1141,6 +1147,7 @@ TEST_F(AXTreeSourceArcTest, SerializeWebView) {
       node2, AXIntListProperty::STANDARD_ACTION_IDS,
       std::vector<int>({static_cast<int>(AXActionType::NEXT_HTML_ELEMENT),
                         static_cast<int>(AXActionType::FOCUS)}));
+  SetProperty(node2, AXStringProperty::CONTENT_DESCRIPTION, "text");
 
   CallNotifyAccessibilityEvent(event.get());
 
@@ -1151,6 +1158,58 @@ TEST_F(AXTreeSourceArcTest, SerializeWebView) {
   // Node inside a WebView is not ignored even if it's not set importance.
   CallSerializeNode(node2, &data);
   ASSERT_FALSE(data->HasState(ax::mojom::State::kIgnored));
+}
+
+TEST_F(AXTreeSourceArcTest, SyncFocus) {
+  auto event = AXEventData::New();
+  event->source_id = 1;
+  event->task_id = 1;
+  event->event_type = AXEventType::VIEW_FOCUSED;
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->emplace_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 10;
+
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* root = event->node_data.back().get();
+  root->id = 10;
+  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({1, 2}));
+
+  // Add child nodes.
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* node1 = event->node_data.back().get();
+  node1->id = 1;
+  SetProperty(node1, AXBooleanProperty::FOCUSABLE, true);
+  SetProperty(node1, AXBooleanProperty::IMPORTANCE, true);
+  node1->bounds_in_screen = gfx::Rect(0, 0, 50, 50);
+
+  event->node_data.emplace_back(AXNodeInfoData::New());
+  AXNodeInfoData* node2 = event->node_data.back().get();
+  node2->id = 2;
+  SetProperty(node2, AXBooleanProperty::FOCUSABLE, true);
+  SetProperty(node2, AXBooleanProperty::IMPORTANCE, true);
+  node2->bounds_in_screen = gfx::Rect(50, 50, 100, 100);
+
+  CallNotifyAccessibilityEvent(event.get());
+
+  // Initially |node1| has a focus.
+  ui::AXTreeData data;
+  EXPECT_TRUE(CallGetTreeData(&data));
+  EXPECT_EQ(node1->id, data.focus_id);
+
+  // Move Chrome accessibility focus to |node2|.
+  CallUpdateAccessibilityFocusLocation(node2->id);
+
+  // When focused node moved, dispatch kLocationChanged event.
+  event->source_id = root->id;
+  event->event_type = AXEventType::WINDOW_CONTENT_CHANGED;
+  node2->bounds_in_screen = gfx::Rect(100, 100, 150, 150);
+  CallNotifyAccessibilityEvent(event.get());
+
+  EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kLocationChanged));
 }
 
 }  // namespace arc

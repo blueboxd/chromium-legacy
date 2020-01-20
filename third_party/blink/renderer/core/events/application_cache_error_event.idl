@@ -11,7 +11,7 @@
 [
     SecureContext=RestrictAppCacheToSecureContexts
 ] interface ApplicationCacheErrorEvent : Event {
-    constructor(DOMString type, optional ApplicationCacheErrorEventInit eventInitDict);
+    constructor(DOMString type, optional ApplicationCacheErrorEventInit eventInitDict = {});
     readonly attribute DOMString reason;
     readonly attribute DOMString url;
     readonly attribute unsigned short status;

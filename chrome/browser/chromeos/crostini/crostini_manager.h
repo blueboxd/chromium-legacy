@@ -784,6 +784,9 @@ class CrostiniManager : public KeyedService,
   void EmitContainerVersionMetric(
       const vm_tools::cicerone::OsRelease& os_release);
 
+  // Configure the container so that it can sideload apps into Arc++.
+  void ConfigureForArcSideload();
+
   Profile* profile_;
   std::string owner_id_;
 

@@ -444,6 +444,29 @@ class CiceroneClientImpl : public CiceroneClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void ConfigureForArcSideload(
+      const vm_tools::cicerone::ConfigureForArcSideloadRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::ConfigureForArcSideloadResponse>
+          callback) override {
+    dbus::MethodCall method_call(
+        vm_tools::cicerone::kVmCiceroneInterface,
+        vm_tools::cicerone::kConfigureForArcSideloadMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode ConfigureForArcSideloadRequest protobuf";
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
+      return;
+    }
+
+    cicerone_proxy_->CallMethod(
+        &method_call, kDefaultTimeout.InMilliseconds(),
+        base::BindOnce(&CiceroneClientImpl::OnDBusProtoResponse<
+                           vm_tools::cicerone::ConfigureForArcSideloadResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void UpgradeContainer(
       const vm_tools::cicerone::UpgradeContainerRequest& request,
       DBusMethodCallback<vm_tools::cicerone::UpgradeContainerResponse> callback)

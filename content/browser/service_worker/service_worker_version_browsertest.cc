@@ -642,7 +642,7 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
         BrowserThread::CurrentlyOn(ServiceWorkerContext::GetCoreThreadId()));
     ServiceWorkerVersion* version =
         wrapper()->context()->GetLiveVersion(version_id);
-    wrapper()->context()->storage()->StoreRegistration(
+    wrapper()->context()->registry()->StoreRegistration(
         registration_.get(), version,
         CreateReceiver(BrowserThread::UI, std::move(done), result));
   }

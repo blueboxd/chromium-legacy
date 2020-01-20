@@ -94,7 +94,7 @@ class BrowserThemePack : public CustomThemeSupplier {
   bool GetTint(int id, color_utils::HSL* hsl) const override;
   bool GetColor(int id, SkColor* color) const override;
   bool GetDisplayProperty(int id, int* result) const override;
-  gfx::Image GetImageNamed(int id) override;
+  gfx::Image GetImageNamed(int id) const override;
   base::RefCountedMemory* GetRawData(int id, ui::ScaleFactor scale_factor)
       const override;
   bool HasCustomImage(int id) const override;
@@ -330,9 +330,9 @@ class BrowserThemePack : public CustomThemeSupplier {
   // needs to be in |image_memory_|.
   RawImages image_memory_;
 
-  // Loaded images. These are loaded from |image_memory_|, from |data_pack_|,
-  // and by BuildFromExtension().
-  ImageCache images_;
+  // Cached loaded images. These are loaded from |image_memory_|, from
+  // |data_pack_|, and by BuildFromExtension().
+  mutable ImageCache images_;
 
   // Cache of images created in BuildFromExtension(). Once the theme pack is
   // created, this cache should only be accessed on the file thread. There

@@ -4,14 +4,13 @@
 
 // https://github.com/samuelgoto/idle-detection
 
-
 [
   SecureContext,
   Exposed=(Window,DedicatedWorker),
   ActiveScriptWrappable,
   RuntimeEnabled=IdleDetection
 ] interface IdleDetector : EventTarget {
-  [CallWith=ScriptState, RaisesException] constructor(optional IdleOptions options);
+  [CallWith=ScriptState, RaisesException] constructor(optional IdleOptions options = {});
   readonly attribute IdleState state;
   attribute EventHandler onchange;
   [CallWith=ScriptState, RaisesException, MeasureAs=IdleDetectionStart] Promise<void> start();

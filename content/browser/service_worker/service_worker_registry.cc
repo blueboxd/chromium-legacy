@@ -6,8 +6,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -15,6 +17,10 @@
 namespace content {
 
 namespace {
+
+void RunSoon(const base::Location& from_here, base::OnceClosure closure) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(from_here, std::move(closure));
+}
 
 void CompleteFindNow(scoped_refptr<ServiceWorkerRegistration> registration,
                      blink::ServiceWorkerStatusCode status,
@@ -117,6 +123,90 @@ ServiceWorkerRegistration* ServiceWorkerRegistry::GetUninstallingRegistration(
   return nullptr;
 }
 
+void ServiceWorkerRegistry::StoreRegistration(
+    ServiceWorkerRegistration* registration,
+    ServiceWorkerVersion* version,
+    StatusCallback callback) {
+  DCHECK(registration);
+  DCHECK(version);
+
+  if (storage()->IsDisabled()) {
+    RunSoon(FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           blink::ServiceWorkerStatusCode::kErrorAbort));
+    return;
+  }
+
+  DCHECK_NE(version->fetch_handler_existence(),
+            ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
+  DCHECK_EQ(registration->status(), ServiceWorkerRegistration::Status::kIntact);
+
+  ServiceWorkerDatabase::RegistrationData data;
+  data.registration_id = registration->id();
+  data.scope = registration->scope();
+  data.script = version->script_url();
+  data.script_type = version->script_type();
+  data.update_via_cache = registration->update_via_cache();
+  data.has_fetch_handler = version->fetch_handler_existence() ==
+                           ServiceWorkerVersion::FetchHandlerExistence::EXISTS;
+  data.version_id = version->version_id();
+  data.last_update_check = registration->last_update_check();
+  data.is_active = (version == registration->active_version());
+  if (version->origin_trial_tokens())
+    data.origin_trial_tokens = *version->origin_trial_tokens();
+  data.navigation_preload_state = registration->navigation_preload_state();
+  data.script_response_time = version->GetInfo().script_response_time;
+  for (const blink::mojom::WebFeature feature : version->used_features())
+    data.used_features.insert(feature);
+  data.cross_origin_embedder_policy = version->cross_origin_embedder_policy();
+
+  ResourceList resources;
+  version->script_cache_map()->GetResources(&resources);
+
+  if (resources.empty()) {
+    RunSoon(FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           blink::ServiceWorkerStatusCode::kErrorFailed));
+    return;
+  }
+
+  uint64_t resources_total_size_bytes = 0;
+  for (const auto& resource : resources) {
+    DCHECK_GE(resource.size_bytes, 0);
+    resources_total_size_bytes += resource.size_bytes;
+  }
+  data.resources_total_size_bytes = resources_total_size_bytes;
+
+  storage()->StoreRegistrationData(
+      data, resources,
+      base::BindOnce(&ServiceWorkerRegistry::DidStoreRegistration,
+                     weak_factory_.GetWeakPtr(), data, std::move(callback)));
+}
+
+void ServiceWorkerRegistry::DeleteRegistration(
+    scoped_refptr<ServiceWorkerRegistration> registration,
+    const GURL& origin,
+    StatusCallback callback) {
+  if (storage()->IsDisabled()) {
+    RunSoon(FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           blink::ServiceWorkerStatusCode::kErrorAbort));
+    return;
+  }
+
+  DCHECK(!registration->is_deleted())
+      << "attempt to delete a registration twice";
+
+  storage()->DeleteRegistration(
+      registration->id(), origin,
+      base::BindOnce(&ServiceWorkerRegistry::DidDeleteRegistration,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+
+  DCHECK(!base::Contains(uninstalling_registrations_, registration->id()));
+  uninstalling_registrations_[registration->id()] = registration;
+  registration->SetStatus(ServiceWorkerRegistration::Status::kUninstalling);
+}
+
 void ServiceWorkerRegistry::NotifyInstallingRegistration(
     ServiceWorkerRegistration* registration) {
   DCHECK(installing_registrations_.find(registration->id()) ==
@@ -196,8 +286,7 @@ ServiceWorkerRegistry::GetOrCreateRegistration(
       options, data.registration_id, context_->AsWeakPtr());
   registration->set_resources_total_size_bytes(data.resources_total_size_bytes);
   registration->set_last_update_check(data.last_update_check);
-  DCHECK(uninstalling_registrations().find(data.registration_id) ==
-         uninstalling_registrations().end());
+  DCHECK(!base::Contains(uninstalling_registrations_, data.registration_id));
 
   scoped_refptr<ServiceWorkerVersion> version =
       context_->GetLiveVersion(data.version_id);
@@ -304,6 +393,35 @@ void ServiceWorkerRegistry::DidFindRegistrationForId(
   }
 
   CompleteFindNow(std::move(registration), status, std::move(callback));
+}
+
+void ServiceWorkerRegistry::DidStoreRegistration(
+    const ServiceWorkerDatabase::RegistrationData& data,
+    StatusCallback callback,
+    blink::ServiceWorkerStatusCode status) {
+  if (status != blink::ServiceWorkerStatusCode::kOk) {
+    std::move(callback).Run(status);
+    return;
+  }
+
+  scoped_refptr<ServiceWorkerRegistration> registration =
+      context_->GetLiveRegistration(data.registration_id);
+  if (registration) {
+    registration->set_resources_total_size_bytes(
+        data.resources_total_size_bytes);
+  }
+  context_->NotifyRegistrationStored(data.registration_id, data.scope);
+
+  std::move(callback).Run(status);
+}
+
+void ServiceWorkerRegistry::DidDeleteRegistration(
+    StatusCallback callback,
+    blink::ServiceWorkerStatusCode status) {
+  // TODO(crbug.com/1039200): Move code from
+  // ServiceWorkerStorage::DidDeleteRegistration() which depends on
+  // ServiceWorkerContextCore.
+  std::move(callback).Run(status);
 }
 
 }  // namespace content

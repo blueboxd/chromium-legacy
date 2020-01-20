@@ -49,6 +49,15 @@ constexpr size_t kMaxNumRequests = 32;
 
 }  // namespace
 
+V4L2ExtCtrl::V4L2ExtCtrl(uint32_t id) {
+  memset(&ctrl, 0, sizeof(ctrl));
+  ctrl.id = id;
+}
+
+V4L2ExtCtrl::V4L2ExtCtrl(uint32_t id, int32_t val) : V4L2ExtCtrl(id) {
+  ctrl.value = val;
+}
+
 // Class used to store the state of a buffer that should persist between
 // reference creations. This includes:
 // * Result of initial VIDIOC_QUERYBUF ioctl,
@@ -1952,6 +1961,20 @@ bool V4L2Device::IsCtrlExposed(uint32_t ctrl_id) {
   query_ctrl.id = ctrl_id;
 
   return Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) == 0;
+}
+
+bool V4L2Device::SetExtCtrls(uint32_t ctrl_class,
+                             std::vector<V4L2ExtCtrl> ctrls) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
+  if (ctrls.empty())
+    return true;
+
+  struct v4l2_ext_controls ext_ctrls {};
+  ext_ctrls.ctrl_class = ctrl_class;
+  ext_ctrls.count = ctrls.size();
+  ext_ctrls.controls = &ctrls[0].ctrl;
+  return Ioctl(VIDIOC_S_EXT_CTRLS, &ext_ctrls) == 0;
 }
 
 class V4L2Request {

@@ -11,7 +11,7 @@
     Exposed=Window,
     RuntimeEnabled=EditContext
 ] interface TextFormatUpdateEvent : Event {
-    constructor(optional TextFormatUpdateEventInit options);
+    constructor(optional TextFormatUpdateEventInit options = {});
     readonly attribute unsigned long formatRangeStart;
     readonly attribute unsigned long formatRangeEnd;
     readonly attribute DOMString underlineColor;

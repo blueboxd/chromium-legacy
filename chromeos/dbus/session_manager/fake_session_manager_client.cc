@@ -678,7 +678,14 @@ void FakeSessionManagerClient::EnableAdbSideload(
     EnableAdbSideloadCallback callback) {}
 
 void FakeSessionManagerClient::QueryAdbSideload(
-    QueryAdbSideloadCallback callback) {}
+    QueryAdbSideloadCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback),
+                     adb_sideload_enabled_ ? AdbSideloadResponseCode::SUCCESS
+                                           : AdbSideloadResponseCode::FAILED,
+                     adb_sideload_enabled_));
+}
 
 void FakeSessionManagerClient::NotifyArcInstanceStopped() {
   for (auto& observer : observers_)

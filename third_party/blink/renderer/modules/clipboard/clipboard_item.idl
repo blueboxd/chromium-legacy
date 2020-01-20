@@ -9,7 +9,7 @@
   RuntimeEnabled=AsyncClipboard
 ] interface ClipboardItem {
   [RaisesException] constructor(record<DOMString, Blob> items,
-              optional ClipboardItemOptions options);
+              optional ClipboardItemOptions options = {});
   readonly attribute FrozenArray<DOMString> types;
 
   [RuntimeEnabled=RawClipboard]

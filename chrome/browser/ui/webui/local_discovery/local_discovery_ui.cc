@@ -20,6 +20,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "printing/buildflags/buildflags.h"
+#include "ui/base/webui/web_ui_util.h"
 
 namespace {
 

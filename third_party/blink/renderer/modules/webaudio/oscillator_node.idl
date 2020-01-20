@@ -23,7 +23,9 @@
  * DAMAGE.
  */
 
-// See https://webaudio.github.io/web-audio-api/#oscillatornode
+// https://webaudio.github.io/web-audio-api/#oscillatornode
+
+// https://webaudio.github.io/web-audio-api/#enumdef-oscillatortype
 enum OscillatorType {
     "sine",
     "square",
@@ -36,7 +38,7 @@ enum OscillatorType {
 [
     Exposed=Window
 ] interface OscillatorNode : AudioScheduledSourceNode {
-    [RaisesException, Measure] constructor(BaseAudioContext context, optional OscillatorOptions options);
+    [RaisesException, Measure] constructor(BaseAudioContext context, optional OscillatorOptions options = {});
 
     [RaisesException=Setter] attribute OscillatorType type;
 

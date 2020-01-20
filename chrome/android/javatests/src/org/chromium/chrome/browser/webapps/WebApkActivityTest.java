@@ -11,7 +11,6 @@ import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,18 +23,14 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
-import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -83,55 +78,6 @@ public final class WebApkActivityTest {
 
         ChromeTabUtils.waitForTabPageLoaded(webApkActivity.getActivityTab(), outOfScopeUrl);
         WebappActivityTestRule.assertToolbarShowState(webApkActivity, true);
-    }
-
-    /**
-     * Test launching a WebAPK. Test that opening a url within scope through window.open() will open
-     * a CCT.
-     */
-    @Test
-    @LargeTest
-    @Feature({"WebApk"})
-    public void testLaunchAndOpenNewWindowInScope() throws Exception {
-        String scopeUrl = getTestServerUrl("scope_a/");
-        String inScopeUrl = getTestServerUrl("scope_a/page_1.html");
-        WebApkActivity webApkActivity =
-                mActivityTestRule.startWebApkActivity(createWebApkInfo(inScopeUrl, scopeUrl));
-
-        WebappActivityTestRule.jsWindowOpen(mActivityTestRule.getActivity(), inScopeUrl);
-
-        CustomTabActivity customTabActivity =
-                ChromeActivityTestRule.waitFor(CustomTabActivity.class);
-        ChromeTabUtils.waitForTabPageLoaded(customTabActivity.getActivityTab(), inScopeUrl);
-        Assert.assertTrue(
-                "Sending to external handlers needs to be enabled for redirect back (e.g. OAuth).",
-                IntentUtils.safeGetBooleanExtra(customTabActivity.getIntent(),
-                        CustomTabIntentDataProvider.EXTRA_SEND_TO_EXTERNAL_DEFAULT_HANDLER, false));
-    }
-
-    /**
-     * Test launching a WebAPK. Test that opening a url off scope through window.open() will open a
-     * CCT, and in scope urls will stay in the CCT.
-     */
-    @Test
-    @LargeTest
-    @Feature({"WebApk"})
-    public void testLaunchAndNavigationInNewWindowOffandInScope() throws Exception {
-        String scopeUrl = getTestServerUrl("scope_a/");
-        String inScopeUrl = getTestServerUrl("scope_a/page_1.html");
-        String offScopeUrl = getTestServerUrl("scope_b/scope_b.html");
-        WebApkActivity webApkActivity =
-                mActivityTestRule.startWebApkActivity(createWebApkInfo(inScopeUrl, scopeUrl));
-
-        WebappActivityTestRule.jsWindowOpen(mActivityTestRule.getActivity(), offScopeUrl);
-        CustomTabActivity customTabActivity =
-                ChromeActivityTestRule.waitFor(CustomTabActivity.class);
-        ChromeTabUtils.waitForTabPageLoaded(customTabActivity.getActivityTab(), offScopeUrl);
-
-        JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                customTabActivity.getActivityTab().getWebContents(),
-                String.format("window.location.href='%s'", inScopeUrl));
-        ChromeTabUtils.waitForTabPageLoaded(customTabActivity.getActivityTab(), inScopeUrl);
     }
 
     /**

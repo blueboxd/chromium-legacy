@@ -30,12 +30,12 @@ ScriptWrappable* NativeValueTraitsInterfaceNativeValue(
     const WrapperTypeInfo* wrapper_type_info,
     v8::Local<v8::Value> value,
     ExceptionState& exception_state) {
-  if (!V8PerIsolateData::From(isolate)->HasInstance(wrapper_type_info, value)) {
-    exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
-        wrapper_type_info->interface_name));
-    return nullptr;
-  }
-  return ToScriptWrappable(value.As<v8::Object>());
+  if (V8PerIsolateData::From(isolate)->HasInstance(wrapper_type_info, value))
+    return ToScriptWrappable(value.As<v8::Object>());
+
+  exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+      wrapper_type_info->interface_name));
+  return nullptr;
 }
 
 ScriptWrappable* NativeValueTraitsInterfaceArgumentValue(
@@ -44,12 +44,45 @@ ScriptWrappable* NativeValueTraitsInterfaceArgumentValue(
     int argument_index,
     v8::Local<v8::Value> value,
     ExceptionState& exception_state) {
-  if (!V8PerIsolateData::From(isolate)->HasInstance(wrapper_type_info, value)) {
-    exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(
-        argument_index, wrapper_type_info->interface_name));
+  if (V8PerIsolateData::From(isolate)->HasInstance(wrapper_type_info, value))
+    return ToScriptWrappable(value.As<v8::Object>());
+
+  exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(
+      argument_index, wrapper_type_info->interface_name));
+  return nullptr;
+}
+
+ScriptWrappable* NativeValueTraitsInterfaceOrNullNativeValue(
+    v8::Isolate* isolate,
+    const WrapperTypeInfo* wrapper_type_info,
+    v8::Local<v8::Value> value,
+    ExceptionState& exception_state) {
+  if (V8PerIsolateData::From(isolate)->HasInstance(wrapper_type_info, value))
+    return ToScriptWrappable(value.As<v8::Object>());
+
+  if (value->IsNullOrUndefined())
     return nullptr;
-  }
-  return ToScriptWrappable(value.As<v8::Object>());
+
+  exception_state.ThrowTypeError(ExceptionMessages::FailedToConvertJSValue(
+      wrapper_type_info->interface_name));
+  return nullptr;
+}
+
+ScriptWrappable* NativeValueTraitsInterfaceOrNullArgumentValue(
+    v8::Isolate* isolate,
+    const WrapperTypeInfo* wrapper_type_info,
+    int argument_index,
+    v8::Local<v8::Value> value,
+    ExceptionState& exception_state) {
+  if (V8PerIsolateData::From(isolate)->HasInstance(wrapper_type_info, value))
+    return ToScriptWrappable(value.As<v8::Object>());
+
+  if (value->IsNullOrUndefined())
+    return nullptr;
+
+  exception_state.ThrowTypeError(ExceptionMessages::ArgumentNotOfType(
+      argument_index, wrapper_type_info->interface_name));
+  return nullptr;
 }
 
 }  // namespace bindings

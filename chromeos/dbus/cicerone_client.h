@@ -262,6 +262,13 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) CiceroneClient : public DBusClient {
       DBusMethodCallback<vm_tools::cicerone::ApplyAnsiblePlaybookResponse>
           callback) = 0;
 
+  // Configure the container to allow sideloading Android apps into Arc.
+  // |callback| is called once configuration finishes.
+  virtual void ConfigureForArcSideload(
+      const vm_tools::cicerone::ConfigureForArcSideloadRequest& request,
+      DBusMethodCallback<vm_tools::cicerone::ConfigureForArcSideloadResponse>
+          callback) = 0;
+
   // Upgrades the container.
   // |callback| is called when the method completes.
   virtual void UpgradeContainer(

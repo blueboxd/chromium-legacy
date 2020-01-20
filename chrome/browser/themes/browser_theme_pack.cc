@@ -953,7 +953,7 @@ bool BrowserThemePack::GetDisplayProperty(int id, int* result) const {
   return false;
 }
 
-gfx::Image BrowserThemePack::GetImageNamed(int idr_id) {
+gfx::Image BrowserThemePack::GetImageNamed(int idr_id) const {
   int prs_id = GetPersistentIDByIDR(idr_id);
   if (prs_id == -1)
     return gfx::Image();

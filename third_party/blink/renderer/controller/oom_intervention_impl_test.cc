@@ -12,7 +12,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/oom_intervention/oom_intervention_types.h"
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"

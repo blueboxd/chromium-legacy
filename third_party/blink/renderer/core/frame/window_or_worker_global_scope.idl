@@ -25,9 +25,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://html.spec.whatwg.org/C/webappapis.html#windoworworkerglobalscope-mixin
-// https://html.spec.whatwg.org/C/timers-and-user-prompts.html#timers
-
 // https://html.spec.whatwg.org/C/#imagebitmapsource
 typedef (HTMLImageElement or
          SVGImageElement or
@@ -38,6 +35,8 @@ typedef (HTMLImageElement or
          ImageBitmap or
          OffscreenCanvas) ImageBitmapSource;
 
+// https://html.spec.whatwg.org/C/#windoworworkerglobalscope-mixin
+// https://html.spec.whatwg.org/C/#timers
 [
     LegacyTreatAsPartialInterface,
     Exposed=(Window,Worker)
@@ -56,7 +55,7 @@ typedef (HTMLImageElement or
 
     // ImageBitmap
     [CallWith=ScriptState, RaisesException] Promise<ImageBitmap> createImageBitmap(
-        ImageBitmapSource imageBitmap, optional ImageBitmapOptions options);
+        ImageBitmapSource imageBitmap, optional ImageBitmapOptions options = {});
     [CallWith=ScriptState, RaisesException] Promise<ImageBitmap> createImageBitmap(
-        ImageBitmapSource imageBitmap, long sx, long sy, long sw, long sh, optional ImageBitmapOptions options);
+        ImageBitmapSource imageBitmap, long sx, long sy, long sw, long sh, optional ImageBitmapOptions options = {});
 };

@@ -122,26 +122,6 @@ IPC_STRUCT_BEGIN(AccessibilityHostMsg_LocationChangeParams)
   IPC_STRUCT_MEMBER(ui::AXRelativeBounds, new_location)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(AccessibilityHostMsg_FindInPageResultParams)
-  // The find in page request id.
-  IPC_STRUCT_MEMBER(int, request_id)
-
-  // The index of the result match.
-  IPC_STRUCT_MEMBER(int, match_index)
-
-  // The id of the accessibility object for the start of the match range.
-  IPC_STRUCT_MEMBER(int, start_id)
-
-  // The character offset into the text of the start object.
-  IPC_STRUCT_MEMBER(int, start_offset)
-
-  // The id of the accessibility object for the end of the match range.
-  IPC_STRUCT_MEMBER(int, end_id)
-
-  // The character offset into the text of the end object.
-  IPC_STRUCT_MEMBER(int, end_offset)
-IPC_STRUCT_END()
-
 // Messages sent from the browser to the renderer.
 
 // Relay a request from assistive technology to perform an action,
@@ -194,15 +174,6 @@ IPC_MESSAGE_ROUTED3(AccessibilityHostMsg_EventBundle,
 IPC_MESSAGE_ROUTED1(
     AccessibilityHostMsg_LocationChanges,
     std::vector<AccessibilityHostMsg_LocationChangeParams>)
-
-// Sent to update the browser of Find In Page results.
-IPC_MESSAGE_ROUTED1(
-    AccessibilityHostMsg_FindInPageResult,
-    AccessibilityHostMsg_FindInPageResultParams)
-
-// Sent when a Find In Page operation is finished and all highlighted results
-// are cleared.
-IPC_MESSAGE_ROUTED0(AccessibilityHostMsg_FindInPageTermination)
 
 // Sent in response to PerformAction with parameter kHitTest.
 IPC_MESSAGE_ROUTED5(AccessibilityHostMsg_ChildFrameHitTestResult,

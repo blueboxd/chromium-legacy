@@ -5,7 +5,6 @@
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
 
 #include <utility>
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/referrer.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"

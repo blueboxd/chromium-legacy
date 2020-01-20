@@ -1144,6 +1144,10 @@ class UnionType(IdlType):
 
     @property
     def flattened_member_types(self):
+        return set(self.flattened_member_types_in_original_order)
+
+    @property
+    def flattened_member_types_in_original_order(self):
         def flatten(idl_type):
             if idl_type.is_union:
                 return functools.reduce(
@@ -1156,7 +1160,7 @@ class UnionType(IdlType):
             else:
                 return [idl_type]
 
-        return set(flatten(self))
+        return flatten(self)
 
     @property
     def union_definition_object(self):

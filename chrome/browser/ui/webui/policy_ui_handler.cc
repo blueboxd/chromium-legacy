@@ -65,6 +65,7 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
+#include "ui/base/webui/web_ui_util.h"
 #include "ui/shell_dialogs/select_file_policy.h"
 
 #if defined(OS_ANDROID)

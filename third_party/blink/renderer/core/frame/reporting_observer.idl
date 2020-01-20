@@ -9,7 +9,7 @@ callback ReportingObserverCallback = void (sequence<Report> reports, ReportingOb
 [
     ActiveScriptWrappable
 ] interface ReportingObserver {
-    [CallWith=ExecutionContext] constructor(ReportingObserverCallback callback, optional ReportingObserverOptions options);
+    [CallWith=ExecutionContext] constructor(ReportingObserverCallback callback, optional ReportingObserverOptions options = {});
     void observe();
     void disconnect();
     ReportList takeRecords();

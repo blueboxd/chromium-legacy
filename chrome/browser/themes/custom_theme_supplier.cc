@@ -44,7 +44,7 @@ bool CustomThemeSupplier::GetDisplayProperty(int id, int* result) const {
   return false;
 }
 
-gfx::Image CustomThemeSupplier::GetImageNamed(int id) {
+gfx::Image CustomThemeSupplier::GetImageNamed(int id) const {
   return gfx::Image();
 }
 

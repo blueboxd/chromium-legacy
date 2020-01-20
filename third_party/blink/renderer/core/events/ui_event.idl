@@ -22,7 +22,7 @@
 [
     Exposed=Window
 ] interface UIEvent : Event {
-    constructor(DOMString type, optional UIEventInit eventInitDict);
+    constructor(DOMString type, optional UIEventInit eventInitDict = {});
     readonly attribute Window? view;
     readonly attribute long detail;
     readonly attribute InputDeviceCapabilities? sourceCapabilities;

@@ -9,6 +9,12 @@
 
 namespace arc {
 
+using AXActionType = mojom::AccessibilityActionType;
+using AXBooleanProperty = mojom::AccessibilityBooleanProperty;
+using AXIntListProperty = mojom::AccessibilityIntListProperty;
+using AXNodeInfoData = mojom::AccessibilityNodeInfoData;
+using AXStringProperty = mojom::AccessibilityStringProperty;
+
 ax::mojom::Event ToAXEvent(
     mojom::AccessibilityEventType arc_event_type,
     mojom::AccessibilityNodeInfoData* focused_node_info_data) {
@@ -109,6 +115,71 @@ base::Optional<mojom::AccessibilityActionType> ConvertToAndroidAction(
     default:
       return base::nullopt;
   }
+}
+
+bool IsImportantInAndroid(AXNodeInfoData* node) {
+  if (!node)
+    return false;
+
+  if (GetBooleanProperty(node, AXBooleanProperty::IMPORTANCE))
+    return true;
+
+  // WebView and its child nodes do not have accessibility importance set.
+  // This logic can be removed once the change in crrev/c/1890402 landed
+  // in all ARC containers.
+  std::vector<int32_t> standard_action_ids;
+  if (GetProperty(node->int_list_properties,
+                  AXIntListProperty::STANDARD_ACTION_IDS,
+                  &standard_action_ids)) {
+    for (const int32_t id : standard_action_ids) {
+      switch (static_cast<AXActionType>(id)) {
+        case AXActionType::NEXT_HTML_ELEMENT:
+        case AXActionType::PREVIOUS_HTML_ELEMENT:
+          return true;
+        default:
+          // unused.
+          break;
+      }
+    }
+  }
+
+  return false;
+}
+
+bool HasImportantProperty(AXNodeInfoData* node) {
+  if (!node)
+    return false;
+
+  std::string prop;
+  if (HasNonEmptyStringProperty(node, AXStringProperty::CONTENT_DESCRIPTION) ||
+      HasNonEmptyStringProperty(node, AXStringProperty::TEXT) ||
+      HasNonEmptyStringProperty(node, AXStringProperty::PANE_TITLE) ||
+      HasNonEmptyStringProperty(node, AXStringProperty::HINT_TEXT))
+    return true;
+
+  if (GetBooleanProperty(node, AXBooleanProperty::EDITABLE) ||
+      GetBooleanProperty(node, AXBooleanProperty::CHECKABLE) ||
+      GetBooleanProperty(node, AXBooleanProperty::SELECTED))
+    return true;
+
+  std::vector<int32_t> standard_action_ids;
+  if (GetProperty(node->int_list_properties,
+                  AXIntListProperty::STANDARD_ACTION_IDS,
+                  &standard_action_ids)) {
+    for (const int32_t id : standard_action_ids) {
+      switch (static_cast<AXActionType>(id)) {
+        case AXActionType::CLICK:
+        case AXActionType::FOCUS:
+          return true;
+        default:
+          // unused.
+          break;
+      }
+    }
+  }
+
+  // TODO(hirokisato) Also check LABELED_BY and ui::IsControl(role)
+  return false;
 }
 
 bool GetBooleanProperty(mojom::AccessibilityNodeInfoData* node,

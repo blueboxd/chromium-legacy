@@ -1688,10 +1688,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_EventBundle, OnAccessibilityEvents)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_LocationChanges,
                         OnAccessibilityLocationChanges)
-    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_FindInPageResult,
-                        OnAccessibilityFindInPageResult)
-    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_FindInPageTermination,
-                        OnAccessibilityFindInPageTermination)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_ChildFrameHitTestResult,
                         OnAccessibilityChildFrameHitTestResult)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_SnapshotResponse,
@@ -3627,6 +3623,30 @@ void RenderFrameHostImpl::GoToEntryAtOffset(int32_t offset,
   delegate_->OnGoToEntryAtOffset(this, offset, has_user_gesture);
 }
 
+void RenderFrameHostImpl::HandleAccessibilityFindInPageResult(
+    blink::mojom::FindInPageResultAXParamsPtr params) {
+  ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
+  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs) && is_active()) {
+    BrowserAccessibilityManager* manager =
+        GetOrCreateBrowserAccessibilityManager();
+    if (manager) {
+      manager->OnFindInPageResult(params->request_id, params->match_index,
+                                  params->start_id, params->start_offset,
+                                  params->end_id, params->end_offset);
+    }
+  }
+}
+
+void RenderFrameHostImpl::HandleAccessibilityFindInPageTermination() {
+  ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
+  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs) && is_active()) {
+    BrowserAccessibilityManager* manager =
+        GetOrCreateBrowserAccessibilityManager();
+    if (manager)
+      manager->OnFindInPageTermination();
+  }
+}
+
 void RenderFrameHostImpl::OnForwardResourceTimingToParent(
     const ResourceTimingInfo& resource_timing) {
   // Don't forward the resource timing if this RFH is pending deletion. This can
@@ -3894,30 +3914,6 @@ void RenderFrameHostImpl::OnAccessibilityLocationChanges(
       details.push_back(detail);
     }
     delegate_->AccessibilityLocationChangesReceived(details);
-  }
-}
-
-void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
-    const AccessibilityHostMsg_FindInPageResultParams& params) {
-  ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs) && is_active()) {
-    BrowserAccessibilityManager* manager =
-        GetOrCreateBrowserAccessibilityManager();
-    if (manager) {
-      manager->OnFindInPageResult(params.request_id, params.match_index,
-                                  params.start_id, params.start_offset,
-                                  params.end_id, params.end_offset);
-    }
-  }
-}
-
-void RenderFrameHostImpl::OnAccessibilityFindInPageTermination() {
-  ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs) && is_active()) {
-    BrowserAccessibilityManager* manager =
-        GetOrCreateBrowserAccessibilityManager();
-    if (manager)
-      manager->OnFindInPageTermination();
   }
 }
 

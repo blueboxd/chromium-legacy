@@ -11,9 +11,9 @@
     [SameObject, SaveSameObject]
     static readonly attribute FrozenArray<DOMString> supportedContentEncodings;
 
-    [CallWith=ScriptState, RaisesException] Promise<PushSubscription> subscribe(optional PushSubscriptionOptionsInit options);
+    [CallWith=ScriptState, RaisesException] Promise<PushSubscription> subscribe(optional PushSubscriptionOptionsInit options = {});
     [CallWith=ScriptState] Promise<PushSubscription?> getSubscription();
-    [CallWith=ScriptState, RaisesException] Promise<PushPermissionState> permissionState(optional PushSubscriptionOptionsInit options);
+    [CallWith=ScriptState, RaisesException] Promise<PushPermissionState> permissionState(optional PushSubscriptionOptionsInit options = {});
 };
 
 enum PushPermissionState {

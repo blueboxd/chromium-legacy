@@ -17,6 +17,7 @@ import android.os.StrictMode;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -513,10 +514,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                     boolean isNavigationInScope = WebappScopePolicy.isUrlInScope(
                             scopePolicy(), mWebappInfo, navigation.getUrl());
                     mBrowserControlsVisibilityManager.updateIsInTwaMode(isNavigationInScope);
-                    if (!isNavigationInScope) {
-                        // Briefly show the toolbar for off-scope navigations.
-                        mToolbarCoordinator.showToolbarTemporarily();
-                    }
                     if (mWebappInfo.isForWebApk()) {
                         boolean isChildTab = (tab.getParentId() != Tab.INVALID_TAB_ID);
                         WebApkUma.recordNavigation(isChildTab, isNavigationInScope);
@@ -551,6 +548,13 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                         }
                     }
                 }, MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL);
+            }
+
+            @Override
+            public void onObservingDifferentTab(@NonNull Tab tab) {
+                boolean isNavigationInScope =
+                        WebappScopePolicy.isUrlInScope(scopePolicy(), mWebappInfo, tab.getUrl());
+                mBrowserControlsVisibilityManager.updateIsInTwaMode(isNavigationInScope);
             }
         };
     }

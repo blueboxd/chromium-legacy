@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/anomaly_detector_client.h"
 #include "chromeos/dbus/concierge_client.h"
@@ -47,6 +49,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/dbus/image_loader_client.h"
+#include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -456,6 +459,8 @@ class CrostiniManager::CrostiniRestarter
           vm_name_);
       vm_info->usb_devices_shared = true;
     }
+    // If arc sideloading is enabled, configure the container for that.
+    crostini_manager_->ConfigureForArcSideload();
     auto info = crostini_manager_->GetContainerInfo(vm_name_, container_name_);
     if (vm_name_ == kCrostiniDefaultVmName &&
         container_name_ == kCrostiniDefaultContainerName && info &&
@@ -670,6 +675,51 @@ void CrostiniManager::EmitContainerVersionMetric(
     version = ContainerOsVersion::kOtherOs;
   }
   base::UmaHistogramEnumeration("Crostini.ContainerOsVersion", version);
+}
+
+void CrostiniManager::ConfigureForArcSideload() {
+  chromeos::SessionManagerClient* session_manager_client =
+      chromeos::SessionManagerClient::Get();
+  if (!base::FeatureList::IsEnabled(features::kCrostiniArcSideload) ||
+      !session_manager_client)
+    return;
+  session_manager_client->QueryAdbSideload(base::BindOnce(
+      // We use a lambda to keep the arc sideloading implementation local, and
+      // avoid header pollution. This means we have to manually check the weak
+      // pointer is alive.
+      [](base::WeakPtr<CrostiniManager> manager,
+         chromeos::SessionManagerClient::AdbSideloadResponseCode response_code,
+         bool is_allowed) {
+        if (!manager || !is_allowed ||
+            response_code != chromeos::SessionManagerClient::
+                                 AdbSideloadResponseCode::SUCCESS) {
+          return;
+        }
+        vm_tools::cicerone::ConfigureForArcSideloadRequest request;
+        request.set_owner_id(manager->owner_id_);
+        request.set_vm_name(std::move(kCrostiniDefaultVmName));
+        request.set_container_name(std::move(kCrostiniDefaultContainerName));
+        GetCiceroneClient()->ConfigureForArcSideload(
+            request,
+            base::BindOnce(
+                [](base::Optional<
+                    vm_tools::cicerone::ConfigureForArcSideloadResponse>
+                       response) {
+                  if (!response) {
+                    LOG(ERROR) << "Failed to configure for arc sideloading: no "
+                                  "response from vm";
+                    return;
+                  }
+                  if (response->status() ==
+                      vm_tools::cicerone::ConfigureForArcSideloadResponse::
+                          SUCCEEDED) {
+                    return;
+                  }
+                  LOG(ERROR) << "Failed to configure for arc sideloading: "
+                             << response->failure_reason();
+                }));
+      },
+      weak_ptr_factory_.GetWeakPtr()));
 }
 
 const vm_tools::cicerone::OsRelease* CrostiniManager::GetContainerOsRelease(

@@ -25,6 +25,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "net/base/url_util.h"
+#include "ui/base/webui/web_ui_util.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"

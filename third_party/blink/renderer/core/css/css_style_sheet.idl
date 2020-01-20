@@ -23,7 +23,7 @@
 [
     Exposed=Window
 ] interface CSSStyleSheet : StyleSheet {
-    [CallWith=Document, RaisesException] constructor(optional CSSStyleSheetInit options);
+    [CallWith=Document, RaisesException] constructor(optional CSSStyleSheetInit options = {});
     readonly attribute CSSRule? ownerRule;
     [SameObject, RaisesException] readonly attribute CSSRuleList cssRules;
     [RaisesException] unsigned long insertRule(DOMString rule, optional unsigned long index = 0);

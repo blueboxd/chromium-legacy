@@ -28,7 +28,7 @@
 [
     NoInterfaceObject
 ] interface SpeechRecognitionEvent : Event {
-    constructor(DOMString type, optional SpeechRecognitionEventInit initDict);
+    constructor(DOMString type, optional SpeechRecognitionEventInit initDict = {});
     readonly attribute unsigned long resultIndex;
     readonly attribute SpeechRecognitionResultList? results;
 

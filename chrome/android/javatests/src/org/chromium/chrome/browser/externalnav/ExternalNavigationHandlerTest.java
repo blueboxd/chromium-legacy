@@ -76,7 +76,6 @@ public class ExternalNavigationHandlerTest {
     private static final int START_INCOGNITO = 0x1;
     private static final int START_WEBAPK = 0x2;
     private static final int START_FILE = 0x4;
-    private static final int START_WEBAPP_CCT = 0x8;
     private static final int START_OTHER_ACTIVITY = 0x10;
     private static final int INTENT_SANITIZATION_EXCEPTION = 0x20;
     private static final int PROXY_FOR_INSTANT_APPS = 0x40;
@@ -1954,7 +1953,6 @@ public class ExternalNavigationHandlerTest {
             startActivityIntent = null;
             startIncognitoIntentCalled = false;
             startFileIntentCalled = false;
-            startWebappCctIntentCalled = false;
             mCalledWithProxy = false;
         }
 
@@ -2009,7 +2007,6 @@ public class ExternalNavigationHandlerTest {
         public Intent startActivityIntent;
         public boolean startIncognitoIntentCalled;
         public boolean startFileIntentCalled;
-        public boolean startWebappCctIntentCalled;
         public String defaultSmsPackageName;
 
         private String mReferrerWebappPackageName;
@@ -2104,7 +2101,6 @@ public class ExternalNavigationHandlerTest {
             boolean expectStartActivity =
                     (otherExpectation & (START_WEBAPK | START_OTHER_ACTIVITY)) != 0;
             boolean expectStartWebApk = (otherExpectation & START_WEBAPK) != 0;
-            boolean expectStartWebappCct = (otherExpectation & START_WEBAPP_CCT) != 0;
             boolean expectStartOtherActivity = (otherExpectation & START_OTHER_ACTIVITY) != 0;
             boolean expectStartFile = (otherExpectation & START_FILE) != 0;
             boolean expectSaneIntent = expectStartOtherActivity
@@ -2138,7 +2134,6 @@ public class ExternalNavigationHandlerTest {
 
             Assert.assertEquals(expectedOverrideResult, result);
             Assert.assertEquals(expectStartIncognito, mDelegate.startIncognitoIntentCalled);
-            Assert.assertEquals(expectStartWebappCct, mDelegate.startWebappCctIntentCalled);
             Assert.assertEquals(expectStartActivity, startActivityCalled);
             Assert.assertEquals(expectStartWebApk, startWebApkCalled);
             Assert.assertEquals(expectStartFile, mDelegate.startFileIntentCalled);

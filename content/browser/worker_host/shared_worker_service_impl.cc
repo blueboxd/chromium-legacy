@@ -281,12 +281,15 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
   auto* service_worker_handle_raw = service_worker_handle.get();
   host->SetServiceWorkerHandle(std::move(service_worker_handle));
 
-  // Fetch classic shared worker script with "same-origin" credentials mode.
+  // Set the credentials mode for worker script fetch based on the script type
+  // For classic worker scripts, always use "same-origin" credentials mode.
   // https://html.spec.whatwg.org/C/#fetch-a-classic-worker-script
-  //
-  // TODO(crbug.com/824646, crbug.com/907749): The document should provide the
-  // credentials mode specified by WorkerOptions for module script.
-  const auto credentials_mode = network::mojom::CredentialsMode::kSameOrigin;
+  // For module worker script, use the credentials mode on WorkerOptions.
+  // https://html.spec.whatwg.org/C/#fetch-a-module-worker-script-tree
+  const auto credentials_mode =
+      instance.script_type() == blink::mojom::ScriptType::kClassic
+          ? network::mojom::CredentialsMode::kSameOrigin
+          : instance.credentials_mode();
 
   RenderFrameHostImpl* creator_render_frame_host =
       RenderFrameHostImpl::FromID(creator_render_frame_host_id);

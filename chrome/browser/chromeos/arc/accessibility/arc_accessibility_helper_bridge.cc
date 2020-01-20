@@ -394,22 +394,19 @@ void ArcAccessibilityHelperBridge::OnAction(
   if (!window_id)
     return;
 
-  arc::mojom::AccessibilityActionDataPtr action_data =
-      arc::mojom::AccessibilityActionData::New();
-
-  action_data->node_id = data.target_node_id;
-
-  action_data->window_id = window_id.value();
-
   const base::Optional<mojom::AccessibilityActionType> action =
       ConvertToAndroidAction(data.action);
   if (!action.has_value())
     return;
 
+  arc::mojom::AccessibilityActionDataPtr action_data =
+      arc::mojom::AccessibilityActionData::New();
+
+  action_data->node_id = data.target_node_id;
+  action_data->window_id = window_id.value();
   action_data->action_type = action.value();
 
-  if (action_data->action_type ==
-      arc::mojom::AccessibilityActionType::GET_TEXT_LOCATION) {
+  if (action == arc::mojom::AccessibilityActionType::GET_TEXT_LOCATION) {
     action_data->start_index = data.start_index;
     action_data->end_index = data.end_index;
     auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
@@ -424,10 +421,15 @@ void ArcAccessibilityHelperBridge::OnAction(
             &ArcAccessibilityHelperBridge::OnGetTextLocationDataResult,
             base::Unretained(this), data));
     return;
-  } else if (action_data->action_type ==
-             arc::mojom::AccessibilityActionType::CUSTOM_ACTION) {
+  } else if (action == arc::mojom::AccessibilityActionType::CUSTOM_ACTION) {
     action_data->custom_action_id = data.custom_action_id;
+  } else if (action == arc::mojom::AccessibilityActionType::SHOW_ON_SCREEN) {
+    // This action is performed every time ChromeVox focus gets changed (from
+    // Background.setCurrentRange). Use this action as a notification of focus
+    // change, and update focus cache.
+    tree_source->UpdateAccessibilityFocusLocation(data.target_node_id);
   }
+
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->accessibility_helper(), PerformAction);
   if (!instance) {

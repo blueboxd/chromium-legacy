@@ -85,7 +85,7 @@ mojom::blink::BlobRegistry* GetThreadSpecificRegistry() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
       ThreadSpecific<mojo::Remote<mojom::blink::BlobRegistry>>, registry, ());
   if (UNLIKELY(!registry.IsSet())) {
-    // TODO(mek): Going through InterfaceProvider to get a
+    // TODO(mek): Going through BrowserInterfaceBroker to get a
     // mojom::blink::BlobRegistry ends up going through the main thread. Ideally
     // workers wouldn't need to do that.
     Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(

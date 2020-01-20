@@ -22,7 +22,7 @@
 [
     Exposed=Window
 ] interface MouseEvent : UIEvent {
-    [CallWith=ScriptState] constructor(DOMString type, optional MouseEventInit eventInitDict);
+    [CallWith=ScriptState] constructor(DOMString type, optional MouseEventInit eventInitDict = {});
     [HighEntropy, MeasureAs=MouseEventScreenX] readonly attribute double screenX;
     [HighEntropy, MeasureAs=MouseEventScreenY] readonly attribute double screenY;
     readonly attribute double           clientX;

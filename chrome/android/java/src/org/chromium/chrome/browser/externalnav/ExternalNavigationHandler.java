@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.externalnav;
 
-import static org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.EXTRA_BROWSER_LAUNCH_SOURCE;
-
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -30,7 +28,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.LaunchSourceType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.Tab;
@@ -241,8 +238,7 @@ public class ExternalNavigationHandler {
             Intent intent = Intent.parseUri(browserFallbackUrl, Intent.URI_INTENT_SCHEME);
             sanitizeQueryIntentActivitiesIntent(intent);
             List<ResolveInfo> resolvingInfos = mDelegate.queryIntentActivities(intent);
-            if (!shouldStayInWebApkCCT(params, resolvingInfos)
-                    && !isAlreadyInTargetWebApk(resolvingInfos, params)
+            if (!isAlreadyInTargetWebApk(resolvingInfos, params)
                     && launchWebApkIfSoleIntentHandler(resolvingInfos, intent)) {
                 return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
             }
@@ -920,9 +916,6 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        if (shouldStayInWebApkCCT(params, resolvingInfos)) {
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
         if (isAlreadyInTargetWebApk(resolvingInfos, params)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         } else if (launchWebApkIfSoleIntentHandler(resolvingInfos, targetIntent)) {
@@ -1078,34 +1071,6 @@ public class ExternalNavigationHandler {
             }
         }
         return null;
-    }
-
-    // Returns whether a navigation in a CustomTabActivity opened from a WebAPK should stay
-    // within the CustomTabActivity. Returns false if the navigation does not occur within a
-    // CustomTabActivity or the CustomTabActivity was not opened from a WebAPK/TWA.
-    private boolean shouldStayInWebApkCCT(
-            ExternalNavigationParams params, List<ResolveInfo> handlers) {
-        Tab tab = params.getTab();
-        if (tab == null || !mDelegate.isOnCustomTab() || ((TabImpl) tab).getActivity() == null) {
-            return false;
-        }
-
-        int launchSource = IntentUtils.safeGetIntExtra(((TabImpl) tab).getActivity().getIntent(),
-                EXTRA_BROWSER_LAUNCH_SOURCE, LaunchSourceType.OTHER);
-        if (launchSource != LaunchSourceType.WEBAPK) {
-            return false;
-        }
-
-        String appId = IntentUtils.safeGetStringExtra(
-                ((TabImpl) tab).getActivity().getIntent(), Browser.EXTRA_APPLICATION_ID);
-        if (appId == null) return false;
-
-        boolean webApkHasSpecializedHandler =
-                ExternalNavigationDelegateImpl.getSpecializedHandlersWithFilter(handlers, appId)
-                        .isEmpty();
-        if (webApkHasSpecializedHandler) return false;
-        if (DEBUG) Log.i(TAG, "Staying in WebApk CCT.");
-        return true;
     }
 
     /**

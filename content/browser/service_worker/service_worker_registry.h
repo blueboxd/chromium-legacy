@@ -42,6 +42,7 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   using ResourceList = ServiceWorkerStorage::ResourceList;
   using FindRegistrationCallback =
       ServiceWorkerStorage::FindRegistrationCallback;
+  using StatusCallback = ServiceWorkerStorage::StatusCallback;
 
   ServiceWorkerRegistry(
       const base::FilePath& user_data_directory,
@@ -73,6 +74,28 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
 
   ServiceWorkerRegistration* GetUninstallingRegistration(const GURL& scope);
 
+  // Commits |registration| with the installed but not activated |version|
+  // to storage, overwriting any pre-existing registration data for the scope.
+  // A pre-existing version's script resources remain available if that version
+  // is live. ServiceWorkerStorage::PurgeResources() should be called when it's
+  // OK to delete them.
+  void StoreRegistration(ServiceWorkerRegistration* registration,
+                         ServiceWorkerVersion* version,
+                         StatusCallback callback);
+
+  // Deletes the registration data for |registration|. The live registration is
+  // still findable via GetUninstallingRegistration(), and versions are usable
+  // because their script resources have not been deleted. After calling this,
+  // the caller should later:
+  // - Call NotifyDoneUninstallingRegistration() to let registry know the
+  //   uninstalling operation is done.
+  // - If it no longer wants versions to be usable, call
+  //   ServiceWorkerStorage::PurgeResources() to delete their script resources.
+  // If these aren't called, on the next profile session the cleanup occurs.
+  void DeleteRegistration(scoped_refptr<ServiceWorkerRegistration> registration,
+                          const GURL& origin,
+                          StatusCallback callback);
+
   // Intended for use only by ServiceWorkerRegisterJob and
   // ServiceWorkerRegistration.
   void NotifyInstallingRegistration(ServiceWorkerRegistration* registration);
@@ -92,14 +115,11 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
 
   using RegistrationRefsById =
       std::map<int64_t, scoped_refptr<ServiceWorkerRegistration>>;
-  // TODO(crbug.com/1039200): Remove these accessors. These are tentatively
+  // TODO(crbug.com/1039200): Remove this accessor. This is tentatively
   // exposed for ServiceWorkerStorage. Code that relies on these should be
   // moved into this class.
   RegistrationRefsById& installing_registrations() {
     return installing_registrations_;
-  }
-  RegistrationRefsById& uninstalling_registrations() {
-    return uninstalling_registrations_;
   }
 
  private:
@@ -126,6 +146,12 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       FindRegistrationCallback callback,
       blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
+
+  void DidStoreRegistration(const ServiceWorkerDatabase::RegistrationData& data,
+                            StatusCallback callback,
+                            blink::ServiceWorkerStatusCode status);
+  void DidDeleteRegistration(StatusCallback callback,
+                             blink::ServiceWorkerStatusCode status);
 
   // The ServiceWorkerContextCore object must outlive this.
   ServiceWorkerContextCore* const context_;

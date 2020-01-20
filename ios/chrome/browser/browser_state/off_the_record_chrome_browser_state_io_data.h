@@ -11,14 +11,11 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_io_data.h"
 #include "ios/chrome/browser/net/net_types.h"
 
 class IOSChromeURLRequestContextGetter;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 namespace net {
 class CookieStore;

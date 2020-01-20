@@ -213,9 +213,10 @@ static inline bool IsMatchingHTMLElement(const HTMLCollection& html_collection,
     case kDocForms:
       return element.HasTagName(html_names::kFormTag);
     case kDocumentNamedItems:
-      return ToDocumentNameCollection(html_collection).ElementMatches(element);
+      return To<DocumentNameCollection>(html_collection)
+          .ElementMatches(element);
     case kDocumentAllNamedItems:
-      return ToDocumentAllNameCollection(html_collection)
+      return To<DocumentAllNameCollection>(html_collection)
           .ElementMatches(element);
     case kTableTBodies:
       return element.HasTagName(html_names::kTbodyTag);
@@ -287,7 +288,7 @@ inline bool HTMLCollection::ElementMatches(const Element& element) const {
     case kWindowNamedItems:
       return To<WindowNameCollection>(*this).ElementMatches(element);
     case kDocumentAllNamedItems:
-      return ToDocumentAllNameCollection(*this).ElementMatches(element);
+      return To<DocumentAllNameCollection>(*this).ElementMatches(element);
     default:
       break;
   }

@@ -251,26 +251,38 @@ void EnableSyncFromPromo(
 }
 }  // namespace internal
 
-AccountInfo GetAccountForDicePromos(Profile* profile) {
+std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile) {
+  // Fetch account ids for accounts that have a token.
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
+  std::vector<AccountInfo> accounts_with_tokens =
+      identity_manager->GetExtendedAccountInfoForAccountsWithRefreshToken();
 
   // Compute the default account.
   CoreAccountId default_account_id =
       identity_manager->GetUnconsentedPrimaryAccountId();
-  AccountInfo default_account_info =
-      identity_manager
-          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
-              default_account_id)
-          .value_or(AccountInfo());
 
-  if (default_account_info.IsEmpty()) {
-    return default_account_info;
+  // Fetch account information for each id and make sure that the first account
+  // in the list matches the unconsented primary account (if available).
+  std::vector<AccountInfo> accounts;
+  for (auto& account_info : accounts_with_tokens) {
+    DCHECK(!account_info.IsEmpty());
+    if (!signin::IsUsernameAllowedByPatternFromPrefs(
+            g_browser_process->local_state(), account_info.email)) {
+      continue;
+    }
+    if (account_info.account_id == default_account_id)
+      accounts.insert(accounts.begin(), std::move(account_info));
+    else
+      accounts.push_back(std::move(account_info));
   }
-  if (signin::IsUsernameAllowedByPatternFromPrefs(
-          g_browser_process->local_state(), default_account_info.email)) {
-    return default_account_info;
-  }
+  return accounts;
+}
+
+AccountInfo GetSingleAccountForDicePromos(Profile* profile) {
+  std::vector<AccountInfo> accounts = GetAccountsForDicePromos(profile);
+  if (!accounts.empty())
+    return accounts[0];
   return AccountInfo();
 }
 

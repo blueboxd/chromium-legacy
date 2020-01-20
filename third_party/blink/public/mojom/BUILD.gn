@@ -497,3 +497,19 @@ mojom("authenticator_test_mojo_bindings") {
   # Don't scramble message IDs so they are redistributable to external tests.
   scramble_message_ids = false
 }
+
+mojom("memory_usage_monitor_linux_mojo_bindings") {
+  visibility = [
+    "//content/browser:browser",
+    "//third_party/blink/renderer/controller:controller",
+  ]
+  visibility_blink = [ "//third_party/blink/renderer/controller:controller" ]
+
+  sources = [ "memory_usage_monitor_linux.mojom" ]
+
+  public_deps = [ "//mojo/public/mojom/base" ]
+
+  export_class_attribute_blink = "PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/renderer/platform/platform_export.h"
+}

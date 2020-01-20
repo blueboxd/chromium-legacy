@@ -369,11 +369,6 @@
       'Chromium Android ARM 32-bit Goma RBE Prod (clobber)': 'android_release_bot_minimal_symbols',
       'Chromium Android ARM 32-bit Goma RBE Prod (dbg)': 'android_debug_static_bot',
       'Chromium Android ARM 32-bit Goma RBE Prod (dbg) (clobber)': 'android_debug_static_bot',
-
-      # RBE FYI
-      'chromeos-amd64-generic-rel (Goma RBE FYI)': 'cros_chrome_sdk',
-      'fuchsia-fyi-arm64-rel (Goma RBE FYI)': 'release_bot_fuchsia_arm64',
-      'fuchsia-fyi-x64-rel (Goma RBE FYI)': 'release_bot_fuchsia',
     },
 
     'chromium.gpu': {

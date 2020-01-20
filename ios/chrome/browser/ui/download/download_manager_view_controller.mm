@@ -5,8 +5,10 @@
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/download/download_manager_metric_names.h"
 #include "ios/chrome/browser/ui/download/download_manager_animation_constants.h"
 #import "ios/chrome/browser/ui/download/download_manager_state_view.h"
 #import "ios/chrome/browser/ui/download/radial_progress_view.h"
@@ -581,6 +583,10 @@ NSString* GetSizeString(long long size_in_bytes) {
 }
 
 - (void)didTapInstallDriveButton {
+  base::UmaHistogramEnumeration(
+      "Download.IOSDownloadFileUIGoogleDrive",
+      DownloadFileUIGoogleDrive::GoogleDriveInstallStarted,
+      DownloadFileUIGoogleDrive::Count);
   SEL selector = @selector(installDriveForDownloadManagerViewController:);
   if ([_delegate respondsToSelector:selector]) {
     [_delegate installDriveForDownloadManagerViewController:self];

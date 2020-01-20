@@ -7,7 +7,7 @@
 source_set("unit_tests") {
   testonly = true
   deps = [
-    "//components/safe_browsing/core/common:test_support",
-    "//components/safe_browsing/core/common:thread_utils",
+    "//components/safe_browsing/core/common:unit_tests",
+    "//components/safe_browsing/core/db:unit_tests_local_db",
   ]
 }

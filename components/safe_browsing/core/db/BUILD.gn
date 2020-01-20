@@ -157,7 +157,6 @@ static_library("v4_local_database_manager") {
     "//build:branding_buildflags",
     "//components/safe_browsing/core:webui_proto",
     "//components/safe_browsing/core/common:thread_utils",
-    "//components/safe_browsing/core/realtime:policy_engine",
     "//components/safe_browsing/core/realtime:url_lookup_service",
     "//crypto",
     "//net",
@@ -298,7 +297,7 @@ source_set("unit_tests_shared") {
   }
 }
 
-source_set("unit_tests_desktop") {
+source_set("unit_tests_local_db") {
   testonly = true
   sources = [
     "v4_database_unittest.cc",

@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow DIV",
-          "rect": [8, 58, 108, 65],
+          "rect": [8, 58, 106, 63],
           "reason": "incremental"
         },
         {
           "object": "LayoutTextControl INPUT id='target'",
-          "rect": [8, 58, 108, 65],
+          "rect": [8, 58, 106, 63],
           "reason": "incremental"
         },
         {

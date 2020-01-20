@@ -66,11 +66,11 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       base::OnceCallback<void(blink::ServiceWorkerStatusCode)>;
   using BoolCallback = base::OnceCallback<void(bool)>;
   using FindRegistrationCallback =
-      ServiceWorkerStorage::FindRegistrationCallback;
+      ServiceWorkerRegistry::FindRegistrationCallback;
   using GetRegistrationsCallback =
-      ServiceWorkerStorage::GetRegistrationsCallback;
+      ServiceWorkerRegistry::GetRegistrationsCallback;
   using GetRegistrationsInfosCallback =
-      ServiceWorkerStorage::GetRegistrationsInfosCallback;
+      ServiceWorkerRegistry::GetRegistrationsInfosCallback;
   using GetUserDataCallback = ServiceWorkerStorage::GetUserDataCallback;
   using GetUserKeysAndDataCallback =
       ServiceWorkerStorage::GetUserKeysAndDataCallback;

@@ -62,20 +62,5 @@ luci.console_view(
             category = 'prod|android arm|dbg',
             short_name = 'clb',
         ),
-        luci.console_view_entry(
-            builder = 'goma/fuchsia-fyi-arm64-rel (Goma RBE FYI)',
-            category = 'prod|chromium.linux|fuchsia|misc',
-            short_name = 'a64',
-        ),
-        luci.console_view_entry(
-            builder = 'goma/fuchsia-fyi-x64-rel (Goma RBE FYI)',
-            category = 'prod|chromium.linux|fuchsia|misc',
-            short_name = 'x64',
-        ),
-        luci.console_view_entry(
-            builder = 'goma/chromeos-amd64-generic-rel (Goma RBE FYI)',
-            category = 'prod|chromium.chromiumos|simple|release|x64',
-            short_name = 'rel',
-        ),
     ],
 )

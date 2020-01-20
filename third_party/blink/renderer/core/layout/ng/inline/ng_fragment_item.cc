@@ -186,11 +186,6 @@ PhysicalRect NGFragmentItem::InkOverflow() const {
   return container_ink_overflow.SelfAndContentsInkOverflow();
 }
 
-PositionWithAffinity NGFragmentItem::PositionForPoint(
-    const PhysicalOffset&) const {
-  return PositionWithAffinity();
-}
-
 const ShapeResultView* NGFragmentItem::TextShapeResult() const {
   if (Type() == kText)
     return text_.shape_result.get();

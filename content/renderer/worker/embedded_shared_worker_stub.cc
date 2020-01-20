@@ -99,7 +99,8 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
 
   impl_ = blink::WebSharedWorker::Create(this);
   impl_->StartWorkerContext(
-      url_, blink::WebString::FromUTF8(info->options->name),
+      url_, info->options->type, info->options->credentials,
+      blink::WebString::FromUTF8(info->options->name),
       blink::WebString::FromUTF8(user_agent),
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,

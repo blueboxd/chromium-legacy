@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
+import("//components/captive_portal/features.gni")
+
 component("captive_portal") {
   sources = [
     "captive_portal_detector.cc",
@@ -25,6 +28,11 @@ component("captive_portal") {
   if (is_chromeos) {
     deps += [ "//chromeos/network" ]
   }
+}
+
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  flags = [ "ENABLE_CAPTIVE_PORTAL_DETECTION=$enable_captive_portal_detection" ]
 }
 
 static_library("test_support") {

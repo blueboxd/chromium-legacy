@@ -7,6 +7,8 @@ static_library("security_interstitial_page") {
   sources = [
     "bad_clock_blocking_page.cc",
     "bad_clock_blocking_page.h",
+    "blocked_interception_blocking_page.cc",
+    "blocked_interception_blocking_page.h",
     "captive_portal_blocking_page.cc",
     "captive_portal_blocking_page.h",
     "cert_report_helper.cc",

@@ -14,6 +14,21 @@ const OobeI18nBehaviorImpl = {
     this.classList.add('i18n-dynamic');
   },
 
+  /**
+   * See documentation for I18nBehavior.i18n(...)
+   * @param {string} id The ID of the string to translate.
+   * @param {...string|number} var_args Values to replace the placeholders $1
+   *     to $9 in the string.
+   * @return {string} A translated, sanitized, substituted string.
+   */
+  i18n(id, var_args) {
+    if (typeof this.locale === 'undefined')
+      return '';
+    if (typeof id === 'undefined')
+      return '';
+    return I18nBehavior.i18n.apply(this, arguments);
+  },
+
   i18nUpdateLocale() {
     // TODO(crbug.com/893934): move i18nUpdateLocale from I18nBehavior to this
     // class.

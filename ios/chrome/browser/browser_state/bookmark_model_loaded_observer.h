@@ -7,10 +7,7 @@
 
 #include "base/macros.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 class BookmarkModelLoadedObserver
     : public bookmarks::BaseBookmarkModelObserver {

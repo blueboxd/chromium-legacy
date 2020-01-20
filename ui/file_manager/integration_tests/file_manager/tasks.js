@@ -6,22 +6,24 @@
 
 /**
  * Fake task.
- *
- * @param {boolean} isDefault Whether the task is default or not.
- * @param {string} taskId Task ID.
- * @param {string} title Title of the task.
- * @param {boolean=} opt_isGenericFileHandler Whether the task is a generic
- *     file handler.
- * @constructor
  */
-function FakeTask(isDefault, taskId, title, opt_isGenericFileHandler) {
-  this.driveApp = false;
-  this.iconUrl = 'chrome://theme/IDR_DEFAULT_FAVICON';  // Dummy icon
-  this.isDefault = isDefault;
-  this.taskId = taskId;
-  this.title = title;
-  this.isGenericFileHandler = opt_isGenericFileHandler || false;
-  Object.freeze(this);
+class FakeTask {
+  /**
+   * @param {boolean} isDefault Whether the task is default or not.
+   * @param {string} taskId Task ID.
+   * @param {string} title Title of the task.
+   * @param {boolean=} opt_isGenericFileHandler Whether the task is a generic
+   *     file handler.
+   */
+  constructor(isDefault, taskId, title, opt_isGenericFileHandler) {
+    this.driveApp = false;
+    this.iconUrl = 'chrome://theme/IDR_DEFAULT_FAVICON';  // Dummy icon
+    this.isDefault = isDefault;
+    this.taskId = taskId;
+    this.title = title;
+    this.isGenericFileHandler = opt_isGenericFileHandler || false;
+    Object.freeze(this);
+  }
 }
 
 /**

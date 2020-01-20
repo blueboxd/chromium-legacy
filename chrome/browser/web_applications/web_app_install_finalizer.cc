@@ -107,8 +107,13 @@ void SetWebAppFileHandlers(
     for (const auto& pair : file_handler.accept) {
       WebApp::FileHandlerAccept accept_entry;
       accept_entry.mimetype = base::UTF16ToUTF8(pair.first);
-      for (const auto& file_extension : pair.second)
-        accept_entry.file_extensions.insert(base::UTF16ToUTF8(file_extension));
+      for (const auto& file_extension : pair.second) {
+        // Remove leading ".".
+        const auto utf8_file_extension = base::UTF16ToUTF8(file_extension);
+        DCHECK(base::StartsWith(utf8_file_extension, ".",
+                                base::CompareCase::SENSITIVE));
+        accept_entry.file_extensions.insert(utf8_file_extension.substr(1));
+      }
       web_app_file_handler.accept.push_back(std::move(accept_entry));
     }
 

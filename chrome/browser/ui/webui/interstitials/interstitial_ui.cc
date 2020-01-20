@@ -19,13 +19,14 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_blocking_page_quiet.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "chrome/browser/ssl/blocked_interception_blocking_page.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/url_constants.h"
+#include "components/captive_portal/buildflags.h"
 #include "components/grit/dev_ui_components_resources.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
+#include "components/security_interstitials/content/blocked_interception_blocking_page.h"
 #include "components/security_interstitials/content/mitm_software_blocking_page.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
@@ -171,11 +172,14 @@ MITMSoftwareBlockingPage* CreateMITMSoftwareBlockingPage(
     is_enterprise_managed = is_enterprise_managed_param == "1";
   }
 
+  ChromeSecurityBlockingPageFactory::SetEnterpriseManagedForTesting(
+      is_enterprise_managed);
+
   net::SSLInfo ssl_info;
   ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
   return ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
       web_contents, cert_error, request_url, nullptr, ssl_info,
-      mitm_software_name, is_enterprise_managed);
+      mitm_software_name);
 }
 
 BlockedInterceptionBlockingPage* CreateBlockedInterceptionBlockingPage(
@@ -185,8 +189,9 @@ BlockedInterceptionBlockingPage* CreateBlockedInterceptionBlockingPage(
 
   net::SSLInfo ssl_info;
   ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
-  return new BlockedInterceptionBlockingPage(web_contents, cert_error,
-                                             request_url, nullptr, ssl_info);
+  return ChromeSecurityBlockingPageFactory::
+      CreateBlockedInterceptionBlockingPage(web_contents, cert_error,
+                                            request_url, nullptr, ssl_info);
 }
 
 BadClockBlockingPage* CreateBadClockBlockingPage(

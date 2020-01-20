@@ -15835,6 +15835,18 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   </int>
 </enum>
 
+<enum name="DownloadFileUI">
+  <int value="0" label="Download UI is presented"/>
+  <int value="1" label="Download file started"/>
+</enum>
+
+<enum name="DownloadFileUIGoogleDrive">
+  <int value="0" label="Google drive is already installed"/>
+  <int value="1" label="Google drive is not installed"/>
+  <int value="2" label="Google drive installation started"/>
+  <int value="3" label="Google drive was installed after showing installator"/>
+</enum>
+
 <enum name="DownloadFrameGesture">
   <obsolete>
     Deprecated 11/2018.
@@ -38117,6 +38129,7 @@ from previous Chrome versions.
   <int value="57791920" label="MemoryCoordinator:enabled"/>
   <int value="58099178" label="SecondaryUiMd:enabled"/>
   <int value="58695502" label="NTPButton:disabled"/>
+  <int value="58727839" label="WebAssemblyLazyCompilation:enabled"/>
   <int value="59784035" label="ImeThread:disabled"/>
   <int value="59964519" label="OmniboxEnableClipboardProvider:disabled"/>
   <int value="60023885" label="AutofillNoLocalSaveOnUnmaskSuccess:disabled"/>
@@ -38218,6 +38231,7 @@ from previous Chrome versions.
   <int value="194895489" label="passive-listeners-default"/>
   <int value="195335115" label="AudioWorkletRealtimeThread:disabled"/>
   <int value="195570937" label="EnableHomeLauncher:disabled"/>
+  <int value="198719062" label="WebAssemblyLazyCompilation:disabled"/>
   <int value="198762155" label="SharingPeerConnectionSender:enabled"/>
   <int value="200347243" label="WebVRExperimentalRendering:disabled"/>
   <int value="201343576" label="enable-password-change-support:enabled"/>
@@ -57654,6 +57668,19 @@ Called by update_net_trust_anchors.py.-->
   <int value="7" label="Reopen: I/O error">
     Reopen attempt failed with (I/O error) after successful database delete.
   </int>
+</enum>
+
+<enum name="SessionType">
+  <int value="0" label="Existing Regular"/>
+  <int value="1" label="Guest"/>
+  <int value="2" label="New Regular"/>
+  <int value="3" label="Public Account"/>
+  <int value="4" label="Locally Managed"/>
+  <int value="5" label="Kiosk App"/>
+  <int value="6" label="Regular Supervised"/>
+  <int value="7" label="ARC Kiosk"/>
+  <int value="8" label="Active Directory"/>
+  <int value="9" label="Web App Kiosk"/>
 </enum>
 
 <enum name="SetDefaultAttemptResult">

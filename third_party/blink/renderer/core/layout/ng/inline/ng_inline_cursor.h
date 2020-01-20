@@ -35,6 +35,41 @@ struct PhysicalOffset;
 struct PhysicalRect;
 struct PhysicalSize;
 
+// Represents a position of |NGInlineCursor|. This class:
+// 1. Provides properties for the current position.
+// 2. Allows to save |Current()|, and can move back later. Moving to |Position|
+// is faster than moving to |NGFragmentItem|.
+class CORE_EXPORT NGInlineCursorPosition {
+  STACK_ALLOCATED();
+
+ public:
+  using ItemsSpan = base::span<const std::unique_ptr<NGFragmentItem>>;
+
+  const NGPaintFragment* PaintFragment() const { return paint_fragment_; }
+  const NGFragmentItem* Item() const { return item_; }
+  const NGFragmentItem* operator->() const { return item_; }
+  const NGFragmentItem& operator*() const { return *item_; }
+
+  operator bool() const { return paint_fragment_ || item_; }
+
+  bool operator==(const NGInlineCursorPosition& other) const {
+    return paint_fragment_ == other.paint_fragment_ && item_ == other.item_;
+  }
+  bool operator!=(const NGInlineCursorPosition& other) const {
+    return !operator==(other);
+  }
+
+  NGStyleVariant StyleVariant() const;
+
+ private:
+  const NGPaintFragment* paint_fragment_ = nullptr;
+  const NGFragmentItem* item_ = nullptr;
+  ItemsSpan::iterator item_iter_;
+
+  friend class NGInlineBackwardCursor;
+  friend class NGInlineCursor;
+};
+
 // This class traverses fragments in an inline formatting context.
 //
 // When constructed, the initial position is empty. Call |MoveToNext()| to move
@@ -53,12 +88,12 @@ class CORE_EXPORT NGInlineCursor {
   explicit NGInlineCursor(const NGFragmentItems& fragment_items,
                           ItemsSpan items);
   explicit NGInlineCursor(const NGPaintFragment& root_paint_fragment);
-  NGInlineCursor(const NGInlineCursor& other);
+  NGInlineCursor(const NGInlineCursor& other) = default;
 
   // Creates an |NGInlineCursor| without the root. Even when callers don't know
   // the root of the inline formatting context, this cursor can |MoveTo()|
   // specific |LayoutObject|.
-  NGInlineCursor();
+  NGInlineCursor() = default;
 
   bool operator==(const NGInlineCursor& other) const;
   bool operator!=(const NGInlineCursor& other) const {
@@ -83,12 +118,13 @@ class CORE_EXPORT NGInlineCursor {
   //
   // Functions to query the current position.
   //
+  const NGInlineCursorPosition& Current() const { return current_; }
 
   // Returns true if cursor is out of fragment tree, e.g. before first fragment
   // or after last fragment in tree.
-  bool IsNull() const { return !current_item_ && !current_paint_fragment_; }
-  bool IsNotNull() const { return !IsNull(); }
-  explicit operator bool() const { return !IsNull(); }
+  bool IsNull() const { return !Current(); }
+  bool IsNotNull() const { return Current(); }
+  explicit operator bool() const { return Current(); }
 
   // True if fragment at the current position can have children.
   bool CanHaveChildren() const;
@@ -164,9 +200,9 @@ class CORE_EXPORT NGInlineCursor {
   bool IsText() const;
 
   // |Current*| functions return an object for the current position.
-  const NGFragmentItem* CurrentItem() const { return current_item_; }
+  const NGFragmentItem* CurrentItem() const { return Current().Item(); }
   const NGPaintFragment* CurrentPaintFragment() const {
-    return current_paint_fragment_;
+    return Current().PaintFragment();
   }
   // Returns text direction of current line. It is error to call at other than
   // line.
@@ -229,12 +265,21 @@ class CORE_EXPORT NGInlineCursor {
   PhysicalOffset LineEndPoint() const;
 
   // Converts the given point, relative to the fragment itself, into a position
-  // in DOM tree within the range of |this|.
-  PositionWithAffinity PositionForPoint(const PhysicalOffset&);
+  // in DOM tree within the range of |this|. This variation ignores the inline
+  // offset, and snaps to the nearest line in the block direction.
+  PositionWithAffinity PositionForPointInInlineFormattingContext(
+      const PhysicalOffset& point,
+      const NGPhysicalBoxFragment& container);
+  // Find the |Position| in the line box |Current()| points to. This variation
+  // ignores the block offset, and snaps to the nearest item in inline
+  // direction.
+  PositionWithAffinity PositionForPointInInlineBox(
+      const PhysicalOffset& point) const;
 
   //
   // Functions to move the current position.
   //
+  void MoveTo(const NGInlineCursorPosition& position);
 
   // Move the current position at |fragment_item|.
   void MoveTo(const NGFragmentItem& fragment_item);
@@ -324,9 +369,6 @@ class CORE_EXPORT NGInlineCursor {
   // NextSkippingChildren, Previous, etc.
 
  private:
-  // Returns style variant of the current position.
-  NGStyleVariant CurrentStyleVariant() const;
-
   // True if current position is part of culled inline box |layout_inline|.
   bool IsPartOfCulledInlineBox(const LayoutInline& layout_inline) const;
 
@@ -362,13 +404,16 @@ class CORE_EXPORT NGInlineCursor {
   void MoveToPreviousPaintFragment();
   void MoveToPreviousSiblingPaintFragment();
 
+  PositionWithAffinity PositionForPointInChild(
+      const PhysicalOffset& point,
+      const NGFragmentItem& child_item) const;
+
+  NGInlineCursorPosition current_;
+
   ItemsSpan items_;
-  ItemsSpan::iterator item_iter_;
-  const NGFragmentItem* current_item_ = nullptr;
   const NGFragmentItems* fragment_items_ = nullptr;
 
   const NGPaintFragment* root_paint_fragment_ = nullptr;
-  const NGPaintFragment* current_paint_fragment_ = nullptr;
 
   // Used in |MoveToNextForSameLayoutObject()| to support culled inline.
   const LayoutInline* layout_inline_ = nullptr;

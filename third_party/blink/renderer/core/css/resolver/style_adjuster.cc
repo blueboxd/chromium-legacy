@@ -131,24 +131,28 @@ static bool IsOutermostSVGElement(const Element* element) {
   return svg_element && svg_element->IsOutermostSVGSVGElement();
 }
 
-static bool IsAtUAShadowBoundary(const Element* element) {
+static bool IsAtMediaUAShadowBoundary(const Element* element) {
   if (!element)
     return false;
-  if (ContainerNode* parent = element->parentNode())
-    return parent->IsShadowRoot() && To<ShadowRoot>(parent)->IsUserAgent();
+  if (ContainerNode* parent = element->parentNode()) {
+    if (auto* shadow_root = DynamicTo<ShadowRoot>(parent))
+      return shadow_root->host().IsMediaElement();
+  }
   return false;
 }
 
-// CSS requires text-decoration to be reset at each DOM element for
-// inline blocks, inline tables, UA shadow DOM crossings, floating elements,
-// and absolute or relatively positioned elements. Outermost <svg> roots are
-// considered to be atomic inline-level.
+// CSS requires text-decoration to be reset at each DOM element for inline
+// blocks, inline tables, floating elements, and absolute or relatively
+// positioned elements. Outermost <svg> roots are considered to be atomic
+// inline-level. Media elements have a special rendering where the media
+// controls do not use a proper containing block model which means we need
+// to manually stop text-decorations to apply to text inside media controls.
 static bool StopPropagateTextDecorations(const ComputedStyle& style,
                                          const Element* element) {
   return style.Display() == EDisplay::kInlineTable ||
          style.Display() == EDisplay::kInlineBlock ||
          style.Display() == EDisplay::kWebkitInlineBox ||
-         IsAtUAShadowBoundary(element) || style.IsFloating() ||
+         IsAtMediaUAShadowBoundary(element) || style.IsFloating() ||
          style.HasOutOfFlowPosition() || IsOutermostSVGElement(element) ||
          IsA<HTMLRTElement>(element);
 }

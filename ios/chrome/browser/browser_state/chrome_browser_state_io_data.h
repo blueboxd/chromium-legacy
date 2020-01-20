@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/prefs/pref_member.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/net/net_types.h"
 #include "net/cert/ct_verifier.h"
@@ -34,11 +35,6 @@ class IOSChromeURLRequestContextGetter;
 
 namespace content_settings {
 class CookieSettings;
-}
-
-namespace ios {
-class ChromeBrowserState;
-enum class ChromeBrowserStateType;
 }
 
 namespace net {

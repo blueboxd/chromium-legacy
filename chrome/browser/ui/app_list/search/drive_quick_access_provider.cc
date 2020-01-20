@@ -58,6 +58,15 @@ void LogDriveFSMounted(bool mounted) {
                         mounted);
 }
 
+// Given an absolute path representing a file in the user's Drive, returns a
+// reparented version of the path within the user's DriveFS mount.
+base::FilePath ReparentToDriveMount(
+    const base::FilePath& path,
+    const drive::DriveIntegrationService* drive_service) {
+  DCHECK(path.IsAbsolute());
+  return drive_service->GetMountPointPath().Append(path.value().substr(1));
+}
+
 // Given a vector of QuickAccessItems, return only those that exist on-disk.
 std::vector<drive::QuickAccessItem> FilterResults(
     const drive::DriveIntegrationService* drive_service,
@@ -65,8 +74,7 @@ std::vector<drive::QuickAccessItem> FilterResults(
   std::vector<drive::QuickAccessItem> valid_results;
   int num_filtered = 0;
   for (const auto& result : drive_results) {
-    if (base::PathExists(
-            drive_service->GetMountPointPath().Append(result.path))) {
+    if (base::PathExists(ReparentToDriveMount(result.path, drive_service))) {
       valid_results.emplace_back(result);
       ++num_filtered;
     }
@@ -122,8 +130,8 @@ void DriveQuickAccessProvider::Start(const base::string16& query) {
   SearchProvider::Results results;
   for (const auto& result : results_cache_) {
     results.emplace_back(std::make_unique<DriveQuickAccessResult>(
-        drive_service_->GetMountPointPath().Append(result.path),
-        result.confidence, profile_));
+        ReparentToDriveMount(result.path, drive_service_), result.confidence,
+        profile_));
   }
   UMA_HISTOGRAM_TIMES("Apps.AppList.DriveQuickAccessProvider.Latency",
                       base::TimeTicks::Now() - query_start_time_);

@@ -113,8 +113,6 @@ class SVGPreserveAspectRatio final
   SVGMeetOrSliceType meet_or_slice_;
 };
 
-DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGPreserveAspectRatio);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_PRESERVE_ASPECT_RATIO_H_

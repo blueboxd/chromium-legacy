@@ -146,6 +146,10 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // Submits a H264BitstreamBuffer |buffer| to the driver.
   void SubmitH264BitstreamBuffer(scoped_refptr<H264BitstreamBuffer> buffer);
 
+  // The unchanged values are filled upon the construction. The varied values
+  // (e.g. ScalingSettings) are filled properly during encoding.
+  VideoEncoderInfo encoder_info_;
+
   // VaapiWrapper is the owner of all HW resources (surfaces and buffers)
   // and will free them on destruction.
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;

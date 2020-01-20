@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/process/memory.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/renderer/controller/memory_usage_monitor_android.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"

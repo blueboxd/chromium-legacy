@@ -14,15 +14,12 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_controller_impl.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 namespace autofill {
 class AutofillManager;
 class CreditCard;
 }  // namespace autofill
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 // Receives the full credit card details. Also displays the unmask prompt UI.
 class FullCardRequester

@@ -179,7 +179,7 @@ class CORE_EXPORT HTMLSelectElement final
 
  private:
   const AtomicString& FormControlType() const override;
-  void UpdateFromElement() override;
+  void UpdateFromElement();
 
   bool MayTriggerVirtualKeyboard() const override;
 

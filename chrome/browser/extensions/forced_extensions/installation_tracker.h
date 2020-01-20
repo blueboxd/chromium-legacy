@@ -39,6 +39,29 @@ class InstallationTracker : public ExtensionRegistryObserver,
 
   ~InstallationTracker() override;
 
+  // Note: enum used for UMA. Do NOT reorder or remove entries. Don't forget to
+  // update enums.xml (name: SessionType) when adding new
+  // entries.
+  // Type of session for current user. This enum is required as UserType enum
+  // doesn't support new regular users. See user_manager::UserType enum for
+  // description of session types other than new and existing regular users.
+  enum class SessionType {
+    // Session with Regular existing user, which has a user name and password.
+    SESSION_TYPE_REGULAR_EXISTING = 0,
+    SESSION_TYPE_GUEST = 1,
+    // Session with Regular new user, which has a user name and password.
+    SESSION_TYPE_REGULAR_NEW = 2,
+    SESSION_TYPE_PUBLIC_ACCOUNT = 3,
+    SESSION_TYPE_SUPERVISED = 4,
+    SESSION_TYPE_KIOSK_APP = 5,
+    SESSION_TYPE_CHILD = 6,
+    SESSION_TYPE_ARC_KIOSK_APP = 7,
+    SESSION_TYPE_ACTIVE_DIRECTORY = 8,
+    SESSION_TYPE_WEB_KIOSK_APP = 9,
+    // Maximum histogram value.
+    kMaxValue = SESSION_TYPE_WEB_KIOSK_APP
+  };
+
   // ExtensionRegistryObserver overrides:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const Extension* extension) override;
@@ -91,9 +114,19 @@ class InstallationTracker : public ExtensionRegistryObserver,
   // Loads list of force-installed extensions if available.
   void OnForcedExtensionsPrefChanged();
 
-  // If |succeeded| report time elapsed for extensions load,
+#if defined(OS_CHROMEOS)
+  // Returns Session Type in case extension fails to install.
+  SessionType GetSessionType();
+#endif  // defined(OS_CHROMEOS)
+
+  // If |kInstallationTimeout| report time elapsed for extensions load,
   // otherwise amount of not yet loaded extensions and reasons
   // why they were not installed.
+  void ReportMetrics();
+
+  // Calls ReportMetrics method if there is a non-empty list of
+  // force-installed extensions, and is responsible for cleanup of
+  // installation reporter and the observers.
   void ReportResults();
 
   // Unowned, but guaranteed to outlive this object.

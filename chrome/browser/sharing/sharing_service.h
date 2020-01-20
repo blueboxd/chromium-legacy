@@ -130,12 +130,6 @@ class SharingService : public KeyedService, public syncer::SyncServiceObserver {
   void OnDeviceRegistered(SharingDeviceRegistrationResult result);
   void OnDeviceUnregistered(SharingDeviceRegistrationResult result);
 
-  // Returns list of devices that have |required_feature| enabled. Also
-  // filters out devices which have not been active for some time.
-  SharingDeviceList FilterDeviceCandidates(
-      SharingDeviceList devices,
-      sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const;
-
   std::unique_ptr<SharingSyncPreference> sync_prefs_;
   std::unique_ptr<VapidKeyManager> vapid_key_manager_;
   std::unique_ptr<SharingDeviceRegistration> sharing_device_registration_;

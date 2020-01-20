@@ -11,6 +11,9 @@
 
 namespace blink {
 
+template <typename OffsetMappingBuilder>
+class NGInlineItemsBuilderTemplate;
+
 // Data which is required for inline nodes.
 struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
  public:
@@ -39,6 +42,9 @@ struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
   friend class NGInlineNodeLegacy;
   friend class NGInlineNodeForTest;
   friend class NGOffsetMappingTest;
+
+  template <typename OffsetMappingBuilder>
+  friend class NGInlineItemsBuilderTemplate;
 
   // Items to use for the first line, when the node has :first-line rules.
   //

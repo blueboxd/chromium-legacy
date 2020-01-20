@@ -149,7 +149,7 @@ void BrowsingDataRemoverImpl::SetEmbedderDelegate(
   embedder_delegate_ = embedder_delegate;
 }
 
-bool BrowsingDataRemoverImpl::DoesOriginMatchMask(
+bool BrowsingDataRemoverImpl::DoesOriginMatchMaskForTesting(
     int origin_type_mask,
     const url::Origin& origin,
     storage::SpecialStoragePolicy* policy) {
@@ -178,17 +178,6 @@ void BrowsingDataRemoverImpl::RemoveAndReply(const base::Time& delete_begin,
   DCHECK(observer);
   RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
                  std::unique_ptr<BrowsingDataFilterBuilder>(), observer);
-}
-
-void BrowsingDataRemoverImpl::RemoveWithFilter(
-    const base::Time& delete_begin,
-    const base::Time& delete_end,
-    int remove_mask,
-    int origin_type_mask,
-    std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) {
-  DCHECK(filter_builder);
-  RemoveInternal(delete_begin, delete_end, remove_mask, origin_type_mask,
-                 std::move(filter_builder), nullptr);
 }
 
 void BrowsingDataRemoverImpl::RemoveWithFilterAndReply(
@@ -533,19 +522,15 @@ void BrowsingDataRemoverImpl::OverrideStoragePartitionForTesting(
   storage_partition_for_testing_ = storage_partition;
 }
 
-const base::Time& BrowsingDataRemoverImpl::GetLastUsedBeginTime() {
+const base::Time& BrowsingDataRemoverImpl::GetLastUsedBeginTimeForTesting() {
   return delete_begin_;
 }
 
-const base::Time& BrowsingDataRemoverImpl::GetLastUsedEndTime() {
-  return delete_end_;
-}
-
-int BrowsingDataRemoverImpl::GetLastUsedRemovalMask() {
+int BrowsingDataRemoverImpl::GetLastUsedRemovalMaskForTesting() {
   return remove_mask_;
 }
 
-int BrowsingDataRemoverImpl::GetLastUsedOriginTypeMask() {
+int BrowsingDataRemoverImpl::GetLastUsedOriginTypeMaskForTesting() {
   return origin_type_mask_;
 }
 

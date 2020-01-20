@@ -334,7 +334,11 @@ void RequestManager::PrepareCaptureRequest() {
     ++preview_buffers_queued_;
   }
 
-  UpdateCaptureSettings(&capture_request->settings);
+  // Currently only 3A related settings will be applied, which means we don't
+  // need to apply for reprocess request.
+  if (!is_reprocess_request) {
+    UpdateCaptureSettings(&capture_request->settings);
+  }
   capture_interface_->ProcessCaptureRequest(
       std::move(capture_request),
       base::BindOnce(&RequestManager::OnProcessedCaptureRequest, GetWeakPtr()));
@@ -371,7 +375,7 @@ bool RequestManager::TryPrepareReprocessRequest(
 
   stream_types->insert(kYUVReprocessStreams);
   // Prepare metadata by adding extra metadata.
-  *settings = repeating_request_settings_.Clone();
+  *settings = reprocess_job_info->metadata.Clone();
   SetSensorTimestamp(settings, reprocess_job_info->shutter_timestamp);
   SetJpegOrientation(settings);
   for (auto& metadata : task.extra_metadata) {
@@ -791,7 +795,7 @@ void RequestManager::SubmitCaptureResult(
       DCHECK_GT(pending_result.shutter_timestamp, 0UL);
       ReprocessJobInfo reprocess_job_info(
           std::move(frame_number_reprocess_tasks_map_[frame_number]),
-          pending_result.shutter_timestamp);
+          std::move(pending_result.metadata), pending_result.shutter_timestamp);
       buffer_id_reprocess_job_info_map_.emplace(buffer_ipc_id,
                                                 std::move(reprocess_job_info));
       frame_number_reprocess_tasks_map_.erase(frame_number);
@@ -940,12 +944,17 @@ RequestManager::CaptureResult::CaptureResult()
 
 RequestManager::CaptureResult::~CaptureResult() = default;
 
-RequestManager::ReprocessJobInfo::ReprocessJobInfo(ReprocessTaskQueue queue,
-                                                   uint64_t timestamp)
-    : task_queue(std::move(queue)), shutter_timestamp(timestamp) {}
+RequestManager::ReprocessJobInfo::ReprocessJobInfo(
+    ReprocessTaskQueue queue,
+    cros::mojom::CameraMetadataPtr metadata,
+    uint64_t timestamp)
+    : task_queue(std::move(queue)),
+      metadata(std::move(metadata)),
+      shutter_timestamp(timestamp) {}
 
 RequestManager::ReprocessJobInfo::ReprocessJobInfo(ReprocessJobInfo&& info)
     : task_queue(std::move(info.task_queue)),
+      metadata(std::move(info.metadata)),
       shutter_timestamp(info.shutter_timestamp) {}
 
 RequestManager::ReprocessJobInfo::~ReprocessJobInfo() = default;

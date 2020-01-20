@@ -1064,6 +1064,11 @@ test("content_browsertests") {
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
 
+  public_deps = [
+    "//content:content_resources",
+    "//content:dev_ui_content_resources",
+  ]
+
   deps = [
     ":browsertest_support",
     ":content_test_mojo_bindings",
@@ -1085,7 +1090,6 @@ test("content_browsertests") {
     "//components/url_formatter:url_formatter",
     "//components/viz/host",
     "//components/viz/test:test_support",
-    "//content:resources",
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",
     "//content/browser/background_sync:background_sync_proto",
@@ -1914,6 +1918,11 @@ test("content_unittests") {
 
   configs += [ "//build/config:precompiled_headers" ]
 
+  public_deps = [
+    "//content:content_resources",
+    "//content:dev_ui_content_resources",
+  ]
+
   deps = [
     ":content_test_mojo_bindings",
     ":run_all_unittests",
@@ -1943,7 +1952,6 @@ test("content_unittests") {
     "//components/viz/host",
     "//components/viz/service",
     "//components/viz/test:test_support",
-    "//content:resources",
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",
     "//content/browser/background_fetch:background_fetch_proto",

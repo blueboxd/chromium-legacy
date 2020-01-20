@@ -1186,15 +1186,13 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   }
 
   const base::Time& GetBeginTime() {
-    return remover_->GetLastUsedBeginTime();
+    return remover_->GetLastUsedBeginTimeForTesting();
   }
 
-  int GetRemovalMask() {
-    return remover_->GetLastUsedRemovalMask();
-  }
+  int GetRemovalMask() { return remover_->GetLastUsedRemovalMaskForTesting(); }
 
   int GetOriginTypeMask() {
-    return remover_->GetLastUsedOriginTypeMask();
+    return remover_->GetLastUsedOriginTypeMaskForTesting();
   }
 
   network::NetworkContext* network_context() { return network_context_; }
@@ -1206,8 +1204,8 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   bool Match(const GURL& origin,
              int mask,
              storage::SpecialStoragePolicy* policy) {
-    return remover_->DoesOriginMatchMask(mask, url::Origin::Create(origin),
-                                         policy);
+    return remover_->DoesOriginMatchMaskForTesting(
+        mask, url::Origin::Create(origin), policy);
   }
 
  private:

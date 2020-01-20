@@ -284,6 +284,7 @@ source_set("ios_web_navigation_unittests") {
     "navigation/crw_navigation_item_storage_unittest.mm",
     "navigation/crw_session_storage_unittest.mm",
     "navigation/crw_wk_navigation_states_unittest.mm",
+    "navigation/error_page_helper_unittest.mm",
     "navigation/error_retry_state_machine_unittest.mm",
     "navigation/navigation_context_impl_unittest.mm",
     "navigation/navigation_item_impl_unittest.mm",
@@ -645,7 +646,11 @@ js_compile_checked("js_resources") {
 }
 
 bundle_data("navigation_resources") {
-  sources = [ "navigation/resources/restore_session.html" ]
+  sources = [
+    "navigation/resources/error_page_injected.html",
+    "navigation/resources/error_page_loaded.html",
+    "navigation/resources/restore_session.html",
+  ]
   outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
 }
 

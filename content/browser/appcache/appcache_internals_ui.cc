@@ -20,7 +20,7 @@
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_response.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/grit/content_resources.h"
+#include "content/grit/dev_ui_content_resources.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"

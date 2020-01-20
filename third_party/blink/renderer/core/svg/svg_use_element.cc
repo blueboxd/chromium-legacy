@@ -319,7 +319,7 @@ Element* SVGUseElement::ResolveTargetElement() {
   }
   if (!ResourceIsValid())
     return nullptr;
-  return ToDocumentResource(GetResource())
+  return To<DocumentResource>(GetResource())
       ->GetDocument()
       ->getElementById(element_identifier);
 }
@@ -628,7 +628,7 @@ bool SVGUseElement::ResourceIsValid() const {
   // TODO(fs): Handle revalidations that return a new/different resource.
   if (!resource->IsLoaded() && !resource->IsCacheValidator())
     return false;
-  return ToDocumentResource(resource)->GetDocument();
+  return To<DocumentResource>(resource)->GetDocument();
 }
 
 }  // namespace blink

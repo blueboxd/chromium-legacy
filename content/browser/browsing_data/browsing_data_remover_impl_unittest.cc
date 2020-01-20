@@ -398,11 +398,15 @@ class BrowsingDataRemoverImplTest : public testing::Test {
 
   void DestroyBrowserContext() { browser_context_.reset(); }
 
-  const base::Time& GetBeginTime() { return remover_->GetLastUsedBeginTime(); }
+  const base::Time& GetBeginTime() {
+    return remover_->GetLastUsedBeginTimeForTesting();
+  }
 
-  int GetRemovalMask() { return remover_->GetLastUsedRemovalMask(); }
+  int GetRemovalMask() { return remover_->GetLastUsedRemovalMaskForTesting(); }
 
-  int GetOriginTypeMask() { return remover_->GetLastUsedOriginTypeMask(); }
+  int GetOriginTypeMask() {
+    return remover_->GetLastUsedOriginTypeMaskForTesting();
+  }
 
   const StoragePartitionRemovalData& GetStoragePartitionRemovalData() const {
     return storage_partition_removal_data_;
@@ -418,8 +422,8 @@ class BrowsingDataRemoverImplTest : public testing::Test {
   bool Match(const GURL& origin,
              int mask,
              storage::SpecialStoragePolicy* policy) {
-    return remover_->DoesOriginMatchMask(mask, url::Origin::Create(origin),
-                                         policy);
+    return remover_->DoesOriginMatchMaskForTesting(
+        mask, url::Origin::Create(origin), policy);
   }
 
  private:
@@ -1141,7 +1145,7 @@ TEST_F(BrowsingDataRemoverImplTest, CompletionInhibition) {
 
   // Verify that the removal has not yet been completed and the observer has
   // not been called.
-  EXPECT_TRUE(remover->is_removing());
+  EXPECT_TRUE(remover->IsRemovingForTesting());
   EXPECT_FALSE(completion_observer.called());
 
   // Now run the removal process until completion, and verify that observers are
@@ -1149,7 +1153,7 @@ TEST_F(BrowsingDataRemoverImplTest, CompletionInhibition) {
   completion_inhibitor.ContinueToCompletion();
   completion_observer.BlockUntilCompletion();
 
-  EXPECT_FALSE(remover->is_removing());
+  EXPECT_FALSE(remover->IsRemovingForTesting());
   EXPECT_TRUE(completion_observer.called());
 }
 
@@ -1167,7 +1171,7 @@ TEST_F(BrowsingDataRemoverImplTest, EarlyShutdown) {
 
   // Verify that the deletion has not yet been completed and the observer has
   // not been called.
-  EXPECT_TRUE(remover->is_removing());
+  EXPECT_TRUE(remover->IsRemovingForTesting());
   EXPECT_FALSE(completion_observer.called());
 
   // Destroying the profile should trigger the notification.
@@ -1272,7 +1276,7 @@ class MultipleTasksObserver {
 TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
       BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));
-  EXPECT_FALSE(remover->is_removing());
+  EXPECT_FALSE(remover->IsRemovingForTesting());
 
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder_1(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
@@ -1320,10 +1324,6 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
       remover->RemoveAndReply(task.delete_begin, task.delete_end,
                               task.remove_mask, task.origin_type_mask,
                               task.observers[0]);
-    } else if (task.observers.empty()) {
-      remover->RemoveWithFilter(task.delete_begin, task.delete_end,
-                                task.remove_mask, task.origin_type_mask,
-                                std::move(task.filter_builder));
     } else {
       remover->RemoveWithFilterAndReply(task.delete_begin, task.delete_end,
                                         task.remove_mask, task.origin_type_mask,
@@ -1334,7 +1334,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
 
   // Use the inhibitor to stop after every task and check the results.
   for (BrowsingDataRemoverImpl::RemovalTask& task : tasks) {
-    EXPECT_TRUE(remover->is_removing());
+    EXPECT_TRUE(remover->IsRemovingForTesting());
     observer.ClearLastCalledTarget();
 
     // Finish the task execution synchronously.
@@ -1352,7 +1352,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
     EXPECT_EQ(task.delete_begin, GetBeginTime());
   }
 
-  EXPECT_FALSE(remover->is_removing());
+  EXPECT_FALSE(remover->IsRemovingForTesting());
 
   // Run clean up tasks.
   RunAllTasksUntilIdle();
@@ -1363,7 +1363,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasks) {
 TEST_F(BrowsingDataRemoverImplTest, MultipleIdenticalTasks) {
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
       BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));
-  EXPECT_FALSE(remover->is_removing());
+  EXPECT_FALSE(remover->IsRemovingForTesting());
 
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
@@ -1381,7 +1381,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleIdenticalTasks) {
         observer.target_a());
   }
 
-  EXPECT_TRUE(remover->is_removing());
+  EXPECT_TRUE(remover->IsRemovingForTesting());
   observer.ClearLastCalledTarget();
 
   // Finish the task execution synchronously.
@@ -1391,7 +1391,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleIdenticalTasks) {
   // Expect the first observer to be called.
   EXPECT_EQ(1u, observer.GetLastCalledTargets().size());
 
-  EXPECT_TRUE(remover->is_removing());
+  EXPECT_TRUE(remover->IsRemovingForTesting());
   observer.ClearLastCalledTarget();
 
   // Finish the task execution synchronously.
@@ -1401,7 +1401,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleIdenticalTasks) {
   // Expect the remaining observer to be called by a batched deletion.
   EXPECT_EQ(9u, observer.GetLastCalledTargets().size());
 
-  EXPECT_FALSE(remover->is_removing());
+  EXPECT_FALSE(remover->IsRemovingForTesting());
 
   // Run clean up tasks.
   RunAllTasksUntilIdle();
@@ -1415,7 +1415,7 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleIdenticalTasks) {
 TEST_F(BrowsingDataRemoverImplTest, MultipleTasksInQuickSuccession) {
   BrowsingDataRemoverImpl* remover = static_cast<BrowsingDataRemoverImpl*>(
       BrowserContext::GetBrowsingDataRemover(GetBrowserContext()));
-  EXPECT_FALSE(remover->is_removing());
+  EXPECT_FALSE(remover->IsRemovingForTesting());
 
   int test_removal_masks[] = {
       BrowsingDataRemover::DATA_TYPE_COOKIES,
@@ -1442,14 +1442,14 @@ TEST_F(BrowsingDataRemoverImplTest, MultipleTasksInQuickSuccession) {
                     BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
   }
 
-  EXPECT_TRUE(remover->is_removing());
+  EXPECT_TRUE(remover->IsRemovingForTesting());
 
   // Add one more deletion and wait for it.
   BlockUntilBrowsingDataRemoved(
       base::Time(), base::Time::Max(), BrowsingDataRemover::DATA_TYPE_COOKIES,
       BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
 
-  EXPECT_FALSE(remover->is_removing());
+  EXPECT_FALSE(remover->IsRemovingForTesting());
 }
 
 }  // namespace content

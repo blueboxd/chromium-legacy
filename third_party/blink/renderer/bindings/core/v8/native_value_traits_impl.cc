@@ -25,6 +25,16 @@ namespace blink {
 
 namespace bindings {
 
+static_assert(static_cast<IntegerConversionConfiguration>(
+                  IDLIntegerConvMode::kDefault) == kNormalConversion,
+              "IDLIntegerConvMode::kDefault == kNormalConversion");
+static_assert(static_cast<IntegerConversionConfiguration>(
+                  IDLIntegerConvMode::kClamp) == kClamp,
+              "IDLIntegerConvMode::kClamp == kClamp");
+static_assert(static_cast<IntegerConversionConfiguration>(
+                  IDLIntegerConvMode::kEnforceRange) == kEnforceRange,
+              "IDLIntegerConvMode::kEnforceRange == kEnforceRange");
+
 ScriptWrappable* NativeValueTraitsInterfaceNativeValue(
     v8::Isolate* isolate,
     const WrapperTypeInfo* wrapper_type_info,

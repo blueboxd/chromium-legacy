@@ -293,7 +293,7 @@ class QuickViewController {
    * @private
    */
   getAvailableTasks_(entry) {
-    return this.taskController_.getFileTasks().then(tasks => {
+    return this.taskController_.getEntryFileTasks(entry).then(tasks => {
       return tasks.getTaskItems();
     });
   }
@@ -332,7 +332,11 @@ class QuickViewController {
                   values[1]));
           return this.onMetadataLoaded_(entry, items, tasks);
         })
-        .catch(console.error);
+        .catch(error => {
+          if (error) {
+            console.error(error.stack || error);
+          }
+        });
   }
 
   /**

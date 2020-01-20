@@ -8,4 +8,5 @@
 dictionary MeasureMemoryEntry {
   unsigned long long jsMemoryEstimate;
   sequence<unsigned long long> jsMemoryRange;
+  DOMString url;
 };

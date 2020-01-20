@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutSVGRect rect id='rect'",
-          "rect": [54, 54, 58, 58],
+          "rect": [56, 56, 54, 54],
           "reason": "style change"
         }
       ]

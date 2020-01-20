@@ -6,6 +6,37 @@ import("//build/config/features.gni")
 import("//components/safe_browsing/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
+static_library("safe_browsing_prefs") {
+  sources = [
+    "safe_browsing_prefs.cc",
+    "safe_browsing_prefs.h",
+  ]
+
+  deps = [
+    "//base:base",
+    "//components/pref_registry:pref_registry",
+    "//components/prefs",
+    "//components/safe_browsing/core:features",
+    "//components/safe_browsing/core/common:thread_utils",
+    "//net:net",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "safe_browsing_prefs_unittest.cc" ]
+  deps = [
+    ":safe_browsing_prefs",
+    ":test_support",
+    "//base:base",
+    "//base/test:test_support",
+    "//components/prefs:test_support",
+    "//components/safe_browsing/core:features",
+    "//testing/gtest",
+    "//url:url",
+  ]
+}
+
 # TODO(crbug.com/1028755): Remove this condition once there are no longer any
 # dependencies on content/.
 if (!is_ios) {
@@ -31,37 +62,6 @@ if (!is_ios) {
     ]
 
     public_deps = [ ":interfaces" ]
-  }
-
-  static_library("safe_browsing_prefs") {
-    sources = [
-      "safe_browsing_prefs.cc",
-      "safe_browsing_prefs.h",
-    ]
-
-    deps = [
-      "//base:base",
-      "//components/pref_registry:pref_registry",
-      "//components/prefs",
-      "//components/safe_browsing/core:features",
-      "//components/safe_browsing/core/common:thread_utils",
-      "//net:net",
-    ]
-  }
-
-  source_set("unit_tests") {
-    testonly = true
-    sources = [ "safe_browsing_prefs_unittest.cc" ]
-    deps = [
-      ":safe_browsing_prefs",
-      ":test_support",
-      "//base:base",
-      "//base/test:test_support",
-      "//components/prefs:test_support",
-      "//components/safe_browsing/core:features",
-      "//testing/gtest",
-      "//url:url",
-    ]
   }
 
   mojom("interfaces") {

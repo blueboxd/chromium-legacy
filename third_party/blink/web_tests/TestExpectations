@@ -4169,6 +4169,9 @@ crbug.com/927477 virtual/import-maps-without-builtin-modules/external/wpt/import
 crbug.com/1010751 virtual/import-maps-without-builtin-modules/external/wpt/import-maps/builtin-support.tentative/* [ Skip ]
 crbug.com/1010751 external/wpt/import-maps/imported/* [ Skip ]
 
+# Disabled temporarliy until eager evaluation is fixed/re-baselined in DevTools.
+crbug.com/1043151 http/tests/devtools/console/viewport-testing/console-runtime-result-below-prompt.js [ Pass Failure ]
+
 # This test requires a special browser flag and seems not suitable for a wpt test, see bug.
 crbug.com/691944 external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
 crbug.com/691944 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/update-after-oneday.https.html [ Skip ]
@@ -6208,7 +6211,7 @@ crbug.com/1026712 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/time
 # virtual test should be run.
 http/tests/devtools/wasm-isolated-code-cache/wasm-cache-test.js [ Skip ]
 
-# Temporarily disables measure memory tests until V8 with a new implementation is rolled.
+# Memory measurement tests are run as virtual tests.
 external/wpt/measure-memory/measure-memory.tentative.any.html [ Skip ]
 external/wpt/measure-memory/measure-memory.tentative.any.worker.html [ Skip ]
 

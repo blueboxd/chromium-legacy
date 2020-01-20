@@ -30,9 +30,6 @@ class CORE_EXPORT LayoutNGInsideListMarker final : public LayoutInline {
   PositionWithAffinity PositionForPoint(const PhysicalOffset&) const override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGInsideListMarker,
-                                IsLayoutNGInsideListMarker());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LIST_LAYOUT_NG_INSIDE_LIST_MARKER_H_

@@ -16,11 +16,13 @@
 SSLErrorNavigationThrottle::SSLErrorNavigationThrottle(
     content::NavigationHandle* navigation_handle,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+    network_time::NetworkTimeTracker* network_time_tracker,
     SSLErrorNavigationThrottle::HandleSSLErrorCallback
         handle_ssl_error_callback,
     IsInHostedAppCallback is_in_hosted_app_callback)
     : content::NavigationThrottle(navigation_handle),
       ssl_cert_reporter_(std::move(ssl_cert_reporter)),
+      network_time_tracker_(network_time_tracker),
       handle_ssl_error_callback_(std::move(handle_ssl_error_callback)),
       is_in_hosted_app_callback_(std::move(is_in_hosted_app_callback)) {}
 
@@ -109,7 +111,7 @@ void SSLErrorNavigationThrottle::QueueShowInterstitial(
   // navigation.
   std::move(handle_ssl_error_callback)
       .Run(web_contents, net_error, ssl_info, request_url,
-           std::move(ssl_cert_reporter),
+           std::move(ssl_cert_reporter), network_time_tracker_,
            base::BindOnce(&SSLErrorNavigationThrottle::ShowInterstitial,
                           weak_ptr_factory_.GetWeakPtr(), net_error));
 }

@@ -1,4 +1,4 @@
-load('//lib/builders.star', 'builder', 'cpu', 'defaults', 'goma', 'os', 'os_category')
+load('//lib/builders.star', 'builder', 'cpu', 'defaults', 'goma', 'os')
 
 luci.bucket(
     name = 'goma',
@@ -33,12 +33,6 @@ defaults.pool.set('luci.chromium.ci')
 defaults.service_account.set(
         'chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com')
 defaults.swarming_tags.set(['vpython:native-python-wrapper'])
-
-
-def compute_goma_enable_ats(goma_backend, os):
-  if goma_backend == None:
-    return False
-  return os.category in (os_category.LINUX, os_category.WINDOWS)
 
 
 # Builders appear after the function used to define them, with all builders
@@ -172,7 +166,6 @@ def fyi_goma_rbe_canary_builder(
       name = name,
       execution_timeout = 10 * time.hour,
       goma_backend = goma_backend,
-      goma_enable_ats = compute_goma_enable_ats(goma_backend, os),
       mastername = 'chromium.fyi',
       os = os,
       **kwargs
@@ -191,6 +184,7 @@ fyi_goma_rbe_canary_builder(
 
 fyi_goma_rbe_canary_builder(
     name = 'android-archive-dbg-goma-rbe-ats-canary',
+    goma_enable_ats = True,
 )
 
 fyi_goma_rbe_canary_builder(
@@ -199,6 +193,7 @@ fyi_goma_rbe_canary_builder(
 
 fyi_goma_rbe_canary_builder(
     name = 'chromeos-amd64-generic-rel-goma-rbe-canary',
+    goma_enable_ats = True,
 )
 
 fyi_goma_rbe_canary_builder(
@@ -216,6 +211,7 @@ fyi_goma_rbe_canary_builder(
 
 fyi_goma_rbe_canary_builder(
     name = 'linux-archive-rel-goma-rbe-ats-canary',
+    goma_enable_ats = True,
 )
 
 fyi_goma_rbe_canary_builder(
@@ -348,7 +344,6 @@ def fyi_goma_rbe_latest_client_builder(
       name = name,
       execution_timeout = 10 * time.hour,
       goma_backend = goma_backend,
-      goma_enable_ats = compute_goma_enable_ats(goma_backend, os),
       mastername = 'chromium.fyi',
       os = os,
       **kwargs
@@ -368,17 +363,20 @@ fyi_goma_rbe_latest_client_builder(
 fyi_goma_rbe_latest_client_builder(
     name = 'Win Builder (dbg) Goma RBE Latest Client',
     goma_backend = goma.backend.RBE_STAGING,
+    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
 fyi_goma_rbe_latest_client_builder(
     name = 'Win Builder Goma RBE Latest Client',
     goma_backend = goma.backend.RBE_STAGING,
+    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
 fyi_goma_rbe_latest_client_builder(
     name = 'android-archive-dbg-goma-rbe-ats-latest',
+    goma_enable_ats = True,
 )
 
 fyi_goma_rbe_latest_client_builder(
@@ -387,6 +385,7 @@ fyi_goma_rbe_latest_client_builder(
 
 fyi_goma_rbe_latest_client_builder(
     name = 'chromeos-amd64-generic-rel-goma-rbe-latest',
+    goma_enable_ats = True,
 )
 
 fyi_goma_rbe_latest_client_builder(
@@ -404,6 +403,7 @@ fyi_goma_rbe_latest_client_builder(
 
 fyi_goma_rbe_latest_client_builder(
     name = 'linux-archive-rel-goma-rbe-ats-latest',
+    goma_enable_ats = True,
 )
 
 fyi_goma_rbe_latest_client_builder(
@@ -418,18 +418,10 @@ fyi_goma_rbe_latest_client_builder(
 )
 
 
-def goma_builder(
-    *,
-    name,
-    builderless=False,
-    goma_backend=None,
-    os=os.LINUX_DEFAULT,
-    **kwargs):
+def goma_builder(*, name, builderless=False, os=os.LINUX_DEFAULT, **kwargs):
   return builder(
       name = name,
       builderless = builderless,
-      goma_backend = goma_backend,
-      goma_enable_ats = compute_goma_enable_ats(goma_backend, os),
       mastername = 'chromium.goma',
       os = os,
       **kwargs
@@ -468,6 +460,7 @@ goma_builder(
 goma_builder(
     name = 'Chromium Android ARM 32-bit Goma RBE ToT (ATS)',
     goma_backend = goma.backend.RBE_TOT,
+    goma_enable_ats = True,
 )
 
 goma_builder(
@@ -522,24 +515,7 @@ goma_builder(
 goma_builder(
     name = 'Chromium Linux Goma RBE ToT (ATS)',
     goma_backend = goma.backend.RBE_TOT,
-)
-
-goma_builder(
-    name = 'chromeos-amd64-generic-rel (Goma RBE FYI)',
-    builderless = True,
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-goma_builder(
-    name = 'fuchsia-fyi-arm64-rel (Goma RBE FYI)',
-    builderless = True,
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-goma_builder(
-    name = 'fuchsia-fyi-x64-rel (Goma RBE FYI)',
-    builderless = True,
-    goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
 )
 
 
@@ -582,10 +558,11 @@ goma_mac_builder(
 )
 
 
-def goma_windows_builder(*, name, cores=32, **kwargs):
+def goma_windows_builder(*, name, goma_enable_ats=True, cores=32, **kwargs):
   return goma_builder(
       name = name,
       cores = cores,
+      goma_enable_ats = goma_enable_ats,
       os = os.WINDOWS_DEFAULT,
       **kwargs
   )
@@ -628,4 +605,5 @@ goma_windows_builder(
 goma_windows_builder(
     name = 'CrWinGomaStaging',
     cores = 8,
+    goma_enable_ats = False,
 )

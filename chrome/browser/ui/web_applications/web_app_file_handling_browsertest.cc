@@ -107,7 +107,8 @@ class WebAppFileHandlingBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest, PWAsCanViewLaunchParams) {
+IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
+                       LaunchConsumerIsNotTriggeredWithNoFiles) {
   ASSERT_TRUE(https_server()->Start());
 
   const std::string app_id = InstallFileHandlingPWA();
@@ -116,10 +117,7 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest, PWAsCanViewLaunchParams) {
   EXPECT_EQ(false, content::EvalJs(web_contents, "!!window.launchParams"));
 }
 
-using WebAppFileHandlingBrowserTestNoUnifiedWebApp =
-    WebAppFileHandlingBrowserTest;
-
-IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTestNoUnifiedWebApp,
+IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
                        PWAsCanReceiveFileLaunchParams) {
   ASSERT_TRUE(https_server()->Start());
 
@@ -134,7 +132,7 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTestNoUnifiedWebApp,
             content::EvalJs(web_contents, "window.launchParams.files[0].name"));
 }
 
-IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTestNoUnifiedWebApp,
+IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
                        PWAsCanReceiveFileLaunchParamsInTab) {
   ASSERT_TRUE(https_server()->Start());
 
@@ -150,7 +148,7 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTestNoUnifiedWebApp,
             content::EvalJs(web_contents, "window.launchParams.files[0].name"));
 }
 
-IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTestNoUnifiedWebApp,
+IN_PROC_BROWSER_TEST_P(WebAppFileHandlingBrowserTest,
                        PWAsDispatchOnCorrectFileHandlingURL) {
   ASSERT_TRUE(https_server()->Start());
 
@@ -181,14 +179,4 @@ INSTANTIATE_TEST_SUITE_P(
         web_app::ControllerType::kHostedAppController,
         web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
         web_app::ControllerType::kUnifiedControllerWithWebApp),
-    web_app::ControllerTypeParamToString);
-
-// Currently web apps don't support getting a list of all file handlers, so some
-// tests cannot be run.
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppFileHandlingBrowserTestNoUnifiedWebApp,
-    ::testing::Values(
-        web_app::ControllerType::kHostedAppController,
-        web_app::ControllerType::kUnifiedControllerWithBookmarkApp),
     web_app::ControllerTypeParamToString);

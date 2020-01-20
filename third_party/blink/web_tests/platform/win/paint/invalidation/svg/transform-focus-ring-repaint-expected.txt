@@ -8,14 +8,14 @@
     },
     {
       "name": "LayoutNGBlockFlow (positioned) DIV id='target'",
-      "position": [-4, -4],
-      "bounds": [208, 208],
+      "position": [-2, -2],
+      "bounds": [204, 204],
       "backfaceVisibility": "hidden",
       "backgroundColor": "#FFFF00",
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
-          "rect": [0, 0, 208, 208],
+          "rect": [0, 0, 204, 204],
           "reason": "full layer"
         },
         {

@@ -8,14 +8,11 @@
 #import <UIKit/UIKit.h>
 
 #include "base/memory/ref_counted.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 namespace autofill {
 class CreditCard;
 }  // namespace autofill
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 class WebStateList;
 

@@ -69,8 +69,6 @@ class SVGBoolean final : public SVGPropertyHelper<SVGBoolean> {
   bool value_;
 };
 
-DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGBoolean);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_BOOLEAN_H_

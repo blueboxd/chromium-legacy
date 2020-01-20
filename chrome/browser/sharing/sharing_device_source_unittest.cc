@@ -19,8 +19,10 @@ class MockSharingDeviceSource : public SharingDeviceSource {
   MOCK_METHOD1(GetDeviceByGuid,
                std::unique_ptr<syncer::DeviceInfo>(const std::string& guid));
 
-  MOCK_METHOD0(GetAllDevices,
-               std::vector<std::unique_ptr<syncer::DeviceInfo>>());
+  MOCK_METHOD1(
+      GetDeviceCandidates,
+      std::vector<std::unique_ptr<syncer::DeviceInfo>>(
+          sync_pb::SharingSpecificFields::EnabledFeatures required_feature));
 
   void MaybeRunReadyCallbacksForTesting() { MaybeRunReadyCallbacks(); }
 };

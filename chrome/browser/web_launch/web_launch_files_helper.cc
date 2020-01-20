@@ -40,6 +40,24 @@ void WebLaunchFilesHelper::SetLaunchPaths(
                          web_contents, launch_url, std::move(launch_paths)));
 }
 
+// static
+void WebLaunchFilesHelper::SetLaunchDirectoryAndLaunchPaths(
+    content::WebContents* web_contents,
+    const GURL& launch_url,
+    base::FilePath launch_dir,
+    std::vector<base::FilePath> launch_paths) {
+  if (launch_dir.empty())
+    return;
+
+  if (launch_paths.size() == 0)
+    return;
+
+  web_contents->SetUserData(UserDataKey(),
+                            std::make_unique<WebLaunchFilesHelper>(
+                                web_contents, launch_url, std::move(launch_dir),
+                                std::move(launch_paths)));
+}
+
 void WebLaunchFilesHelper::DidFinishNavigation(
     content::NavigationHandle* handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -50,6 +68,41 @@ void WebLaunchFilesHelper::DidFinishNavigation(
   MaybeSendLaunchEntries();
 }
 
+namespace {
+
+class EntriesBuilder {
+ public:
+  EntriesBuilder(
+      std::vector<blink::mojom::NativeFileSystemEntryPtr>* entries_ref,
+      content::WebContents* web_contents,
+      const GURL& launch_url)
+      : entries_ref_(entries_ref),
+        entry_factory_(web_contents->GetMainFrame()
+                           ->GetProcess()
+                           ->GetStoragePartition()
+                           ->GetNativeFileSystemEntryFactory()),
+        context_(url::Origin::Create(launch_url),
+                 launch_url,
+                 web_contents->GetMainFrame()->GetProcess()->GetID(),
+                 web_contents->GetMainFrame()->GetRoutingID()) {}
+
+  void AddFileEntry(const base::FilePath& path) {
+    entries_ref_->push_back(
+        entry_factory_->CreateFileEntryFromPath(context_, path));
+  }
+  void AddDirectoryEntry(const base::FilePath& path) {
+    entries_ref_->push_back(
+        entry_factory_->CreateDirectoryEntryFromPath(context_, path));
+  }
+
+ private:
+  std::vector<blink::mojom::NativeFileSystemEntryPtr>* entries_ref_;
+  scoped_refptr<content::NativeFileSystemEntryFactory> entry_factory_;
+  content::NativeFileSystemEntryFactory::BindingContext context_;
+};
+
+}  // namespace
+
 WebLaunchFilesHelper::WebLaunchFilesHelper(
     content::WebContents* web_contents,
     const GURL& launch_url,
@@ -58,22 +111,34 @@ WebLaunchFilesHelper::WebLaunchFilesHelper(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(launch_paths.size());
 
-  scoped_refptr<content::NativeFileSystemEntryFactory> entry_factory =
-      web_contents->GetMainFrame()
-          ->GetProcess()
-          ->GetStoragePartition()
-          ->GetNativeFileSystemEntryFactory();
-
-  content::NativeFileSystemEntryFactory::BindingContext context(
-      url::Origin::Create(launch_url), launch_url,
-      web_contents->GetMainFrame()->GetProcess()->GetID(),
-      web_contents->GetMainFrame()->GetRoutingID());
-
   launch_entries_.reserve(launch_paths.size());
-  for (const auto& path : launch_paths) {
-    launch_entries_.push_back(
-        entry_factory->CreateFileEntryFromPath(context, path));
-  }
+
+  EntriesBuilder entries_builder(&launch_entries_, web_contents, launch_url);
+  for (const auto& path : launch_paths)
+    entries_builder.AddFileEntry(path);
+
+  // Asynchronously call MaybeSendLaunchEntries, since it may destroy |this|.
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&WebLaunchFilesHelper::MaybeSendLaunchEntries,
+                                weak_ptr_factory.GetWeakPtr()));
+}
+
+WebLaunchFilesHelper::WebLaunchFilesHelper(
+    content::WebContents* web_contents,
+    const GURL& launch_url,
+    base::FilePath launch_dir,
+    std::vector<base::FilePath> launch_paths)
+    : content::WebContentsObserver(web_contents), launch_url_(launch_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!launch_dir.empty());
+  DCHECK(launch_paths.size());
+
+  launch_entries_.reserve(launch_paths.size() + 1);
+
+  EntriesBuilder entries_builder(&launch_entries_, web_contents, launch_url);
+  entries_builder.AddDirectoryEntry(launch_dir);
+  for (const auto& path : launch_paths)
+    entries_builder.AddFileEntry(path);
 
   // Asynchronously call MaybeSendLaunchEntries, since it may destroy |this|.
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},

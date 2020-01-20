@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 namespace base {
 class FilePath;
@@ -17,9 +18,6 @@ class FilePath;
 class BrowserStateInfoCache;
 
 namespace ios {
-
-class ChromeBrowserState;
-
 // Provides methods that allow for various ways of creating non-incognito
 // ChromeBrowserState instances. Owns all instances that it creates.
 class ChromeBrowserStateManager {

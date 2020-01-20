@@ -45,18 +45,31 @@ jumbo_component("controller") {
     "memory_usage_monitor.h",
   ]
 
+  if (is_linux) {
+    sources += [
+      "memory_usage_monitor_posix.cc",
+      "memory_usage_monitor_posix.h",
+    ]
+    deps += [ "//third_party/blink/public/mojom:memory_usage_monitor_linux_mojo_bindings_blink" ]
+  }
   if (is_android) {
     sources += [
       "crash_memory_metrics_reporter_impl.cc",
       "crash_memory_metrics_reporter_impl.h",
       "highest_pmf_reporter.cc",
       "highest_pmf_reporter.h",
-      "memory_usage_monitor_android.cc",
-      "memory_usage_monitor_android.h",
+      "memory_usage_monitor_posix.cc",
+      "memory_usage_monitor_posix.h",
       "oom_intervention_impl.cc",
       "oom_intervention_impl.h",
       "user_level_memory_pressure_signal_generator.cc",
       "user_level_memory_pressure_signal_generator.h",
+    ]
+  }
+  if (is_win) {
+    sources += [
+      "memory_usage_monitor_win.cc",
+      "memory_usage_monitor_win.h",
     ]
   }
   if (is_mac) {
@@ -84,11 +97,15 @@ group("webkit_unit_tests") {
   visibility = []  # Allow re-assignment of list.
   visibility = [ "*" ]
   testonly = true
-  deps = [ ":blink_unittests" ]
+  deps = [
+    ":blink_unittests",
+  ]
 }
 
 test("blink_unittests") {
-  deps = [ ":blink_unittests_sources" ]
+  deps = [
+    ":blink_unittests_sources",
+  ]
 
   data_deps = [
     ":blink_unittests_data",
@@ -110,7 +127,9 @@ test("blink_unittests") {
 }
 
 test("blink_perf_tests") {
-  deps = [ ":blink_perf_tests_sources" ]
+  deps = [
+    ":blink_perf_tests_sources",
+  ]
 }
 
 jumbo_source_set("blink_perf_tests_sources") {
@@ -118,7 +137,9 @@ jumbo_source_set("blink_perf_tests_sources") {
   visibility = [ "*" ]
   testonly = true
 
-  sources = [ "tests/run_all_tests.cc" ]
+  sources = [
+    "tests/run_all_tests.cc",
+  ]
 
   deps = [
     ":controller",
@@ -139,12 +160,17 @@ jumbo_source_set("blink_unittests_sources") {
   visibility = [ "*" ]
   testonly = true
 
-  sources = [ "tests/run_all_tests.cc" ]
+  sources = [
+    "tests/run_all_tests.cc",
+  ]
   sources += bindings_unittest_files
+  if (is_linux) {
+    sources += [ "memory_usage_monitor_posix_test.cc" ]
+  }
   if (is_android) {
     sources += [
       "highest_pmf_reporter_test.cc",
-      "memory_usage_monitor_android_test.cc",
+      "memory_usage_monitor_posix_test.cc",
       "memory_usage_monitor_test.cc",
       "oom_intervention_impl_test.cc",
       "user_level_memory_pressure_signal_generator_test.cc",

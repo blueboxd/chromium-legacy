@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
 import("//build/config/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//testing/test.gni")
@@ -64,7 +65,7 @@ if (use_official_google_api_keys == "") {
 
 config("key_defines") {
   defines = []
-  if (use_official_google_api_keys) {
+  if (is_chrome_branded || use_official_google_api_keys) {
     defines += [ "USE_OFFICIAL_GOOGLE_API_KEYS=1" ]
   }
   if (google_api_key != "") {
@@ -140,7 +141,7 @@ template("google_apis_tmpl") {
       "//services/network/public/cpp",
     ]
 
-    if (use_official_google_api_keys) {
+    if (is_chrome_branded || use_official_google_api_keys) {
       deps += [ "internal:generate_metrics_key_header" ]
     }
 

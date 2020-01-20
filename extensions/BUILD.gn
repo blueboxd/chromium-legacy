@@ -162,9 +162,7 @@ jumbo_static_library("test_support") {
     "//third_party/cld_3/src/src:cld_3",
   ]
 
-  public_deps = [
-    "//content/public/browser",
-  ]
+  public_deps = [ "//content/public/browser" ]
 }
 
 repack("shell_and_test_pak") {
@@ -173,6 +171,7 @@ repack("shell_and_test_pak") {
   sources = [
     "$root_gen_dir/content/browser/devtools/devtools_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
+    "$root_gen_dir/content/dev_ui_content_resources.pak",
     "$root_gen_dir/content/shell/shell_resources.pak",
     "$root_gen_dir/extensions/extensions_browser_resources_100_percent.pak",
     "$root_gen_dir/extensions/extensions_renderer_resources.pak",
@@ -192,7 +191,8 @@ repack("shell_and_test_pak") {
 
   deps = [
     ":extensions_resources",
-    "//content:resources",
+    "//content:content_resources",
+    "//content:dev_ui_content_resources",
     "//content/browser/devtools:devtools_resources",
     "//content/shell:resources",
     "//extensions/shell:resources",
@@ -237,9 +237,7 @@ test("extensions_unittests") {
     "//ui/gl:test_support",
   ]
 
-  data_deps = [
-    "//third_party/mesa_headers",
-  ]
+  data_deps = [ "//third_party/mesa_headers" ]
 }
 
 test("extensions_browsertests") {
@@ -256,9 +254,7 @@ test("extensions_browsertests") {
     "//extensions/shell:browser_tests",
   ]
 
-  data_deps = [
-    "//third_party/mesa_headers",
-  ]
+  data_deps = [ "//third_party/mesa_headers" ]
 }
 
 # TODO(rockot) bug 505926: These should be moved to extensions_browsertests but have

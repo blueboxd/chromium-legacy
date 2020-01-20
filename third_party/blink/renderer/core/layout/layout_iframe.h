@@ -50,8 +50,6 @@ class LayoutIFrame final : public LayoutEmbeddedContent {
   PaintLayerType LayerTypeRequired() const override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutIFrame, IsLayoutIFrame());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_IFRAME_H_

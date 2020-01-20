@@ -312,10 +312,24 @@ const SharedOption = {
 };
 Object.freeze(SharedOption);
 
-/**
- * @enum {string}
- */
 
+/**
+ * @typedef {{
+ *   downloads: string,
+ *   drive: string,
+ *   android_files: string,
+ * }}
+ *
+ */
+let getRootPathsResult;
+
+/**
+ * @typedef {{
+ *   DOWNLOADS: string,
+ *   DRIVE: string,
+ *   ANDROID_FILES: string,
+ * }}
+ */
 const RootPath = {
   DOWNLOADS: '/must-be-filled-in-test-setup',
   DRIVE: '/must-be-filled-in-test-setup',
@@ -408,40 +422,43 @@ let TestEntryInfoOptions;
  * in file_manager_browsertest_base.cc
  * TODO(sashab): Remove this, rename TestEntryInfoOptions to TestEntryInfo and
  * set the defaults in the record definition above.
- *
- * @constructor
- * @param {TestEntryInfoOptions} options Parameters to create the TestEntryInfo.
  */
-function TestEntryInfo(options) {
-  this.type = options.type;
-  this.sourceFileName = options.sourceFileName || '';
-  this.targetPath = options.targetPath;
-  this.teamDriveName = options.teamDriveName || '';
-  this.computerName = options.computerName || '';
-  this.mimeType = options.mimeType || '';
-  this.sharedOption = options.sharedOption || SharedOption.NONE;
-  this.lastModifiedTime = options.lastModifiedTime;
-  this.nameText = options.nameText;
-  this.sizeText = options.sizeText;
-  this.typeText = options.typeText;
-  this.capabilities = options.capabilities;
-  this.folderFeature = options.folderFeature;
-  this.pinned = !!options.pinned;
-  Object.freeze(this);
+class TestEntryInfo {
+  /**
+   * @param {TestEntryInfoOptions} options Parameters to create the
+   *     TestEntryInfo.
+   */
+  constructor(options) {
+    this.type = options.type;
+    this.sourceFileName = options.sourceFileName || '';
+    this.targetPath = options.targetPath;
+    this.teamDriveName = options.teamDriveName || '';
+    this.computerName = options.computerName || '';
+    this.mimeType = options.mimeType || '';
+    this.sharedOption = options.sharedOption || SharedOption.NONE;
+    this.lastModifiedTime = options.lastModifiedTime;
+    this.nameText = options.nameText;
+    this.sizeText = options.sizeText;
+    this.typeText = options.typeText;
+    this.capabilities = options.capabilities;
+    this.folderFeature = options.folderFeature;
+    this.pinned = !!options.pinned;
+    Object.freeze(this);
+  }
+
+  static getExpectedRows(entries) {
+    return entries.map(function(entry) {
+      return entry.getExpectedRow();
+    });
+  }
+
+  /**
+   * Obtains a expected row contents of the file in the file list.
+   */
+  getExpectedRow() {
+    return [this.nameText, this.sizeText, this.typeText, this.lastModifiedTime];
+  }
 }
-
-TestEntryInfo.getExpectedRows = function(entries) {
-  return entries.map(function(entry) {
-    return entry.getExpectedRow();
-  });
-};
-
-/**
- * Obtains a expected row contents of the file in the file list.
- */
-TestEntryInfo.prototype.getExpectedRow = function() {
-  return [this.nameText, this.sizeText, this.typeText, this.lastModifiedTime];
-};
 
 /**
  * Filesystem entries used by the test cases.

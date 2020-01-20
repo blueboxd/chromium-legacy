@@ -1215,9 +1215,11 @@ TEST(PeopleHandlerDiceUnifiedConsentTest, StoredAccountsList) {
   ASSERT_TRUE(accounts.is_list());
   base::Value::ConstListView accounts_list = accounts.GetList();
 
-  ASSERT_EQ(1u, accounts_list.size());
+  ASSERT_EQ(2u, accounts_list.size());
   ASSERT_TRUE(accounts_list[0].FindKey("email"));
+  ASSERT_TRUE(accounts_list[1].FindKey("email"));
   EXPECT_EQ("a@gmail.com", accounts_list[0].FindKey("email")->GetString());
+  EXPECT_EQ("b@gmail.com", accounts_list[1].FindKey("email")->GetString());
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 

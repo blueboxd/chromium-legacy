@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
@@ -233,6 +234,108 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
             EvalJs(web_contents,
                    "window.launchParamsPromise.then("
                    "  launchParams => launchParams.files[0].name)"));
+}
+
+class SystemWebAppManagerLaunchFilesBrowserTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppManagerLaunchFilesBrowserTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    maybe_installation_ =
+        TestSystemWebAppInstallation::SetUpAppThatReceivesLaunchDirectory();
+  }
+};
+
+// Launching behavior for apps that do not want to received launch directory are
+// tested in |SystemWebAppManagerBrowserTest.LaunchFilesForSystemWebApp|.
+IN_PROC_BROWSER_TEST_F(SystemWebAppManagerLaunchFilesBrowserTest,
+                       LaunchDirectoryForSystemWebApp) {
+  WaitForTestSystemAppInstall();
+  apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
+  params.source = apps::mojom::AppLaunchSource::kSourceChromeInternal;
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::ScopedTempDir temp_directory;
+  ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
+  base::FilePath temp_file_path;
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.GetPath(),
+                                             &temp_file_path));
+
+  const GURL& launch_url = WebAppProvider::Get(browser()->profile())
+                               ->registrar()
+                               .GetAppLaunchURL(params.app_id);
+
+  // First launch.
+  params.launch_files = {temp_file_path};
+  content::TestNavigationObserver navigation_observer(launch_url);
+  navigation_observer.StartWatchingNewWebContents();
+  content::WebContents* web_contents =
+      OpenApplication(browser()->profile(), params);
+  navigation_observer.Wait();
+
+  // Set up a Promise that resolves to launchParams, when launchQueue's consumer
+  // callback is called.
+  EXPECT_TRUE(ExecJs(web_contents,
+                     "window.launchParamsPromise = new Promise(resolve => {"
+                     "  window.resolveLaunchParamsPromise = resolve;"
+                     "});"
+                     "launchQueue.setConsumer(launchParams => {"
+                     "  window.resolveLaunchParamsPromise(launchParams);"
+                     "});"));
+
+  // Wait for launch. Set window.firstLaunchParams for inspection.
+  EXPECT_TRUE(ExecJs(web_contents,
+                     "window.launchParamsPromise.then(launchParams => {"
+                     "  window.firstLaunchParams = launchParams;"
+                     "});"));
+
+  // Check launch directory is correct.
+  EXPECT_EQ(true, EvalJs(web_contents,
+                         "window.firstLaunchParams.files[0].isDirectory"));
+  EXPECT_EQ(temp_directory.GetPath().BaseName().AsUTF8Unsafe(),
+            EvalJs(web_contents, "window.firstLaunchParams.files[0].name"));
+
+  // Check launch files are correct.
+  EXPECT_EQ(true,
+            EvalJs(web_contents, "window.firstLaunchParams.files[1].isFile"));
+  EXPECT_EQ(temp_file_path.BaseName().AsUTF8Unsafe(),
+            EvalJs(web_contents, "window.firstLaunchParams.files[1].name"));
+
+  // Reset the Promise to get second launchParams.
+  EXPECT_TRUE(ExecJs(web_contents,
+                     "window.launchParamsPromise = new Promise(resolve => {"
+                     "  window.resolveLaunchParamsPromise = resolve;"
+                     "});"));
+
+  // Second Launch.
+  base::ScopedTempDir temp_directory2;
+  ASSERT_TRUE(temp_directory2.CreateUniqueTempDir());
+  base::FilePath temp_file_path2;
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory2.GetPath(),
+                                             &temp_file_path2));
+  params.launch_files = {temp_file_path2};
+  content::WebContents* web_contents2 =
+      OpenApplication(browser()->profile(), params);
+
+  // WebContents* should be the same because we are passing launchParams to the
+  // opened application.
+  EXPECT_EQ(web_contents, web_contents2);
+
+  // Wait for launch. Sets window.secondLaunchParams for inspection.
+  EXPECT_TRUE(ExecJs(web_contents,
+                     "window.launchParamsPromise.then(launchParams => {"
+                     "  window.secondLaunchParams = launchParams;"
+                     "});"));
+
+  // Second launch_dir and launch_files are passed to the opened application.
+  EXPECT_EQ(true, EvalJs(web_contents,
+                         "window.secondLaunchParams.files[0].isDirectory"));
+  EXPECT_EQ(temp_directory2.GetPath().BaseName().AsUTF8Unsafe(),
+            EvalJs(web_contents, "window.secondLaunchParams.files[0].name"));
+  EXPECT_EQ(true,
+            EvalJs(web_contents, "window.secondLaunchParams.files[1].isFile"));
+  EXPECT_EQ(temp_file_path2.BaseName().AsUTF8Unsafe(),
+            EvalJs(web_contents, "window.secondLaunchParams.files[1].name"));
 }
 
 }  // namespace web_app

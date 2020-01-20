@@ -398,7 +398,9 @@ WebRtcLogUploader* TestingBrowserProcess::webrtc_log_uploader() {
 network_time::NetworkTimeTracker*
 TestingBrowserProcess::network_time_tracker() {
   if (!network_time_tracker_) {
-    DCHECK(local_state_);
+    if (!local_state_)
+      return nullptr;
+
     network_time_tracker_.reset(new network_time::NetworkTimeTracker(
         std::unique_ptr<base::Clock>(new base::DefaultClock()),
         std::unique_ptr<base::TickClock>(new base::DefaultTickClock()),

@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/timing/largest_contentful_paint.h"
 #include "third_party/blink/renderer/core/timing/layout_shift.h"
+#include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_delegate.h"
 #include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_options.h"
 #include "third_party/blink/renderer/core/timing/performance_element_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
@@ -146,19 +147,41 @@ MemoryInfo* Performance::memory() const {
   return nullptr;
 }
 
-ScriptPromise Performance::measureMemory(ScriptState* script_state,
-                                         MeasureMemoryOptions* options) const {
-  v8::Isolate* isolate = script_state->GetIsolate();
-  v8::Local<v8::Context> context = script_state->GetContext();
-  v8::Local<v8::Promise> promise;
-  v8::MaybeLocal<v8::Promise> maybe_promise = isolate->MeasureMemory(
-      context, options && options->hasDetailed() && options->detailed()
-                   ? v8::MeasureMemoryMode::kDetailed
-                   : v8::MeasureMemoryMode::kSummary);
-  if (!maybe_promise.ToLocal(&promise)) {
+ScriptPromise Performance::measureMemory(
+    ScriptState* script_state,
+    MeasureMemoryOptions* options,
+    ExceptionState& exception_state) const {
+  if (!Platform::Current()->IsLockedToSite()) {
+    // TODO(ulan): We should check for COOP and COEP here when they ship.
+    // Until then we enable the API only for processes locked to a site
+    // similar to the precise mode of the legacy performance.memory API.
+    exception_state.ThrowSecurityError(
+        "Cannot measure memory for cross-origin frames");
     return ScriptPromise();
   }
-  return ScriptPromise(script_state, promise);
+  v8::Isolate* isolate = script_state->GetIsolate();
+  v8::TryCatch try_catch(isolate);
+  v8::Local<v8::Context> context = script_state->GetContext();
+  v8::Local<v8::Promise::Resolver> promise_resolver;
+  if (!v8::Promise::Resolver::New(context).ToLocal(&promise_resolver)) {
+    exception_state.RethrowV8Exception(try_catch.Exception());
+    return ScriptPromise();
+  }
+  v8::MeasureMemoryMode mode =
+      options && options->hasDetailed() && options->detailed()
+          ? v8::MeasureMemoryMode::kDetailed
+          : v8::MeasureMemoryMode::kSummary;
+
+  v8::MeasureMemoryExecution execution =
+      RuntimeEnabledFeatures::ForceEagerMeasureMemoryEnabled(
+          ExecutionContext::From(script_state))
+          ? v8::MeasureMemoryExecution::kEager
+          : v8::MeasureMemoryExecution::kDefault;
+
+  isolate->MeasureMemory(std::make_unique<MeasureMemoryDelegate>(
+                             isolate, context, promise_resolver, mode),
+                         execution);
+  return ScriptPromise(script_state, promise_resolver->GetPromise());
 }
 
 DOMHighResTimeStamp Performance::timeOrigin() const {

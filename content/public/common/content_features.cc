@@ -613,6 +613,10 @@ const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
 const base::Feature kWebAssemblyCodeGC{"WebAssemblyCodeGC",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable WebAssembly lazy compilation (JIT on first call).
+const base::Feature kWebAssemblyLazyCompilation{
+    "WebAssemblyLazyCompilation", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable WebAssembly SIMD.
 // https://github.com/WebAssembly/Simd
 const base::Feature kWebAssemblySimd{"WebAssemblySimd",

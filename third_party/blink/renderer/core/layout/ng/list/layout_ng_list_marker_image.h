@@ -28,9 +28,6 @@ class CORE_EXPORT LayoutNGListMarkerImage final : public LayoutImage {
   void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const final;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGListMarkerImage,
-                                IsLayoutNGListMarkerImage());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LIST_LAYOUT_NG_LIST_MARKER_IMAGE_H_

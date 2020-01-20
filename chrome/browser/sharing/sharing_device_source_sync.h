@@ -16,20 +16,25 @@ class SyncService;
 class DeviceInfoTracker;
 }  // namespace syncer
 
+class SharingSyncPreference;
+
 class SharingDeviceSourceSync : public SharingDeviceSource,
                                 public syncer::DeviceInfoTracker::Observer {
  public:
   SharingDeviceSourceSync(
       syncer::SyncService* sync_service,
       syncer::LocalDeviceInfoProvider* local_device_info_provider,
-      syncer::DeviceInfoTracker* device_info_tracker);
+      syncer::DeviceInfoTracker* device_info_tracker,
+      SharingSyncPreference* sync_prefs);
   ~SharingDeviceSourceSync() override;
 
   // SharingDeviceSource:
   bool IsReady() override;
   std::unique_ptr<syncer::DeviceInfo> GetDeviceByGuid(
       const std::string& guid) override;
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> GetAllDevices() override;
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> GetDeviceCandidates(
+      sync_pb::SharingSpecificFields::EnabledFeatures required_feature)
+      override;
 
   // syncer::DeviceInfoTracker::Observer:
   void OnDeviceInfoChange() override;
@@ -52,11 +57,17 @@ class SharingDeviceSourceSync : public SharingDeviceSource,
   std::vector<std::unique_ptr<syncer::DeviceInfo>> RenameAndDeduplicateDevices(
       std::vector<std::unique_ptr<syncer::DeviceInfo>> devices) const;
 
+  std::vector<std::unique_ptr<syncer::DeviceInfo>> FilterDeviceCandidates(
+      std::vector<std::unique_ptr<syncer::DeviceInfo>> devices,
+      const base::Time min_updated_time,
+      sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const;
+
   syncer::SyncService* sync_service_;
   syncer::LocalDeviceInfoProvider* local_device_info_provider_;
   syncer::DeviceInfoTracker* device_info_tracker_;
   std::unique_ptr<syncer::LocalDeviceInfoProvider::Subscription>
       local_device_info_ready_subscription_;
+  SharingSyncPreference* sync_prefs_;
 
   // The personalized name is stored for deduplicating devices running older
   // clients.

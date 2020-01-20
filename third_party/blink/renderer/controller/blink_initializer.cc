@@ -67,6 +67,10 @@
 #include "third_party/blink/renderer/controller/user_level_memory_pressure_signal_generator.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "third_party/blink/renderer/controller/memory_usage_monitor_posix.h"
+#endif
+
 namespace blink {
 
 namespace {
@@ -178,6 +182,11 @@ void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
 
   binders.Add(ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
                   &CrashMemoryMetricsReporterImpl::Bind)),
+              main_thread->GetTaskRunner());
+#endif
+#if defined(OS_LINUX)
+  binders.Add(ConvertToBaseRepeatingCallback(
+                  CrossThreadBindRepeating(&MemoryUsageMonitorPosix::Bind)),
               main_thread->GetTaskRunner());
 #endif
 

@@ -90,6 +90,11 @@ ExecutionContext* ExecutionContext::From(const ScriptState* script_state) {
 }
 
 // static
+ExecutionContext* ExecutionContext::From(v8::Local<v8::Context> context) {
+  return ToExecutionContext(context);
+}
+
+// static
 ExecutionContext* ExecutionContext::ForCurrentRealm(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   return ToExecutionContext(info.GetIsolate()->GetCurrentContext());

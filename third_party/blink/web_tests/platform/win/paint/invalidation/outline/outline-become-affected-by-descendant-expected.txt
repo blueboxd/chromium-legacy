@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutNGBlockFlow DIV id='outline'",
-          "rect": [4, 4, 158, 108],
+          "rect": [6, 6, 154, 104],
           "reason": "outline"
         },
         {

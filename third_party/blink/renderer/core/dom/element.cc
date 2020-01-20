@@ -5408,8 +5408,6 @@ bool Element::CanGeneratePseudoElement(PseudoId pseudo_id) const {
     return false;
   if (pseudo_id == kPseudoIdFirstLetter && IsSVGElement())
     return false;
-  if (pseudo_id == kPseudoIdMarker && IsA<HTMLFieldSetElement>(this))
-    return false;
   if (const ComputedStyle* style = GetComputedStyle())
     return style->CanGeneratePseudoElement(pseudo_id);
   return false;

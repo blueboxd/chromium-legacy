@@ -343,7 +343,6 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
 
   // Converts the given point, relative to the fragment itself, into a position
   // in DOM tree.
-  PositionWithAffinity PositionForPoint(const PhysicalOffset&) const;
   PositionWithAffinity PositionForPointInText(
       const PhysicalOffset& point,
       const NGInlineCursor& cursor) const;

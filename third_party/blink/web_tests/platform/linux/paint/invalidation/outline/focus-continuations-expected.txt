@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "NGPhysicalBoxFragment LayoutInline SPAN id='outer'",
-          "rect": [4, 84, 94, 28],
+          "rect": [6, 86, 90, 24],
           "reason": "disappeared"
         }
       ]

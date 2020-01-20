@@ -394,10 +394,6 @@ views::Button* MediaNotificationViewImpl::GetHeaderRowForTesting() const {
   return header_row_;
 }
 
-base::string16 MediaNotificationViewImpl::GetSourceTitleForTesting() const {
-  return header_row_->app_name_for_testing();
-}
-
 void MediaNotificationViewImpl::UpdateActionButtonsVisibility() {
   base::flat_set<MediaSessionAction> ignored_actions = {
       GetPlayPauseIgnoredAction(GetActionFromButtonTag(*play_pause_button_))};

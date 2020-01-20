@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -58,17 +57,26 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   // DownloadTaskObserver overrides:
   void OnDownloadUpdated(web::DownloadTask* task) override {
     if (task->IsDone()) {
-      UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadFileResult",
-                                task->GetErrorCode()
-                                    ? DownloadFileResult::Failure
-                                    : DownloadFileResult::Completed,
-                                DownloadFileResult::Count);
+      base::UmaHistogramEnumeration("Download.IOSDownloadFileResult",
+                                    task->GetErrorCode()
+                                        ? DownloadFileResult::Failure
+                                        : DownloadFileResult::Completed,
+                                    DownloadFileResult::Count);
       if (task->GetErrorCode()) {
         base::UmaHistogramSparse("Download.IOSDownloadedFileNetError",
                                  -task->GetErrorCode());
       } else {
-        UMA_HISTOGRAM_BOOLEAN("Download.IOSDownloadInstallDrivePromoShown",
-                              !IsGoogleDriveAppInstalled());
+        bool GoogleDriveIsInstalled = IsGoogleDriveAppInstalled();
+        if (GoogleDriveIsInstalled)
+          base::UmaHistogramEnumeration(
+              "Download.IOSDownloadFileUIGoogleDrive",
+              DownloadFileUIGoogleDrive::GoogleDriveAlreadyInstalled,
+              DownloadFileUIGoogleDrive::Count);
+        else
+          base::UmaHistogramEnumeration(
+              "Download.IOSDownloadFileUIGoogleDrive",
+              DownloadFileUIGoogleDrive::GoogleDriveNotInstalled,
+              DownloadFileUIGoogleDrive::Count);
       }
 
       bool backgrounded = task->HasPerformedBackgroundDownload();
@@ -80,9 +88,9 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
               : (backgrounded
                      ? DownloadFileInBackground::SucceededWithBackgrounding
                      : DownloadFileInBackground::SucceededWithoutBackgrounding);
-      UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadFileInBackground",
-                                histogram_value,
-                                DownloadFileInBackground::Count);
+      base::UmaHistogramEnumeration("Download.IOSDownloadFileInBackground",
+                                    histogram_value,
+                                    DownloadFileInBackground::Count);
     }
   }
   void OnDownloadDestroyed(web::DownloadTask* task) override {
@@ -96,14 +104,14 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   // Logs histograms. Called when DownloadTask or this object was destroyed.
   void DownloadAborted(web::DownloadTask* task) {
     if (task->GetState() == web::DownloadTask::State::kInProgress) {
-      UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadFileResult",
-                                DownloadFileResult::Other,
-                                DownloadFileResult::Count);
+      base::UmaHistogramEnumeration("Download.IOSDownloadFileResult",
+                                    DownloadFileResult::Other,
+                                    DownloadFileResult::Count);
 
       if (did_close_web_state_without_user_action) {
         // web state can be closed without user action only during the app
         // shutdown.
-        UMA_HISTOGRAM_ENUMERATION(
+        base::UmaHistogramEnumeration(
             "Download.IOSDownloadFileInBackground",
             DownloadFileInBackground::CanceledAfterAppQuit,
             DownloadFileInBackground::Count);
@@ -111,7 +119,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
     }
 
     if (task->IsDone() && task->GetErrorCode() == net::OK) {
-      UMA_HISTOGRAM_ENUMERATION(
+      base::UmaHistogramEnumeration(
           "Download.IOSDownloadedFileAction",
           DownloadedFileAction::NoActionOrOpenedViaExtension,
           DownloadedFileAction::Count);
@@ -235,7 +243,10 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
                didCreateDownload:(nonnull web::DownloadTask*)download
                webStateIsVisible:(BOOL)webStateIsVisible {
-  base::RecordAction(base::UserMetricsAction("MobileDownloadFileUIShown"));
+  base::UmaHistogramEnumeration("Download.IOSDownloadFileUI",
+                                DownloadFileUI::DownloadFileStarted,
+                                DownloadFileUI::Count);
+
   if (!webStateIsVisible) {
     // Do nothing if a background Tab requested download UI presentation.
     return;
@@ -262,8 +273,8 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
                           confirmTitle:IDS_OK
                            cancelTitle:IDS_CANCEL
                      completionHandler:^(BOOL confirmed) {
-                       UMA_HISTOGRAM_BOOLEAN("Download.IOSDownloadReplaced",
-                                             confirmed);
+                       base::UmaHistogramBoolean("Download.IOSDownloadReplaced",
+                                                 confirmed);
                        handler(confirmed ? kNewDownloadPolicyReplace
                                          : kNewDownloadPolicyDiscard);
                      }];
@@ -294,8 +305,8 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   DownloadedFileAction action = [applicationID isEqual:kGoogleDriveAppBundleID]
                                     ? DownloadedFileAction::OpenedInDrive
                                     : DownloadedFileAction::OpenedInOtherApp;
-  UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadedFileAction", action,
-                            DownloadedFileAction::Count);
+  base::UmaHistogramEnumeration("Download.IOSDownloadedFileAction", action,
+                                DownloadedFileAction::Count);
   if (_downloadTask) {  // _downloadTask can be null if coordinator was stopped.
     _unopenedDownloads.Remove(_downloadTask);
   }
@@ -316,9 +327,9 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 - (void)downloadManagerViewControllerDidClose:
     (DownloadManagerViewController*)controller {
   if (_downloadTask->GetState() != web::DownloadTask::State::kInProgress) {
-    UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadFileResult",
-                              DownloadFileResult::NotStarted,
-                              DownloadFileResult::Count);
+    base::UmaHistogramEnumeration("Download.IOSDownloadFileResult",
+                                  DownloadFileResult::NotStarted,
+                                  DownloadFileResult::Count);
     [self cancelDownload];
     return;
   }
@@ -331,7 +342,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
                            cancelTitle:IDS_IOS_DOWNLOAD_MANAGER_CONTINUE
                      completionHandler:^(BOOL confirmed) {
                        if (confirmed) {
-                         UMA_HISTOGRAM_ENUMERATION(
+                         base::UmaHistogramEnumeration(
                              "Download.IOSDownloadFileResult",
                              DownloadFileResult::Cancelled,
                              DownloadFileResult::Count);
@@ -433,8 +444,10 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 
 // Called when Google Drive app is installed after starting StoreKitCoordinator.
 - (void)didInstallGoogleDriveApp {
-  base::RecordAction(
-      base::UserMetricsAction("MobileDownloadFileUIInstallGoogleDrive"));
+  base::UmaHistogramEnumeration(
+      "Download.IOSDownloadFileUIGoogleDrive",
+      DownloadFileUIGoogleDrive::GoogleDriveInstalledAfterDisplay,
+      DownloadFileUIGoogleDrive::Count);
 }
 
 // Called when Open In... menu was not presented. This method shows the alert

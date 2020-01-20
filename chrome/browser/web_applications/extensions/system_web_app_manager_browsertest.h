@@ -67,11 +67,13 @@ class SystemWebAppManagerBrowserTest : public InProcessBrowserTest {
   // Invokes OpenApplication() using the test's Profile.
   content::WebContents* LaunchApp(const apps::AppLaunchParams& params);
 
+ protected:
+  std::unique_ptr<TestSystemWebAppInstallation> maybe_installation_;
+
  private:
   std::unique_ptr<KeyedService> CreateWebAppProvider(Profile* profile);
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<TestSystemWebAppInstallation> maybe_installation_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemWebAppManagerBrowserTest);
 };

@@ -29,36 +29,76 @@ class ScriptValue;
 // Boolean
 struct IDLBoolean final : public IDLBaseHelper<bool> {};
 
+// Integer types
+
+namespace bindings {
+
+enum class IDLIntegerConvMode {
+  kDefault,
+  kClamp,
+  kEnforceRange,
+};
+
+}  // namespace bindings
+
+template <typename T,
+          bindings::IDLIntegerConvMode mode =
+              bindings::IDLIntegerConvMode::kDefault>
+struct IDLIntegerTypeBase final : public IDLBaseHelper<T> {};
+
 // Integers
-struct IDLByte final : public IDLBaseHelper<int8_t> {};
-struct IDLOctet final : public IDLBaseHelper<uint8_t> {};
-struct IDLShort final : public IDLBaseHelper<int16_t> {};
-struct IDLUnsignedShort final : public IDLBaseHelper<uint16_t> {};
-struct IDLLong final : public IDLBaseHelper<int32_t> {};
-struct IDLUnsignedLong final : public IDLBaseHelper<uint32_t> {};
-struct IDLLongLong final : public IDLBaseHelper<int64_t> {};
-struct IDLUnsignedLongLong final : public IDLBaseHelper<uint64_t> {};
+using IDLByte = IDLIntegerTypeBase<int8_t>;
+using IDLOctet = IDLIntegerTypeBase<uint8_t>;
+using IDLShort = IDLIntegerTypeBase<int16_t>;
+using IDLUnsignedShort = IDLIntegerTypeBase<uint16_t>;
+using IDLLong = IDLIntegerTypeBase<int32_t>;
+using IDLUnsignedLong = IDLIntegerTypeBase<uint32_t>;
+using IDLLongLong = IDLIntegerTypeBase<int64_t>;
+using IDLUnsignedLongLong = IDLIntegerTypeBase<uint64_t>;
 
 // [Clamp] Integers
-struct IDLByteClamp final : public IDLBaseHelper<int8_t> {};
-struct IDLOctetClamp final : public IDLBaseHelper<uint8_t> {};
-struct IDLShortClamp final : public IDLBaseHelper<int16_t> {};
-struct IDLUnsignedShortClamp final : public IDLBaseHelper<uint16_t> {};
-struct IDLLongClamp final : public IDLBaseHelper<int32_t> {};
-struct IDLUnsignedLongClamp final : public IDLBaseHelper<uint32_t> {};
-struct IDLLongLongClamp final : public IDLBaseHelper<int64_t> {};
-struct IDLUnsignedLongLongClamp final : public IDLBaseHelper<uint64_t> {};
+using IDLByteClamp =
+    IDLIntegerTypeBase<int8_t, bindings::IDLIntegerConvMode::kClamp>;
+using IDLOctetClamp =
+    IDLIntegerTypeBase<uint8_t, bindings::IDLIntegerConvMode::kClamp>;
+using IDLShortClamp =
+    IDLIntegerTypeBase<int16_t, bindings::IDLIntegerConvMode::kClamp>;
+using IDLUnsignedShortClamp =
+    IDLIntegerTypeBase<uint16_t, bindings::IDLIntegerConvMode::kClamp>;
+using IDLLongClamp =
+    IDLIntegerTypeBase<int32_t, bindings::IDLIntegerConvMode::kClamp>;
+using IDLUnsignedLongClamp =
+    IDLIntegerTypeBase<uint32_t, bindings::IDLIntegerConvMode::kClamp>;
+using IDLLongLongClamp =
+    IDLIntegerTypeBase<int64_t, bindings::IDLIntegerConvMode::kClamp>;
+using IDLUnsignedLongLongClamp =
+    IDLIntegerTypeBase<uint64_t, bindings::IDLIntegerConvMode::kClamp>;
 
 // [EnforceRange] Integers
-struct IDLByteEnforceRange final : public IDLBaseHelper<int8_t> {};
-struct IDLOctetEnforceRange final : public IDLBaseHelper<uint8_t> {};
-struct IDLShortEnforceRange final : public IDLBaseHelper<int16_t> {};
-struct IDLUnsignedShortEnforceRange final : public IDLBaseHelper<uint16_t> {};
-struct IDLLongEnforceRange final : public IDLBaseHelper<int32_t> {};
-struct IDLUnsignedLongEnforceRange final : public IDLBaseHelper<uint32_t> {};
-struct IDLLongLongEnforceRange final : public IDLBaseHelper<int64_t> {};
-struct IDLUnsignedLongLongEnforceRange final : public IDLBaseHelper<uint64_t> {
-};
+using IDLByteEnforceRange =
+    IDLIntegerTypeBase<int8_t, bindings::IDLIntegerConvMode::kEnforceRange>;
+using IDLOctetEnforceRange =
+    IDLIntegerTypeBase<uint8_t, bindings::IDLIntegerConvMode::kEnforceRange>;
+using IDLShortEnforceRange =
+    IDLIntegerTypeBase<int16_t, bindings::IDLIntegerConvMode::kEnforceRange>;
+using IDLUnsignedShortEnforceRange =
+    IDLIntegerTypeBase<uint16_t, bindings::IDLIntegerConvMode::kEnforceRange>;
+using IDLLongEnforceRange =
+    IDLIntegerTypeBase<int32_t, bindings::IDLIntegerConvMode::kEnforceRange>;
+using IDLUnsignedLongEnforceRange =
+    IDLIntegerTypeBase<uint32_t, bindings::IDLIntegerConvMode::kEnforceRange>;
+using IDLLongLongEnforceRange =
+    IDLIntegerTypeBase<int64_t, bindings::IDLIntegerConvMode::kEnforceRange>;
+using IDLUnsignedLongLongEnforceRange =
+    IDLIntegerTypeBase<uint64_t, bindings::IDLIntegerConvMode::kEnforceRange>;
+
+// Float
+struct IDLFloat final : public IDLBaseHelper<float> {};
+struct IDLUnrestrictedFloat final : public IDLBaseHelper<float> {};
+
+// Double
+struct IDLDouble final : public IDLBaseHelper<double> {};
+struct IDLUnrestrictedDouble final : public IDLBaseHelper<double> {};
 
 // Strings
 // The "Base" classes are always templatized and require users to specify how JS
@@ -117,14 +157,6 @@ template <bindings::IDLStringConvMode mode>
 struct IDLUSVStringBaseV2 final : public IDLBaseHelper<String> {};
 using IDLUSVStringV2 =
     IDLUSVStringBaseV2<bindings::IDLStringConvMode::kDefault>;
-
-// Double
-struct IDLDouble final : public IDLBaseHelper<double> {};
-struct IDLUnrestrictedDouble final : public IDLBaseHelper<double> {};
-
-// Float
-struct IDLFloat final : public IDLBaseHelper<float> {};
-struct IDLUnrestrictedFloat final : public IDLBaseHelper<float> {};
 
 // object
 struct IDLObject final : public IDLBaseHelper<ScriptValue> {};

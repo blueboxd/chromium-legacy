@@ -258,6 +258,13 @@ VaapiVideoEncodeAccelerator::VaapiVideoEncodeAccelerator()
 
   child_weak_this_ = child_weak_this_factory_.GetWeakPtr();
   encoder_weak_this_ = encoder_weak_this_factory_.GetWeakPtr();
+
+  // The default value of VideoEncoderInfo of VaapiVideoEncodeAccelerator.
+  encoder_info_.implementation_name = "VaapiVideoEncodeAccelerator";
+  encoder_info_.has_trusted_rate_controller = true;
+  DCHECK(encoder_info_.is_hardware_accelerated);
+  DCHECK(encoder_info_.supports_native_handle);
+  DCHECK(!encoder_info_.supports_simulcast);
 }
 
 VaapiVideoEncodeAccelerator::~VaapiVideoEncodeAccelerator() {
@@ -432,6 +439,19 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
                      num_frames_in_flight_, aligned_input_frame_size_,
                      output_buffer_byte_size_));
 
+  encoder_info_.scaling_settings = encoder_->GetScalingSettings();
+
+  // TODO(crbug.com/1030199): VaapiVideoEncodeAccelerator doesn't support either
+  // temporal-SVC or spatial-SVC. Update |fps_allocation| properly once they are
+  // supported.
+  // A single stream shall be output at the desired FPS.
+  constexpr uint8_t kFullFramerate = 255;
+  encoder_info_.fps_allocation[0] = {kFullFramerate};
+
+  // Notify VideoEncoderInfo after initialization.
+  child_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Client::NotifyEncoderInfoChange, client_, encoder_info_));
   SetState(kEncoding);
 }
 

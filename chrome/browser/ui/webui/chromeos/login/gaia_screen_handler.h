@@ -28,6 +28,7 @@ class AccountId;
 
 namespace base {
 class DictionaryValue;
+class OneShotTimer;
 }  // namespace base
 
 namespace network {
@@ -334,6 +335,8 @@ class GaiaScreenHandler : public BaseScreenHandler,
       const net::CookieStatusList& cookies,
       const net::CookieStatusList& excluded_cookies);
 
+  void OnCookieWaitTimeout();
+
   bool is_security_token_pin_dialog_running() const {
     return !security_token_pin_dialog_closed_callback_.is_null();
   }
@@ -453,6 +456,7 @@ class GaiaScreenHandler : public BaseScreenHandler,
   mojo::Receiver<network::mojom::CookieChangeListener> oauth_code_listener_{
       this};
   std::unique_ptr<UserContext> pending_user_context_;
+  std::unique_ptr<base::OneShotTimer> cookie_waiting_timer_;
 
   base::WeakPtrFactory<GaiaScreenHandler> weak_factory_{this};
 

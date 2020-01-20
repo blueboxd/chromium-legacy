@@ -9,11 +9,8 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "net/cookies/canonical_cookie.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 namespace net {
 class CookieCryptoDelegate;

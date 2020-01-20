@@ -9,11 +9,8 @@
 
 #import "base/ios/block_types.h"
 #import "components/browsing_data/core/browsing_data_utils.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // Protocol for commands that relate to browsing data.
 @protocol BrowsingDataCommands<NSObject>

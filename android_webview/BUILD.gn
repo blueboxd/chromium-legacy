@@ -82,9 +82,7 @@ if (public_android_sdk) {
 
   android_resource_sizes_test("resource_sizes_system_webview_apk") {
     apk_name = "SystemWebView"
-    data_deps = [
-      ":system_webview_apk",
-    ]
+    data_deps = [ ":system_webview_apk" ]
   }
 
   # Trichrome WebView APK.
@@ -344,9 +342,7 @@ generate_jni("browser_jni_headers") {
     "java/src/org/chromium/android_webview/safe_browsing/AwSafeBrowsingConfigHelper.java",
   ]
 
-  deps = [
-    ":cancellation_signal_android_jar_jni_headers",
-  ]
+  deps = [ ":cancellation_signal_android_jar_jni_headers" ]
 }
 
 generate_jar_jni("cancellation_signal_android_jar_jni_headers") {
@@ -493,9 +489,7 @@ android_library("browser_java") {
 }
 
 android_library("common_variations_utils_java") {
-  sources = [
-    "java/src/org/chromium/android_webview/common/variations/VariationsUtils.java",
-  ]
+  sources = [ "java/src/org/chromium/android_webview/common/variations/VariationsUtils.java" ]
   deps = [
     "//android_webview/proto:aw_variations_seed_proto_java",
     "//base:base_java",
@@ -526,12 +520,8 @@ android_library("common_platform_services_java") {
 
 # This target compiles the implementation of PlatformServiceBridge for AOSP targets.
 android_library("platform_service_bridge_upstream_implementation_java") {
-  sources = [
-    "java/src/org/chromium/android_webview/common/PlatformServiceBridgeImpl.java",
-  ]
-  deps = [
-    ":common_platform_services_java",
-  ]
+  sources = [ "java/src/org/chromium/android_webview/common/PlatformServiceBridgeImpl.java" ]
+  deps = [ ":common_platform_services_java" ]
 }
 
 android_library("common_crash_java") {
@@ -594,21 +584,16 @@ generate_product_config_srcjar("webview_product_config") {
 # level - with the list of pak locales populated by looking at the assets that
 # are listed in the final APK's .build_config.
 android_library("android_webview_product_config_java") {
-  sources = [
-    "java/src/org/chromium/android_webview/AwLocaleConfig.java",
-  ]
+  sources = [ "java/src/org/chromium/android_webview/AwLocaleConfig.java" ]
   srcjar_deps = [ ":webview_product_config" ]
   jar_excluded_patterns = [ "*/ProductConfig.class" ]
 }
 
 if (enable_resource_whitelist_generation) {
   generate_resource_whitelist("system_webview_pak_whitelist") {
-    deps = [
-      ":libwebviewchromium",
-    ]
-    inputs = [
-      "$root_out_dir/lib.unstripped/libwebviewchromium$shlib_extension",
-    ]
+    deps = [ ":libwebviewchromium" ]
+    inputs =
+        [ "$root_out_dir/lib.unstripped/libwebviewchromium$shlib_extension" ]
     output = system_webview_pak_whitelist
   }
 }
@@ -619,9 +604,7 @@ webview_repack_locales("repack_locales") {
 
   if (enable_resource_whitelist_generation) {
     repack_whitelist = system_webview_pak_whitelist
-    deps = [
-      ":system_webview_pak_whitelist",
-    ]
+    deps = [ ":system_webview_pak_whitelist" ]
   }
 }
 
@@ -634,9 +617,7 @@ android_assets("locale_pak_assets") {
     renaming_destinations += [ "stored-locales/$_locale.pak" ]
   }
   treat_as_locale_paks = true
-  deps = [
-    ":repack_locales",
-  ]
+  deps = [ ":repack_locales" ]
 }
 
 repack("repack_pack") {
@@ -654,7 +635,7 @@ repack("repack_pack") {
     ":generate_components_resources",
     ":generate_mojo_resources",
     ":generate_webui_resources",
-    "//content:resources",
+    "//content:content_resources",
     "//net:net_resources",
     "//third_party/blink/public:resources",
   ]
@@ -726,20 +707,14 @@ if (android_64bit_target_cpu) {
 
 android_assets("webview_primary_abi_assets") {
   if (use_v8_context_snapshot) {
-    deps = [
-      "//tools/v8_context_snapshot:v8_context_snapshot_assets",
-    ]
+    deps = [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
   } else {
-    deps = [
-      "//v8:v8_external_startup_data_assets",
-    ]
+    deps = [ "//v8:v8_external_startup_data_assets" ]
   }
 }
 
 android_assets("monochrome_webview_primary_abi_assets") {
-  deps = [
-    "//third_party/icu:icu_assets",
-  ]
+  deps = [ "//third_party/icu:icu_assets" ]
   if (use_v8_context_snapshot) {
     deps += [ "//tools/v8_context_snapshot:v8_context_snapshot_assets" ]
   } else {
@@ -749,15 +724,11 @@ android_assets("monochrome_webview_primary_abi_assets") {
 
 if (android_64bit_target_cpu) {
   android_assets("webview_secondary_abi_assets") {
-    deps = [
-      ":v8_snapshot_secondary_abi_assets",
-    ]
+    deps = [ ":v8_snapshot_secondary_abi_assets" ]
   }
 
   android_assets("monochrome_webview_secondary_abi_assets") {
-    deps = [
-      "//third_party/icu:icu_assets",
-    ]
+    deps = [ "//third_party/icu:icu_assets" ]
     deps += [ ":v8_snapshot_secondary_abi_assets" ]
   }
 }
@@ -775,17 +746,13 @@ android_assets("weblayer_webview_assets") {
 android_assets("stub_assets") {
   renaming_sources = [ "$root_gen_dir/components/resources/about_credits.html" ]
   renaming_destinations = [ "webview_licenses.notice" ]
-  deps = [
-    "//components/resources:about_credits",
-  ]
+  deps = [ "//components/resources:about_credits" ]
 }
 
 android_resources("resources") {
   resource_dirs = [ "java/res" ]
   custom_package = "org.chromium.android_webview"
-  deps = [
-    ":strings_grd",
-  ]
+  deps = [ ":strings_grd" ]
 }
 
 grit("generate_aw_resources") {
@@ -798,9 +765,7 @@ grit("generate_aw_resources") {
 
 grit("generate_aw_strings") {
   source = "ui/aw_strings.grd"
-  outputs = [
-    "grit/aw_strings.h",
-  ]
+  outputs = [ "grit/aw_strings.h" ]
   foreach(_locale, locales) {
     outputs += [ "aw_strings_${_locale}.pak" ]
   }
@@ -815,9 +780,7 @@ grit("generate_webui_resources") {
   # webui/resources has way too many resources. The whitelist is trim this down
   # to a reasonable size
   _whitelist = "ui/grit_resources_whitelist.txt"
-  inputs = [
-    _whitelist,
-  ]
+  inputs = [ _whitelist ]
   grit_flags = [
     "-w",
     rebase_path(_whitelist, root_build_dir),
@@ -838,9 +801,7 @@ grit("generate_mojo_resources") {
 
   # See :generate_webui_resources for an explanation of the whitelist
   _whitelist = "ui/grit_resources_whitelist.txt"
-  inputs = [
-    _whitelist,
-  ]
+  inputs = [ _whitelist ]
   grit_flags = [
     "-w",
     rebase_path(_whitelist, root_build_dir),
@@ -853,9 +814,7 @@ grit("generate_mojo_resources") {
     "grit/mojo_bindings_resources_map.h",
     "mojo_bindings_resources.pak",
   ]
-  deps = [
-    "//mojo/public/js:bindings_lite",
-  ]
+  deps = [ "//mojo/public/js:bindings_lite" ]
 }
 
 grit("generate_components_resources") {
@@ -869,9 +828,7 @@ grit("generate_components_resources") {
 
   # See :generate_webui_resources for an explanation of the whitelist
   _whitelist = "ui/grit_resources_whitelist.txt"
-  inputs = [
-    _whitelist,
-  ]
+  inputs = [ _whitelist ]
   _about_credits_file = get_label_info("//components/resources",
                                        "target_gen_dir") + "/about_credits.html"
 
@@ -886,9 +843,7 @@ grit("generate_components_resources") {
     "components_resources.pak",
   ]
 
-  deps = [
-    "//components/resources:about_credits",
-  ]
+  deps = [ "//components/resources:about_credits" ]
 }
 
 grit("generate_components_strings") {
@@ -899,9 +854,7 @@ grit("generate_components_strings") {
   # strings. This whitelist trims about 50% more than the compile-based
   # whitelist generated by :system_webview_pak_whitelist.
   whitelist = rebase_path("ui/grit_strings_whitelist.txt", root_build_dir)
-  inputs = [
-    "//android_webview/ui/grit_strings_whitelist.txt",
-  ]
+  inputs = [ "//android_webview/ui/grit_strings_whitelist.txt" ]
   grit_flags = [
     "-w",
     whitelist,

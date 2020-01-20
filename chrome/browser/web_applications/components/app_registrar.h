@@ -19,6 +19,11 @@
 class GURL;
 class Profile;
 
+// Forward declared to support safe downcast;
+namespace extensions {
+class BookmarkAppRegistrar;
+}
+
 namespace web_app {
 
 class AppRegistrarObserver;
@@ -85,6 +90,7 @@ class AppRegistrar {
 
   // Safe downcast.
   virtual WebAppRegistrar* AsWebAppRegistrar() = 0;
+  virtual extensions::BookmarkAppRegistrar* AsBookmarkAppRegistrar();
 
   // Searches for the first app id in the registry for which the |url| is in
   // scope.

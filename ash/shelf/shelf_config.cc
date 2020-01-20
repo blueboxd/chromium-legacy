@@ -254,10 +254,14 @@ int ShelfConfig::GetShelfSize(bool ignore_in_app_state) const {
 }
 
 SkColor ShelfConfig::GetShelfControlButtonColor() const {
+  const session_manager::SessionState session_state =
+      Shell::Get()->session_controller()->GetSessionState();
+
   if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletMode() &&
-      Shell::Get()->session_controller()->GetSessionState() ==
-          session_manager::SessionState::ACTIVE) {
+      session_state == session_manager::SessionState::ACTIVE) {
     return is_in_app() ? SK_ColorTRANSPARENT : GetDefaultShelfColor();
+  } else if (session_state == session_manager::SessionState::OOBE) {
+    return SkColorSetA(SK_ColorBLACK, 16);  // 6% opacity
   }
   return shelf_control_permanent_highlight_background_;
 }

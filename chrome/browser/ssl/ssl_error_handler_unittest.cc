@@ -23,9 +23,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_assistant.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
-#include "chrome/common/buildflags.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/captive_portal/buildflags.h"
 #include "components/captive_portal/captive_portal_testing_utils.h"
 #include "components/network_time/network_time_test_utils.h"
 #include "components/network_time/network_time_tracker.h"
@@ -138,12 +138,14 @@ class TestSSLErrorHandler : public SSLErrorHandler {
                       Profile* profile,
                       int cert_error,
                       const net::SSLInfo& ssl_info,
+                      network_time::NetworkTimeTracker* network_time_tracker,
                       const GURL& request_url)
       : SSLErrorHandler(std::move(delegate),
                         web_contents,
                         profile,
                         cert_error,
                         ssl_info,
+                        network_time_tracker,
                         request_url) {}
 
   using SSLErrorHandler::StartHandlingError;
@@ -163,7 +165,6 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
         bad_clock_interstitial_shown_(false),
         captive_portal_interstitial_shown_(false),
         mitm_software_interstitial_shown_(false),
-        is_mitm_software_interstitial_enterprise_(false),
         blocked_interception_interstitial_shown_(false),
         redirected_to_suggested_url_(false),
         is_overridable_error_(true),
@@ -194,9 +195,6 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
   int mitm_software_interstitial_shown() const {
     return mitm_software_interstitial_shown_;
   }
-  bool is_mitm_software_interstitial_enterprise() const {
-    return is_mitm_software_interstitial_enterprise_;
-  }
   bool bad_clock_interstitial_shown() const {
     return bad_clock_interstitial_shown_;
   }
@@ -222,7 +220,6 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
     bad_clock_interstitial_shown_ = false;
     captive_portal_interstitial_shown_ = false;
     mitm_software_interstitial_shown_ = false;
-    is_mitm_software_interstitial_enterprise_ = false;
     redirected_to_suggested_url_ = false;
     has_blocked_interception_ = false;
   }
@@ -257,10 +254,9 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
     captive_portal_interstitial_shown_ = true;
   }
 
-  void ShowMITMSoftwareInterstitial(const std::string& mitm_software_name,
-                                    bool is_enterprise_managed) override {
+  void ShowMITMSoftwareInterstitial(
+      const std::string& mitm_software_name) override {
     mitm_software_interstitial_shown_ = true;
-    is_mitm_software_interstitial_enterprise_ = is_enterprise_managed;
   }
 
   void ShowBlockedInterceptionInterstitial() override {
@@ -296,7 +292,6 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
   bool bad_clock_interstitial_shown_;
   bool captive_portal_interstitial_shown_;
   bool mitm_software_interstitial_shown_;
-  bool is_mitm_software_interstitial_enterprise_;
   bool blocked_interception_interstitial_shown_;
   bool redirected_to_suggested_url_;
   bool is_overridable_error_;
@@ -329,7 +324,7 @@ class SSLErrorHandlerNameMismatchTest : public ChromeRenderViewHostTestHarness {
     error_handler_.reset(new TestSSLErrorHandler(
         std::unique_ptr<SSLErrorHandler::Delegate>(delegate_), web_contents(),
         profile(), net::MapCertStatusToNetError(ssl_info_.cert_status),
-        ssl_info_, GURL() /*request_url*/));
+        ssl_info_, /*network_time_tracker=*/nullptr, GURL() /*request_url*/));
   }
 
   void TearDown() override {
@@ -591,7 +586,7 @@ class SSLErrorAssistantProtoTest : public ChromeRenderViewHostTestHarness {
     error_handler_.reset(new TestSSLErrorHandler(
         std::unique_ptr<SSLErrorHandler::Delegate>(delegate_), web_contents(),
         profile(), net::MapCertStatusToNetError(ssl_info_.cert_status),
-        ssl_info_, GURL() /*request_url*/));
+        ssl_info_, /*network_time_tracker=*/nullptr, GURL() /*request_url*/));
   }
 
   net::SSLInfo ssl_info_;
@@ -652,8 +647,7 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
     error_handler_.reset(new TestSSLErrorHandler(
         std::unique_ptr<SSLErrorHandler::Delegate>(delegate_), web_contents(),
         profile(), net::MapCertStatusToNetError(ssl_info_.cert_status),
-        ssl_info_, GURL() /*request_url*/));
-    error_handler_->SetNetworkTimeTrackerForTesting(tracker_.get());
+        ssl_info_, tracker_.get(), GURL() /*request_url*/));
 
     // Fix flakiness in case system time is off and triggers a bad clock
     // interstitial. https://crbug.com/666821#c50
@@ -1411,36 +1405,6 @@ TEST_F(SSLErrorAssistantProtoTest,
   TestNoMITMSoftwareInterstitial();
 }
 
-// Tests that when a user's machine is enterprise managed the correct MITM
-// software interstitial is triggered.
-TEST_F(SSLErrorAssistantProtoTest, MITMSoftware_EnterpriseManaged) {
-  SetMITMSoftwareFeatureEnabled(true);
-
-  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
-                              net::CERT_STATUS_AUTHORITY_INVALID);
-  SSLErrorHandler::SetEnterpriseManagedForTesting(true);
-  ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
-  InitMITMSoftwareList();
-  TestMITMSoftwareInterstitial();
-
-  EXPECT_TRUE(delegate()->is_mitm_software_interstitial_enterprise());
-}
-
-// Tests that when a user's machine is not enterprise managed the correct MITM
-// software interstitial is triggered.
-TEST_F(SSLErrorAssistantProtoTest, MITMSoftware_NotEnterpriseManaged) {
-  SetMITMSoftwareFeatureEnabled(true);
-
-  ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
-                              net::CERT_STATUS_AUTHORITY_INVALID);
-  SSLErrorHandler::SetEnterpriseManagedForTesting(false);
-  ASSERT_TRUE(SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting());
-  InitMITMSoftwareList();
-  TestMITMSoftwareInterstitial();
-
-  EXPECT_FALSE(delegate()->is_mitm_software_interstitial_enterprise());
-}
-
 // Tests that the MITM software interstitial is not triggered when the feature
 // is disabled by Finch.
 TEST_F(SSLErrorAssistantProtoTest, MITMSoftware_FeatureDisabled) {
@@ -1549,7 +1513,7 @@ TEST_F(SSLErrorHandlerTest, BlockedInterceptionInterstitial) {
   TestSSLErrorHandler error_handler(
       std::move(delegate), web_contents(), profile(),
       net::MapCertStatusToNetError(ssl_info.cert_status), ssl_info,
-      GURL() /*request_url*/);
+      /*network_time_tracker=*/nullptr, GURL() /*request_url*/);
 
   base::HistogramTester histograms;
   delegate_ptr->set_has_blocked_interception();

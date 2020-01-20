@@ -994,6 +994,10 @@ const char kEnableWasmCodeGCName[] = "WebAssembly code garbage collection";
 const char kEnableWasmCodeGCDescription[] =
     "Enables garbage collection of WebAssembly code.";
 
+const char kEnableWasmLazyCompilationName[] = "WebAssembly lazy compilation";
+const char kEnableWasmLazyCompilationDescription[] =
+    "Enables lazy (JIT on first call) compilation of WebAssembly modules.";
+
 const char kEnableWasmSimdName[] = "WebAssembly SIMD support.";
 const char kEnableWasmSimdDescription[] =
     "Enables support for the WebAssembly SIMD proposal.";
@@ -1006,7 +1010,7 @@ const char kEnableWasmThreadsDescription[] =
 const char kEnableWasmTieringName[] = "WebAssembly tiering";
 const char kEnableWasmTieringDescription[] =
     "Enables tiered compilation of WebAssembly (will tier up to TurboFan if "
-    "#enable-webassembly-baseline is enabled.";
+    "#enable-webassembly-baseline is enabled).";
 
 const char kEvDetailsInPageInfoName[] = "EV certificate details in Page Info.";
 const char kEvDetailsInPageInfoDescription[] =

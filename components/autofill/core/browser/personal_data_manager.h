@@ -342,6 +342,9 @@ class PersonalDataManager : public KeyedService,
   // Cancels any pending queries to the server web database.
   void CancelPendingServerQueries();
 
+  // Returns if there are any pending queries to the web database.
+  bool HasPendingQueriesForTesting();
+
   // This function assumes |credit_card| contains the full PAN. Returns |true|
   // if the card number of |credit_card| is equal to any local card or any
   // unmasked server card known by the browser, or |TypeAndLastFourDigits| of
@@ -715,6 +718,9 @@ class PersonalDataManager : public KeyedService,
   void OnProfileChangeDone(const std::string& guid);
   // Clear |ongoing_profile_changes_|.
   void ClearOnGoingProfileChanges();
+
+  // Returns if there are any pending queries to the web database.
+  bool HasPendingQueries();
 
   // Migrates the user opted in to wallet sync transport. This is needed while
   // migrating from using email to Gaia ID as th account identifier.

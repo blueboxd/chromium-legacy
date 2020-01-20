@@ -480,7 +480,7 @@ void ServiceWorkerContextCore::UnregisterServiceWorker(
 void ServiceWorkerContextCore::DeleteForOrigin(const GURL& origin,
                                                StatusCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  storage()->GetRegistrationsForOrigin(
+  registry()->GetRegistrationsForOrigin(
       origin,
       base::BindOnce(
           &ServiceWorkerContextCore::DidGetRegistrationsForDeleteForOrigin,
@@ -720,7 +720,7 @@ void ServiceWorkerContextCore::ClearAllServiceWorkersForTest(
   if (!was_service_worker_registered_)
     return;
   was_service_worker_registered_ = false;
-  storage()->GetAllRegistrationsInfos(
+  registry()->GetAllRegistrationsInfos(
       base::BindOnce(&ClearAllServiceWorkersHelper::DidGetAllRegistrations,
                      helper, AsWeakPtr()));
 }

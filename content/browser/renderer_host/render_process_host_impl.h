@@ -914,6 +914,15 @@ class CONTENT_EXPORT RenderProcessHostImpl
   friend class IOThreadHostImpl;
   base::Optional<base::SequenceBound<IOThreadHostImpl>> io_thread_host_impl_;
 
+#if defined(OS_LINUX)
+  // Provides /proc/{renderer pid}/status and statm files for the renderer,
+  // because the files are required to calculate the renderer's private
+  // footprint on Chromium Linux. Regarding MacOS X and Windows, we have
+  // the different way to calculate renderer's private memory footprint.
+  // So this method is implemented only when OS_LINUX is defined.
+  void ProvideStatusFileForRenderer();
+#endif
+
   mojo::OutgoingInvitation mojo_invitation_;
 
   size_t keep_alive_ref_count_;

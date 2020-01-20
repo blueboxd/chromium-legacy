@@ -42,6 +42,38 @@
 
 namespace {
 
+enum EnterpriseManaged {
+  ENTERPRISE_MANAGED_STATUS_NOT_SET,
+  ENTERPRISE_MANAGED_STATUS_TRUE,
+  ENTERPRISE_MANAGED_STATUS_FALSE
+};
+
+EnterpriseManaged g_is_enterprise_managed_for_testing =
+    ENTERPRISE_MANAGED_STATUS_NOT_SET;
+
+bool IsEnterpriseManaged() {
+  // Return the value of the testing flag if it's set.
+  if (g_is_enterprise_managed_for_testing == ENTERPRISE_MANAGED_STATUS_TRUE) {
+    return true;
+  }
+
+  if (g_is_enterprise_managed_for_testing == ENTERPRISE_MANAGED_STATUS_FALSE) {
+    return false;
+  }
+
+#if defined(OS_WIN)
+  if (base::IsMachineExternallyManaged()) {
+    return true;
+  }
+#elif defined(OS_CHROMEOS)
+  if (g_browser_process->platform_part()->browser_policy_connector_chromeos()) {
+    return true;
+  }
+#endif  // #if defined OS_WIN
+
+  return false;
+}
+
 // Opens the login page for a captive portal. Passed in to
 // CaptivePortalBlockingPage to be invoked when the user has pressed the
 // connect button.
@@ -105,6 +137,19 @@ std::unique_ptr<ChromeMetricsHelper> CreateMitmSoftwareMetricsHelper(
   // Set up the metrics helper for the MITMSoftwareUI.
   security_interstitials::MetricsHelper::ReportDetails reporting_info;
   reporting_info.metric_prefix = "mitm_software";
+  std::unique_ptr<ChromeMetricsHelper> metrics_helper =
+      std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
+                                            reporting_info);
+  metrics_helper.get()->StartRecordingCaptivePortalMetrics(false);
+  return metrics_helper;
+}
+
+std::unique_ptr<ChromeMetricsHelper> CreateBlockedInterceptionMetricsHelper(
+    content::WebContents* web_contents,
+    const GURL& request_url) {
+  // Set up the metrics helper for the BlockedInterceptionUI.
+  security_interstitials::MetricsHelper::ReportDetails reporting_info;
+  reporting_info.metric_prefix = "blocked_interception";
   std::unique_ptr<ChromeMetricsHelper> metrics_helper =
       std::make_unique<ChromeMetricsHelper>(web_contents, request_url,
                                             reporting_info);
@@ -227,16 +272,34 @@ ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
     const net::SSLInfo& ssl_info,
-    const std::string& mitm_software_name,
-    bool is_enterprise_managed) {
+    const std::string& mitm_software_name) {
   auto page = std::make_unique<MITMSoftwareBlockingPage>(
       web_contents, cert_error, request_url, std::move(ssl_cert_reporter),
-      ssl_info, mitm_software_name, is_enterprise_managed,
+      ssl_info, mitm_software_name, IsEnterpriseManaged(),
       std::make_unique<SSLErrorControllerClient>(
           web_contents, ssl_info, cert_error, request_url,
           CreateMitmSoftwareMetricsHelper(web_contents, request_url)));
 
   DoChromeSpecificSetup(page.get());
+  return page.release();
+}
+
+// static
+BlockedInterceptionBlockingPage*
+ChromeSecurityBlockingPageFactory::CreateBlockedInterceptionBlockingPage(
+    content::WebContents* web_contents,
+    int cert_error,
+    const GURL& request_url,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+    const net::SSLInfo& ssl_info) {
+  auto page = std::make_unique<BlockedInterceptionBlockingPage>(
+      web_contents, cert_error, request_url, std::move(ssl_cert_reporter),
+      ssl_info,
+      std::make_unique<SSLErrorControllerClient>(
+          web_contents, ssl_info, cert_error, request_url,
+          CreateBlockedInterceptionMetricsHelper(web_contents, request_url)));
+
+  ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(page.get());
   return page.release();
 }
 
@@ -268,4 +331,13 @@ void ChromeSecurityBlockingPageFactory::DoChromeSpecificSetup(
         // optional.
         report->AddNetworkTimeInfo(g_browser_process->network_time_tracker());
       }));
+}
+
+void ChromeSecurityBlockingPageFactory::SetEnterpriseManagedForTesting(
+    bool enterprise_managed) {
+  if (enterprise_managed) {
+    g_is_enterprise_managed_for_testing = ENTERPRISE_MANAGED_STATUS_TRUE;
+  } else {
+    g_is_enterprise_managed_for_testing = ENTERPRISE_MANAGED_STATUS_FALSE;
+  }
 }

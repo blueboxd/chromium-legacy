@@ -15,6 +15,7 @@
 #import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/navigation/crw_pending_navigation_info.h"
 #import "ios/web/navigation/crw_wk_navigation_states.h"
+#import "ios/web/navigation/error_page_helper.h"
 #include "ios/web/navigation/error_retry_state_machine.h"
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -639,6 +640,24 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                      rendererInitiated:YES
                  placeholderNavigation:isPlaceholderURL];
   web::NavigationContextImpl* navigationContextPtr = navigationContext.get();
+
+  if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
+    // |item| is nil for back/forward/reload navigations.
+    if (navigationContext->GetItem() &&
+        navigationContext->GetItem()->GetVirtualURL() ==
+            navigationContext->GetItem()->GetURL()) {
+      // Set nav item's virtual URL to failed URL if it doesn't have a specific
+      // virtualURL.
+      GURL virtualURLForError =
+          [ErrorPageHelper failedNavigationURLFromErrorPageFileURL:webViewURL];
+      // virtualURLForError will only be valid of error URL. If it is a regular
+      // URL it won't be valid, so the virtualURL won't be overridden.
+      if (virtualURLForError.is_valid()) {
+        navigationContext->GetItem()->SetVirtualURL(virtualURLForError);
+      }
+    }
+  }
+
   // GetPendingItem which may be called inside OnNavigationStarted relies on
   // association between NavigationContextImpl and WKNavigation.
   [self.navigationStates setContext:std::move(navigationContext)
@@ -1035,6 +1054,14 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                  originalNavigation:navigation
                             webView:webView];
     }
+  }
+
+  if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
+    // TODO(crbug.com/991608): With the new error page workflow, the callbacks
+    // for the page loaded aren't good. It is probably necessary to call
+    // something like loadErrorPageForNavigationItem:navigationContext:webView:
+    // to either mark this context as failing or get the context of the original
+    // navigation.
   }
 
   [self.navigationStates setState:web::WKNavigationState::FINISHED
@@ -1744,7 +1771,31 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   if (item) {
     if (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage)) {
-      // TODO(crbug.com/991608): Instantiate error page.
+      ErrorPageHelper* errorPage =
+          [[ErrorPageHelper alloc] initWithError:error];
+      WKBackForwardListItem* backForwardItem =
+          webView.backForwardList.currentItem;
+      // There are 3 possible scenarios here:
+      //   1. Current nav item is an error page for failed URL;
+      //   2. Current nav item has a failed URL. This may happen when
+      //      back/forward/refresh on a loaded page;
+      //   3. Current nav item is an irrelevant page.
+      // For 1&2, load error page HTML into current page;
+      // For 3, load error page file to create a new nav item.
+      if (provisionalLoad &&
+          ![errorPage
+              isErrorPageFileURLForFailedNavigationURL:backForwardItem.URL] &&
+          ![backForwardItem.URL isEqual:errorPage.failedNavigationURL]) {
+        [webView loadFileURL:errorPage.errorPageFileURL
+            allowingReadAccessToURL:errorPage.errorPageFileURL];
+      } else {
+        [webView evaluateJavaScript:errorPage.scriptToInject
+                  completionHandler:^(id result, NSError* error) {
+                    DCHECK(!error)
+                        << "Error injecting page: "
+                        << base::SysNSStringToUTF8(error.description);
+                  }];
+      }
     } else {
       GURL errorURL =
           net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey]);

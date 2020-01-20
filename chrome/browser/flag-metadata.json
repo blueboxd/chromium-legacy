@@ -305,7 +305,7 @@
   {
     "name": "autofill-keyboard-accessory-view",
     "owners": [ "fhorschig@chromium.org" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 83
   },
   {
     "name": "autofill-no-local-save-on-unmask-success",
@@ -357,12 +357,12 @@
   {
     "name": "autofill-use-improved-label-disambiguation",
     "owners": [ "fhorschig" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 83
   },
   {
     "name": "autofill-use-mobile-label-disambiguation",
     "owners": [ "fhorschig" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 83
   },
   {
     "name": "back-forward-cache",
@@ -706,8 +706,8 @@
   },
   {
     "name": "direct-actions",
-    "owners": [ "szermatt", "tedchoc", "twellington" ],
-    "expiry_milestone": 81
+    "owners": [ "//components/autofill_assistant/OWNERS" ],
+    "expiry_milestone": 90
   },
   {
     "name": "direct-manipulation-stylus",
@@ -1075,7 +1075,7 @@
   {
     "name": "enable-autofill-manual-fallback",
     "owners": [ "fhorschig@chromium.org" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 83
   },
   {
     "name": "enable-autofill-refresh-style",
@@ -1885,7 +1885,7 @@
   {
     "name": "enable-suggestions-with-substring-match",
     "owners": [ "fhorschig" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 83
   },
   {
     "name": "enable-surfacecontrol",
@@ -2092,6 +2092,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "enable-webassembly-lazy-compilation",
+    "owners": [ "clemensb", "wasm-team@google.com" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "enable-webassembly-simd",
     "owners": [ "gdeepti", "wasm-team@google.com" ],
     "expiry_milestone": 83
@@ -2134,21 +2139,6 @@
     "expiry_milestone": 81
   },
   {
-    "name": "enable-webrtc-hw-h264-encoding",
-    "owners": [ "hiroh", "chromeos-video-eng@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-webrtc-hw-vp8-encoding",
-    "owners": [ "hiroh", "chromeos-video-eng@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
-    "name": "enable-webrtc-hw-vp9-encoding",
-    "owners": [ "hiroh", "chromeos-video-eng@google.com" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "enable-webrtc-hybrid-agc",
     "owners": [ "aleloi" ],
     "expiry_milestone": 83
@@ -2166,7 +2156,7 @@
   {
     "name": "enable-webrtc-remote-event-log",
     "owners": [ "eladalon" ],
-    "expiry_milestone": 76
+    "expiry_milestone": 90
   },
   {
     "name": "enable-webrtc-srtp-aes-gcm",
@@ -2559,7 +2549,7 @@
   {
     "name": "mac-system-media-permissions-info-ui",
     "owners": [ "guidou", "engedy", "hkamila" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 83
   },
   {
     "name": "mac-v2-gpu-sandbox",
@@ -3041,8 +3031,8 @@
   },
   {
     "name": "password-editing-android",
-    "owners": [ "izuzic", "fhorschig" ],
-    "expiry_milestone": 80
+    "owners": [ "fhorschig" ],
+    "expiry_milestone": 83
   },
   {
     "name": "password-leak-detection",

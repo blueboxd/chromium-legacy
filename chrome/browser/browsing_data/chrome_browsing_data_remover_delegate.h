@@ -276,9 +276,6 @@ class ChromeBrowsingDataRemoverDelegate
       base::OnceClosure done,
       const std::vector<std::string>& sites);
 
-  // Indicates that LSO cookies for one website have been deleted.
-  void OnFlashDataDeleted();
-
   // PepperFlashSettingsManager::Client implementation.
   void OnDeauthorizeFlashContentLicensesCompleted(uint32_t request_id,
                                                   bool success) override;

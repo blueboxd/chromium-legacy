@@ -119,10 +119,12 @@ def runtime_call_stats_context(interface, method):
     includes.add('platform/bindings/runtime_call_stats.h')
     generic_counter_name = 'Blink_' + v8_utilities.cpp_name(interface) + '_' + method.name
     (method_counter, extended_attribute_defined) = v8_utilities.rcs_counter_name(method, generic_counter_name)
+    trace_event_name = interface.name + '.' + method.name
     return {
         'extended_attribute_defined': extended_attribute_defined,
         'method_counter': method_counter,
-        'origin_safe_method_getter_counter': generic_counter_name + '_OriginSafeMethodGetter'
+        'origin_safe_method_getter_counter': generic_counter_name + '_OriginSafeMethodGetter',
+        'trace_event_name': trace_event_name,
     }
 
 

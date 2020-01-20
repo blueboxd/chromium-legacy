@@ -67,12 +67,14 @@ static void VoidMethodPartial2Method(const v8::FunctionCallbackInfo<v8::Value>& 
 }  // namespace test_interface_2_partial_v8_internal
 
 void V8TestInterface2Partial::VoidMethodPartial1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.voidMethodPartial1");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_voidMethodPartial1");
 
   test_interface_2_partial_v8_internal::VoidMethodPartial1Method(info);
 }
 
 void V8TestInterface2Partial::VoidMethodPartial2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterface2.voidMethodPartial2");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterface2_voidMethodPartial2");
 
   test_interface_2_partial_v8_internal::VoidMethodPartial2Method(info);

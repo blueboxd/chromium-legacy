@@ -37,12 +37,12 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   ~BrowsingDataRemoverImpl() override;
 
   // Is the BrowsingDataRemoverImpl currently in the process of removing data?
-  bool is_removing() { return is_removing_; }
+  bool IsRemovingForTesting() { return is_removing_; }
 
   // BrowsingDataRemover implementation:
   void SetEmbedderDelegate(
       BrowsingDataRemoverDelegate* embedder_delegate) override;
-  bool DoesOriginMatchMask(
+  bool DoesOriginMatchMaskForTesting(
       int origin_type_mask,
       const url::Origin& origin,
       storage::SpecialStoragePolicy* special_storage_policy) override;
@@ -55,12 +55,6 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
                       int remove_mask,
                       int origin_type_mask,
                       Observer* observer) override;
-  void RemoveWithFilter(
-      const base::Time& delete_begin,
-      const base::Time& delete_end,
-      int remove_mask,
-      int origin_type_mask,
-      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) override;
   void RemoveWithFilterAndReply(
       const base::Time& delete_begin,
       const base::Time& delete_end,
@@ -76,10 +70,9 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
       const base::RepeatingCallback<
           void(base::OnceClosure continue_to_completion)>& callback) override;
 
-  const base::Time& GetLastUsedBeginTime() override;
-  const base::Time& GetLastUsedEndTime() override;
-  int GetLastUsedRemovalMask() override;
-  int GetLastUsedOriginTypeMask() override;
+  const base::Time& GetLastUsedBeginTimeForTesting() override;
+  int GetLastUsedRemovalMaskForTesting() override;
+  int GetLastUsedOriginTypeMaskForTesting() override;
 
   // Used for testing.
   void OverrideStoragePartitionForTesting(StoragePartition* storage_partition);

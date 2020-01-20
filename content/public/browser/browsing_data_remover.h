@@ -150,7 +150,7 @@ class BrowsingDataRemover {
 
   // Determines whether |origin| matches the |origin_type_mask| according to
   // the |special_storage_policy|.
-  virtual bool DoesOriginMatchMask(
+  virtual bool DoesOriginMatchMaskForTesting(
       int origin_type_mask,
       const url::Origin& origin,
       storage::SpecialStoragePolicy* special_storage_policy) = 0;
@@ -169,16 +169,6 @@ class BrowsingDataRemover {
                               int remove_mask,
                               int origin_type_mask,
                               Observer* observer) = 0;
-
-  // Like Remove(), but in case of URL-keyed only removes data whose URL match
-  // |filter_builder| (e.g. are on certain origin or domain).
-  // RemoveWithFilter() currently only works with FILTERABLE_DATA_TYPES.
-  virtual void RemoveWithFilter(
-      const base::Time& delete_begin,
-      const base::Time& delete_end,
-      int remove_mask,
-      int origin_type_mask,
-      std::unique_ptr<BrowsingDataFilterBuilder> filter_builder) = 0;
 
   // A version of the above that in addition informs the |observer| when the
   // removal task is finished.
@@ -208,10 +198,9 @@ class BrowsingDataRemover {
   // consider returning them in OnBrowsingDataRemoverDone() callback. If not,
   // consider simplifying this interface by removing these methods and changing
   // the tests to record the parameters using GMock instead.
-  virtual const base::Time& GetLastUsedBeginTime() = 0;
-  virtual const base::Time& GetLastUsedEndTime() = 0;
-  virtual int GetLastUsedRemovalMask() = 0;
-  virtual int GetLastUsedOriginTypeMask() = 0;
+  virtual const base::Time& GetLastUsedBeginTimeForTesting() = 0;
+  virtual int GetLastUsedRemovalMaskForTesting() = 0;
+  virtual int GetLastUsedOriginTypeMaskForTesting() = 0;
 };
 
 }  // namespace content

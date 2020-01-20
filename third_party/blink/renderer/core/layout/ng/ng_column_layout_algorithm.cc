@@ -929,7 +929,6 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForBalancing(
   space_builder.SetPercentageResolutionSize(column_size);
   space_builder.SetIsAnonymous(true);
   space_builder.SetIsInColumnBfc();
-  space_builder.SetIsIntermediateLayout(true);
   space_builder.SetIsInsideBalancedColumns();
 
   return space_builder.ToConstraintSpace();
@@ -956,7 +955,6 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForMinMax()
       ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
   space_builder.SetIsAnonymous(true);
   space_builder.SetIsInColumnBfc();
-  space_builder.SetIsIntermediateLayout(true);
 
   return space_builder.ToConstraintSpace();
 }

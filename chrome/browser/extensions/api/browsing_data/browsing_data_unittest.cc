@@ -68,11 +68,15 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
     browser_window_.reset();
     ExtensionServiceTestBase::TearDown();
   }
-  const base::Time& GetBeginTime() { return remover_->GetLastUsedBeginTime(); }
+  const base::Time& GetBeginTime() {
+    return remover_->GetLastUsedBeginTimeForTesting();
+  }
 
-  int GetRemovalMask() { return remover_->GetLastUsedRemovalMask(); }
+  int GetRemovalMask() { return remover_->GetLastUsedRemovalMaskForTesting(); }
 
-  int GetOriginTypeMask() { return remover_->GetLastUsedOriginTypeMask(); }
+  int GetOriginTypeMask() {
+    return remover_->GetLastUsedOriginTypeMaskForTesting();
+  }
 
   int GetAsMask(const base::DictionaryValue* dict,
                 std::string path,

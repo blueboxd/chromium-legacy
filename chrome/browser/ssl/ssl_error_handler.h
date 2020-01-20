@@ -114,8 +114,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
     virtual bool IsErrorOverridable() const = 0;
     virtual void ShowCaptivePortalInterstitial(const GURL& landing_url) = 0;
     virtual void ShowMITMSoftwareInterstitial(
-        const std::string& mitm_software_name,
-        bool is_enterprise_managed) = 0;
+        const std::string& mitm_software_name) = 0;
     virtual void ShowSSLInterstitial(const GURL& support_url) = 0;
     virtual void ShowBadClockInterstitial(
         const base::Time& now,
@@ -139,6 +138,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+      network_time::NetworkTimeTracker* network_time_tracker,
       BlockingPageReadyCallback blocking_page_ready_callback);
 
   // Sets the binary proto for SSL error assistant. The binary proto
@@ -154,8 +154,6 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   static void SetInterstitialTimerStartedCallbackForTesting(
       TimerStartedCallback* callback);
   static void SetClockForTesting(base::Clock* testing_clock);
-  static void SetNetworkTimeTrackerForTesting(
-      network_time::NetworkTimeTracker* tracker);
   static void SetReportNetworkConnectivityCallbackForTesting(
       base::OnceClosure callback);
   static void SetEnterpriseManagedForTesting(bool enterprise_managed);
@@ -172,6 +170,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
                   Profile* profile,
                   int cert_error,
                   const net::SSLInfo& ssl_info,
+                  network_time::NetworkTimeTracker* network_time_tracker,
                   const GURL& request_url);
 
   // Called when an SSL cert error is encountered. Triggers a captive portal
@@ -184,8 +183,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   FRIEND_TEST_ALL_PREFIXES(SSLErrorHandlerTest, CalculateOptionsMask);
 
   void ShowCaptivePortalInterstitial(const GURL& landing_url);
-  void ShowMITMSoftwareInterstitial(const std::string& mitm_software_name,
-                                    bool is_enterprise_managed);
+  void ShowMITMSoftwareInterstitial(const std::string& mitm_software_name);
   void ShowSSLInterstitial();
   void ShowBadClockInterstitial(const base::Time& now,
                                 ssl_errors::ClockState clock_state);
@@ -226,6 +224,7 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   const int cert_error_;
   const net::SSLInfo ssl_info_;
   const GURL request_url_;
+  network_time::NetworkTimeTracker* network_time_tracker_;
 
   content::NotificationRegistrar registrar_;
   base::OneShotTimer timer_;

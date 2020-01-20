@@ -7,6 +7,8 @@
 #include <set>
 #include <vector>
 
+#include "base/rand_util.h"
+#include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -115,7 +117,10 @@ class TestClient final : public mojom::QuicTransportClient {
   }
 
   // mojom::QuicTransportClient implementation.
-  void OnDatagramReceived(base::span<const uint8_t> data) override {}
+  void OnDatagramReceived(base::span<const uint8_t> data) override {
+    received_datagrams_.push_back(
+        std::vector<uint8_t>(data.begin(), data.end()));
+  }
   void OnIncomingStreamClosed(uint32_t stream_id, bool fin_received) override {
     closed_incoming_streams_.insert(std::make_pair(stream_id, fin_received));
     if (quit_closure_for_incoming_stream_closure_) {
@@ -139,6 +144,9 @@ class TestClient final : public mojom::QuicTransportClient {
     }
   }
 
+  const std::vector<std::vector<uint8_t>>& received_datagrams() const {
+    return received_datagrams_;
+  }
   bool has_received_fin_for(uint32_t stream_id) {
     auto it = closed_incoming_streams_.find(stream_id);
     return it != closed_incoming_streams_.end() && it->second;
@@ -164,6 +172,7 @@ class TestClient final : public mojom::QuicTransportClient {
   base::OnceClosure quit_closure_for_mojo_connection_error_;
   base::OnceClosure quit_closure_for_incoming_stream_closure_;
 
+  std::vector<std::vector<uint8_t>> received_datagrams_;
   std::map<uint32_t, bool> closed_incoming_streams_;
   bool has_seen_mojo_connection_error_ = false;
 };
@@ -292,28 +301,43 @@ TEST_F(QuicTransportTest, SendDatagram) {
       handshake_client.InitWithNewPipeAndPassReceiver(),
       run_loop_for_handshake.QuitClosure());
 
-  CreateQuicTransport(GetURL("/discard"),
+  CreateQuicTransport(GetURL("/echo"),
                       url::Origin::Create(GURL("https://example.org/")),
                       std::move(handshake_client));
 
   run_loop_for_handshake.Run();
-
-  base::RunLoop run_loop_for_datagram;
-  bool result;
-  uint8_t data[] = {1, 2, 3, 4, 5};
   mojo::Remote<mojom::QuicTransport> transport_remote(
       test_handshake_client.PassTransport());
-  transport_remote->SendDatagram(base::make_span(data),
-                                 base::BindLambdaForTesting([&](bool r) {
-                                   result = r;
-                                   run_loop_for_datagram.Quit();
-                                 }));
-  run_loop_for_datagram.Run();
-  EXPECT_TRUE(result);
-}
+  TestClient client(test_handshake_client.PassClientReceiver());
 
-// TODO(yhirano): Add a test for OnDatagramReceived. It would be difficult due
-// to the flaky nature of datagrams.
+  std::set<std::vector<uint8_t>> sent_data;
+  // Both sending and receiving datagrams are flaky due to lack of
+  // retransmission, and we cannot expect a specific message to be echoed back.
+  // Instead, we expect one of sent messages to be echoed back.
+  while (client.received_datagrams().empty()) {
+    base::RunLoop run_loop_for_datagram;
+    bool result;
+    std::vector<uint8_t> data = {
+        static_cast<uint8_t>(base::RandInt(0, 255)),
+        static_cast<uint8_t>(base::RandInt(0, 255)),
+        static_cast<uint8_t>(base::RandInt(0, 255)),
+        static_cast<uint8_t>(base::RandInt(0, 255)),
+    };
+    transport_remote->SendDatagram(base::make_span(data),
+                                   base::BindLambdaForTesting([&](bool r) {
+                                     result = r;
+                                     run_loop_for_datagram.Quit();
+                                   }));
+    run_loop_for_datagram.Run();
+    if (sent_data.empty()) {
+      // We expect that the first data went to the network successfully.
+      ASSERT_TRUE(result);
+    }
+    sent_data.insert(std::move(data));
+  }
+
+  EXPECT_TRUE(base::Contains(sent_data, client.received_datagrams()[0]));
+}
 
 TEST_F(QuicTransportTest, SendToolargeDatagram) {
   base::RunLoop run_loop_for_handshake;

@@ -99,12 +99,11 @@ constexpr int kButtonMarginRightDp = 16;
 // Spacing between the button image and label.
 constexpr int kImageLabelSpacingDp = 10;
 
-// The color of the button background.
-constexpr SkColor kButtonBackgroundColor =
-    SkColorSetA(gfx::kGoogleGrey100, 0x19);
-
 // The color of the button text.
 constexpr SkColor kButtonTextColor = gfx::kGoogleGrey100;
+
+// The color of the button text during OOBE.
+constexpr SkColor kButtonTextColorOobe = gfx::kGoogleGrey700;
 
 // The color of the button icon.
 constexpr SkColor kButtonIconColor = SkColorSetRGB(0xEB, 0xEA, 0xED);
@@ -195,7 +194,7 @@ class LoginShelfButton : public views::LabelButton {
   void PaintButtonContents(gfx::Canvas* canvas) override {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setColor(kButtonBackgroundColor);
+    flags.setColor(ShelfConfig::Get()->GetShelfControlButtonColor());
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->DrawPath(GetButtonHighlightPath(this), flags);
   }
@@ -214,15 +213,17 @@ class LoginShelfButton : public views::LabelButton {
   }
 
   void PaintDarkColors() {
-    SetEnabledTextColors(gfx::kGoogleGrey600);
+    SetEnabledTextColors(kButtonTextColorOobe);
     SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(icon_, gfx::kGoogleGrey600));
+             gfx::CreateVectorIcon(icon_, kButtonTextColorOobe));
+    SchedulePaint();
   }
 
   void PaintLightColors() {
     SetEnabledTextColors(kButtonTextColor);
     SetImage(views::Button::STATE_NORMAL,
              gfx::CreateVectorIcon(icon_, kButtonTextColor));
+    SchedulePaint();
   }
 
  private:
@@ -321,7 +322,7 @@ class KioskAppsButton : public views::MenuButton,
   void PaintButtonContents(gfx::Canvas* canvas) override {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setColor(kButtonBackgroundColor);
+    flags.setColor(ShelfConfig::Get()->GetShelfControlButtonColor());
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->DrawPath(GetButtonHighlightPath(this), flags);
   }
@@ -340,15 +341,17 @@ class KioskAppsButton : public views::MenuButton,
   }
 
   void PaintDarkColors() {
-    SetEnabledTextColors(gfx::kGoogleGrey600);
+    SetEnabledTextColors(kButtonTextColorOobe);
     SetImage(views::Button::STATE_NORMAL,
-             CreateVectorIcon(kShelfAppsButtonIcon, gfx::kGoogleGrey600));
+             CreateVectorIcon(kShelfAppsButtonIcon, kButtonTextColorOobe));
+    SchedulePaint();
   }
 
   void PaintLightColors() {
     SetEnabledTextColors(kButtonTextColor);
     SetImage(views::Button::STATE_NORMAL,
              CreateVectorIcon(kShelfAppsButtonIcon, kButtonIconColor));
+    SchedulePaint();
   }
 
   // views::ButtonListener:

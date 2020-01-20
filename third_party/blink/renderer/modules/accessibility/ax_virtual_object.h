@@ -43,8 +43,6 @@ class MODULES_EXPORT AXVirtualObject : public AXObject {
   Member<AccessibleNode> accessible_node_;
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXVirtualObject, IsVirtualObject());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_VIRTUAL_OBJECT_H_

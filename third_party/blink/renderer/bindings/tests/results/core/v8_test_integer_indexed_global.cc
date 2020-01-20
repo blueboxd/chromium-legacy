@@ -156,6 +156,7 @@ void V8TestIntegerIndexedGlobal::LengthAttributeSetterCallback(
 }
 
 void V8TestIntegerIndexedGlobal::VoidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestIntegerIndexedGlobal.voidMethodDocument");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestIntegerIndexedGlobal_voidMethodDocument");
 
   test_integer_indexed_global_v8_internal::VoidMethodDocumentMethod(info);

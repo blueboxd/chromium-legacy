@@ -2292,11 +2292,6 @@
           'gtest_tests': 'goma_gtests',
         },
       },
-      'chromeos-amd64-generic-rel (Goma RBE FYI)': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-      },
     },
   },
   {

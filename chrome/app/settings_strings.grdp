@@ -4403,6 +4403,21 @@
   <message name="IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL" desc="Label for the checkbox which causes all properties to be synced.">
     Sync everything
   </message>
+   <message name="IDS_SETTINGS_SYNC_EVERYTHING" desc="Label for the radio button which causes all properties to be synced.">
+    Sync everything
+  </message>
+  <message name="IDS_SETTINGS_SYNC_EVERYTHING_HINT" desc="Hint for the radio button which causes all properties to be synced.">
+    Sync all data types including ones that might be added in the future
+  </message>
+   <message name="IDS_SETTINGS_CUSTOMIZE_SYNC" desc="Label for the radio button to customize sync data types.">
+    Customize sync
+  </message>
+  <message name="IDS_SETTINGS_CUSTOMIZE_SYNC_HINT" desc="Hint or the radio button to customize sync data types.">
+    Sync only selected data types
+  </message>
+  <message name="IDS_SETTINGS_SYNC_DATA" desc="Title for sync data types list.">
+    Sync data
+  </message>
   <message name="IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT" desc="Label for the button that takes the user to the Google Account website.">
     Manage your Google Account
   </message>

@@ -81,7 +81,8 @@ jumbo_source_set("browser") {
     "//components/viz/client",
     "//components/viz/common",
     "//components/viz/host",
-    "//content:resources",
+    "//content:content_resources",
+    "//content:dev_ui_content_resources",
     "//content/app/resources",
     "//content/browser/background_fetch:background_fetch_proto",
     "//content/browser/background_sync:background_sync_proto",
@@ -1959,6 +1960,7 @@ jumbo_source_set("browser") {
     deps += [
       "//components/services/font:lib",
       "//services/service_manager/zygote",
+      "//third_party/blink/public/mojom:memory_usage_monitor_linux_mojo_bindings",
     ]
   }
 

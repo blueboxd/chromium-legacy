@@ -67,246 +67,67 @@ struct CORE_EXPORT NativeValueTraits<IDLBoolean>
   }
 };
 
-// Integers
+// Integer types
+#define DEFINE_NATIVE_VALUE_TRAITS_INTEGER_TYPE(T, Func)             \
+  template <bindings::IDLIntegerConvMode mode>                       \
+  struct NativeValueTraits<IDLIntegerTypeBase<T, mode>>              \
+      : public NativeValueTraitsBase<IDLIntegerTypeBase<T, mode>> {  \
+    static T NativeValue(v8::Isolate* isolate,                       \
+                         v8::Local<v8::Value> value,                 \
+                         ExceptionState& exception_state) {          \
+      return Func(isolate, value,                                    \
+                  static_cast<IntegerConversionConfiguration>(mode), \
+                  exception_state);                                  \
+    }                                                                \
+  }
+DEFINE_NATIVE_VALUE_TRAITS_INTEGER_TYPE(int8_t, ToInt8);
+DEFINE_NATIVE_VALUE_TRAITS_INTEGER_TYPE(uint8_t, ToUInt8);
+DEFINE_NATIVE_VALUE_TRAITS_INTEGER_TYPE(int16_t, ToInt16);
+DEFINE_NATIVE_VALUE_TRAITS_INTEGER_TYPE(uint16_t, ToUInt16);
+DEFINE_NATIVE_VALUE_TRAITS_INTEGER_TYPE(int32_t, ToInt32);
+DEFINE_NATIVE_VALUE_TRAITS_INTEGER_TYPE(uint32_t, ToUInt32);
+DEFINE_NATIVE_VALUE_TRAITS_INTEGER_TYPE(int64_t, ToInt64);
+DEFINE_NATIVE_VALUE_TRAITS_INTEGER_TYPE(uint64_t, ToUInt64);
+#undef DEFINE_NATIVE_VALUE_TRAITS_INTEGER_TYPE
+
+// Floats and doubles
 template <>
-struct CORE_EXPORT NativeValueTraits<IDLByte>
-    : public NativeValueTraitsBase<IDLByte> {
-  static int8_t NativeValue(v8::Isolate* isolate,
+struct CORE_EXPORT NativeValueTraits<IDLDouble>
+    : public NativeValueTraitsBase<IDLDouble> {
+  static double NativeValue(v8::Isolate* isolate,
                             v8::Local<v8::Value> value,
                             ExceptionState& exception_state) {
-    return ToInt8(isolate, value, kNormalConversion, exception_state);
+    return ToRestrictedDouble(isolate, value, exception_state);
   }
 };
 
 template <>
-struct CORE_EXPORT NativeValueTraits<IDLOctet>
-    : public NativeValueTraitsBase<IDLOctet> {
-  static uint8_t NativeValue(v8::Isolate* isolate,
-                             v8::Local<v8::Value> value,
-                             ExceptionState& exception_state) {
-    return ToUInt8(isolate, value, kNormalConversion, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLShort>
-    : public NativeValueTraitsBase<IDLShort> {
-  static int16_t NativeValue(v8::Isolate* isolate,
-                             v8::Local<v8::Value> value,
-                             ExceptionState& exception_state) {
-    return ToInt16(isolate, value, kNormalConversion, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLUnsignedShort>
-    : public NativeValueTraitsBase<IDLUnsignedShort> {
-  static uint16_t NativeValue(v8::Isolate* isolate,
-                              v8::Local<v8::Value> value,
-                              ExceptionState& exception_state) {
-    return ToUInt16(isolate, value, kNormalConversion, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLLong>
-    : public NativeValueTraitsBase<IDLLong> {
-  static int32_t NativeValue(v8::Isolate* isolate,
-                             v8::Local<v8::Value> value,
-                             ExceptionState& exception_state) {
-    return ToInt32(isolate, value, kNormalConversion, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLUnsignedLong>
-    : public NativeValueTraitsBase<IDLUnsignedLong> {
-  static uint32_t NativeValue(v8::Isolate* isolate,
-                              v8::Local<v8::Value> value,
-                              ExceptionState& exception_state) {
-    return ToUInt32(isolate, value, kNormalConversion, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLLongLong>
-    : public NativeValueTraitsBase<IDLLongLong> {
-  static int64_t NativeValue(v8::Isolate* isolate,
-                             v8::Local<v8::Value> value,
-                             ExceptionState& exception_state) {
-    return ToInt64(isolate, value, kNormalConversion, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLUnsignedLongLong>
-    : public NativeValueTraitsBase<IDLUnsignedLongLong> {
-  static uint64_t NativeValue(v8::Isolate* isolate,
-                              v8::Local<v8::Value> value,
-                              ExceptionState& exception_state) {
-    return ToUInt64(isolate, value, kNormalConversion, exception_state);
-  }
-};
-
-// [Clamp] Integers
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLByteClamp>
-    : public NativeValueTraitsBase<IDLByte> {
-  static int8_t NativeValue(v8::Isolate* isolate,
+struct CORE_EXPORT NativeValueTraits<IDLUnrestrictedDouble>
+    : public NativeValueTraitsBase<IDLUnrestrictedDouble> {
+  static double NativeValue(v8::Isolate* isolate,
                             v8::Local<v8::Value> value,
                             ExceptionState& exception_state) {
-    return ToInt8(isolate, value, kClamp, exception_state);
+    return ToDouble(isolate, value, exception_state);
   }
 };
 
 template <>
-struct CORE_EXPORT NativeValueTraits<IDLOctetClamp>
-    : public NativeValueTraitsBase<IDLOctet> {
-  static uint8_t NativeValue(v8::Isolate* isolate,
-                             v8::Local<v8::Value> value,
-                             ExceptionState& exception_state) {
-    return ToUInt8(isolate, value, kClamp, exception_state);
+struct CORE_EXPORT NativeValueTraits<IDLFloat>
+    : public NativeValueTraitsBase<IDLFloat> {
+  static float NativeValue(v8::Isolate* isolate,
+                           v8::Local<v8::Value> value,
+                           ExceptionState& exception_state) {
+    return ToRestrictedFloat(isolate, value, exception_state);
   }
 };
 
 template <>
-struct CORE_EXPORT NativeValueTraits<IDLShortClamp>
-    : public NativeValueTraitsBase<IDLShort> {
-  static int16_t NativeValue(v8::Isolate* isolate,
-                             v8::Local<v8::Value> value,
-                             ExceptionState& exception_state) {
-    return ToInt16(isolate, value, kClamp, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLUnsignedShortClamp>
-    : public NativeValueTraitsBase<IDLUnsignedShort> {
-  static uint16_t NativeValue(v8::Isolate* isolate,
-                              v8::Local<v8::Value> value,
-                              ExceptionState& exception_state) {
-    return ToUInt16(isolate, value, kClamp, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLLongClamp>
-    : public NativeValueTraitsBase<IDLLong> {
-  static int32_t NativeValue(v8::Isolate* isolate,
-                             v8::Local<v8::Value> value,
-                             ExceptionState& exception_state) {
-    return ToInt32(isolate, value, kClamp, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLUnsignedLongClamp>
-    : public NativeValueTraitsBase<IDLUnsignedLong> {
-  static uint32_t NativeValue(v8::Isolate* isolate,
-                              v8::Local<v8::Value> value,
-                              ExceptionState& exception_state) {
-    return ToUInt32(isolate, value, kClamp, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLLongLongClamp>
-    : public NativeValueTraitsBase<IDLLongLong> {
-  static int64_t NativeValue(v8::Isolate* isolate,
-                             v8::Local<v8::Value> value,
-                             ExceptionState& exception_state) {
-    return ToInt64(isolate, value, kClamp, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLUnsignedLongLongClamp>
-    : public NativeValueTraitsBase<IDLUnsignedLongLong> {
-  static uint64_t NativeValue(v8::Isolate* isolate,
-                              v8::Local<v8::Value> value,
-                              ExceptionState& exception_state) {
-    return ToUInt64(isolate, value, kClamp, exception_state);
-  }
-};
-
-// [EnforceRange] Integers
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLByteEnforceRange>
-    : public NativeValueTraitsBase<IDLByte> {
-  static int8_t NativeValue(v8::Isolate* isolate,
-                            v8::Local<v8::Value> value,
-                            ExceptionState& exception_state) {
-    return ToInt8(isolate, value, kEnforceRange, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLOctetEnforceRange>
-    : public NativeValueTraitsBase<IDLOctet> {
-  static uint8_t NativeValue(v8::Isolate* isolate,
-                             v8::Local<v8::Value> value,
-                             ExceptionState& exception_state) {
-    return ToUInt8(isolate, value, kEnforceRange, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLShortEnforceRange>
-    : public NativeValueTraitsBase<IDLShort> {
-  static int16_t NativeValue(v8::Isolate* isolate,
-                             v8::Local<v8::Value> value,
-                             ExceptionState& exception_state) {
-    return ToInt16(isolate, value, kEnforceRange, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLUnsignedShortEnforceRange>
-    : public NativeValueTraitsBase<IDLUnsignedShort> {
-  static uint16_t NativeValue(v8::Isolate* isolate,
-                              v8::Local<v8::Value> value,
-                              ExceptionState& exception_state) {
-    return ToUInt16(isolate, value, kEnforceRange, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLLongEnforceRange>
-    : public NativeValueTraitsBase<IDLLong> {
-  static int32_t NativeValue(v8::Isolate* isolate,
-                             v8::Local<v8::Value> value,
-                             ExceptionState& exception_state) {
-    return ToInt32(isolate, value, kEnforceRange, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLUnsignedLongEnforceRange>
-    : public NativeValueTraitsBase<IDLUnsignedLong> {
-  static uint32_t NativeValue(v8::Isolate* isolate,
-                              v8::Local<v8::Value> value,
-                              ExceptionState& exception_state) {
-    return ToUInt32(isolate, value, kEnforceRange, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLLongLongEnforceRange>
-    : public NativeValueTraitsBase<IDLLongLong> {
-  static int64_t NativeValue(v8::Isolate* isolate,
-                             v8::Local<v8::Value> value,
-                             ExceptionState& exception_state) {
-    return ToInt64(isolate, value, kEnforceRange, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLUnsignedLongLongEnforceRange>
-    : public NativeValueTraitsBase<IDLUnsignedLongLong> {
-  static uint64_t NativeValue(v8::Isolate* isolate,
-                              v8::Local<v8::Value> value,
-                              ExceptionState& exception_state) {
-    return ToUInt64(isolate, value, kEnforceRange, exception_state);
+struct CORE_EXPORT NativeValueTraits<IDLUnrestrictedFloat>
+    : public NativeValueTraitsBase<IDLUnrestrictedFloat> {
+  static float NativeValue(v8::Isolate* isolate,
+                           v8::Local<v8::Value> value,
+                           ExceptionState& exception_state) {
+    return ToFloat(isolate, value, exception_state);
   }
 };
 
@@ -536,47 +357,6 @@ struct CORE_EXPORT NativeValueTraits<IDLNullable<IDLUSVStringV2>>
     return NativeValueTraits<IDLUSVStringBaseV2<
         bindings::IDLStringConvMode::kNullable>>::NativeValue(isolate, value,
                                                               exception_state);
-  }
-};
-
-// Floats and doubles
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLDouble>
-    : public NativeValueTraitsBase<IDLDouble> {
-  static double NativeValue(v8::Isolate* isolate,
-                            v8::Local<v8::Value> value,
-                            ExceptionState& exception_state) {
-    return ToRestrictedDouble(isolate, value, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLUnrestrictedDouble>
-    : public NativeValueTraitsBase<IDLUnrestrictedDouble> {
-  static double NativeValue(v8::Isolate* isolate,
-                            v8::Local<v8::Value> value,
-                            ExceptionState& exception_state) {
-    return ToDouble(isolate, value, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLFloat>
-    : public NativeValueTraitsBase<IDLFloat> {
-  static float NativeValue(v8::Isolate* isolate,
-                           v8::Local<v8::Value> value,
-                           ExceptionState& exception_state) {
-    return ToRestrictedFloat(isolate, value, exception_state);
-  }
-};
-
-template <>
-struct CORE_EXPORT NativeValueTraits<IDLUnrestrictedFloat>
-    : public NativeValueTraitsBase<IDLUnrestrictedFloat> {
-  static float NativeValue(v8::Isolate* isolate,
-                           v8::Local<v8::Value> value,
-                           ExceptionState& exception_state) {
-    return ToFloat(isolate, value, exception_state);
   }
 };
 

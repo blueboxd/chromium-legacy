@@ -63,13 +63,6 @@ bool IsWebContentsFocused(content::WebContents* web_contents) {
   return browser->tab_strip_model()->GetActiveWebContents() == web_contents;
 }
 
-base::WeakPtr<media_router::WebContentsPresentationManager>
-GetPresentationManager(content::WebContents* web_contents) {
-  return web_contents
-             ? media_router::WebContentsPresentationManager::Get(web_contents)
-             : nullptr;
-}
-
 }  // anonymous namespace
 
 MediaNotificationService::Session::Session(
@@ -81,14 +74,11 @@ MediaNotificationService::Session::Session(
     : content::WebContentsObserver(web_contents),
       owner_(owner),
       id_(id),
-      item_(std::move(item)),
-      presentation_manager_(GetPresentationManager(web_contents)) {
+      item_(std::move(item)) {
   DCHECK(owner_);
   DCHECK(item_);
 
   SetController(std::move(controller));
-  if (presentation_manager_)
-    presentation_manager_->AddObserver(this);
 }
 
 MediaNotificationService::Session::~Session() {
@@ -99,8 +89,6 @@ MediaNotificationService::Session::~Session() {
 
   RecordDismissReason(dismiss_reason_.value_or(
       GlobalMediaControlsDismissReason::kMediaSessionStopped));
-  if (presentation_manager_)
-    presentation_manager_->RemoveObserver(this);
 }
 
 void MediaNotificationService::Session::WebContentsDestroyed() {
@@ -144,12 +132,6 @@ void MediaNotificationService::Session::MediaSessionInfoChanged(
 void MediaNotificationService::Session::MediaSessionPositionChanged(
     const base::Optional<media_session::MediaPosition>& position) {
   OnSessionInteractedWith();
-}
-
-void MediaNotificationService::Session::OnMediaRoutesChanged(
-    const std::vector<media_router::MediaRoute>& routes) {
-  if (!routes.empty())
-    item_->Dismiss();
 }
 
 void MediaNotificationService::Session::SetController(

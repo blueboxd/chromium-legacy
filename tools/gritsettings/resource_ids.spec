@@ -234,6 +234,9 @@
   "content/browser/webrtc/resources/resources.grd": {
     "includes": [2240],
   },
+  "content/dev_ui_content_resources.grd": {
+    "includes": [2250],
+  },
   # END chrome/ WebUI resources section
 
   # START chrome/ miscellaneous section.

@@ -194,7 +194,7 @@ executable("views_examples_with_content_exe") {
 }
 
 copy("copy_content_resources") {
-  deps = [ "//content:resources" ]
+  deps = [ "//content:content_resources" ]
   sources = [ "$root_gen_dir/content/content_resources.pak" ]
   outputs = [ "$root_out_dir/content_resources.pak" ]
 }

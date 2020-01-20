@@ -276,15 +276,18 @@ PositionWithAffinity LayoutNGBlockFlowMixin<Base>::PositionForPoint(
     if (const PositionWithAffinity position =
             paint_fragment->PositionForPoint(point_in_contents))
       return position;
-  } else if (const NGFragmentItems* items = Base::FragmentItems()) {
-    // The given offset is relative to this |LayoutBlockFlow|. Convert to the
-    // contents offset.
-    PhysicalOffset point_in_contents = point;
-    Base::OffsetForContents(point_in_contents);
-    NGInlineCursor cursor(*items);
-    if (const PositionWithAffinity position =
-            cursor.PositionForPoint(point_in_contents))
-      return position;
+  } else if (const NGPhysicalBoxFragment* fragment = CurrentFragment()) {
+    if (const NGFragmentItems* items = fragment->Items()) {
+      // The given offset is relative to this |LayoutBlockFlow|. Convert to the
+      // contents offset.
+      PhysicalOffset point_in_contents = point;
+      Base::OffsetForContents(point_in_contents);
+      NGInlineCursor cursor(*items);
+      if (const PositionWithAffinity position =
+              cursor.PositionForPointInInlineFormattingContext(
+                  point_in_contents, *fragment))
+        return position;
+    }
   }
 
   return Base::CreatePositionWithAffinity(0);

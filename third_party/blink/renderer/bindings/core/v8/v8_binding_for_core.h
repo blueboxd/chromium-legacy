@@ -199,8 +199,8 @@ CORE_EXPORT void V8SetReturnValue(const v8::PropertyCallbackInfo<v8::Value>&,
 // Conversion flags, used in toIntXX/toUIntXX.
 enum IntegerConversionConfiguration {
   kNormalConversion,
+  kClamp,
   kEnforceRange,
-  kClamp
 };
 
 // Convert a value to a boolean.

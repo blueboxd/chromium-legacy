@@ -161,6 +161,17 @@ PseudoElement::AttachLayoutTreeScope::~AttachLayoutTreeScope() {
 
 void PseudoElement::AttachLayoutTree(AttachContext& context) {
   DCHECK(!GetLayoutObject());
+
+  // Some elements may have 'display: list-item' but not be list items.
+  // Do not create a layout object for the ::marker in that case.
+  if (pseudo_id_ == kPseudoIdMarker) {
+    LayoutObject* originating_layout = parentNode()->GetLayoutObject();
+    if (!originating_layout || !originating_layout->IsListItemIncludingNG()) {
+      Node::AttachLayoutTree(context);
+      return;
+    }
+  }
+
   {
     AttachLayoutTreeScope scope(this);
     Element::AttachLayoutTree(context);

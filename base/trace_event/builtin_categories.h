@@ -34,6 +34,7 @@
   X("base")                                                              \
   X("benchmark")                                                         \
   X("blink")                                                             \
+  X("blink.bindings")                                                    \
   X("blink.animations")                                                  \
   X("blink.console")                                                     \
   X("blink_gc")                                                          \

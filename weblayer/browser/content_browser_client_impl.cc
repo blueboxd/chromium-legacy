@@ -38,6 +38,7 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "weblayer/browser/browser_main_parts_impl.h"
+#include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/ssl_error_handler.h"
@@ -340,6 +341,7 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
   std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
   throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
       handle, std::make_unique<SSLCertReporterImpl>(),
+      BrowserProcess::GetInstance()->GetNetworkTimeTracker(),
       base::BindOnce(&HandleSSLError), base::BindOnce(&IsInHostedApp)));
   return throttles;
 }

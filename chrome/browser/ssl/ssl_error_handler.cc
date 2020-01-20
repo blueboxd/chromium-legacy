@@ -21,20 +21,18 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ssl/blocked_interception_blocking_page.h"
 #include "chrome/browser/ssl/captive_portal_helper.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/ssl_error_assistant.h"
-#include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
+#include "components/captive_portal/buildflags.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
+#include "components/security_interstitials/content/blocked_interception_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
 #include "components/security_interstitials/content/mitm_software_blocking_page.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
@@ -186,7 +184,6 @@ class ConfigSingleton {
   base::TimeDelta interstitial_delay() const;
   SSLErrorHandler::TimerStartedCallback* timer_started_callback() const;
   base::Clock* clock() const;
-  network_time::NetworkTimeTracker* network_time_tracker() const;
 
   bool IsKnownCaptivePortalCertificate(const net::SSLInfo& ssl_info);
 
@@ -208,8 +205,6 @@ class ConfigSingleton {
   void SetTimerStartedCallbackForTesting(
       SSLErrorHandler::TimerStartedCallback* callback);
   void SetClockForTesting(base::Clock* clock);
-  void SetNetworkTimeTrackerForTesting(
-      network_time::NetworkTimeTracker* tracker);
   void SetReportNetworkConnectivityCallbackForTesting(
       base::OnceClosure callback);
 
@@ -217,11 +212,7 @@ class ConfigSingleton {
       std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
           error_assistant_proto);
 
-  void SetEnterpriseManagedForTesting(bool enterprise_managed);
-  bool IsEnterpriseManagedFlagSetForTesting() const;
   int GetErrorAssistantProtoVersionIdForTesting() const;
-
-  bool IsEnterpriseManaged() const;
 
   void SetOSReportsCaptivePortalForTesting(bool os_reports_captive_portal);
   bool DoesOSReportCaptivePortalForTesting() const;
@@ -241,16 +232,7 @@ class ConfigSingleton {
   // testing.
   base::Clock* testing_clock_ = nullptr;
 
-  network_time::NetworkTimeTracker* network_time_tracker_ = nullptr;
-
   base::OnceClosure report_network_connectivity_callback_;
-
-  enum EnterpriseManaged {
-    ENTERPRISE_MANAGED_STATUS_NOT_SET,
-    ENTERPRISE_MANAGED_STATUS_TRUE,
-    ENTERPRISE_MANAGED_STATUS_FALSE
-  };
-  EnterpriseManaged is_enterprise_managed_for_testing_;
 
   enum OSCaptivePortalStatus {
     OS_CAPTIVE_PORTAL_STATUS_NOT_SET,
@@ -265,7 +247,6 @@ class ConfigSingleton {
 ConfigSingleton::ConfigSingleton()
     : interstitial_delay_(
           base::TimeDelta::FromMilliseconds(kInterstitialDelayInMilliseconds)),
-      is_enterprise_managed_for_testing_(ENTERPRISE_MANAGED_STATUS_NOT_SET),
       os_captive_portal_status_for_testing_(OS_CAPTIVE_PORTAL_STATUS_NOT_SET),
       ssl_error_assistant_(std::make_unique<SSLErrorAssistant>()) {}
 
@@ -278,12 +259,6 @@ SSLErrorHandler::TimerStartedCallback* ConfigSingleton::timer_started_callback()
   return timer_started_callback_;
 }
 
-network_time::NetworkTimeTracker* ConfigSingleton::network_time_tracker()
-    const {
-  return network_time_tracker_ ? network_time_tracker_
-                               : g_browser_process->network_time_tracker();
-}
-
 base::Clock* ConfigSingleton::clock() const {
   return testing_clock_;
 }
@@ -292,10 +267,8 @@ void ConfigSingleton::ResetForTesting() {
   interstitial_delay_ =
       base::TimeDelta::FromMilliseconds(kInterstitialDelayInMilliseconds);
   timer_started_callback_ = nullptr;
-  network_time_tracker_ = nullptr;
   testing_clock_ = nullptr;
   ssl_error_assistant_->ResetForTesting();
-  is_enterprise_managed_for_testing_ = ENTERPRISE_MANAGED_STATUS_NOT_SET;
   os_captive_portal_status_for_testing_ = OS_CAPTIVE_PORTAL_STATUS_NOT_SET;
 }
 
@@ -314,54 +287,13 @@ void ConfigSingleton::SetClockForTesting(base::Clock* clock) {
   testing_clock_ = clock;
 }
 
-void ConfigSingleton::SetNetworkTimeTrackerForTesting(
-    network_time::NetworkTimeTracker* tracker) {
-  network_time_tracker_ = tracker;
-}
-
 void ConfigSingleton::SetReportNetworkConnectivityCallbackForTesting(
     base::OnceClosure closure) {
   report_network_connectivity_callback_ = std::move(closure);
 }
 
-void ConfigSingleton::SetEnterpriseManagedForTesting(bool enterprise_managed) {
-  if (enterprise_managed) {
-    is_enterprise_managed_for_testing_ = ENTERPRISE_MANAGED_STATUS_TRUE;
-  } else {
-    is_enterprise_managed_for_testing_ = ENTERPRISE_MANAGED_STATUS_FALSE;
-  }
-}
-
-bool ConfigSingleton::IsEnterpriseManagedFlagSetForTesting() const {
-  if (is_enterprise_managed_for_testing_ == ENTERPRISE_MANAGED_STATUS_NOT_SET) {
-    return false;
-  }
-  return true;
-}
-
 int ConfigSingleton::GetErrorAssistantProtoVersionIdForTesting() const {
   return ssl_error_assistant_->GetErrorAssistantProtoVersionIdForTesting();
-}
-
-bool ConfigSingleton::IsEnterpriseManaged() const {
-  // Return the value of the testing flag if it's set.
-  if (is_enterprise_managed_for_testing_ == ENTERPRISE_MANAGED_STATUS_TRUE) {
-    return true;
-  }
-  if (is_enterprise_managed_for_testing_ == ENTERPRISE_MANAGED_STATUS_FALSE) {
-    return false;
-  }
-
-#if defined(OS_WIN)
-  if (base::IsMachineExternallyManaged()) {
-    return true;
-  }
-#elif defined(OS_CHROMEOS)
-  if (g_browser_process->platform_part()->browser_policy_connector_chromeos()) {
-    return true;
-  }
-#endif  // #if defined(OS_WIN)
-  return false;
 }
 
 void ConfigSingleton::SetOSReportsCaptivePortalForTesting(
@@ -432,8 +364,8 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
   void NavigateToSuggestedURL(const GURL& suggested_url) override;
   bool IsErrorOverridable() const override;
   void ShowCaptivePortalInterstitial(const GURL& landing_url) override;
-  void ShowMITMSoftwareInterstitial(const std::string& mitm_software_name,
-                                    bool is_enterprise_managed) override;
+  void ShowMITMSoftwareInterstitial(
+      const std::string& mitm_software_name) override;
   void ShowSSLInterstitial(const GURL& support_url) override;
   void ShowBadClockInterstitial(const base::Time& now,
                                 ssl_errors::ClockState clock_state) override;
@@ -523,14 +455,12 @@ void SSLErrorHandlerDelegateImpl::ShowCaptivePortalInterstitial(
 }
 
 void SSLErrorHandlerDelegateImpl::ShowMITMSoftwareInterstitial(
-    const std::string& mitm_software_name,
-    bool is_enterprise_managed) {
+    const std::string& mitm_software_name) {
   // Show MITM software blocking page. The interstitial owns the blocking page.
   OnBlockingPageReady(
       ChromeSecurityBlockingPageFactory::CreateMITMSoftwareBlockingPage(
           web_contents_, cert_error_, request_url_,
-          std::move(ssl_cert_reporter_), ssl_info_, mitm_software_name,
-          is_enterprise_managed));
+          std::move(ssl_cert_reporter_), ssl_info_, mitm_software_name));
 }
 
 void SSLErrorHandlerDelegateImpl::ShowSSLInterstitial(const GURL& support_url) {
@@ -553,9 +483,10 @@ void SSLErrorHandlerDelegateImpl::ShowBadClockInterstitial(
 
 void SSLErrorHandlerDelegateImpl::ShowBlockedInterceptionInterstitial() {
   // Show interception blocking page. The interstitial owns the blocking page.
-  OnBlockingPageReady(new BlockedInterceptionBlockingPage(
-      web_contents_, cert_error_, request_url_, std::move(ssl_cert_reporter_),
-      ssl_info_));
+  OnBlockingPageReady(
+      ChromeSecurityBlockingPageFactory::CreateBlockedInterceptionBlockingPage(
+          web_contents_, cert_error_, request_url_,
+          std::move(ssl_cert_reporter_), ssl_info_));
 }
 
 void SSLErrorHandlerDelegateImpl::ReportNetworkConnectivity(
@@ -595,6 +526,7 @@ void SSLErrorHandler::HandleSSLError(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+    network_time::NetworkTimeTracker* network_time_tracker,
     base::OnceCallback<
         void(std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
         blocking_page_ready_callback) {
@@ -621,7 +553,8 @@ void SSLErrorHandler::HandleSSLError(
               web_contents, ssl_info, profile, cert_error, options_mask,
               request_url, std::move(ssl_cert_reporter),
               std::move(blocking_page_ready_callback))),
-      web_contents, profile, cert_error, ssl_info, request_url);
+      web_contents, profile, cert_error, ssl_info, network_time_tracker,
+      request_url);
   web_contents->SetUserData(UserDataKey(), base::WrapUnique(error_handler));
   error_handler->StartHandlingError();
 }
@@ -649,26 +582,10 @@ void SSLErrorHandler::SetClockForTesting(base::Clock* testing_clock) {
 }
 
 // static
-void SSLErrorHandler::SetNetworkTimeTrackerForTesting(
-    network_time::NetworkTimeTracker* tracker) {
-  g_config.Pointer()->SetNetworkTimeTrackerForTesting(tracker);
-}
-
-// static
 void SSLErrorHandler::SetReportNetworkConnectivityCallbackForTesting(
     base::OnceClosure closure) {
   g_config.Pointer()->SetReportNetworkConnectivityCallbackForTesting(
       std::move(closure));
-}
-
-// static
-void SSLErrorHandler::SetEnterpriseManagedForTesting(bool enterprise_managed) {
-  g_config.Pointer()->SetEnterpriseManagedForTesting(enterprise_managed);
-}
-
-// static
-bool SSLErrorHandler::IsEnterpriseManagedFlagSetForTesting() {
-  return g_config.Pointer()->IsEnterpriseManagedFlagSetForTesting();
 }
 
 // static
@@ -698,22 +615,24 @@ void SSLErrorHandler::SetErrorAssistantProto(
   g_config.Pointer()->SetErrorAssistantProto(std::move(config_proto));
 }
 
-SSLErrorHandler::SSLErrorHandler(std::unique_ptr<Delegate> delegate,
-                                 content::WebContents* web_contents,
-                                 Profile* profile,
-                                 int cert_error,
-                                 const net::SSLInfo& ssl_info,
-                                 const GURL& request_url)
+SSLErrorHandler::SSLErrorHandler(
+    std::unique_ptr<Delegate> delegate,
+    content::WebContents* web_contents,
+    Profile* profile,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    network_time::NetworkTimeTracker* network_time_tracker,
+    const GURL& request_url)
     : content::WebContentsObserver(web_contents),
       delegate_(std::move(delegate)),
       web_contents_(web_contents),
       profile_(profile),
       cert_error_(cert_error),
       ssl_info_(ssl_info),
-      request_url_(request_url) {}
+      request_url_(request_url),
+      network_time_tracker_(network_time_tracker) {}
 
-SSLErrorHandler::~SSLErrorHandler() {
-}
+SSLErrorHandler::~SSLErrorHandler() = default;
 
 void SSLErrorHandler::StartHandlingError() {
   RecordUMA(HANDLE_ALL);
@@ -780,8 +699,7 @@ void SSLErrorHandler::StartHandlingError() {
     const std::string found_mitm_software =
         g_config.Pointer()->MatchKnownMITMSoftware(ssl_info_.cert);
     if (!found_mitm_software.empty()) {
-      ShowMITMSoftwareInterstitial(found_mitm_software,
-                                   g_config.Pointer()->IsEnterpriseManaged());
+      ShowMITMSoftwareInterstitial(found_mitm_software);
       return;
     }
   }
@@ -859,12 +777,10 @@ void SSLErrorHandler::ShowCaptivePortalInterstitial(const GURL& landing_url) {
 }
 
 void SSLErrorHandler::ShowMITMSoftwareInterstitial(
-    const std::string& mitm_software_name,
-    bool is_enterprise_managed) {
+    const std::string& mitm_software_name) {
   // Show SSL blocking page. The interstitial owns the blocking page.
   RecordUMA(SHOW_MITM_SOFTWARE_INTERSTITIAL);
-  delegate_->ShowMITMSoftwareInterstitial(mitm_software_name,
-                                          is_enterprise_managed);
+  delegate_->ShowMITMSoftwareInterstitial(mitm_software_name);
   // Once an interstitial is displayed, no need to keep the handler around.
   // This is the equivalent of "delete this".
   web_contents_->RemoveUserData(UserDataKey());
@@ -908,8 +824,7 @@ void SSLErrorHandler::ShowDynamicInterstitial(
         INTERSTITIAL_PAGE_MITM_SOFTWARE:
       DCHECK(!dynamic_interstitial.mitm_software_name.empty());
       delegate_->ShowMITMSoftwareInterstitial(
-          dynamic_interstitial.mitm_software_name,
-          g_config.Pointer()->IsEnterpriseManaged());
+          dynamic_interstitial.mitm_software_name);
       return;
   }
 }
@@ -994,9 +909,7 @@ void SSLErrorHandler::HandleCertDateInvalidError() {
   // Pass a weak pointer as the callback; if the timer fires before the
   // fetch completes and shows an interstitial, this SSLErrorHandler
   // will be deleted.
-  network_time::NetworkTimeTracker* tracker =
-      g_config.Pointer()->network_time_tracker();
-  if (!tracker->StartTimeFetch(
+  if (!network_time_tracker_->StartTimeFetch(
           base::BindOnce(&SSLErrorHandler::HandleCertDateInvalidErrorImpl,
                          weak_ptr_factory_.GetWeakPtr(), now))) {
     HandleCertDateInvalidErrorImpl(now);
@@ -1020,9 +933,8 @@ void SSLErrorHandler::HandleCertDateInvalidErrorImpl(
   const base::Time now =
       testing_clock ? testing_clock->Now() : base::Time::NowFromSystemTime();
 
-  network_time::NetworkTimeTracker* tracker =
-      g_config.Pointer()->network_time_tracker();
-  ssl_errors::ClockState clock_state = ssl_errors::GetClockState(now, tracker);
+  ssl_errors::ClockState clock_state =
+      ssl_errors::GetClockState(now, network_time_tracker_);
   if (clock_state == ssl_errors::CLOCK_STATE_FUTURE ||
       clock_state == ssl_errors::CLOCK_STATE_PAST) {
     ShowBadClockInterstitial(now, clock_state);

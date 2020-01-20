@@ -210,7 +210,6 @@ NGConstraintSpaceBuilder CreateConstraintSpaceBuilderForMinMax(
                                    node.Style().GetWritingMode(),
                                    node.CreatesNewFormattingContext());
   builder.SetTextDirection(node.Style().Direction());
-  builder.SetIsIntermediateLayout(true);
   return builder;
 }
 
@@ -308,8 +307,6 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     if (UNLIKELY(Style().MayHaveMargin() && !constraint_space.IsTableCell()))
       box_->SetMargin(ComputePhysicalMargins(constraint_space, Style()));
 
-    // TODO(layoutng): Figure out why these two call can't be inside the
-    // !constraint_space.IsIntermediateLayout() block below.
     UpdateShapeOutsideInfoIfNeeded(
         *layout_result, constraint_space.PercentageResolutionInlineSize());
 
@@ -390,9 +387,6 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::Layout(
     DCHECK(scrollbar_changed.insert(box_).is_new_entry);
 #endif
 
-    // Must not call SetNeedsLayout in intermediate layout. If we do,
-    // the NeedsLayout flag might not be cleared. crbug.com/967361
-    DCHECK(!constraint_space.IsIntermediateLayout() || box_->NeedsLayout());
     // Scrollbar changes are hard to detect. Make sure everyone gets the
     // message.
     box_->SetNeedsLayout(layout_invalidation_reason::kScrollbarChanged,
@@ -517,9 +511,6 @@ void NGBlockNode::FinishLayout(
     const NGConstraintSpace& constraint_space,
     const NGBreakToken* break_token,
     scoped_refptr<const NGLayoutResult> layout_result) {
-  if (constraint_space.IsIntermediateLayout())
-    return;
-
   // If we abort layout and don't clear the cached layout-result, we can end
   // up in a state where the layout-object tree doesn't match fragment tree
   // referenced by this layout-result.
@@ -801,9 +792,6 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     const NGConstraintSpace& constraint_space,
     const NGLayoutResult& layout_result,
     const NGBlockBreakToken* previous_break_token) {
-  if (UNLIKELY(constraint_space.IsIntermediateLayout()))
-    return;
-
   const auto& physical_fragment =
       To<NGPhysicalBoxFragment>(layout_result.PhysicalFragment());
 
@@ -1158,8 +1146,7 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::LayoutAtomicInline(
   scoped_refptr<const NGLayoutResult> result = Layout(constraint_space);
   // TODO(kojii): Investigate why ClearNeedsLayout() isn't called automatically
   // when it's being laid out.
-  if (!constraint_space.IsIntermediateLayout())
-    GetLayoutBox()->ClearNeedsLayout();
+  GetLayoutBox()->ClearNeedsLayout();
   return result;
 }
 
@@ -1240,16 +1227,12 @@ scoped_refptr<const NGLayoutResult> NGBlockNode::RunLegacyLayout(
     CopyBaselinesFromLegacyLayout(constraint_space, &builder);
     layout_result = builder.ToBoxFragment();
 
-    if (!constraint_space.IsIntermediateLayout())
-      box_->SetCachedLayoutResult(*layout_result, /* break_token */ nullptr);
+    box_->SetCachedLayoutResult(*layout_result, /* break_token */ nullptr);
 
     // If |SetCachedLayoutResult| did not update cached |LayoutResult|,
     // |NeedsLayout()| flag should not be cleared.
     if (needed_layout) {
-      if (constraint_space.IsIntermediateLayout()) {
-        DCHECK_NE(layout_result, box_->GetCachedLayoutResult());
-        box_->SetNeedsLayout(layout_invalidation_reason::kUnknown);
-      } else if (layout_result != box_->GetCachedLayoutResult()) {
+      if (layout_result != box_->GetCachedLayoutResult()) {
         // TODO(kojii): If we failed to update CachedLayoutResult for other
         // reasons, we'd like to review it.
         NOTREACHED();
@@ -1376,8 +1359,6 @@ void NGBlockNode::UseLegacyOutOfFlowPositioning() const {
 
 void NGBlockNode::StoreMargins(const NGConstraintSpace& constraint_space,
                                const NGBoxStrut& margins) {
-  if (constraint_space.IsIntermediateLayout())
-    return;
   NGPhysicalBoxStrut physical_margins = margins.ConvertToPhysical(
       constraint_space.GetWritingMode(), constraint_space.Direction());
   box_->SetMargin(physical_margins);

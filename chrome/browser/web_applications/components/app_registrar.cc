@@ -95,6 +95,10 @@ bool AppRegistrar::HasExternalAppWithInstallSource(
       profile()->GetPrefs(), app_id, install_source);
 }
 
+extensions::BookmarkAppRegistrar* AppRegistrar::AsBookmarkAppRegistrar() {
+  return nullptr;
+}
+
 base::Optional<AppId> AppRegistrar::FindAppWithUrlInScope(
     const GURL& url) const {
   const std::string url_path = url.spec();

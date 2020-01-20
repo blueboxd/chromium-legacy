@@ -594,6 +594,9 @@ extern const char kEnableWasmCodeGCDescription[];
 extern const char kEnableWasmCodeCacheName[];
 extern const char kEnableWasmCodeCacheDescription[];
 
+extern const char kEnableWasmLazyCompilationName[];
+extern const char kEnableWasmLazyCompilationDescription[];
+
 extern const char kEnableWasmSimdName[];
 extern const char kEnableWasmSimdDescription[];
 

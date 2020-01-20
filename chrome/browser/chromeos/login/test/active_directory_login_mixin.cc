@@ -102,13 +102,15 @@ void ActiveDirectoryLoginMixin::ClosePasswordChangeScreen() {
 void ActiveDirectoryLoginMixin::TestLoginVisible() {
   OobeScreenWaiter screen_waiter(GaiaView::kScreenId);
   screen_waiter.Wait();
+
+  // Wait for the Active Directory signin visible.
+  std::initializer_list<base::StringPiece> ad_screen{kGaiaSigninId,
+                                                     kAdOfflineAuthId};
+  test::OobeJS().CreateVisibilityWaiter(true, ad_screen)->Wait();
+
   // Checks if Gaia signin is hidden.
   test::OobeJS().ExpectHiddenPath({kGaiaSigninId, kGaiaSigninDialogId});
 
-  // Checks if Active Directory signin is visible.
-  std::initializer_list<base::StringPiece> ad_screen{kGaiaSigninId,
-                                                     kAdOfflineAuthId};
-  test::OobeJS().ExpectVisiblePath(ad_screen);
   test::OobeJS().ExpectNE(test::GetOobeElementPath(ad_screen) + ".clientWidth",
                           0);
   test::OobeJS().ExpectNE(test::GetOobeElementPath(ad_screen) + ".clientHeight",

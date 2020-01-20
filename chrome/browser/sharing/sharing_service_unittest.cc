@@ -84,7 +84,7 @@ class MockSharingFCMHandler : public SharingFCMHandler {
                           /*sharing_fcm_sender=*/nullptr,
                           /*sync_preference=*/nullptr,
                           /*handler_registry=*/nullptr) {}
-  ~MockSharingFCMHandler() = default;
+  ~MockSharingFCMHandler() override = default;
 
   MOCK_METHOD0(StartListening, void());
   MOCK_METHOD0(StopListening, void());
@@ -158,8 +158,10 @@ class MockSharingDeviceSource : public SharingDeviceSource {
   MOCK_METHOD1(GetDeviceByGuid,
                std::unique_ptr<syncer::DeviceInfo>(const std::string& guid));
 
-  MOCK_METHOD0(GetAllDevices,
-               std::vector<std::unique_ptr<syncer::DeviceInfo>>());
+  MOCK_METHOD1(
+      GetDeviceCandidates,
+      std::vector<std::unique_ptr<syncer::DeviceInfo>>(
+          sync_pb::SharingSpecificFields::EnabledFeatures required_feature));
 };
 
 class SharingServiceTest : public testing::Test {
@@ -263,10 +265,12 @@ bool ProtoEquals(const google::protobuf::MessageLite& expected,
 }  // namespace
 
 TEST_F(SharingServiceTest, GetDeviceCandidates_Empty) {
-  EXPECT_CALL(*device_source_, GetAllDevices())
-      .WillOnce([]() -> std::vector<std::unique_ptr<syncer::DeviceInfo>> {
-        return {};
-      });
+  EXPECT_CALL(*device_source_, GetDeviceCandidates(::testing::_))
+      .WillOnce(
+          [](sync_pb::SharingSpecificFields::EnabledFeatures required_feature)
+              -> std::vector<std::unique_ptr<syncer::DeviceInfo>> {
+            return {};
+          });
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
       GetSharingService()->GetDeviceCandidates(
@@ -275,61 +279,21 @@ TEST_F(SharingServiceTest, GetDeviceCandidates_Empty) {
 }
 
 TEST_F(SharingServiceTest, GetDeviceCandidates_Tracked) {
-  EXPECT_CALL(*device_source_, GetAllDevices())
-      .WillOnce([]() -> std::vector<std::unique_ptr<syncer::DeviceInfo>> {
-        std::vector<std::unique_ptr<syncer::DeviceInfo>> device_candidates;
-        device_candidates.push_back(CreateFakeDeviceInfo(
-            base::GenerateGUID(), kDeviceName, CreateSharingInfo()));
-        return device_candidates;
-      });
+  EXPECT_CALL(*device_source_, GetDeviceCandidates(::testing::_))
+      .WillOnce(
+          [](sync_pb::SharingSpecificFields::EnabledFeatures required_feature)
+              -> std::vector<std::unique_ptr<syncer::DeviceInfo>> {
+            std::vector<std::unique_ptr<syncer::DeviceInfo>> device_candidates;
+            device_candidates.push_back(CreateFakeDeviceInfo(
+                base::GenerateGUID(), kDeviceName, CreateSharingInfo()));
+            return device_candidates;
+          });
 
   std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
       GetSharingService()->GetDeviceCandidates(
           sync_pb::SharingSpecificFields::CLICK_TO_CALL);
 
   ASSERT_EQ(1u, candidates.size());
-}
-
-TEST_F(SharingServiceTest, GetDeviceCandidates_Expired) {
-  // Create device in advance so we can forward time before calling
-  // GetDeviceCandidates.
-  auto device_info = CreateFakeDeviceInfo(base::GenerateGUID(), kDeviceName,
-                                          CreateSharingInfo());
-  EXPECT_CALL(*device_source_, GetAllDevices())
-      .WillOnce(
-          [&device_info]() -> std::vector<std::unique_ptr<syncer::DeviceInfo>> {
-            std::vector<std::unique_ptr<syncer::DeviceInfo>> device_candidates;
-            device_candidates.push_back(std::move(device_info));
-            return device_candidates;
-          });
-
-  // Forward time until device expires.
-  task_environment_.FastForwardBy(
-      base::TimeDelta::FromHours(kSharingDeviceExpirationHours.Get()) +
-      base::TimeDelta::FromMilliseconds(1));
-
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::CLICK_TO_CALL);
-
-  EXPECT_TRUE(candidates.empty());
-}
-
-TEST_F(SharingServiceTest, GetDeviceCandidates_MissingRequirements) {
-  EXPECT_CALL(*device_source_, GetAllDevices())
-      .WillOnce([]() -> std::vector<std::unique_ptr<syncer::DeviceInfo>> {
-        std::vector<std::unique_ptr<syncer::DeviceInfo>> device_candidates;
-        device_candidates.push_back(CreateFakeDeviceInfo(
-            base::GenerateGUID(), kDeviceName, CreateSharingInfo()));
-        return device_candidates;
-      });
-
-  // Requires shared clipboard feature.
-  std::vector<std::unique_ptr<syncer::DeviceInfo>> candidates =
-      GetSharingService()->GetDeviceCandidates(
-          sync_pb::SharingSpecificFields::SHARED_CLIPBOARD);
-
-  EXPECT_TRUE(candidates.empty());
 }
 
 TEST_F(SharingServiceTest, SendMessageToDeviceSuccess) {

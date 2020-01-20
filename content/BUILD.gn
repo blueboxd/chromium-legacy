@@ -115,7 +115,7 @@ if (is_component_build) {
   }
 }
 
-grit("resources") {
+grit("content_resources") {
   source = "content_resources.grd"
 
   # The .grd contains references to generated files.
@@ -132,10 +132,26 @@ grit("resources") {
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   deps = [
-    "//content/browser/process_internals:mojo_bindings_js",
     "//gpu/ipc/common:vulkan_interface_js",
     "//url/mojom:url_mojom_origin_js",
   ]
+}
+
+grit("dev_ui_content_resources") {
+  source = "dev_ui_content_resources.grd"
+
+  # The .grd contains references to generated files.
+  source_is_generated = true
+
+  outputs = [
+    "grit/dev_ui_content_resources.h",
+    "dev_ui_content_resources.pak",
+  ]
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+  deps = [ "//content/browser/process_internals:mojo_bindings_js" ]
 }
 
 # This target exists to "hold" the content_export header so we can do proper

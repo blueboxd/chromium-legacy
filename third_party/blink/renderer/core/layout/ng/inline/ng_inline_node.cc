@@ -427,13 +427,6 @@ void TruncateOrPadText(String* text, unsigned length) {
   }
 }
 
-template <typename OffsetMappingBuilder>
-bool MayBeBidiEnabled(
-    const String& text_content,
-    const NGInlineItemsBuilderTemplate<OffsetMappingBuilder>& builder) {
-  return !text_content.Is8Bit() || builder.HasBidiControls();
-}
-
 }  // namespace
 
 NGInlineNode::NGInlineNode(LayoutBlockFlow* block)
@@ -778,7 +771,7 @@ bool NGInlineNode::SetTextWithOffset(LayoutText* layout_text,
   // inline items.
   layout_text->ClearInlineItems();
   CollectInlinesInternal(node.GetLayoutBlockFlow(), &builder, previous_data);
-  data->text_content = builder.ToString();
+  builder.DidFinishCollectInlines(data);
   // Relocates |ShapeResult| in |previous_data| after |offset|+|length|
   editor.Run();
   node.SegmentText(data);
@@ -886,17 +879,7 @@ void NGInlineNode::CollectInlines(NGInlineNodeData* data,
   data->items.ReserveCapacity(EstimateInlineItemsCount(*block));
   NGInlineItemsBuilder builder(&data->items, dirty_lines);
   CollectInlinesInternal(block, &builder, previous_data);
-  data->text_content = builder.ToString();
-
-  // Set |is_bidi_enabled_| for all UTF-16 strings for now, because at this
-  // point the string may or may not contain RTL characters.
-  // |SegmentText()| will analyze the text and reset |is_bidi_enabled_| if it
-  // doesn't contain any RTL characters.
-  data->is_bidi_enabled_ = MayBeBidiEnabled(data->text_content, builder);
-  data->is_empty_inline_ = builder.IsEmptyInline();
-  data->is_block_level_ = builder.IsBlockLevel();
-  data->changes_may_affect_earlier_lines_ =
-      builder.ChangesMayAffectEarlierLines();
+  builder.DidFinishCollectInlines(data);
 }
 
 void NGInlineNode::SegmentText(NGInlineNodeData* data) {
@@ -1400,10 +1383,6 @@ const NGPaintFragment* NGInlineNode::ReusableLineBoxContainer(
           .HasOutOfFlowPositionedDescendants())
     return nullptr;
 
-  // Cached fragments are not for intermediate layout.
-  if (constraint_space.IsIntermediateLayout())
-    return nullptr;
-
   // Block fragmentation is not supported yet.
   if (constraint_space.HasBlockFragmentation())
     return nullptr;
@@ -1505,7 +1484,6 @@ static LayoutUnit ComputeContentSize(
   builder.SetAvailableSize({available_inline_size, kIndefiniteSize});
   builder.SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()});
   builder.SetReplacedPercentageResolutionSize({LayoutUnit(), LayoutUnit()});
-  builder.SetIsIntermediateLayout(true);
   NGConstraintSpace space = builder.ToConstraintSpace();
 
   NGExclusionSpace empty_exclusion_space;

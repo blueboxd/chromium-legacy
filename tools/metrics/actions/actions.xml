@@ -12306,6 +12306,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileDownloadFileUIInstallGoogleDrive">
+  <obsolete>
+    Removed in 12/2019 after adds of IOSDownloadFileUIGoogleDrive's histogram.
+  </obsolete>
   <owner>eugenebut@chromium.org</owner>
   <description>
     User has requested installation of Google Drive app from the Download file
@@ -12314,6 +12317,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileDownloadFileUIShown">
+  <obsolete>
+    Removed as of 11/2019 after adds of DownloadFileUI's histogram.
+  </obsolete>
   <owner>eugenebut@chromium.org</owner>
   <description>User was presented with the Download file UI.</description>
 </action>

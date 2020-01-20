@@ -323,7 +323,7 @@ void ServiceWorkerContainerHost::GetRegistrations(
   TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
                            "ServiceWorkerContainerHost::GetRegistrations",
                            trace_id);
-  context_->storage()->GetRegistrationsForOrigin(
+  context_->registry()->GetRegistrationsForOrigin(
       url_.GetOrigin(),
       base::AdaptCallbackForRepeating(base::BindOnce(
           &ServiceWorkerContainerHost::GetRegistrationsComplete,

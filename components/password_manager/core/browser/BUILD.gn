@@ -273,6 +273,7 @@ jumbo_static_library("browser") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/safe_browsing/core:features",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/security_state/core",
     "//components/signin/public/identity_manager",
     "//components/strings",
@@ -302,7 +303,6 @@ jumbo_static_library("browser") {
       "http_credentials_cleaner.cc",
       "http_credentials_cleaner.h",
     ]
-    deps += [ "//components/safe_browsing/core/common:safe_browsing_prefs" ]
   }
 
   if ((is_posix && !is_mac && !is_ios) || is_fuchsia) {
@@ -624,6 +624,7 @@ source_set("unit_tests") {
     "//components/password_manager/core/common",
     "//components/prefs:test_support",
     "//components/safe_browsing/core:features",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/security_state/core",
     "//components/signin/public/identity_manager:test_support",
     "//components/strings",
@@ -645,10 +646,6 @@ source_set("unit_tests") {
     "//ui/gfx:test_support",
     "//url",
   ]
-
-  if (password_reuse_detection_support) {
-    deps += [ "//components/safe_browsing/core/common:safe_browsing_prefs" ]
-  }
 }
 
 fuzzer_test("csv_reader_fuzzer") {

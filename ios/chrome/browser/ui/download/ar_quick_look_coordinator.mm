@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/scoped_observer.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper_delegate.h"
@@ -172,7 +172,7 @@ PresentQLPreviewController GetHistogramEnum(
     didFinishDowloadingFileWithURL:(NSURL*)fileURL {
   self.fileURL = fileURL;
 
-  UMA_HISTOGRAM_ENUMERATION(
+  base::UmaHistogramEnumeration(
       kIOSPresentQLPreviewControllerHistogram,
       GetHistogramEnum(self.baseViewController, self.fileURL));
 

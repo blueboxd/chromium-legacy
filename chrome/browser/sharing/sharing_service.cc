@@ -71,8 +71,7 @@ std::unique_ptr<syncer::DeviceInfo> SharingService::GetDeviceByGuid(
 
 SharingService::SharingDeviceList SharingService::GetDeviceCandidates(
     sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const {
-  return FilterDeviceCandidates(device_source_->GetAllDevices(),
-                                required_feature);
+  return device_source_->GetDeviceCandidates(required_feature);
 }
 
 void SharingService::SendMessageToDevice(
@@ -244,23 +243,4 @@ void SharingService::OnDeviceUnregistered(
       // Device has not been registered, no-op.
       break;
   }
-}
-
-SharingService::SharingDeviceList SharingService::FilterDeviceCandidates(
-    SharingDeviceList devices,
-    sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const {
-  const base::Time min_updated_time =
-      base::Time::Now() -
-      base::TimeDelta::FromHours(kSharingDeviceExpirationHours.Get());
-  base::EraseIf(devices,
-                [this, required_feature, min_updated_time](const auto& device) {
-                  // Checks if |last_updated_timestamp| is not too old.
-                  if (device->last_updated_timestamp() < min_updated_time)
-                    return true;
-
-                  // Checks whether |device| supports |required_feature|.
-                  return !sync_prefs_->GetEnabledFeatures(device.get())
-                              .count(required_feature);
-                });
-  return devices;
 }

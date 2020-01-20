@@ -481,6 +481,7 @@ repack("cast_shell_pak") {
     "$root_gen_dir/chromecast/bindings/bindings_resources.pak",
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/content/content_resources.pak",
+    "$root_gen_dir/content/dev_ui_content_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_resources.pak",
@@ -497,7 +498,8 @@ repack("cast_shell_pak") {
   deps = [
     "//chromecast/app:resources",
     "//chromecast/bindings:bindings_resources_grit",
-    "//content:resources",
+    "//content:content_resources",
+    "//content:dev_ui_content_resources",
     "//content/app/resources",
     "//mojo/public/js:resources",
     "//net:net_resources",

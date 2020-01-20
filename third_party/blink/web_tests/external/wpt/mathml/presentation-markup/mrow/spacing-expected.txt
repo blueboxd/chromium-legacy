@@ -1,0 +1,12 @@
+This is a testharness.js-based test.
+FAIL operator spacing inside Mrow assert_true: expected true got false
+FAIL operator spacing inside Sqrt assert_true: expected true got false
+FAIL operator spacing inside Style assert_true: expected true got false
+FAIL operator spacing inside Error assert_true: expected true got false
+FAIL operator spacing inside Phantom assert_true: expected true got false
+FAIL operator spacing inside Math assert_true: expected true got false
+FAIL operator spacing inside Menclose assert_true: expected true got false
+FAIL operator spacing inside Mpadded assert_true: expected true got false
+FAIL operator spacing inside Unknown assert_true: expected true got false
+Harness: the test ran to completion.
+

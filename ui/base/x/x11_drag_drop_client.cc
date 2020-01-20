@@ -12,6 +12,9 @@ namespace ui {
 
 namespace {
 
+constexpr int kWillAcceptDrop = 1;
+constexpr int kWantFurtherPosEvents = 2;
+
 // The lowest XDND protocol version that we understand.
 //
 // The XDND protocol specification says that we must support all versions
@@ -139,7 +142,62 @@ std::vector<Atom> XDragDropClient::GetOfferedDragOperations() const {
   return operations;
 }
 
+void XDragDropClient::CompleteXdndPosition(XID source_window,
+                                           const gfx::Point& screen_point) {
+  int drag_operation = GetDragOperation(screen_point);
+
+  // Sends an XdndStatus message back to the source_window. l[2,3]
+  // theoretically represent an area in the window where the current action is
+  // the same as what we're returning, but I can't find any implementation that
+  // actually making use of this. A client can return (0, 0) and/or set the
+  // first bit of l[1] to disable the feature, and it appears that gtk neither
+  // sets this nor respects it if set.
+  XEvent xev = PrepareXdndClientMessage(kXdndStatus, source_window);
+  xev.xclient.data.l[1] =
+      (drag_operation != 0) ? (kWantFurtherPosEvents | kWillAcceptDrop) : 0;
+  xev.xclient.data.l[4] = ui::DragOperationToAtom(drag_operation);
+  SendXClientEvent(source_window, &xev);
+}
+
+void XDragDropClient::ProcessMouseMove(const gfx::Point& screen_point,
+                                       unsigned long event_time) {
+  if (source_state() != SourceState::kOther)
+    return;
+
+  // Find the current window the cursor is over.
+  XID dest_window = FindWindowFor(screen_point);
+
+  if (source_current_window() != dest_window) {
+    if (source_current_window() != x11::None)
+      SendXdndLeave(source_current_window());
+
+    set_source_current_window(dest_window);
+    waiting_on_status_ = false;
+    next_position_message_.reset();
+    status_received_since_enter_ = false;
+    negotiated_operation_ = ui::DragDropTypes::DRAG_NONE;
+
+    if (source_current_window() != x11::None) {
+      std::vector<Atom> targets;
+      RetrieveTargets(&targets);
+      SendXdndEnter(source_current_window(), targets);
+    }
+  }
+
+  if (source_current_window() != x11::None) {
+    if (waiting_on_status_) {
+      next_position_message_ =
+          std::make_unique<std::pair<gfx::Point, unsigned long>>(screen_point,
+                                                                 event_time);
+    } else {
+      SendXdndPosition(dest_window, screen_point, event_time);
+    }
+  }
+}
+
 void XDragDropClient::OnXdndEnter(const XClientMessageEvent& event) {
+  DVLOG(1) << "OnXdndEnter, version " << ((event.data.l[1] & 0xff000000) >> 24);
+
   int version = (event.data.l[1] & 0xff000000) >> 24;
   if (version < kMinXdndVersion) {
     // This protocol version is not documented in the XDND standard (last
@@ -159,10 +217,21 @@ void XDragDropClient::OnXdndEnter(const XClientMessageEvent& event) {
   // Make sure that we've run ~X11DragContext() before creating another one.
   ResetDragContext();
   auto* source_client = GetForWindow(event.data.l[0]);
-  set_target_current_context(std::make_unique<XDragContext>(
+  target_current_context_ = std::make_unique<XDragContext>(
       xwindow_, event, source_client,
       (source_client ? source_client->GetFormatMap()
-                     : ui::SelectionFormatMap())));
+                     : ui::SelectionFormatMap()));
+
+  if (!target_current_context()->source_client()) {
+    // The window doesn't have a DesktopDragDropClientAuraX11, which means it's
+    // created by some other process.  Listen for messages on it.
+    OnBeginForeignDrag(event.data.l[0]);
+  }
+
+  // In the Windows implementation, we immediately call DesktopDropTargetWin::
+  // Translate().  The XDND specification demands that we wait until we receive
+  // an XdndPosition message before we use XConvertSelection or send an
+  // XdndStatus message.
 }
 
 void XDragDropClient::OnXdndPosition(const XClientMessageEvent& event) {
@@ -184,18 +253,185 @@ void XDragDropClient::OnXdndPosition(const XClientMessageEvent& event) {
       gfx::Point(x_root_window, y_root_window));
 }
 
-void XDragDropClient::OnXdndStatus(const XClientMessageEvent& event) {}
+void XDragDropClient::OnXdndStatus(const XClientMessageEvent& event) {
+  DVLOG(1) << "OnXdndStatus";
+
+  XID source_window = event.data.l[0];
+
+  if (source_window != source_current_window())
+    return;
+
+  if (source_state() != SourceState::kPendingDrop &&
+      source_state() != SourceState::kOther) {
+    return;
+  }
+
+  waiting_on_status_ = false;
+  status_received_since_enter_ = true;
+
+  if (event.data.l[1] & 1) {
+    Atom atom_operation = event.data.l[4];
+    negotiated_operation_ = ui::AtomToDragOperation(atom_operation);
+  } else {
+    negotiated_operation_ = ui::DragDropTypes::DRAG_NONE;
+  }
+
+  if (source_state() == SourceState::kPendingDrop) {
+    // We were waiting on the status message so we could send the XdndDrop.
+    if (negotiated_operation_ == ui::DragDropTypes::DRAG_NONE) {
+      EndMoveLoop();
+      return;
+    }
+    set_source_state(SourceState::kDropped);
+    SendXdndDrop(source_window);
+    return;
+  }
+
+  UpdateCursor(negotiated_operation_);
+
+  // Note: event.data.[2,3] specify a rectangle. It is a request by the other
+  // window to not send further XdndPosition messages while the cursor is
+  // within it. However, it is considered advisory and (at least according to
+  // the spec) the other side must handle further position messages within
+  // it. GTK+ doesn't bother with this, so neither should we.
+
+  if (next_position_message_.get()) {
+    // We were waiting on the status message so we could send off the next
+    // position message we queued up.
+    gfx::Point p = next_position_message_->first;
+    unsigned long event_time = next_position_message_->second;
+    next_position_message_.reset();
+
+    SendXdndPosition(source_window, p, event_time);
+  }
+}
 
 void XDragDropClient::OnXdndLeave(const XClientMessageEvent& event) {
+  DVLOG(1) << "OnXdndLeave";
+  OnBeforeDragLeave();
   ResetDragContext();
 }
 
-void XDragDropClient::OnXdndDrop(const XClientMessageEvent& event) {}
+void XDragDropClient::OnXdndDrop(const XClientMessageEvent& event) {
+  DVLOG(1) << "OnXdndDrop";
 
-void XDragDropClient::OnXdndFinished(const XClientMessageEvent& event) {}
+  XID source_window = event.data.l[0];
+
+  int drag_operation = PerformDrop();
+
+  XEvent xev = PrepareXdndClientMessage(kXdndFinished, source_window);
+  xev.xclient.data.l[1] = (drag_operation != 0) ? 1 : 0;
+  xev.xclient.data.l[2] = ui::DragOperationToAtom(drag_operation);
+  SendXClientEvent(source_window, &xev);
+}
+
+void XDragDropClient::OnXdndFinished(const XClientMessageEvent& event) {
+  DVLOG(1) << "OnXdndFinished";
+  XID source_window = event.data.l[0];
+  if (source_current_window() != source_window)
+    return;
+
+  // Clear |negotiated_operation_| if the drag was rejected.
+  if ((event.data.l[1] & 1) == 0)
+    negotiated_operation_ = ui::DragDropTypes::DRAG_NONE;
+
+  // Clear |source_current_window_| to avoid sending XdndLeave upon ending the
+  // move loop.
+  set_source_current_window(x11::None);
+  EndMoveLoop();
+}
+
+void XDragDropClient::OnSelectionNotify(const XSelectionEvent& xselection) {
+  DVLOG(1) << "OnSelectionNotify";
+  if (target_current_context_)
+    target_current_context_->OnSelectionNotify(xselection);
+
+  // ICCCM requires us to delete the property passed into SelectionNotify.
+  if (xselection.property != x11::None)
+    XDeleteProperty(xdisplay_, xwindow_, xselection.property);
+}
+
+void XDragDropClient::InitDrag(int operation) {
+  waiting_on_status_ = false;
+  next_position_message_.reset();
+  status_received_since_enter_ = false;
+  drag_operation_ = operation;
+  negotiated_operation_ = ui::DragDropTypes::DRAG_NONE;
+}
+
+void XDragDropClient::UpdateModifierState(int flags) {
+  const int kModifiers = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
+                         ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN |
+                         ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON |
+                         ui::EF_RIGHT_MOUSE_BUTTON;
+  current_modifier_state_ = flags & kModifiers;
+}
 
 void XDragDropClient::ResetDragContext() {
+  if (!target_current_context())
+    return;
+  if (!target_current_context()->source_client())
+    OnEndForeignDrag();
+
   target_current_context_.reset();
+}
+
+void XDragDropClient::StopRepeatMouseMoveTimer() {
+  repeat_mouse_move_timer_.Stop();
+}
+
+void XDragDropClient::StartEndMoveLoopTimer() {
+  end_move_loop_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(1000),
+                             this, &XDragDropClient::EndMoveLoop);
+}
+
+void XDragDropClient::StopEndMoveLoopTimer() {
+  end_move_loop_timer_.Stop();
+}
+
+void XDragDropClient::HandleMouseReleased() {
+  StopRepeatMouseMoveTimer();
+
+  if (source_state() != SourceState::kOther) {
+    // The user has previously released the mouse and is clicking in
+    // frustration.
+    EndMoveLoop();
+    return;
+  }
+
+  if (source_current_window() != x11::None) {
+    if (waiting_on_status()) {
+      if (status_received_since_enter()) {
+        // If we are waiting for an XdndStatus message, we need to wait for it
+        // to complete.
+        set_source_state(SourceState::kPendingDrop);
+
+        // Start timer to end the move loop if the target takes too long to send
+        // the XdndStatus and XdndFinished messages.
+        StartEndMoveLoopTimer();
+        return;
+      }
+
+      EndMoveLoop();
+      return;
+    }
+
+    if (negotiated_operation() != ui::DragDropTypes::DRAG_NONE) {
+      // Start timer to end the move loop if the target takes too long to send
+      // an XdndFinished message. It is important that StartEndMoveLoopTimer()
+      // is called before SendXdndDrop() because SendXdndDrop()
+      // sends XdndFinished synchronously if the drop target is a Chrome
+      // window.
+      StartEndMoveLoopTimer();
+
+      // We have negotiated an action with the other end.
+      set_source_state(SourceState::kDropped);
+      SendXdndDrop(source_current_window());
+      return;
+    }
+  }
+
+  EndMoveLoop();
 }
 
 XEvent XDragDropClient::PrepareXdndClientMessage(const char* message,
@@ -292,6 +528,26 @@ void XDragDropClient::SendXdndEnter(XID dest_window,
   }
 
   SendXClientEvent(dest_window, &xev);
+}
+
+void XDragDropClient::SendXdndPosition(XID dest_window,
+                                       const gfx::Point& screen_point,
+                                       unsigned long event_time) {
+  waiting_on_status_ = true;
+
+  XEvent xev = PrepareXdndClientMessage(kXdndPosition, dest_window);
+  xev.xclient.data.l[2] = (screen_point.x() << 16) | screen_point.y();
+  xev.xclient.data.l[3] = event_time;
+  xev.xclient.data.l[4] = ui::DragOperationToAtom(drag_operation_);
+  SendXClientEvent(dest_window, &xev);
+
+  // http://www.whatwg.org/specs/web-apps/current-work/multipage/dnd.html and
+  // the Xdnd protocol both recommend that drag events should be sent
+  // periodically.
+  repeat_mouse_move_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(350),
+      base::BindOnce(&XDragDropClient::ProcessMouseMove, base::Unretained(this),
+                     screen_point, event_time));
 }
 
 void XDragDropClient::SendXdndLeave(XID dest_window) {

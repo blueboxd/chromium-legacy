@@ -4,8 +4,10 @@
 
 #include "ios/chrome/browser/download/browser_download_service.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/download/ar_quick_look_tab_helper.h"
+#include "ios/chrome/browser/download/download_manager_metric_names.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #include "ios/chrome/browser/download/pass_kit_mime_type.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
@@ -102,8 +104,11 @@ void BrowserDownloadService::OnDownloadCreated(
     web::DownloadController* download_controller,
     web::WebState* web_state,
     std::unique_ptr<web::DownloadTask> task) {
-  UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadMimeType",
-                            GetUmaResult(task->GetMimeType()));
+  base::UmaHistogramEnumeration("Download.IOSDownloadMimeType",
+                                GetUmaResult(task->GetMimeType()));
+  base::UmaHistogramEnumeration("Download.IOSDownloadFileUI",
+                                DownloadFileUI::DownloadFilePresented,
+                                DownloadFileUI::Count);
 
   if (task->GetMimeType() == kPkPassMimeType) {
     PassKitTabHelper* tab_helper = PassKitTabHelper::FromWebState(web_state);

@@ -46,7 +46,10 @@ grit("camera_resources") {
   ]
   output_dir = "$root_gen_dir/chrome"
 
-  deps = [ "//media/capture/video/chromeos/mojom:cros_camera_js" ]
+  deps = [
+    "//components/arc/mojom:camera_intent_js",
+    "//media/capture/video/chromeos/mojom:cros_camera_js",
+  ]
 
   # The .grd contains references to generated files.
   source_is_generated = true

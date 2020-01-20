@@ -49,8 +49,6 @@ class AXValidationMessage final : public AXMockObject {
   DISALLOW_COPY_AND_ASSIGN(AXValidationMessage);
 };
 
-DEFINE_AX_OBJECT_TYPE_CASTS(AXValidationMessage, IsValidationMessage());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_ACCESSIBILITY_AX_VALIDATION_MESSAGE_H_

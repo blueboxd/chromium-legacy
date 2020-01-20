@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
+#include "components/security_interstitials/content/blocked_interception_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
 #include "components/security_interstitials/content/mitm_software_blocking_page.h"
 #include "components/security_interstitials/content/ssl_blocking_page.h"
@@ -58,11 +59,23 @@ class ChromeSecurityBlockingPageFactory {
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const net::SSLInfo& ssl_info,
-      const std::string& mitm_software_name,
-      bool is_enterprise_managed);
+      const std::string& mitm_software_name);
+
+  // Creates a blocked interception blocking page. The caller is
+  // responsible for ownership of the returned object.
+  static BlockedInterceptionBlockingPage* CreateBlockedInterceptionBlockingPage(
+      content::WebContents* web_contents,
+      int cert_error,
+      const GURL& request_url,
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+      const net::SSLInfo& ssl_info);
 
   // Does setup on |page| that is specific to the client (Chrome).
   static void DoChromeSpecificSetup(SSLBlockingPageBase* page);
+
+  // Overrides the calculation of whether the app is enterprise-managed for
+  // tests.
+  static void SetEnterpriseManagedForTesting(bool enterprise_managed);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChromeSecurityBlockingPageFactory);

@@ -481,18 +481,26 @@ class TaskController {
   }
 
   /**
+   * Return the tasks for the FileEntry |entry|.
+   *
+   * @param {FileEntry} entry
+   * @return {!Promise<!FileTasks>}
+   */
+  getEntryFileTasks(entry) {
+    return this.metadataModel_.get([entry], ['contentMimeType']).then(props => {
+      return FileTasks.create(
+          this.volumeManager_, this.metadataModel_, this.directoryModel_,
+          this.ui_, [entry], [props[0].contentMimeType || null],
+          this.taskHistory_, this.namingController_, this.crostini_);
+    });
+  }
+
+  /**
    * @param {FileEntry} entry
    */
   executeEntryTask(entry) {
-    this.metadataModel_.get([entry], ['contentMimeType']).then(props => {
-      FileTasks
-          .create(
-              this.volumeManager_, this.metadataModel_, this.directoryModel_,
-              this.ui_, [entry], [props[0].contentMimeType || null],
-              this.taskHistory_, this.namingController_, this.crostini_)
-          .then(tasks => {
-            tasks.executeDefault();
-          });
+    this.getEntryFileTasks(entry).then(tasks => {
+      tasks.executeDefault();
     });
   }
 }

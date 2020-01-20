@@ -1231,6 +1231,27 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Exit(
 }
 
 template <typename OffsetMappingBuilder>
+bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::MayBeBidiEnabled()
+    const {
+  return !text_.Is8Bit() || HasBidiControls();
+}
+
+template <typename OffsetMappingBuilder>
+void NGInlineItemsBuilderTemplate<
+    OffsetMappingBuilder>::DidFinishCollectInlines(NGInlineNodeData* data) {
+  data->text_content = ToString();
+
+  // Set |is_bidi_enabled_| for all UTF-16 strings for now, because at this
+  // point the string may or may not contain RTL characters.
+  // |SegmentText()| will analyze the text and reset |is_bidi_enabled_| if it
+  // doesn't contain any RTL characters.
+  data->is_bidi_enabled_ = MayBeBidiEnabled();
+  data->is_empty_inline_ = IsEmptyInline();
+  data->is_block_level_ = IsBlockLevel();
+  data->changes_may_affect_earlier_lines_ = ChangesMayAffectEarlierLines();
+}
+
+template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::SetIsSymbolMarker(
     bool b) {
   DCHECK(!items_->IsEmpty());

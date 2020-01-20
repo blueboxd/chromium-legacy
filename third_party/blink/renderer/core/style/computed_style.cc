@@ -2178,7 +2178,8 @@ int ComputedStyle::OutlineOutsetExtent() const {
     return 0;
   if (OutlineStyleIsAuto()) {
     return GraphicsContext::FocusRingOutsetExtent(
-        OutlineOffset(), std::ceil(GetOutlineStrokeWidthForFocusRing()),
+        OutlineOffset(), GetDefaultOffsetForFocusRing(),
+        std::ceil(GetOutlineStrokeWidthForFocusRing()),
         LayoutTheme::GetTheme().IsFocusRingOutset());
   }
   return base::ClampAdd(OutlineWidth(), OutlineOffset()).Max(0);
@@ -2199,6 +2200,17 @@ float ComputedStyle::GetOutlineStrokeWidthForFocusRing() const {
   // so narrow that it becomes invisible.
   return std::max(EffectiveZoom(), 1.f);
 #endif
+}
+
+int ComputedStyle::GetDefaultOffsetForFocusRing() const {
+  if (!::features::IsFormControlsRefreshEnabled())
+    return 0;
+
+  // For FormControlsRefresh checkbox, radio and links have a 2px inner padding.
+  if (EffectiveAppearance() == kCheckboxPart ||
+      EffectiveAppearance() == kRadioPart || IsLink())
+    return 2;
+  return 0;
 }
 
 bool ComputedStyle::ColumnRuleEquivalent(

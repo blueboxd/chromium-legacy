@@ -367,13 +367,6 @@ class CORE_EXPORT NGConstraintSpace final {
   // (ie. fit-content). This is used for inline-block, floats, etc.
   bool IsShrinkToFit() const { return bitfields_.is_shrink_to_fit; }
 
-  // Whether this constraint space is used for an intermediate layout in a
-  // multi-pass layout. In such a case, we should not copy back the resulting
-  // layout data to the legacy tree or create a paint fragment from it.
-  bool IsIntermediateLayout() const {
-    return bitfields_.is_intermediate_layout;
-  }
-
   bool IsPaintedAtomically() const { return bitfields_.is_painted_atomically; }
 
   // If specified a layout should produce a Fragment which fragments at the
@@ -915,7 +908,6 @@ class CORE_EXPORT NGConstraintSpace final {
           is_anonymous(false),
           is_new_formatting_context(false),
           is_orthogonal_writing_mode_root(false),
-          is_intermediate_layout(false),
           is_painted_atomically(false),
           is_fixed_block_size_indefinite(false),
           use_first_line_style(false),
@@ -941,7 +933,6 @@ class CORE_EXPORT NGConstraintSpace final {
              is_new_formatting_context == other.is_new_formatting_context &&
              is_orthogonal_writing_mode_root ==
                  other.is_orthogonal_writing_mode_root &&
-             is_intermediate_layout == other.is_intermediate_layout &&
              is_painted_atomically == other.is_painted_atomically &&
              use_first_line_style == other.use_first_line_style &&
              ancestor_has_clearance_past_adjoining_floats ==
@@ -966,7 +957,6 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned is_anonymous : 1;
     unsigned is_new_formatting_context : 1;
     unsigned is_orthogonal_writing_mode_root : 1;
-    unsigned is_intermediate_layout : 1;
 
     unsigned is_painted_atomically : 1;
     unsigned is_fixed_block_size_indefinite : 1;

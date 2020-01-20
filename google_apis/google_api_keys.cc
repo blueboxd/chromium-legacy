@@ -23,7 +23,7 @@
 #include "google_apis/google_api_keys_mac.h"
 #endif
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
+#if defined(USE_OFFICIAL_GOOGLE_API_KEYS)
 #include "google_apis/internal/google_chrome_api_keys.h"
 #include "google_apis/internal/metrics_signing_key.h"
 #endif
@@ -363,7 +363,7 @@ std::string GetSpdyProxyAuthValue() {
 }
 
 bool IsGoogleChromeAPIKeyUsed() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(USE_OFFICIAL_GOOGLE_API_KEYS)
+#if defined(USE_OFFICIAL_GOOGLE_API_KEYS)
   return true;
 #else
   return false;

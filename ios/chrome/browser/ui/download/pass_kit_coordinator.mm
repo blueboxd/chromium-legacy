@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/infobars/core/simple_alert_infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -100,9 +100,9 @@ PresentAddPassesDialogResult GetUmaResult(
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION(kUmaPresentAddPassesDialogResult,
-                            GetUmaResult(self.baseViewController),
-                            PresentAddPassesDialogResult::kCount);
+  base::UmaHistogramEnumeration(kUmaPresentAddPassesDialogResult,
+                                GetUmaResult(self.baseViewController),
+                                PresentAddPassesDialogResult::kCount);
   if (_viewController)
     return;
 

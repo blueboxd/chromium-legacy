@@ -25,8 +25,6 @@ class CORE_EXPORT LayoutNGFieldset final : public LayoutNGBlockFlow {
   bool IsOfType(LayoutObjectType) const override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGFieldset, IsLayoutNGFieldset());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LAYOUT_NG_FIELDSET_H_

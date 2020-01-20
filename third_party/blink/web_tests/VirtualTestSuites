@@ -545,6 +545,11 @@
     "args": ["--enable-blink-features=ForceDeferScriptIntervention"]
   },
   {
+    "prefix": "force-eager",
+    "bases": ["external/wpt/measure-memory"],
+    "args": ["--enable-blink-features=MeasureMemory,ForceEagerMeasureMemory"]
+  },
+  {
     "prefix": "cascade",
     "bases": ["animations/custom-properties",
               "animations/interpolation",

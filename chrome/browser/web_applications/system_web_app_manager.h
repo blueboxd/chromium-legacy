@@ -72,6 +72,10 @@ struct SystemAppInfo {
 
   // If set, we allow only a single window for this app.
   bool single_window = true;
+
+  // If set, when the app is launched through the File Handling Web API, we will
+  // include the file's directory in window.launchQueue as the first value.
+  bool include_launch_directory = false;
 };
 
 // Installs, uninstalls, and updates System Web Apps.
@@ -128,6 +132,10 @@ class SystemWebAppManager {
 
   // Returns whether the given System App |type| should use a single window.
   bool IsSingleWindow(SystemAppType type) const;
+
+  // Returns whether the given System App |type| should get launch directory in
+  // launch parameter.
+  bool AppShouldReceiveLaunchDirectory(SystemAppType type) const;
 
   // Returns the minimum window size for |app_id| or an empty size if the app
   // doesn't specify a minimum.

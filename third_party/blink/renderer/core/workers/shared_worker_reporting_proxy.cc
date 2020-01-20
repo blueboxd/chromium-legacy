@@ -77,9 +77,11 @@ void SharedWorkerReportingProxy::DidFailToFetchClassicScript() {
 
 void SharedWorkerReportingProxy::DidFailToFetchModuleScript() {
   DCHECK(!IsMainThread());
-  // TODO(nhiroki): Implement module scripts for shared workers.
-  // (https://crbug.com/824646)
-  NOTIMPLEMENTED();
+  PostCrossThreadTask(
+      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
+      FROM_HERE,
+      CrossThreadBindOnce(&WebSharedWorkerImpl::DidFailToFetchModuleScript,
+                          CrossThreadUnretained(worker_)));
 }
 
 void SharedWorkerReportingProxy::DidEvaluateClassicScript(bool success) {
@@ -93,9 +95,11 @@ void SharedWorkerReportingProxy::DidEvaluateClassicScript(bool success) {
 
 void SharedWorkerReportingProxy::DidEvaluateModuleScript(bool success) {
   DCHECK(!IsMainThread());
-  // TODO(nhiroki): Implement module scripts for shared workers.
-  // (https://crbug.com/824646)
-  NOTIMPLEMENTED();
+  PostCrossThreadTask(
+      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
+      FROM_HERE,
+      CrossThreadBindOnce(&WebSharedWorkerImpl::DidEvaluateModuleScript,
+                          CrossThreadUnretained(worker_), success));
 }
 
 void SharedWorkerReportingProxy::DidCloseWorkerGlobalScope() {

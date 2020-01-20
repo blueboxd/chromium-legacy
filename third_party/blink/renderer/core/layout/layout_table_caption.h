@@ -62,8 +62,6 @@ class LayoutTableCaption : public LayoutBlockFlow {
   LayoutTable* Table() const;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTableCaption, IsTableCaption());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TABLE_CAPTION_H_

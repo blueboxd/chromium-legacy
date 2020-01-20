@@ -60,9 +60,6 @@ class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
   void ClearLineClamp();
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutDeprecatedFlexibleBox,
-                                IsDeprecatedFlexibleBox());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_DEPRECATED_FLEXIBLE_BOX_H_

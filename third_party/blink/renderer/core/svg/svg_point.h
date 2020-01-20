@@ -82,8 +82,6 @@ class SVGPoint final : public SVGPropertyHelper<SVGPoint> {
   FloatPoint value_;
 };
 
-DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGPoint);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_POINT_H_

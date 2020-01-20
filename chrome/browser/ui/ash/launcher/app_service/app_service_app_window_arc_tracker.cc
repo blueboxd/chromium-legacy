@@ -181,17 +181,18 @@ void AppServiceAppWindowArcTracker::OnTaskDestroyed(int task_id) {
 
   // Check if we may close controller now, at this point we can safely remove
   // controllers without window.
+  const auto app_shelf_id = it->second->app_shelf_id();
   auto it_controller =
-      app_shelf_group_to_controller_map_.find(it->second->app_shelf_id());
+      app_shelf_group_to_controller_map_.find(app_shelf_id);
   if (it_controller != app_shelf_group_to_controller_map_.end()) {
     it_controller->second->RemoveTaskId(task_id);
     if (!it_controller->second->HasAnyTasks()) {
       app_service_controller_->owner()->CloseLauncherItem(
           it_controller->second->shelf_id());
-      app_shelf_group_to_controller_map_.erase(it_controller);
+      app_shelf_group_to_controller_map_.erase(app_shelf_id);
     }
   }
-  task_id_to_arc_app_window_info_.erase(it);
+  task_id_to_arc_app_window_info_.erase(task_id);
 }
 
 void AppServiceAppWindowArcTracker::OnTaskSetActive(int32_t task_id) {

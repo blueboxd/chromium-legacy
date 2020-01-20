@@ -58,13 +58,12 @@ namespace {
 // defined in the Fetch spec:
 // https://fetch.spec.whatwg.org/#request-destination-script-like
 bool IsRequestContextSupported(mojom::RequestContextType request_context) {
-  // TODO(nhiroki): Support |kRequestContextSharedWorker| for module loading for
-  // shared workers (https://crbug.com/824646).
   // TODO(nhiroki): Support "audioworklet" and "paintworklet" destinations.
   switch (request_context) {
     case mojom::RequestContextType::SCRIPT:
     case mojom::RequestContextType::WORKER:
     case mojom::RequestContextType::SERVICE_WORKER:
+    case mojom::RequestContextType::SHARED_WORKER:
       return true;
     default:
       break;

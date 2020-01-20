@@ -77,8 +77,6 @@ class SVGString final : public SVGPropertyBase {
   String value_;
 };
 
-DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGString);
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_STRING_H_

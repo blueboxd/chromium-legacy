@@ -285,12 +285,14 @@ void V8TestInterfaceOriginTrialEnabled::StaticConditionalReadOnlyLongAttributeAt
 }
 
 void V8TestInterfaceOriginTrialEnabled::VoidMethodDoubleArgFloatArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterfaceOriginTrialEnabled.voidMethodDoubleArgFloatArg");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceOriginTrialEnabled_voidMethodDoubleArgFloatArg");
 
   test_interface_origin_trial_enabled_v8_internal::VoidMethodDoubleArgFloatArgMethod(info);
 }
 
 void V8TestInterfaceOriginTrialEnabled::VoidMethodPartialOverloadMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterfaceOriginTrialEnabled.voidMethodPartialOverload");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceOriginTrialEnabled_voidMethodPartialOverload");
 
   test_interface_origin_trial_enabled_v8_internal::VoidMethodPartialOverloadMethod(info);

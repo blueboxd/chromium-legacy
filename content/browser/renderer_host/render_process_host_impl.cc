@@ -247,6 +247,7 @@
 
 #include "components/services/font/public/mojom/font_service.mojom.h"  // nogncheck
 #include "content/browser/font_service.h"  // nogncheck
+#include "third_party/blink/public/mojom/memory_usage_monitor_linux.mojom.h"  // nogncheck
 #endif
 
 #if defined(OS_MACOSX)
@@ -3478,6 +3479,12 @@ void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
     // Send RenderProcessReady only if we already received the process handle.
     for (auto& observer : observers_)
       observer.RenderProcessReady(this);
+
+#if defined(OS_LINUX)
+    // Provide /proc/{renderer pid}/status and statm files for
+    // MemoryUsageMonitor in blink.
+    ProvideStatusFileForRenderer();
+#endif
   }
 
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
@@ -4728,6 +4735,12 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     // Send RenderProcessReady only if the channel is already connected.
     for (auto& observer : observers_)
       observer.RenderProcessReady(this);
+
+#if defined(OS_LINUX)
+    // Provide /proc/{renderer pid}/status and statm files for
+    // MemoryUsageMonitor in blink.
+    ProvideStatusFileForRenderer();
+#endif
   }
 
   aec_dump_manager_.set_pid(GetProcess().Pid());
@@ -4895,5 +4908,28 @@ void RenderProcessHost::InterceptBindHostReceiverForTesting(
     BindHostReceiverInterceptor callback) {
   GetBindHostReceiverInterceptor() = std::move(callback);
 }
+
+#if defined(OS_LINUX)
+void RenderProcessHostImpl::ProvideStatusFileForRenderer() {
+  // We use ScopedAllowBlocking, because opening /proc/{pid}/status and
+  // /proc/{pid}/statm is not blocking call.
+  base::ScopedAllowBlocking allow_blocking;
+  base::FilePath proc_pid_dir =
+      base::FilePath("/proc").Append(base::NumberToString(GetProcess().Pid()));
+
+  base::File status_file(
+      proc_pid_dir.Append("status"),
+      base::File::Flags::FLAG_OPEN | base::File::Flags::FLAG_READ);
+  base::File statm_file(
+      proc_pid_dir.Append("statm"),
+      base::File::Flags::FLAG_OPEN | base::File::Flags::FLAG_READ);
+  if (!status_file.IsValid() || !statm_file.IsValid())
+    return;
+
+  mojo::Remote<blink::mojom::MemoryUsageMonitorLinux> monitor;
+  BindReceiver(monitor.BindNewPipeAndPassReceiver());
+  monitor->SetProcFiles(statm_file.Duplicate(), status_file.Duplicate());
+}
+#endif
 
 }  // namespace content

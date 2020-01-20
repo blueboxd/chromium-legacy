@@ -289,7 +289,8 @@ jumbo_static_library("content_shell_lib") {
     "//components/plugins/renderer",
     "//components/url_formatter",
     "//components/web_cache/renderer",
-    "//content:resources",
+    "//content:content_resources",
+    "//content:dev_ui_content_resources",
     "//content/app/resources",
     "//content/gpu",
     "//content/public/common",
@@ -522,6 +523,7 @@ repack("pak") {
     "$root_gen_dir/content/browser/tracing/tracing_resources.pak",
     "$root_gen_dir/content/browser/webrtc/resources/webrtc_internals_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
+    "$root_gen_dir/content/dev_ui_content_resources.pak",
     "$root_gen_dir/content/shell/shell_resources.pak",
     "$root_gen_dir/mojo/public/js/mojo_bindings_resources.pak",
     "$root_gen_dir/net/net_resources.pak",
@@ -536,7 +538,8 @@ repack("pak") {
 
   deps = [
     ":resources",
-    "//content:resources",
+    "//content:content_resources",
+    "//content:dev_ui_content_resources",
     "//content/app/resources",
     "//content/browser/resources/media:media_internals_resources",
     "//content/browser/tracing:resources",

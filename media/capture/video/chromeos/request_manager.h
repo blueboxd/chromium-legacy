@@ -205,11 +205,14 @@ class CAPTURE_EXPORT RequestManager final
   // ReprocessJobInfo holds the queued reprocess tasks and associated metadata
   // for a given YUVInput buffer.
   struct ReprocessJobInfo {
-    ReprocessJobInfo(ReprocessTaskQueue queue, uint64_t timestamp);
+    ReprocessJobInfo(ReprocessTaskQueue queue,
+                     cros::mojom::CameraMetadataPtr metadata,
+                     uint64_t timestamp);
     ReprocessJobInfo(ReprocessJobInfo&& info);
     ~ReprocessJobInfo();
 
     ReprocessTaskQueue task_queue;
+    cros::mojom::CameraMetadataPtr metadata;
     uint64_t shutter_timestamp;
   };
 

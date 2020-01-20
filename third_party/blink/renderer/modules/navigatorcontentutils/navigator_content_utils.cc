@@ -102,6 +102,22 @@ static bool VerifyCustomHandlerURL(const Document& document,
   return true;
 }
 
+// HTML5 requires that schemes with the |web+| prefix contain one or more
+// ASCII alphas after that prefix.
+static bool IsValidWebSchemeName(const String& protocol) {
+  if (protocol.length() < 5)
+    return false;
+
+  unsigned protocol_length = protocol.length();
+  for (unsigned i = 4; i < protocol_length; i++) {
+    char c = protocol[i];
+    if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))) {
+      return false;
+    }
+  }
+  return true;
+}
+
 static bool VerifyCustomHandlerScheme(const String& scheme,
                                       ExceptionState& exception_state) {
   if (!IsValidProtocol(scheme)) {
@@ -112,13 +128,12 @@ static bool VerifyCustomHandlerScheme(const String& scheme,
   }
 
   if (scheme.StartsWith("web+")) {
-    // The specification requires that the length of scheme is at least five
-    // characters (including 'web+' prefix).
-    if (scheme.length() >= 5)
+    if (IsValidWebSchemeName(scheme))
       return true;
-
-    exception_state.ThrowSecurityError("The scheme name '" + scheme +
-                                       "' is less than five characters long.");
+    exception_state.ThrowSecurityError(
+        "The scheme name '" + scheme +
+        "' is not allowed. Schemes starting with 'web+' must be followed by "
+        "one or more ASCII letters.");
     return false;
   }
 

@@ -43,6 +43,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   std::vector<web_app::AppId> GetAppIds() const override;
   web_app::WebAppRegistrar* AsWebAppRegistrar() override;
+  BookmarkAppRegistrar* AsBookmarkAppRegistrar() override;
 
   // ExtensionRegistryObserver:
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
@@ -53,12 +54,25 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
                            UnloadedExtensionReason reason) override;
   void OnShutdown(ExtensionRegistry* registry) override;
 
+  // Finds the extension object in ExtensionRegistry and in the being
+  // uninstalled slot.
+  //
+  // When AppRegistrarObserver::OnWebAppWillBeUninstalled(app_id) happens for
+  // bookmark apps, the bookmark app backing that app_id is already removed
+  // from ExtensionRegistry. If some abstract observer needs the extension
+  // pointer for |app_id| being uninstalled, that observer should use this
+  // getter. This is a short-term workaround which helps to unify
+  // ExtensionsRegistry and WebAppRegistrar observation.
+  const Extension* FindExtension(const web_app::AppId& app_id) const;
+
  private:
   const Extension* GetBookmarkApp(const web_app::AppId& app_id) const;
-  const Extension* GetExtension(const web_app::AppId& app_id) const;
+  const Extension* GetEnabledExtension(const web_app::AppId& app_id) const;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_observer_{this};
+
+  const Extension* bookmark_app_being_uninstalled_ = nullptr;
 };
 
 }  // namespace extensions

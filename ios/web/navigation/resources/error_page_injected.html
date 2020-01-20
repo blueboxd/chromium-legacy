@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript">
+    // When back/forward/refresh this error page, reload the page.
+    window.addEventListener('pageshow', (event) => {
+      window.onpageshow = (event) => {
+        window.location.replace('%@');
+      };
+    }, {once: true});
+    </script>
+  </head>
+  <body>
+    <h1>Error Page injected into current page</h1>
+    <h2>%@</h2>
+    <h2>%@</h2>
+  </body>
+</html>

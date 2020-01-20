@@ -23,8 +23,6 @@ class LayoutNGMathMLBlock : public LayoutNGMixin<LayoutBlock> {
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const final;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGMathMLBlock, IsMathML());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_MATHML_LAYOUT_NG_MATHML_BLOCK_H_

@@ -58,8 +58,6 @@ class LayoutFieldset final : public LayoutBlockFlow {
                  const PhysicalOffset& paint_offset) const override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFieldset, IsFieldset());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_FIELDSET_H_

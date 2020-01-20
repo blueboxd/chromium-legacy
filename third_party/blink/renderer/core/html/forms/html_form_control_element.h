@@ -135,7 +135,6 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   void ParseAttribute(const AttributeModificationParams&) override;
   virtual void RequiredAttributeChanged();
   void DisabledAttributeChanged() override;
-  void AttachLayoutTree(AttachContext&) override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
   void WillChangeForm() override;
@@ -146,13 +145,7 @@ class CORE_EXPORT HTMLFormControlElement : public HTMLElement,
   bool IsKeyboardFocusable() const override;
   bool ShouldHaveFocusAppearance() const final;
 
-  void DidRecalcStyle(const StyleRecalcChange) override;
-
   virtual void ResetImpl() {}
-
-  // This is called just after attaching a LayoutObject. However,
-  // GetLayoutObject() can be nullptr.
-  virtual void UpdateFromElement();
 
  private:
   bool IsFormControlElement() const final { return true; }

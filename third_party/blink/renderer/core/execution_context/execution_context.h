@@ -128,6 +128,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   void Trace(blink::Visitor*) override;
 
   static ExecutionContext* From(const ScriptState*);
+  static ExecutionContext* From(v8::Local<v8::Context>);
 
   // Returns the ExecutionContext of the current realm.
   static ExecutionContext* ForCurrentRealm(

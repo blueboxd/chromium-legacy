@@ -36,7 +36,9 @@
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/mojom/content_security_policy.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
+#include "third_party/blink/public/mojom/script/script_type.mojom-shared.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_common.h"
 
@@ -58,6 +60,8 @@ class BLINK_EXPORT WebSharedWorker {
 
   virtual void StartWorkerContext(
       const WebURL& script_url,
+      mojom::ScriptType script_type,
+      network::mojom::CredentialsMode,
       const WebString& name,
       const WebString& user_agent,
       const WebString& content_security_policy,

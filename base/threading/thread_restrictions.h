@@ -146,6 +146,7 @@ class CategorizedWorkerPool;
 class DesktopCaptureDevice;
 class InProcessUtilityThread;
 class NestedMessagePumpAndroid;
+class RenderProcessHostImpl;
 class RenderWidgetHostViewMac;
 class RTCVideoDecoder;
 class SandboxHostLinux;
@@ -368,6 +369,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class web::WebSubThread;
   friend class StackSamplingProfiler;
   friend class weblayer::ProfileImpl;
+  friend class content::RenderProcessHostImpl;
 
   ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
   ~ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;

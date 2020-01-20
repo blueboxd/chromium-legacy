@@ -1256,16 +1256,10 @@ void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
 void LockContentsView::OnOobeDialogStateChanged(OobeDialogState state) {
   oobe_dialog_visible_ = state != OobeDialogState::HIDDEN;
 
-  // Deactivate the lock screen widget while the dialog is visible to
-  // prevent lock screen from grabbing focus and hiding the OOBE dialog.
-  GetWidget()->widget_delegate()->SetCanActivate(!oobe_dialog_visible_);
+  // Show either oobe dialog or lock screen.
+  SetVisible(!oobe_dialog_visible_);
 
-  // Block login screen events, to prevent actions on user pods shown in the
-  // background (e.g. hover over user name, or clicking a pod) from having
-  // effect.
-  set_can_process_events_within_subtree(!oobe_dialog_visible_);
-
-  if (state == OobeDialogState::HIDDEN && primary_big_view_)
+  if (!oobe_dialog_visible_ && primary_big_view_)
     primary_big_view_->RequestFocus();
 }
 

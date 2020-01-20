@@ -788,13 +788,13 @@ void ScreenLocker::OnAuthScanDone(
   VLOG(1) << "Receive fingerprint auth scan result. scan_result="
           << scan_result;
   unlock_attempt_type_ = AUTH_FINGERPRINT;
-  user_manager::User* active_user =
-      user_manager::UserManager::Get()->GetActiveUser();
+  const user_manager::User* primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
   quick_unlock::QuickUnlockStorage* quick_unlock_storage =
-      quick_unlock::QuickUnlockFactory::GetForUser(active_user);
+      quick_unlock::QuickUnlockFactory::GetForUser(primary_user);
   if (!quick_unlock_storage ||
       !quick_unlock_storage->IsFingerprintAuthenticationAvailable() ||
-      base::Contains(users_with_disabled_auth_, active_user->GetAccountId())) {
+      base::Contains(users_with_disabled_auth_, primary_user->GetAccountId())) {
     return;
   }
 
@@ -804,19 +804,19 @@ void ScreenLocker::OnAuthScanDone(
   if (scan_result != device::mojom::ScanResult::SUCCESS) {
     LOG(ERROR) << "Fingerprint unlock failed because scan_result="
                << scan_result;
-    OnFingerprintAuthFailure(*active_user);
+    OnFingerprintAuthFailure(*primary_user);
     return;
   }
 
-  UserContext user_context(*active_user);
-  if (!base::Contains(matches, active_user->username_hash())) {
-    LOG(ERROR) << "Fingerprint unlock failed because it does not match active"
+  UserContext user_context(*primary_user);
+  if (!base::Contains(matches, primary_user->username_hash())) {
+    LOG(ERROR) << "Fingerprint unlock failed because it does not match primary"
                << " user's record";
-    OnFingerprintAuthFailure(*active_user);
+    OnFingerprintAuthFailure(*primary_user);
     return;
   }
   ash::LoginScreen::Get()->GetModel()->NotifyFingerprintAuthResult(
-      active_user->GetAccountId(), true /*success*/);
+      primary_user->GetAccountId(), true /*success*/);
   VLOG(1) << "Fingerprint unlock is successful.";
   LoginScreenClient::Get()->auth_recorder()->RecordFingerprintAuthSuccess(
       true /*success*/,

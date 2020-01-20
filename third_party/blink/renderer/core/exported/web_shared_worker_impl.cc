@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom-blink.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
@@ -107,7 +108,19 @@ void WebSharedWorkerImpl::DidFailToFetchClassicScript() {
   // DidTerminateWorkerThread() will be called asynchronously.
 }
 
+void WebSharedWorkerImpl::DidFailToFetchModuleScript() {
+  DCHECK(IsMainThread());
+  client_->WorkerScriptLoadFailed();
+  TerminateWorkerThread();
+  // DidTerminateWorkerThread() will be called asynchronously.
+}
+
 void WebSharedWorkerImpl::DidEvaluateClassicScript(bool success) {
+  DCHECK(IsMainThread());
+  client_->WorkerScriptEvaluated(success);
+}
+
+void WebSharedWorkerImpl::DidEvaluateModuleScript(bool success) {
   DCHECK(IsMainThread());
   client_->WorkerScriptEvaluated(success);
 }
@@ -150,6 +163,8 @@ void WebSharedWorkerImpl::ConnectTaskOnWorkerThread(
 
 void WebSharedWorkerImpl::StartWorkerContext(
     const WebURL& script_request_url,
+    mojom::ScriptType script_type,
+    network::mojom::CredentialsMode credentials_mode,
     const WebString& name,
     const WebString& user_agent,
     const WebString& content_security_policy,
@@ -186,10 +201,6 @@ void WebSharedWorkerImpl::StartWorkerContext(
   scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context =
       client_->CreateWorkerFetchContext();
   DCHECK(web_worker_fetch_context);
-
-  // TODO(nhiroki); Set |script_type| to mojom::ScriptType::kModule for module
-  // fetch (https://crbug.com/824646).
-  mojom::ScriptType script_type = mojom::ScriptType::kClassic;
 
   bool starter_secure_context =
       starter_origin->IsPotentiallyTrustworthy() ||
@@ -248,10 +259,19 @@ void WebSharedWorkerImpl::StartWorkerContext(
 
   GetWorkerThread()->Start(std::move(creation_params), thread_startup_data,
                            std::move(devtools_params));
-  GetWorkerThread()->FetchAndRunClassicScript(
-      script_request_url, outside_settings_object->CopyData(),
-      nullptr /* outside_resource_timing_notifier */,
-      v8_inspector::V8StackTraceId());
+  switch (script_type) {
+    case mojom::ScriptType::kClassic:
+      GetWorkerThread()->FetchAndRunClassicScript(
+          script_request_url, outside_settings_object->CopyData(),
+          nullptr /* outside_resource_timing_notifier */,
+          v8_inspector::V8StackTraceId());
+      break;
+    case mojom::ScriptType::kModule:
+      GetWorkerThread()->FetchAndRunModuleScript(
+          script_request_url, outside_settings_object->CopyData(),
+          nullptr /* outside_resource_timing_notifier */, credentials_mode);
+      break;
+  }
 
   // We are now ready to inspect worker thread.
   client_->WorkerReadyForInspection(devtools_agent_remote.PassPipe(),

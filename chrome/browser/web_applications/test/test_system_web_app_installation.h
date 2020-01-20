@@ -25,6 +25,8 @@ class TestSystemWebAppInstallation {
   SetUpTabbedMultiWindowApp();
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpStandaloneSingleWindowApp();
+  static std::unique_ptr<TestSystemWebAppInstallation>
+  SetUpAppThatReceivesLaunchDirectory();
 
   ~TestSystemWebAppInstallation();
 

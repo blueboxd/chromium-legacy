@@ -393,7 +393,7 @@ test("components_unittests") {
   if (safe_browsing_mode == 1) {
     deps += [
       "//components/safe_browsing/core:verdict_cache_manager_unittest",
-      "//components/safe_browsing/core/db:unit_tests_desktop",
+      "//components/safe_browsing/core/db:unit_tests_local_db",
     ]
   } else if (safe_browsing_mode == 2) {
     deps += [ "//components/safe_browsing/android:unit_tests_mobile" ]

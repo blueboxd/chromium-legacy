@@ -10,6 +10,8 @@
 #include "base/callback.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
+#include "chrome/browser/sharing/features.h"
+#include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/sharing_utils.h"
 #include "components/send_tab_to_self/target_device_info.h"
 #include "components/sync/driver/sync_service.h"
@@ -21,10 +23,12 @@
 SharingDeviceSourceSync::SharingDeviceSourceSync(
     syncer::SyncService* sync_service,
     syncer::LocalDeviceInfoProvider* local_device_info_provider,
-    syncer::DeviceInfoTracker* device_info_tracker)
+    syncer::DeviceInfoTracker* device_info_tracker,
+    SharingSyncPreference* sync_prefs)
     : sync_service_(sync_service),
       local_device_info_provider_(local_device_info_provider),
-      device_info_tracker_(device_info_tracker) {
+      device_info_tracker_(device_info_tracker),
+      sync_prefs_(sync_prefs) {
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(),
@@ -66,11 +70,18 @@ std::unique_ptr<syncer::DeviceInfo> SharingDeviceSourceSync::GetDeviceByGuid(
 }
 
 std::vector<std::unique_ptr<syncer::DeviceInfo>>
-SharingDeviceSourceSync::GetAllDevices() {
+SharingDeviceSourceSync::GetDeviceCandidates(
+    sync_pb::SharingSpecificFields::EnabledFeatures required_feature) {
   if (!IsSyncEnabledForSharing(sync_service_) || !IsReady())
     return {};
 
-  return RenameAndDeduplicateDevices(device_info_tracker_->GetAllDeviceInfo());
+  const base::Time min_updated_time =
+      base::Time::Now() -
+      base::TimeDelta::FromHours(kSharingDeviceExpirationHours.Get());
+
+  return RenameAndDeduplicateDevices(
+      FilterDeviceCandidates(device_info_tracker_->GetAllDeviceInfo(),
+                             min_updated_time, required_feature));
 }
 
 bool SharingDeviceSourceSync::IsReady() {
@@ -106,6 +117,24 @@ void SharingDeviceSourceSync::OnLocalDeviceInfoProviderReady() {
   DCHECK(local_device_info_provider_->GetLocalDeviceInfo());
   local_device_info_ready_subscription_.reset();
   MaybeRunReadyCallbacks();
+}
+
+std::vector<std::unique_ptr<syncer::DeviceInfo>>
+SharingDeviceSourceSync::FilterDeviceCandidates(
+    std::vector<std::unique_ptr<syncer::DeviceInfo>> devices,
+    const base::Time min_updated_time,
+    sync_pb::SharingSpecificFields::EnabledFeatures required_feature) const {
+  base::EraseIf(devices,
+                [this, required_feature, min_updated_time](const auto& device) {
+                  // Checks if |last_updated_timestamp| is not too old.
+                  if (device->last_updated_timestamp() < min_updated_time)
+                    return true;
+
+                  // Checks whether |device| supports |required_feature|.
+                  return !sync_prefs_->GetEnabledFeatures(device.get())
+                              .count(required_feature);
+                });
+  return devices;
 }
 
 std::vector<std::unique_ptr<syncer::DeviceInfo>>

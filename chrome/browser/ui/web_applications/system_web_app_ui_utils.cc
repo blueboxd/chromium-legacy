@@ -6,8 +6,10 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
@@ -90,6 +92,27 @@ Browser* LaunchSystemWebApp(Profile* profile,
   return LaunchSystemWebApp(profile, app_type, url, params, did_create);
 }
 
+namespace {
+base::FilePath GetLaunchDirectory(
+    const std::vector<base::FilePath>& launch_files) {
+  // |launch_dir| is the directory that contains all |launch_files|. If
+  // there are no launch files, launch_dir is empty.
+  base::FilePath launch_dir =
+      launch_files.size() ? launch_files[0].DirName() : base::FilePath();
+
+#if DCHECK_IS_ON()
+  // Check |launch_files| all come from the same directory.
+  if (!launch_dir.empty()) {
+    for (auto path : launch_files) {
+      DCHECK_EQ(launch_dir, path.DirName());
+    }
+  }
+#endif
+
+  return launch_dir;
+}
+}  // namespace
+
 Browser* LaunchSystemWebApp(Profile* profile,
                             SystemAppType app_type,
                             const GURL& url,
@@ -137,8 +160,15 @@ Browser* LaunchSystemWebApp(Profile* profile,
 
   // Send launch files.
   if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
-    web_launch::WebLaunchFilesHelper::SetLaunchPaths(
-        web_contents, web_contents->GetURL(), params.launch_files);
+    if (provider->system_web_app_manager().AppShouldReceiveLaunchDirectory(
+            app_type)) {
+      web_launch::WebLaunchFilesHelper::SetLaunchDirectoryAndLaunchPaths(
+          web_contents, web_contents->GetURL(),
+          GetLaunchDirectory(params.launch_files), params.launch_files);
+    } else {
+      web_launch::WebLaunchFilesHelper::SetLaunchPaths(
+          web_contents, web_contents->GetURL(), params.launch_files);
+    }
   }
 
   browser->window()->Show();

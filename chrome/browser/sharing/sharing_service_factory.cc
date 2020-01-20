@@ -127,7 +127,8 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
       SharingMessageSender::DelegateType::kFCM, std::move(fcm_sender));
 
   auto device_source = std::make_unique<SharingDeviceSourceSync>(
-      sync_service, local_device_info_provider, device_info_tracker);
+      sync_service, local_device_info_provider, device_info_tracker,
+      sync_prefs.get());
   auto handler_registry = std::make_unique<SharingHandlerRegistryImpl>(
       profile, sharing_device_registration.get(), sharing_message_sender.get(),
       device_source.get(), sms_fetcher);

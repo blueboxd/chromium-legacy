@@ -111,6 +111,22 @@ void ServiceWorkerRegistry::FindRegistrationForIdOnly(
                      std::move(callback)));
 }
 
+void ServiceWorkerRegistry::GetRegistrationsForOrigin(
+    const GURL& origin,
+    GetRegistrationsCallback callback) {
+  storage()->GetRegistrationsForOrigin(
+      origin,
+      base::BindOnce(&ServiceWorkerRegistry::DidGetRegistrationsForOrigin,
+                     weak_factory_.GetWeakPtr(), std::move(callback), origin));
+}
+
+void ServiceWorkerRegistry::GetAllRegistrationsInfos(
+    GetRegistrationsInfosCallback callback) {
+  storage()->GetAllRegistrations(
+      base::BindOnce(&ServiceWorkerRegistry::DidGetAllRegistrations,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 ServiceWorkerRegistration* ServiceWorkerRegistry::GetUninstallingRegistration(
     const GURL& scope) {
   // TODO(bashi): Should we check state of ServiceWorkerStorage?
@@ -393,6 +409,133 @@ void ServiceWorkerRegistry::DidFindRegistrationForId(
   }
 
   CompleteFindNow(std::move(registration), status, std::move(callback));
+}
+
+void ServiceWorkerRegistry::DidGetRegistrationsForOrigin(
+    GetRegistrationsCallback callback,
+    const GURL& origin_filter,
+    blink::ServiceWorkerStatusCode status,
+    std::unique_ptr<RegistrationList> registration_data_list,
+    std::unique_ptr<std::vector<ResourceList>> resources_list) {
+  DCHECK(origin_filter.is_valid());
+
+  if (status != blink::ServiceWorkerStatusCode::kOk &&
+      status != blink::ServiceWorkerStatusCode::kErrorNotFound) {
+    std::move(callback).Run(
+        status, std::vector<scoped_refptr<ServiceWorkerRegistration>>());
+    return;
+  }
+
+  DCHECK(registration_data_list);
+  DCHECK(resources_list);
+
+  // Add all stored registrations.
+  std::set<int64_t> registration_ids;
+  std::vector<scoped_refptr<ServiceWorkerRegistration>> registrations;
+  size_t index = 0;
+  for (const auto& registration_data : *registration_data_list) {
+    registration_ids.insert(registration_data.registration_id);
+    registrations.push_back(GetOrCreateRegistration(
+        registration_data, resources_list->at(index++)));
+  }
+
+  // Add unstored registrations that are being installed.
+  for (const auto& registration : installing_registrations_) {
+    if (registration.second->scope().GetOrigin() != origin_filter)
+      continue;
+    if (registration_ids.insert(registration.first).second)
+      registrations.push_back(registration.second);
+  }
+
+  std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk,
+                          std::move(registrations));
+}
+
+void ServiceWorkerRegistry::DidGetAllRegistrations(
+    GetRegistrationsInfosCallback callback,
+    blink::ServiceWorkerStatusCode status,
+    std::unique_ptr<RegistrationList> registration_data_list) {
+  if (status != blink::ServiceWorkerStatusCode::kOk &&
+      status != blink::ServiceWorkerStatusCode::kErrorNotFound) {
+    std::move(callback).Run(status,
+                            std::vector<ServiceWorkerRegistrationInfo>());
+    return;
+  }
+
+  DCHECK(registration_data_list);
+
+  // Add all stored registrations.
+  std::set<int64_t> pushed_registrations;
+  std::vector<ServiceWorkerRegistrationInfo> infos;
+  for (const auto& registration_data : *registration_data_list) {
+    const bool inserted =
+        pushed_registrations.insert(registration_data.registration_id).second;
+    DCHECK(inserted);
+
+    ServiceWorkerRegistration* registration =
+        context_->GetLiveRegistration(registration_data.registration_id);
+    if (registration) {
+      infos.push_back(registration->GetInfo());
+      continue;
+    }
+
+    ServiceWorkerRegistrationInfo info;
+    info.scope = registration_data.scope;
+    info.update_via_cache = registration_data.update_via_cache;
+    info.registration_id = registration_data.registration_id;
+    info.stored_version_size_bytes =
+        registration_data.resources_total_size_bytes;
+    info.navigation_preload_enabled =
+        registration_data.navigation_preload_state.enabled;
+    info.navigation_preload_header_length =
+        registration_data.navigation_preload_state.header.size();
+    if (ServiceWorkerVersion* version =
+            context_->GetLiveVersion(registration_data.version_id)) {
+      if (registration_data.is_active)
+        info.active_version = version->GetInfo();
+      else
+        info.waiting_version = version->GetInfo();
+      infos.push_back(info);
+      continue;
+    }
+
+    if (registration_data.is_active) {
+      info.active_version.status = ServiceWorkerVersion::ACTIVATED;
+      info.active_version.script_url = registration_data.script;
+      info.active_version.version_id = registration_data.version_id;
+      info.active_version.registration_id = registration_data.registration_id;
+      info.active_version.script_response_time =
+          registration_data.script_response_time;
+      info.active_version.fetch_handler_existence =
+          registration_data.has_fetch_handler
+              ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS
+              : ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST;
+      info.active_version.navigation_preload_state =
+          registration_data.navigation_preload_state;
+    } else {
+      info.waiting_version.status = ServiceWorkerVersion::INSTALLED;
+      info.waiting_version.script_url = registration_data.script;
+      info.waiting_version.version_id = registration_data.version_id;
+      info.waiting_version.registration_id = registration_data.registration_id;
+      info.waiting_version.script_response_time =
+          registration_data.script_response_time;
+      info.waiting_version.fetch_handler_existence =
+          registration_data.has_fetch_handler
+              ? ServiceWorkerVersion::FetchHandlerExistence::EXISTS
+              : ServiceWorkerVersion::FetchHandlerExistence::DOES_NOT_EXIST;
+      info.waiting_version.navigation_preload_state =
+          registration_data.navigation_preload_state;
+    }
+    infos.push_back(info);
+  }
+
+  // Add unstored registrations that are being installed.
+  for (const auto& registration : installing_registrations_) {
+    if (pushed_registrations.insert(registration.first).second)
+      infos.push_back(registration.second->GetInfo());
+  }
+
+  std::move(callback).Run(blink::ServiceWorkerStatusCode::kOk, infos);
 }
 
 void ServiceWorkerRegistry::DidStoreRegistration(

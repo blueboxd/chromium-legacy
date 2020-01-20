@@ -43,7 +43,7 @@ const videoPlayerApp = new RemoteCall(VIDEO_PLAYER_APP_ID);
 /**
  * Basic entry set for the local volume.
  *
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<TestEntryInfo>}
  * @const
  */
 const BASIC_LOCAL_ENTRY_SET = [
@@ -73,7 +73,7 @@ const BASIC_LOCAL_ENTRY_SET_WITH_HIDDEN = BASIC_LOCAL_ENTRY_SET.concat([
  * TODO(sashab): Merge items from COMPLEX_DRIVE_ENTRY_SET into here (so all
  *               tests run with read-only files) once crbug.com/850834 is fixed.
  *
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<TestEntryInfo>}
  * @const
  */
 const BASIC_DRIVE_ENTRY_SET = [
@@ -129,7 +129,7 @@ const BASIC_CROSTINI_ENTRY_SET = [
  * More complex entry set for Drive that includes entries with varying
  * permissions (such as read-only entries).
  *
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<TestEntryInfo>}
  * @const
  */
 const COMPLEX_DRIVE_ENTRY_SET = [
@@ -141,7 +141,7 @@ const COMPLEX_DRIVE_ENTRY_SET = [
  * More complex entry set for DocumentsProvider that includes entries with
  * arying permissions (such as read-only entries).
  *
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<TestEntryInfo>}
  * @const
  */
 const COMPLEX_DOCUMENTS_PROVIDER_ENTRY_SET = [
@@ -152,7 +152,7 @@ const COMPLEX_DOCUMENTS_PROVIDER_ENTRY_SET = [
 /**
  * Nested entry set (directories inside each other).
  *
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<TestEntryInfo>}
  * @const
  */
 const NESTED_ENTRY_SET = [
@@ -165,7 +165,7 @@ const NESTED_ENTRY_SET = [
  * Expected list of preset entries in fake test volumes. This should be in sync
  * with FakeTestVolume::PrepareTestEntries in the test harness.
  *
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<TestEntryInfo>}
  * @const
  */
 const BASIC_FAKE_ENTRY_SET = [
@@ -177,7 +177,7 @@ const BASIC_FAKE_ENTRY_SET = [
  * Expected files shown in "Recent". Directories (e.g. 'photos') are not in this
  * list as they are not expected in "Recent".
  *
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<TestEntryInfo>}
  * @const
  */
 const RECENT_ENTRY_SET = [
@@ -190,7 +190,7 @@ const RECENT_ENTRY_SET = [
  * "available offline". Google Documents, Google Spreadsheets, and the files
  * cached locally are "available offline".
  *
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<TestEntryInfo>}
  * @const
  */
 const OFFLINE_ENTRY_SET = [
@@ -203,7 +203,7 @@ const OFFLINE_ENTRY_SET = [
  * Expected files shown in "Shared with me", which should be the entries labeled
  * with "shared-with-me".
  *
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<TestEntryInfo>}
  * @const
  */
 const SHARED_WITH_ME_ENTRY_SET = [
@@ -217,7 +217,7 @@ const SHARED_WITH_ME_ENTRY_SET = [
  *
  * TODO(sashab): Add support for capabilities of Shared Drive roots.
  *
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<TestEntryInfo>}
  * @const
  */
 const SHARED_DRIVE_ENTRY_SET = [
@@ -235,10 +235,10 @@ const SHARED_DRIVE_ENTRY_SET = [
  * Entry set for Drive that includes Computers, including nested computers with
  * files and nested "USB and External Devices" with nested devices.
  *
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<TestEntryInfo>}
  * @const
  */
-let COMPUTERS_ENTRY_SET = [
+const COMPUTERS_ENTRY_SET = [
   ENTRIES.hello,
   ENTRIES.computerA,
   ENTRIES.computerAFile,
@@ -248,7 +248,7 @@ let COMPUTERS_ENTRY_SET = [
 /**
  * Basic entry set for the android volume.
  *
- * @type {Array<TestEntryInfo>}
+ * @type {!Array<TestEntryInfo>}
  * @const
  */
 const BASIC_ANDROID_ENTRY_SET = [
@@ -296,12 +296,12 @@ function openNewWindow(initialRoot, appState = {}) {
 /**
  * Opens a file dialog and waits for closing it.
  *
- * @param {Object} dialogParams Dialog parameters to be passed to chrome.
- *     fileSystem.chooseEntry() API.
+ * @param {chrome.fileSystem.AcceptsOption} dialogParams Dialog parameters to be
+ *     passed to chrome. fileSystem.chooseEntry() API.
  * @param {string} volumeName Volume name passed to the selectVolume remote
- *     funciton.
+ *     function.
  * @param {Array<TestEntryInfo>} expectedSet Expected set of the entries.
- * @param {function(appId:string):Promise} closeDialog Function to close the
+ * @param {function(string):Promise} closeDialog Function to close the
  *     dialog.
  * @param {boolean} useBrowserOpen Whether to launch the select file dialog via
  *     a browser OpenFile() call.
@@ -350,9 +350,9 @@ async function openAndWaitForClosingDialog(
  *
  * @param {?string} initialRoot Root path to be used as a default current
  *     directory during initialization. Can be null, for no default path.
- * @param {!Array<TestEntryInfo>>} initialLocalEntries List of initial
+ * @param {!Array<TestEntryInfo>} initialLocalEntries List of initial
  *     entries to load in Downloads (defaults to a basic entry set).
- * @param {!Array<TestEntryInfo>>} initialDriveEntries List of initial
+ * @param {!Array<TestEntryInfo>} initialDriveEntries List of initial
  *     entries to load in Google Drive (defaults to a basic entry set).
  * @param {Object} appState App state to be passed with on opening the Files
  *     app.
@@ -379,7 +379,7 @@ async function setupAndWaitUntilReady(
 
 /**
  * Returns the name of the given file list entry.
- * @param {Array<string>} file An entry in a file list.
+ * @param {Array<string>} fileListEntry An entry in a file list.
  * @return {string} Name of the file.
  */
 function getFileName(fileListEntry) {
@@ -388,7 +388,7 @@ function getFileName(fileListEntry) {
 
 /**
  * Returns the size of the given file list entry.
- * @param {Array<string>} An entry in a file list.
+ * @param {Array<string>} fileListEntry An entry in a file list.
  * @return {string} Size of the file.
  */
 function getFileSize(fileListEntry) {
@@ -397,7 +397,7 @@ function getFileSize(fileListEntry) {
 
 /**
  * Returns the type of the given file list entry.
- * @param {Array<string>} An entry in a file list.
+ * @param {Array<string>} fileListEntry An entry in a file list.
  * @return {string} Type of the file.
  */
 function getFileType(fileListEntry) {
@@ -473,7 +473,7 @@ window.addEventListener('load', () => {
     },
     // Request the test case name.
     paths => {
-      const roots = JSON.parse(paths);
+      const roots = /** @type {getRootPathsResult} */ (JSON.parse(paths));
       RootPath.DOWNLOADS = roots.downloads;
       RootPath.DRIVE = roots.drive;
       RootPath.ANDROID_FILES = roots.android_files;
@@ -555,7 +555,8 @@ async function expandTreeItem(appId, treeItem) {
  *     /My files/Downloads/photos to item that should navigate to.
  * @param {string=} shortcutToPath For shortcuts it navigates to a different
  *   breadcrumbs path, like /My Drive/ShortcutName.
- *   @return {string} the final selector used to click on the desired tree item.
+ *   @return {!Promise<string>} the final selector used to click on the desired
+ * tree item.
  */
 async function navigateWithDirectoryTree(
     appId, breadcrumbsPath, shortcutToPath) {
@@ -603,7 +604,7 @@ async function navigateWithDirectoryTree(
 /**
  * Mounts crostini volume by clicking on the fake crostini root.
  * @param {string} appId Files app windowId.
- * @param {!Array<TestEntryInfo>>} initialEntries List of initial entries to
+ * @param {!Array<TestEntryInfo>} initialEntries List of initial entries to
  *     load in Crostini (defaults to a basic entry set).
  */
 async function mountCrostini(appId, initialEntries = BASIC_CROSTINI_ENTRY_SET) {

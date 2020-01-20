@@ -473,14 +473,14 @@ TEST_F(DiceSigninUiUtilTest, MAYBE_EnableSyncForNewAccountWithOneTab) {
 
 // TODO(https://crbug.com/1014790): Timeout on Mac10.12 and Win7 x64.
 #if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_GetAccountForDicePromos DISABLED_GetAccountForDicePromos
+#define MAYBE_GetAccountsForDicePromos DISABLED_GetAccountsForDicePromos
 #else
-#define MAYBE_GetAccountForDicePromos GetAccountForDicePromos
+#define MAYBE_GetAccountsForDicePromos GetAccountsForDicePromos
 #endif
-TEST_F(DiceSigninUiUtilTest, MAYBE_GetAccountForDicePromos) {
-  // Should start off with no account.
-  AccountInfo info_empty = GetAccountForDicePromos(profile());
-  EXPECT_TRUE(info_empty.IsEmpty());
+TEST_F(DiceSigninUiUtilTest, MAYBE_GetAccountsForDicePromos) {
+  // Should start off with no accounts.
+  std::vector<AccountInfo> accounts = GetAccountsForDicePromos(profile());
+  EXPECT_TRUE(accounts.empty());
 
   // TODO(tangltom): Flesh out this test.
 }

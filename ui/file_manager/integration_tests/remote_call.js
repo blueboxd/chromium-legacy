@@ -58,7 +58,7 @@ class RemoteCall {
    * @param {string} func Function name.
    * @param {?string} appId App window Id or null for functions not requiring a
    *     window.
-   * @param {Array<*>} args Array of arguments.
+   * @param {?Array<*>=} args Array of arguments.
    * @param {function(*)=} opt_callback Callback handling the function's result.
    * @return {!Promise} Promise to be fulfilled with the result of the remote
    *     utility.
@@ -221,11 +221,11 @@ class RemoteCall {
    *
    * @param {string} funcName Name of remote test function to be executed.
    * @param {string} appId App window Id.
-   * @param {function(Object): boolean|Object} expectedResult An value to be
-   *     checked against the return value of |funcName| or a callback that
+   * @param {function(Object):boolean|boolean|Object} expectedResult An value to
+   *     be checked against the return value of |funcName| or a callback that
    *     receives the return value of |funcName| and returns true if the result
    *     is the expected value.
-   * @param {?Array<*>} args Arguments to be provided to |funcName| when
+   * @param {?Array<*>=} args Arguments to be provided to |funcName| when
    *     executing it.
    * @return {Promise} Promise to be fulfilled when the |expectedResult| is
    *     returned from |funcName| execution.

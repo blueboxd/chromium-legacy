@@ -22,6 +22,12 @@
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "components/user_manager/fake_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user_names.h"
+#endif  // defined(OS_CHROMEOS)
+
 namespace {
 constexpr char kExtensionId1[] = "id1";
 constexpr char kExtensionId2[] = "id2";
@@ -64,6 +70,12 @@ constexpr char kFetchRetriesManifestFetchFailedStats[] =
     "Extensions.ForceInstalledManifestFetchFailedFetchTries";
 constexpr char kSandboxUnpackFailureReason[] =
     "Extensions.ForceInstalledFailureSandboxUnpackFailureReason";
+#if defined(OS_CHROMEOS)
+constexpr char kFailureSessionStats[] =
+    "Extensions.ForceInstalledFailureSessionType";
+#endif  // defined(OS_CHROMEOS)
+constexpr char kPossibleNonMisconfigurationFailures[] =
+    "Extensions.ForceInstalledSessionsWithNonMisconfigurationFailureOccured";
 }  // namespace
 
 namespace extensions {
@@ -247,6 +259,60 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsStuck) {
       prefs_->GetManagedPref(pref_names::kInstallForceList)->DictSize(), 1);
 }
 
+#if defined(OS_CHROMEOS)
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       ReportManagedGuestSessionOnExtensionFailure) {
+  user_manager::FakeUserManager* fake_user_manager =
+      new user_manager::FakeUserManager();
+  user_manager::ScopedUserManager scoped_user_manager(
+      base::WrapUnique(fake_user_manager));
+  const AccountId account_id =
+      AccountId::FromUserEmail(profile_.GetProfileUserName());
+  const user_manager::User* user =
+      fake_user_manager->AddPublicAccountUser(account_id);
+  fake_user_manager->UserLoggedIn(account_id, user->username_hash(),
+                                  false /* browser_restart */,
+                                  false /* is_child */);
+  SetupForceList();
+  installation_reporter_->ReportFailure(
+      kExtensionId1, InstallationReporter::FailureReason::INVALID_ID);
+  installation_reporter_->ReportCrxInstallError(
+      kExtensionId2,
+      InstallationReporter::FailureReason::CRX_INSTALL_ERROR_OTHER,
+      CrxInstallErrorDetail::UNEXPECTED_ID);
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectBucketCount(
+      kFailureSessionStats,
+      InstallationTracker::SessionType::SESSION_TYPE_PUBLIC_ACCOUNT, 2);
+}
+
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       ReportGuestSessionOnExtensionFailure) {
+  user_manager::FakeUserManager* fake_user_manager =
+      new user_manager::FakeUserManager();
+  user_manager::ScopedUserManager scoped_user_manager(
+      base::WrapUnique(fake_user_manager));
+  const AccountId guest_id =
+      AccountId::FromUserEmail(user_manager::kGuestUserName);
+  fake_user_manager->AddGuestUser(guest_id);
+  SetupForceList();
+  installation_reporter_->ReportFailure(
+      kExtensionId1, InstallationReporter::FailureReason::INVALID_ID);
+  installation_reporter_->ReportCrxInstallError(
+      kExtensionId2,
+      InstallationReporter::FailureReason::CRX_INSTALL_ERROR_OTHER,
+      CrxInstallErrorDetail::UNEXPECTED_ID);
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectBucketCount(
+      kFailureSessionStats,
+      InstallationTracker::SessionType::SESSION_TYPE_GUEST, 2);
+}
+#endif  // defined(OS_CHROMEOS)
+
 TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionsAreDownloading) {
   SetupForceList();
   installation_reporter_->ReportInstallationStage(
@@ -326,6 +392,46 @@ TEST_F(ForcedExtensionsInstallationTrackerTest, ExtensionManifestFetchFailed) {
                                       -net::Error::ERR_INVALID_ARGUMENT, 1);
   histogram_tester_.ExpectBucketCount(kFetchRetriesManifestFetchFailedStats,
                                       kFetchTries, 2);
+}
+
+// Session in which either all the extensions installed successfully, or all
+// failures are admin-side misconfigurations. Misconfiguration failure includes
+// error KIOSK_MODE_ONLY, when force installed extension fails to install with
+// failure reason CRX_INSTALL_ERROR.
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       NonMisconfigurationFailureNotPresent) {
+  SetupForceList();
+  auto extension =
+      ExtensionBuilder(kExtensionName1).SetID(kExtensionId1).Build();
+  tracker_->OnExtensionLoaded(&profile_, extension.get());
+  installation_reporter_->ReportCrxInstallError(
+      kExtensionId2,
+      InstallationReporter::FailureReason::CRX_INSTALL_ERROR_DECLINED,
+      CrxInstallErrorDetail::KIOSK_MODE_ONLY);
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectBucketCount(kPossibleNonMisconfigurationFailures, 0,
+                                      1);
+}
+
+// Session in which at least one non misconfiguration failure occurred.
+// Misconfiguration failure includes error KIOSK_MODE_ONLY, when force installed
+// extension fails to install with failure reason CRX_INSTALL_ERROR.
+TEST_F(ForcedExtensionsInstallationTrackerTest,
+       NonMisconfigurationFailurePresent) {
+  SetupForceList();
+  installation_reporter_->ReportFailure(
+      kExtensionId1, InstallationReporter::FailureReason::INVALID_ID);
+  installation_reporter_->ReportCrxInstallError(
+      kExtensionId2,
+      InstallationReporter::FailureReason::CRX_INSTALL_ERROR_DECLINED,
+      CrxInstallErrorDetail::KIOSK_MODE_ONLY);
+  // InstallationTracker shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectBucketCount(kPossibleNonMisconfigurationFailures, 1,
+                                      1);
 }
 
 TEST_F(ForcedExtensionsInstallationTrackerTest, NoExtensionsConfigured) {

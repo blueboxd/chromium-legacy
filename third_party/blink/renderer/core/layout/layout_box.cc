@@ -2384,7 +2384,6 @@ void LayoutBox::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
 void LayoutBox::SetCachedLayoutResult(const NGLayoutResult& layout_result,
                                       const NGBreakToken* break_token) {
   DCHECK_EQ(layout_result.Status(), NGLayoutResult::kSuccess);
-  DCHECK(!layout_result.GetConstraintSpaceForCaching().IsIntermediateLayout());
 
   if (break_token)
     return;

@@ -782,23 +782,26 @@ public class IntentHandler {
         IntentHeadersRecorder.HeaderClassifier headerClassifier = shouldBlockNonSafelistedHeaders
                 ? new IntentHeadersRecorder.HeaderClassifier()
                 : null;
+        boolean fromChrome = IntentHandler.wasIntentSenderChrome(intent);
         boolean firstParty = shouldLogHeaders
-                ? IntentHandler.notSecureIsIntentChromeOrFirstParty(intent)
+                ? (IntentHandler.notSecureIsIntentChromeOrFirstParty(intent) && !fromChrome)
                 : false;
 
         for (String key : bundleExtraHeaders.keySet()) {
             String value = bundleExtraHeaders.getString(key);
 
+            if (!HttpUtil.isAllowedHeader(key, value)) continue;
+
             // Strip the custom header that can only be added by ourselves.
             if ("x-chrome-intent-type".equals(key.toLowerCase(Locale.US))) continue;
 
-            if (!HttpUtil.isAllowedHeader(key, value)) continue;
+            if (!fromChrome) {
+                if (shouldLogHeaders) recorder.recordHeader(key, value, firstParty);
 
-            if (shouldLogHeaders) recorder.recordHeader(key, value, firstParty);
-
-            if (shouldBlockNonSafelistedHeaders
-                    && !headerClassifier.isCorsSafelistedHeader(key, value, firstParty)) {
-                continue;
+                if (shouldBlockNonSafelistedHeaders
+                        && !headerClassifier.isCorsSafelistedHeader(key, value, firstParty)) {
+                    continue;
+                }
             }
 
             if (extraHeaders.length() != 0) extraHeaders.append("\n");

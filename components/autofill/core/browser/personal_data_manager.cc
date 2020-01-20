@@ -471,12 +471,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   // If all requests have responded, then all personal data is loaded.
   // We need to check if the server database is set here, because we won't have
   // the server data yet if we don't have the database.
-  if (pending_profiles_query_ == 0 && pending_creditcards_query_ == 0 &&
-      pending_server_profiles_query_ == 0 &&
-      pending_server_creditcards_query_ == 0 &&
-      pending_server_creditcard_cloud_token_data_query_ == 0 &&
-      pending_customer_data_query_ == 0 &&
-      database_helper_->GetServerDatabase()) {
+  if (!HasPendingQueries() && database_helper_->GetServerDatabase()) {
     // On initial data load, is_data_loaded_ will be false here.
     if (!is_data_loaded_) {
       // If sync is enabled for addresses, defer running cleanups until address
@@ -1674,6 +1669,10 @@ void PersonalDataManager::CancelPendingServerQueries() {
   CancelPendingServerQuery(&pending_server_creditcard_cloud_token_data_query_);
 }
 
+bool PersonalDataManager::HasPendingQueriesForTesting() {
+  return HasPendingQueries();
+}
+
 void PersonalDataManager::LoadPaymentsCustomerData() {
   if (!database_helper_->GetServerDatabase())
     return;
@@ -2515,6 +2514,14 @@ void PersonalDataManager::OnProfileChangeDone(const std::string& guid) {
 
 void PersonalDataManager::ClearOnGoingProfileChanges() {
   ongoing_profile_changes_.clear();
+}
+
+bool PersonalDataManager::HasPendingQueries() {
+  return pending_profiles_query_ != 0 || pending_creditcards_query_ != 0 ||
+         pending_server_profiles_query_ != 0 ||
+         pending_server_creditcards_query_ != 0 ||
+         pending_server_creditcard_cloud_token_data_query_ != 0 ||
+         pending_customer_data_query_ != 0;
 }
 
 void PersonalDataManager::MigrateUserOptedInWalletSyncTransportIfNeeded() {

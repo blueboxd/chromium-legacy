@@ -1439,6 +1439,21 @@
             ]
         }
     ],
+    "BlockedMediaSystemPermissionUI": [
+        {
+            "platforms": [
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "MacSystemMediaPermissionsInfoUI",
+                    "enable_features": [
+                        "MacSystemMediaPermissionsInfoUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "BookmarkInProductHelp": [
         {
             "platforms": [

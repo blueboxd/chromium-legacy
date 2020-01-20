@@ -6,10 +6,7 @@
 #define IOS_CHROME_APP_SPOTLIGHT_TOPSITES_SPOTLIGHT_MANAGER_H_
 
 #import "ios/chrome/app/spotlight/base_spotlight_manager.h"
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 // This spotlight manager handles indexing of sites shown on the NTP. Because of
 // privacy concerns, only sites shown on the NTP are indexed; therefore, this

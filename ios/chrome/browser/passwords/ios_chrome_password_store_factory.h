@@ -9,12 +9,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/refcounted_browser_state_keyed_service_factory.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 enum class ServiceAccessType;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 namespace password_manager {
 class PasswordStore;

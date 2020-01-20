@@ -2103,12 +2103,19 @@ void HTMLSelectElement::HidePopup() {
 
 void HTMLSelectElement::DidRecalcStyle(const StyleRecalcChange change) {
   HTMLFormControlElementWithState::DidRecalcStyle(change);
-  if (!change.ReattachLayoutTree() && PopupIsVisible())
+  if (change.ReattachLayoutTree())
+    return;
+  UpdateFromElement();
+  if (PopupIsVisible())
     popup_->UpdateFromElement(PopupMenu::kByStyleChange);
 }
 
 void HTMLSelectElement::AttachLayoutTree(AttachContext& context) {
   HTMLFormControlElementWithState::AttachLayoutTree(context);
+  // The call to UpdateFromElement() needs to go after the call through
+  // to the base class's AttachLayoutTree() because that can sometimes do a
+  // close on the LayoutObject.
+  UpdateFromElement();
 
   if (const ComputedStyle* style = GetComputedStyle()) {
     if (style->Visibility() != EVisibility::kHidden) {

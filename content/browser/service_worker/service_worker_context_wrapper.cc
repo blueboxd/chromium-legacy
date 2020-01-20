@@ -554,7 +554,7 @@ void ServiceWorkerContextWrapper::GetAllOriginsInfoOnCoreThread(
         base::BindOnce(std::move(callback), std::vector<StorageUsageInfo>()));
     return;
   }
-  context()->storage()->GetAllRegistrationsInfos(base::BindOnce(
+  context()->registry()->GetAllRegistrationsInfos(base::BindOnce(
       &ServiceWorkerContextWrapper::DidGetAllRegistrationsForGetAllOrigins,
       this, std::move(callback), std::move(callback_runner)));
 }
@@ -1069,7 +1069,7 @@ void ServiceWorkerContextWrapper::GetAllRegistrationsOnCoreThread(
                             std::vector<ServiceWorkerRegistrationInfo>());
     return;
   }
-  context_core_->storage()->GetAllRegistrationsInfos(std::move(callback));
+  context_core_->registry()->GetAllRegistrationsInfos(std::move(callback));
 }
 
 void ServiceWorkerContextWrapper::GetRegistrationsForOrigin(
@@ -1084,8 +1084,8 @@ void ServiceWorkerContextWrapper::GetRegistrationsForOrigin(
             std::vector<scoped_refptr<ServiceWorkerRegistration>>()));
     return;
   }
-  context_core_->storage()->GetRegistrationsForOrigin(origin.GetURL(),
-                                                      std::move(callback));
+  context_core_->registry()->GetRegistrationsForOrigin(origin.GetURL(),
+                                                       std::move(callback));
 }
 
 void ServiceWorkerContextWrapper::GetRegistrationUserData(

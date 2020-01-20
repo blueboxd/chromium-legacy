@@ -32,7 +32,7 @@ DiceBubbleSyncPromoView::DiceBubbleSyncPromoView(
   AccountInfo account;
   // Signin promos can be shown in incognito, they use an empty account list.
   if (profile->IsRegularProfile())
-    account = signin_ui_util::GetAccountForDicePromos(profile);
+    account = signin_ui_util::GetSingleAccountForDicePromos(profile);
 
   // Always show the accounts promo message for now.
   const int title_resource_id = accounts_promo_message_resource_id;

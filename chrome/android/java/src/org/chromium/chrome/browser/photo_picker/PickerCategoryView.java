@@ -35,15 +35,16 @@ import android.widget.VideoView;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.DiscardableReferencePool.DiscardableReference;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.MimeTypeFilter;
 import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.UiUtils;
@@ -52,8 +53,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * A class for keeping track of common data associated with showing photos in
@@ -228,8 +227,8 @@ public class PickerCategoryView extends RelativeLayout
     // The SeekBar showing the video playback progress (allows user seeking).
     private SeekBar mSeekBar;
 
-    // A timer for periodically updating the progress of video playback to the user.
-    private Timer mPlaybackUpdateTimer;
+    // A flag to control when the playback monitor schedules new tasks.
+    private boolean mRunPlaybackMonitoringTask;
 
     // The Zoom (floating action) button.
     private ImageView mZoom;
@@ -378,6 +377,7 @@ public class PickerCategoryView extends RelativeLayout
                 // break before reaching the end). This also allows the user to restart playback
                 // from the start, by pressing Play.
                 mLargePlayButton.setImageResource(R.drawable.ic_play_circle_filled_white_24dp);
+                updateProgress();
                 showOverlayControls(/*animateAway=*/false);
                 if (sProgressCallback != null) {
                     sProgressCallback.onVideoEnded();
@@ -817,6 +817,7 @@ public class PickerCategoryView extends RelativeLayout
 
         if (animateAway && mVideoView.isPlaying()) {
             fadeAwayVideoControls();
+            startPlaybackMonitor();
         }
     }
 
@@ -832,6 +833,7 @@ public class PickerCategoryView extends RelativeLayout
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         enableClickableButtons(false);
+                        stopPlaybackMonitor();
                     }
 
                     @Override
@@ -872,39 +874,28 @@ public class PickerCategoryView extends RelativeLayout
             return;
         }
 
-        ThreadUtils.postOnUiThread(() -> {
-            TextView remainingTime = findViewById(R.id.remaining_time);
-            String formattedProgress = mActivity.getResources().getString(
-                    R.string.photo_picker_video_duration, current, total);
-            remainingTime.setText(formattedProgress);
-            int percentage = mVideoView.getDuration() == 0
-                    ? 0
-                    : mVideoView.getCurrentPosition() * 100 / mVideoView.getDuration();
-            seekBar.setProgress(percentage);
-        });
+        TextView remainingTime = findViewById(R.id.remaining_time);
+        String formattedProgress = mActivity.getResources().getString(
+                R.string.photo_picker_video_duration, current, total);
+        remainingTime.setText(formattedProgress);
+        int percentage = mVideoView.getDuration() == 0
+                ? 0
+                : mVideoView.getCurrentPosition() * 100 / mVideoView.getDuration();
+        seekBar.setProgress(percentage);
+
+        if (mRunPlaybackMonitoringTask) {
+            startPlaybackMonitorTask();
+        }
     }
 
     private void startVideoPlayback() {
         mMediaPlayer.start();
         mLargePlayButton.setImageResource(R.drawable.ic_pause_circle_outline_white_24dp);
         showOverlayControls(/*animateAway=*/true);
-
-        if (mPlaybackUpdateTimer == null) {
-            mPlaybackUpdateTimer = new Timer();
-            final TimerTask tickTask = new TimerTask() {
-                @Override
-                public void run() {
-                    updateProgress();
-                }
-            };
-
-            mPlaybackUpdateTimer.schedule(tickTask, 0, 250);
-        }
     }
 
     private void stopVideoPlayback() {
-        mPlaybackUpdateTimer.cancel();
-        mPlaybackUpdateTimer = null;
+        stopPlaybackMonitor();
 
         mMediaPlayer.pause();
         mLargePlayButton.setImageResource(R.drawable.ic_play_circle_filled_white_24dp);
@@ -928,6 +919,19 @@ public class PickerCategoryView extends RelativeLayout
             mMediaPlayer.setVolume(0f, 0f);
             mMuteButton.setImageResource(R.drawable.ic_volume_off_white_24dp);
         }
+    }
+
+    private void startPlaybackMonitor() {
+        mRunPlaybackMonitoringTask = true;
+        startPlaybackMonitorTask();
+    }
+
+    private void startPlaybackMonitorTask() {
+        PostTask.postDelayedTask(UiThreadTaskTraits.DEFAULT, () -> updateProgress(), 250);
+    }
+
+    private void stopPlaybackMonitor() {
+        mRunPlaybackMonitoringTask = false;
     }
 
     /** Sets a list of files to use as data for the dialog. For testing use only. */

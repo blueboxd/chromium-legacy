@@ -567,12 +567,14 @@ void V8TestInterfaceCheckSecurity::DoNotCheckSecurityReplaceableReadonlyLongAttr
 }
 
 void V8TestInterfaceCheckSecurity::VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterfaceCheckSecurity.voidMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceCheckSecurity_voidMethod");
 
   test_interface_check_security_v8_internal::VoidMethodMethod(info);
 }
 
 void V8TestInterfaceCheckSecurity::DoNotCheckSecurityVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterfaceCheckSecurity.doNotCheckSecurityVoidMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceCheckSecurity_doNotCheckSecurityVoidMethod");
 
   test_interface_check_security_v8_internal::DoNotCheckSecurityVoidMethodMethod(info);
@@ -585,6 +587,7 @@ void V8TestInterfaceCheckSecurity::DoNotCheckSecurityVoidMethodOriginSafeMethodG
 }
 
 void V8TestInterfaceCheckSecurity::DoNotCheckSecurityPerWorldBindingsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterfaceCheckSecurity.doNotCheckSecurityPerWorldBindingsVoidMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceCheckSecurity_doNotCheckSecurityPerWorldBindingsVoidMethod");
 
   test_interface_check_security_v8_internal::DoNotCheckSecurityPerWorldBindingsVoidMethodMethod(info);
@@ -597,6 +600,7 @@ void V8TestInterfaceCheckSecurity::DoNotCheckSecurityPerWorldBindingsVoidMethodO
 }
 
 void V8TestInterfaceCheckSecurity::DoNotCheckSecurityPerWorldBindingsVoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterfaceCheckSecurity.doNotCheckSecurityPerWorldBindingsVoidMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceCheckSecurity_doNotCheckSecurityPerWorldBindingsVoidMethod");
 
   test_interface_check_security_v8_internal::DoNotCheckSecurityPerWorldBindingsVoidMethodMethodForMainWorld(info);
@@ -609,6 +613,7 @@ void V8TestInterfaceCheckSecurity::DoNotCheckSecurityPerWorldBindingsVoidMethodO
 }
 
 void V8TestInterfaceCheckSecurity::DoNotCheckSecurityUnforgeableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterfaceCheckSecurity.doNotCheckSecurityUnforgeableVoidMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceCheckSecurity_doNotCheckSecurityUnforgeableVoidMethod");
 
   test_interface_check_security_v8_internal::DoNotCheckSecurityUnforgeableVoidMethodMethod(info);
@@ -621,6 +626,7 @@ void V8TestInterfaceCheckSecurity::DoNotCheckSecurityUnforgeableVoidMethodOrigin
 }
 
 void V8TestInterfaceCheckSecurity::DoNotCheckSecurityVoidOverloadMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterfaceCheckSecurity.doNotCheckSecurityVoidOverloadMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceCheckSecurity_doNotCheckSecurityVoidOverloadMethod");
 
   test_interface_check_security_v8_internal::DoNotCheckSecurityVoidOverloadMethodMethod(info);
@@ -633,6 +639,7 @@ void V8TestInterfaceCheckSecurity::DoNotCheckSecurityVoidOverloadMethodOriginSaf
 }
 
 void V8TestInterfaceCheckSecurity::SecureContextRuntimeEnabledMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  BLINK_BINDINGS_TRACE_EVENT("TestInterfaceCheckSecurity.secureContextRuntimeEnabledMethod");
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceCheckSecurity_secureContextRuntimeEnabledMethod");
 
   test_interface_check_security_v8_internal::SecureContextRuntimeEnabledMethodMethod(info);

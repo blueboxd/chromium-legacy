@@ -6,15 +6,12 @@
 #define IOS_CHROME_APP_SPOTLIGHT_BOOKMARKS_SPOTLIGHT_MANAGER_H_
 
 #import "ios/chrome/app/spotlight/base_spotlight_manager.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 namespace bookmarks {
 class BookmarkNode;
 class BookmarkModel;
 }
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 @class CSSearchableItem;
 @class TopSitesSpotlightManager;

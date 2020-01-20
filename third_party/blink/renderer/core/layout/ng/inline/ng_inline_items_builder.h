@@ -134,6 +134,9 @@ class NGInlineItemsBuilderTemplate {
   void EnterInline(LayoutInline*);
   void ExitInline(LayoutObject*);
 
+  // Set collected inline items data to |data|.
+  void DidFinishCollectInlines(NGInlineNodeData* data);
+
   OffsetMappingBuilder& GetOffsetMappingBuilder() { return mapping_builder_; }
 
   void SetIsSymbolMarker(bool b);
@@ -222,6 +225,8 @@ class NGInlineItemsBuilderTemplate {
   void AppendGeneratedBreakOpportunity(LayoutObject*);
 
   void Exit(LayoutObject*);
+
+  bool MayBeBidiEnabled() const;
 
   bool ShouldInsertBreakOpportunityAfterLeadingPreservedSpaces(
       const String&,

@@ -25,15 +25,17 @@ namespace {
 // Length of the trailing button side.
 const CGFloat kButtonSize = 24;
 // Space between the location icon and the location label.
-const CGFloat kLocationImageToLabelSpacing = -4.0;
+const CGFloat kLocationImageToLabelSpacing = -2.0;
 // Minimal horizontal padding between the leading edge of the location bar and
 // the content of the location bar.
-const CGFloat kLocationBarLeadingPadding = 5.0;
+const CGFloat kLocationBarLeadingPadding = 8.0;
 // Trailing space between the trailing button and the trailing edge of the
 // location bar.
 const CGFloat kButtonTrailingSpacing = 10;
 // Duration of display and hide animation of the badge view, in seconds.
 const CGFloat kbadgeViewAnimationDuration = 0.2;
+// Location label vertical offset.
+const CGFloat kLocationLabelVerticalOffset = -1;
 }  // namespace
 
 @interface LocationBarSteadyView ()
@@ -200,9 +202,6 @@ const CGFloat kbadgeViewAnimationDuration = 0.2;
 
     [self addSubview:_locationButton];
 
-    ApplyVisualConstraints(
-        @[ @"V:|[label]|", @"V:|[container]|" ],
-        @{@"label" : _locationLabel, @"container" : _locationContainerView});
 
     AddSameConstraints(self, _locationButton);
 
@@ -218,6 +217,12 @@ const CGFloat kbadgeViewAnimationDuration = 0.2;
 
     // Setup and activate constraints.
     [NSLayoutConstraint activateConstraints:@[
+      [_locationLabel.centerYAnchor
+          constraintEqualToAnchor:_locationContainerView.centerYAnchor
+                         constant:kLocationLabelVerticalOffset],
+      [_locationLabel.heightAnchor
+          constraintLessThanOrEqualToAnchor:_locationContainerView.heightAnchor
+                                   constant:2 * kLocationLabelVerticalOffset],
       [_trailingButton.centerYAnchor
           constraintEqualToAnchor:self.centerYAnchor],
       [_locationContainerView.centerYAnchor

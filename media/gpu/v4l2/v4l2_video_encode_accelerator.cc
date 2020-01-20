@@ -1524,16 +1524,6 @@ bool V4L2VideoEncodeAccelerator::InitControls(const Config& config) {
                         V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_GOP_SIZE,
                                     config.gop_length.value_or(0))});
 
-  // Optional Exynos specific controls.
-  // - Enable "tight" bitrate mode. For this to work properly, frame- and
-  //   mb-level bitrate controls have to be enabled as well.
-  // - Force bitrate control to average over a GOP (for tight bitrate
-  //   tolerance).
-  device_->SetExtCtrls(
-      V4L2_CTRL_CLASS_MPEG,
-      {V4L2ExtCtrl(V4L2_CID_MPEG_MFC51_VIDEO_RC_REACTION_COEFF, 1),
-       V4L2ExtCtrl(V4L2_CID_MPEG_MFC51_VIDEO_RC_FIXED_TARGET_BIT, 1)});
-
   return true;
 }
 

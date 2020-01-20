@@ -51,13 +51,18 @@ const char kUmaSelectDefaultSearchEngine[] =
 }  // namespace
 
 @interface SearchEngineTableViewController () <SearchEngineObserving>
+
+// Prevent unnecessary notifications when we write to the setting.
+@property(nonatomic, assign) BOOL updatingBackend;
+
+// Whether the search engines have changed while the backend was being updated.
+@property(nonatomic, assign) BOOL searchEngineChangedInBackground;
+
 @end
 
 @implementation SearchEngineTableViewController {
   TemplateURLService* _templateURLService;  // weak
   std::unique_ptr<SearchEngineObserverBridge> _observer;
-  // Prevent unnecessary notifications when we write to the setting.
-  BOOL _updatingBackend;
   // The first list in the page which contains prepopulted search engines and
   // search engines that are created by policy, and possibly one custom search
   // engine if it's selected as default search engine.
@@ -90,6 +95,65 @@ const char kUmaSelectDefaultSearchEngine[] =
     [self updateUIForEditState];
   }
   return self;
+}
+
+#pragma mark - Properties
+
+- (void)setUpdatingBackend:(BOOL)updatingBackend {
+  if (_updatingBackend == updatingBackend)
+    return;
+
+  _updatingBackend = updatingBackend;
+
+  if (!self.searchEngineChangedInBackground)
+    return;
+
+  [self loadSearchEngines];
+
+  BOOL hasSecondSection = [self.tableViewModel
+      hasSectionForSectionIdentifier:SectionIdentifierSecondList];
+  BOOL secondSectionExistenceChanged = hasSecondSection == _secondList.empty();
+  BOOL numberOfCustomItemDifferent =
+      secondSectionExistenceChanged ||
+      (hasSecondSection &&
+       [self.tableViewModel
+           itemsInSectionWithIdentifier:SectionIdentifierSecondList]
+               .count != _secondList.size());
+
+  BOOL numberOfPrepopulatedItemDifferent =
+      [self.tableViewModel
+          itemsInSectionWithIdentifier:SectionIdentifierFirstList]
+          .count != _firstList.size();
+
+  if (numberOfPrepopulatedItemDifferent || numberOfCustomItemDifferent) {
+    // The number of items has changed.
+    [self reloadData];
+    return;
+  }
+
+  NSArray* firstListItem = [self.tableViewModel
+      itemsInSectionWithIdentifier:SectionIdentifierFirstList];
+  for (NSUInteger index = 0; index < firstListItem.count; index++) {
+    if ([self isItem:firstListItem[index]
+            differentForTemplateURL:_firstList[index]]) {
+      // Item has changed, reload the TableView.
+      [self reloadData];
+      return;
+    }
+  }
+
+  if (hasSecondSection) {
+    NSArray* secondListItem = [self.tableViewModel
+        itemsInSectionWithIdentifier:SectionIdentifierSecondList];
+    for (NSUInteger index = 0; index < secondListItem.count; index++) {
+      if ([self isItem:secondListItem[index]
+              differentForTemplateURL:_secondList[index]]) {
+        // Item has changed, reload the TableView.
+        [self reloadData];
+        return;
+      }
+    }
+  }
 }
 
 #pragma mark - UIViewController
@@ -237,7 +301,7 @@ const char kUmaSelectDefaultSearchEngine[] =
   cell.accessoryType = UITableViewCellAccessoryCheckmark;
 
   // Set the new engine as the default.
-  _updatingBackend = YES;
+  self.updatingBackend = YES;
   if (indexPath.section ==
       [model sectionForSectionIdentifier:SectionIdentifierFirstList]) {
     _templateURLService->SetUserSelectedDefaultSearchProvider(
@@ -247,7 +311,7 @@ const char kUmaSelectDefaultSearchEngine[] =
         _secondList[indexPath.row]);
   }
   [self recordUmaOfDefaultSearchEngine];
-  _updatingBackend = NO;
+  self.updatingBackend = NO;
 }
 
 #pragma mark - UITableViewDataSource
@@ -303,8 +367,11 @@ const char kUmaSelectDefaultSearchEngine[] =
 #pragma mark - SearchEngineObserving
 
 - (void)searchEngineChanged {
-  if (!_updatingBackend)
+  if (!self.updatingBackend) {
     [self reloadData];
+  } else {
+    self.searchEngineChangedInBackground = YES;
+  }
 }
 
 #pragma mark - Private methods
@@ -541,6 +608,16 @@ const char kUmaSelectDefaultSearchEngine[] =
     [self.tableView reloadRowsAtIndexPaths:indexPaths
                           withRowAnimation:UITableViewRowAnimationAutomatic];
   }
+}
+
+// Returns whether the |item| is different from an item that would be created
+// from |templateURL|.
+- (BOOL)isItem:(SearchEngineItem*)item
+    differentForTemplateURL:(TemplateURL*)templateURL {
+  NSString* name = base::SysUTF16ToNSString(templateURL->short_name());
+  NSString* keyword = base::SysUTF16ToNSString(templateURL->keyword());
+  return ![item.text isEqualToString:name] ||
+         ![item.detailText isEqualToString:keyword];
 }
 
 @end

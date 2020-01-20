@@ -37,8 +37,6 @@ declare_args() {
   # and have a system dialog.
   enable_basic_print_dialog = enable_basic_printing && !is_chromeos
 
-  enable_captive_portal_detection = !is_android && !is_chromecast
-
   # Enables the Click to Call feature on desktop platforms.
   enable_click_to_call = is_mac || is_win || is_desktop_linux || is_chromeos
 

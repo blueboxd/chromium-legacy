@@ -2004,6 +2004,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
   CORE_EXPORT int OutlineOutsetExtent() const;
   CORE_EXPORT float GetOutlineStrokeWidthForFocusRing() const;
+  CORE_EXPORT int GetDefaultOffsetForFocusRing() const;
   bool HasOutlineWithCurrentColor() const {
     return HasOutline() && OutlineColor().IsCurrentColor();
   }

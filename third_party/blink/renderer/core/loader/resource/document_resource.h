@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -75,11 +76,12 @@ class CORE_EXPORT DocumentResource final : public TextResource {
   Member<Document> document_;
 };
 
-DEFINE_TYPE_CASTS(DocumentResource,
-                  Resource,
-                  resource,
-                  resource->GetType() == ResourceType::kSVGDocument,
-                  resource.GetType() == ResourceType::kSVGDocument);
+template <>
+struct DowncastTraits<DocumentResource> {
+  static bool AllowFrom(const Resource& resource) {
+    return resource.GetType() == ResourceType::kSVGDocument;
+  }
+};
 
 }  // namespace blink
 

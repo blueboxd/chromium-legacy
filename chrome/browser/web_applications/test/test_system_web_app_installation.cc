@@ -74,6 +74,16 @@ TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp() {
       SystemAppInfo("OSSettings", GURL("chrome://test-system-app/pwa.html"))));
 }
 
+// static
+std::unique_ptr<TestSystemWebAppInstallation>
+TestSystemWebAppInstallation::SetUpAppThatReceivesLaunchDirectory() {
+  SystemAppInfo media_system_app_info(
+      "Media", GURL("chrome://test-system-app/pwa.html"));
+  media_system_app_info.include_launch_directory = true;
+  return base::WrapUnique(new TestSystemWebAppInstallation(
+      SystemAppType::MEDIA, media_system_app_info));
+}
+
 std::unique_ptr<KeyedService>
 TestSystemWebAppInstallation::CreateWebAppProvider(SystemAppInfo info,
                                                    Profile* profile) {

@@ -25,8 +25,6 @@ class CORE_EXPORT LayoutNGProgress
   bool IsOfType(LayoutObjectType type) const override;
 };
 
-DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGProgress, IsLayoutNGProgress());
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_LAYOUT_NG_PROGRESS_H_

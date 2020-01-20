@@ -13,6 +13,7 @@ import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/common/features.gni")
+import("//components/captive_portal/features.gni")
 import("//components/feature_engagement/features.gni")
 import("//components/feed/features.gni")
 import("//components/nacl/features.gni")
@@ -1684,8 +1685,6 @@ jumbo_static_library("browser") {
     "speech/speech_recognizer_delegate.h",
     "speech/tts_controller_delegate_impl.cc",
     "speech/tts_controller_delegate_impl.h",
-    "ssl/blocked_interception_blocking_page.cc",
-    "ssl/blocked_interception_blocking_page.h",
     "ssl/captive_portal_helper.h",
     "ssl/captive_portal_helper_android.cc",
     "ssl/captive_portal_helper_android.h",
@@ -1984,6 +1983,7 @@ jumbo_static_library("browser") {
     "//components/browsing_data/content",
     "//components/browsing_data/core",
     "//components/captive_portal",
+    "//components/captive_portal:buildflags",
     "//components/certificate_matching",
     "//components/certificate_transparency",
     "//components/cloud_devices/common",

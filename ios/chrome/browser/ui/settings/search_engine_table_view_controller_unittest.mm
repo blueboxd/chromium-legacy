@@ -374,12 +374,7 @@ TEST_F(SearchEngineTableViewControllerTest, TestUrlModifiedByService) {
 
 // Tests that when user change default search engine, all items can be displayed
 // correctly and the change can be synced to the prefs.
-// TODO(crbug.com/1036445): When selecting prepopulated search engines the test
-// relies on the assumption that setting search engine as default will leave it
-// intact. The actual behavior is that if search engine's prepopulated id
-// matches the one from the record in search engines table then the later one
-// will be used.
-TEST_F(SearchEngineTableViewControllerTest, DISABLED_TestChangeProvider) {
+TEST_F(SearchEngineTableViewControllerTest, TestChangeProvider) {
   // This test also needs to test the UMA, so load some real prepopulated search
   // engines to ensure the SearchEngineType is logged correctly. Don't use any
   // literal symbol(e.g. "google" or "AOL") from
@@ -465,14 +460,15 @@ TEST_F(SearchEngineTableViewControllerTest, DISABLED_TestChangeProvider) {
       didSelectRowAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:1]];
 
   ASSERT_EQ(2, NumberOfSections());
+  // The selected Custom search engine is moved to the first section.
   // Check first list.
-  ASSERT_EQ(2, NumberOfItemsInSection(0));
+  ASSERT_EQ(3, NumberOfItemsInSection(0));
   CheckRealItem(url_p1, false, 0, url_p1_index);
   CheckRealItem(url_p2, false, 0, url_p2_index);
   // Check second list.
-  ASSERT_EQ(2, NumberOfItemsInSection(1));
-  CheckCustomItem(kEngineC1Name, EngineC1Url(), true, 1, 0);
-  CheckCustomItem(kEngineC2Name, EngineC2Url(), false, 1, 1);
+  ASSERT_EQ(1, NumberOfItemsInSection(1));
+  CheckCustomItem(kEngineC1Name, EngineC1Url(), true, 0, 2);
+  CheckCustomItem(kEngineC2Name, EngineC2Url(), false, 1, 0);
   // Check default search engine.
   EXPECT_EQ(url_c1, template_url_service_->GetDefaultSearchProvider());
   // Check UMA.
@@ -619,8 +615,8 @@ TEST_F(SearchEngineTableViewControllerTest, DeleteItems) {
   CheckPrepopulatedItem(kEngineP1Name, EngineP1Url(), false, 0, 0);
   CheckPrepopulatedItem(kEngineP2Name, EngineP2Url(), false, 0, 1);
   CheckPrepopulatedItem(kEngineP3Name, EngineP3Url(), false, 0, 2);
-  CheckCustomItem(kEngineC2Name, EngineC2Url(), false, 0, 3);
-  CheckCustomItem(kEngineC4Name, EngineC4Url(), true, 1, 0);
+  CheckCustomItem(kEngineC2Name, EngineC2Url(), false, 1, 0);
+  CheckCustomItem(kEngineC4Name, EngineC4Url(), true, 0, 3);
 
   // Remove all custom search engines.
   ASSERT_TRUE(DeleteItemsAndWait(

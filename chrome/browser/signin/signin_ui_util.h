@@ -53,8 +53,12 @@ void EnableSyncFromPromo(Browser* browser,
                          bool is_default_promo_account);
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-// Returns the account to use in Dice promos.
-AccountInfo GetAccountForDicePromos(Profile* profile);
+// Returns the list of all accounts that have a token. The unconsented primary
+// account will be the first account in the list.
+std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile);
+
+// Returns single account to use in Dice promos.
+AccountInfo GetSingleAccountForDicePromos(Profile* profile);
 
 #endif
 

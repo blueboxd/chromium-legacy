@@ -393,7 +393,8 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest,
   RunDefaultPresentationUrlCallbackTest(true);
 }
 
-TEST_F(PresentationServiceDelegateImplTest, NotifyDefaultPresentationChanged) {
+TEST_F(PresentationServiceDelegateImplTest,
+       NotifyWebContentsPresentationObservers) {
   auto callback = base::BindRepeating(
       &PresentationServiceDelegateImplTest::OnDefaultPresentationStarted,
       base::Unretained(this));
@@ -428,28 +429,6 @@ TEST_F(PresentationServiceDelegateImplTest, NotifyDefaultPresentationChanged) {
       frame_origin_);
   delegate_impl_->SetDefaultPresentationUrls(std::move(empty_request),
                                              callback);
-}
-
-TEST_F(PresentationServiceDelegateImplTest, NotifyMediaRoutesChanged) {
-  const int render_process_id = 100;
-  const int render_frame_id = 200;
-  content::PresentationRequest request(
-      content::GlobalFrameRoutingId(render_process_id, render_frame_id),
-      {presentation_url1_}, frame_origin_);
-  MediaRoute media_route("differentRouteId", source1_, "mediaSinkId", "", true,
-                         true);
-  std::unique_ptr<RouteRequestResult> result =
-      RouteRequestResult::FromSuccess(media_route, kPresentationId);
-  StrictMock<MockWebContentsPresentationObserver> observer(GetWebContents());
-
-  EXPECT_CALL(observer,
-              OnMediaRoutesChanged(std::vector<MediaRoute>({media_route})));
-  delegate_impl_->OnPresentationResponse(request,
-                                         /** connection */ nullptr, *result);
-
-  EXPECT_CALL(observer, OnMediaRoutesChanged(std::vector<MediaRoute>()));
-  delegate_impl_->Terminate(render_process_id, render_frame_id,
-                            kPresentationId);
 }
 
 TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {

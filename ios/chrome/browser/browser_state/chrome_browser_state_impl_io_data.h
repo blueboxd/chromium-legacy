@@ -9,14 +9,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/prefs/pref_store.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state_io_data.h"
 #include "ios/chrome/browser/net/net_types.h"
 
 class JsonPrefStore;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 namespace net {
 class CookieStore;

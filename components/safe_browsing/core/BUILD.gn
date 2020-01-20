@@ -16,6 +16,24 @@ static_library("features") {
   ]
 }
 
+proto_library("csd_proto") {
+  sources = [ "proto/csd.proto" ]
+}
+
+proto_library("webui_proto") {
+  sources = [ "proto/webui.proto" ]
+}
+
+proto_library("realtimeapi_proto") {
+  sources = [ "proto/realtimeapi.proto" ]
+
+  deps = [ ":csd_proto" ]
+}
+
+proto_library("webprotect_proto") {
+  sources = [ "proto/webprotect.proto" ]
+}
+
 # safe_browsing/ pulls in content/, which doesn't work on iOS.
 # TODO(thakis): This should be `safe_browsing_mode != 0`, but chromecast builds
 # set safe_browsing_mode to 0 and build chrome/, and chrome/ currently
@@ -23,24 +41,6 @@ static_library("features") {
 # conditional on safe_browsing_mode != 0 and then change the conditional here.
 if (!is_ios) {
   assert(!is_ios, "safe_browsing/ pulls in content/ which doesn't work on iOS")
-
-  proto_library("csd_proto") {
-    sources = [ "proto/csd.proto" ]
-  }
-
-  proto_library("webui_proto") {
-    sources = [ "proto/webui.proto" ]
-  }
-
-  proto_library("realtimeapi_proto") {
-    sources = [ "proto/realtimeapi.proto" ]
-
-    deps = [ ":csd_proto" ]
-  }
-
-  proto_library("webprotect_proto") {
-    sources = [ "proto/webprotect.proto" ]
-  }
 
   static_library("ping_manager") {
     sources = [

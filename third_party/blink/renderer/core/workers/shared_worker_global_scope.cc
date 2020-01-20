@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_thread.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
+#include "third_party/blink/renderer/core/workers/worker_module_tree_client.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -155,14 +156,18 @@ void SharedWorkerGlobalScope::FetchAndRunModuleScript(
     network::mojom::CredentialsMode credentials_mode) {
   // Step 12: "Let destination be "sharedworker" if is shared is true, and
   // "worker" otherwise."
+  auto context_type = mojom::RequestContextType::SHARED_WORKER;
+  auto destination = network::mojom::RequestDestination::kSharedWorker;
 
   // Step 13: "... Fetch a module worker script graph given url, outside
   // settings, destination, the value of the credentials member of options, and
   // inside settings."
-
-  // TODO(nhiroki): Implement module loading for shared workers.
-  // (https://crbug.com/824646)
-  NOTREACHED();
+  FetchModuleScript(module_url_record, outside_settings_object,
+                    outside_resource_timing_notifier, context_type, destination,
+                    credentials_mode,
+                    ModuleScriptCustomFetchType::kWorkerConstructor,
+                    MakeGarbageCollected<WorkerModuleTreeClient>(
+                        ScriptController()->GetScriptState()));
 }
 
 const String SharedWorkerGlobalScope::name() const {

@@ -256,6 +256,14 @@ bool SystemWebAppManager::IsSingleWindow(SystemAppType type) const {
   return it->second.single_window;
 }
 
+bool SystemWebAppManager::AppShouldReceiveLaunchDirectory(
+    SystemAppType type) const {
+  auto it = system_app_infos_.find(type);
+  if (it == system_app_infos_.end())
+    return false;
+  return it->second.include_launch_directory;
+}
+
 gfx::Size SystemWebAppManager::GetMinimumWindowSize(const AppId& app_id) const {
   auto app_type_it = app_id_to_app_type_.find(app_id);
   if (app_type_it == app_id_to_app_type_.end())

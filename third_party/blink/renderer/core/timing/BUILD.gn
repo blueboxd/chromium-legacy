@@ -14,6 +14,8 @@ blink_core_sources("timing") {
     "largest_contentful_paint.h",
     "layout_shift.cc",
     "layout_shift.h",
+    "measure_memory/measure_memory_delegate.cc",
+    "measure_memory/measure_memory_delegate.h",
     "memory_info.cc",
     "memory_info.h",
     "performance.cc",

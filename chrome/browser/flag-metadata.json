@@ -769,12 +769,6 @@
     "expiry_milestone": 77
   },
   {
-    // See https://crbug.com/882238.
-    "name": "disable-ipc-flooding-protection",
-    "owners": [ "arthursonzogni@chromium.org", "palmer@chromium.org" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "disable-javascript-harmony-shipping",
     "owners": [ "adamk", "hablich" ],
     // This flag is used for field debugging along with
@@ -792,12 +786,6 @@
       "chrome-apps-platform-rationalization@google.com",
       "quickoffice-chrome-eng@google.com" ],
     "expiry_milestone": 88
-  },
-  {
-    // See https://crbug.com/882238.
-    "name": "disable-pushstate-throttle",
-    "owners": [ "arthursonzogni@chromium.org", "palmer@chromium.org" ],
-    "expiry_milestone": 76
   },
   {
     "name": "disable-threaded-scrolling",
@@ -3035,11 +3023,6 @@
     "expiry_milestone": 83
   },
   {
-    "name": "password-leak-detection",
-    "owners": [ "jdoerrie", "vasilii" ],
-    "expiry_milestone": 81
-  },
-  {
     "name": "password-manager-onboarding-android",
     "owners": ["ioanap"],
     "expiry_milestone": 82
@@ -3576,11 +3559,6 @@
     // This flag is used for in-the-field debugging of animation issues on
     // Chrome OS.
     "expiry_milestone": -1
-  },
-  {
-    "name": "unified-consent",
-    "owners": [ "msarda", "tangltom" ],
-    "expiry_milestone": 79
   },
   {
     "name": "unsafely-treat-insecure-origin-as-secure",

@@ -172,6 +172,9 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
      "os_priority_preferences", "OS Priority Preferences",
      sync_pb::EntitySpecifics::kOsPriorityPreferenceFieldNumber,
      ModelTypeForHistograms::kOsPriorityPreferences},
+    {SHARING_MESSAGE, "SHARING_MESSAGE", "sharing_message", "Sharing Message",
+     sync_pb::EntitySpecifics::kSharingMessageFieldNumber,
+     ModelTypeForHistograms::kSharingMessage},
     // ---- Proxy types ----
     {PROXY_TABS, "", "", "Tabs", -1, ModelTypeForHistograms::kProxyTabs},
     // ---- Control Types ----
@@ -186,11 +189,11 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 static_assert(base::size(kModelTypeInfoMap) == ModelType::NUM_ENTRIES,
               "kModelTypeInfoMap should have ModelType::NUM_ENTRIES elements");
 
-static_assert(40 == syncer::ModelType::NUM_ENTRIES,
+static_assert(41 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
-static_assert(40 == syncer::ModelType::NUM_ENTRIES,
+static_assert(41 == syncer::ModelType::NUM_ENTRIES,
               "When adding a new type, update kAllocatorDumpNameWhitelist in "
               "base/trace_event/memory_infra_background_whitelist.cc.");
 
@@ -314,6 +317,9 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
     case OS_PRIORITY_PREFERENCES:
       specifics->mutable_os_priority_preference();
       break;
+    case SHARING_MESSAGE:
+      specifics->mutable_sharing_message();
+      break;
     case ModelType::NUM_ENTRIES:
       NOTREACHED() << "No default field value for " << ModelTypeToString(type);
       break;
@@ -356,7 +362,7 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
 }
 
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
-  static_assert(40 == ModelType::NUM_ENTRIES,
+  static_assert(41 == ModelType::NUM_ENTRIES,
                 "When adding new protocol types, the following type lookup "
                 "logic must be updated.");
   if (specifics.has_bookmark())
@@ -433,12 +439,14 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
     return OS_PREFERENCES;
   if (specifics.has_os_priority_preference())
     return OS_PRIORITY_PREFERENCES;
+  if (specifics.has_sharing_message())
+    return SHARING_MESSAGE;
 
   return UNSPECIFIED;
 }
 
 ModelTypeSet EncryptableUserTypes() {
-  static_assert(40 == ModelType::NUM_ENTRIES,
+  static_assert(41 == ModelType::NUM_ENTRIES,
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();
@@ -465,6 +473,8 @@ ModelTypeSet EncryptableUserTypes() {
   encryptable_user_types.Remove(USER_EVENTS);
   encryptable_user_types.Remove(USER_CONSENTS);
   encryptable_user_types.Remove(SECURITY_EVENTS);
+  // Sharing message is not encrypted since it is consumed server-side.
+  encryptable_user_types.Remove(SHARING_MESSAGE);
   // Proxy types have no sync representation and are therefore not encrypted.
   // Note however that proxy types map to one or more protocol types, which
   // may or may not be encrypted themselves.

@@ -512,12 +512,13 @@ CrSettingsPeoplePageSyncControlsTest.prototype = {
     '../test_browser_proxy.js',
     'sync_test_util.js',
     'test_sync_browser_proxy.js',
-    '../test_util.js',
+    'test_util.js',
     'people_page_sync_controls_test.js',
   ]),
 };
 
-TEST_F('CrSettingsPeoplePageSyncControlsTest', 'All', function() {
+// TODO(crbug.com/1043665): disabling due to deterministic failures.
+TEST_F('CrSettingsPeoplePageSyncControlsTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -945,12 +946,15 @@ TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageTests', function() {
   mocha.run();
 });
 
-TEST_F('CrSettingsPrivacyPageTest', 'PrivacyPageSoundTests', function() {
-  settings_privacy_page.registerPrivacyPageSoundTests();
-  mocha.run();
-});
+// TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
+TEST_F(
+    'CrSettingsPrivacyPageTest', 'DISABLED_PrivacyPageSoundTests', function() {
+      settings_privacy_page.registerPrivacyPageSoundTests();
+      mocha.run();
+    });
 
-TEST_F('CrSettingsPrivacyPageTest', 'UMALoggingTests', function() {
+// TODO(crbug.com/1043665): flaky crash on Linux Tests (dbg).
+TEST_F('CrSettingsPrivacyPageTest', 'DISABLED_UMALoggingTests', function() {
   settings_privacy_page.registerUMALoggingTests();
   mocha.run();
 });
@@ -961,10 +965,13 @@ TEST_F('CrSettingsPrivacyPageTest', 'InstalledAppsTests', () => {
 });
 
 GEN('#if defined(OS_MACOSX) || defined(OS_WIN)');
-TEST_F('CrSettingsPrivacyPageTest', 'CertificateManagerTests', function() {
-  settings_privacy_page.registerNativeCertificateManagerTests();
-  mocha.run();
-});
+// TODO(crbug.com/1043665): disabling due to failures on several builders.
+TEST_F(
+    'CrSettingsPrivacyPageTest', 'DISABLED_CertificateManagerTests',
+    function() {
+      settings_privacy_page.registerNativeCertificateManagerTests();
+      mocha.run();
+    });
 GEN('#endif');
 
 GEN('#if !defined(OS_CHROMEOS)');

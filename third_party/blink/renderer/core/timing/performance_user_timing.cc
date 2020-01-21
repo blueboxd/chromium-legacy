@@ -34,45 +34,6 @@
 
 namespace blink {
 
-namespace {
-
-typedef uint64_t (PerformanceTiming::*NavigationTimingFunction)() const;
-using RestrictedKeyMap = HashMap<AtomicString, NavigationTimingFunction>;
-
-const RestrictedKeyMap& GetRestrictedKeyMap() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<RestrictedKeyMap>, map, ());
-  if (!map.IsSet()) {
-    *map = {
-        {"navigationStart", &PerformanceTiming::navigationStart},
-        {"unloadEventStart", &PerformanceTiming::unloadEventStart},
-        {"unloadEventEnd", &PerformanceTiming::unloadEventEnd},
-        {"redirectStart", &PerformanceTiming::redirectStart},
-        {"redirectEnd", &PerformanceTiming::redirectEnd},
-        {"fetchStart", &PerformanceTiming::fetchStart},
-        {"domainLookupStart", &PerformanceTiming::domainLookupStart},
-        {"domainLookupEnd", &PerformanceTiming::domainLookupEnd},
-        {"connectStart", &PerformanceTiming::connectStart},
-        {"connectEnd", &PerformanceTiming::connectEnd},
-        {"secureConnectionStart", &PerformanceTiming::secureConnectionStart},
-        {"requestStart", &PerformanceTiming::requestStart},
-        {"responseStart", &PerformanceTiming::responseStart},
-        {"responseEnd", &PerformanceTiming::responseEnd},
-        {"domLoading", &PerformanceTiming::domLoading},
-        {"domInteractive", &PerformanceTiming::domInteractive},
-        {"domContentLoadedEventStart",
-         &PerformanceTiming::domContentLoadedEventStart},
-        {"domContentLoadedEventEnd",
-         &PerformanceTiming::domContentLoadedEventEnd},
-        {"domComplete", &PerformanceTiming::domComplete},
-        {"loadEventStart", &PerformanceTiming::loadEventStart},
-        {"loadEventEnd", &PerformanceTiming::loadEventEnd},
-    };
-  }
-  return *map;
-}
-
-}  // namespace
-
 UserTiming::UserTiming(Performance& performance) : performance_(&performance) {}
 
 static void InsertPerformanceEntry(PerformanceEntryMap& performance_entry_map,
@@ -122,7 +83,8 @@ PerformanceMark* UserTiming::CreatePerformanceMark(
   bool is_worker_global_scope =
       performance_->GetExecutionContext() &&
       performance_->GetExecutionContext()->IsWorkerGlobalScope();
-  if (!is_worker_global_scope && GetRestrictedKeyMap().Contains(mark_name)) {
+  if (!is_worker_global_scope &&
+      PerformanceTiming::GetAttributeMapping().Contains(mark_name)) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,
         "'" + mark_name +
@@ -155,8 +117,8 @@ double UserTiming::FindExistingMarkStartTime(const AtomicString& mark_name,
   if (marks_map_.Contains(mark_name))
     return marks_map_.at(mark_name).back()->startTime();
 
-  NavigationTimingFunction timing_function =
-      GetRestrictedKeyMap().at(mark_name);
+  PerformanceTiming::PerformanceTimingGetter timing_function =
+      PerformanceTiming::GetAttributeMapping().at(mark_name);
   if (!timing_function) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kSyntaxError,

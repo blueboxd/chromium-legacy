@@ -235,7 +235,9 @@ void InstalledLoader::Load(const ExtensionInfo& info, bool write_to_prefs) {
       // external updates.
       PendingExtensionManager* pending_manager =
           extension_service_->pending_extension_manager();
-      pending_manager->ExpectPolicyReinstallForCorruption(extension->id());
+      pending_manager->ExpectPolicyReinstallForCorruption(
+          extension->id(), PendingExtensionManager::PolicyReinstallReason::
+                               CORRUPTION_DETECTED_IN_PRIOR_SESSION);
     }
   } else {
     // Extension is enabled. Check management policy to verify if it should

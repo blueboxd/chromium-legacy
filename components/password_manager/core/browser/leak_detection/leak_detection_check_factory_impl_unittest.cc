@@ -45,28 +45,13 @@ class LeakDetectionCheckFactoryImplTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(LeakDetectionCheckFactoryImplTest, DisabledFeature) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(features::kLeakDetection);
-
-  identity_env().SetPrimaryAccount(kTestAccount);
-  EXPECT_FALSE(request_factory().TryCreateLeakCheck(
-      &delegate(), identity_env().identity_manager(), url_loader_factory()));
-}
-
 TEST_F(LeakDetectionCheckFactoryImplTest, SignedOut) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kLeakDetection);
-
   EXPECT_CALL(delegate(), OnError(LeakDetectionError::kNotSignIn));
   EXPECT_FALSE(request_factory().TryCreateLeakCheck(
       &delegate(), identity_env().identity_manager(), url_loader_factory()));
 }
 
 TEST_F(LeakDetectionCheckFactoryImplTest, SignedIn) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kLeakDetection);
-
   AccountInfo info = identity_env().MakeAccountAvailable(kTestAccount);
   identity_env().SetCookieAccounts({{info.email, info.gaia}});
   identity_env().SetRefreshTokenForAccount(info.account_id);
@@ -75,9 +60,6 @@ TEST_F(LeakDetectionCheckFactoryImplTest, SignedIn) {
 }
 
 TEST_F(LeakDetectionCheckFactoryImplTest, SignedInAndSyncing) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kLeakDetection);
-
   identity_env().SetPrimaryAccount(kTestAccount);
   EXPECT_TRUE(request_factory().TryCreateLeakCheck(
       &delegate(), identity_env().identity_manager(), url_loader_factory()));

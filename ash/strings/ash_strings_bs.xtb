@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">ivično područje ekrana</translation>
 <translation id="119944043368869598">Očisti sve</translation>
 <translation id="1247372569136754018">Mikrofon (interno)</translation>
-<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> Ovu postavku je nametnuo vaš administrator.</translation>
 <translation id="1252999807265626933">Izvor punjenja: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Kakvo je vrijeme?</translation>
 <translation id="1267032506238418139">Promjena prečice</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">Pridružite se drugim WiFi mrežama</translation>
 <translation id="2718395828230677721">Noćno svjetlo</translation>
 <translation id="2727977024730340865">Priključeno na niskonaponski punjač. Punjenje baterije može biti nepouzdano.</translation>
-<translation id="2761704814324807722">Statusna traka, vrijeme <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + tipka za pretraživanje</translation>
 <translation id="2803734122639935495">Da otključate, unesite lozinku</translation>
 <translation id="2819276065543622893">Sada ćete se odjaviti.</translation>

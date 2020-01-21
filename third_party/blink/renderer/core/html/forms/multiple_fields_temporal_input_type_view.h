@@ -118,6 +118,7 @@ class MultipleFieldsTemporalInputTypeView final
   void UpdateClearButtonVisibility() final;
   TextDirection ComputedTextDirection() final;
   AXObject* PopupRootAXObject() final;
+  bool TypeShouldForceLegacyLayout() const final;
 
   DateTimeEditElement* GetDateTimeEditElement() const;
   SpinButtonElement* GetSpinButtonElement() const;

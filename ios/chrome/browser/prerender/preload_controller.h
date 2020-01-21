@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "components/prefs/pref_change_registrar.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/net/connection_type_observer_bridge.h"
 #include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/web_state_delegate_bridge.h"
@@ -18,10 +19,6 @@
 #include "url/gurl.h"
 
 @protocol PreloadControllerDelegate;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 namespace web {
 class WebState;

@@ -248,6 +248,15 @@ In some cases you may want to run custom C++ code before running the Java test,
 in which case, use CalledByNative instead of CalledByNativeJavaTest and call the
 test method yourself. eg. Java_FooTest_testFancyFoo(env, j_test());
 
+#### Disabling @CalledByNativeJavaTest tests
+In order to disabled a Native Java Unittest, replace the @CalledByNativeJavaTest
+annotation with @DisabledCalledByNativeJavaTest. This will generate a native
+test prefixed with DISABLED_.
+
+Please note that unlike @DisabledTest, you should not provide a message in the
+annotation as to why the test is disabled, as this will be interpreted as the
+inner class name by the CalledByNative jni generator.
+
 ### Additional Guidelines / Advice
 
 Minimize the surface API between the two sides. Rather than calling multiple

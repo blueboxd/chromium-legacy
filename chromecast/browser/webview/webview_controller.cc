@@ -131,7 +131,7 @@ void WebviewController::SendNavigationEvent(
       std::make_unique<webview::WebviewResponse>();
   auto* navigation_event = response->mutable_navigation_event();
 
-  navigation_event->set_url(navigation_handle->GetURL().GetContent());
+  navigation_event->set_url(navigation_handle->GetURL().spec());
   navigation_event->set_is_for_main_frame(navigation_handle->IsInMainFrame());
   navigation_event->set_is_renderer_initiated(
       navigation_handle->IsRendererInitiated());

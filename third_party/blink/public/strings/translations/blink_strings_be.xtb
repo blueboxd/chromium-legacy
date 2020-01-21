@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">паўзунок</translation>
 <translation id="1211441953136645838">вынаска</translation>
 <translation id="1281252709823657822">дыялогавае акно</translation>
+<translation id="1306460908038601864">выключыць</translation>
 <translation id="1335095011850992622">падзякі</translation>
 <translation id="1342835525016946179">артыкул</translation>
 <translation id="1359897965706325498">банер</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="5307600278924710095">Адрас "<ph name="INVALIDADDRESS" />" – няпоўны. Увядзіце частку перад сімвалам "<ph name="ATSIGN" />".</translation>
 <translation id="5334352251556557839">Не ўдалося прайграць мультымедыйны файл.</translation>
+<translation id="537648784377940524">Мінімальная дата (<ph name="MIN_DATE_OR_TIME" />) павінна быць ранейшая за максімальную (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">фігура</translation>
 <translation id="5453733299334684579">элемент дрэва</translation>
 <translation id="5466621249238537318">Выберыце адзін або некалькі файлаў.</translation>

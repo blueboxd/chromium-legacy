@@ -335,6 +335,14 @@ class CORE_EXPORT V8DOMConfiguration final {
 
   // If an empty handle is passed as |instance|, |prototype|, or |interface|,
   // then that object is ignored and no properties are installed on that object.
+  static void InstallMethods(v8::Isolate*,
+                             const DOMWrapperWorld&,
+                             v8::Local<v8::Object> instance,
+                             v8::Local<v8::Object> prototype,
+                             v8::Local<v8::Function> interface,
+                             v8::Local<v8::Signature>,
+                             const MethodConfiguration*,
+                             size_t method_count);
   static void InstallMethod(v8::Isolate*,
                             const DOMWrapperWorld&,
                             v8::Local<v8::Object> instance,

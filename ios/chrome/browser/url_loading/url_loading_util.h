@@ -8,12 +8,11 @@
 #import <Foundation/Foundation.h>
 
 #include "components/sessions/core/session_id.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ui/base/window_open_disposition.h"
 
 class GURL;
-namespace ios {
-class ChromeBrowserState;
-}
+
 namespace web {
 class WebState;
 }

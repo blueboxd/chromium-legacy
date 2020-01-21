@@ -9,14 +9,11 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 namespace bookmarks {
 class BookmarkModel;
 class BookmarkNode;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 // Possible locations where a bookmark can be opened from.

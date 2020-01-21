@@ -4,8 +4,10 @@
 
 #include "gpu/command_buffer/service/shared_context_state.h"
 
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "components/crash/core/common/crash_key.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
@@ -119,6 +121,10 @@ SharedContextState::SharedContextState(
   // Initialize the scratch buffer to some small initial size.
   scratch_deserialization_buffer_.resize(
       kInitialScratchDeserializationBufferSize);
+
+  static crash_reporter::CrashKeyString<16> crash_key("gr-context-type");
+  crash_key.Set(
+      base::StringPrintf("%u", static_cast<uint32_t>(gr_context_type_)));
 }
 
 SharedContextState::~SharedContextState() {

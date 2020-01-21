@@ -1029,10 +1029,10 @@ TEST_F(AnimationAnimationTestNoCompositing, AttachedAnimations) {
   EXPECT_TRUE(element->GetElementAnimations()->Animations().IsEmpty());
 }
 
-TEST_F(AnimationAnimationTestNoCompositing, HasLowerPriority) {
+TEST_F(AnimationAnimationTestNoCompositing, HasLowerCompositeOrdering) {
   Animation* animation1 = timeline->Play(nullptr);
   Animation* animation2 = timeline->Play(nullptr);
-  EXPECT_TRUE(Animation::HasLowerPriority(animation1, animation2));
+  EXPECT_TRUE(Animation::HasLowerCompositeOrdering(animation1, animation2));
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, PlayAfterCancel) {

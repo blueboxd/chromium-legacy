@@ -12,12 +12,15 @@
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/testing/embedded_test_server_handlers.h"
+#include "ios/web/common/features.h"
 #include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -39,7 +42,8 @@ std::unique_ptr<net::test_server::HttpResponse> GetResponse(
     const net::test_server::HttpRequest& request) {
   auto result = std::make_unique<net::test_server::BasicHttpResponse>();
   result->set_code(net::HTTP_OK);
-  result->set_content("<a id='download' href='/download?50000'>Download</a>");
+  result->set_content(
+      "<a id='download' href='/download-example?50000'>Download</a>");
   return result;
 }
 
@@ -70,6 +74,20 @@ bool WaitForDownloadButton() {
       });
 }
 
+// Waits until Open in Downloads button is shown.
+bool WaitForOpenInDownloadsButton() WARN_UNUSED_RESULT;
+bool WaitForOpenInDownloadsButton() {
+  return base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^{
+        NSError* error = nil;
+        [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
+                                                IDS_IOS_OPEN_IN_DOWNLOADS))]
+            assertWithMatcher:grey_notNil()
+                        error:&error];
+        return (error == nil);
+      });
+}
+
 }  // namespace
 
 // Tests critical user journeys for Download Manager.
@@ -78,6 +96,14 @@ bool WaitForDownloadButton() {
 
 @implementation DownloadManagerTestCase
 
+- (void)launchAppForTestMethod {
+  [[AppLaunchManager sharedManager]
+      ensureAppLaunchedWithFeaturesEnabled:
+          {web::features::kEnablePersistentDownloads}
+                                  disabled:{}
+                            relaunchPolicy:NoForceRelaunchAndResetState];
+}
+
 - (void)setUp {
   [super setUp];
 
@@ -85,9 +111,9 @@ bool WaitForDownloadButton() {
       base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/",
                           base::BindRepeating(&GetResponse)));
 
-  self.testServer->RegisterRequestHandler(
-      base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/download",
-                          base::BindRepeating(&testing::HandleDownload)));
+  self.testServer->RegisterRequestHandler(base::BindRepeating(
+      &net::test_server::HandlePrefixedRequest, "/download-example",
+      base::BindRepeating(&testing::HandleDownload)));
 
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
 }
@@ -224,6 +250,43 @@ bool WaitForDownloadButton() {
   GREYAssert(WaitForOpenInButton(), @"Open in... button did not show up");
 
   [ChromeEarlGrey verifyAccessibilityForCurrentScreen];
+}
+
+// Tests that filename label and "Open in Downloads" button are showing.
+- (void)testVisibleFileNameAndOpenInDownloads {
+  // Apple is hiding UIActivityViewController's contents from the host app on
+  // iOS 12. However, at least on iOS 13, the actions provided by the host app
+  // itself are not obfuscated.
+  if (@available(iOS 13, *)) {
+  } else {
+    EARL_GREY_TEST_SKIPPED(@"Test skipped on iOS12.");
+  }
+
+// Earl Grey 1 can't test UI elements out of Chrome process.
+#if defined(CHROME_EARL_GREY_1)
+  EARL_GREY_TEST_SKIPPED(@"Test skipped on Earl Grey 1.");
+#endif
+
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/")];
+  [ChromeEarlGrey waitForWebStateContainingText:"Download"];
+  [ChromeEarlGrey tapWebStateElementWithID:@"download"];
+
+  GREYAssert(WaitForDownloadButton(), @"Download button did not show up");
+  [[EarlGrey selectElementWithMatcher:DownloadButton()]
+      performAction:grey_tap()];
+
+  GREYAssert(WaitForOpenInButton(), @"Open in... button did not show up");
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::OpenInButton()]
+      performAction:grey_tap()];
+
+  GREYAssert(WaitForOpenInDownloadsButton(),
+             @"Open in Downloads button did not show up");
+
+  // Tests filename label.
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_text(@"download-example"),
+                                          grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_notNil()];
 }
 
 @end

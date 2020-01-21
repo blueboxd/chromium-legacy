@@ -143,6 +143,10 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   uint64_t ParseBlockedOnScriptExecutionDuration() const;
   uint64_t ParseBlockedOnScriptExecutionFromDocumentWriteDuration() const;
 
+  typedef uint64_t (PerformanceTiming::*PerformanceTimingGetter)() const;
+  using NameToAttributeMap = HashMap<AtomicString, PerformanceTimingGetter>;
+  static const NameToAttributeMap& GetAttributeMapping();
+
   ScriptValue toJSONForBinding(ScriptState*) const;
 
   void Trace(blink::Visitor*) override;

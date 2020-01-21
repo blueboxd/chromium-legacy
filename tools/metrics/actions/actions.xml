@@ -442,7 +442,6 @@ should be able to be added at any place in this file.
 <action name="AboutFlags_top-chrome-md@1">
   <obsolete>Deprecated in favor of Launch.FlagsAtStartup histogram.</obsolete>
   <owner>tbuckley@chromium.org</owner>
-  <owner>tdanderson@chromium.org</owner>
   <description>
     User enabled flag that sets Chrome's style to be non-material design. The
     action is emitted once per startup when the flag is active.
@@ -452,7 +451,6 @@ should be able to be added at any place in this file.
 <action name="AboutFlags_top-chrome-md@2">
   <obsolete>Deprecated in favor of Launch.FlagsAtStartup histogram.</obsolete>
   <owner>tbuckley@chromium.org</owner>
-  <owner>tdanderson@chromium.org</owner>
   <description>
     User enabled flag that sets Chrome's style to be material design. The action
     is emitted once per startup when the flag is active.
@@ -462,7 +460,6 @@ should be able to be added at any place in this file.
 <action name="AboutFlags_top-chrome-md@3">
   <obsolete>Deprecated in favor of Launch.FlagsAtStartup histogram.</obsolete>
   <owner>tbuckley@chromium.org</owner>
-  <owner>tdanderson@chromium.org</owner>
   <description>
     User enabled flag that sets Chrome's style to be hybrid material design. The
     action is emitted once per startup when the flag is active.
@@ -5367,8 +5364,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Desktop_SwitchTask">
-  <owner>bruthig@google.com</owner>
-  <owner>tdanderson@google.com</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Recorded when the user activates an existing task window by clicking or
     tapping on it. Recorded on ChromeOS only.
@@ -10663,16 +10659,14 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Launcher_ButtonPressed_Mouse" not_user_triggered="true">
-  <owner>bruthig@google.com</owner>
-  <owner>tdanderson@google.com</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Recorded when the user activates a shelf button using the mouse.
   </description>
 </action>
 
 <action name="Launcher_ButtonPressed_Touch" not_user_triggered="true">
-  <owner>bruthig@google.com</owner>
-  <owner>tdanderson@google.com</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Recorded when the user activates a shelf button using touch.
   </description>
@@ -10694,16 +10688,14 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Launcher_LaunchTask">
-  <owner>bruthig@google.com</owner>
-  <owner>tdanderson@google.com</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Recorded when the user launches a new task from the shelf.
   </description>
 </action>
 
 <action name="Launcher_MinimizeTask">
-  <owner>bruthig@google.com</owner>
-  <owner>tdanderson@google.com</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Recorded when the user minimizes an existing task by clicking an icon in the
     shelf.
@@ -10716,8 +10708,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Launcher_SwitchTask">
-  <owner>bruthig@google.com</owner>
-  <owner>tdanderson@google.com</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Recorded when the user activates an existing task from the shelf.
   </description>
@@ -20856,8 +20847,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StackedTab_DragActiveTab">
-  <owner>bruthig@chromium.org</owner>
-  <owner>tdanderson@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Recorded when the active tab is dragged while the tabstrip is using a
     stacked layout. The user performs this action in order to view tabs which
@@ -20867,8 +20857,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StackedTab_EnteredStackedLayout">
-  <owner>bruthig@chromium.org</owner>
-  <owner>tdanderson@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Recorded when the tabstrip begins using a stacked layout for its tabs. This
     occurs when the user is interacting with the tabstrip using touch and there
@@ -21189,7 +21178,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Default_Selected">
-  <owner>bruthig@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user selects the display row in the system
@@ -21201,7 +21189,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Default_ShowSettings">
-  <owner>bruthig@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the display settings are opened as a result of
@@ -21210,7 +21197,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Notification_Created">
-  <owner>bruthig@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times a new display notification is added to the
@@ -21219,7 +21205,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Notification_Selected">
-  <owner>bruthig@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user selects the display notification. This
@@ -21232,7 +21217,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Display_Notification_Show_Settings">
-  <owner>bruthig@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the display settings are opened as a result of
@@ -21451,7 +21435,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_OS_Update_Default_Selected">
-  <owner>bruthig@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user selects the update row in the system
@@ -21486,7 +21469,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_ScreenCapture_Default_Stop">
-  <owner>bruthig@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user stops screen capturing via the screen
@@ -21495,7 +21477,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_ScreenCapture_Notification_Stop">
-  <owner>bruthig@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user stops screen capturing via the Screen
@@ -21525,7 +21506,6 @@ should be able to be added at any place in this file.
 
 <action name="StatusArea_SMS_Detailed">
   <owner>tbuckley@chromium.org</owner>
-  <owner>bruthig@chromium.org</owner>
   <description>
     Counts the number of times the user has opened the &quot;SMS messages &quot;
     detailed view in the system menu.
@@ -21534,7 +21514,6 @@ should be able to be added at any place in this file.
 
 <action name="StatusArea_SMS_Detailed_DismissMsg">
   <owner>tbuckley@chromium.org</owner>
-  <owner>bruthig@chromium.org</owner>
   <description>
     Counts the number of times the user has dismissed an SMS message from the
     SMS message detailed view in the system menu.
@@ -21543,7 +21522,6 @@ should be able to be added at any place in this file.
 
 <action name="StatusArea_SMS_Notification_DismissMsg">
   <owner>tbuckley@chromium.org</owner>
-  <owner>bruthig@chromium.org</owner>
   <description>
     Counts the number of times the user has dismissed an SMS message
     notification. Note these notifications are managed by the system menu and
@@ -21602,7 +21580,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_Tracing_Default_Selected">
-  <owner>bruthig@chromium.org</owner>
   <owner>tbuckley@chromium.org</owner>
   <description>
     Counts the number of times the user selects the tracing row in the system
@@ -21930,8 +21907,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SwitchTab_Click">
-  <owner>bruthig@chromium.org</owner>
-  <owner>tdanderson@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Recorded when the user switches tabs with a mouse click. This user action is
     only recorded on platforms which use the Views toolkit.
@@ -22784,20 +22760,17 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Touchview_Disabled">
-  <owner>bruthig@chromium.org</owner>
-  <owner>tdanderson@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>Recorded when a user exits TouchView mode.</description>
 </action>
 
 <action name="Touchview_Enabled">
-  <owner>bruthig@chromium.org</owner>
-  <owner>tdanderson@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>Recorded when a user enters TouchView mode.</description>
 </action>
 
 <action name="Touchview_Initially_Disabled">
-  <owner>bruthig@chromium.org</owner>
-  <owner>tdanderson@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Recorded when the Touchview controller is initialized such that TouchView
     mode is disabled initially.
@@ -22852,8 +22825,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Tray_Overview">
-  <owner>bruthig@chromium.org</owner>
-  <owner>tdanderson@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Records when the user presses the overview mode button in the Ash system
     tray. Overview mode is a feature of Ash that shows thumbnails of all
@@ -22862,8 +22834,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Tray_Settings">
-  <owner>bruthig@chromium.org</owner>
-  <owner>tdanderson@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Records when the Settings button on the Ash system menu is clicked.
   </description>
@@ -23543,7 +23514,6 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="WindowCycleController_Cycle">
-  <owner>tdanderson@chromium.org</owner>
   <owner>flackr@chromium.org</owner>
   <description>
     Starting a window selection cycle by pressing alt-tab. Only counts the
@@ -23562,8 +23532,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="WindowSelector_ActiveWindowChanged">
-  <owner>tdanderson@chromium.org</owner>
-  <owner>bruthig@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Recorded when the user selects a window from Ash overview mode which is
     different from the window that was active prior to entering overview mode.
@@ -23571,29 +23540,25 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="WindowSelector_Overview">
-  <owner>tdanderson@chromium.org</owner>
   <owner>flackr@chromium.org</owner>
   <description>Starting the window overview mode.</description>
 </action>
 
 <action name="WindowSelector_OverviewCloseButton">
-  <owner>tdanderson@chromium.org</owner>
-  <owner>varkha@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Using the 'X' button to close a window in the overview.
   </description>
 </action>
 
 <action name="WindowSelector_OverviewCloseKey">
-  <owner>tdanderson@chromium.org</owner>
-  <owner>varkha@chromium.org</owner>
+  <owner>tbuckley@chromium.org</owner>
   <description>
     Using Ctrl+W shortcut to close a window in the overview.
   </description>
 </action>
 
 <action name="WindowSelector_OverviewEnterKey">
-  <owner>tdanderson@chromium.org</owner>
   <owner>flackr@chromium.org</owner>
   <description>
     Using the enter key to select a window in the overview.

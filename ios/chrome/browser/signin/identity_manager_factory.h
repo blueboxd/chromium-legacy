@@ -9,15 +9,12 @@
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 class IdentityManagerFactoryObserver;
 
 namespace signin {
 class IdentityManager;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 // Singleton that owns all IdentityManager instances and associates them with

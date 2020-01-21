@@ -4472,7 +4472,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7352651011704765696">Bir şeyler ters gitti</translation>
 <translation id="735361434055555355">Linux yükleniyor...</translation>
 <translation id="7353887511974462734">Mevcut Gruba Ekle</translation>
-<translation id="7354341762311560488">Parmak izi sensörü, klavyenizin sol altındaki tuştur. hafHerhangi bir parmağınızla bu tuşa hafifçe dokunun.</translation>
+<translation id="7354341762311560488">Parmak izi sensörü, klavyenizin sol altındaki tuştur. Bir parmağınızla bu tuşa hafifçe dokunun.</translation>
 <translation id="735745346212279324">VPN bağlantısı kesildi</translation>
 <translation id="7359588939039777303">Reklamlar engellendi.</translation>
 <translation id="7360183604634508679">Yer İşaretleri menüsü</translation>
@@ -5088,7 +5088,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8202160505685531999"><ph name="DEVICE_TYPE" /> profilinizi güncellemek için lütfen şifrenizi tekrar girin.</translation>
 <translation id="8203732864715032075">Size bildirimler gönderir ve Mesajlar uygulaması için bu bilgisayarın hatırlanmasını varsayılan ayar yapar. <ph name="LINK_BEGIN" />Daha fazla bilgi<ph name="LINK_END" /></translation>
 <translation id="820568752112382238">En çok ziyaret edilen siteler</translation>
-<translation id="8206354486702514201">Bu seçenek, yöneticiniz tarafınızdan denetleniyor.</translation>
 <translation id="8206581664590136590">Kullanım ve teşhis verilerini gönder. Teşhis, cihaz ve uygulama kullanımı verilerini otomatik olarak Google'a göndererek çocuğunuzun Android deneyiminin iyileştirilmesine yardımcı olun. Bu veriler, çocuğunuzun kimliğini tespit etmek için kullanılmaz; sistem ve uygulama kararlılığı ile diğer özellikleri iyileştirmeye yardımcı olur. Bazı birleştirilmiş veriler, Google uygulamalarına ve iş ortaklarına da (ör. Android geliştiricileri) yardımcı olur. Çocuğunuz için ek Web ve Uygulama Etkinliği açıksa bu veriler çocuğunuzun Google Hesabına kaydedilebilir. <ph name="BEGIN_LINK1" />Daha Fazla Bilgi<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">Melodi</translation>
 <translation id="8206859287963243715">Cep telefonu</translation>

@@ -9,7 +9,6 @@
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "ui/gfx/geometry/mojom/geometry.mojom-shared.h"
 
 namespace mojo {
@@ -19,15 +18,6 @@ struct StructTraits<gfx::mojom::PointDataView, ::blink::WebPoint> {
   static int x(const ::blink::WebPoint& point) { return point.x; }
   static int y(const ::blink::WebPoint& point) { return point.y; }
   static bool Read(gfx::mojom::PointDataView, ::blink::WebPoint* out);
-};
-
-template <>
-struct StructTraits<gfx::mojom::Point3FDataView, ::blink::FloatPoint3D> {
-  static float x(const gfx::Point3F& p) { return p.x(); }
-  static float y(const gfx::Point3F& p) { return p.y(); }
-  static float z(const gfx::Point3F& p) { return p.z(); }
-  static bool Read(gfx::mojom::Point3FDataView data,
-                   ::blink::FloatPoint3D* out);
 };
 
 template <>

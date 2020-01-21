@@ -258,23 +258,6 @@ void AppServiceProxy::Uninstall(const std::string& app_id,
   }
 }
 
-void AppServiceProxy::OnUninstallDialogClosed(
-    apps::mojom::AppType app_type,
-    const std::string& app_id,
-    bool uninstall,
-    bool clear_site_data,
-    bool report_abuse,
-    UninstallDialog* uninstall_dialog) {
-  if (uninstall) {
-    app_service_->Uninstall(app_type, app_id, clear_site_data, report_abuse);
-  }
-
-  DCHECK(uninstall_dialog);
-  auto it = uninstall_dialogs_.find(uninstall_dialog);
-  DCHECK(it != uninstall_dialogs_.end());
-  uninstall_dialogs_.erase(it);
-}
-
 void AppServiceProxy::PauseApps(
     const std::map<std::string, PauseData>& pause_data) {
   if (!app_service_.is_connected()) {
@@ -309,11 +292,6 @@ void AppServiceProxy::UnpauseApps(const std::set<std::string>& app_ids) {
 
     app_service_->UnpauseApps(app_type, app_id);
   }
-}
-
-void AppServiceProxy::OnPauseDialogClosed(apps::mojom::AppType app_type,
-                                          const std::string& app_id) {
-  app_service_->PauseApp(app_type, app_id);
 }
 
 void AppServiceProxy::GetMenuModel(const std::string& app_id,
@@ -477,6 +455,23 @@ void AppServiceProxy::InitializePreferredApps(base::Value preferred_apps) {
       std::make_unique<base::Value>(std::move(preferred_apps)));
 }
 
+void AppServiceProxy::OnUninstallDialogClosed(
+    apps::mojom::AppType app_type,
+    const std::string& app_id,
+    bool uninstall,
+    bool clear_site_data,
+    bool report_abuse,
+    UninstallDialog* uninstall_dialog) {
+  if (uninstall) {
+    app_service_->Uninstall(app_type, app_id, clear_site_data, report_abuse);
+  }
+
+  DCHECK(uninstall_dialog);
+  auto it = uninstall_dialogs_.find(uninstall_dialog);
+  DCHECK(it != uninstall_dialogs_.end());
+  uninstall_dialogs_.erase(it);
+}
+
 void AppServiceProxy::LoadIconForPauseDialog(const apps::AppUpdate& update,
                                              const PauseData& pause_data) {
   apps::mojom::IconKeyPtr icon_key = update.IconKey();
@@ -520,6 +515,11 @@ void AppServiceProxy::UpdatePausedStatus(apps::mojom::AppType app_type,
                          : apps::mojom::OptionalBool::kFalse;
   apps.push_back(std::move(app));
   cache_.OnApps(std::move(apps));
+}
+
+void AppServiceProxy::OnPauseDialogClosed(apps::mojom::AppType app_type,
+                                          const std::string& app_id) {
+  app_service_->PauseApp(app_type, app_id);
 }
 
 void AppServiceProxy::OnAppUpdate(const apps::AppUpdate& update) {

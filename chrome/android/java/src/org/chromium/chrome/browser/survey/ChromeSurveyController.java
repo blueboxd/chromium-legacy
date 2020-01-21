@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.survey;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Handler;
 import android.text.TextUtils;
 
@@ -27,6 +26,8 @@ import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SurveyInfoBar;
 import org.chromium.chrome.browser.infobar.SurveyInfoBarDelegate;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -46,13 +47,6 @@ import java.util.Random;
  * Class that controls if and when to show surveys related to the Chrome Home experiment.
  */
 public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimationListener {
-    /**
-     *  The survey questions for this survey are the same as those in the survey used for Chrome
-     *  Home, so we reuse the old infobar key to prevent the users from seeing the same survey more
-     *  than once.
-     */
-    static final String SURVEY_INFO_BAR_DISPLAYED_KEY = "chrome_home_survey_info_bar_displayed";
-    static final String DATE_LAST_ROLLED_KEY = "last_rolled_for_chrome_survey_key";
 
     private static final String CHROME_SURVEY_TRIAL_NAME = "ChromeSurvey";
     private static final String MAX_NUMBER = "max-number";
@@ -269,8 +263,8 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
     /** @return If the survey info bar for this survey was logged as seen before. */
     @VisibleForTesting
     boolean hasInfoBarBeenDisplayed() {
-        SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
-        if (sharedPreferences.getLong(SURVEY_INFO_BAR_DISPLAYED_KEY, -1L) != -1L) {
+        SharedPreferencesManager preferences = SharedPreferencesManager.getInstance();
+        if (preferences.readLong(ChromePreferenceKeys.SURVEY_INFO_BAR_DISPLAYED, -1L) != -1L) {
             recordSurveyFilteringResult(FilteringResult.SURVEY_INFOBAR_ALREADY_DISPLAYED);
             return true;
         }
@@ -317,8 +311,8 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
      */
     @VisibleForTesting
     boolean isRandomlySelectedForSurvey() {
-        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-        int lastDate = preferences.getInt(DATE_LAST_ROLLED_KEY, -1);
+        SharedPreferencesManager preferences = SharedPreferencesManager.getInstance();
+        int lastDate = preferences.readInt(ChromePreferenceKeys.SURVEY_DATE_LAST_ROLLED, -1);
         int today = getDayOfYear();
         if (lastDate == today) {
             recordSurveyFilteringResult(FilteringResult.USER_ALREADY_SAMPLED_TODAY);
@@ -345,7 +339,7 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
             return false;
         }
 
-        preferences.edit().putInt(DATE_LAST_ROLLED_KEY, today).apply();
+        preferences.writeInt(ChromePreferenceKeys.SURVEY_DATE_LAST_ROLLED, today);
         if (getRandomNumberUpTo(maxNumber) == 0) {
             recordSurveyFilteringResult(FilteringResult.USER_SELECTED_FOR_SURVEY);
             return true;
@@ -436,7 +430,7 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
         };
     }
 
-    /** Logs in {@link SharedPreferences} that the info bar was displayed. */
+    /** Logs in SharedPreferences that the info bar was displayed. */
     private void recordInfoBarDisplayed() {
         // This can be called multiple times e.g. by mLoggingHandler & onSurveyInfoBarClosed().
         // Return early to allow only one call to this method (http://crbug.com/791076).
@@ -447,10 +441,9 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
 
         mLoggingHandler.removeCallbacksAndMessages(null);
 
-        SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
-        sharedPreferences.edit()
-                .putLong(SURVEY_INFO_BAR_DISPLAYED_KEY, System.currentTimeMillis())
-                .apply();
+        SharedPreferencesManager preferences = SharedPreferencesManager.getInstance();
+        preferences.writeLong(
+                ChromePreferenceKeys.SURVEY_INFO_BAR_DISPLAYED, System.currentTimeMillis());
         mSurveyInfoBarTab = null;
     }
 
@@ -518,7 +511,7 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
 
     @VisibleForTesting
     public static String getChromeSurveyInfoBarDisplayedKey() {
-        return SURVEY_INFO_BAR_DISPLAYED_KEY;
+        return ChromePreferenceKeys.SURVEY_INFO_BAR_DISPLAYED;
     }
 
     @VisibleForTesting

@@ -29,9 +29,9 @@
               has-error="[[isErrorLabelVisible_(errorLabelId_, userEdited_)]]"
               aria-invalid$="[[isAriaInvalid_(parameters, userEdited_)]]"
               on-pin-change="onPinChange_" on-submit="onSubmit_"
-              disabled="[[!canSubmit_]]">
+              disabled="[[!canEdit_]]">
             <div id="errorContainer" role="alert" problem
-                hidden$="[[!isLabelVisible_(parameters, userEdited_)]]">
+                invisible$="[[!isLabelVisible_(parameters, userEdited_)]]">
               <iron-icon id="errorIcon" icon="cr:error-outline"></iron-icon>
               [[getLabel_(locale, parameters, errorLabelId_, userEdited_)]]
             </div>

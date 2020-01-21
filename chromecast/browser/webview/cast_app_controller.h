@@ -22,6 +22,9 @@ class CastAppController : public WebContentController {
   content::WebContents* GetWebContents() override;
 
  private:
+  // content::WebContentsObserver
+  void WebContentsDestroyed() override;
+
   content::WebContents* contents_;
 
   DISALLOW_COPY_AND_ASSIGN(CastAppController);

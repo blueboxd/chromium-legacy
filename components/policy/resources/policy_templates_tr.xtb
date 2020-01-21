@@ -456,7 +456,7 @@
         Yapılandırılmış beyaz liste, uygulama başına süre sınırlamalarına sahip belirtilen kullanıcı için <ph name="PRODUCT_OS_NAME" /> üzerinde yüklü uygulamalara uygulanır.
         Yapılandırılmış beyaz liste yalnızca alt kullanıcı hesaplarına uygulanabilir ve <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> politikası ayarlandığında geçerli olur.
         Yapılandırılmış beyaz liste, uygulama başına zaman sınırlamaları tarafından engellenmemesi için uygulamalara ve URL'lere uygulanır.
-        İzin verilenler listesine eklenen URL'lere erişmek Chrome zaman sınırına dahil edilmez.
+        İzin verilenler listesine eklenen URL'lere erişmek için harcanan zaman, Chrome zaman sınırından düşülmez.
         Listedeki normal ifadelerden herhangi biriyle eşleşen URL'leri izin verilenler listesine eklemek için |url_list|'e URL normal ifadelerini ekleyin.
         Bir uygulamayı izin verilenler listesine dahil etmek için uygulamayı |app_id| ve |app_type| ile |app_list|'e ekleyin.
        </translation>
@@ -2869,7 +2869,7 @@ politikayı geçersiz kılamaz.
 
       Bu politika False (Yanlış) değerine ayarlanırsa bu tür günlükler toplanıp yüklenmez.
 
-      Bu politika ayarlanmadan bırakılırsa M76 ve önceki sürümlerde <ph name="PRODUCT_NAME" /> bu günlükleri toplayıp yükleyemez. M77'den başlayarak <ph name="PRODUCT_NAME" /> varsayılan olarak, bu günlükleri bulut tabanlı kullanıcı düzeyi kurumsal politikalardan etkilenen profillerin çoğundan toplayıp yükleyebilir. M77Yden M80'e (dahil) kadar, <ph name="PRODUCT_NAME" /> bu günlükleri varsayılan olarak <ph name="PRODUCT_NAME" /> şirket içi yönetiminden etkilenen profillerden toplayıp yükleyebilir.</translation>
+      Bu politika ayarlanmadan bırakılırsa M76 ve önceki sürümlerde <ph name="PRODUCT_NAME" /> bu günlükleri toplayıp yükleyemez. M77'den başlayarak <ph name="PRODUCT_NAME" /> varsayılan olarak, bu günlükleri bulut tabanlı kullanıcı düzeyi kurumsal politikalardan etkilenen profillerin çoğundan toplayıp yükleyebilir. M77'den M80'e (dahil) kadar, <ph name="PRODUCT_NAME" /> bu günlükleri varsayılan olarak <ph name="PRODUCT_NAME" /> şirket içi yönetiminden etkilenen profillerden toplayıp yükleyebilir.</translation>
 <translation id="5331746669335642668"><ph name="PRODUCT_NAME" /> bulut politikası, Platform politikasını geçersiz kılar.</translation>
 <translation id="5362531528507578966">Varsayılan arka plan grafikleri yazdırma modunu geçersiz kılar.</translation>
 <translation id="5365476955714838841">Alternatif tarayıcı için komut satırı parametreleri.</translation>

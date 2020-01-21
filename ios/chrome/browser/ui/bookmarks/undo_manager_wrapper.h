@@ -7,9 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 // This object is a convenience ObjC wrapper around UndoManager.
 // On construction, it registers itself as an observer of the UndoManager.

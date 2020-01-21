@@ -49,8 +49,10 @@ TEST_F(SmbFsHostTest, DisconnectDelegate) {
       .WillOnce(base::test::RunOnceCallback<1>(chromeos::MOUNT_ERROR_NONE));
 
   std::unique_ptr<SmbFsHost> host = std::make_unique<SmbFsHost>(
-      base::FilePath(kMountPath), &mock_delegate_, &mock_disk_mount_manager_,
-      std::move(smbfs_remote_), std::move(delegate_pending_receiver_));
+      std::make_unique<chromeos::disks::MountPoint>(base::FilePath(kMountPath),
+                                                    &mock_disk_mount_manager_),
+      &mock_delegate_, std::move(smbfs_remote_),
+      std::move(delegate_pending_receiver_));
   delegate_remote_.reset();
 
   run_loop.Run();
@@ -64,8 +66,10 @@ TEST_F(SmbFsHostTest, DisconnectSmbFs) {
       .WillOnce(base::test::RunOnceCallback<1>(chromeos::MOUNT_ERROR_NONE));
 
   std::unique_ptr<SmbFsHost> host = std::make_unique<SmbFsHost>(
-      base::FilePath(kMountPath), &mock_delegate_, &mock_disk_mount_manager_,
-      std::move(smbfs_remote_), std::move(delegate_pending_receiver_));
+      std::make_unique<chromeos::disks::MountPoint>(base::FilePath(kMountPath),
+                                                    &mock_disk_mount_manager_),
+      &mock_delegate_, std::move(smbfs_remote_),
+      std::move(delegate_pending_receiver_));
   smbfs_pending_receiver_.reset();
 
   run_loop.Run();
@@ -78,8 +82,10 @@ TEST_F(SmbFsHostTest, UnmountOnDestruction) {
 
   base::RunLoop run_loop;
   std::unique_ptr<SmbFsHost> host = std::make_unique<SmbFsHost>(
-      base::FilePath(kMountPath), &mock_delegate_, &mock_disk_mount_manager_,
-      std::move(smbfs_remote_), std::move(delegate_pending_receiver_));
+      std::make_unique<chromeos::disks::MountPoint>(base::FilePath(kMountPath),
+                                                    &mock_disk_mount_manager_),
+      &mock_delegate_, std::move(smbfs_remote_),
+      std::move(delegate_pending_receiver_));
   run_loop.RunUntilIdle();
   host.reset();
 }

@@ -676,10 +676,6 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
 
     self.assertEqual(exit_code, 0)
 
-
-  # TODO(crbug.com/990304): Enable this test when the long-term solution for
-  # building the trace_processor_shell on all platforms is found.
-  @unittest.skip('crbug.com/990304')
   def testHistogramsOutput_TBMv3(self):
     self.SerializeIntermediateResults(
         testing.TestResult(
@@ -701,6 +697,7 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
         '--output-dir', self.output_dir,
         '--intermediate-dir', self.intermediate_dir,
         '--results-label', 'label',
+        '--experimental-tbmv3-metrics',
     ])
 
     with open(os.path.join(

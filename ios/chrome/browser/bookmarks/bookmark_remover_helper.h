@@ -9,10 +9,7 @@
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 namespace bookmarks {
 class BookmarkModel;

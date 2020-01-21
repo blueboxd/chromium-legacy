@@ -651,7 +651,7 @@
 <translation id="1879000426787380528">登入身分</translation>
 <translation id="1880905663253319515">要刪除憑證「<ph name="CERTIFICATE_NAME" />」嗎？</translation>
 <translation id="1884013283844450420">第 <ph name="NETWORK_INDEX" /> 個網絡，一共有 <ph name="NETWORK_COUNT" /> 個網絡，<ph name="NETWORK_NAME" />，連接</translation>
-<translation id="1884930769492918228">追蹤攝影機位置並對應你的房間</translation>
+<translation id="1884930769492918228">追蹤攝錄機位置並對應您的房間</translation>
 <translation id="1886996562706621347">允許網站要求成為通訊協定的預設處理常式 (建議)</translation>
 <translation id="1887442540531652736">登入錯誤</translation>
 <translation id="1887597546629269384">再說一次「Hey Google」</translation>
@@ -734,7 +734,7 @@
 <translation id="2018352199541442911">很抱歉，系統目前不支援您的外部儲存裝置。</translation>
 <translation id="2019718679933488176">在新分頁中開啟音效檔案(&amp;O)</translation>
 <translation id="2020183425253392403">顯示網絡地址設定</translation>
-<translation id="2020225359413970060">掃描檔案</translation>
+<translation id="2020225359413970060">掃瞄檔案</translation>
 <translation id="2022953316617983419">二維條碼</translation>
 <translation id="2023167225947895179">PIN 可能容易被猜中</translation>
 <translation id="202352106777823113">下載時間太長，已被網絡停止。</translation>
@@ -764,7 +764,7 @@
 <translation id="2059913712424898428">時區</translation>
 <translation id="2065405795449409761">Chrome 目前由自動化測試軟件控制。</translation>
 <translation id="2071393345806050157">沒有本機記錄檔案。</translation>
-<translation id="2073148037220830746">{NUM_EXTENSIONS,plural, =1{按一下即可安裝擴充功能}other{按一下即可安裝這些擴充功能}}</translation>
+<translation id="2073148037220830746">{NUM_EXTENSIONS,plural, =1{按一下即可安裝擴充程式}other{按一下即可安裝這些擴充程式}}</translation>
 <translation id="2075474481720804517">電量：<ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="2075959085554270910">讓您啟用/停用輕按點擊和輕按拖曳功能</translation>
 <translation id="2076269580855484719">隱藏這個外掛程式</translation>
@@ -1371,7 +1371,7 @@
 <translation id="2875698561019555027">(Chrome 錯誤頁面)</translation>
 <translation id="2876336351874743617">手指 2</translation>
 <translation id="2876369937070532032">當網站面臨安全風險時，Chrome 會將您瀏覽的部分網頁網址傳送給 Google</translation>
-<translation id="2877030408509021795">掃描完成，一切都準備就緒。</translation>
+<translation id="2877030408509021795">掃瞄完成，一切準備就緒。</translation>
 <translation id="2878782256107578644">正在掃瞄，要立即開啟嗎？</translation>
 <translation id="288042212351694283">存取您的 Universal 2nd Factor 裝置</translation>
 <translation id="2881076733170862447">當您點擊擴充程式時</translation>
@@ -2039,7 +2039,7 @@
 <translation id="3819800052061700452">全螢幕(&amp;F)</translation>
 <translation id="3820172043799983114">PIN 無效。</translation>
 <translation id="3820749202859700794">SECG 橢圓曲線 secp521r1 (亦稱為 NIST P-521)</translation>
-<translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{已核准擴充功能}other{已核准 # 個擴充功能}}</translation>
+<translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{已核准 1 個擴充程式}other{已核准 # 個擴充程式}}</translation>
 <translation id="3822559385185038546">管理員已強制執行此 Proxy</translation>
 <translation id="3826440694796503677">您的管理員已停用新增更多 Google 帳戶的功能</translation>
 <translation id="3827306204503227641">繼續允許無沙箱防護的外掛程式</translation>
@@ -2398,7 +2398,7 @@
 <translation id="4353114845960720315">當您處於 VR 模式時，此網站可以識別：</translation>
 <translation id="4354344420232759511">您瀏覽過的網站會在這裡顯示</translation>
 <translation id="435527878592612277">選取相片</translation>
-<translation id="4357784477082216550"><ph name="URL" /> 想要追蹤攝影機位置並對應你的房間</translation>
+<translation id="4357784477082216550"><ph name="URL" /> 想追蹤攝錄機位置並對應您的房間</translation>
 <translation id="4358313196493694334">穩定點擊位置</translation>
 <translation id="4359408040881008151">您已安裝有依賴關係的擴充功能，因此必須安裝此擴充功能。</translation>
 <translation id="4359717112757026264">城市景觀</translation>
@@ -2954,7 +2954,7 @@
 <translation id="51918995459521422"><ph name="ORIGIN" /> 想下載多個檔案</translation>
 <translation id="5192062846343383368">開啟 Family Link 應用程式以查看監控設定</translation>
 <translation id="5193988420012215838">已複製至剪貼簿</translation>
-<translation id="5203920255089865054">{NUM_EXTENSIONS,plural, =1{按一下即可查看擴充功能}other{按一下即可查看這些擴充功能}}</translation>
+<translation id="5203920255089865054">{NUM_EXTENSIONS,plural, =1{按一下即可查看擴充程式}other{按一下即可查看這些擴充程式}}</translation>
 <translation id="5204673965307125349">請在裝置上執行 Powerwash，然後再試一次。</translation>
 <translation id="5206215183583316675">要刪除「<ph name="CERTIFICATE_NAME" />」嗎？</translation>
 <translation id="520621735928254154">憑證匯入錯誤</translation>
@@ -3037,7 +3037,7 @@
 <translation id="5310281978693206542">將連結傳送至裝置</translation>
 <translation id="5311304534597152726">正在使用以下身分登入：</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" />請再試一次。</translation>
-<translation id="5313628438272378649">這個上傳項目違反貴機構的安全性政策，因此無法完成上傳。</translation>
+<translation id="5313628438272378649">此上載項目違反機構的安全性政策，因此無法完成上載。</translation>
 <translation id="5315738755890845852">多餘的大括弧：<ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">身分</translation>
 <translation id="5317780077021120954">儲存</translation>
@@ -3131,7 +3131,7 @@
 <translation id="5449588825071916739">將所有分頁加入書籤</translation>
 <translation id="5449716055534515760">關閉視窗(&amp;D)</translation>
 <translation id="5454166040603940656">與 <ph name="PROVIDER" /></translation>
-<translation id="5454360575035671759">移除 Plugin VM 將會刪除你的 VM，包含其應用程式、設定和資料。你確定要繼續嗎？</translation>
+<translation id="5454360575035671759">移除 Plugin VM 將會刪除您的虛擬機器，包括其應用程式、設定和資料。您確定要繼續嗎？</translation>
 <translation id="5457113250005438886">無效</translation>
 <translation id="5457459357461771897">讀取及刪除您電腦中的相片、音樂及其他媒體</translation>
 <translation id="5457599981699367932">以訪客身分瀏覽</translation>
@@ -3185,7 +3185,7 @@
 <translation id="5518584115117143805">電郵加密憑證</translation>
 <translation id="5521078259930077036">這是您想要的首頁嗎？</translation>
 <translation id="5522156646677899028">這個擴充功能內含嚴重安全性漏洞。</translation>
-<translation id="5523149538118225875">{NUM_EXTENSIONS,plural, =1{你的系統管理員已安裝擴充功能}other{你的系統管理員已安裝 # 個擴充功能}}</translation>
+<translation id="5523149538118225875">{NUM_EXTENSIONS,plural, =1{管理員已安裝 1 個擴充程式}other{管理員已安裝 # 個擴充程式}}</translation>
 <translation id="5525677322972469346">建立新的受管使用者</translation>
 <translation id="5526701598901867718">全部 (不安全)</translation>
 <translation id="5526745900034778153">如要繼續同步處理，請重新登入</translation>
@@ -3852,7 +3852,7 @@
 <translation id="6459799433792303855">使用中的視窗已移至其他顯示屏。</translation>
 <translation id="6460601847208524483">尋找下一個項目</translation>
 <translation id="6461170143930046705">正在搜尋網絡...</translation>
-<translation id="6462438303393708881">取消上傳</translation>
+<translation id="6462438303393708881">取消上載</translation>
 <translation id="6463795194797719782">編輯(&amp;E)</translation>
 <translation id="6466988389784393586">開啟所有書籤(&amp;O)</translation>
 <translation id="6467304607960172345">優化全螢幕影片</translation>
@@ -4055,7 +4055,7 @@
 <translation id="677965093459947883">非常小</translation>
 <translation id="6781284683813954823">Doodle 連結</translation>
 <translation id="6781978626986383437">已取消 Linux 備份</translation>
-<translation id="6785915470941880363">反向捲動。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
+<translation id="6785915470941880363">反向捲動<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="6786747875388722282">擴充功能</translation>
 <translation id="6787839852456839824">鍵盤快速鍵</translation>
 <translation id="6788210894632713004">已解除壓縮的擴充程式</translation>
@@ -4162,7 +4162,7 @@
 <translation id="6923132443355966645">捲動/點擊</translation>
 <translation id="6923633482430812883">連接共用裝置時發生錯誤。請檢查您正連接的檔案伺服器是否支援 SMBv2 或以上版本。</translation>
 <translation id="6930036377490597025">外置安全密鑰或內置感應器</translation>
-<translation id="6930161297841867798">{NUM_EXTENSIONS,plural, =1{已拒絕擴充功能}other{已拒絕 # 個擴充功能}}</translation>
+<translation id="6930161297841867798">{NUM_EXTENSIONS,plural, =1{已拒絕 1 個擴充程式}other{已拒絕 # 個擴充程式}}</translation>
 <translation id="6935286146439255109">找不到紙匣</translation>
 <translation id="693807610556624488">寫入操作長度超過「<ph name="DEVICE_NAME" />」屬性的上限。</translation>
 <translation id="6938386202199793006">你有 1 部儲存咗嘅打印機。</translation>
@@ -4469,7 +4469,7 @@
 <translation id="7352651011704765696">發生問題</translation>
 <translation id="735361434055555355">正在安裝 Linux…</translation>
 <translation id="7353887511974462734">新增至現有群組</translation>
-<translation id="7354341762311560488">指紋感應器位於鍵盤左下方，請以任何一隻手指輕觸這個按鍵。</translation>
+<translation id="7354341762311560488">指紋感應器位於鍵盤左下方。請用任何一隻手指輕觸指紋感應器。</translation>
 <translation id="735745346212279324">已中斷 VPN 連線</translation>
 <translation id="7359588939039777303">已封鎖廣告。</translation>
 <translation id="7360183604634508679">書籤選單</translation>
@@ -5085,7 +5085,6 @@
 <translation id="8202160505685531999">請重新輸入密碼以更新 <ph name="DEVICE_TYPE" /> 的個人檔案。</translation>
 <translation id="8203732864715032075">讓「訊息」向您傳送通知並預設記住這台電腦<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="820568752112382238">最常瀏覽的網站</translation>
-<translation id="8206354486702514201">這項設定由管理員執行。</translation>
 <translation id="8206581664590136590">傳送使用情況和診斷資料。自動將診斷、裝置及應用程式的使用情況資料傳送至 Google，協助改善您子女的 Android 使用體驗。這些資料不會用來識別您子女的身分，而是用於改善系統和應用程式的穩定性和其他效能。部分彙整資料也會用於協助 Google 應用程式與合作夥伴 (例如 Android 開發人員)。如果已為子女開啟其他「網絡及應用程式活動記錄」設定，系統可能會將此資料儲存至其 Google 帳戶。<ph name="BEGIN_LINK1" />瞭解詳情<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">藍調</translation>
 <translation id="8206859287963243715">蜂窩</translation>
@@ -5106,7 +5105,7 @@
 <translation id="8227119283605456246">附加檔案</translation>
 <translation id="8230134520748321204">要儲存 <ph name="ORIGIN" /> 的密碼嗎？</translation>
 <translation id="8234795456569844941">為協助我們的軟件工程師修正此問題，請說明您在收到設定檔錯誤訊息前發生的狀況：</translation>
-<translation id="8236123533334037984">機構正在掃描這個上傳項目以取得安全性核准。</translation>
+<translation id="8236123533334037984">機構正在掃瞄此上載項目，以取得安全性核准。</translation>
 <translation id="8236917170563564587">改為分享此分頁</translation>
 <translation id="8237647586961940482">深粉紅色和紅色</translation>
 <translation id="8241040075392580210">陰晴不定</translation>

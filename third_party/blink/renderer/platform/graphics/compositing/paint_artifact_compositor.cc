@@ -1023,14 +1023,14 @@ static void UpdateCompositorViewportProperties(
             *properties.page_scale);
   }
   if (properties.inner_scroll_translation) {
-    ids.inner_scroll = property_tree_manager.EnsureCompositorScrollNode(
+    ids.inner_scroll = property_tree_manager.EnsureCompositorInnerScrollNode(
         *properties.inner_scroll_translation);
     if (properties.outer_clip) {
       ids.outer_clip = property_tree_manager.EnsureCompositorClipNode(
           *properties.outer_clip);
     }
     if (properties.outer_scroll_translation) {
-      ids.outer_scroll = property_tree_manager.EnsureCompositorScrollNode(
+      ids.outer_scroll = property_tree_manager.EnsureCompositorOuterScrollNode(
           *properties.outer_scroll_translation);
     }
   }

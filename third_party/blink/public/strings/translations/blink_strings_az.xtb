@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">slayder</translation>
 <translation id="1211441953136645838">son qeyd</translation>
 <translation id="1281252709823657822">dialoq</translation>
+<translation id="1306460908038601864">Deaktiv</translation>
 <translation id="1335095011850992622">kreditlər</translation>
 <translation id="1342835525016946179">məqalə</translation>
 <translation id="1359897965706325498">banner</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' ilə davam edən hissəni daxil edin. '<ph name="INVALIDADDRESS" />' natamamdır.</translation>
 <translation id="5334352251556557839">Medianı oxutmaq mümkün deyil.</translation>
+<translation id="537648784377940524">Minimum tarix (<ph name="MIN_DATE_OR_TIME" />) Maksimum tarixdən (<ph name="MAX_DATE_OR_TIME" />) əvvəl gəlməlidir.</translation>
 <translation id="5406322316791861025">rəqəm</translation>
 <translation id="5453733299334684579">ağac elementi</translation>
 <translation id="5466621249238537318">Bir və ya daha çox faylı seçin.</translation>

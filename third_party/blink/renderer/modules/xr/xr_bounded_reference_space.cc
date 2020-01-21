@@ -74,7 +74,7 @@ void XRBoundedReferenceSpace::EnsureUpdated() {
             kMinimumNumberOfBoundVertices) {
       for (const auto& bound : *(display_info->stage_parameters->bounds)) {
         FloatPoint3D p = offset_from_native.MapPoint(
-            FloatPoint3D(bound.X(), 0.0, bound.Z()));
+            FloatPoint3D(bound.x(), 0.0, bound.z()));
         offset_bounds_geometry_.push_back(RoundedDOMPoint(p));
       }
     }

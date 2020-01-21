@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import os.path
 import posixpath
 
 import web_idl
@@ -14,8 +15,14 @@ class PathManager(object):
     """
     Provides a variety of paths such as Blink headers and output files.  Unless
     explicitly specified, returned paths are relative to the project's root
-    directory or the root directory of generated files.
-    e.g. "third_party/blink/renderer/..."
+    directory or the root directory of generated files, e.g.
+    "third_party/blink/renderer/..."
+
+    Relative paths are represented in POSIX style so that it fits nicely in
+    generated code, e.g. #include "third_party/blink/renderer/...", while
+    absolute paths are represented in a platform-specific style so that it works
+    well with a platform-specific notion, e.g. a drive letter in Windows path
+    such as "C:\\chromium\\src\\...".
 
     About output files, there are two cases.
     - cross-components case:
@@ -47,8 +54,8 @@ class PathManager(object):
         cls._blink_path_prefix = posixpath.sep + posixpath.join(
             "third_party", "blink", "renderer", "")
 
-        cls._root_src_dir = posixpath.abspath(root_src_dir)
-        cls._root_gen_dir = posixpath.abspath(root_gen_dir)
+        cls._root_src_dir = os.path.abspath(root_src_dir)
+        cls._root_gen_dir = os.path.abspath(root_gen_dir)
         cls._component_reldirs = {
             component: posixpath.normpath(rel_dir)
             for component, rel_dir in component_reldirs.iteritems()
@@ -62,8 +69,7 @@ class PathManager(object):
         directory of generated files.
         """
         assert PathManager._is_initialized, PathManager._REQUIRE_INIT_MESSAGE
-        return posixpath.abspath(
-            posixpath.join(PathManager._root_gen_dir, path))
+        return os.path.abspath(os.path.join(PathManager._root_gen_dir, path))
 
     @classmethod
     def relpath_to_project_root(cls, path):

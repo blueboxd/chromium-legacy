@@ -17,7 +17,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.chrome.browser.identity.UuidBasedUniqueIdentificationGenerator;
@@ -342,9 +341,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
                     SigninAccessPoint.UNKNOWN, account, new SigninManager.SignInCallback() {
                         @Override
                         public void onSignInComplete() {
-                            if (ChromeFeatureList.isEnabled(
-                                        ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
-                                    && setFirstSetupComplete) {
+                            if (setFirstSetupComplete) {
                                 mProfileSyncService.setFirstSetupComplete(
                                         SyncFirstSetupCompleteSource.BASIC_FLOW);
                             }

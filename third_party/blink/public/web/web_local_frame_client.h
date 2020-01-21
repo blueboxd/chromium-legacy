@@ -108,7 +108,6 @@ class WebMediaStreamDeviceObserver;
 class WebNavigationControl;
 class WebPlugin;
 class WebPrescientNetworking;
-class WebRTCPeerConnectionHandler;
 class WebRelatedAppsFetcher;
 class WebServiceWorkerProvider;
 class WebSocketHandshakeThrottle;
@@ -649,10 +648,6 @@ class BLINK_EXPORT WebLocalFrameClient {
       const WebScrollIntoViewParams&) {}
 
   // MediaStream -----------------------------------------------------
-
-  // A new WebRTCPeerConnectionHandler is created.
-  virtual void WillStartUsingPeerConnectionHandler(
-      WebRTCPeerConnectionHandler*) {}
 
   virtual WebMediaStreamDeviceObserver* MediaStreamDeviceObserver() {
     return nullptr;

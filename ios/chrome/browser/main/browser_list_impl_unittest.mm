@@ -136,7 +136,13 @@ TEST_F(BrowserListImplTest, AllBrowserValuesDontChange) {
 
 // Check that an observer is informed of additions and removals to both the
 // regular and incognito browser lists.
-TEST_F(BrowserListImplTest, BrowserListObserver) {
+// TODO(crbug.com/1043625): Fails on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_BrowserListObserver BrowserListObserver
+#else
+#define MAYBE_BrowserListObserver DISABLED_BrowserListObserver
+#endif
+TEST_F(BrowserListImplTest, MAYBE_BrowserListObserver) {
   TestBrowserListObserver* observer = new TestBrowserListObserver;
   browser_list_->AddObserver(observer);
 

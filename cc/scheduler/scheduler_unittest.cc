@@ -3401,6 +3401,55 @@ TEST_F(SchedulerTest, SynchronousCompositorPrepareTilesOnDraw) {
   client_->Reset();
 }
 
+// Synchronous compositor does not require the active tree to be drawn at least
+// once before the next activation. This test verifies two commit-activate
+// cycles without draw work correctly.
+TEST_F(SchedulerTest, SynchronousCompositorAllowsActivateBeforeDraw) {
+  scheduler_settings_.using_synchronous_renderer_compositor = true;
+
+  std::unique_ptr<FakeSchedulerClient> client =
+      base::WrapUnique(new SchedulerClientSetNeedsPrepareTilesOnDraw);
+  SetUpScheduler(EXTERNAL_BFS, std::move(client));
+
+  scheduler_->SetNeedsRedraw();
+  EXPECT_ACTIONS("AddObserver(this)");
+  client_->Reset();
+
+  // Next vsync.
+  scheduler_->SetNeedsBeginMainFrame();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame",
+                 "ScheduledActionInvalidateLayerTreeFrameSink");
+  client_->Reset();
+
+  // Commit and activate.
+  scheduler_->NotifyBeginMainFrameStarted(task_runner_->NowTicks());
+  scheduler_->NotifyReadyToCommit(nullptr);
+  EXPECT_ACTIONS("ScheduledActionCommit");
+  client_->Reset();
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_ACTIONS("ScheduledActionActivateSyncTree");
+  client_->Reset();
+
+  // No Draw.
+
+  // Next vsync.
+  scheduler_->SetNeedsBeginMainFrame();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTIONS("WillBeginImplFrame", "ScheduledActionSendBeginMainFrame",
+                 "ScheduledActionInvalidateLayerTreeFrameSink");
+  client_->Reset();
+
+  // Commit and activate.
+  scheduler_->NotifyBeginMainFrameStarted(task_runner_->NowTicks());
+  scheduler_->NotifyReadyToCommit(nullptr);
+  EXPECT_ACTIONS("ScheduledActionCommit");
+  client_->Reset();
+  scheduler_->NotifyReadyToActivate();
+  EXPECT_ACTIONS("ScheduledActionActivateSyncTree");
+  client_->Reset();
+}
+
 TEST_F(SchedulerTest, SetNeedsRedrawFromWillBeginImplFrame) {
   client_ = std::make_unique<FakeSchedulerClient>();
   CreateScheduler(EXTERNAL_BFS);

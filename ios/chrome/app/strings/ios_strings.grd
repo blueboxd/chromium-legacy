@@ -1028,6 +1028,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_OPEN_IN_ANOTHER_APP" desc="Alert to let the user know that user about to open this page on another application. [Length: 60em] [iOS only]">
         This page will open in another application.
       </message>
+      <message name="IDS_IOS_OPEN_IN_DOWNLOADS" desc="Label of the button that lets users open downloads folder. [Length: unlimited] [iOS only]">
+        Open in Downloads
+      </message>
       <message name="IDS_IOS_OPEN_IN_FILE_DEFAULT_TITLE" desc="Default title for a file that will be opened in another application. [Length: 30em] [iOS only]">
         Document
       </message>

@@ -24,6 +24,9 @@ void CastContentWindow::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void CastContentWindow::SetCanGoBackQuery(
+    base::RepeatingCallback<bool()> can_go_back) {}
+
 mojom::MediaControlUi* CastContentWindow::media_controls() {
   return nullptr;
 }

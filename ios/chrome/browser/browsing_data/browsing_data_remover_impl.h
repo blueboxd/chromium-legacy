@@ -17,15 +17,12 @@
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/prefs/pref_member.h"
 #include "components/search_engines/template_url_service.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remover.h"
 
 @class SessionServiceIOS;
 @class WKWebView;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 namespace net {
 class URLRequestContextGetter;

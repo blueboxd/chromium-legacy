@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">reajustar</translation>
 <translation id="119944043368869598">Eliminar todo</translation>
 <translation id="1247372569136754018">Micrófono (interno)</translation>
-<translation id="1249456112629248620">El administrador gestiona esta opción: <ph name="FEATURE_NAME" /></translation>
 <translation id="1252999807265626933">Cargando a través de <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">¿Qué tiempo hace?</translation>
 <translation id="1267032506238418139">Cambio de la combinación de teclas</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">Conectarse a otras redes Wi‑Fi</translation>
 <translation id="2718395828230677721">Luz nocturna</translation>
 <translation id="2727977024730340865">Conectado a un cargador de baja potencia. Es posible que la carga de la batería no sea fiable.</translation>
-<translation id="2761704814324807722">Bandeja de estado, hora <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+tecla de búsqueda</translation>
 <translation id="2803734122639935495">Para desbloquearlo, introduce la contraseña</translation>
 <translation id="2819276065543622893">Tu sesión se cerrará ahora.</translation>

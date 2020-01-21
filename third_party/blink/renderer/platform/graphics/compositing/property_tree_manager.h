@@ -99,6 +99,12 @@ class PropertyTreeManager {
   int EnsureCompositorScrollNode(
       const TransformPaintPropertyNode& scroll_offset_translation);
 
+  // Same as above but marks the scroll nodes as being the viewport.
+  int EnsureCompositorInnerScrollNode(
+      const TransformPaintPropertyNode& scroll_offset_translation);
+  int EnsureCompositorOuterScrollNode(
+      const TransformPaintPropertyNode& scroll_offset_translation);
+
   int EnsureCompositorPageScaleTransformNode(const TransformPaintPropertyNode&);
 
   // This function is expected to be invoked right before emitting each layer.

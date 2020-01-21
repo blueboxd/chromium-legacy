@@ -37,10 +37,9 @@
 
 -->
 <dom-module id="navigation-bar">
-  <link rel="stylesheet" href="navigation_bar.css">
-  <link rel="stylesheet" href="oobe_flex_layout.css">
-
   <template>
+    <link rel="stylesheet" href="navigation_bar.css">
+    <link rel="stylesheet" href="oobe_flex_layout.css">
     <div class="fit layout horizontal center">
       <gaia-icon-button id="backButton" icon="navigation-bar:arrow-back"
           hidden="[[!backVisible]]" disabled="[[disabled]]" on-tap="onBack_"

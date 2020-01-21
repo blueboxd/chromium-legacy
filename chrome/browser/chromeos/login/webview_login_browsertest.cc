@@ -284,13 +284,8 @@ IN_PROC_BROWSER_TEST_F(WebviewLoginTest, Basic) {
   histogram_tester.ExpectUniqueSample("ChromeOS.SAML.APILogin", 0, 1);
 }
 
-// TODO(crbug.com/998330): The test is flaky (timeout) on Chromium OS MSAN.
-#if defined(MEMORY_SANITIZER) && defined(OS_CHROMEOS)
-#define MAYBE_BackButton DISABLED_BackButton
-#else
-#define MAYBE_BackButton BackButton
-#endif
-IN_PROC_BROWSER_TEST_F(WebviewLoginTest, MAYBE_BackButton) {
+// TODO(crbug.com/1043661): The test timeouts on builders.
+IN_PROC_BROWSER_TEST_F(WebviewLoginTest, DISABLED_BackButton) {
   WaitForGaiaPageLoadAndPropertyUpdate();
 
   // Start with identifer page.

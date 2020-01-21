@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="1337778609052285767">Aktuální heslo nesplňuje požadavky na složitost hesla. Obraťte se na administrátora.</translation>
 <translation id="1337821341856692531">Pokud budete pokračovat bez zadání svého aktuálního hesla účtu Windows, může to vést k nevratné ztrátě informací.</translation>
 <translation id="1383286653814676580">Používá se ke spuštění přihlašovací stránky poskytovatele identifikačních údajů Google.</translation>
 <translation id="1894475569413661128">Přihlaste se pomocí pracovního účtu.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Zadali jste nesprávné heslo účtu Windows. Zkuste to znovu.</translation>
 <translation id="2831078752570172210">Váš účet byl uzamčen. Kontaktujte administrátora systému.</translation>
 <translation id="2844349213149998955">Přihlášení pomocí osobního účtu na tomto zařízení není povoleno. Přihlaste se pomocí pracovního účtu.</translation>
+<translation id="2995851317559936311">Změna hesla je dovolena jen na řadiči domény. Obraťte se na administrátora.</translation>
 <translation id="3306357053520292004">Pomocí tohoto účtu již byl do tohoto počítače uživatel přidán. Přihlaste se pomocí jiného účtu.</translation>
 <translation id="3926852373333893095">Přihlásit se smějí pouze uživatelé GSuite Enterprise.</translation>
 <translation id="4057329986137569701">Došlo k interní chybě.</translation>
 <translation id="4267670563222825190">Pro váš účet nebyl nalezen žádný doménový uživatel. Obraťte se na administrátora.</translation>
 <translation id="4300229033992784001">Heslo vašeho účtu se změnilo. Chcete-li účet Windows synchronizovat se svým pracovním účtem, zadejte své aktuální heslo pro Windows.</translation>
+<translation id="4669462973597624151">Změnit heslo se nepodařilo. Obraťte se na administrátora.</translation>
 <translation id="4706454071748629324">Přidání nového uživatele se nezdařilo. Na tomto počítači lze pomocí pracovního účtu vytvořit jen jednoho uživatele.</translation>
+<translation id="5186761973554910131">Při pokusu změnit heslo byl zadán nesprávný název počítače. Obraťte se na administrátora.</translation>
 <translation id="6033715878377252112">Pomocník Poskytovatele identifikačních údajů Google pro Windows</translation>
 <translation id="6149399665202317746">Poskytovatel identifikačních údajů Google pro Windows</translation>
 <translation id="6239180560789153226">V zařízení chybí údaje pro obnovení. Přihlaste se pomocí pracovního účtu Google.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Přidat pracovní účet</translation>
 <translation id="7811865856574012727">Administrátor omezil přihlášení zařízení na následující domény: <ph name="EMAIL_DOMAINS" />. Zkuste to znovu pomocí platného pracovního účtu.</translation>
 <translation id="7856245195110636219">Bez zadání aktuálního hesla účtu Windows nelze pokračovat. Kontaktujte administrátora systému.</translation>
+<translation id="8109730953933509335">Došlo k pokusu o změnu hesla neplatného uživatele. Obraťte se na administrátora.</translation>
 <translation id="8639729688781680518">Zapomněl(a) jsem heslo účtu Windows</translation>
 <translation id="866458870819756755">Uživatele se nepodařilo vytvořit.</translation>
 <translation id="8875753657315897487">Přihlaste se pomocí pracovního účtu</translation>

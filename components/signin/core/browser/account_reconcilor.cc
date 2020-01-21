@@ -278,10 +278,11 @@ void AccountReconcilor::Initialize(bool start_reconcile_if_tokens_available) {
 }
 
 void AccountReconcilor::EnableReconcile() {
-  SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_SCHEDULED);
   RegisterWithAllDependencies();
   if (IsIdentityManagerReady())
     StartReconcile();
+  else
+    SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_SCHEDULED);
 }
 
 void AccountReconcilor::DisableReconcile(bool logout_all_accounts) {

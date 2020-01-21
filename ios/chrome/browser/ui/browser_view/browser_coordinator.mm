@@ -293,7 +293,9 @@
   DCHECK(self.dispatcher);
 
   self.appLauncherCoordinator = [[AppLauncherCoordinator alloc]
-      initWithBaseViewController:self.viewController];
+      initWithBaseViewController:self.viewController
+                         browser:self.browser];
+  [self.appLauncherCoordinator start];
 
   self.ARQuickLookCoordinator = [[ARQuickLookCoordinator alloc]
       initWithBaseViewController:self.viewController
@@ -355,8 +357,7 @@
   [self.allPasswordCoordinator stop];
   self.allPasswordCoordinator = nil;
 
-  // TODO(crbug.com/906541) : AppLauncherCoordinator is not a subclass of
-  // ChromeCoordinator, and does not have a |-stop| method.
+  [self.appLauncherCoordinator stop];
   self.appLauncherCoordinator = nil;
 
   [self.ARQuickLookCoordinator stop];

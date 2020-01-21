@@ -173,6 +173,8 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorTest,
                            GetAccountsFromCookieSuccess);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorTest,
+                           EnableReconcileWhileAlreadyRunning);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorTest,
                            GetAccountsFromCookieFailure);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorMirrorTest,
                            ExtraCookieChangeNotification);

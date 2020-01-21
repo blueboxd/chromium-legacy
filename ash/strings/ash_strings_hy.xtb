@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">էկրանի եզերվածք</translation>
 <translation id="119944043368869598">Մաքրել բոլորը</translation>
 <translation id="1247372569136754018">Խոսափող (ներքին)</translation>
-<translation id="1249456112629248620">«<ph name="FEATURE_NAME" />» կարգավորումը պարտադրված է ձեր ադմինիստրատորի կողմից:</translation>
 <translation id="1252999807265626933">Լիցքավորվում է <ph name="POWER_SOURCE" />-ից</translation>
 <translation id="1255033239764210633">Ի՞նչ եղանակ է հիմա։</translation>
 <translation id="1267032506238418139">Դյուրանցումի փոփոխություն</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">Միացեք այլ Wi-Fi ցանցերի</translation>
 <translation id="2718395828230677721">Գիշերային ռեժիմ</translation>
 <translation id="2727977024730340865">Միացված է թույլ լիցքավորիչի: Մարտկոցի լիցքավորումը կարող է հուսալի չլինել:</translation>
-<translation id="2761704814324807722">Կարգավիճակի գոտի, ժամանակը <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">Սարքն ապակողպելու համար մուտքագրեք գաղտնաբառը</translation>
 <translation id="2819276065543622893">Դուք հիմա դուրս կգրվեք:</translation>
@@ -225,7 +223,7 @@
 <translation id="3897533311200664389">Մուտքագրել հարցում</translation>
 <translation id="3899995891769452915">Ձայնային ներածում</translation>
 <translation id="3900355044994618856">Ձեր աշխատաշրջանը կավարտվի <ph name="SESSION_TIME_REMAINING" />-ից</translation>
-<translation id="3901991538546252627">Կապակցում <ph name="NAME" />-ին</translation>
+<translation id="3901991538546252627">Միացում <ph name="NAME" />-ին</translation>
 <translation id="394485226368336402">Ձայնի կարգավորումներ</translation>
 <translation id="3962859241508114581">Նախորդ կատարումը</translation>
 <translation id="3965097803111112935">Անջատված է</translation>
@@ -256,7 +254,7 @@
 <translation id="4338109981321384717">Խոշորացույց</translation>
 <translation id="4351433414020964307">Օգնականը բեռնվում է...</translation>
 <translation id="4356930093361201197">բարձր կոնտրաստի ռեժիմ</translation>
-<translation id="4378551569595875038">Կապակցում…</translation>
+<translation id="4378551569595875038">Միացում…</translation>
 <translation id="4379531060876907730">Սրանք ձեր ստիլուսի գործիքներն են</translation>
 <translation id="4383956581743965695">–<ph name="TIME_SINCE_EXPIRATION" /></translation>
 <translation id="4389184120735010762">Դուք սեղմել եք ամրացված խոշորացույցի դյուրանցման ստեղները: Ուզում եք միացնե՞լ այն:</translation>

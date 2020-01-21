@@ -1823,8 +1823,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
       state.user_scrollable_vertical =
           scrollable_area->UserInputScrollable(kVerticalScrollbar);
 
-      state.scrolls_outer_viewport = box.IsGlobalRootScroller();
-
       // TODO(bokan): We probably don't need to pass ancestor reasons down the
       // scroll tree. On the compositor, in
       // LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint, we walk up

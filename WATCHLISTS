@@ -1098,10 +1098,6 @@
     'infra_docs': {
       'filepath': 'docs/infra',
     },
-    'ink_drop': {
-      'filepath': 'ui/views/animation/test/.*ink_drop.*|' \
-                  'ui/views/animation/.*ink_drop.*'
-    },
     'input': {
       'filepath': 'content/browser/renderer_host/input|'\
                   'content/renderer/input|'\
@@ -2446,7 +2442,6 @@
                    'dmurph+watching-idb@chromium.org'],
     'infra': ['jbudorick+watch@chromium.org'],
     'infra_docs': ['martiniss+watch@chromium.org'],
-    'ink_drop': ['bruthig+ink_drop@chromium.org'],
     'input': ['dtapuska+chromiumwatch@chromium.org',
               'nzolghadr+chromiumwatch@chromium.org'],
     'input_devices': ['spang+watch@chromium.org'],

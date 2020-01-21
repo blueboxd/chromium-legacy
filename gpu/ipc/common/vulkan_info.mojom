@@ -9,6 +9,7 @@ import "gpu/ipc/common/vulkan_types.mojom";
 
 struct VulkanPhysicalDeviceInfo {
   VkPhysicalDeviceProperties properties;
+  array<VkExtensionProperties> extensions;
   array<VkLayerProperties> layers;
   VkPhysicalDeviceFeatures features;
   bool feature_sampler_ycbcr_conversion;

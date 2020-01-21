@@ -456,7 +456,9 @@ void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
   while (priority_queue_.Min() <= document_time) {
     SVGSMILElement* element = priority_queue_.MinElement();
     element->UpdateInterval(document_time);
-    element->UpdateActiveState(document_time);
+    auto events_to_dispatch = element->UpdateActiveState(document_time);
+    if (events_to_dispatch)
+      element->DispatchEvents(events_to_dispatch);
     SMILTime next_interval_time =
         element->ComputeNextIntervalTime(document_time);
     priority_queue_.Update(next_interval_time, element);

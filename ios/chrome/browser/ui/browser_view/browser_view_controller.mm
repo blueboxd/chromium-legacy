@@ -771,7 +771,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           initWithBaseViewController:_browserContainerViewController];
       _downloadManagerCoordinator.presenter =
           [[VerticalAnimationContainer alloc] init];
+      _downloadManagerCoordinator.dispatcher = self.dispatcher;
     }
+
     if (!base::FeatureList::IsEnabled(dialogs::kNonModalDialogs)) {
       _dialogPresenter = [[DialogPresenter alloc] initWithDelegate:self
                                           presentingViewController:self];

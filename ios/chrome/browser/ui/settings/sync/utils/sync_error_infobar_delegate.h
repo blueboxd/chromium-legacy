@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/sync/driver/sync_service_observer.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ui/gfx/image/image.h"
 
@@ -22,10 +23,6 @@ class Image;
 
 namespace infobars {
 class InfoBarManager;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 // Shows a sync error in an infobar.

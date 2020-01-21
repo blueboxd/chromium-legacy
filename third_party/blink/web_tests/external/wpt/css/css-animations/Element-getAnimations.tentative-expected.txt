@@ -3,7 +3,7 @@ PASS getAnimations for non-animated content
 PASS getAnimations for CSS Animations
 PASS getAnimations returns CSSAnimation objects for CSS Animations
 PASS getAnimations for multi-property animations
-FAIL getAnimations for both CSS Animations and CSS Transitions at once assert_class_string: First-returned animation is the CSS Transition expected "[object CSSTransition]" but got "[object CSSAnimation]"
+PASS getAnimations for both CSS Animations and CSS Transitions at once
 PASS getAnimations for CSS Animations that have finished
 PASS getAnimations for CSS Animations that have finished but are forwards filling
 PASS getAnimations for CSS Animations with animation-name: none

@@ -25,7 +25,6 @@ cr.define('settings_personalization_options', function() {
     suiteSetup(function() {
       loadTimeData.overrideValues({
         driveSuggestAvailable: true,
-        passwordsLeakDetectionEnabled: true,
         privacySettingsRedesign: false,
       });
     });

@@ -11,15 +11,12 @@
 #include "base/ios/block_types.h"
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #include "ios/chrome/app/application_mode.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ui/base/page_transition_types.h"
 
 struct UrlLoadParams;
 
 @class TabModel;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // Objective-C delegate for AppUrlLoadingService.
 @protocol AppURLLoadingServiceDelegate

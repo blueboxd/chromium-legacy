@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">Overscan</translation>
 <translation id="119944043368869598">Alle löschen</translation>
 <translation id="1247372569136754018">Mikrofon (intern)</translation>
-<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> Diese Einstellung wird von Ihrem Administrator erzwungen.</translation>
 <translation id="1252999807265626933">Wird über ein <ph name="POWER_SOURCE" /> aufgeladen</translation>
 <translation id="1255033239764210633">Wie ist das Wetter?</translation>
 <translation id="1267032506238418139">Änderung der Tastenkombination</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">Mit anderen WLANs verbinden</translation>
 <translation id="2718395828230677721">Nachtlicht</translation>
 <translation id="2727977024730340865">Das Gerät ist an ein Schwachstrom-Ladegerät angeschlossen. Möglicherweise kann der Akku nicht zuverlässig aufgeladen werden.</translation>
-<translation id="2761704814324807722">Statusleiste, Uhrzeit <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Suchtaste</translation>
 <translation id="2803734122639935495">Zum Entsperren Passwort eingeben</translation>
 <translation id="2819276065543622893">Sie werden jetzt abgemeldet.</translation>

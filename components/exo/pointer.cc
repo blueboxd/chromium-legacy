@@ -225,62 +225,6 @@ void Pointer::UnregisterRelativePointerDelegate(
   relative_pointer_delegate_ = nullptr;
 }
 
-bool Pointer::EnablePointerCapture() {
-  if (!base::FeatureList::IsEnabled(kPointerCapture))
-    return false;
-
-  // You are not allowed to have more than one capture active.
-  if (capture_window_)
-    return false;
-
-  aura::Window* active_window = WMHelper::GetInstance()->GetActiveWindow();
-  if (!active_window) {
-    LOG(ERROR) << "Failed to enable pointer capture: "
-                  "active window not found";
-    return false;
-  }
-  auto* top_level_widget =
-      views::Widget::GetTopLevelWidgetForNativeView(active_window);
-
-  if (!top_level_widget) {
-    LOG(ERROR) << "Failed to enable pointer capture: "
-                  "active window does not have associated widget";
-    return false;
-  }
-  Surface* root_surface =
-      GetShellMainSurface(top_level_widget->GetNativeWindow());
-  if (!root_surface ||
-      !delegate_->CanAcceptPointerEventsForSurface(root_surface)) {
-    LOG(ERROR) << "Failed to enable pointer capture: "
-                  "cannot find window for capture";
-    return false;
-  }
-  return EnablePointerCapture(root_surface);
-}
-
-void Pointer::DisablePointerCapture() {
-  // Early out if pointer capture is not enabled.
-  if (!capture_window_)
-    return;
-
-  // Remove the pre-target handler that consumes all mouse events.
-  aura::Env::GetInstance()->RemovePreTargetHandler(this);
-
-  auto* cursor_client = WMHelper::GetInstance()->GetCursorClient();
-  cursor_client->UnlockCursor();
-  cursor_client->ShowCursor();
-
-  aura::Window* root = capture_window_->GetRootWindow();
-  gfx::Point p = location_when_pointer_capture_enabled_
-                     ? *location_when_pointer_capture_enabled_
-                     : root->bounds().CenterPoint();
-  root->MoveCursorTo(p);
-
-  capture_window_ = nullptr;
-  location_when_pointer_capture_enabled_.reset();
-  UpdateCursor();
-}
-
 bool Pointer::ConstrainPointer(PointerConstraintDelegate* delegate) {
   // Pointer lock is a chromeos-only feature (i.e. the chromeos::features
   // namespace only exists in chromeos builds). So we do not compile pointer
@@ -343,6 +287,29 @@ bool Pointer::EnablePointerCapture(Surface* capture_surface) {
     MoveCursorToCenterOfActiveDisplay();
 
   return true;
+}
+
+void Pointer::DisablePointerCapture() {
+  // Early out if pointer capture is not enabled.
+  if (!capture_window_)
+    return;
+
+  // Remove the pre-target handler that consumes all mouse events.
+  aura::Env::GetInstance()->RemovePreTargetHandler(this);
+
+  auto* cursor_client = WMHelper::GetInstance()->GetCursorClient();
+  cursor_client->UnlockCursor();
+  cursor_client->ShowCursor();
+
+  aura::Window* root = capture_window_->GetRootWindow();
+  gfx::Point p = location_when_pointer_capture_enabled_
+                     ? *location_when_pointer_capture_enabled_
+                     : root->bounds().CenterPoint();
+  root->MoveCursorTo(p);
+
+  capture_window_ = nullptr;
+  location_when_pointer_capture_enabled_.reset();
+  UpdateCursor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -120,7 +120,7 @@ WebLaunchFilesHelper::WebLaunchFilesHelper(
   // Asynchronously call MaybeSendLaunchEntries, since it may destroy |this|.
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindOnce(&WebLaunchFilesHelper::MaybeSendLaunchEntries,
-                                weak_ptr_factory.GetWeakPtr()));
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 WebLaunchFilesHelper::WebLaunchFilesHelper(
@@ -143,7 +143,7 @@ WebLaunchFilesHelper::WebLaunchFilesHelper(
   // Asynchronously call MaybeSendLaunchEntries, since it may destroy |this|.
   base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                  base::BindOnce(&WebLaunchFilesHelper::MaybeSendLaunchEntries,
-                                weak_ptr_factory.GetWeakPtr()));
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 WebLaunchFilesHelper::~WebLaunchFilesHelper() = default;

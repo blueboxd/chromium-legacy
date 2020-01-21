@@ -12,11 +12,13 @@
 #include "base/component_export.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "chromeos/components/smbfs/mojom/smbfs.mojom.h"
 #include "chromeos/components/smbfs/smbfs_host.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "chromeos/disks/mount_point.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
 
@@ -25,8 +27,7 @@ namespace smbfs {
 // SmbFsMounter is a helper class that is used to mount an instance of smbfs. It
 // performs all the actions necessary to start smbfs and initiate a connection
 // to the SMB server.
-class COMPONENT_EXPORT(SMBFS) SmbFsMounter
-    : public chromeos::disks::DiskMountManager::Observer {
+class COMPONENT_EXPORT(SMBFS) SmbFsMounter {
  public:
   using DoneCallback =
       base::OnceCallback<void(mojom::MountError, std::unique_ptr<SmbFsHost>)>;
@@ -50,7 +51,7 @@ class COMPONENT_EXPORT(SMBFS) SmbFsMounter
                const MountOptions& options,
                SmbFsHost::Delegate* delegate,
                chromeos::disks::DiskMountManager* disk_mount_manager);
-  ~SmbFsMounter() override;
+  virtual ~SmbFsMounter();
 
   // Initiate the filesystem mount request, and run |callback| when completed.
   // |callback| is guaranteed not to run after |this| is destroyed.
@@ -58,14 +59,19 @@ class COMPONENT_EXPORT(SMBFS) SmbFsMounter
   virtual void Mount(DoneCallback callback);
 
  protected:
+  // Additional constructors for tests.
   SmbFsMounter();
+  SmbFsMounter(const std::string& share_path,
+               const std::string& mount_dir_name,
+               const MountOptions& options,
+               SmbFsHost::Delegate* delegate,
+               chromeos::disks::DiskMountManager* disk_mount_manager,
+               mojo::Remote<mojom::SmbFsBootstrap> bootstrap);
 
  private:
-  // DiskMountManager::Observer overrides.
-  void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
-                    chromeos::MountError error_code,
-                    const chromeos::disks::DiskMountManager::MountPointInfo&
-                        mount_info) override;
+  // Callback for MountPoint::Mount().
+  void OnMountDone(chromeos::MountError error_code,
+                   std::unique_ptr<chromeos::disks::MountPoint> mount_point);
 
   // Callback for receiving a Mojo bootstrap channel.
   void OnIpcChannel(base::ScopedFD mojo_fd);
@@ -97,9 +103,11 @@ class COMPONENT_EXPORT(SMBFS) SmbFsMounter
   base::OneShotTimer mount_timer_;
   DoneCallback callback_;
 
-  std::string mount_path_;
+  std::unique_ptr<chromeos::disks::MountPoint> mount_point_;
   mojo::OutgoingInvitation bootstrap_invitation_;
   mojo::Remote<mojom::SmbFsBootstrap> bootstrap_;
+
+  base::WeakPtrFactory<SmbFsMounter> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SmbFsMounter);
 };

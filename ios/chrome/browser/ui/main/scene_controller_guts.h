@@ -11,6 +11,7 @@
 #import "ios/chrome/app/application_delegate/tab_opening.h"
 #import "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 
 @class TabModel;
 
@@ -18,7 +19,7 @@ namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-@protocol SceneControllerGuts
+@protocol SceneControllerGuts <WebStateListObserving>
 
 - (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
                            dismissOmnibox:(BOOL)dismissOmnibox;
@@ -59,8 +60,17 @@ class ChromeBrowserState;
 - (void)presentSignedInAccountsViewControllerForBrowserState:
     (ios::ChromeBrowserState*)browserState;
 
-// Returns YES if the settings navigation controller exists.
-- (BOOL)hasSettingsNavigationController;
+// Clears incognito data that is specific to iOS and won't be cleared by
+// deleting the browser state.
+- (void)clearIOSSpecificIncognitoData;
+
+- (void)activateBVCAndMakeCurrentBVCPrimary;
+
+#pragma mark - iOS 12 compat
+
+// Method called on SceneController when the scene disconnects. Exposed here for
+// iOS 12 compatibility.
+- (void)teardownUI;
 
 @end
 

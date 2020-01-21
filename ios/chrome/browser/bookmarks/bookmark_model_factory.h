@@ -10,15 +10,13 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 namespace bookmarks {
 class BookmarkModel;
 }
 
 namespace ios {
-
-class ChromeBrowserState;
-
 // Singleton that owns all BookmarkModels and associates them with
 // ios::ChromeBrowserState.
 class BookmarkModelFactory : public BrowserStateKeyedServiceFactory {

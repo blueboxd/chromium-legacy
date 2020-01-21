@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">kuvasta rajataan pois osa</translation>
 <translation id="119944043368869598">Tyhjennä kaikki</translation>
 <translation id="1247372569136754018">Mikrofoni (sisäinen)</translation>
-<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> Järjestelmänvalvojasi vastaa tästä asetuksesta.</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> lataa laitetta.</translation>
 <translation id="1255033239764210633">Miltä päivän sää näyttää?</translation>
 <translation id="1267032506238418139">Pikanäppäimen muutos</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">Liity muihin Wi-Fi-verkkoihin</translation>
 <translation id="2718395828230677721">Yövalo</translation>
 <translation id="2727977024730340865">Pienitehoinen laturi kytketty. Akku ei ehkä lataudu luotettavasti.</translation>
-<translation id="2761704814324807722">Tila-alue, aika <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + haku</translation>
 <translation id="2803734122639935495">Avaa lukitus antamalla salasana</translation>
 <translation id="2819276065543622893">Sinut kirjataan ulos nyt.</translation>

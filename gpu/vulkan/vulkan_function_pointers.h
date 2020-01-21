@@ -73,6 +73,8 @@ struct VulkanFunctionPointers {
   // Instance functions
   PFN_vkCreateDevice vkCreateDeviceFn = nullptr;
   PFN_vkDestroyInstance vkDestroyInstanceFn = nullptr;
+  PFN_vkEnumerateDeviceExtensionProperties
+      vkEnumerateDeviceExtensionPropertiesFn = nullptr;
   PFN_vkEnumerateDeviceLayerProperties vkEnumerateDeviceLayerPropertiesFn =
       nullptr;
   PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevicesFn = nullptr;
@@ -228,6 +230,8 @@ struct VulkanFunctionPointers {
 // Instance functions
 #define vkCreateDevice gpu::GetVulkanFunctionPointers()->vkCreateDeviceFn
 #define vkDestroyInstance gpu::GetVulkanFunctionPointers()->vkDestroyInstanceFn
+#define vkEnumerateDeviceExtensionProperties \
+  gpu::GetVulkanFunctionPointers()->vkEnumerateDeviceExtensionPropertiesFn
 #define vkEnumerateDeviceLayerProperties \
   gpu::GetVulkanFunctionPointers()->vkEnumerateDeviceLayerPropertiesFn
 #define vkEnumeratePhysicalDevices \

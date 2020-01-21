@@ -7,7 +7,9 @@
 #import <UIKit/UIKit.h>
 
 #include "base/mac/foundation_util.h"
+#include "base/test/task_environment.h"
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
+#include "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/app_launcher_alert_overlay.h"
@@ -32,8 +34,10 @@ class AppLauncherCoordinatorTest : public PlatformTest {
   AppLauncherCoordinatorTest() {
     base_view_controller_ = [[UIViewController alloc] init];
     [scoped_key_window_.Get() setRootViewController:base_view_controller_];
+    browser_ = std::make_unique<TestBrowser>();
     coordinator_ = [[AppLauncherCoordinator alloc]
-        initWithBaseViewController:base_view_controller_];
+        initWithBaseViewController:base_view_controller_
+                           browser:browser_.get()];
     application_ = OCMClassMock([UIApplication class]);
     OCMStub([application_ sharedApplication]).andReturn(application_);
     AppLauncherTabHelper::CreateForWebState(&web_state_, nil, nil);
@@ -72,9 +76,12 @@ class AppLauncherCoordinatorTest : public PlatformTest {
     }
   }
 
+  base::test::TaskEnvironment task_environment_;
+
   web::TestWebState web_state_;
   UIViewController* base_view_controller_ = nil;
   ScopedKeyWindow scoped_key_window_;
+  std::unique_ptr<Browser> browser_;
   AppLauncherCoordinator* coordinator_ = nil;
   id application_ = nil;
 };

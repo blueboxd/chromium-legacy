@@ -11,9 +11,11 @@
 namespace web {
 class DownloadTask;
 }  // namespace web
-class WebStateList;
 
+@protocol BrowserCoordinatorCommands;
+@class CommandDispatcher;
 @protocol ContainedPresenter;
+class WebStateList;
 
 // Coordinates presentation of Download Manager UI.
 @interface DownloadManagerCoordinator
@@ -37,6 +39,8 @@ class WebStateList;
 
 // Underlying UIViewController presented by this coordinator.
 @property(nonatomic, readonly) UIViewController* viewController;
+
+@property(nonatomic, weak) CommandDispatcher* dispatcher;
 
 @end
 

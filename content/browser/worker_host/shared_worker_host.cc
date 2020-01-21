@@ -389,8 +389,9 @@ void SharedWorkerHost::OnFeatureUsed(blink::mojom::WebFeature feature) {
     info.client->OnFeatureUsed(feature);
 }
 
-void SharedWorkerHost::RenderProcessHostDestroyed(
-    RenderProcessHost* render_process_host) {
+void SharedWorkerHost::RenderProcessExited(
+    RenderProcessHost* render_process_host,
+    const ChildProcessTerminationInfo& info) {
   DCHECK_EQ(worker_process_host_, render_process_host);
   Destruct();
 }

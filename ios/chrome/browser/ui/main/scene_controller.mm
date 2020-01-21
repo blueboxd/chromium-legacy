@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/post_task.h"
 #include "components/payments/core/features.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/url_formatter/url_formatter.h"
@@ -23,6 +24,7 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
+#include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ntp/features.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher.h"
@@ -39,6 +41,7 @@
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
+#import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
@@ -50,10 +53,12 @@
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_service_factory.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
+#include "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -90,10 +95,22 @@ enum class EnterTabSwitcherSnapshotResult {
 }  // namespace
 
 @interface SceneController () <UserFeedbackDataSource,
-                               SettingsNavigationControllerDelegate>
+                               SettingsNavigationControllerDelegate,
+                               WebStateListObserving>
 
 // A flag that keeps track of the UI initialization for the controlled scene.
 @property(nonatomic, assign) BOOL hasInitializedUI;
+
+// The SigninInteractionCoordinator to present Sign In UI. It is created the
+// first time Sign In UI is needed to be presented and should not be destroyed
+// while the UI is presented.
+@property(nonatomic, strong)
+    SigninInteractionCoordinator* signinInteractionCoordinator;
+
+// Returns YES if the settings are presented, either from
+// self.settingsNavigationController or from SigninInteractionCoordinator.
+@property(nonatomic, assign, readonly, getter=isSettingsViewPresented)
+    BOOL settingsViewPresented;
 
 @end
 
@@ -135,6 +152,11 @@ enum class EnterTabSwitcherSnapshotResult {
   return self.mainController.interfaceProvider;
 }
 
+- (BOOL)isSettingsViewPresented {
+  return self.settingsNavigationController ||
+         self.signinInteractionCoordinator.isSettingsViewPresented;
+}
+
 #pragma mark - SceneStateObserver
 
 - (void)sceneState:(SceneState*)sceneState
@@ -150,10 +172,18 @@ enum class EnterTabSwitcherSnapshotResult {
   self.hasInitializedUI = YES;
 }
 
-#pragma mark - Guts
+// This method completely destroys all of the UI. It should be called when the
+// scene is disconnected.
+- (void)teardownUI {
+  if (!self.hasInitializedUI) {
+    return;  // Nothing to do.
+  }
 
-- (BOOL)hasSettingsNavigationController {
-  return self.settingsNavigationController != nil;
+  // The UI should be stopped before the models they observe are stopped.
+  [self.signinInteractionCoordinator cancel];
+  self.signinInteractionCoordinator = nil;
+
+  self.hasInitializedUI = NO;
 }
 
 #pragma mark - ApplicationCommands
@@ -217,7 +247,7 @@ enum class EnterTabSwitcherSnapshotResult {
   DCHECK(!self.mainController.isTabSwitcherActive);
   if (!self.mainController.isProcessingVoiceSearchCommand) {
     [self.mainController.currentBVC userEnteredTabSwitcher];
-    [self.mainController showTabSwitcher];
+    [self showTabSwitcher];
     self.mainController.isProcessingTabSwitcherCommand = YES;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
                                  kExpectedTransitionDurationInNanoSeconds),
@@ -230,8 +260,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove showing settings from MainController.
 - (void)showAutofillSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(!self.mainController.signinInteractionCoordinator
-              .isSettingsViewPresented);
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (self.settingsNavigationController)
     return;
 
@@ -250,8 +279,7 @@ enum class EnterTabSwitcherSnapshotResult {
   // This dispatch is necessary to give enough time for the tools menu to
   // disappear before taking a screenshot.
   dispatch_async(dispatch_get_main_queue(), ^{
-    DCHECK(!self.mainController.signinInteractionCoordinator
-                .isSettingsViewPresented);
+    DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
     if (self.settingsNavigationController)
       return;
     Browser* browser = self.mainInterface.browser;
@@ -283,29 +311,27 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
 - (void)showSignin:(ShowSigninCommand*)command
     baseViewController:(UIViewController*)baseViewController {
-  if (!self.mainController.signinInteractionCoordinator) {
+  if (!self.signinInteractionCoordinator) {
     Browser* mainBrowser = self.mainInterface.browser;
-    self.mainController.signinInteractionCoordinator =
-        [[SigninInteractionCoordinator alloc]
-            initWithBrowser:mainBrowser
-                 dispatcher:self.mainController.mainBVC.dispatcher];
+    self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
+        initWithBrowser:mainBrowser
+             dispatcher:self.mainController.mainBVC.dispatcher];
   }
 
   switch (command.operation) {
     case AUTHENTICATION_OPERATION_REAUTHENTICATE:
-      [self.mainController.signinInteractionCoordinator
+      [self.signinInteractionCoordinator
           reAuthenticateWithAccessPoint:command.accessPoint
                             promoAction:command.promoAction
                presentingViewController:baseViewController
                              completion:command.callback];
       break;
     case AUTHENTICATION_OPERATION_SIGNIN:
-      [self.mainController.signinInteractionCoordinator
-                signInWithIdentity:command.identity
-                       accessPoint:command.accessPoint
-                       promoAction:command.promoAction
-          presentingViewController:baseViewController
-                        completion:command.callback];
+      [self.signinInteractionCoordinator signInWithIdentity:command.identity
+                                                accessPoint:command.accessPoint
+                                                promoAction:command.promoAction
+                                   presentingViewController:baseViewController
+                                                 completion:command.callback];
       break;
   }
 }
@@ -313,11 +339,10 @@ enum class EnterTabSwitcherSnapshotResult {
 - (void)showAdvancedSigninSettingsFromViewController:
     (UIViewController*)baseViewController {
   Browser* mainBrowser = self.mainInterface.browser;
-  self.mainController.signinInteractionCoordinator =
-      [[SigninInteractionCoordinator alloc]
-          initWithBrowser:mainBrowser
-               dispatcher:self.mainController.mainBVC.dispatcher];
-  [self.mainController.signinInteractionCoordinator
+  self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
+      initWithBrowser:mainBrowser
+           dispatcher:self.mainController.mainBVC.dispatcher];
+  [self.signinInteractionCoordinator
       showAdvancedSigninSettingsWithPresentingViewController:
           baseViewController];
 }
@@ -325,14 +350,13 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove settings commands from MainController.
 - (void)showAddAccountFromViewController:(UIViewController*)baseViewController {
   Browser* mainBrowser = self.mainInterface.browser;
-  if (!self.mainController.signinInteractionCoordinator) {
-    self.mainController.signinInteractionCoordinator =
-        [[SigninInteractionCoordinator alloc]
-            initWithBrowser:mainBrowser
-                 dispatcher:self.mainController.mainBVC.dispatcher];
+  if (!self.signinInteractionCoordinator) {
+    self.signinInteractionCoordinator = [[SigninInteractionCoordinator alloc]
+        initWithBrowser:mainBrowser
+             dispatcher:self.mainController.mainBVC.dispatcher];
   }
 
-  [self.mainController.signinInteractionCoordinator
+  [self.signinInteractionCoordinator
       addAccountWithAccessPoint:signin_metrics::AccessPoint::
                                     ACCESS_POINT_UNKNOWN
                     promoAction:signin_metrics::PromoAction::
@@ -358,8 +382,7 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)showSettingsFromViewController:(UIViewController*)baseViewController {
-  DCHECK(!self.mainController.signinInteractionCoordinator
-              .isSettingsViewPresented);
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (self.settingsNavigationController)
     return;
   [[DeferredInitializationRunner sharedInstance]
@@ -380,8 +403,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings from MainController.
 - (void)showAccountsSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(!self.mainController.signinInteractionCoordinator
-              .isSettingsViewPresented);
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (!baseViewController) {
     DCHECK_EQ(self.mainController.currentBVC,
               self.mainController.mainCoordinator.activeViewController);
@@ -410,8 +432,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove Google services settings from MainController.
 - (void)showGoogleServicesSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(!self.mainController.signinInteractionCoordinator
-              .isSettingsViewPresented);
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (!baseViewController) {
     DCHECK_EQ(self.mainController.currentBVC,
               self.mainController.mainCoordinator.activeViewController);
@@ -439,8 +460,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showSyncPassphraseSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(!self.mainController.signinInteractionCoordinator
-              .isSettingsViewPresented);
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
         showSyncPassphraseSettingsFromViewController:baseViewController];
@@ -459,8 +479,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showSavedPasswordsSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(!self.mainController.signinInteractionCoordinator
-              .isSettingsViewPresented);
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
         showSavedPasswordsSettingsFromViewController:baseViewController];
@@ -478,8 +497,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showProfileSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(!self.mainController.signinInteractionCoordinator
-              .isSettingsViewPresented);
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
         showProfileSettingsFromViewController:baseViewController];
@@ -498,8 +516,7 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showCreditCardSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(!self.mainController.signinInteractionCoordinator
-              .isSettingsViewPresented);
+  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
         showCreditCardSettingsFromViewController:baseViewController];
@@ -635,7 +652,7 @@ enum class EnterTabSwitcherSnapshotResult {
     self.mainController.modeToDisplayOnTabSwitcherDismissal =
         TabSwitcherDismissalMode::NONE;
     self.mainController.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
-    [self.mainController showTabSwitcher];
+    [self showTabSwitcher];
     return;
   }
 
@@ -827,7 +844,7 @@ enum class EnterTabSwitcherSnapshotResult {
     [self.mainController displayCurrentBVCAndFocusOmnibox:NO];
 
   // Tell the BVC that was made current that it can use the web.
-  [self.mainController activateBVCAndMakeCurrentBVCPrimary];
+  [self activateBVCAndMakeCurrentBVCPrimary];
 }
 
 - (void)dismissModalDialogsWithCompletion:(ProceduralBlock)completion
@@ -852,7 +869,7 @@ enum class EnterTabSwitcherSnapshotResult {
   ProceduralBlock completionWithBVC = ^{
     DCHECK(self.mainController.currentBVC);
     DCHECK(!self.mainController.tabSwitcherIsActive);
-    DCHECK(!self.mainController.signinInteractionCoordinator.isActive);
+    DCHECK(!self.signinInteractionCoordinator.isActive);
     // This will dismiss the SSO view controller.
     [self.interfaceProvider.currentInterface
         clearPresentedStateWithCompletion:completion
@@ -863,7 +880,7 @@ enum class EnterTabSwitcherSnapshotResult {
     // active.
     DCHECK(self.mainController.tabSwitcherIsActive);
     // This will dismiss the SSO view controller.
-    [self.mainController.signinInteractionCoordinator cancelAndDismiss];
+    [self.signinInteractionCoordinator cancelAndDismiss];
     // History coordinator can be started on top of the tab grid. This is not
     // true of the other tab switchers.
     DCHECK(self.mainController.mainCoordinator);
@@ -875,18 +892,18 @@ enum class EnterTabSwitcherSnapshotResult {
   // dismissed. Then, based on whether the BVC is present or not, a different
   // completion callback is called.
   if (!self.mainController.tabSwitcherIsActive &&
-      self.mainController.isSettingsViewPresented) {
+      self.isSettingsViewPresented) {
     // In this case, the settings are up and the BVC is showing. Close the
     // settings then call the BVC completion.
     [self closeSettingsAnimated:NO completion:completionWithBVC];
-  } else if (self.mainController.isSettingsViewPresented) {
+  } else if (self.isSettingsViewPresented) {
     // In this case, the settings are up but the BVC is not showing. Close the
     // settings then call the no-BVC completion.
     [self closeSettingsAnimated:NO completion:completionWithoutBVC];
   } else if (![self.mainController isTabSwitcherActive]) {
     // In this case, the settings are not shown but the BVC is showing. Call the
     // BVC completion.
-    [self.mainController.signinInteractionCoordinator cancel];
+    [self.signinInteractionCoordinator cancel];
     completionWithBVC();
   } else {
     // In this case, neither the settings nor the BVC are shown. Call the no-BVC
@@ -1137,9 +1154,8 @@ enum class EnterTabSwitcherSnapshotResult {
   //  - start sign-in
   //  - tap on "Settings" to open the advanced sign-in settings
   //  - tap on "Manage Your Google Account"
-  DCHECK(
-      self.mainController.signinInteractionCoordinator.isSettingsViewPresented);
-  [self.mainController.signinInteractionCoordinator
+  DCHECK(self.signinInteractionCoordinator.isSettingsViewPresented);
+  [self.signinInteractionCoordinator
       abortAndDismissSettingsViewAnimated:animated
                                completion:completion];
 }
@@ -1149,6 +1165,146 @@ enum class EnterTabSwitcherSnapshotResult {
   // privately.
   return top_view_controller::TopPresentedViewControllerFrom(
       self.mainController.mainCoordinator.viewController);
+}
+
+#pragma mark - WebStateListObserving
+
+// Called when a WebState is removed. Triggers the switcher view when the last
+// WebState is closed on a device that uses the switcher.
+- (void)webStateList:(WebStateList*)notifiedWebStateList
+    didDetachWebState:(web::WebState*)webState
+              atIndex:(int)atIndex {
+  // Do nothing on initialization.
+  if (![self currentTabModel].webStateList)
+    return;
+
+  if (notifiedWebStateList->empty()) {
+    if (webState->GetBrowserState()->IsOffTheRecord()) {
+      [self lastIncognitoTabClosed];
+    } else {
+      [self lastRegularTabClosed];
+    }
+  }
+}
+
+// Called when the last incognito tab was closed.
+- (void)lastIncognitoTabClosed {
+  // This seems the best place to mark the start of destroying the incognito
+  // browser state.
+  breakpad_helper::SetDestroyingAndRebuildingIncognitoBrowserState(
+      /*in_progress=*/true);
+  DCHECK(self.mainController.mainBrowserState
+             ->HasOffTheRecordChromeBrowserState());
+  [self clearIOSSpecificIncognitoData];
+
+  // OffTheRecordProfileIOData cannot be deleted before all the requests are
+  // deleted. Queue browser state recreation on IO thread.
+  base::PostTaskAndReply(FROM_HERE, {web::WebThread::IO}, base::DoNothing(),
+                         base::BindRepeating(^{
+                           [self destroyAndRebuildIncognitoBrowserState];
+                         }));
+
+  // a) The first condition can happen when the last incognito tab is closed
+  // from the tab switcher.
+  // b) The second condition can happen if some other code (like JS) triggers
+  // closure of tabs from the otr tab model when it's not current.
+  // Nothing to do here. The next user action (like clicking on an existing
+  // regular tab or creating a new incognito tab from the settings menu) will
+  // take care of the logic to mode switch.
+  if (self.mainController.tabSwitcherIsActive ||
+      ![self.mainController.currentTabModel isOffTheRecord]) {
+    return;
+  }
+
+  if ([self.mainController.currentTabModel count] == 0U) {
+    [self showTabSwitcher];
+  } else {
+    [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
+  }
+}
+
+// Called when the last regular tab was closed.
+- (void)lastRegularTabClosed {
+  // a) The first condition can happen when the last regular tab is closed from
+  // the tab switcher.
+  // b) The second condition can happen if some other code (like JS) triggers
+  // closure of tabs from the main tab model when the main tab model is not
+  // current.
+  // Nothing to do here.
+  if (self.mainController.tabSwitcherIsActive ||
+      [self.mainController.currentTabModel isOffTheRecord]) {
+    return;
+  }
+
+  [self showTabSwitcher];
+}
+
+- (void)clearIOSSpecificIncognitoData {
+  DCHECK(self.mainController.mainBrowserState
+             ->HasOffTheRecordChromeBrowserState());
+  ios::ChromeBrowserState* otrBrowserState =
+      self.mainController.mainBrowserState->GetOffTheRecordChromeBrowserState();
+  [self.mainController
+      removeBrowsingDataForBrowserState:otrBrowserState
+                             timePeriod:browsing_data::TimePeriod::ALL_TIME
+                             removeMask:BrowsingDataRemoveMask::REMOVE_ALL
+                        completionBlock:^{
+                          [self activateBVCAndMakeCurrentBVCPrimary];
+                        }];
+}
+
+- (void)activateBVCAndMakeCurrentBVCPrimary {
+  // If there are pending removal operations, the activation will be deferred
+  // until the callback is received.
+  BrowsingDataRemover* browsingDataRemover =
+      BrowsingDataRemoverFactory::GetForBrowserStateIfExists(
+          self.currentBrowserState);
+  if (browsingDataRemover && browsingDataRemover->IsRemoving())
+    return;
+
+  self.interfaceProvider.mainInterface.userInteractionEnabled = YES;
+  self.interfaceProvider.incognitoInterface.userInteractionEnabled = YES;
+  [self.mainController.currentBVC setPrimary:YES];
+}
+
+- (void)showTabSwitcher {
+  DCHECK(self.mainController.tabSwitcher);
+  // Tab switcher implementations may need to rebuild state before being
+  // displayed.
+  [self.mainController.tabSwitcher
+      restoreInternalStateWithMainTabModel:self.mainInterface.tabModel
+                               otrTabModel:self.incognitoInterface.tabModel
+                            activeTabModel:self.currentTabModel];
+  self.mainController.tabSwitcherIsActive = YES;
+  [self.mainController.tabSwitcher setDelegate:self];
+
+  [self.mainController.mainCoordinator
+      showTabSwitcher:self.mainController.tabSwitcher];
+}
+
+// Destroys and rebuilds the incognito browser state.
+- (void)destroyAndRebuildIncognitoBrowserState {
+  BOOL otrBVCIsCurrent = (self.interfaceProvider.mainInterface.bvc ==
+                          self.interfaceProvider.incognitoInterface.bvc);
+
+  // Clear the OTR tab model and notify the _tabSwitcher that its otrBVC will
+  // be destroyed.
+  [self.mainController.tabSwitcher setOtrBrowser:nil];
+
+  [self.mainController.browserViewWrangler destroyAndRebuildIncognitoBrowser];
+
+  if (otrBVCIsCurrent) {
+    [self activateBVCAndMakeCurrentBVCPrimary];
+  }
+
+  // Always set the new otr tab model for the tablet or grid switcher.
+  // Notify the _tabSwitcher with the new otrBVC.
+  [self.mainController.tabSwitcher setOtrBrowser:self.mainInterface.browser];
+
+  // This seems the best place to deem the destroying and rebuilding the
+  // incognito browser state to be completed.
+  breakpad_helper::SetDestroyingAndRebuildingIncognitoBrowserState(
+      /*in_progress=*/false);
 }
 
 @end

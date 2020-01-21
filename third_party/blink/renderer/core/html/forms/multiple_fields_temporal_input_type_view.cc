@@ -690,4 +690,8 @@ AXObject* MultipleFieldsTemporalInputTypeView::PopupRootAXObject() {
   return nullptr;
 }
 
+bool MultipleFieldsTemporalInputTypeView::TypeShouldForceLegacyLayout() const {
+  return false;
+}
+
 }  // namespace blink

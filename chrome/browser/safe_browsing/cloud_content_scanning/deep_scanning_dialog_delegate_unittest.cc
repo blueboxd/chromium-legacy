@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/fake_deep_scanning_dialog_delegate.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -1391,6 +1392,55 @@ TEST_F(DeepScanningDialogDelegateAuditOnlyTest, UnsupportedTypeAndDLPFailure) {
   RunUntilDone();
   EXPECT_TRUE(called);
 }
+
+// TODO(crbug/1041890): This test should not depend on
+// DeepScanningDialogDelegateAuditOnlyTest. Refactor this by moving common
+// functionalities to BaseTest or util classes/functions.
+class DeepScanningDialogDelegateResultHandlingTest
+    : public DeepScanningDialogDelegateAuditOnlyTest,
+      public testing::WithParamInterface<BinaryUploadService::Result> {};
+
+TEST_P(DeepScanningDialogDelegateResultHandlingTest, Test) {
+  GURL url(kTestUrl);
+  DeepScanningDialogDelegate::Data data;
+  FakeDeepScanningDialogDelegate::SetResponseResult(GetParam());
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(profile(), url, &data));
+
+  data.paths.emplace_back(FILE_PATH_LITERAL("/tmp/foo.txt"));
+
+  bool called = false;
+  DeepScanningDialogDelegate::ShowForWebContents(
+      contents(), std::move(data),
+      base::BindOnce(
+          [](bool* called, const DeepScanningDialogDelegate::Data& data,
+             const DeepScanningDialogDelegate::Result& result) {
+            EXPECT_EQ(0u, data.text.size());
+            EXPECT_EQ(1u, data.paths.size());
+            EXPECT_EQ(0u, result.text_results.size());
+            EXPECT_EQ(1u, result.paths_results.size());
+
+            bool expected =
+                DeepScanningDialogDelegate::ResultShouldAllowDataUse(
+                    GetParam());
+            EXPECT_EQ(expected, result.paths_results[0]);
+            *called = true;
+          },
+          &called));
+  RunUntilDone();
+  EXPECT_TRUE(called);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    Tests,
+    DeepScanningDialogDelegateResultHandlingTest,
+    testing::Values(BinaryUploadService::Result::UNKNOWN,
+                    BinaryUploadService::Result::SUCCESS,
+                    BinaryUploadService::Result::UPLOAD_FAILURE,
+                    BinaryUploadService::Result::TIMEOUT,
+                    BinaryUploadService::Result::FILE_TOO_LARGE,
+                    BinaryUploadService::Result::FAILED_TO_GET_TOKEN,
+                    BinaryUploadService::Result::UNAUTHORIZED,
+                    BinaryUploadService::Result::FILE_ENCRYPTED));
 
 }  // namespace
 

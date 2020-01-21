@@ -38,20 +38,17 @@ void QueueMessageSwapPromise::DidActivate() {
 void QueueMessageSwapPromise::WillSwap(viz::CompositorFrameMetadata* metadata) {
   message_queue_->DidSwap(source_frame_number_);
 
-  if (!message_queue_->AreFramesDiscarded()) {
-    std::unique_ptr<FrameSwapMessageQueue::SendMessageScope>
-        send_message_scope = message_queue_->AcquireSendMessageScope();
-    std::vector<std::unique_ptr<IPC::Message>> messages;
-    message_queue_->DrainMessages(&messages);
+  std::unique_ptr<FrameSwapMessageQueue::SendMessageScope> send_message_scope =
+      message_queue_->AcquireSendMessageScope();
+  std::vector<std::unique_ptr<IPC::Message>> messages;
+  message_queue_->DrainMessages(&messages);
 
-    std::vector<IPC::Message> messages_to_send;
-    FrameSwapMessageQueue::TransferMessages(&messages, &messages_to_send);
-    if (!messages_to_send.empty()) {
-      metadata->send_frame_token_to_embedder = true;
-      message_sender_->Send(new WidgetHostMsg_FrameSwapMessages(
-          message_queue_->routing_id(), metadata->frame_token,
-          messages_to_send));
-    }
+  std::vector<IPC::Message> messages_to_send;
+  FrameSwapMessageQueue::TransferMessages(&messages, &messages_to_send);
+  if (!messages_to_send.empty()) {
+    metadata->send_frame_token_to_embedder = true;
+    message_sender_->Send(new WidgetHostMsg_FrameSwapMessages(
+        message_queue_->routing_id(), metadata->frame_token, messages_to_send));
   }
 }
 

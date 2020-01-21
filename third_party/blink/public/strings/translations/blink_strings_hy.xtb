@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">սահիչ</translation>
 <translation id="1211441953136645838">ավարտական ծանոթագրություն</translation>
 <translation id="1281252709823657822">երկխոսության պատուհան</translation>
+<translation id="1306460908038601864">ԱՆՋԱՏ</translation>
 <translation id="1335095011850992622">երախտիքի խոսքեր</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">ազդերիզ</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> ՊԲ</translation>
 <translation id="5307600278924710095">Մուտքագրեք «<ph name="ATSIGN" />»-ին հաջորդող մասը: «<ph name="INVALIDADDRESS" />»-ը թերի է:</translation>
 <translation id="5334352251556557839">Չհաջողվեց նվագարկել մեդիա ֆայլը:</translation>
+<translation id="537648784377940524">Նվազագույն ամսաթիվը (<ph name="MIN_DATE_OR_TIME" />) պետք է լինի առավելագույն ամսաթվից առաջ (<ph name="MAX_DATE_OR_TIME" />)։</translation>
 <translation id="5406322316791861025">պատկեր</translation>
 <translation id="5453733299334684579">ծառի տարր</translation>
 <translation id="5466621249238537318">Ընտրեք մեկ կամ մի քանի ֆայլ:</translation>

@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">сырғытпа</translation>
 <translation id="1211441953136645838">түсіндірме</translation>
 <translation id="1281252709823657822">диалогтық терезе</translation>
+<translation id="1306460908038601864">Өшірулі</translation>
 <translation id="1335095011850992622">рұқсаттар</translation>
 <translation id="1342835525016946179">мақала</translation>
 <translation id="1359897965706325498">баннер</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="5307600278924710095">"<ph name="ATSIGN" />" болып жалғасатын бөлікті енгізіңіз. "<ph name="INVALIDADDRESS" />" толық емес.</translation>
 <translation id="5334352251556557839">Медиафайл ойнатылмады.</translation>
+<translation id="537648784377940524">Минималды күн (<ph name="MIN_DATE_OR_TIME" />) максималды күннен (<ph name="MAX_DATE_OR_TIME" />) бұрын болуы тиіс.</translation>
 <translation id="5406322316791861025">пішін</translation>
 <translation id="5453733299334684579">ағаш тәрізді элемент</translation>
 <translation id="5466621249238537318">Бір немесе бірнеше файлды таңдаңыз.</translation>

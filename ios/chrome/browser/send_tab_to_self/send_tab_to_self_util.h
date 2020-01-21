@@ -7,11 +7,9 @@
 
 #import <Foundation/Foundation.h>
 
-class GURL;
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
-namespace ios {
-class ChromeBrowserState;
-}
+class GURL;
 
 namespace send_tab_to_self {
 

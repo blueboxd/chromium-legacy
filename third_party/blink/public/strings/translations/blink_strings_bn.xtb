@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">স্লাইডার</translation>
 <translation id="1211441953136645838">এন্ডনোট</translation>
 <translation id="1281252709823657822">ডায়ালগ</translation>
+<translation id="1306460908038601864">বন্ধ করা আছে</translation>
 <translation id="1335095011850992622">ক্রেডিট</translation>
 <translation id="1342835525016946179">নিবন্ধ</translation>
 <translation id="1359897965706325498">ব্যানার</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' অনুসরণ করে একটি অংশ লিখুন৷ '<ph name="INVALIDADDRESS" />' অসম্পূর্ণ৷</translation>
 <translation id="5334352251556557839">মিডিয়া চালানো যাচ্ছে না।</translation>
+<translation id="537648784377940524">আগের তারিখ (<ph name="MIN_DATE_OR_TIME" />) অবশ্যই পরের তারিখের (<ph name="MAX_DATE_OR_TIME" />) আগে লিখতে হবে।</translation>
 <translation id="5406322316791861025">আকার</translation>
 <translation id="5453733299334684579">ট্রি আইটেম</translation>
 <translation id="5466621249238537318">অনুগ্রহ করে এক বা একাধিক ফাইল নির্বাচন করুন৷</translation>

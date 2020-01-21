@@ -11,6 +11,7 @@
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/macros.h"
 #include "components/bookmarks/browser/bookmark_client.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 class GURL;
 
@@ -22,10 +23,6 @@ class BookmarkPermanentNode;
 
 namespace sync_bookmarks {
 class BookmarkSyncService;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 class BookmarkClientImpl : public bookmarks::BookmarkClient {

@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">ສະແກນເກີນ</translation>
 <translation id="119944043368869598">ລຶບທັງ​ຫມົດ</translation>
 <translation id="1247372569136754018">ໄມໂຄຣໂຟນ (ພາຍໃນ)</translation>
-<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> ການຕັ້ງຄ່ານີ້ຖືກບັງຄັບໃຊ້ໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ.</translation>
 <translation id="1252999807265626933">ກຳລັງສາກຈາກ <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">ສະພາບອາກາດເປັນແນວໃດ?</translation>
 <translation id="1267032506238418139">ການປ່ຽນແປງທາງລັດ</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">ເຂົ້າຮ່ວມເຄືອຂ່າຍ Wi-Fi ອື່ນ</translation>
 <translation id="2718395828230677721">ແສງກາງຄືນ</translation>
 <translation id="2727977024730340865">ສຽບໃສ່ເຄື່ອງສາກໄຟຕໍ່າແລ້ວ. ການສາກແບັດເຕີຣີອາດຈະບໍ່ເຊື່ອຖືໄດ້.</translation>
-<translation id="2761704814324807722">ຖາດສະຖານະ, ເວລາ <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+ຄົ້ນຫາ</translation>
 <translation id="2803734122639935495">ເພື່ອປົດລັອກ, ກະລຸນາປ້ອນລະຫັດຜ່ານຂອງທ່ານ</translation>
 <translation id="2819276065543622893">ທ່ານຈະຖືກອອກຈາກລະບົບດຽວນີ້.</translation>

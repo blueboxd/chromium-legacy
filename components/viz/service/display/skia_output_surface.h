@@ -96,10 +96,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
       sk_sp<SkColorSpace> dst_color_space,
       bool has_alpha) = 0;
 
-  // Swaps the current backbuffer to the screen.
-  virtual void SkiaSwapBuffers(OutputSurfaceFrame frame) = 0;
-
-  // Called if SkiaSwapBuffers() will be skipped.
+  // Called if SwapBuffers() will be skipped.
   virtual void SwapBuffersSkipped() = 0;
 
   // TODO(weiliangc): This API should move to OverlayProcessor.
@@ -152,7 +149,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
                           const gfx::ColorSpace& color_space,
                           std::unique_ptr<CopyOutputRequest> request) = 0;
 
-  // Schedule drawing overlays at next SkiaSwapBuffers() call. Waits on
+  // Schedule drawing overlays at next SwapBuffers() call. Waits on
   // |sync_tokens| for the overlay textures to be ready before scheduling.
   virtual void ScheduleOverlays(OverlayList overlays,
                                 std::vector<gpu::SyncToken> sync_tokens) = 0;

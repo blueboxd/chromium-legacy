@@ -314,6 +314,24 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
     }
   }
 
+  void SetTargetStretchInlineSize(LayoutUnit target_stretch_inline_size) {
+    DCHECK_GE(target_stretch_inline_size, LayoutUnit());
+    space_.EnsureRareData()->SetTargetStretchInlineSize(
+        target_stretch_inline_size);
+  }
+
+  void SetTargetStretchAscentSize(LayoutUnit target_stretch_ascent_size) {
+    DCHECK_GE(target_stretch_ascent_size, LayoutUnit());
+    space_.EnsureRareData()->SetTargetStretchAscentSize(
+        target_stretch_ascent_size);
+  }
+
+  void SetTargetStretchDescentSize(LayoutUnit target_stretch_descent_size) {
+    DCHECK_GE(target_stretch_descent_size, LayoutUnit());
+    space_.EnsureRareData()->SetTargetStretchDescentSize(
+        target_stretch_descent_size);
+  }
+
   // Creates a new constraint space.
   const NGConstraintSpace ToConstraintSpace() {
 #if DCHECK_IS_ON()

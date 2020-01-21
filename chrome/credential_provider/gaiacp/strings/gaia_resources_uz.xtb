@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uz">
+<translation id="1337778609052285767">Joriy parol yetarli darajada murakkab emas. Administratorga murojaat qiling.</translation>
 <translation id="1337821341856692531">Agar Windows paroli kiritilmay davom etilsa, axborotlar oʻchib ketishi mumkin</translation>
 <translation id="1383286653814676580">Google Credential Provider sahifasiga kirish uchun foydalaniladi.</translation>
 <translation id="1894475569413661128">Ishchi hisob orqali kiring.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Windows parolini xato terdingiz. Qayta urining.</translation>
 <translation id="2831078752570172210">Hisobingiz qulflandi. Tizim administratoriga muroojat qiling.</translation>
 <translation id="2844349213149998955">Bu qurilmada shaxsiy hisob orqali kirish taqiqlangan. Ishchi hisob orqali kiring.</translation>
+<translation id="2995851317559936311">Parollar faqat domen kontrollerida almashtiriladi. Administratorga murojaat qiling.</translation>
 <translation id="3306357053520292004">Bu kompyuterdagi foydalanuvchi allaqachun bu hisob orqali kiritilgan. Boshqa hisob bilan kiring.</translation>
 <translation id="3926852373333893095">Faqat Gsuite Enterprise foydalanuvchlariga kirishga ruxsat berilgan.</translation>
 <translation id="4057329986137569701">Ichki xatolik yuz berdi.</translation>
 <translation id="4267670563222825190">Hisobingiz uchun hech qanday domen foydalanuvchisi topilmadi. Administratorga murojaat qiling.</translation>
 <translation id="4300229033992784001">Hisobingiz paroli oʻzgardi. Windows hisobingiz ishchi hisobingiz bilan sinxronlanishi uchun joriy Windows parolingizni kiriting.</translation>
+<translation id="4669462973597624151">Parolni almashtirish urinishi rad etildi. Administratorga murojaat qiling.</translation>
 <translation id="4706454071748629324">Yangi foydalanuvchi kiritilmadi. Bu kompyuterda ishchi hisob orqali faqat bitta profil ochish mumkin.</translation>
+<translation id="5186761973554910131">Parol almashtirishda kompyuter nomi xato kiritildi. Administratorga murojaat qiling.</translation>
 <translation id="6033715878377252112">Windows uchun Google Credential Provider yordamchisi</translation>
 <translation id="6149399665202317746">Windows uchun Google Credential Provider</translation>
 <translation id="6239180560789153226">Qurilmangizda qayta tiklash axboroti yetishmayapti. Google ishchi hisobingiz orqali kiring.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Ishchi hisob kiritish</translation>
 <translation id="7811865856574012727">Administrator quyidagi domenlarga shu qurilmada kirishni taqiqlagan: <ph name="EMAIL_DOMAINS" />. Yaroqli ish hisobingiz bilan qayta urining.</translation>
 <translation id="7856245195110636219">Davom etish uchun Windows paroli kiritilishi lozim. Tizim administratoriga murojaat qiling.</translation>
+<translation id="8109730953933509335">Notanish foydalanuvchi parolni almashtirishga urindi. Administratorga murojaat qiling.</translation>
 <translation id="8639729688781680518">Windows paroli esimdan chiqdi</translation>
 <translation id="866458870819756755">Foydalanuvchi yaratilmadi.</translation>
 <translation id="8875753657315897487">Ishchi hisob orqali kiring</translation>

@@ -49,6 +49,7 @@ sync_protocol_bases = [
   "security_event_specifics",
   "send_tab_to_self_specifics",
   "session_specifics",
+  "sharing_message_specifics",
   "sync",
   "sync_enums",
   "synced_notification_app_info_specifics",

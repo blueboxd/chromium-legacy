@@ -78,7 +78,7 @@ class WebLaunchFilesHelper
   // The url the launch entries are for.
   GURL launch_url_;
 
-  base::WeakPtrFactory<WebLaunchFilesHelper> weak_ptr_factory{this};
+  base::WeakPtrFactory<WebLaunchFilesHelper> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(WebLaunchFilesHelper);
 };
 

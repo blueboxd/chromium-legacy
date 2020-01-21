@@ -40,7 +40,7 @@ class GeometryStructTraitsTest
     std::move(callback).Run(p);
   }
 
-  void EchoPoint3F(const FloatPoint3D& p,
+  void EchoPoint3F(const gfx::Point3F& p,
                    EchoPoint3FCallback callback) override {
     std::move(callback).Run(p);
   }
@@ -113,18 +113,6 @@ TEST_F(GeometryStructTraitsTest, Size) {
       GetTraitsTestProxy();
   WebSize output;
   proxy->EchoSize(input, &output);
-  EXPECT_EQ(input, output);
-}
-
-TEST_F(GeometryStructTraitsTest, Point3D) {
-  const float kX = 1.234;
-  const float kY = 5.678;
-  const float kZ = 9.098;
-  FloatPoint3D input(kX, kY, kZ);
-  mojo::Remote<gfx::mojom::blink::GeometryTraitsTestService> proxy =
-      GetTraitsTestProxy();
-  FloatPoint3D output;
-  proxy->EchoPoint3F(input, &output);
   EXPECT_EQ(input, output);
 }
 

@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">Дэлгэцийн дүрс таарахгүй байх</translation>
 <translation id="119944043368869598">Бүгдийг арилгах</translation>
 <translation id="1247372569136754018">Микрофон (дотоод)</translation>
-<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> Энэ тохиргоог таны администратораас хэрэгжүүлсэн байна.</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" />-с цэнэглэж байна</translation>
 <translation id="1255033239764210633">Цаг агаар ямар байна вэ?</translation>
 <translation id="1267032506238418139">Товчлолыг өөрчлөх</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">Бусад Wi-Fi сүлжээнд нэгдэх</translation>
 <translation id="2718395828230677721">Шөнийн гэрэл</translation>
 <translation id="2727977024730340865">Бага энергитэй цэнэглэгч залгасан байна. Тэжээлийг цэнэглэхгүй байж болох юм.</translation>
-<translation id="2761704814324807722">Статусын мэдээллийн хэсэг, цаг <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+ Хайлт</translation>
 <translation id="2803734122639935495">Түгжээг тайлахын тулд нууц үгээ оруулна уу</translation>
 <translation id="2819276065543622893">Та нэвтрэх хэсгээс яг одоо гарч байна.</translation>

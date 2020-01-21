@@ -1683,7 +1683,6 @@ crbug.com/891427 animations/responsive/viewport-unit-transform-responsive.html [
 crbug.com/891427 animations/responsive/viewport-unit-translate-responsive.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 virtual/android/rootscroller/rootscroller-during-fullscreen.html [ Pass Failure Timeout Crash ]
 # Next 2 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1183
-crbug.com/891427 external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Failure Timeout Crash ]
 crbug.com/891427 fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
 crbug.com/816914 virtual/gpu/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure Timeout Crash ]
 # Next 1 here: https://ci.chromium.org/buildbot/tryserver.blink/win7-blink-rel/1180
@@ -2964,8 +2963,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-text/word-break/word-break-keep-al
 crbug.com/626703 [ Mac10.11 ] external/wpt/shape-detection/idlharness.https.any.sharedworker.html [ Failure Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-pan-y-css_touch.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/payment-request/payment-request-hasenrolledinstrument-method.tentative.https.html [ Failure Timeout ]
-crbug.com/626703 [ Mac10.10 ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout Pass Failure ]
-crbug.com/626703 [ Retina ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout Pass Failure ]
 crbug.com/626703 [ Win10 ] virtual/cascade/external/wpt/css/css-paint-api/color-custom-property-animation.https.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] virtual/omt-service-worker-startup/external/wpt/shape-detection/shapedetection-cross-origin.sub.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.11 ] virtual/omt-service-worker-startup/external/wpt/shape-detection/detection-security-test.https.html [ Timeout ]
@@ -3296,7 +3293,6 @@ crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-dynamic-
 crbug.com/626703 external/wpt/css/css-will-change/will-change-abspos-cb-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-conditional/at-supports-040.html [ Failure ]
 ### See crbug.com/891427 comment near the top of this file:
-###crbug.com/626703 [ Win7 ] external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/legend-block-margins-2.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/align_center_position_50.html [ Failure ]
@@ -5865,8 +5861,6 @@ crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-with-mask.html [ Failure ]
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-border.html [ Failure ]
 crbug.com/989014 [ Linux Debug ] external/wpt/cookie-store/serviceworker_cookiechange_eventhandler_single_subscription.tentative.https.any.serviceworker.html [ Pass Timeout ]
-crbug.com/989665 [ Win ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Timeout ]
-crbug.com/989665 [ Linux ] virtual/omt-worker-fetch/external/wpt/resource-timing/resource_timing_buffer_full_eventually.html [ Pass Timeout ]
 
 # Sheriff 2019-08-01
 crbug.com/989860 [ Mac10.13 ] http/tests/devtools/indexeddb/live-update-indexeddb-list.js [ Pass Failure ]
@@ -6306,3 +6300,7 @@ crbug.com/1042694 fast/forms/form-control-with-state-eager-tracing-crashTest.htm
 crbug.com/1042689 [ Linux ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
 crbug.com/1042689 [ Win ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
 crbug.com/1042688 http/tests/devtools/elements/highlight/highlight-dom-updates.js [ Pass Timeout ]
+
+# Sheriff 2020-01-20
+crbug.com/1043357 http/tests/credentialmanager/credentialscontainer-get-with-virtual-authenticator.html [ Pass Timeout Failure ]
+crbug.com/1043774 [ Linux ] virtual/web-components-v0-disabled/external/wpt/html/dom/reflection-grouping.html [ Pass Failure ]

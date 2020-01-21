@@ -215,7 +215,6 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
     state.user_scrollable_horizontal =
         UserInputScrollable(kHorizontalScrollbar);
     state.user_scrollable_vertical = UserInputScrollable(kVerticalScrollbar);
-    state.scrolls_inner_viewport = true;
     state.max_scroll_offset_affected_by_page_scale = true;
     state.compositor_element_id = GetScrollElementId();
 

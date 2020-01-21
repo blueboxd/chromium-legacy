@@ -210,6 +210,13 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                     const PhysicalOffset& physical_offset);
   bool HitTestItemsChildren(const HitTestContext& hit_test,
                             const NGInlineCursor& children);
+  bool HitTestFloatingChildren(const HitTestContext& hit_test,
+                               const NGPhysicalContainerFragment& container,
+                               const PhysicalOffset& accumulated_offset);
+
+  bool HitTestAllPhases(const HitTestContext& hit_test,
+                        const NGPhysicalFragment& fragment,
+                        const PhysicalOffset& accumulated_offset);
 
   // Hit tests a box fragment, which is a child of either |box_fragment_|, or
   // one of its child line box fragments.

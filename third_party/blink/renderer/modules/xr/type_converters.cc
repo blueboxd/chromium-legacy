@@ -47,9 +47,9 @@ TypeConverter<blink::TransformationMatrix, device::mojom::blink::VRPosePtr>::
   }
 
   if (pose->position) {
-    decomp.translate_x = pose->position->X();
-    decomp.translate_y = pose->position->Y();
-    decomp.translate_z = pose->position->Z();
+    decomp.translate_x = pose->position->x();
+    decomp.translate_y = pose->position->y();
+    decomp.translate_z = pose->position->z();
   }
 
   result.Recompose(decomp);
@@ -77,9 +77,9 @@ TypeConverter<blink::TransformationMatrix, device::mojom::blink::PosePtr>::
   decomp.quaternion_z = quat.z();
   decomp.quaternion_w = quat.w();
 
-  decomp.translate_x = pose->position.X();
-  decomp.translate_y = pose->position.Y();
-  decomp.translate_z = pose->position.Z();
+  decomp.translate_x = pose->position.x();
+  decomp.translate_y = pose->position.y();
+  decomp.translate_z = pose->position.z();
 
   result.Recompose(decomp);
 

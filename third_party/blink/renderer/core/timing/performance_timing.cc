@@ -586,30 +586,47 @@ std::unique_ptr<TracedValue> PerformanceTiming::GetNavigationTracingData() {
   return data;
 }
 
+// static
+const PerformanceTiming::NameToAttributeMap&
+PerformanceTiming::GetAttributeMapping() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<NameToAttributeMap>, map, ());
+  if (!map.IsSet()) {
+    *map = {
+        {"navigationStart", &PerformanceTiming::navigationStart},
+        {"unloadEventStart", &PerformanceTiming::unloadEventStart},
+        {"unloadEventEnd", &PerformanceTiming::unloadEventEnd},
+        {"redirectStart", &PerformanceTiming::redirectStart},
+        {"redirectEnd", &PerformanceTiming::redirectEnd},
+        {"fetchStart", &PerformanceTiming::fetchStart},
+        {"domainLookupStart", &PerformanceTiming::domainLookupStart},
+        {"domainLookupEnd", &PerformanceTiming::domainLookupEnd},
+        {"connectStart", &PerformanceTiming::connectStart},
+        {"connectEnd", &PerformanceTiming::connectEnd},
+        {"secureConnectionStart", &PerformanceTiming::secureConnectionStart},
+        {"requestStart", &PerformanceTiming::requestStart},
+        {"responseStart", &PerformanceTiming::responseStart},
+        {"responseEnd", &PerformanceTiming::responseEnd},
+        {"domLoading", &PerformanceTiming::domLoading},
+        {"domInteractive", &PerformanceTiming::domInteractive},
+        {"domContentLoadedEventStart",
+         &PerformanceTiming::domContentLoadedEventStart},
+        {"domContentLoadedEventEnd",
+         &PerformanceTiming::domContentLoadedEventEnd},
+        {"domComplete", &PerformanceTiming::domComplete},
+        {"loadEventStart", &PerformanceTiming::loadEventStart},
+        {"loadEventEnd", &PerformanceTiming::loadEventEnd},
+    };
+  }
+  return *map;
+}
+
 ScriptValue PerformanceTiming::toJSONForBinding(
     ScriptState* script_state) const {
   V8ObjectBuilder result(script_state);
-  result.AddNumber("navigationStart", navigationStart());
-  result.AddNumber("unloadEventStart", unloadEventStart());
-  result.AddNumber("unloadEventEnd", unloadEventEnd());
-  result.AddNumber("redirectStart", redirectStart());
-  result.AddNumber("redirectEnd", redirectEnd());
-  result.AddNumber("fetchStart", fetchStart());
-  result.AddNumber("domainLookupStart", domainLookupStart());
-  result.AddNumber("domainLookupEnd", domainLookupEnd());
-  result.AddNumber("connectStart", connectStart());
-  result.AddNumber("connectEnd", connectEnd());
-  result.AddNumber("secureConnectionStart", secureConnectionStart());
-  result.AddNumber("requestStart", requestStart());
-  result.AddNumber("responseStart", responseStart());
-  result.AddNumber("responseEnd", responseEnd());
-  result.AddNumber("domLoading", domLoading());
-  result.AddNumber("domInteractive", domInteractive());
-  result.AddNumber("domContentLoadedEventStart", domContentLoadedEventStart());
-  result.AddNumber("domContentLoadedEventEnd", domContentLoadedEventEnd());
-  result.AddNumber("domComplete", domComplete());
-  result.AddNumber("loadEventStart", loadEventStart());
-  result.AddNumber("loadEventEnd", loadEventEnd());
+  for (const auto& name_attribute_pair : GetAttributeMapping()) {
+    result.AddNumber(name_attribute_pair.key,
+                     (this->*(name_attribute_pair.value))());
+  }
   return result.GetScriptValue();
 }
 

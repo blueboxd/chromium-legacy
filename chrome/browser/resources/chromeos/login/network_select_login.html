@@ -3,17 +3,16 @@
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/onc_mojo.html">
 
 <dom-module id="network-select-login">
-  <style>
-    :host {
-      display: inline-flex;
-      min-height: 0;
-    }
-
-    #networkSelect {
-      flex: 1;
-    }
-  </style>
   <template>
+    <style>
+      :host {
+        display: inline-flex;
+      }
+
+      #networkSelect {
+        flex: 1;
+      }
+    </style>
     <network-select id="networkSelect" class="focus-on-show"
         show-scan-progress
         custom-items="[[getNetworkCustomItems_(isConnected)]]"

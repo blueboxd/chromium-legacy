@@ -339,6 +339,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, CreateTransferBuffer) {
 class GpuProcessHostDisableGLBrowserTest : public GpuProcessHostBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    UseSoftwareCompositing();
     GpuProcessHostBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kUseGL,
                                     gl::kGLImplementationDisabledName);

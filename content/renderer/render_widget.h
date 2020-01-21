@@ -558,7 +558,7 @@ class CONTENT_EXPORT RenderWidget
   // Helper to convert |point| using ConvertWindowToViewport().
   gfx::PointF ConvertWindowPointToViewport(const gfx::PointF& point);
   gfx::Point ConvertWindowPointToViewport(const gfx::Point& point);
-  void DidNavigate();
+  void DidNavigate(ukm::SourceId source_id, const GURL& url);
 
   bool auto_resize_mode() const { return auto_resize_mode_; }
 

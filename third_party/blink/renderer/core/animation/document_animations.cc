@@ -56,7 +56,7 @@ void UpdateAnimationTiming(
 
 bool CompareAnimations(const Member<Animation>& left,
                        const Member<Animation>& right) {
-  return Animation::HasLowerPriority(left.Get(), right.Get());
+  return Animation::HasLowerCompositeOrdering(left.Get(), right.Get());
 }
 }  // namespace
 

@@ -8,18 +8,20 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/app_launcher/app_launcher_tab_helper_delegate.h"
+#import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 // A coordinator that handles UI related to launching apps.
-// TODO(crbug.com/906541) : Convert to ChromeCoordinator subclass.
-@interface AppLauncherCoordinator : NSObject<AppLauncherTabHelperDelegate>
+@interface AppLauncherCoordinator
+    : ChromeCoordinator <AppLauncherTabHelperDelegate>
 
-// Initializes the coordinator with the |baseViewController|, from which to
-// present UI.
-- (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
-    NS_DESIGNATED_INITIALIZER;
-
-// Default designated initializer is unavailable.
-- (instancetype)init NS_UNAVAILABLE;
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:
+                                  (ios::ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
 
 @end
 

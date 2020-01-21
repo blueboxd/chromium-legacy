@@ -11,6 +11,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -4061,6 +4062,62 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
 
 MULTI_THREAD_TEST_F(
     LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor);
+
+class LayerTreeHostTestSynchronousCompositorActivateWithoutDraw
+    : public LayerTreeHostTest {
+ protected:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->using_synchronous_renderer_compositor = true;
+  }
+
+  std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
+      const viz::RendererSettings& renderer_settings,
+      double refresh_rate,
+      scoped_refptr<viz::ContextProvider> compositor_context_provider,
+      scoped_refptr<viz::RasterContextProvider> worker_context_provider)
+      override {
+    // Make |invalidate_callback| do nothing so there is no draw.
+    auto frame_sink = std::make_unique<OnDrawLayerTreeFrameSink>(
+        compositor_context_provider, std::move(worker_context_provider),
+        gpu_memory_buffer_manager(), renderer_settings, ImplThreadTaskRunner(),
+        /*synchronous_composite=*/false, refresh_rate,
+        /*invalidate_callback=*/base::DoNothing());
+    return std::move(frame_sink);
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DidCommit() override { commit_count_++; }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    activate_count_++;
+    if (activate_count_ == 1) {
+      PostSetNeedsCommitToMainThread();
+    } else if (activate_count_ == 2) {
+      EndTest();
+    } else {
+      NOTREACHED();
+    }
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    // This test specifically tests that two commit-activate cycles without
+    // draw in between them.
+    ADD_FAILURE();
+  }
+
+  void AfterTest() override {
+    // There should be two commits and activations without any draw.
+    EXPECT_EQ(commit_count_, 2);
+    EXPECT_EQ(activate_count_, 2);
+  }
+
+ private:
+  int commit_count_ = 0;
+  int activate_count_ = 0;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestSynchronousCompositorActivateWithoutDraw);
 
 class LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation
     : public LayerTreeHostTest {

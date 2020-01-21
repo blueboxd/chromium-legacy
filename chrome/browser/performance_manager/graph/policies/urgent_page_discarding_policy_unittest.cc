@@ -159,6 +159,9 @@ class UrgentPageDiscardingPolicyTest : public GraphTestHarness {
   FrameNodeImpl* frame_node() { return main_frame_node_.get(); }
   void ResetFrameNode() { main_frame_node_.reset(); }
   MockPageDiscarder* discarder() { return mock_discarder_; }
+  util::test::FakeMemoryPressureMonitor* mem_pressure_monitor() {
+    return &mem_pressure_monitor_;
+  }
 
  protected:
   // Make sure that |page_node| is discardable.
@@ -410,6 +413,15 @@ TEST_F(UrgentPageDiscardingPolicyTest,
   EXPECT_CALL(*discarder(), DiscardPageNodeImpl(page_node2.get()))
       .WillOnce(Return(true));
   SimulateMemoryPressure();
+  testing::Mock::VerifyAndClearExpectations(discarder());
+}
+
+TEST_F(UrgentPageDiscardingPolicyTest, NoDiscardOnModeratePressure) {
+  // No tab should be discarded on moderate pressure.
+  mem_pressure_monitor()->SetAndNotifyMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel::
+          MEMORY_PRESSURE_LEVEL_MODERATE);
+  task_env().RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(discarder());
 }
 

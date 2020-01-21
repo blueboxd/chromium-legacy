@@ -22,13 +22,18 @@
 #import "ios/chrome/browser/installation_notifier.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/download/activities/open_downloads_folder_activity.h"
 #import "ios/chrome/browser/ui/download/download_manager_mediator.h"
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/web/common/features.h"
 #import "ios/web/public/download/download_task.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_fetcher_response_writer.h"
@@ -151,16 +156,15 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 };
 }  // namespace
 
-@interface DownloadManagerCoordinator ()<
+@interface DownloadManagerCoordinator () <
     ContainedPresenterDelegate,
-    DownloadManagerViewControllerDelegate,
-    UIDocumentInteractionControllerDelegate> {
+    DownloadManagerViewControllerDelegate> {
   // View controller for presenting Download Manager UI.
   DownloadManagerViewController* _viewController;
   // A dialog which requests a confirmation from the user.
   UIAlertController* _confirmationDialog;
   // View controller for presenting "Open In.." dialog.
-  UIDocumentInteractionController* _openInController;
+  UIActivityViewController* _openInController;
   DownloadManagerMediator _mediator;
   StoreKitCoordinator* _storeKitCoordinator;
   // Coordinator for displaying the alert informing the user that no application
@@ -297,21 +301,6 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   self.animatesPresentation = YES;
 }
 
-#pragma mark - UIDocumentInteractionControllerDelegate
-
-- (void)documentInteractionController:
-            (UIDocumentInteractionController*)controller
-        willBeginSendingToApplication:(NSString*)applicationID {
-  DownloadedFileAction action = [applicationID isEqual:kGoogleDriveAppBundleID]
-                                    ? DownloadedFileAction::OpenedInDrive
-                                    : DownloadedFileAction::OpenedInOtherApp;
-  base::UmaHistogramEnumeration("Download.IOSDownloadedFileAction", action,
-                                DownloadedFileAction::Count);
-  if (_downloadTask) {  // _downloadTask can be null if coordinator was stopped.
-    _unopenedDownloads.Remove(_downloadTask);
-  }
-}
-
 #pragma mark - ContainedPresenterDelegate
 
 - (void)containedPresenterDidPresent:(id<ContainedPresenter>)presenter {
@@ -367,31 +356,37 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   _mediator.StartDowloading();
 }
 
-- (void)downloadManagerViewController:(DownloadManagerViewController*)controller
-     presentOpenInMenuWithLayoutGuide:(UILayoutGuide*)layoutGuide {
+- (void)presentOpenInForDownloadManagerViewController:
+    (DownloadManagerViewController*)controller {
   base::FilePath path =
       _downloadTask->GetResponseWriter()->AsFileWriter()->file_path();
   NSURL* URL = [NSURL fileURLWithPath:base::SysUTF8ToNSString(path.value())];
-  _openInController =
-      [UIDocumentInteractionController interactionControllerWithURL:URL];
 
-  base::ScopedCFTypeRef<CFStringRef> MIMEType(
-      base::SysUTF8ToCFStringRef(_downloadTask->GetMimeType()));
-  CFStringRef UTI = UTTypeCreatePreferredIdentifierForTag(
-      kUTTagClassMIMEType, MIMEType.get(), nullptr);
-  _openInController.UTI = CFBridgingRelease(UTI);
-  _openInController.delegate = self;
+  NSArray* customActions = @[ URL ];
+  NSArray* activities = nil;
 
-  BOOL menuShown =
-      [_openInController presentOpenInMenuFromRect:layoutGuide.layoutFrame
-                                            inView:layoutGuide.owningView
-                                          animated:YES];
-
-  // No application on this device can open the file. Typically happens on
-  // iOS 10, where Files app does not exist.
-  if (!menuShown) {
-    [self didFailOpenInMenuPresentation];
+  if (base::FeatureList::IsEnabled(web::features::kEnablePersistentDownloads)) {
+    OpenDownloadsFolderActivity* customActivity =
+        [[OpenDownloadsFolderActivity alloc] init];
+    customActivity.browserHandler =
+        HandlerForProtocol(self.dispatcher, BrowserCoordinatorCommands);
+    activities = @[ customActivity ];
   }
+  _openInController =
+      [[UIActivityViewController alloc] initWithActivityItems:customActions
+                                        applicationActivities:activities];
+
+  _openInController.excludedActivityTypes =
+      @[ UIActivityTypeCopyToPasteboard, UIActivityTypeSaveToCameraRoll ];
+
+  // UIActivityViewController is presented in a popover on iPad.
+  _openInController.popoverPresentationController.sourceView =
+      _viewController.actionButton;
+  _openInController.popoverPresentationController.sourceRect =
+      _viewController.actionButton.bounds;
+  [_viewController presentViewController:_openInController
+                                animated:YES
+                              completion:nil];
 }
 
 #pragma mark - Private

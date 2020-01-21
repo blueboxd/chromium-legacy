@@ -8,13 +8,11 @@
 #import <Foundation/Foundation.h>
 
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 
 @protocol SyncPresenter;
 
-namespace ios {
-class ChromeBrowserState;
-}
 namespace web {
 class WebState;
 }

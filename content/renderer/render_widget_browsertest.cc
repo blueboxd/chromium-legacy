@@ -56,7 +56,7 @@ class RenderWidgetTest : public RenderViewTest {
 };
 
 TEST_F(RenderWidgetTest, OnSynchronizeVisualProperties) {
-  widget()->DidNavigate();
+  widget()->DidNavigate(ukm::SourceId(42), GURL(""));
   // The initial bounds is empty, so setting it to the same thing should do
   // nothing.
   VisualProperties visual_properties;

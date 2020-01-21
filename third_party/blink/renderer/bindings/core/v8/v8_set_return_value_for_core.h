@@ -12,6 +12,52 @@ namespace blink {
 
 namespace bindings {
 
+// ScriptWrappable (DOMWindow specialization)
+template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      DOMWindow* value,
+                      V8ReturnValue::MainWorld) {
+  DCHECK(DOMWrapperWorld::Current(info.GetIsolate()).IsMainWorld());
+  info.GetReturnValue().Set(ToV8(value, info.This(), info.GetIsolate()));
+}
+
+template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      DOMWindow& value,
+                      V8ReturnValue::MainWorld) {
+  DCHECK(DOMWrapperWorld::Current(info.GetIsolate()).IsMainWorld());
+  info.GetReturnValue().Set(ToV8(&value, info.This(), info.GetIsolate()));
+}
+
+template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      DOMWindow* value,
+                      const ScriptWrappable* receiver) {
+  info.GetReturnValue().Set(ToV8(value, info.This(), info.GetIsolate()));
+}
+
+template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      DOMWindow& value,
+                      const ScriptWrappable* receiver) {
+  info.GetReturnValue().Set(ToV8(&value, info.This(), info.GetIsolate()));
+}
+
+template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      DOMWindow* value,
+                      v8::Local<v8::Context> creation_context) {
+  info.GetReturnValue().Set(ToV8(value, info.This(), info.GetIsolate()));
+}
+
+template <typename CallbackInfo>
+void V8SetReturnValue(const CallbackInfo& info,
+                      DOMWindow& value,
+                      v8::Local<v8::Context> creation_context) {
+  info.GetReturnValue().Set(ToV8(&value, info.This(), info.GetIsolate()));
+}
+
+// EventListener
 template <typename CallbackInfo>
 void V8SetReturnValue(const CallbackInfo& info,
                       EventListener* value,

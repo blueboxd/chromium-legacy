@@ -4796,7 +4796,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 
       Sie ist standardmäßig deaktiviert. Ist sie aktiviert, so ist der Nutzer nicht mehr vor den Sicherheitsproblemen geschützt, sobald der Netzwerkprozess in einer Sandbox ausgeführt wird.
 
-      Diese Richtlinie soll Unternehmen ermöglichen, zu Drittanbietersoftware zu migrieren, die nicht auf Hooking von Netzwerk-APIs angewiesen sind. Proxyserver werden anstelle von LSPs und Win32 API-Patching empfohlen.
+      Diese Richtlinie soll Unternehmen ermöglichen, zu Drittanbietersoftware zu migrieren, die nicht auf Hooking von Netzwerk-APIs angewiesen ist. Proxyserver werden anstelle von LSPs und Win32 API-Patching empfohlen.
 
       Wenn diese Richtlinie nicht konfiguriert ist, wird der Netzwerkcode standardmäßig außerhalb des Browserprozesses ausgeführt.
 

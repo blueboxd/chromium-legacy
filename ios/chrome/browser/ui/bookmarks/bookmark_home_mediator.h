@@ -7,12 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
 @protocol BookmarkHomeConsumer;
 @class BookmarkHomeSharedState;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // BookmarkHomeMediator manages model interactions for the
 // BookmarkHomeViewController.

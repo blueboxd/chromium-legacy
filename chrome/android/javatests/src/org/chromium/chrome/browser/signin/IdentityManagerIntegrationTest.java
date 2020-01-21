@@ -88,7 +88,6 @@ public class IdentityManagerIntegrationTest {
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(null); });
-        SigninHelper.resetSharedPrefs();
         SigninTestUtil.resetSigninState();
     }
 

@@ -9,6 +9,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/feature_list.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -88,6 +89,11 @@ void UrgentPageDiscardingPolicy::OnIsAudibleChanged(const PageNode* page_node) {
 void UrgentPageDiscardingPolicy::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel level) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (level != base::MemoryPressureListener::MemoryPressureLevel::
+                   MEMORY_PRESSURE_LEVEL_CRITICAL) {
+    return;
+  }
 
   // The Memory Pressure Monitor will send notifications at regular interval,
   // it's important to unregister the pressure listener to ensure that we don't

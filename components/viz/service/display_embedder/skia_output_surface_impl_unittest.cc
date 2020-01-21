@@ -224,7 +224,7 @@ TEST_P(SkiaOutputSurfaceImplTest, SupportsColorSpaceChange) {
 
     OutputSurfaceFrame frame;
     frame.size = kSurfaceRect.size();
-    output_surface_->SkiaSwapBuffers(std::move(frame));
+    output_surface_->SwapBuffers(std::move(frame));
 
     run_loop.Run();
   }

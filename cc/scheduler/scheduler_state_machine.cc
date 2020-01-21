@@ -412,9 +412,13 @@ bool SchedulerStateMachine::ShouldActivateSyncTree() const {
 
   // We should not activate a second tree before drawing the first one.
   // Even if we need to force activation of the pending tree, we should abort
-  // drawing the active tree first.
-  if (active_tree_needs_first_draw_)
+  // drawing the active tree first. Relax this requirement for synchronous
+  // compositor where scheduler does not control draw, and blocking commit
+  // may lead to bad scheduling.
+  if (!settings_.using_synchronous_renderer_compositor &&
+      active_tree_needs_first_draw_) {
     return false;
+  }
 
   // Delay pending tree activation until paint worklets have completed painting
   // the pending tree. This must occur before the |ShouldAbortCurrentFrame|

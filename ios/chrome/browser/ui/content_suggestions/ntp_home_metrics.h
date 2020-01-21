@@ -7,11 +7,8 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 namespace web {
 class WebState;

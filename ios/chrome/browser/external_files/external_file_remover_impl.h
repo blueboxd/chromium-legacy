@@ -12,11 +12,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/external_files/external_file_remover.h"
 
-namespace ios {
-class ChromeBrowserState;
-}
 namespace sessions {
 class TabRestoreService;
 }

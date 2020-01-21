@@ -341,7 +341,7 @@
 <translation id="2465655957518002998">Teslimat Yöntemi Seç</translation>
 <translation id="2465688316154986572">Tel zımba</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Ağ Teşhislerini Çalıştırma<ph name="END_LINK" /></translation>
-<translation id="2469153820345007638">1'den N'e sıralı</translation>
+<translation id="2469153820345007638">1'den N'ye sıralı</translation>
 <translation id="2473195200299095979">Bu sayfayı çevir</translation>
 <translation id="2479410451996844060">Geçersiz arama URL'si.</translation>
 <translation id="2482878487686419369">Bildirimler</translation>
@@ -780,7 +780,7 @@
 <translation id="4372948949327679948">Beklenen <ph name="VALUE_TYPE" /> değeri.</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" /> adresine ulaşmayı denediniz, ancak sunucunun sağladığı sertifika, sertifikayı veren tarafından iptal edildi. Bu, sunucunun sağladığı güvenlik kimlik bilgilerine kesinlikle güvenilmemesi gerektiği anlamına gelir. Bir saldırganla irtibat kuruyor olabilirsiniz.</translation>
 <translation id="4378154925671717803">Telefon</translation>
-<translation id="4390472908992056574">Kenarlık</translation>
+<translation id="4390472908992056574">Brim</translation>
 <translation id="4406896451731180161">arama sonuçları</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> çerez</translation>
 <translation id="4415426530740016218">Alınacağı Adres</translation>
@@ -1028,7 +1028,7 @@
 <translation id="552553974213252141">Metin doğru bir şekilde çıkarıldı mı?</translation>
 <translation id="55293785478302737">Kenar dikişi</translation>
 <translation id="553484882784876924">Prc6 (Zarf)</translation>
-<translation id="5539243836947087108">Radye Temel</translation>
+<translation id="5539243836947087108">Raft</translation>
 <translation id="5540224163453853">İstenen makale bulunamadı.</translation>
 <translation id="5541086400771735334">Posta kutusu 7</translation>
 <translation id="5541546772353173584">E-posta Adresi Ekleyin</translation>
@@ -1521,7 +1521,7 @@ Ek ayrıntılar:
 <translation id="7761701407923456692">Sunucu sertifikası URL ile eşleşmiyor.</translation>
 <translation id="7763386264682878361">Ödeme Bildirimi Ayrıştırıcısı</translation>
 <translation id="7764225426217299476">Adres ekle</translation>
-<translation id="7766518757692125295">Etek</translation>
+<translation id="7766518757692125295">Skirt</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Aynı sırada ön yüz yukarı bakacak şekilde</translation>
 <translation id="777702478322588152">Bölge</translation>

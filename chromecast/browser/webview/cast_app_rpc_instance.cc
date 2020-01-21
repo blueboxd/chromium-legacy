@@ -68,8 +68,8 @@ void CastAppRpcInstance::CreateCastAppWindowLink(int platform_view_id,
 }
 
 void CastAppRpcInstance::WebContentsDestroyed() {
-  controller_.reset();
   window_manager_->RemoveObserver(this);
+  OnError("Web contents destroyed");
 }
 
 }  // namespace chromecast

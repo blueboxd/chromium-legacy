@@ -101,7 +101,7 @@ class PaintRecordMatcher
   Vector<cc::PaintOpType> expected_ops_;
 };
 
-#define EXPECT_EFFECT_BOUNDS(rect, op_buffer, index)                        \
+#define EXPECT_EFFECT_BOUNDS(x, y, width, height, op_buffer, index)         \
   do {                                                                      \
     FloatRect bounds;                                                       \
     if (const auto* save_layer_alpha =                                      \
@@ -113,7 +113,7 @@ class PaintRecordMatcher
     } else {                                                                \
       FAIL() << "No SaveLayer[Alpha]Op at " << index;                       \
     }                                                                       \
-    EXPECT_EQ(rect, bounds);                                                \
+    EXPECT_EQ(FloatRect(x, y, width, height), bounds);                      \
   } while (false)
 
 #define EXPECT_TRANSFORM_MATRIX(transform, op_buffer, index)                 \
@@ -183,10 +183,6 @@ struct TestChunks {
   }
 };
 
-const cc::DisplayItemList::UsageHint kUsageHints[] = {
-    cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer,
-    cc::DisplayItemList::kTopLevelDisplayItemList};
-
 TEST_P(PaintChunksToCcLayerTest, EffectGroupingSimple) {
   // This test verifies effects are applied as a group.
   auto e1 = CreateOpacityEffect(e0(), 0.5f);
@@ -194,23 +190,18 @@ TEST_P(PaintChunksToCcLayerTest, EffectGroupingSimple) {
   chunks.AddChunk(t0(), c0(), *e1, IntRect(0, 0, 50, 50));
   chunks.AddChunk(t0(), c0(), *e1, IntRect(20, 20, 70, 70));
 
-  const FloatRect kExpectedBounds[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                       FloatRect(0, 0, 90, 90)};
-
-  for (size_t hint = 0; hint < base::size(kUsageHints); ++hint) {
-    sk_sp<PaintRecord> output =
-        PaintChunksToCcLayer::Convert(chunks.chunks, PropertyTreeState::Root(),
-                                      gfx::Vector2dF(), chunks.items,
-                                      kUsageHints[hint])
-            ->ReleaseAsRecord();
-    EXPECT_THAT(
-        *output,
-        PaintRecordMatcher::Make({cc::PaintOpType::SaveLayerAlpha,  // <e1>
-                                  cc::PaintOpType::DrawRecord,      // <p0/>
-                                  cc::PaintOpType::DrawRecord,      // <p1/>
-                                  cc::PaintOpType::Restore}));      // </e1>
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds[hint], *output, 0);
-  }
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState::Root(), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(
+      *output,
+      PaintRecordMatcher::Make({cc::PaintOpType::SaveLayerAlpha,  // <e1>
+                                cc::PaintOpType::DrawRecord,      // <p0/>
+                                cc::PaintOpType::DrawRecord,      // <p1/>
+                                cc::PaintOpType::Restore}));      // </e1>
+  EXPECT_EFFECT_BOUNDS(0, 0, 90, 90, *output, 0);
 }
 
 TEST_P(PaintChunksToCcLayerTest, EffectGroupingNested) {
@@ -222,33 +213,24 @@ TEST_P(PaintChunksToCcLayerTest, EffectGroupingNested) {
   chunks.AddChunk(t0(), c0(), *e2);
   chunks.AddChunk(t0(), c0(), *e3, IntRect(111, 222, 333, 444));
 
-  const FloatRect kExpectedBounds1[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                        FloatRect(0, 0, 444, 666)};
-  const FloatRect kExpectedBounds2[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                        FloatRect(0, 0, 100, 100)};
-  const FloatRect kExpectedBounds3[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                        FloatRect(111, 222, 333, 444)};
-
-  for (size_t hint = 0; hint < base::size(kUsageHints); ++hint) {
-    sk_sp<PaintRecord> output =
-        PaintChunksToCcLayer::Convert(chunks.chunks, PropertyTreeState::Root(),
-                                      gfx::Vector2dF(), chunks.items,
-                                      kUsageHints[hint])
-            ->ReleaseAsRecord();
-    EXPECT_THAT(
-        *output,
-        PaintRecordMatcher::Make({cc::PaintOpType::SaveLayerAlpha,  // <e1>
-                                  cc::PaintOpType::SaveLayerAlpha,  // <e2>
-                                  cc::PaintOpType::DrawRecord,      // <p0/>
-                                  cc::PaintOpType::Restore,         // </e2>
-                                  cc::PaintOpType::SaveLayerAlpha,  // <e3>
-                                  cc::PaintOpType::DrawRecord,      // <p1/>
-                                  cc::PaintOpType::Restore,         // </e3>
-                                  cc::PaintOpType::Restore}));      // </e1>
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds1[hint], *output, 0);
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds2[hint], *output, 1);
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds3[hint], *output, 4);
-  }
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState::Root(), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(
+      *output,
+      PaintRecordMatcher::Make({cc::PaintOpType::SaveLayerAlpha,  // <e1>
+                                cc::PaintOpType::SaveLayerAlpha,  // <e2>
+                                cc::PaintOpType::DrawRecord,      // <p0/>
+                                cc::PaintOpType::Restore,         // </e2>
+                                cc::PaintOpType::SaveLayerAlpha,  // <e3>
+                                cc::PaintOpType::DrawRecord,      // <p1/>
+                                cc::PaintOpType::Restore,         // </e3>
+                                cc::PaintOpType::Restore}));      // </e1>
+  EXPECT_EFFECT_BOUNDS(0, 0, 444, 666, *output, 0);
+  EXPECT_EFFECT_BOUNDS(0, 0, 100, 100, *output, 1);
+  EXPECT_EFFECT_BOUNDS(111, 222, 333, 444, *output, 4);
 }
 
 TEST_P(PaintChunksToCcLayerTest, EffectFilterGroupingNestedWithTransforms) {
@@ -264,47 +246,40 @@ TEST_P(PaintChunksToCcLayerTest, EffectFilterGroupingNestedWithTransforms) {
   chunks.AddChunk(*t2, c0(), *e1, IntRect(0, 0, 50, 50));
   chunks.AddChunk(*t1, c0(), *e2, IntRect(20, 20, 70, 70));
 
-  const FloatRect kExpectedBounds1[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                        FloatRect(0, 0, 155, 155)};
-  const FloatRect kExpectedBounds2[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                        FloatRect(10, 10, 70, 70)};
-
-  for (size_t hint = 0; hint < base::size(kUsageHints); ++hint) {
-    sk_sp<PaintRecord> output =
-        PaintChunksToCcLayer::Convert(chunks.chunks, PropertyTreeState::Root(),
-                                      gfx::Vector2dF(), chunks.items,
-                                      kUsageHints[hint])
-            ->ReleaseAsRecord();
-    EXPECT_THAT(
-        *output,
-        PaintRecordMatcher::Make(
-            {cc::PaintOpType::Save, cc::PaintOpType::Concat,     // <t1*t2>
-             cc::PaintOpType::SaveLayerAlpha,                    // <e1>
-             cc::PaintOpType::DrawRecord,                        // <p1/>
-             cc::PaintOpType::Save, cc::PaintOpType::Translate,  // <e2_offset>
-             cc::PaintOpType::SaveLayer,                         // <e2>
-             cc::PaintOpType::Translate,  // <e2_offset^-1/>
-             cc::PaintOpType::Save, cc::PaintOpType::Translate,  // <t2^-1>
-             cc::PaintOpType::DrawRecord,                        // <p2/>
-             cc::PaintOpType::Restore,                           // </t2^-1>
-             cc::PaintOpType::Restore,                           // </e2>
-             cc::PaintOpType::Restore,                           // </e2_offset>
-             cc::PaintOpType::Restore,                           // </e1>
-             cc::PaintOpType::Restore}));                        // </t1*t2>
-    EXPECT_TRANSFORM_MATRIX(t1->Matrix() * t2->SlowMatrix(), *output, 1);
-    // chunk1.bounds + e2(t2^-1(chunk2.bounds))
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds1[hint], *output, 2);
-    // e2_offset
-    EXPECT_TRANSLATE(60, 60, *output, 5);
-    // t2^-1(chunk2.bounds) - e2_offset
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds2[hint], *output, 6);
-    // -e2_offset
-    EXPECT_TRANSLATE(-e2->FiltersOrigin().X(), -e2->FiltersOrigin().Y(),
-                     *output, 7);
-    // t2^1
-    EXPECT_TRANSLATE(-t2->Translation2D().Width(),
-                     -t2->Translation2D().Height(), *output, 9);
-  }
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState::Root(), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(
+      *output,
+      PaintRecordMatcher::Make(
+          {cc::PaintOpType::Save, cc::PaintOpType::Concat,     // <t1*t2>
+           cc::PaintOpType::SaveLayerAlpha,                    // <e1>
+           cc::PaintOpType::DrawRecord,                        // <p1/>
+           cc::PaintOpType::Save, cc::PaintOpType::Translate,  // <e2_offset>
+           cc::PaintOpType::SaveLayer,                         // <e2>
+           cc::PaintOpType::Translate,  // <e2_offset^-1/>
+           cc::PaintOpType::Save, cc::PaintOpType::Translate,  // <t2^-1>
+           cc::PaintOpType::DrawRecord,                        // <p2/>
+           cc::PaintOpType::Restore,                           // </t2^-1>
+           cc::PaintOpType::Restore,                           // </e2>
+           cc::PaintOpType::Restore,                           // </e2_offset>
+           cc::PaintOpType::Restore,                           // </e1>
+           cc::PaintOpType::Restore}));                        // </t1*t2>
+  EXPECT_TRANSFORM_MATRIX(t1->Matrix() * t2->SlowMatrix(), *output, 1);
+  // chunk1.bounds + e2(t2^-1(chunk2.bounds))
+  EXPECT_EFFECT_BOUNDS(0, 0, 155, 155, *output, 2);
+  // e2_offset
+  EXPECT_TRANSLATE(60, 60, *output, 5);
+  // t2^-1(chunk2.bounds) - e2_offset
+  EXPECT_EFFECT_BOUNDS(10, 10, 70, 70, *output, 6);
+  // -e2_offset
+  EXPECT_TRANSLATE(-e2->FiltersOrigin().X(), -e2->FiltersOrigin().Y(), *output,
+                   7);
+  // t2^1
+  EXPECT_TRANSLATE(-t2->Translation2D().Width(), -t2->Translation2D().Height(),
+                   *output, 9);
 }
 
 TEST_P(PaintChunksToCcLayerTest, InterleavedClipEffect) {
@@ -326,45 +301,38 @@ TEST_P(PaintChunksToCcLayerTest, InterleavedClipEffect) {
   chunks.AddChunk(t0(), *c3, *e1, IntRect(20, 20, 70, 70));
   chunks.AddChunk(t0(), *c4, e0());
 
-  const FloatRect kExpectedBounds1[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                        FloatRect(0, 0, 90, 90)};
-  const FloatRect kExpectedBounds2[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                        FloatRect(0, 0, 50, 50)};
-
-  for (size_t hint = 0; hint < base::size(kUsageHints); ++hint) {
-    sk_sp<PaintRecord> output =
-        PaintChunksToCcLayer::Convert(chunks.chunks, PropertyTreeState::Root(),
-                                      gfx::Vector2dF(), chunks.items,
-                                      kUsageHints[hint])
-            ->ReleaseAsRecord();
-    EXPECT_THAT(*output, PaintRecordMatcher::Make(
-                             {cc::PaintOpType::Save,
-                              cc::PaintOpType::ClipRect,    // <c1+c2>
-                              cc::PaintOpType::DrawRecord,  // <p0/>
-                              cc::PaintOpType::Save,
-                              cc::PaintOpType::ClipRect,        // <c3>
-                              cc::PaintOpType::DrawRecord,      // <p1/>
-                              cc::PaintOpType::Restore,         // </c3>
-                              cc::PaintOpType::SaveLayerAlpha,  // <e1>
-                              cc::PaintOpType::Save,
-                              cc::PaintOpType::ClipRect,        // <c3+c4>
-                              cc::PaintOpType::SaveLayerAlpha,  // <e2>
-                              cc::PaintOpType::DrawRecord,      // <p2/>
-                              cc::PaintOpType::Restore,         // </e2>
-                              cc::PaintOpType::Restore,         // </c3+c4>
-                              cc::PaintOpType::Save,
-                              cc::PaintOpType::ClipRect,    // <c3>
-                              cc::PaintOpType::DrawRecord,  // <p3/>
-                              cc::PaintOpType::Restore,     // </c3>
-                              cc::PaintOpType::Restore,     // </e1>
-                              cc::PaintOpType::Save,
-                              cc::PaintOpType::ClipRect,    // <c3+c4>
-                              cc::PaintOpType::DrawRecord,  // <p4/>
-                              cc::PaintOpType::Restore,     // </c3+c4>
-                              cc::PaintOpType::Restore}));  // </c1+c2>
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds1[hint], *output, 7);
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds2[hint], *output, 10);
-  }
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState::Root(), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(*output, PaintRecordMatcher::Make(
+                           {cc::PaintOpType::Save,
+                            cc::PaintOpType::ClipRect,    // <c1+c2>
+                            cc::PaintOpType::DrawRecord,  // <p0/>
+                            cc::PaintOpType::Save,
+                            cc::PaintOpType::ClipRect,        // <c3>
+                            cc::PaintOpType::DrawRecord,      // <p1/>
+                            cc::PaintOpType::Restore,         // </c3>
+                            cc::PaintOpType::SaveLayerAlpha,  // <e1>
+                            cc::PaintOpType::Save,
+                            cc::PaintOpType::ClipRect,        // <c3+c4>
+                            cc::PaintOpType::SaveLayerAlpha,  // <e2>
+                            cc::PaintOpType::DrawRecord,      // <p2/>
+                            cc::PaintOpType::Restore,         // </e2>
+                            cc::PaintOpType::Restore,         // </c3+c4>
+                            cc::PaintOpType::Save,
+                            cc::PaintOpType::ClipRect,    // <c3>
+                            cc::PaintOpType::DrawRecord,  // <p3/>
+                            cc::PaintOpType::Restore,     // </c3>
+                            cc::PaintOpType::Restore,     // </e1>
+                            cc::PaintOpType::Save,
+                            cc::PaintOpType::ClipRect,    // <c3+c4>
+                            cc::PaintOpType::DrawRecord,  // <p4/>
+                            cc::PaintOpType::Restore,     // </c3+c4>
+                            cc::PaintOpType::Restore}));  // </c1+c2>
+  EXPECT_EFFECT_BOUNDS(0, 0, 90, 90, *output, 7);
+  EXPECT_EFFECT_BOUNDS(0, 0, 50, 50, *output, 10);
 }
 
 TEST_P(PaintChunksToCcLayerTest, ClipSpaceInversion) {
@@ -407,29 +375,24 @@ TEST_P(PaintChunksToCcLayerTest, OpacityEffectSpaceInversion) {
   chunks.AddChunk(t0(), c0(), *e1);
   chunks.AddChunk(*t1, c0(), *e1);
 
-  const FloatRect kExpectedBounds[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                       FloatRect(0, 0, 100, 100)};
-
-  for (size_t hint = 0; hint < base::size(kUsageHints); ++hint) {
-    sk_sp<PaintRecord> output =
-        PaintChunksToCcLayer::Convert(chunks.chunks, PropertyTreeState::Root(),
-                                      gfx::Vector2dF(), chunks.items,
-                                      kUsageHints[hint])
-            ->ReleaseAsRecord();
-    EXPECT_THAT(*output,
-                PaintRecordMatcher::Make(
-                    {cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t1>
-                     cc::PaintOpType::SaveLayerAlpha,                 // <e1>
-                     cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t1^-1>
-                     cc::PaintOpType::DrawRecord,                     // <p0/>
-                     cc::PaintOpType::Restore,     // </t1^-1>
-                     cc::PaintOpType::DrawRecord,  // <p1/>
-                     cc::PaintOpType::Restore,     // </e1>
-                     cc::PaintOpType::Restore}));  // </t1>
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds[hint], *output, 2);
-    EXPECT_TRANSFORM_MATRIX(t1->Matrix(), *output, 1);
-    EXPECT_TRANSFORM_MATRIX(t1->Matrix().Inverse(), *output, 4);
-  }
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState::Root(), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(*output,
+              PaintRecordMatcher::Make(
+                  {cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t1>
+                   cc::PaintOpType::SaveLayerAlpha,                 // <e1>
+                   cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t1^-1>
+                   cc::PaintOpType::DrawRecord,                     // <p0/>
+                   cc::PaintOpType::Restore,                        // </t1^-1>
+                   cc::PaintOpType::DrawRecord,                     // <p1/>
+                   cc::PaintOpType::Restore,                        // </e1>
+                   cc::PaintOpType::Restore}));                     // </t1>
+  EXPECT_EFFECT_BOUNDS(0, 0, 100, 100, *output, 2);
+  EXPECT_TRANSFORM_MATRIX(t1->Matrix(), *output, 1);
+  EXPECT_TRANSFORM_MATRIX(t1->Matrix().Inverse(), *output, 4);
 }
 
 TEST_P(PaintChunksToCcLayerTest, FilterEffectSpaceInversion) {
@@ -447,33 +410,29 @@ TEST_P(PaintChunksToCcLayerTest, FilterEffectSpaceInversion) {
   TestChunks chunks;
   chunks.AddChunk(t0(), c0(), *e1);
 
-  const FloatRect kExpectedBounds[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                       FloatRect(-66, -88, 50, 50)};
-
-  for (size_t hint = 0; hint < base::size(kUsageHints); ++hint) {
-    auto output = PaintChunksToCcLayer::Convert(
-                      chunks.chunks, PropertyTreeState::Root(),
-                      gfx::Vector2dF(), chunks.items, kUsageHints[hint])
-                      ->ReleaseAsRecord();
-    EXPECT_THAT(
-        *output,
-        PaintRecordMatcher::Make(
-            {cc::PaintOpType::Save, cc::PaintOpType::Concat,     // <t1>
-             cc::PaintOpType::Save, cc::PaintOpType::Translate,  // <e1_offset>
-             cc::PaintOpType::SaveLayer,                         // <e1>
-             cc::PaintOpType::Translate,                      // <e1_offset^-1/>
-             cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t1^-1>
-             cc::PaintOpType::DrawRecord,                     // <p0/>
-             cc::PaintOpType::Restore,                        // </t1^-1>
-             cc::PaintOpType::Restore,                        // </e1>
-             cc::PaintOpType::Restore,                        // </e1_offset>
-             cc::PaintOpType::Restore}));                     // </t1>
-    EXPECT_TRANSFORM_MATRIX(t1->Matrix(), *output, 1);
-    EXPECT_TRANSLATE(66, 88, *output, 3);
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds[hint], *output, 4);
-    EXPECT_TRANSLATE(-66, -88, *output, 5);
-    EXPECT_TRANSFORM_MATRIX(t1->Matrix().Inverse(), *output, 7);
-  }
+  auto output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState::Root(), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(
+      *output,
+      PaintRecordMatcher::Make(
+          {cc::PaintOpType::Save, cc::PaintOpType::Concat,     // <t1>
+           cc::PaintOpType::Save, cc::PaintOpType::Translate,  // <e1_offset>
+           cc::PaintOpType::SaveLayer,                         // <e1>
+           cc::PaintOpType::Translate,                      // <e1_offset^-1/>
+           cc::PaintOpType::Save, cc::PaintOpType::Concat,  // <t1^-1>
+           cc::PaintOpType::DrawRecord,                     // <p0/>
+           cc::PaintOpType::Restore,                        // </t1^-1>
+           cc::PaintOpType::Restore,                        // </e1>
+           cc::PaintOpType::Restore,                        // </e1_offset>
+           cc::PaintOpType::Restore}));                     // </t1>
+  EXPECT_TRANSFORM_MATRIX(t1->Matrix(), *output, 1);
+  EXPECT_TRANSLATE(66, 88, *output, 3);
+  EXPECT_EFFECT_BOUNDS(-66, -88, 50, 50, *output, 4);
+  EXPECT_TRANSLATE(-66, -88, *output, 5);
+  EXPECT_TRANSFORM_MATRIX(t1->Matrix().Inverse(), *output, 7);
 }
 
 TEST_P(PaintChunksToCcLayerTest, NonRootLayerSimple) {
@@ -523,25 +482,20 @@ TEST_P(PaintChunksToCcLayerTest, EffectWithNoOutputClip) {
   TestChunks chunks;
   chunks.AddChunk(t0(), *c2, *e1);
 
-  const FloatRect kExpectedBounds[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                       FloatRect(0, 0, 100, 100)};
-
-  for (size_t hint = 0; hint < base::size(kUsageHints); ++hint) {
-    sk_sp<PaintRecord> output =
-        PaintChunksToCcLayer::Convert(
-            chunks.chunks, PropertyTreeState(t0(), *c1, e0()), gfx::Vector2dF(),
-            chunks.items, kUsageHints[hint])
-            ->ReleaseAsRecord();
-    EXPECT_THAT(
-        *output,
-        PaintRecordMatcher::Make({cc::PaintOpType::SaveLayerAlpha,  // <e1>
-                                  cc::PaintOpType::Save,
-                                  cc::PaintOpType::ClipRect,    // <c2>
-                                  cc::PaintOpType::DrawRecord,  // <p0/>
-                                  cc::PaintOpType::Restore,     // </c2>
-                                  cc::PaintOpType::Restore}));  // </e1>
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds[hint], *output, 0);
-  }
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState(t0(), *c1, e0()), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(
+      *output,
+      PaintRecordMatcher::Make({cc::PaintOpType::SaveLayerAlpha,  // <e1>
+                                cc::PaintOpType::Save,
+                                cc::PaintOpType::ClipRect,    // <c2>
+                                cc::PaintOpType::DrawRecord,  // <p0/>
+                                cc::PaintOpType::Restore,     // </c2>
+                                cc::PaintOpType::Restore}));  // </e1>
+  EXPECT_EFFECT_BOUNDS(0, 0, 100, 100, *output, 0);
 }
 
 TEST_P(PaintChunksToCcLayerTest,
@@ -553,30 +507,23 @@ TEST_P(PaintChunksToCcLayerTest,
   TestChunks chunks;
   chunks.AddChunk(t0(), *c1, *e2);
 
-  const FloatRect kExpectedBounds1[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                        FloatRect(0, 0, 100, 100)};
-  const FloatRect kExpectedBounds2[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                        FloatRect(0, 0, 100, 100)};
-
-  for (size_t hint = 0; hint < base::size(kUsageHints); ++hint) {
-    sk_sp<PaintRecord> output =
-        PaintChunksToCcLayer::Convert(chunks.chunks, PropertyTreeState::Root(),
-                                      gfx::Vector2dF(), chunks.items,
-                                      kUsageHints[hint])
-            ->ReleaseAsRecord();
-    EXPECT_THAT(
-        *output,
-        PaintRecordMatcher::Make({cc::PaintOpType::SaveLayerAlpha,  // <e1>
-                                  cc::PaintOpType::SaveLayerAlpha,  // <e2>
-                                  cc::PaintOpType::Save,
-                                  cc::PaintOpType::ClipRect,    // <c1>
-                                  cc::PaintOpType::DrawRecord,  // <p0/>
-                                  cc::PaintOpType::Restore,     // </c1>
-                                  cc::PaintOpType::Restore,     // </e2>
-                                  cc::PaintOpType::Restore}));  // </e1>
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds1[hint], *output, 0);
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds2[hint], *output, 1);
-  }
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState::Root(), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(
+      *output,
+      PaintRecordMatcher::Make({cc::PaintOpType::SaveLayerAlpha,  // <e1>
+                                cc::PaintOpType::SaveLayerAlpha,  // <e2>
+                                cc::PaintOpType::Save,
+                                cc::PaintOpType::ClipRect,    // <c1>
+                                cc::PaintOpType::DrawRecord,  // <p0/>
+                                cc::PaintOpType::Restore,     // </c1>
+                                cc::PaintOpType::Restore,     // </e2>
+                                cc::PaintOpType::Restore}));  // </e1>
+  EXPECT_EFFECT_BOUNDS(0, 0, 100, 100, *output, 0);
+  EXPECT_EFFECT_BOUNDS(0, 0, 100, 100, *output, 1);
 }
 
 TEST_P(PaintChunksToCcLayerTest,
@@ -588,25 +535,20 @@ TEST_P(PaintChunksToCcLayerTest,
   TestChunks chunks;
   chunks.AddChunk(t0(), *c1, *e2);
 
-  const FloatRect kExpectedBounds[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                       FloatRect(0, 0, 100, 100)};
-
-  for (size_t hint = 0; hint < base::size(kUsageHints); ++hint) {
-    sk_sp<PaintRecord> output =
-        PaintChunksToCcLayer::Convert(
-            chunks.chunks, PropertyTreeState(t0(), c0(), *e1), gfx::Vector2dF(),
-            chunks.items, kUsageHints[hint])
-            ->ReleaseAsRecord();
-    EXPECT_THAT(
-        *output,
-        PaintRecordMatcher::Make({cc::PaintOpType::SaveLayerAlpha,  // <e2>
-                                  cc::PaintOpType::Save,
-                                  cc::PaintOpType::ClipRect,    // <c1>
-                                  cc::PaintOpType::DrawRecord,  // <p0/>
-                                  cc::PaintOpType::Restore,     // </c1>
-                                  cc::PaintOpType::Restore}));  // </e2>
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds[hint], *output, 0);
-  }
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState(t0(), c0(), *e1), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(
+      *output,
+      PaintRecordMatcher::Make({cc::PaintOpType::SaveLayerAlpha,  // <e2>
+                                cc::PaintOpType::Save,
+                                cc::PaintOpType::ClipRect,    // <c1>
+                                cc::PaintOpType::DrawRecord,  // <p0/>
+                                cc::PaintOpType::Restore,     // </c1>
+                                cc::PaintOpType::Restore}));  // </e2>
+  EXPECT_EFFECT_BOUNDS(0, 0, 100, 100, *output, 0);
 }
 
 TEST_P(PaintChunksToCcLayerTest,
@@ -618,22 +560,17 @@ TEST_P(PaintChunksToCcLayerTest,
   TestChunks chunks;
   chunks.AddChunk(t0(), *c1, *e2);
 
-  const FloatRect kExpectedBounds[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                       FloatRect(0, 0, 100, 100)};
-
-  for (size_t hint = 0; hint < base::size(kUsageHints); ++hint) {
-    sk_sp<PaintRecord> output =
-        PaintChunksToCcLayer::Convert(
-            chunks.chunks, PropertyTreeState(t0(), *c1, *e1), gfx::Vector2dF(),
-            chunks.items, kUsageHints[hint])
-            ->ReleaseAsRecord();
-    EXPECT_THAT(
-        *output,
-        PaintRecordMatcher::Make({cc::PaintOpType::SaveLayerAlpha,  // <e2>
-                                  cc::PaintOpType::DrawRecord,      // <p0/>
-                                  cc::PaintOpType::Restore}));      // </e2>
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds[hint], *output, 0);
-  }
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState(t0(), *c1, *e1), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
+  EXPECT_THAT(
+      *output,
+      PaintRecordMatcher::Make({cc::PaintOpType::SaveLayerAlpha,  // <e2>
+                                cc::PaintOpType::DrawRecord,      // <p0/>
+                                cc::PaintOpType::Restore}));      // </e2>
+  EXPECT_EFFECT_BOUNDS(0, 0, 100, 100, *output, 0);
 }
 
 TEST_P(PaintChunksToCcLayerTest, VisualRect) {
@@ -751,22 +688,17 @@ TEST_P(PaintChunksToCcLayerTest, EmptyEffectsAreStored) {
   chunks.AddChunk(nullptr, t0(), c0(), e0());
   chunks.AddChunk(nullptr, t0(), c0(), *e1);
 
-  const FloatRect kExpectedBounds[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                       FloatRect(0, 0, 100, 100)};
+  sk_sp<PaintRecord> output =
+      PaintChunksToCcLayer::Convert(
+          chunks.chunks, PropertyTreeState::Root(), gfx::Vector2dF(),
+          chunks.items, cc::DisplayItemList::kToBeReleasedAsPaintOpBuffer)
+          ->ReleaseAsRecord();
 
-  for (size_t hint = 0; hint < base::size(kUsageHints); ++hint) {
-    sk_sp<PaintRecord> output =
-        PaintChunksToCcLayer::Convert(chunks.chunks, PropertyTreeState::Root(),
-                                      gfx::Vector2dF(), chunks.items,
-                                      kUsageHints[hint])
-            ->ReleaseAsRecord();
-
-    EXPECT_THAT(*output, PaintRecordMatcher::Make({
-                             cc::PaintOpType::SaveLayerAlpha,  // <e1>
-                             cc::PaintOpType::Restore,         // </e1>
-                         }));
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds[hint], *output, 0);
-  }
+  EXPECT_THAT(*output, PaintRecordMatcher::Make({
+                           cc::PaintOpType::SaveLayerAlpha,  // <e1>
+                           cc::PaintOpType::Restore,         // </e1>
+                       }));
+  EXPECT_EFFECT_BOUNDS(0, 0, 100, 100, *output, 0);
 }
 
 TEST_P(PaintChunksToCcLayerTest, CombineClips) {
@@ -1379,29 +1311,6 @@ TEST_P(PaintChunksToCcLayerTest, AllowChunkEscapeLayerNoopEffects) {
                            cc::PaintOpType::DrawRecord,
                            cc::PaintOpType::Restore,  // end e4
                        }));
-}
-
-// https://crbug.com/918240
-TEST_P(PaintChunksToCcLayerTest, EmptyChunkRectDoesntTurnToUnsetOne) {
-  CompositorFilterOperations filter;
-  filter.AppendBlurFilter(5);
-  auto e1 = CreateFilterEffect(e0(), t0(), &c0(), filter, FloatPoint(0, 0));
-  TestChunks chunks;
-  chunks.AddChunk(nullptr, t0(), c0(), *e1, {0, 0, 0, 0});
-
-  const FloatRect kExpectedBounds[] = {FloatRect(cc::PaintOp::kUnsetRect),
-                                       FloatRect(0, 0, 0, 0)};
-
-  for (size_t hint = 0; hint < base::size(kUsageHints); ++hint) {
-    auto output = PaintChunksToCcLayer::Convert(
-                      chunks.chunks, PropertyTreeState::Root(),
-                      gfx::Vector2dF(), chunks.items, kUsageHints[hint])
-                      ->ReleaseAsRecord();
-    EXPECT_THAT(*output,
-                PaintRecordMatcher::Make({cc::PaintOpType::SaveLayer,   // <e1>
-                                          cc::PaintOpType::Restore}));  // </e1>
-    EXPECT_EFFECT_BOUNDS(kExpectedBounds[hint], *output, 0);
-  }
 }
 
 }  // namespace

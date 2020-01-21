@@ -4806,7 +4806,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8777369558049831576">Exibir uma caixa de seleção "Sempre aberto" na caixa de diálogo do protocolo externo.</translation>
 <translation id="877773134585155834">Lista os identificadores de aplicativo que o <ph name="PRODUCT_OS_NAME" /> exibe como apps fixados na barra do acesso rápido.
 
-      Aplicativos do Google Chrome são especificados por um código, por exemplo, "pjkljhegncpnkpknbcohdijeoejaedia", enquanto apps Android são especificados por um nome de pacote, como "com.google.android.gm", e apps da Web pelo URL usado em WebAppInstallForceList, por exemplo, "https://google.com/maps".
+      apps do Chrome são especificados por um código, por exemplo, "pjkljhegncpnkpknbcohdijeoejaedia", enquanto apps Android são especificados por um nome de pacote, como "com.google.android.gm", e apps da Web pelo URL usado em WebAppInstallForceList, por exemplo, "https://google.com/maps".
 
       Se esta política for definida, o conjunto de aplicativos será fixado e não poderá ser alterado pelo usuário.
 

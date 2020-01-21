@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">过扫描</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1247372569136754018">麦克风（内部）</translation>
-<translation id="1249456112629248620">“<ph name="FEATURE_NAME" />”这项设置是您的管理员强制执行的。</translation>
 <translation id="1252999807265626933">正在通过“<ph name="POWER_SOURCE" />”充电</translation>
 <translation id="1255033239764210633">天气怎么样？</translation>
 <translation id="1267032506238418139">该快捷键发生了变化</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">连接到其他 Wi-Fi 网络</translation>
 <translation id="2718395828230677721">夜间模式</translation>
 <translation id="2727977024730340865">已插入低功率充电器；可能无法保证充电成功。</translation>
-<translation id="2761704814324807722">状态栏，时间为<ph name="TIME" />，<ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + 搜索键</translation>
 <translation id="2803734122639935495">要解锁此设备，请输入您的密码</translation>
 <translation id="2819276065543622893">您将立即退出。</translation>

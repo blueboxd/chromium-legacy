@@ -6,16 +6,14 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
 @protocol BookmarkInteractionControllerDelegate;
 
 namespace bookmarks {
 class BookmarkNode;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 namespace web {

@@ -22376,6 +22376,11 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="225" label="kCrashReportPrivate"/>
 </enum>
 
+<enum name="ExtensionPolicyReinstallReason">
+  <int value="0" label="Tried to load a corrupted extension"/>
+  <int value="1" label="Corrupted Chrome Web Store extension"/>
+</enum>
+
 <enum name="ExtensionServiceVerifyAllSuccess">
   <int value="0" label="VERIFY_ALL_BOOTSTRAP_SUCCESS"/>
   <int value="1" label="VERIFY_ALL_BOOTSTRAP_FAILURE"/>
@@ -32424,6 +32429,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="11"
       label="Image queued for transcoding was stored back to cache."/>
   <int value="12" label="Load image metadata"/>
+</enum>
+
+<enum name="IMEAssistiveAction">
+  <int value="0" label="GENERIC_ACTION"/>
+  <int value="1" label="PERSONAL_EMAIL"/>
+  <int value="2" label="PERSONAL_ADDRESS"/>
+  <int value="3" label="PERSONAL_PHONE_NUMBER"/>
 </enum>
 
 <enum name="IMECommitType">
@@ -62027,6 +62039,7 @@ would be helpful to identify which type is being sent.
   <int value="45" label="Web Apps"/>
   <int value="46" label="OS Preferences"/>
   <int value="47" label="OS Priority Preferences"/>
+  <int value="48" label="Sharing Message"/>
 </enum>
 
 <enum name="SyncModelTypeStoreInitResult">

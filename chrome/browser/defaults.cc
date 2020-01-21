@@ -37,7 +37,7 @@ const bool kShowHelpMenuItemIcon = false;
 
 const bool kDownloadPageHasShowInFolder = true;
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
 const bool kSyncAutoStarts = true;
 #else
 const bool kSyncAutoStarts = false;

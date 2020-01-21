@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">көрінбейтін бөлік</translation>
 <translation id="119944043368869598">Барлығын өшіру</translation>
 <translation id="1247372569136754018">Микрофон (ішкі)</translation>
-<translation id="1249456112629248620"><ph name="FEATURE_NAME" />: бұл функцияны әкімші басқарады.</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> арқылы зарядтау</translation>
 <translation id="1255033239764210633">Ауа райы қандай?</translation>
 <translation id="1267032506238418139">Таңбаша өзгерісі</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">Басқа Wi-Fi желілеріне қосылу</translation>
 <translation id="2718395828230677721">Түнгі жарық</translation>
 <translation id="2727977024730340865">Төмен қуатты зарядтағышқа жалғанған. Батареяны зарядтау кезінде қиындықтар болуы мүмкін.</translation>
-<translation id="2761704814324807722">Күй науасы, уақыт: <ph name="TIME" /> , <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Іздеу</translation>
 <translation id="2803734122639935495">Құлыпты ашу үшін құпия сөзді енгізіңіз</translation>
 <translation id="2819276065543622893">Жүйеден қазір шығасыз.</translation>

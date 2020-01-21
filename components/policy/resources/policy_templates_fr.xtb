@@ -214,7 +214,7 @@
       Si cette règle n'est pas définie, ou si elle est définie sur "True", ses données et son heure de récupération sont collectées.
       Si cette règle est définie sur "False", ses données et son heure de récupération ne sont pas collectées.
 
-      Cette règle n'est effective que lorsque la règle <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est enregistré auprès de <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1327466551276625742">Activer l'invite de configuration réseau lorsque l'utilisateur n'est pas connecté</translation>
 <translation id="1330145147221172764">Activer le clavier à l'écran</translation>
 <translation id="13356285923490863">Nom de stratégie</translation>
@@ -1015,7 +1015,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle n'est pas définie, ou si elle est définie sur "True", les informations de version sont collectées.
       Si cette règle est définie sur "False", les informations de version ne sont pas collectées.
 
-      Cette règle n'est effective que lorsque la règle <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est enregistré auprès de <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2480971699591919564">Cette règle active la fonctionnalité Click to Call, qui autorise les utilisateurs à envoyer des numéros de téléphone depuis leur ordinateur équipé de Chrome vers un appareil Android lorsqu'ils sont connectés. Pour plus d'informations, consultez cet article du centre d'aide : https://support.google.com/chrome/answer/9430554?hl=fr.
 
       Si cette règle est activée, la fonctionnalité permettant d'envoyer des numéros de téléphone vers des appareils Android sera activée pour l'utilisateur Chrome.
@@ -2880,7 +2880,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Cette règle peut également être définie sur l'une des valeurs suivantes : "tls1.2" ou "tls1.3". Si elle est configurée, <ph name="PRODUCT_NAME" /> n'utilisera pas de versions de SSL/TLS supérieures à la version spécifiée. Toute valeur non reconnue sera ignorée.</translation>
 <translation id="5330684698007383292">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu suivants</translation>
 <translation id="5331081760098249172">
-      Si la règle est définie sur "True", <ph name="PRODUCT_NAME" /> est autorisé à collecter les journaux des événements WebRTC auprès des services Google (Hangouts Meet, par exemple) et à les importer sur Google. Ces journaux contiennent des informations de diagnostic permettant de déboguer des problèmes liés aux réunions audio ou aux visioconférences dans <ph name="PRODUCT_NAME" />, telles que l'horodatage et la taille des paquets RTP, des commentaires sur l'encombrement du réseau, ainsi que des métadonnées concernant l'horodatage et la qualité des trames vidéo et audio. Ces journaux n'incluent aucun contenu audio ni vidéo de la réunion. Dans le but de faciliter le débogage, Google peut associer ces journaux à d'autres journaux collectés par le service Google proprement dit au moyen d'un ID de session
+      Si la règle est définie sur "True", <ph name="PRODUCT_NAME" /> est autorisé à collecter les journaux des événements WebRTC auprès des services Google (Hangouts Meet, par exemple) et à les importer sur Google. Ces journaux contiennent des informations de diagnostic permettant de déboguer des problèmes liés aux réunions audio ou aux visioconférences dans <ph name="PRODUCT_NAME" />, telles que l'horodatage et la taille des paquets RTP, des commentaires sur l'encombrement du réseau, ainsi que des métadonnées concernant l'horodatage et la qualité de la vidéo et de l'audio. Ces journaux n'incluent aucun contenu audio ni vidéo de la réunion. Dans le but de faciliter le débogage, Google peut associer ces journaux à d'autres journaux collectés par le service Google proprement dit au moyen d'un ID de session
 
       Si la règle est définie sur "False", ces journaux ne sont ni collectés ni importés.
 
@@ -3520,7 +3520,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Si cette règle n'est pas définie, ou si elle est définie sur "True", les données des extensions et des plug-ins sont collectées.
       Si cette règle est définie sur "False", les données des extensions et des plug-ins ne sont pas collectées.
 
-      Cette règle n'est effective que lorsque la règle <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est enregistré auprès de <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6401669939808766804">Déconnecter l'utilisateur</translation>
 <translation id="6406448383934634215">Si l'option "Ouvrir une liste d'URL" est sélectionnée comme action de démarrage, vous pouvez spécifier la liste des URL qui sont ouvertes. Si cette règle n'est pas configurée, aucune URL ne sera ouverte au démarrage.
 
@@ -3609,7 +3609,7 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Si cette règle n'est pas définie, ou si elle est définie sur "True", les informations pouvant être utilisées pour identifier les ordinateurs sont collectées.
       Si cette règle est définie sur "False", les informations pouvant être utilisées pour identifier les ordinateurs ne sont pas collectées.
 
-      Cette règle n'est effective que lorsque la règle <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est enregistré auprès de <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6539246272469751178">Cette règle n'a aucun effet sur les applications Android. Celles-ci se servent toujours du répertoire de téléchargements par défaut. Elles ne peuvent pas accéder aux fichiers téléchargés par <ph name="PRODUCT_OS_NAME" /> dans un autre répertoire de téléchargements.</translation>
 <translation id="654303922206238013">Stratégie de migration pour eCryptfs</translation>
 <translation id="6544897973797372144">Si cette règle est définie sur "True", et si la règle ChromeOsReleaseChannel n'est pas spécifiée, les utilisateurs du domaine correspondant sont autorisés à modifier la version de l'appareil. Si elle est définie sur "False", l'appareil est verrouillé sur la dernière version configurée.
@@ -3832,7 +3832,7 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
        Si cette règle n'est pas définie, ou si elle est définie sur "True", les informations pouvant être utilisées pour identifier les utilisateurs sont collectées.
       Si cette règle est définie sur "False", les informations pouvant être utilisées pour identifier les utilisateurs ne sont pas collectées.
 
-      Cette règle n'est effective que lorsque la règle <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est enregistré auprès de <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6994082778848658360">Indique comment le matériel sécurisé intégré peut être utilisé pour l'authentification à deux facteurs, s'il est compatible avec cette fonctionnalité. Le bouton Marche/Arrêt de l'appareil est utilisé pour détecter la présence de l'utilisateur.
 
       Si vous sélectionnez "Désactivé" ou si vous ne définissez pas cette règle, aucun deuxième facteur n'est fourni.
@@ -4356,7 +4356,7 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="7754704193130578113">Toujours demander où enregistrer les fichiers</translation>
 <translation id="7755495228644343508">Configurez les règles liées à Chrome Reporting Extension.
 
-      Ces règles ne sont effectives que lorsque la règle <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est enregistré auprès de <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+      Ces règles ne sont effectives que lorsque la règle <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Activer l'authentification ambiante en fonction du type de profil.</translation>
 <translation id="7761446981238915769">Configurez la liste des applications installées sur l'écran de connexion.</translation>
 <translation id="7763614521440615342">Afficher des recommandations de contenus sur la page "Nouvel onglet"</translation>
@@ -4367,7 +4367,7 @@ au maximum si un utilisateur se sert de l'appareil.
       Si cette règle n'est pas définie, ou si elle est définie sur "True", les données de navigation sécurisée sont collectées.
       Si cette règle est définie sur "False", les données de navigation sécurisée ne sont pas collectées.
 
-      Cette règle n'est effective que lorsque la règle <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est enregistré auprès de <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7777535871204167559">Traiter les appareils de stockage externe en lecture seule</translation>
 <translation id="7788511847830146438">Par profil</translation>
 <translation id="7792973482799545782">Interdire à tous les sites de charger un contenu mixte blocable</translation>

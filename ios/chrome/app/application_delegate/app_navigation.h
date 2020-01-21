@@ -8,10 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/ios/block_types.h"
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 @class SettingsNavigationController;
 

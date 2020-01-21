@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">സ്ലൈഡർ</translation>
 <translation id="1211441953136645838">അന്തിമ കുറിപ്പ്</translation>
 <translation id="1281252709823657822">ഡയലോഗ്</translation>
+<translation id="1306460908038601864">ഓഫാണ്</translation>
 <translation id="1335095011850992622">ക്രെഡിറ്റുകൾ</translation>
 <translation id="1342835525016946179">ലേഖനം</translation>
 <translation id="1359897965706325498">ബാനർ</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' എന്നതിനുശേഷം ഒരു ഭാഗം നൽകുക.'<ph name="INVALIDADDRESS" />' അപൂർണ്ണമാണ്.</translation>
 <translation id="5334352251556557839">മീഡിയ പ്ലേ ചെയ്യാനായില്ല.</translation>
+<translation id="537648784377940524">കുറഞ്ഞ തീയതി (<ph name="MIN_DATE_OR_TIME" />) പരമാവധി തീയതിയേക്കാൾ (<ph name="MAX_DATE_OR_TIME" />) മുമ്പുള്ളതായിരിക്കണം.</translation>
 <translation id="5406322316791861025">ആകാരം</translation>
 <translation id="5453733299334684579">ട്രീ ഇനം</translation>
 <translation id="5466621249238537318">ഒന്നോ അതില്‍ക്കൂടുതലോ ഫയലുകള്‍ ദയവായി തിരഞ്ഞെടുക്കുക.</translation>

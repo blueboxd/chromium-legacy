@@ -69,11 +69,15 @@ void BaseRenderingContext2D::RealizeSaves() {
 }
 
 void BaseRenderingContext2D::save() {
+  if (isContextLost())
+    return;
   state_stack_.back()->Save();
   ValidateStateStack();
 }
 
 void BaseRenderingContext2D::restore() {
+  if (isContextLost())
+    return;
   ValidateStateStack();
   if (GetState().HasUnrealizedSaves()) {
     // We never realized the save, so just record that it was unnecessary.

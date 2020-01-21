@@ -128,15 +128,6 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       const ServiceWorkerDatabase::RegistrationData& data,
       const ResourceList& resources);
 
-  using RegistrationRefsById =
-      std::map<int64_t, scoped_refptr<ServiceWorkerRegistration>>;
-  // TODO(crbug.com/1039200): Remove this accessor. This is tentatively
-  // exposed for ServiceWorkerStorage. Code that relies on these should be
-  // moved into this class.
-  RegistrationRefsById& installing_registrations() {
-    return installing_registrations_;
-  }
-
  private:
   ServiceWorkerRegistration* FindInstallingRegistrationForClientUrl(
       const GURL& client_url);
@@ -185,6 +176,8 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   std::unique_ptr<ServiceWorkerStorage> storage_;
 
   // For finding registrations being installed or uninstalled.
+  using RegistrationRefsById =
+      std::map<int64_t, scoped_refptr<ServiceWorkerRegistration>>;
   RegistrationRefsById installing_registrations_;
   RegistrationRefsById uninstalling_registrations_;
 

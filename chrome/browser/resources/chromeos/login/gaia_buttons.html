@@ -20,9 +20,8 @@
     'disabled' - button is disabled when the attribute is set.
 -->
 <dom-module id="gaia-button">
-  <link rel="stylesheet" href="gaia_button.css">
-
   <template>
+    <link rel="stylesheet" href="gaia_button.css">
     <cr-button id="button" disabled="[[disabled]]" on-click="onClick_"
         noink$="[[link]]">
       <slot></slot>
@@ -45,9 +44,8 @@
     'aria-label' - accessibility label.
 -->
 <dom-module id="gaia-icon-button">
-  <link rel="stylesheet" href="gaia_icon_button.css">
-
   <template>
+    <link rel="stylesheet" href="gaia_icon_button.css">
     <div>
       <cr-icon-button id="iconButton" iron-icon="[[icon]]" on-click="onClick_"
           disabled="[[disabled]]" aria-label$="[[ariaLabel]]"></cr-icon-button>

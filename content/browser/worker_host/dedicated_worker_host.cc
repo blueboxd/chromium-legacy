@@ -43,7 +43,7 @@ DedicatedWorkerHost::DedicatedWorkerHost(
     DedicatedWorkerServiceImpl* service,
     DedicatedWorkerId id,
     RenderProcessHost* worker_process_host,
-    GlobalFrameRoutingId creator_render_frame_host_id,
+    base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
     GlobalFrameRoutingId ancestor_render_frame_host_id,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host)
@@ -99,8 +99,9 @@ void DedicatedWorkerHost::LifecycleStateChanged(
   }
 }
 
-void DedicatedWorkerHost::RenderProcessHostDestroyed(
-    RenderProcessHost* render_process_host) {
+void DedicatedWorkerHost::RenderProcessExited(
+    RenderProcessHost* render_process_host,
+    const ChildProcessTerminationInfo& info) {
   DCHECK_EQ(worker_process_host_, render_process_host);
 
   delete this;
@@ -167,9 +168,9 @@ void DedicatedWorkerHost::StartScriptLoad(
 
   // If this is a nested worker, there is no creator frame.
   RenderFrameHostImpl* creator_render_frame_host = nullptr;
-  if (creator_render_frame_host_id_.frame_routing_id != MSG_ROUTING_NONE) {
+  if (creator_render_frame_host_id_) {
     creator_render_frame_host =
-        RenderFrameHostImpl::FromID(creator_render_frame_host_id_);
+        RenderFrameHostImpl::FromID(creator_render_frame_host_id_.value());
     if (!creator_render_frame_host) {
       client_->OnScriptLoadStartFailed();
       return;
@@ -368,11 +369,11 @@ void DedicatedWorkerHost::CreateQuicTransportConnector(
 void DedicatedWorkerHost::CreateNestedDedicatedWorker(
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GlobalFrameRoutingId new_creator_render_frame_host_id(
-      worker_process_host_->GetID(), MSG_ROUTING_NONE);
-  CreateDedicatedWorkerHostFactory(new_creator_render_frame_host_id,
-                                   ancestor_render_frame_host_id_, origin_,
-                                   std::move(receiver));
+  // There is no creator frame when the worker is nested.
+  CreateDedicatedWorkerHostFactory(
+      worker_process_host_->GetID(),
+      /*creator_render_frame_host_id_=*/base::nullopt,
+      ancestor_render_frame_host_id_, origin_, std::move(receiver));
 }
 
 void DedicatedWorkerHost::CreateIdleManager(
@@ -448,7 +449,6 @@ void DedicatedWorkerHost::UpdateSubresourceLoaderFactories() {
   auto* storage_partition_impl = static_cast<StoragePartitionImpl*>(
       worker_process_host_->GetStoragePartition());
 
-  // Get a storage domain.
   RenderFrameHostImpl* ancestor_render_frame_host =
       RenderFrameHostImpl::FromID(ancestor_render_frame_host_id_);
   if (!ancestor_render_frame_host)
@@ -458,6 +458,7 @@ void DedicatedWorkerHost::UpdateSubresourceLoaderFactories() {
   if (!site_instance)
     return;
 
+  // Get a storage domain.
   std::string storage_domain;
   std::string partition_name;
   bool in_memory;
@@ -496,10 +497,12 @@ class DedicatedWorkerHostFactoryImpl final
     : public blink::mojom::DedicatedWorkerHostFactory {
  public:
   DedicatedWorkerHostFactoryImpl(
-      GlobalFrameRoutingId creator_render_frame_host_id,
+      int worker_process_id,
+      base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
       GlobalFrameRoutingId ancestor_render_frame_host_id,
       const url::Origin& parent_context_origin)
-      : creator_render_frame_host_id_(creator_render_frame_host_id),
+      : worker_process_id_(worker_process_id),
+        creator_render_frame_host_id_(creator_render_frame_host_id),
         ancestor_render_frame_host_id_(ancestor_render_frame_host_id),
         parent_context_origin_(parent_context_origin) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -518,9 +521,7 @@ class DedicatedWorkerHostFactoryImpl final
       return;
     }
 
-    // Allocate the worker in the same process as the creator.
-    auto* worker_process_host =
-        RenderProcessHost::FromID(creator_render_frame_host_id_.child_id);
+    auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
     if (!worker_process_host) {
       // Abort if the worker's process host is gone. This means that the calling
       // frame or worker is also either destroyed or in the process of being
@@ -565,9 +566,7 @@ class DedicatedWorkerHostFactoryImpl final
       return;
     }
 
-    // Allocate the worker in the same process as the creator.
-    auto* worker_process_host =
-        RenderProcessHost::FromID(creator_render_frame_host_id_.child_id);
+    auto* worker_process_host = RenderProcessHost::FromID(worker_process_id_);
     if (!worker_process_host) {
       // Abort if the worker's process host is gone. This means that the calling
       // frame or worker is also either destroyed or in the process of being
@@ -604,8 +603,11 @@ class DedicatedWorkerHostFactoryImpl final
   }
 
  private:
+  // The ID of the RenderProcessHost where the worker will live.
+  const int worker_process_id_;
+
   // See comments on the corresponding members of DedicatedWorkerHost.
-  const GlobalFrameRoutingId creator_render_frame_host_id_;
+  const base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id_;
   const GlobalFrameRoutingId ancestor_render_frame_host_id_;
 
   const url::Origin parent_context_origin_;
@@ -616,14 +618,16 @@ class DedicatedWorkerHostFactoryImpl final
 }  // namespace
 
 void CreateDedicatedWorkerHostFactory(
-    GlobalFrameRoutingId creator_render_frame_host_id,
+    int worker_process_id,
+    base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
     GlobalFrameRoutingId ancestor_render_frame_host_id,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::DedicatedWorkerHostFactory> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<DedicatedWorkerHostFactoryImpl>(
-          creator_render_frame_host_id, ancestor_render_frame_host_id, origin),
+          worker_process_id, creator_render_frame_host_id,
+          ancestor_render_frame_host_id, origin),
       std::move(receiver));
 }
 

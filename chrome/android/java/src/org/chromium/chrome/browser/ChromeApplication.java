@@ -117,6 +117,10 @@ public class ChromeApplication extends Application {
             ApplicationStatus.registerApplicationStateListener(
                     ChromeApplication::updateMemoryPressurePolling);
 
+            // Record via UMA all modules that have been requested and are currently installed. This
+            // will tell us the install penetration of each module over time.
+            ModuleUtil.recordModuleAvailability();
+
             // Set Chrome factory for mapping BackgroundTask classes to TaskIds.
             ChromeBackgroundTaskFactory.setAsDefault();
         }

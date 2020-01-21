@@ -34,3 +34,9 @@ crbug.com/870173 virtual/cache-storage-high-priority-match/external/wpt/service-
 crbug.com/870173 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 crbug.com/870173 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+
+# Timing-Allow-Origin checks are only completely correct with OOR-CORS.
+crbug.com/1042580 external/wpt/element-timing/multiple-redirects-TAO.html [ Failure ]
+crbug.com/1042580 external/wpt/element-timing/redirects-tao-star.html [ Failure ]
+crbug.com/1042580 external/wpt/largest-contentful-paint/multiple-redirects-TAO.html [ Failure ]
+crbug.com/1042580 external/wpt/largest-contentful-paint/redirects-tao-star.html [ Failure ]

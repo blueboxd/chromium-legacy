@@ -82,7 +82,14 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime SimpleDuration() const;
 
   void UpdateInterval(SMILTime presentation_time);
-  void UpdateActiveState(SMILTime elapsed);
+  enum EventDispatchMask {
+    kDispatchNoEvent = 0,
+    kDispatchBeginEvent = 1u << 0,
+    kDispatchRepeatEvent = 1u << 1,
+    kDispatchEndEvent = 1u << 2,
+  };
+  EventDispatchMask UpdateActiveState(SMILTime elapsed);
+  void DispatchEvents(EventDispatchMask);
   void UpdateProgressState(SMILTime presentation_time);
   bool IsHigherPriorityThan(const SVGSMILElement* other,
                             SMILTime presentation_time) const;
@@ -101,9 +108,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   void SetDocumentOrderIndex(unsigned index) { document_order_index_ = index; }
 
   wtf_size_t& PriorityQueueHandle() { return queue_handle_; }
-
-  void ScheduleEvent(const AtomicString& event_type);
-  void ScheduleRepeatEvents();
 
   void Trace(blink::Visitor*) override;
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="1337778609052285767">Parola actuală nu respectă cerințele privind complexitatea parolei. Contactează administratorul.</translation>
 <translation id="1337821341856692531">Dacă vei continua fără să introduci parola pentru Windows actuală, este posibil să pierzi informații fără să le mai poți recupera.</translation>
 <translation id="1383286653814676580">Folosit pentru a afișa pagina de conectare la furnizorul de date de conectare la Google.</translation>
 <translation id="1894475569413661128">Conectează-te folosind contul de serviciu.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Ai introdus o parolă Windows incorectă. Încearcă din nou.</translation>
 <translation id="2831078752570172210">Contul tău a fost blocat. Contactează administratorul de sistem.</translation>
 <translation id="2844349213149998955">Pe acest dispozitiv nu este permisă conectarea folosind un cont personal. Conectează-te cu un cont de serviciu.</translation>
+<translation id="2995851317559936311">Schimbarea parolei este permisă numai pentru controlerul domeniului. Contactează administratorul.</translation>
 <translation id="3306357053520292004">Un utilizator de pe acest computer a fost deja adăugat cu acest cont. Conectați-vă cu un alt cont.</translation>
 <translation id="3926852373333893095">Doar utilizatorii G Suite Enterprise au permisiunea de a se conecta.</translation>
 <translation id="4057329986137569701">A apărut o eroare internă.</translation>
 <translation id="4267670563222825190">Nu s-a găsit niciun utilizator de domeniu pentru contul tău. Contactează administratorul.</translation>
 <translation id="4300229033992784001">Parola contului a fost schimbată. Introdu parola Windows curentă pentru a sincroniza parola Windows cu contul de serviciu.</translation>
+<translation id="4669462973597624151">Încercarea de schimbare a parolei nu a reușit. Contactează administratorul.</translation>
 <translation id="4706454071748629324">Nu s-a reușit adăugarea unui utilizator nou. Computerul permite crearea unui singur utilizator folosind un cont de serviciu.</translation>
+<translation id="5186761973554910131">Ai introdus un nume de computer nevalid în timpul încercării de schimbare a parolei. Contactează administratorul.</translation>
 <translation id="6033715878377252112">Asistentul Furnizorului de date de conectare Google pentru Windows</translation>
 <translation id="6149399665202317746">Furnizor de date de conectare Google pentru Windows</translation>
 <translation id="6239180560789153226">De pe dispozitivul tău lipsesc informațiile de recuperare. Conectează-te folosind contul de serviciu Google.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">Adaugă contul de serviciu</translation>
 <translation id="7811865856574012727">Administratorul a restricționat conectarea dispozitivului la următoarele domenii: <ph name="EMAIL_DOMAINS" />. Încearcă din nou folosind un cont de serviciu valid.</translation>
 <translation id="7856245195110636219">Nu se mai poate continua fără introducerea parolei pentru Windows actuale. Contactează un administrator de sistem.</translation>
+<translation id="8109730953933509335">Un utilizator nevalid a încercat să schimbe parola. Contactează administratorul.</translation>
 <translation id="8639729688781680518">Am uitat parola pentru Windows</translation>
 <translation id="866458870819756755">Nu s-a putut crea un utilizator.</translation>
 <translation id="8875753657315897487">Conectează-te folosind contul de serviciu</translation>

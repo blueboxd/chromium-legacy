@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Alles wissen</translation>
 <translation id="1247372569136754018">Microfoon (intern)</translation>
-<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> Deze instelling wordt door je beheerder afgedwongen.</translation>
 <translation id="1252999807265626933">Opladen via <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Wat voor weer is het?</translation>
 <translation id="1267032506238418139">Sneltoets gewijzigd</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">Verbinden met andere wifi-netwerken</translation>
 <translation id="2718395828230677721">Nachtverlichting</translation>
 <translation id="2727977024730340865">Aangesloten op een laag-vermogen-lader. Opladen van de batterij mogelijk niet betrouwbaar.</translation>
-<translation id="2761704814324807722">Statusvak, tijd <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Zoeken</translation>
 <translation id="2803734122639935495">Geef je wachtwoord om te ontgrendelen</translation>
 <translation id="2819276065543622893">Je wordt nu uitgelogd.</translation>

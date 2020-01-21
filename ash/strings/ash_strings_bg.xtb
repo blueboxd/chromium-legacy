@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">допълнителна област</translation>
 <translation id="119944043368869598">Изчистване на всички</translation>
 <translation id="1247372569136754018">Микрофон (вътрешен)</translation>
-<translation id="1249456112629248620">Настройката „<ph name="FEATURE_NAME" />“ е наложена от администратора ви.</translation>
 <translation id="1252999807265626933">Зарежда се от <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">„What's the weather?“ („Какво е времето?“)</translation>
 <translation id="1267032506238418139">Промяна на клавишната комбинация</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">Присъединяване към други Wi-Fi мрежи</translation>
 <translation id="2718395828230677721">Нощно осветление</translation>
 <translation id="2727977024730340865">Използва се зарядно устройство с малка мощност. Зареждането на батерията може да не е надеждно.</translation>
-<translation id="2761704814324807722">Област за състоянието, часът е <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + търсене</translation>
 <translation id="2803734122639935495">За да отключите, въведете паролата си</translation>
 <translation id="2819276065543622893">Ще излезете сега.</translation>

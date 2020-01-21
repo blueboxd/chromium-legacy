@@ -57,21 +57,8 @@ void AppLauncherOverlayCallback(ProceduralBlockWithBool app_launch_completion,
 
 }  // namespace
 
-@interface AppLauncherCoordinator ()
-// The base view controller from which to present UI.
-@property(nonatomic, weak) UIViewController* baseViewController;
-@end
-
 @implementation AppLauncherCoordinator
 @synthesize baseViewController = _baseViewController;
-
-- (instancetype)initWithBaseViewController:
-    (UIViewController*)baseViewController {
-  if (self = [super init]) {
-    _baseViewController = baseViewController;
-  }
-  return self;
-}
 
 #pragma mark - Private methods
 

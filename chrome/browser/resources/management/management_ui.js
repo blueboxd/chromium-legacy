@@ -230,7 +230,7 @@ Polymer({
       case DeviceReportingType.EXTENSION:
         return 'cr:extension';
       case DeviceReportingType.ANDROID_APPLICATION:
-        return 'management:android';
+        return 'management:play-store';
       default:
         return 'cr:computer';
     }

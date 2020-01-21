@@ -174,6 +174,7 @@ class CalledByNative(object):
                                self.return_type)
     self.static_cast = GetStaticCastForReturnType(self.return_type)
     self.gen_test_method = kwargs.get('gen_test_method', False)
+    self.test_disabled = kwargs.get('test_disabled', False)
 
 
 class ConstantField(object):
@@ -671,8 +672,8 @@ RE_SCOPED_JNI_TYPES = re.compile('jobject|jclass|jstring|jthrowable|.*Array')
 
 # Regex to match a string like "@CalledByNative public void foo(int bar)".
 RE_CALLED_BY_NATIVE = re.compile(
-    r'@CalledByNative(?P<Unchecked>(?:Unchecked)?)(?P<JavaTest>(?:JavaTest)?)'
-    r'(?:\("(?P<annotation>.*)"\))?'
+    r'@(?P<Disabled>(?:Disabled)?)CalledByNative(?P<Unchecked>(?:Unchecked)?)'
+    r'(?P<JavaTest>(?:JavaTest)?)(?:\("(?P<annotation>.*)"\))?'
     r'(?:\s+@\w+(?:\(.*\))?)*'  # Ignore any other annotations.
     r'\s+(?P<prefix>('
     r'(private|protected|public|static|abstract|final|default|synchronized)'
@@ -724,7 +725,8 @@ def ExtractCalledByNatives(jni_params, contents, always_mangle):
             name=name,
             is_constructor=is_constructor,
             params=JniParams.Parse(match.group('params')),
-            gen_test_method='JavaTest' in match.group('JavaTest'))
+            gen_test_method='JavaTest' in match.group('JavaTest'),
+            test_disabled='Disabled' in match.group('Disabled')),
     ]
   # Check for any @CalledByNative occurrences that weren't matched.
   unmatched_lines = re.sub(RE_CALLED_BY_NATIVE, '', contents).split('\n')
@@ -1474,7 +1476,7 @@ ${PROFILING_LEAVING_NATIVE}\
 
   def GetTestMethodString(self, called_by_native):
     method_template = Template("""\
-  TEST_F(test_fixture, ${METHOD_ID_VAR_NAME_UPPERCASE}) { \\
+  TEST_F(test_fixture, ${DISABLED}${METHOD_ID_VAR_NAME_UPPERCASE}) { \\
     JNIEnv* env = base::android::AttachCurrentThread(); \\
     Java_${JAVA_CLASS_ONLY}_${METHOD_ID_VAR_NAME}(\\
         env, java_test_object); \\
@@ -1483,6 +1485,10 @@ ${PROFILING_LEAVING_NATIVE}\
     method_name = values['METHOD_ID_VAR_NAME']
     values['METHOD_ID_VAR_NAME_UPPERCASE'] = method_name[0].upper(
     ) + method_name[1:]
+    if called_by_native.test_disabled:
+      values['DISABLED'] = 'DISABLED_'
+    else:
+      values['DISABLED'] = ''
     return RemoveIndentedEmptyLines(method_template.substitute(values))
 
 

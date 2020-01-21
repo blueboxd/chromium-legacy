@@ -81,7 +81,10 @@ void FakeSkiaOutputSurface::Reshape(const gfx::Size& size,
 }
 
 void FakeSkiaOutputSurface::SwapBuffers(OutputSurfaceFrame frame) {
-  NOTIMPLEMENTED();
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&FakeSkiaOutputSurface::SwapBuffersAck,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FakeSkiaOutputSurface::ScheduleOutputSurfaceAsOverlay(
@@ -186,13 +189,6 @@ FakeSkiaOutputSurface::CreateImageContext(
     sk_sp<SkColorSpace> color_space) {
   return std::make_unique<ExternalUseClient::ImageContext>(
       holder, size, format, ycbcr_info, std::move(color_space));
-}
-
-void FakeSkiaOutputSurface::SkiaSwapBuffers(OutputSurfaceFrame frame) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&FakeSkiaOutputSurface::SwapBuffersAck,
-                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 SkCanvas* FakeSkiaOutputSurface::BeginPaintRenderPass(

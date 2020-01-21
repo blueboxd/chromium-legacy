@@ -150,9 +150,6 @@ class SynchronousLayerTreeFrameSink
   void DeliverMessages();
   bool CalledOnValidThread() const;
 
-  void CancelFallbackTick();
-  void FallbackTickFired();
-
   // Sends DidNotProduceFrame to CompositorFrameSink for the previous BeginFrame
   // if we didn't send DidNotProduceFrame/SubmitCompositorFrame already.
   void SendAckToLastBeginFrameIfNeeded();
@@ -177,10 +174,6 @@ class SynchronousLayerTreeFrameSink
   bool in_software_draw_ = false;
   bool did_submit_frame_ = false;
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
-
-  base::CancelableOnceClosure fallback_tick_;
-  bool fallback_tick_pending_ = false;
-  bool fallback_tick_running_ = false;
 
   mojo::PendingRemote<viz::mojom::CompositorFrameSink>
       unbound_compositor_frame_sink_;

@@ -79,6 +79,9 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
       const std::string& rule_name,
       DlpDeepScanningVerdict::TriggeredRule::Action action);
 
+  // Sets the BinaryUploadService::Result to use in the next response callback.
+  static void SetResponseResult(BinaryUploadService::Result result);
+
  private:
   // Simulates a response from the binary upload service.  the |path| argument
   // is used to call |status_callback_| to determine if the path should succeed
@@ -96,6 +99,7 @@ class FakeDeepScanningDialogDelegate : public DeepScanningDialogDelegate {
       std::unique_ptr<BinaryUploadService::Request> request) override;
   bool CloseTabModalDialog() override;
 
+  static BinaryUploadService::Result result_;
   base::RepeatingClosure delete_closure_;
   StatusCallback status_callback_;
   EncryptionStatusCallback encryption_callback_;

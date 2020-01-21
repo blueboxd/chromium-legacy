@@ -251,6 +251,36 @@ class CORE_EXPORT NGConstraintSpace final {
     return LayoutUnit();
   }
 
+  // Inline/block target stretch size constraints.
+  // See:
+  // https://mathml-refresh.github.io/mathml-core/#dfn-inline-stretch-size-constraint
+  LayoutUnit TargetStretchInlineSize() const {
+    return HasRareData() ? rare_data_->TargetStretchInlineSize()
+                         : kIndefiniteSize;
+  }
+
+  bool HasTargetStretchInlineSize() const {
+    return TargetStretchInlineSize() != kIndefiniteSize;
+  }
+
+  LayoutUnit TargetStretchAscentSize() const {
+    return HasRareData() ? rare_data_->TargetStretchAscentSize()
+                         : kIndefiniteSize;
+  }
+
+  bool HasTargetStretchAscentSize() const {
+    return TargetStretchAscentSize() != kIndefiniteSize;
+  }
+
+  LayoutUnit TargetStretchDescentSize() const {
+    return HasRareData() ? rare_data_->TargetStretchDescentSize()
+                         : kIndefiniteSize;
+  }
+
+  bool HasTargetStretchDescentSize() const {
+    return TargetStretchDescentSize() != kIndefiniteSize;
+  }
+
   // Return the borders which should be used for a table-cell.
   NGBoxStrut TableCellBorders() const {
     return HasRareData() ? rare_data_->TableCellBorders() : NGBoxStrut();
@@ -600,6 +630,7 @@ class CORE_EXPORT NGConstraintSpace final {
   //  - The margin strut.
   //  - Anything to do with floats (the exclusion space, clearance offset, etc).
   //  - Anything to do with fragmentation.
+  //  - Anything to do with stretching of math operators.
   //
   // This information is kept in a separate in this heap-allocated struct to
   // reduce memory usage. Over time this may have to change based on usage data.
@@ -645,6 +676,9 @@ class CORE_EXPORT NGConstraintSpace final {
         case kCustomData:
           new (&custom_data_) CustomData(other.custom_data_);
           break;
+        case kStretchData:
+          new (&stretch_data_) StretchData(other.stretch_data_);
+          break;
         default:
           NOTREACHED();
       }
@@ -662,6 +696,9 @@ class CORE_EXPORT NGConstraintSpace final {
         case kCustomData:
           custom_data_.~CustomData();
           break;
+        case kStretchData:
+          stretch_data_.~StretchData();
+          break;
         default:
           NOTREACHED();
       }
@@ -673,7 +710,8 @@ class CORE_EXPORT NGConstraintSpace final {
       kNone,
       kBlockData,      // An inflow block which doesn't establish a new FC.
       kTableCellData,  // A table-cell (display: table-cell).
-      kCustomData      // A custom layout (display: layout(foo)).
+      kCustomData,     // A custom layout (display: layout(foo)).
+      kStretchData     // The target inline/block stretch sizes for MathML.
     };
 
     LogicalSize percentage_resolution_size;
@@ -683,7 +721,7 @@ class CORE_EXPORT NGConstraintSpace final {
     LayoutUnit fragmentainer_block_size = kIndefiniteSize;
     LayoutUnit fragmentainer_offset_at_bfc;
 
-    unsigned data_union_type : 2;
+    unsigned data_union_type : 3;
 
     unsigned is_restricted_block_size_table_cell : 1;
     unsigned hide_table_cell_if_empty : 1;
@@ -716,8 +754,11 @@ class CORE_EXPORT NGConstraintSpace final {
       if (data_union_type == kTableCellData)
         return table_cell_data_.MaySkipLayout(other.table_cell_data_);
 
-      DCHECK_EQ(data_union_type, kCustomData);
-      return custom_data_.MaySkipLayout(other.custom_data_);
+      if (data_union_type == kCustomData)
+        return custom_data_.MaySkipLayout(other.custom_data_);
+
+      DCHECK_EQ(data_union_type, kStretchData);
+      return stretch_data_.MaySkipLayout(other.stretch_data_);
     }
 
     // Must be kept in sync with members checked within |MaySkipLayout|.
@@ -739,8 +780,11 @@ class CORE_EXPORT NGConstraintSpace final {
       if (data_union_type == kTableCellData)
         return table_cell_data_.IsInitialForMaySkipLayout();
 
-      DCHECK_EQ(data_union_type, kCustomData);
-      return custom_data_.IsInitialForMaySkipLayout();
+      if (data_union_type == kCustomData)
+        return custom_data_.IsInitialForMaySkipLayout();
+
+      DCHECK_EQ(data_union_type, kStretchData);
+      return stretch_data_.IsInitialForMaySkipLayout();
     }
 
     NGMarginStrut MarginStrut() const {
@@ -818,6 +862,39 @@ class CORE_EXPORT NGConstraintSpace final {
       EnsureCustomData()->data = std::move(custom_layout_data);
     }
 
+    LayoutUnit TargetStretchInlineSize() const {
+      return data_union_type == kStretchData
+                 ? stretch_data_.target_stretch_inline_size
+                 : kIndefiniteSize;
+    }
+
+    void SetTargetStretchInlineSize(LayoutUnit target_stretch_inline_size) {
+      EnsureStretchData()->target_stretch_inline_size =
+          target_stretch_inline_size;
+    }
+
+    LayoutUnit TargetStretchAscentSize() const {
+      return data_union_type == kStretchData
+                 ? stretch_data_.target_stretch_ascent_size
+                 : kIndefiniteSize;
+    }
+
+    void SetTargetStretchAscentSize(LayoutUnit target_stretch_ascent_size) {
+      EnsureStretchData()->target_stretch_ascent_size =
+          target_stretch_ascent_size;
+    }
+
+    LayoutUnit TargetStretchDescentSize() const {
+      return data_union_type == kStretchData
+                 ? stretch_data_.target_stretch_descent_size
+                 : kIndefiniteSize;
+    }
+
+    void SetTargetStretchDescentSize(LayoutUnit target_stretch_descent_size) {
+      EnsureStretchData()->target_stretch_descent_size =
+          target_stretch_descent_size;
+    }
+
    private:
     struct BlockData {
       NGMarginStrut margin_strut;
@@ -883,10 +960,38 @@ class CORE_EXPORT NGConstraintSpace final {
       return &custom_data_;
     }
 
+    struct StretchData {
+      LayoutUnit target_stretch_inline_size = kIndefiniteSize;
+      LayoutUnit target_stretch_ascent_size = kIndefiniteSize;
+      LayoutUnit target_stretch_descent_size = kIndefiniteSize;
+
+      bool MaySkipLayout(const StretchData& other) const {
+        return target_stretch_inline_size == other.target_stretch_inline_size &&
+               target_stretch_ascent_size == other.target_stretch_ascent_size &&
+               target_stretch_descent_size == other.target_stretch_descent_size;
+      }
+
+      bool IsInitialForMaySkipLayout() const {
+        return target_stretch_inline_size == kIndefiniteSize &&
+               target_stretch_ascent_size == kIndefiniteSize &&
+               target_stretch_descent_size == kIndefiniteSize;
+      }
+    };
+
+    StretchData* EnsureStretchData() {
+      DCHECK(data_union_type == kNone || data_union_type == kStretchData);
+      if (data_union_type != kStretchData) {
+        data_union_type = kStretchData;
+        new (&stretch_data_) StretchData();
+      }
+      return &stretch_data_;
+    }
+
     union {
       BlockData block_data_;
       TableCellData table_cell_data_;
       CustomData custom_data_;
+      StretchData stretch_data_;
     };
   };
 

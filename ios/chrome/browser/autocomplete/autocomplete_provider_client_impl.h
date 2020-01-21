@@ -8,10 +8,7 @@
 #include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 namespace unified_consent {
 class UrlKeyedDataCollectionConsentHelper;

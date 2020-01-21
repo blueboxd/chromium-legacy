@@ -185,6 +185,11 @@
          use_base_dir="false"
          type="BINDATA"
          compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_CR_SLIDER_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_slider/cr_slider.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
   <if expr="chromeos">
     <include name="IDR_CR_ELEMENTS_CR_SEARCHABLE_DROP_DOWN_M_JS"
            file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.m.js"

@@ -10,7 +10,7 @@ import android.annotation.SuppressLint;
 import androidx.annotation.WorkerThread;
 
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.chrome.browser.signin.SigninHelper;
+import org.chromium.chrome.browser.signin.SigninPreferencesManager;
 import org.chromium.components.signin.AccountIdProvider;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
@@ -46,7 +46,6 @@ public final class SigninTestUtil {
         AccountManagerFacade.overrideAccountManagerFacadeForTests(sAccountManager);
         overrideAccountIdProvider();
         resetSigninState();
-        SigninHelper.resetSharedPrefs();
     }
 
     /**
@@ -59,7 +58,6 @@ public final class SigninTestUtil {
         }
         sAddedAccounts.clear();
         resetSigninState();
-        SigninHelper.resetSharedPrefs();
     }
 
     /**
@@ -136,6 +134,8 @@ public final class SigninTestUtil {
     public static void resetSigninState() {
         // Clear cached signed account name and accounts list.
         ChromeSigninController.get().setSignedInAccountName(null);
+
+        SigninPreferencesManager.getInstance().clearAccountsStateSharedPrefsForTesting();
     }
 
     private SigninTestUtil() {}

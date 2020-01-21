@@ -5,12 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_URL_LOADING_TEST_APP_URL_LOADING_SERVICE_H_
 #define IOS_CHROME_BROWSER_URL_LOADING_TEST_APP_URL_LOADING_SERVICE_H_
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/url_loading/app_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // Service used to manage url loading at application level.
 class TestAppUrlLoadingService : public AppUrlLoadingService {

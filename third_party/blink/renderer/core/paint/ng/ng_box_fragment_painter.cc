@@ -1763,17 +1763,22 @@ bool NGBoxFragmentPainter::HitTestChildBoxFragment(
   if (fragment.IsInline() && hit_test.action != kHitTestForeground)
     return false;
 
-  LayoutBox* const layout_box = ToLayoutBox(fragment.GetMutableLayoutObject());
+  if (fragment.IsAtomicInline() || fragment.IsFloating())
+    return HitTestAllPhases(hit_test, fragment, physical_offset);
 
-  // https://www.w3.org/TR/CSS22/zindex.html#painting-order
+  return fragment.GetMutableLayoutObject()->NodeAtPoint(
+      *hit_test.result, hit_test.location, physical_offset, hit_test.action);
+}
+
+bool NGBoxFragmentPainter::HitTestAllPhases(
+    const HitTestContext& hit_test,
+    const NGPhysicalFragment& fragment,
+    const PhysicalOffset& accumulated_offset) {
   // Hit test all phases of inline blocks, inline tables, replaced elements and
   // non-positioned floats as if they created their own stacking contexts.
-  if (fragment.IsAtomicInline() || fragment.IsFloating()) {
-    return layout_box->HitTestAllPhases(*hit_test.result, hit_test.location,
-                                        physical_offset);
-  }
-  return layout_box->NodeAtPoint(*hit_test.result, hit_test.location,
-                                 physical_offset, hit_test.action);
+  // https://www.w3.org/TR/CSS22/zindex.html#painting-order
+  return fragment.GetMutableLayoutObject()->HitTestAllPhases(
+      *hit_test.result, hit_test.location, accumulated_offset);
 }
 
 bool NGBoxFragmentPainter::HitTestChildBoxItem(
@@ -1833,6 +1838,12 @@ bool NGBoxFragmentPainter::HitTestChildren(
     return false;
   }
   if (items_) {
+    if (hit_test.action == kHitTestFloat) {
+      const NGPhysicalBoxFragment& fragment = PhysicalFragment();
+      return fragment.HasFloatingDescendantsForPaint() &&
+             HitTestFloatingChildren(hit_test, fragment, accumulated_offset);
+    }
+
     NGInlineCursor cursor(*items_);
     return HitTestChildren(hit_test, cursor, accumulated_offset);
   }
@@ -1934,6 +1945,34 @@ bool NGBoxFragmentPainter::HitTestItemsChildren(
     cursor.MoveToPreviousSibling();
   }
 
+  return false;
+}
+
+bool NGBoxFragmentPainter::HitTestFloatingChildren(
+    const HitTestContext& hit_test,
+    const NGPhysicalContainerFragment& container,
+    const PhysicalOffset& accumulated_offset) {
+  DCHECK_EQ(hit_test.action, kHitTestFloat);
+  DCHECK(container.HasFloatingDescendantsForPaint());
+  for (const NGLink& child : container.Children()) {
+    if (child->IsFloating()) {
+      if (HitTestAllPhases(hit_test, *child,
+                           accumulated_offset + child.Offset()))
+        return true;
+      continue;
+    }
+
+    if (child->IsBlockFormattingContextRoot())
+      continue;
+
+    if (const auto* child_container =
+            DynamicTo<NGPhysicalContainerFragment>(child.get())) {
+      if (child_container->HasFloatingDescendantsForPaint() &&
+          HitTestFloatingChildren(hit_test, *child_container,
+                                  accumulated_offset + child.Offset()))
+        return true;
+    }
+  }
   return false;
 }
 

@@ -415,11 +415,6 @@ public class ChromeBrowserInitializer {
         FeatureUtilities.cacheNativeFlagsForServiceManagerOnlyMode();
 
         ModuleUtil.recordStartupTime();
-
-        // Record via UMA all modules that have been requested and are currently installed. This
-        // will tell us the install penetration of each module over time.
-        // Side effect: SplitCompat is initialized.
-        ModuleUtil.recordModuleAvailability();
     }
 
     private ActivityStateListener createActivityStateListener() {

@@ -5,7 +5,9 @@
 #ifndef COMPONENTS_VIZ_SERVICE_MAIN_VIZ_MAIN_IMPL_H_
 #define COMPONENTS_VIZ_SERVICE_MAIN_VIZ_MAIN_IMPL_H_
 
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -21,6 +23,10 @@
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
 #include "services/viz/privileged/mojom/viz_main.mojom.h"
 #include "ui/gfx/font_render_params.h"
+
+namespace base {
+class PowerMonitorSource;
+}
 
 namespace gpu {
 class GpuInit;
@@ -63,6 +69,23 @@ class VizMainImpl : public mojom::VizMain {
 
     ExternalDependencies& operator=(ExternalDependencies&& other);
 
+    // Note that, due to the design of |base::PowerMonitor|, it is inherently
+    // racy to decide to initialize or not based on a call to
+    // |base::PowerMonitor::IsInitialized|. This makes it difficult for
+    // VizMainImpl to know whether to call initialize or not as the correct
+    // choice depends on the context in which VizMainImpl will be used.
+    //
+    // To work around this, calling code must understand whether VizMainImpl
+    // should initialize |base::PowerMonitor| or not and can then use the
+    // |power_monitor_source| to signal its intent.
+    //
+    // If |power_monitor_source| is null, |PowerMonitor::Initialize| will not
+    // be called. If |power_monitor_source| is non-null, it will be std::move'd
+    // in to a call of |PowerMonitor::Initialize|.
+    //
+    // We use a |PowerMonitorSource| here instead of a boolean flag so that
+    // tests can use mocks and fakes for testing.
+    mutable std::unique_ptr<base::PowerMonitorSource> power_monitor_source;
     gpu::SyncPointManager* sync_point_manager = nullptr;
     gpu::SharedImageManager* shared_image_manager = nullptr;
     base::WaitableEvent* shutdown_event = nullptr;
@@ -152,7 +175,6 @@ class VizMainImpl : public mojom::VizMain {
 
   const scoped_refptr<base::SingleThreadTaskRunner> gpu_thread_task_runner_;
 
-  std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
   mojo::AssociatedReceiver<mojom::VizMain> receiver_{this};
 
   std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>

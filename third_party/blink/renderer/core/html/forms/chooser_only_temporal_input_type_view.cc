@@ -155,4 +155,8 @@ void ChooserOnlyTemporalInputTypeView::Blur() {
   ClosePopupView();
 }
 
+bool ChooserOnlyTemporalInputTypeView::TypeShouldForceLegacyLayout() const {
+  return false;
+}
+
 }  // namespace blink

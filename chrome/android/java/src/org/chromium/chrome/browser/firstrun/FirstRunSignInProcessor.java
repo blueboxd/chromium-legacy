@@ -13,7 +13,6 @@ import android.text.TextUtils;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
@@ -84,8 +83,7 @@ public final class FirstRunSignInProcessor {
                 // Show sync settings if user pressed the "Settings" button.
                 if (setUp) {
                     openSignInSettings(activity);
-                } else if (ChromeFeatureList.isEnabled(
-                                   ChromeFeatureList.SYNC_MANUAL_START_ANDROID)) {
+                } else {
                     ProfileSyncService.get().setFirstSetupComplete(
                             SyncFirstSetupCompleteSource.BASIC_FLOW);
                 }

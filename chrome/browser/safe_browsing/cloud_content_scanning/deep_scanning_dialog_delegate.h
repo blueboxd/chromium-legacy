@@ -177,6 +177,10 @@ class DeepScanningDialogDelegate {
                                 const bool for_dlp_scan,
                                 const base::FilePath& path);
 
+  // Determines if a request result should be used to allow a data use or to
+  // block it.
+  static bool ResultShouldAllowDataUse(BinaryUploadService::Result result);
+
  protected:
   DeepScanningDialogDelegate(
       content::WebContents* web_contents,

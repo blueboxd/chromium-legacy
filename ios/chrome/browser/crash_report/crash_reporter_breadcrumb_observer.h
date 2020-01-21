@@ -10,11 +10,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer_bridge.h"
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 // Combines breadcrumbs from multiple ChromeBrowserState instances and sends the
 // merged breadcrumb events to breakpad for attachment to crash reports.

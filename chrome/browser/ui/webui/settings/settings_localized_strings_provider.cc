@@ -1735,10 +1735,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       "fidoAuthenticationAvailableForAutofill",
       IsFidoAuthenticationAvailable(personal_data, web_contents));
 
-  html_source->AddBoolean(
-      "passwordsLeakDetectionEnabled",
-      base::FeatureList::IsEnabled(password_manager::features::kLeakDetection));
-
   ui::Accelerator undo_accelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   html_source->AddString(
       "undoDescription",
@@ -2010,11 +2006,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT},
     {"syncEverythingCheckboxLabel",
      IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL},
-    {"syncEverythingLabel", IDS_SETTINGS_SYNC_EVERYTHING},
-    {"syncEverythingHint", IDS_SETTINGS_SYNC_EVERYTHING_HINT},
-    {"customizeSyncLabel", IDS_SETTINGS_CUSTOMIZE_SYNC},
-    {"customizeSyncHint", IDS_SETTINGS_CUSTOMIZE_SYNC_HINT},
-    {"syncData", IDS_SETTINGS_SYNC_DATA},
     {"manageGoogleAccount", IDS_SETTINGS_MANAGE_GOOGLE_ACCOUNT},
     {"appCheckboxLabel", IDS_SETTINGS_APPS_CHECKBOX_LABEL},
     {"extensionsCheckboxLabel", IDS_SETTINGS_EXTENSIONS_CHECKBOX_LABEL},

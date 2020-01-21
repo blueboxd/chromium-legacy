@@ -819,7 +819,7 @@ void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
 
   switch (draw_mode_) {
     case DrawMode::DDL: {
-      skia_output_surface_->SkiaSwapBuffers(std::move(output_frame));
+      skia_output_surface_->SwapBuffers(std::move(output_frame));
       break;
     }
     case DrawMode::SKPRECORD: {

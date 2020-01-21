@@ -240,12 +240,10 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &password_manager::features::kGooglePasswordManager,
     &password_manager::features::kPasswordEditingAndroid,
     &password_manager::features::kPasswordManagerOnboardingAndroid,
-    &password_manager::features::kLeakDetection,
     &safe_browsing::kCaptureSafetyNetId,
     &security_state::features::kMarkHttpAsFeature,
     &signin::kMiceFeature,
     &switches::kSyncErrorInfoBarAndroid,
-    &switches::kSyncManualStartAndroid,
     &switches::kSyncUseSessionsUnregisterDelay,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
 };

@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">Surbalayage</translation>
 <translation id="119944043368869598">Tout effacer</translation>
 <translation id="1247372569136754018">Micro (interne)</translation>
-<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> Ce paramètre est appliqué par votre administrateur.</translation>
 <translation id="1252999807265626933">Charge à partir de la source "<ph name="POWER_SOURCE" />"</translation>
 <translation id="1255033239764210633">Quel temps fait-il ?</translation>
 <translation id="1267032506238418139">Modification du raccourci</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">Rejoindre d'autres réseaux Wi-Fi</translation>
 <translation id="2718395828230677721">Éclairage nocturne</translation>
 <translation id="2727977024730340865">L'appareil est branché à un chargeur de faible puissance. Il se peut que la charge ne soit pas fiable.</translation>
-<translation id="2761704814324807722">Barre d'état – Heure : <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + Recherche</translation>
 <translation id="2803734122639935495">Pour déverrouiller l'appareil, saisissez votre mot de passe</translation>
 <translation id="2819276065543622893">Vous allez être déconnecté maintenant.</translation>

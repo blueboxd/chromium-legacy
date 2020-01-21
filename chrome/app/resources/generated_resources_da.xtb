@@ -384,7 +384,7 @@
 <translation id="1525740877599838384">Brug kun Wi-Fi til at fastslå placeringen</translation>
 <translation id="1526560967942511387">Unavngivet dokument</translation>
 <translation id="1529891865407786369">Strømkilde</translation>
-<translation id="1530838837447122178">Åbn indstillingerne for mus og touchpad på enheden</translation>
+<translation id="1530838837447122178">Åbn indstillingerne for mus og touchplade på enheden</translation>
 <translation id="1531004739673299060">Appvindue</translation>
 <translation id="1531275250079031713">Vis dialogboksen "Tilføj nyt Wi-Fi-netværk"</translation>
 <translation id="1536754031901697553">Afbryder forbindelsen...</translation>
@@ -402,7 +402,7 @@
 <translation id="1554390798506296774">Tillad altid plugins, der ikke er gemt i sandbox, på <ph name="HOST" /></translation>
 <translation id="1555130319947370107">Blå</translation>
 <translation id="1556537182262721003">Udvidelsesmappen kunne ikke flyttes til profilen.</translation>
-<translation id="155865706765934889">Touchpad</translation>
+<translation id="155865706765934889">Touchplade</translation>
 <translation id="1564414980088536597">Du kan ikke bruge dette billede. Vælg et andet billede.</translation>
 <translation id="1566049601598938765">Website</translation>
 <translation id="15662109988763471">Den valgte printer er ikke tilgængelig eller ikke installeret korrekt. Tjek din printer, eller vælg en anden printer.</translation>
@@ -880,7 +880,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2214884991347062907">Adgangskoden er forkert. Prøv igen.</translation>
 <translation id="2214893006758804920">{LINE_COUNT,plural, =1{&lt;1 linje vises ikke&gt;}one{&lt;<ph name="NUMBER_OF_LINES" /> linje vise ikke&gt;}other{&lt;<ph name="NUMBER_OF_LINES" /> linjer vises ikke&gt;}}</translation>
 <translation id="2215727959747642672">Filredigering</translation>
-<translation id="2218019600945559112">Mus og touchpad</translation>
+<translation id="2218019600945559112">Mus og touchplade</translation>
 <translation id="2218320521449013367">Der opstod en fejl i Chrome ved fjernelsen af skadelig software</translation>
 <translation id="2218515861914035131">Indsæt som almindelig tekst</translation>
 <translation id="221872881068107022">Omvendt rulning</translation>
@@ -1234,7 +1234,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2701737434167469065">Log ind, <ph name="EMAIL" /></translation>
 <translation id="270358213449696159">Indholdet i vilkårene for Google Chrome OS</translation>
 <translation id="2704184184447774363">Microsoft-signering af dokument</translation>
-<translation id="270516211545221798">Hastighed for touchpad</translation>
+<translation id="270516211545221798">Hastighed for touchplade</translation>
 <translation id="2705736684557713153">Rul til bunden af skærmen, og aktivér Øjeblikkelig netdeling, hvis det vises. Hvis det ikke vises, er alt som det skal være.</translation>
 <translation id="2707024448553392710">Komponenten downloades</translation>
 <translation id="270921614578699633">Gennemsnit op</translation>
@@ -5088,7 +5088,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8202160505685531999">Angiv adgangskoden igen for at opdatere din <ph name="DEVICE_TYPE" />-profil.</translation>
 <translation id="8203732864715032075">Sende dig notifikationer og huske denne computer som standard til Beskeder. <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
 <translation id="820568752112382238">Mest besøgte websites</translation>
-<translation id="8206354486702514201">Denne indstilling håndhæves af din administrator.</translation>
 <translation id="8206581664590136590">Send brugs- og diagnosticeringsdata. Hjælp med at forbedre dit barns Android-oplevelse ved automatisk at sende diagnosticerings- og enhedsdata samt data om brug af apps til Google. Disse data bruges ikke til at identificere dit barn. De bruges kun til forbedring af bl.a. systemets og appens stabilitet. Visse samlede data hjælper også Google-apps og -partnere, f.eks. Android-udviklere. Hvis indstillingen til yderligere web- og appaktivitet er aktiveret for dit barn, gemmes disse data muligvis på barnets Google-konto. <ph name="BEGIN_LINK1" />Få flere oplysninger<ph name="END_LINK1" /></translation>
 <translation id="8206745257863499010">BB King</translation>
 <translation id="8206859287963243715">Mobil</translation>
@@ -5581,7 +5580,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8879284080359814990">&amp;Vis som fane</translation>
 <translation id="8879921471468674457">Husk loginoplysninger</translation>
 <translation id="8881020143150461183">Prøv igen. Kontakt <ph name="CARRIER_NAME" /> for at få teknisk support.</translation>
-<translation id="8883273463630735858">Aktivér acceleration af touchpad</translation>
+<translation id="8883273463630735858">Aktivér acceleration af touchplade</translation>
 <translation id="8884570509232205463">Din enhed låses nu kl. <ph name="UNLOCK_TIME" />.</translation>
 <translation id="8885197664446363138">Smart Lock er ikke tilgængelig</translation>
 <translation id="8888253246822647887">Din app åbner, når opgraderingen er fuldført. Opgraderinger kan tage et par minutter.</translation>

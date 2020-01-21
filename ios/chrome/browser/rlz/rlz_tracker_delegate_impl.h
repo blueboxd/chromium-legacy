@@ -11,12 +11,9 @@
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "components/rlz/rlz_tracker_delegate.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 struct OmniboxLog;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // RLZTrackerDelegateImpl implements RLZTrackerDelegate abstract interface
 // and provides access to Chrome on iOS features.

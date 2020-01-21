@@ -194,10 +194,22 @@ void BuiltInChromeOsApps::GetMenuModel(const std::string& app_id,
                                        apps::mojom::MenuType menu_type,
                                        GetMenuModelCallback callback) {
   apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
-  if (app_id == plugin_vm::kPluginVmAppId) {
+
+  if (ShouldAddOpenItem(app_id, menu_type, profile_)) {
+    AddCommandItem(ash::MENU_OPEN_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC,
+                   &menu_items);
+  }
+
+  if (ShouldAddCloseItem(app_id, menu_type, profile_)) {
+    AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, &menu_items);
+  }
+
+  if (app_id == plugin_vm::kPluginVmAppId &&
+      plugin_vm::IsPluginVmRunning(profile_)) {
     AddCommandItem(ash::STOP_APP, IDS_PLUGIN_VM_SHUT_DOWN_MENU_ITEM,
                    &menu_items);
   }
+
   std::move(callback).Run(std::move(menu_items));
 }
 

@@ -451,6 +451,7 @@ android_library("chrome_java") {
   if (enable_vr) {
     deps += [ ":chrome_vr_java_resources" ]
   }
+
   srcjar_deps += [ ":chrome_vr_android_java_enums_srcjar" ]
   if (enable_feed_in_chrome) {
     deps += [ ":chrome_feed_java_resources" ]
@@ -1673,8 +1674,8 @@ template("monochrome_public_apk_or_module_tmpl") {
   # of manually-instantiated manifests.
   jinja_template("${target_name}__android_manifest") {
     includes = [ "java/AndroidManifest.xml" ]
-    variables =
-        chrome_public_jinja_variables + [ "include_arcore_manifest_flag=true" ]
+    variables = chrome_public_jinja_variables +
+                [ "include_arcore_manifest_flag=$enable_arcore" ]
     if (_is_trichrome) {
       input = "java/AndroidManifest_trichrome_chrome.xml"
       variables += trichrome_jinja_variables
@@ -1877,7 +1878,7 @@ jinja_template("monochrome_public_test_ar_apk_manifest") {
                 "target_sdk_version=$android_sdk_version",
                 "test_manifest_package=$chrome_public_test_manifest_package",
                 "webview_library=libmonochrome.so",
-                "include_arcore_manifest_flag=true",
+                "include_arcore_manifest_flag=$enable_arcore",
               ]
 }
 

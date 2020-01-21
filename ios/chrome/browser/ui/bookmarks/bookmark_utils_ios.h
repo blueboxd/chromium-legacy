@@ -13,6 +13,7 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 class GURL;
 @class MDCSnackbarMessage;
@@ -21,10 +22,6 @@ namespace bookmarks {
 class BookmarkModel;
 class BookmarkNode;
 }  // namespace bookmarks
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 namespace bookmark_utils_ios {
 

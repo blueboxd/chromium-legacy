@@ -24,6 +24,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "components/crx_file/crx_verifier.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -737,15 +738,25 @@ void SandboxedUnpacker::MaybeComputeHashes(bool should_compute) {
     return;
   }
 
+  base::ElapsedTimer timer;
+
   base::Optional<ComputedHashes::Data> computed_hashes_data =
       ComputedHashes::Compute(
           extension_->path(),
           extension_misc::kContentVerificationDefaultBlockSize,
           IsCancelledCallback(),
           base::BindRepeating(&ShouldComputeHashesForResource));
-  if (!computed_hashes_data ||
-      !ComputedHashes(std::move(*computed_hashes_data))
-           .WriteToFile(file_util::GetComputedHashesPath(extension_->path()))) {
+  bool success =
+      computed_hashes_data &&
+      ComputedHashes(std::move(*computed_hashes_data))
+          .WriteToFile(file_util::GetComputedHashesPath(extension_->path()));
+  UMA_HISTOGRAM_BOOLEAN(
+      "Extensions.ContentVerification.ComputeHashesOnInstallResult", success);
+  if (success) {
+    UMA_HISTOGRAM_TIMES(
+        "Extensions.ContentVerification.ComputeHashesOnInstallTime",
+        timer.Elapsed());
+  } else {
     LOG(ERROR) << "[extension " << extension_->id()
                << "] Failed to create computed_hashes.json";
   }

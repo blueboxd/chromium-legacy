@@ -210,7 +210,9 @@ void ChromeContentVerifierDelegate::VerifyFailed(
       SYSLOG(WARNING) << "Corruption detected in policy extension "
                       << extension_id << " installed at: "
                       << extension->path().value();
-      pending_manager->ExpectPolicyReinstallForCorruption(extension_id);
+      pending_manager->ExpectPolicyReinstallForCorruption(
+          extension_id, PendingExtensionManager::PolicyReinstallReason::
+                            CORRUPTION_DETECTED_WEBSTORE);
       service->DisableExtension(extension_id,
                                 disable_reason::DISABLE_CORRUPTED);
       // Attempt to reinstall.

@@ -38,28 +38,24 @@ class SmbFsDelegateImpl : public mojom::SmbFsDelegate {
 SmbFsHost::Delegate::~Delegate() = default;
 
 SmbFsHost::SmbFsHost(
-    const base::FilePath& mount_path,
+    std::unique_ptr<chromeos::disks::MountPoint> mount_point,
     Delegate* delegate,
-    chromeos::disks::DiskMountManager* disk_mount_manager,
     mojo::Remote<mojom::SmbFs> smbfs_remote,
     mojo::PendingReceiver<mojom::SmbFsDelegate> delegate_receiver)
-    : mount_path_(mount_path),
+    : mount_point_(std::move(mount_point)),
       delegate_(delegate),
-      disk_mount_manager_(disk_mount_manager),
       smbfs_(std::move(smbfs_remote)),
       delegate_impl_(std::make_unique<SmbFsDelegateImpl>(
           std::move(delegate_receiver),
           base::BindOnce(&SmbFsHost::OnDisconnect, base::Unretained(this)))) {
-  DCHECK(!mount_path.empty());
+  DCHECK(mount_point_);
   DCHECK(delegate);
 
   smbfs_.set_disconnect_handler(
       base::BindOnce(&SmbFsHost::OnDisconnect, base::Unretained(this)));
 }
 
-SmbFsHost::~SmbFsHost() {
-  disk_mount_manager_->UnmountPath(mount_path_.value(), base::DoNothing());
-}
+SmbFsHost::~SmbFsHost() = default;
 
 void SmbFsHost::OnDisconnect() {
   // Ensure only one disconnection event occurs.

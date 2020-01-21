@@ -59,7 +59,8 @@ using PolicyExtensionReinstallerUnittest = ExtensionServiceTestBase;
 TEST_F(PolicyExtensionReinstallerUnittest, Retry) {
   InitializeEmptyExtensionService();
   service()->pending_extension_manager()->ExpectPolicyReinstallForCorruption(
-      kDummyExtensionId);
+      kDummyExtensionId, PendingExtensionManager::PolicyReinstallReason::
+                             CORRUPTION_DETECTED_WEBSTORE);
 
   PolicyExtensionReinstaller reinstaller(profile_.get());
   TestReinstallerTracker tracker;
@@ -77,7 +78,8 @@ TEST_F(PolicyExtensionReinstallerUnittest, Retry) {
 TEST_F(PolicyExtensionReinstallerUnittest, DoNotScheduleWhenAlreadyInflight) {
   InitializeEmptyExtensionService();
   service()->pending_extension_manager()->ExpectPolicyReinstallForCorruption(
-      kDummyExtensionId);
+      kDummyExtensionId, PendingExtensionManager::PolicyReinstallReason::
+                             CORRUPTION_DETECTED_WEBSTORE);
 
   PolicyExtensionReinstaller reinstaller(profile_.get());
   TestReinstallerTracker tracker;

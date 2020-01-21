@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-HK">
-<translation id="1337778609052285767">目前的密碼不符合密碼複雜度要求。請與你的系統管理員聯絡。</translation>
+<translation id="1337778609052285767">目前的密碼不符合密碼複雜性要求。請聯絡您的管理員。</translation>
 <translation id="1337821341856692531">在沒有輸入目前 Windows 密碼的情況下繼續，可能會導致無法復原的資料遺失。</translation>
 <translation id="1383286653814676580">用於執行 Google Credential Provider 登入頁面。</translation>
 <translation id="1894475569413661128">請使用公司帳戶登入。</translation>
@@ -11,15 +11,15 @@
 <translation id="2679096858700291438">您輸入的 Windows 密碼不正確。請再試一次。</translation>
 <translation id="2831078752570172210">您的帳戶已被鎖定。請聯絡您的系統管理員。</translation>
 <translation id="2844349213149998955">系統不允許使用個人帳戶登入此裝置。請改用公司帳戶登入。</translation>
-<translation id="2995851317559936311">只能在網域控制站上變更密碼。請與你的系統管理員聯絡。</translation>
+<translation id="2995851317559936311">只能在網域控制器上變更密碼。請聯絡您的管理員。</translation>
 <translation id="3306357053520292004">此電腦已有其他使用者使用此帳戶登入。請改用其他帳戶登入。</translation>
 <translation id="3926852373333893095">僅限 G Suite 企業版使用者登入。</translation>
 <translation id="4057329986137569701">發生內部錯誤。</translation>
 <translation id="4267670563222825190">找不到帳戶的網域使用者。請聯絡您的管理員。</translation>
 <translation id="4300229033992784001">您的帳戶密碼已變更。請輸入您目前的 Windows 密碼，以便同步處理 Windows 帳戶和公司帳戶。</translation>
-<translation id="4669462973597624151">嘗試變更密碼失敗。請與你的系統管理員聯絡。</translation>
+<translation id="4669462973597624151">嘗試變更密碼失敗。請聯絡您的管理員。</translation>
 <translation id="4706454071748629324">無法新增使用者。此電腦只允許使用公司帳戶建立一個使用者。</translation>
-<translation id="5186761973554910131">嘗試變更密碼時提供的電腦名稱無效。請與你的系統管理員聯絡。</translation>
+<translation id="5186761973554910131">嘗試變更密碼時提供的電腦名稱無效。請聯絡您的管理員。</translation>
 <translation id="6033715878377252112">適用於 Windows 小幫手的「Google 憑證提供者」</translation>
 <translation id="6149399665202317746">適用於 Windows 的「Google 憑證提供者」</translation>
 <translation id="6239180560789153226">您的裝置缺少復原資料。請使用 Google 公司帳戶登入。</translation>
@@ -31,7 +31,7 @@
 <translation id="7536769223115622137">新增公司帳戶</translation>
 <translation id="7811865856574012727">管理員限制裝置登入網域 <ph name="EMAIL_DOMAINS" />，請使用有效的公司帳戶，然後再試一次。</translation>
 <translation id="7856245195110636219">必須輸入目前的 Windows 密碼才能繼續操作。請聯絡系統管理員。</translation>
-<translation id="8109730953933509335">嘗試變更無效使用者的密碼。請與你的系統管理員聯絡。</translation>
+<translation id="8109730953933509335">嘗試變更無效使用者的密碼。請聯絡您的管理員。</translation>
 <translation id="8639729688781680518">忘記 Windows 密碼</translation>
 <translation id="866458870819756755">無法建立使用者。</translation>
 <translation id="8875753657315897487">請使用公司帳戶登入</translation>

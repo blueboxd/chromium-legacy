@@ -43,8 +43,6 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     IntSize contents_size;
     bool user_scrollable_horizontal = false;
     bool user_scrollable_vertical = false;
-    bool scrolls_inner_viewport = false;
-    bool scrolls_outer_viewport = false;
 
     // This bit tells the compositor whether the inner viewport should be
     // scrolled using the full viewport mechanism (overscroll, top control
@@ -69,8 +67,6 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
           contents_size != other.contents_size ||
           user_scrollable_horizontal != other.user_scrollable_horizontal ||
           user_scrollable_vertical != other.user_scrollable_vertical ||
-          scrolls_inner_viewport != other.scrolls_inner_viewport ||
-          scrolls_outer_viewport != other.scrolls_outer_viewport ||
           prevent_viewport_scrolling_from_inner !=
               other.prevent_viewport_scrolling_from_inner ||
           max_scroll_offset_affected_by_page_scale !=
@@ -145,8 +141,6 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   bool UserScrollableVertical() const {
     return state_.user_scrollable_vertical;
   }
-  bool ScrollsInnerViewport() const { return state_.scrolls_inner_viewport; }
-  bool ScrollsOuterViewport() const { return state_.scrolls_outer_viewport; }
   bool PreventViewportScrollingFromInner() const {
     return state_.prevent_viewport_scrolling_from_inner;
   }

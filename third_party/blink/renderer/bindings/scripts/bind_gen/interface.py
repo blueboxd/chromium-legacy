@@ -555,25 +555,38 @@ def bind_return_value(code_node, cg_context):
 
 def make_check_argument_length(cg_context):
     assert isinstance(cg_context, CodeGenContext)
-    # Attribute getters don't need this check and operations have their own
-    # checks handling optional arguments.
-    assert cg_context.attribute_set
 
     T = TextNode
+    F = lambda *args, **kwargs: T(_format(*args, **kwargs))
 
-    idl_type = cg_context.attribute.idl_type
-    if not (idl_type.does_include_nullable_or_dict or idl_type.unwrap().is_any
-            or
-            "TreatNonObjectAsNull" in idl_type.unwrap().extended_attributes):
-        # ES undefined in ${info}[0] will cause a TypeError anyway, so omit the
-        # check against the number of arguments.
+    if cg_context.attribute_get:
+        num_of_required_args = 0
+    elif cg_context.attribute_set:
+        idl_type = cg_context.attribute.idl_type
+        if not (idl_type.does_include_nullable_or_dict
+                or idl_type.unwrap().is_any or
+                "TreatNonObjectAsNull" in idl_type.unwrap().extended_attributes
+                or "PutForwards" in cg_context.attribute.extended_attributes
+                or "Replaceable" in cg_context.attribute.extended_attributes):
+            # ES undefined in ${info}[0] will cause a TypeError anyway, so omit
+            # the check against the number of arguments.
+            return None
+        num_of_required_args = 1
+    elif cg_context.function_like:
+        num_of_required_args = (
+            cg_context.function_like.num_of_required_arguments)
+    else:
+        assert False
+
+    if num_of_required_args == 0:
         return None
 
     return CxxUnlikelyIfNode(
-        cond="${info}.Length() == 0",
+        cond=_format("UNLIKELY(${info}.Length() < {})", num_of_required_args),
         body=[
-            T("${exception_state}.ThrowTypeError("
-              "ExceptionMessages::NotEnoughArguments(1, ${info}.Length()));"),
+            F(("${exception_state}.ThrowTypeError("
+               "ExceptionMessages::NotEnoughArguments"
+               "({}, ${info}.Length()));"), num_of_required_args),
             T("return;"),
         ])
 
@@ -1456,6 +1469,8 @@ def make_constructor_function_def(cg_context, function_name):
         make_report_measure_as(cg_context),
         make_log_activity(cg_context),
         EmptyNode(),
+        make_check_argument_length(cg_context),
+        EmptyNode(),
     ])
 
     if "HTMLConstructor" in cg_context.constructor.extended_attributes:
@@ -1552,6 +1567,7 @@ def make_operation_function_def(cg_context, function_name):
 
     body.extend([
         make_check_receiver(cg_context),
+        make_check_argument_length(cg_context),
         EmptyNode(),
         make_steps_of_ce_reactions(cg_context),
         EmptyNode(),
@@ -2532,8 +2548,7 @@ def make_cross_component_init(cg_context, function_name, class_name):
     T = TextNode
     F = lambda *args, **kwargs: T(_format(*args, **kwargs))
 
-    trampoline_var_defs = ListNode([
-        T("// Cross-component trampolines"),
+    trampoline_var_decls = ListNode([
         F("static InstallInterfaceTemplateFuncType {};",
           TP_INSTALL_INTERFACE_TEMPLATE),
         F("static InstallUnconditionalPropertiesFuncType {};",
@@ -2543,6 +2558,19 @@ def make_cross_component_init(cg_context, function_name, class_name):
         F("static InstallContextDependentPropertiesFuncType {};",
           TP_INSTALL_CONTEXT_DEPENDENT_PROPS),
     ])
+
+    trampoline_var_defs = ListNode([
+        F(("${class_name}::InstallInterfaceTemplateFuncType "
+           "${class_name}::{} = nullptr;"), TP_INSTALL_INTERFACE_TEMPLATE),
+        F(("${class_name}::InstallUnconditionalPropertiesFuncType "
+           "${class_name}::{} = nullptr;"), TP_INSTALL_UNCONDITIONAL_PROPS),
+        F(("${class_name}::InstallContextIndependentPropertiesFuncType "
+           "${class_name}::{} = nullptr;"),
+          TP_INSTALL_CONTEXT_INDEPENDENT_PROPS),
+        F(("${class_name}::InstallContextDependentPropertiesFuncType "
+           "${class_name}::{} = nullptr;"), TP_INSTALL_CONTEXT_DEPENDENT_PROPS),
+    ])
+    trampoline_var_defs.set_base_template_vars(cg_context.template_bindings())
 
     func_decl = CxxFuncDeclNode(
         name=function_name, arg_decls=[], return_type="void", static=True)
@@ -2566,7 +2594,7 @@ def make_cross_component_init(cg_context, function_name, class_name):
           FN_INSTALL_CONTEXT_DEPENDENT_PROPS),
     ])
 
-    return func_decl, func_def, trampoline_var_defs
+    return func_decl, func_def, trampoline_var_decls, trampoline_var_defs
 
 
 # ----------------------------------------------------------------------------
@@ -2600,7 +2628,7 @@ def make_wrapper_type_info(cg_context, function_name, member_var_name,
 
     pattern = """\
 // Migration adapter
-static v8::Local<v8::FunctionTemplate> DomTemplate(
+v8::Local<v8::FunctionTemplate> ${class_name}::DomTemplate(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world) {{
   return V8DOMConfiguration::DomClassTemplate(
@@ -2611,7 +2639,7 @@ static v8::Local<v8::FunctionTemplate> DomTemplate(
 
 WrapperTypeInfo ${class_name}::wrapper_type_info_{{
     gin::kEmbedderBlink,
-    DomTemplate,
+    ${class_name}::DomTemplate,
     {install_context_dependent_func},
     "${{class_like.identifier}}",
     {wrapper_type_info_of_inherited},
@@ -2725,6 +2753,9 @@ def _collect_include_headers(interface):
         for argument in operation.arguments:
             collect_from_idl_type(argument.idl_type)
 
+    if interface.inherited:
+        headers.add(PathManager(interface.inherited).api_path(ext="h"))
+
     path_manager = PathManager(interface)
     headers.discard(path_manager.api_path(ext="h"))
     headers.discard(path_manager.impl_path(ext="h"))
@@ -2748,12 +2779,11 @@ def generate_interface(interface):
     cg_context = CodeGenContext(interface=interface, class_name=api_class_name)
 
     # Filepaths
-    filename = "v8_example_interface"
-    api_header_path = path_manager.api_path(filename, ext="h")
-    api_source_path = path_manager.api_path(filename, ext="cc")
+    api_header_path = path_manager.api_path(ext="h")
+    api_source_path = path_manager.api_path(ext="cc")
     if is_cross_components:
-        impl_header_path = path_manager.impl_path(filename, ext="h")
-        impl_source_path = path_manager.impl_path(filename, ext="cc")
+        impl_header_path = path_manager.impl_path(ext="h")
+        impl_source_path = path_manager.impl_path(ext="cc")
 
     # Root nodes
     api_header_node = ListNode(tail="\n")
@@ -2861,7 +2891,7 @@ def generate_interface(interface):
             TP_INSTALL_CONTEXT_INDEPENDENT_PROPS)
         tp_install_context_dependent_props = TP_INSTALL_CONTEXT_DEPENDENT_PROPS
         (cross_component_init_decl, cross_component_init_def,
-         trampoline_var_defs) = make_cross_component_init(
+         trampoline_var_decls, trampoline_var_defs) = make_cross_component_init(
              cg_context, "Init", class_name=impl_class_name)
     else:
         tp_install_interface_template = None
@@ -3060,6 +3090,13 @@ def generate_interface(interface):
 
     api_class_def.public_section.append(get_wrapper_type_info_def)
     api_class_def.public_section.append(EmptyNode())
+    api_class_def.public_section.extend([
+        TextNode("// Migration adapter"),
+        TextNode("static v8::Local<v8::FunctionTemplate> DomTemplate("
+                 "v8::Isolate* isolate, "
+                 "const DOMWrapperWorld& world);"),
+        EmptyNode(),
+    ])
     api_class_def.private_section.append(wrapper_type_info_var_def)
     api_class_def.private_section.append(EmptyNode())
     api_source_blink_ns.body.extend([
@@ -3069,7 +3106,16 @@ def generate_interface(interface):
 
     if is_cross_components:
         api_class_def.public_section.append(installer_function_trampolines)
-        api_class_def.private_section.append(trampoline_var_defs)
+        api_class_def.private_section.extend([
+            TextNode("// Cross-component trampolines"),
+            trampoline_var_decls,
+            EmptyNode(),
+        ])
+        api_source_blink_ns.body.extend([
+            TextNode("// Cross-component trampolines"),
+            trampoline_var_defs,
+            EmptyNode(),
+        ])
         impl_class_def.public_section.append(cross_component_init_decl)
         impl_class_def.private_section.append(installer_function_decls)
         impl_source_blink_ns.body.extend([
@@ -3078,19 +3124,20 @@ def generate_interface(interface):
         ])
     else:
         api_class_def.public_section.append(installer_function_decls)
+        api_class_def.public_section.append(EmptyNode())
 
     if constant_defs:
         api_class_def.public_section.extend([
-            EmptyNode(),
             TextNode("// Constants"),
             constant_defs,
+            EmptyNode(),
         ])
 
     if custom_callback_impl_decls:
         api_class_def.public_section.extend([
-            EmptyNode(),
             TextNode("// Custom callback implementations"),
             custom_callback_impl_decls,
+            EmptyNode(),
         ])
 
     impl_source_blink_ns.body.extend([
@@ -3112,5 +3159,5 @@ def generate_interface(interface):
 
 
 def generate_interfaces(web_idl_database):
-    interface = web_idl_database.find("Element")
+    interface = web_idl_database.find("Performance")
     generate_interface(interface)

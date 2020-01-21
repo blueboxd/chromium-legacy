@@ -48,7 +48,6 @@ namespace content {
 
 namespace {
 
-const int64_t kFallbackTickTimeoutInMilliseconds = 100;
 const viz::FrameSinkId kRootFrameSinkId(1, 1);
 const viz::FrameSinkId kChildFrameSinkId(1, 2);
 
@@ -276,7 +275,6 @@ void SynchronousLayerTreeFrameSink::DetachFromClient() {
   compositor_frame_sink_.reset();
 
   cc::LayerTreeFrameSink::DetachFromClient();
-  CancelFallbackTick();
 }
 
 void SynchronousLayerTreeFrameSink::SetLocalSurfaceId(
@@ -291,12 +289,6 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
     bool show_hit_test_borders) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_client_);
-
-  if (fallback_tick_running_) {
-    DCHECK(frame.resource_list.empty());
-    did_submit_frame_ = true;
-    return;
-  }
 
   base::Optional<viz::CompositorFrame> submit_frame;
   gfx::Size child_size = in_software_draw_
@@ -444,39 +436,10 @@ void SynchronousLayerTreeFrameSink::DidDeleteSharedBitmap(
   NOTREACHED();
 }
 
-void SynchronousLayerTreeFrameSink::CancelFallbackTick() {
-  fallback_tick_.Cancel();
-  fallback_tick_pending_ = false;
-}
-
-void SynchronousLayerTreeFrameSink::FallbackTickFired() {
-  DCHECK(CalledOnValidThread());
-  TRACE_EVENT0("renderer", "SynchronousLayerTreeFrameSink::FallbackTickFired");
-  base::AutoReset<bool> in_fallback_tick(&fallback_tick_running_, true);
-  frame_swap_message_queue_->NotifyFramesAreDiscarded(true);
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(1, 1);
-  bitmap.eraseColor(0);
-  SkCanvas canvas(bitmap);
-  fallback_tick_pending_ = false;
-  DemandDrawSw(&canvas);
-  frame_swap_message_queue_->NotifyFramesAreDiscarded(false);
-}
-
 void SynchronousLayerTreeFrameSink::Invalidate(bool needs_draw) {
   DCHECK(CalledOnValidThread());
   if (sync_client_)
     sync_client_->Invalidate(needs_draw);
-
-  if (!fallback_tick_pending_) {
-    fallback_tick_.Reset(
-        base::BindOnce(&SynchronousLayerTreeFrameSink::FallbackTickFired,
-                       base::Unretained(this)));
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, fallback_tick_.callback(),
-        base::TimeDelta::FromMilliseconds(kFallbackTickTimeoutInMilliseconds));
-    fallback_tick_pending_ = true;
-  }
 }
 
 void SynchronousLayerTreeFrameSink::DemandDrawHw(
@@ -486,7 +449,6 @@ void SynchronousLayerTreeFrameSink::DemandDrawHw(
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
   DCHECK(context_provider_.get());
-  CancelFallbackTick();
 
   client_->SetExternalTilePriorityConstraints(viewport_rect_for_tile_priority,
                                               transform_for_tile_priority);
@@ -497,7 +459,6 @@ void SynchronousLayerTreeFrameSink::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(CalledOnValidThread());
   DCHECK(canvas);
   DCHECK(!current_sw_canvas_);
-  CancelFallbackTick();
 
   base::AutoReset<SkCanvas*> canvas_resetter(&current_sw_canvas_, canvas);
 
@@ -516,7 +477,6 @@ void SynchronousLayerTreeFrameSink::DemandDrawSw(SkCanvas* canvas) {
 }
 
 void SynchronousLayerTreeFrameSink::WillSkipDraw() {
-  CancelFallbackTick();
   client_->OnDraw(gfx::Transform(), gfx::Rect(), in_software_draw_,
                   true /*skip_draw*/);
 }

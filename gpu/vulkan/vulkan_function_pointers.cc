@@ -88,6 +88,16 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
     return false;
   }
 
+  vkEnumerateDeviceExtensionPropertiesFn =
+      reinterpret_cast<PFN_vkEnumerateDeviceExtensionProperties>(
+          vkGetInstanceProcAddrFn(vk_instance,
+                                  "vkEnumerateDeviceExtensionProperties"));
+  if (!vkEnumerateDeviceExtensionPropertiesFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkEnumerateDeviceExtensionProperties";
+    return false;
+  }
+
   vkEnumerateDeviceLayerPropertiesFn =
       reinterpret_cast<PFN_vkEnumerateDeviceLayerProperties>(
           vkGetInstanceProcAddrFn(vk_instance,

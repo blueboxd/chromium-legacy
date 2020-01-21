@@ -273,6 +273,18 @@ void VulkanInstance::CollectInfo() {
     vkGetPhysicalDeviceProperties(device, &info.properties);
 
     count = 0;
+    result = vkEnumerateDeviceExtensionProperties(
+        device, nullptr /* pLayerName */, &count, nullptr);
+    DLOG_IF(ERROR, result != VK_SUCCESS)
+        << "vkEnumerateDeviceExtensionProperties failed: " << result;
+
+    info.extensions.resize(count);
+    result = vkEnumerateDeviceExtensionProperties(
+        device, nullptr /* pLayerName */, &count, info.extensions.data());
+    DLOG_IF(ERROR, result != VK_SUCCESS)
+        << "vkEnumerateDeviceExtensionProperties failed: " << result;
+
+    count = 0;
     result = vkEnumerateDeviceLayerProperties(device, &count, nullptr);
     DLOG_IF(ERROR, result != VK_SUCCESS)
         << "vkEnumerateDeviceLayerProperties failed: " << result;

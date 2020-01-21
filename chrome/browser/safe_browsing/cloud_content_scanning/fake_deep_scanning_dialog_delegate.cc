@@ -6,8 +6,12 @@
 
 #include <base/callback.h>
 #include <base/logging.h>
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 
 namespace safe_browsing {
+
+BinaryUploadService::Result FakeDeepScanningDialogDelegate::result_ =
+    BinaryUploadService::Result::SUCCESS;
 
 FakeDeepScanningDialogDelegate::FakeDeepScanningDialogDelegate(
     base::RepeatingClosure delete_closure,
@@ -28,6 +32,12 @@ FakeDeepScanningDialogDelegate::FakeDeepScanningDialogDelegate(
 FakeDeepScanningDialogDelegate::~FakeDeepScanningDialogDelegate() {
   if (!delete_closure_.is_null())
     delete_closure_.Run();
+}
+
+// static
+void FakeDeepScanningDialogDelegate::SetResponseResult(
+    BinaryUploadService::Result result) {
+  result_ = result;
 }
 
 // static
@@ -117,9 +127,9 @@ void FakeDeepScanningDialogDelegate::Response(
                                             ? DeepScanningClientResponse()
                                             : status_callback_.Run(path);
   if (path.empty())
-    StringRequestCallback(BinaryUploadService::Result::SUCCESS, response);
+    StringRequestCallback(result_, response);
   else
-    FileRequestCallback(path, BinaryUploadService::Result::SUCCESS, response);
+    FileRequestCallback(path, result_, response);
 }
 
 void FakeDeepScanningDialogDelegate::PrepareFileRequest(

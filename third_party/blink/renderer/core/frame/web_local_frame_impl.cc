@@ -1050,14 +1050,6 @@ void WebLocalFrameImpl::ReplaceSelection(const WebString& text) {
   GetFrame()->GetEditor().ReplaceSelection(text);
 }
 
-void WebLocalFrameImpl::SetMarkedText(const WebString& text,
-                                      unsigned location,
-                                      unsigned length) {
-  Vector<ImeTextSpan> decorations;
-  GetFrame()->GetInputMethodController().SetComposition(text, decorations,
-                                                        location, length);
-}
-
 void WebLocalFrameImpl::UnmarkText() {
   GetFrame()->GetInputMethodController().CancelComposition();
 }
@@ -1640,10 +1632,6 @@ bool WebLocalFrameImpl::HasCustomPageSizeStyle(int page_index) {
          EPageSizeType::kAuto;
 }
 
-bool WebLocalFrameImpl::IsPageBoxVisible(int page_index) {
-  return GetFrame()->GetDocument()->IsPageBoxVisible(page_index);
-}
-
 void WebLocalFrameImpl::PageSizeAndMarginsInPixels(int page_index,
                                                    WebDoubleSize& page_size,
                                                    int& margin_top,
@@ -1654,13 +1642,6 @@ void WebLocalFrameImpl::PageSizeAndMarginsInPixels(int page_index,
   GetFrame()->GetDocument()->PageSizeAndMarginsInPixels(
       page_index, size, margin_top, margin_right, margin_bottom, margin_left);
   page_size = size;
-}
-
-WebString WebLocalFrameImpl::PageProperty(const WebString& property_name,
-                                          int page_index) {
-  DCHECK(print_context_);
-  return print_context_->PageProperty(GetFrame(), property_name.Utf8().c_str(),
-                                      page_index);
 }
 
 void WebLocalFrameImpl::PrintPagesForTesting(
@@ -2059,10 +2040,6 @@ WebContentCaptureClient* WebLocalFrameImpl::ContentCaptureClient() const {
   return content_capture_client_;
 }
 
-bool WebLocalFrameImpl::IsLocalRoot() const {
-  return frame_->IsLocalRoot();
-}
-
 bool WebLocalFrameImpl::IsProvisional() const {
   return frame_->IsProvisional();
 }
@@ -2305,16 +2282,6 @@ void WebLocalFrameImpl::SendOrientationChangeEvent() {
     GetFrame()->DomWindow()->SendOrientationChangeEvent();
 }
 
-void WebLocalFrameImpl::DidCallAddSearchProvider() {
-  UseCounter::Count(GetFrame()->GetDocument(),
-                    WebFeature::kExternalAddSearchProvider);
-}
-
-void WebLocalFrameImpl::DidCallIsSearchProviderInstalled() {
-  UseCounter::Count(GetFrame()->GetDocument(),
-                    WebFeature::kExternalIsSearchProviderInstalled);
-}
-
 void WebLocalFrameImpl::DispatchMessageEventWithOriginCheck(
     const WebSecurityOrigin& intended_target_origin,
     const WebDOMMessageEvent& event) {
@@ -2356,7 +2323,7 @@ WebNode WebLocalFrameImpl::ContextMenuNode() const {
 
 void WebLocalFrameImpl::WillBeDetached() {
   // The |frame_widget_| can be null for frames in non-composited WebViews.
-  if (IsLocalRoot() && frame_widget_)
+  if (frame_->IsLocalRoot() && frame_widget_)
     frame_widget_->DidDetachLocalFrameTree();
   if (dev_tools_agent_)
     dev_tools_agent_->WillBeDestroyed();

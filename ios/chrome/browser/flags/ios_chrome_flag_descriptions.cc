@@ -312,10 +312,6 @@ const char kPageInfoRefactoringName[] = "New design of the page info";
 const char kPageInfoRefactoringDescription[] =
     "Uses the new design for the page security info.";
 
-const char kPasswordLeakDetectionName[] = "Password Leak Detection";
-const char kPasswordLeakDetectionDescription[] =
-    "Enables the detection of leaked passwords.";
-
 const char kReloadSadTabName[] = "Reload SadTab automatically";
 const char kReloadSadTabDescription[] =
     "When enabled, the first time the renderer crashes, the page is reloaded "

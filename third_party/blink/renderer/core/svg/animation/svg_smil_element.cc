@@ -1056,7 +1056,8 @@ bool SVGSMILElement::IsContributing(SMILTime elapsed) const {
          GetActiveState() == kFrozen;
 }
 
-void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
+SVGSMILElement::EventDispatchMask SVGSMILElement::UpdateActiveState(
+    SMILTime elapsed) {
   const bool was_active = GetActiveState() == kActive;
   active_state_ = DetermineActiveState(interval_, elapsed);
   const bool is_active = GetActiveState() == kActive;
@@ -1064,14 +1065,15 @@ void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
       interval_has_changed_ && previous_interval_.end == interval_.begin;
   interval_has_changed_ = false;
 
+  unsigned events_to_dispatch = kDispatchNoEvent;
   if ((was_active && !is_active) || interval_restart) {
-    ScheduleEvent(event_type_names::kEndEvent);
+    events_to_dispatch |= kDispatchEndEvent;
     EndedActiveInterval();
   }
 
   if (IsContributing(elapsed)) {
     if (!was_active || interval_restart) {
-      ScheduleEvent(event_type_names::kBeginEvent);
+      events_to_dispatch |= kDispatchBeginEvent;
       StartedActiveInterval();
     }
 
@@ -1079,9 +1081,30 @@ void SVGSMILElement::UpdateActiveState(SMILTime elapsed) {
     if (progress_state.repeat &&
         progress_state.repeat != last_progress_.repeat) {
       NotifyDependentsOnRepeat(progress_state.repeat, elapsed);
-      ScheduleRepeatEvents();
+      events_to_dispatch |= kDispatchRepeatEvent;
     }
     last_progress_ = progress_state;
+  }
+  return static_cast<EventDispatchMask>(events_to_dispatch);
+}
+
+void SVGSMILElement::DispatchEvents(EventDispatchMask events_to_dispatch) {
+  // The ordering is based on the usual order in which these events should be
+  // dispatched (and should match the order the flags are set in
+  // UpdateActiveState().
+  if (events_to_dispatch & kDispatchEndEvent) {
+    EnqueueEvent(*Event::Create(event_type_names::kEndEvent),
+                 TaskType::kDOMManipulation);
+  }
+  if (events_to_dispatch & kDispatchBeginEvent) {
+    EnqueueEvent(*Event::Create(event_type_names::kBeginEvent),
+                 TaskType::kDOMManipulation);
+  }
+  if (events_to_dispatch & kDispatchRepeatEvent) {
+    EnqueueEvent(*Event::Create(event_type_names::kRepeatEvent),
+                 TaskType::kDOMManipulation);
+    EnqueueEvent(*Event::Create(AtomicString("repeatn")),
+                 TaskType::kDOMManipulation);
   }
 }
 
@@ -1200,19 +1223,6 @@ void SVGSMILElement::StartedActiveInterval() {
 void SVGSMILElement::EndedActiveInterval() {
   RemoveInstanceTimesWithOrigin(begin_times_, SMILTimeOrigin::kScript);
   RemoveInstanceTimesWithOrigin(end_times_, SMILTimeOrigin::kScript);
-}
-
-void SVGSMILElement::ScheduleRepeatEvents() {
-  ScheduleEvent(event_type_names::kRepeatEvent);
-  ScheduleEvent(AtomicString("repeatn"));
-}
-
-void SVGSMILElement::ScheduleEvent(const AtomicString& event_type) {
-  DCHECK(event_type == event_type_names::kEndEvent ||
-         event_type == event_type_names::kBeginEvent ||
-         event_type == event_type_names::kRepeatEvent ||
-         event_type == "repeatn");
-  EnqueueEvent(*Event::Create(event_type), TaskType::kDOMManipulation);
 }
 
 bool SVGSMILElement::HasValidTarget() const {

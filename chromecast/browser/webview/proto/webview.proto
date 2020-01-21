@@ -309,12 +309,6 @@ message WebviewResponse {
   }
 }
 
-// TODO(sagallea): Deprecate this after moving to new service.
-service WebviewService {
-  // Creates a webview. See the comment at the top of the file.
-  rpc CreateWebview(stream WebviewRequest) returns (stream WebviewResponse);
-}
-
 service PlatformViewsService {
   // Creates a webview. See the comment at the top of the file.
   rpc CreateWebview(stream WebviewRequest) returns (stream WebviewResponse);

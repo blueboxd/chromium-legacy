@@ -8,10 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 // CacheCounter is a BrowsingDataCounter used to compute the cache size.
 class CacheCounter : public browsing_data::BrowsingDataCounter {

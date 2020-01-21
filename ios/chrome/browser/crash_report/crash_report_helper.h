@@ -5,11 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_REPORT_HELPER_H_
 #define IOS_CHROME_BROWSER_CRASH_REPORT_CRASH_REPORT_HELPER_H_
 
-@class NSString;
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
+@class NSString;
 
 namespace web {
 class WebState;

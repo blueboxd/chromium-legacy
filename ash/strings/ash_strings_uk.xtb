@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">облямівка екрана</translation>
 <translation id="119944043368869598">Очистити все</translation>
 <translation id="1247372569136754018">Мікрофон (внутрішній)</translation>
-<translation id="1249456112629248620"><ph name="FEATURE_NAME" />: це налаштування застосовується вашим адміністратором.</translation>
 <translation id="1252999807265626933">Джерело заряджання: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Який прогноз погоди?</translation>
 <translation id="1267032506238418139">Зміна комбінацій клавіш</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">Підключитися до інших мереж Wi-Fi</translation>
 <translation id="2718395828230677721">Нічний режим</translation>
 <translation id="2727977024730340865">Підключено до зарядного пристрою низької потужності. Акумулятор може заряджатися неналежним чином.</translation>
-<translation id="2761704814324807722">Панель статусу, час: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+клавіша пошуку</translation>
 <translation id="2803734122639935495">Щоб розблокувати, введіть пароль</translation>
 <translation id="2819276065543622893">Зараз ви вийдете.</translation>

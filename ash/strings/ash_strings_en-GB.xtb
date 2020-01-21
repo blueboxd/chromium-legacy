@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">overscan</translation>
 <translation id="119944043368869598">Clear all</translation>
 <translation id="1247372569136754018">Microphone (internal)</translation>
-<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> This setting is enforced by your administrator.</translation>
 <translation id="1252999807265626933">Charging from <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">What's the weather?</translation>
 <translation id="1267032506238418139">Shortcut change</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">Join other Wi-Fi networks</translation>
 <translation id="2718395828230677721">Night Light</translation>
 <translation id="2727977024730340865">Plugged in to a low-power charger. Battery charging may not be reliable.</translation>
-<translation id="2761704814324807722">Status tray, time <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2803734122639935495">To unlock, enter your password</translation>
 <translation id="2819276065543622893">You will be signed out now.</translation>

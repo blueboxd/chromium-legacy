@@ -48,8 +48,8 @@ class SyncUserSettings {
 
   // Whether the initial Sync setup has been completed, meaning the user has
   // consented to Sync.
-  // NOTE: On Android and ChromeOS, this gets set automatically, so it doesn't
-  // really mean anything. See |browser_defaults::kSyncAutoStarts|.
+  // NOTE: On ChromeOS, this gets set automatically, so it doesn't really mean
+  // anything. See |browser_defaults::kSyncAutoStarts|.
   virtual bool IsFirstSetupComplete() const = 0;
   virtual void SetFirstSetupComplete(SyncFirstSetupCompleteSource source) = 0;
 

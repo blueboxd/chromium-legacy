@@ -3679,7 +3679,7 @@ void RenderWidget::StartDragging(network::mojom::ReferrerPolicy policy,
                                      image_offset, possible_drag_event_info_));
 }
 
-void RenderWidget::DidNavigate() {
+void RenderWidget::DidNavigate(ukm::SourceId source_id, const GURL& url) {
   // The input handler wants to know about navigation so that it can
   // suppress input until the newly navigated page has a committed frame.
   // It also resets the state for UMA reporting of input arrival with respect
@@ -3687,7 +3687,10 @@ void RenderWidget::DidNavigate() {
   DCHECK(widget_input_handler_manager_);
   widget_input_handler_manager_->DidNavigate();
 
-  layer_tree_host_->ClearCachesOnNextCommit();
+  // Update the URL and the document source id used to key UKM metrics in the
+  // compositor. Note that the metrics for all frames are keyed to the main
+  // frame's URL.
+  layer_tree_host_->SetSourceURL(source_id, url);
 }
 
 blink::WebInputMethodController* RenderWidget::GetInputMethodController()

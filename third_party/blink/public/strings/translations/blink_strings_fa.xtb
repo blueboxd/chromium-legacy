@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">لغزنده</translation>
 <translation id="1211441953136645838">ته‌نویس</translation>
 <translation id="1281252709823657822">کادر گفتگو</translation>
+<translation id="1306460908038601864">خاموش</translation>
 <translation id="1335095011850992622">دست‌اندرکاران</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1359897965706325498">برنما</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> پتابایت</translation>
 <translation id="5307600278924710095">لطفاً قسمت قبل از «<ph name="ATSIGN" />» را وارد کنید. «<ph name="INVALIDADDRESS" />» ناقص است.</translation>
 <translation id="5334352251556557839">رسانه پخش نشد.</translation>
+<translation id="537648784377940524">حداقل تاریخ (<ph name="MIN_DATE_OR_TIME" />) باید قبل از حداکثر تاریخ باشد (<ph name="MAX_DATE_OR_TIME" />).</translation>
 <translation id="5406322316791861025">شکل</translation>
 <translation id="5453733299334684579">مورد درختی</translation>
 <translation id="5466621249238537318">لطفاً یک یا چند فایل را انتخاب کنید.</translation>

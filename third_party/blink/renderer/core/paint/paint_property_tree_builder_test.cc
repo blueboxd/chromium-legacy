@@ -6509,65 +6509,6 @@ TEST_P(PaintPropertyTreeBuilderTest, NoPaintPropertyForSVGText) {
   EXPECT_FALSE(text->FirstFragment().PaintProperties());
 }
 
-TEST_P(PaintPropertyTreeBuilderTest, SetViewportScrollingBits) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      body, html {
-        margin: 0;
-        width: 100%;
-        height: 100%;
-      }
-      #scroller {
-       width: 100%;
-       height: 200%;
-       overflow: auto;
-      }
-    </style>
-    <div id="scroller">
-      <div style="height: 3000px"></div>
-    </div>
-  )HTML");
-
-  const auto* scroller_node = PaintPropertiesForElement("scroller")->Scroll();
-  const auto* document_node = DocScroll();
-
-  // Ensure the LayoutView's ScrollNode is marked as scrolling the "outer" or
-  // "layout" viewport.
-  {
-    EXPECT_FALSE(scroller_node->ScrollsOuterViewport());
-    EXPECT_TRUE(document_node->ScrollsOuterViewport());
-  }
-
-  // Ensure the visual viewport is the only one that sets the inner scroll bit.
-  {
-    EXPECT_TRUE(GetDocument()
-                    .GetPage()
-                    ->GetVisualViewport()
-                    .GetScrollNode()
-                    ->ScrollsInnerViewport());
-    EXPECT_FALSE(scroller_node->ScrollsInnerViewport());
-    EXPECT_FALSE(document_node->ScrollsInnerViewport());
-  }
-
-  // Make the scroller fill the viewport. This will make it eligible for root
-  // scroller promotion. Ensure the outer viewport scrolling property is
-  // correctly recomputed, moving it from the LayoutView to the scroller.
-  {
-    Element* scroller = GetDocument().getElementById("scroller");
-    scroller->setAttribute(html_names::kStyleAttr, "height: 100%");
-    LocalFrameView* frame_view = GetDocument().View();
-    frame_view->UpdateAllLifecyclePhases(
-        DocumentLifecycle::LifecycleUpdateReason::kTest);
-    ASSERT_TRUE(scroller->GetLayoutObject()->IsGlobalRootScroller());
-
-    EXPECT_TRUE(scroller_node->ScrollsOuterViewport());
-
-    // Since the document is no longer scrollable and isn't the root scroller
-    // it shouldn't have a node.
-    EXPECT_FALSE(DocScroll());
-  }
-}
-
 TEST_P(PaintPropertyTreeBuilderTest, IsAffectedByOuterViewportBoundsDelta) {
   SetBodyInnerHTML(R"HTML(
     <style>div { will-change: transform; position: fixed; }</style>

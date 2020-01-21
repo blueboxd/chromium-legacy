@@ -113,6 +113,10 @@
     "dependencies": ["permission:tts"],
     "contexts": ["blessed_extension"]
   },
+  "loginState": {
+    "dependencies": ["permission:loginState"],
+    "contexts": ["blessed_extension"]
+  },
   "windows": [{
     "dependencies": ["api:tabs"],
     "contexts": ["blessed_extension"]

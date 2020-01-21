@@ -15,6 +15,7 @@
 #include "chromeos/components/smbfs/smbfs_host.h"
 #include "chromeos/components/smbfs/smbfs_mounter.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "chromeos/disks/mount_point.h"
 #include "content/public/test/browser_task_environment.h"
 #include "storage/browser/file_system/external_mount_points.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -100,7 +101,9 @@ class SmbFsShareTest : public testing::Test {
       mojo::Receiver<smbfs::mojom::SmbFs>* smbfs_receiver,
       mojo::Remote<smbfs::mojom::SmbFsDelegate>* delegate) {
     return std::make_unique<smbfs::SmbFsHost>(
-        base::FilePath(kMountPath), share, disk_mount_manager_,
+        std::make_unique<chromeos::disks::MountPoint>(
+            base::FilePath(kMountPath), disk_mount_manager_),
+        share,
         mojo::Remote<smbfs::mojom::SmbFs>(
             smbfs_receiver->BindNewPipeAndPassRemote()),
         delegate->BindNewPipeAndPassReceiver());

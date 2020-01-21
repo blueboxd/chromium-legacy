@@ -410,8 +410,6 @@ cast_source_set("browser") {
       "webview/web_content_controller.h",
       "webview/webview_controller.cc",
       "webview/webview_controller.h",
-      "webview/webview_grpc_service.cc",
-      "webview/webview_grpc_service.h",
       "webview/webview_navigation_throttle.cc",
       "webview/webview_navigation_throttle.h",
       "webview/webview_rpc_instance.cc",

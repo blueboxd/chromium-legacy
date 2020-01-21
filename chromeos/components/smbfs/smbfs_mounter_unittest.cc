@@ -45,6 +45,14 @@ constexpr char kUsername[] = "username";
 constexpr char kWorkgroup[] = "example.com";
 constexpr char kPassword[] = "myverysecurepassword";
 
+chromeos::disks::DiskMountManager::MountPointInfo MakeMountPointInfo(
+    const std::string& source_path,
+    const std::string& mount_path) {
+  return chromeos::disks::DiskMountManager::MountPointInfo(
+      source_path, mount_path, chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+      chromeos::disks::MOUNT_CONDITION_NONE);
+}
+
 class MockDelegate : public SmbFsHost::Delegate {
  public:
   MOCK_METHOD(void, OnDisconnected, (), (override));
@@ -62,13 +70,44 @@ class TestSmbFsBootstrapImpl : public mojom::SmbFsBootstrap {
 
 class TestSmbFsImpl : public mojom::SmbFs {};
 
-chromeos::disks::DiskMountManager::MountPointInfo MakeMountPointInfo(
-    const std::string& source_path,
-    const std::string& mount_path) {
-  return chromeos::disks::DiskMountManager::MountPointInfo(
-      source_path, mount_path, chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-      chromeos::disks::MOUNT_CONDITION_NONE);
-}
+class TestSmbFsMounter : public SmbFsMounter {
+ public:
+  TestSmbFsMounter(const std::string& share_path,
+                   const MountOptions& options,
+                   SmbFsHost::Delegate* delegate,
+                   const base::FilePath& mount_path,
+                   chromeos::MountError mount_error,
+                   mojo::Remote<mojom::SmbFsBootstrap> bootstrap)
+      : SmbFsMounter(share_path,
+                     kMountDir,
+                     options,
+                     delegate,
+                     &mock_disk_mount_manager_,
+                     std::move(bootstrap)) {
+    EXPECT_CALL(mock_disk_mount_manager_,
+                MountPath(StartsWith(kMountUrlPrefix), _, kMountDir, _, _, _))
+        .WillOnce(WithArg<0>(
+            [this, mount_error, mount_path](const std::string& source_path) {
+              base::SequencedTaskRunnerHandle::Get()->PostTask(
+                  FROM_HERE,
+                  base::BindOnce(
+                      &chromeos::disks::MockDiskMountManager::NotifyMountEvent,
+                      base::Unretained(&mock_disk_mount_manager_),
+                      chromeos::disks::DiskMountManager::MOUNTING, mount_error,
+                      MakeMountPointInfo(source_path, mount_path.value())));
+            }));
+    if (mount_error == chromeos::MOUNT_ERROR_NONE) {
+      EXPECT_CALL(mock_disk_mount_manager_, UnmountPath(mount_path.value(), _))
+          .WillOnce(base::test::RunOnceCallback<1>(chromeos::MOUNT_ERROR_NONE));
+    } else {
+      EXPECT_CALL(mock_disk_mount_manager_, UnmountPath(mount_path.value(), _))
+          .Times(0);
+    }
+  }
+
+ private:
+  chromeos::disks::MockDiskMountManager mock_disk_mount_manager_;
+};
 
 class SmbFsMounterTest : public testing::Test {
  public:
@@ -210,6 +249,133 @@ TEST_F(SmbFsMounterTest, FilesystemMountAfterDestruction) {
   mounter.reset();
 
   run_loop.RunUntilIdle();
+}
+
+TEST_F(SmbFsMounterTest, MountOptions) {
+  base::RunLoop run_loop;
+  auto callback =
+      base::BindLambdaForTesting([&run_loop](mojom::MountError mount_error,
+                                             std::unique_ptr<SmbFsHost> host) {
+        EXPECT_EQ(mount_error, mojom::MountError::kOk);
+        ASSERT_TRUE(host);
+        EXPECT_EQ(host->mount_path(), base::FilePath(kMountPath));
+        run_loop.Quit();
+      });
+
+  // Dummy Mojo bindings to satifsy lifetimes.
+  mojo::PendingRemote<mojom::SmbFsDelegate> delegate_remote;
+  TestSmbFsImpl mock_smbfs;
+  mojo::Receiver<mojom::SmbFs> smbfs_receiver(&mock_smbfs);
+
+  TestSmbFsBootstrapImpl mock_bootstrap;
+  mojo::Receiver<mojom::SmbFsBootstrap> bootstrap_receiver(&mock_bootstrap);
+  EXPECT_CALL(mock_bootstrap, MountShare(_, _, _))
+      .WillOnce([&delegate_remote, &smbfs_receiver](
+                    mojom::MountOptionsPtr options,
+                    mojo::PendingRemote<mojom::SmbFsDelegate> delegate,
+                    mojom::SmbFsBootstrap::MountShareCallback callback) {
+        EXPECT_EQ(options->share_path, kSharePath);
+        EXPECT_EQ(options->username, kUsername);
+        EXPECT_EQ(options->workgroup, kWorkgroup);
+        ASSERT_TRUE(options->password);
+        EXPECT_EQ(options->password->length,
+                  static_cast<int32_t>(strlen(kPassword)));
+        std::string password_buf(options->password->length, 'a');
+        base::ScopedFD fd =
+            mojo::UnwrapPlatformHandle(std::move(options->password->fd))
+                .TakeFD();
+        EXPECT_TRUE(base::ReadFromFD(fd.get(), &(password_buf.front()),
+                                     options->password->length));
+        EXPECT_EQ(password_buf, kPassword);
+        EXPECT_TRUE(options->allow_ntlm);
+
+        delegate_remote = std::move(delegate);
+        std::move(callback).Run(mojom::MountError::kOk,
+                                smbfs_receiver.BindNewPipeAndPassRemote());
+      });
+
+  SmbFsMounter::MountOptions mount_options;
+  mount_options.username = kUsername;
+  mount_options.workgroup = kWorkgroup;
+  mount_options.password = kPassword;
+  mount_options.allow_ntlm = true;
+  std::unique_ptr<SmbFsMounter> mounter = std::make_unique<TestSmbFsMounter>(
+      kSharePath, mount_options, &mock_delegate_, base::FilePath(kMountPath),
+      chromeos::MOUNT_ERROR_NONE,
+      mojo::Remote<mojom::SmbFsBootstrap>(
+          bootstrap_receiver.BindNewPipeAndPassRemote()));
+  mounter->Mount(callback);
+
+  run_loop.Run();
+}
+
+TEST_F(SmbFsMounterTest, BootstrapMountError) {
+  base::RunLoop run_loop;
+  auto callback =
+      base::BindLambdaForTesting([&run_loop](mojom::MountError mount_error,
+                                             std::unique_ptr<SmbFsHost> host) {
+        EXPECT_EQ(mount_error, mojom::MountError::kAccessDenied);
+        EXPECT_FALSE(host);
+        run_loop.Quit();
+      });
+
+  // Dummy Mojo bindings to satifsy lifetimes.
+  mojo::PendingRemote<mojom::SmbFsDelegate> delegate_remote;
+
+  TestSmbFsBootstrapImpl mock_bootstrap;
+  mojo::Receiver<mojom::SmbFsBootstrap> bootstrap_receiver(&mock_bootstrap);
+  EXPECT_CALL(mock_bootstrap, MountShare(_, _, _))
+      .WillOnce([&delegate_remote](
+                    mojom::MountOptionsPtr options,
+                    mojo::PendingRemote<mojom::SmbFsDelegate> delegate,
+                    mojom::SmbFsBootstrap::MountShareCallback callback) {
+        delegate_remote = std::move(delegate);
+        std::move(callback).Run(mojom::MountError::kAccessDenied, {});
+      });
+
+  std::unique_ptr<SmbFsMounter> mounter = std::make_unique<TestSmbFsMounter>(
+      kSharePath, SmbFsMounter::MountOptions(), &mock_delegate_,
+      base::FilePath(kMountPath), chromeos::MOUNT_ERROR_NONE,
+      mojo::Remote<mojom::SmbFsBootstrap>(
+          bootstrap_receiver.BindNewPipeAndPassRemote()));
+  mounter->Mount(callback);
+
+  run_loop.Run();
+}
+
+TEST_F(SmbFsMounterTest, BootstrapDisconnection) {
+  base::RunLoop run_loop;
+  auto callback =
+      base::BindLambdaForTesting([&run_loop](mojom::MountError mount_error,
+                                             std::unique_ptr<SmbFsHost> host) {
+        EXPECT_EQ(mount_error, mojom::MountError::kUnknown);
+        EXPECT_FALSE(host);
+        run_loop.Quit();
+      });
+
+  // Dummy Mojo bindings to satifsy lifetimes.
+  mojo::PendingRemote<mojom::SmbFsDelegate> delegate_remote;
+
+  TestSmbFsBootstrapImpl mock_bootstrap;
+  mojo::Receiver<mojom::SmbFsBootstrap> bootstrap_receiver(&mock_bootstrap);
+  EXPECT_CALL(mock_bootstrap, MountShare(_, _, _))
+      .WillOnce([&bootstrap_receiver](
+                    mojom::MountOptionsPtr options,
+                    mojo::PendingRemote<mojom::SmbFsDelegate> delegate,
+                    mojom::SmbFsBootstrap::MountShareCallback callback) {
+        // Reset the bootstrap binding, which should cause a disconnect event.
+        bootstrap_receiver.reset();
+        std::move(callback).Run(mojom::MountError::kAccessDenied, {});
+      });
+
+  std::unique_ptr<SmbFsMounter> mounter = std::make_unique<TestSmbFsMounter>(
+      kSharePath, SmbFsMounter::MountOptions(), &mock_delegate_,
+      base::FilePath(kMountPath), chromeos::MOUNT_ERROR_NONE,
+      mojo::Remote<mojom::SmbFsBootstrap>(
+          bootstrap_receiver.BindNewPipeAndPassRemote()));
+  mounter->Mount(callback);
+
+  run_loop.Run();
 }
 
 class SmbFsMounterE2eTest : public testing::Test {

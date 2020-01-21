@@ -358,6 +358,8 @@ class ProgressCenterPanel {
         return info['source'] || item.message;
       case 'error':
         return item.message;
+      case 'canceled':
+        return '';
       default:
         assertNotReached();
         break;
@@ -383,6 +385,7 @@ class ProgressCenterPanel {
         }
         break;
       case 'error':
+      case 'canceled':
         break;
       default:
         assertNotReached();

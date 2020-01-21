@@ -243,6 +243,7 @@ void XR::PendingSupportsSessionQuery::Resolve(bool supported,
     if (supported) {
       resolver_->Resolve();
     } else {
+      DVLOG(2) << __func__ << ": session is unsupported - throwing exception";
       RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
                              kSessionNotSupported, exception_state);
     }
@@ -742,6 +743,9 @@ ScriptPromise XR::InternalIsSessionSupported(ScriptState* script_state,
 
   if (session_mode == device::mojom::blink::XRSessionMode::kImmersiveAr &&
       !RuntimeEnabledFeatures::WebXRARModuleEnabled(doc)) {
+    DVLOG(2) << __func__
+             << ": Immersive AR session is only supported if WebXRARModule "
+                "feature is enabled";
     query->Resolve(false);
     return promise;
   }

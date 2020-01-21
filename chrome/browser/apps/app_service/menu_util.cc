@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "ash/public/cpp/app_menu_constants.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/grit/generated_resources.h"
 
 namespace {
@@ -63,6 +65,40 @@ void CreateOpenNewSubmenu(uint32_t string_id,
   menu_item->radio_group_id = kInvalidRadioGroupId;
 
   (*menu_items)->items.push_back(std::move(menu_item));
+}
+
+bool ShouldAddOpenItem(const std::string& app_id,
+                       apps::mojom::MenuType menu_type,
+                       Profile* profile) {
+  if (menu_type != apps::mojom::MenuType::kShelf) {
+    return false;
+  }
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+  if (proxy->InstanceRegistry().GetWindows(app_id).empty()) {
+    return true;
+  }
+
+  return false;
+}
+
+bool ShouldAddCloseItem(const std::string& app_id,
+                        apps::mojom::MenuType menu_type,
+                        Profile* profile) {
+  if (menu_type != apps::mojom::MenuType::kShelf) {
+    return false;
+  }
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile);
+  DCHECK(proxy);
+  if (proxy->InstanceRegistry().GetWindows(app_id).empty()) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace apps

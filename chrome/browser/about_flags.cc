@@ -1595,14 +1595,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kHistoryManipulationIntervention,
      flag_descriptions::kHistoryManipulationInterventionDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kHistoryManipulationIntervention)},
-    {"disable-pushstate-throttle",
-     flag_descriptions::kDisablePushStateThrottleName,
-     flag_descriptions::kDisablePushStateThrottleDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kDisablePushStateThrottle)},
-    {"disable-ipc-flooding-protection",
-     flag_descriptions::kDisableIpcFloodingProtectionName,
-     flag_descriptions::kDisableIpcFloodingProtectionDescription, kOsAll,
-     SINGLE_VALUE_TYPE(switches::kDisableIpcFloodingProtection)},
 #if defined(OS_ANDROID)
     {"contextual-search-definitions",
      flag_descriptions::kContextualSearchDefinitionsName,
@@ -4578,9 +4570,6 @@ const FeatureEntry kFeatureEntries[] = {
          chrome::android::kDarkenWebsitesCheckboxInThemesSetting)},
 #endif  // defined(OS_ANDROID)
 
-    {"password-leak-detection", flag_descriptions::kPasswordLeakDetectionName,
-     flag_descriptions::kPasswordLeakDetectionDescription, kOsAll,
-     FEATURE_VALUE_TYPE(password_manager::features::kLeakDetection)},
     {"enable-autofill-upi-vpa", flag_descriptions::kAutofillSaveAndFillVPAName,
      flag_descriptions::kAutofillSaveAndFillVPADescription, kOsAll,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillSaveAndFillVPA)},

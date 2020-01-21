@@ -269,11 +269,6 @@ extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 extern const char kPageInfoRefactoringName[];
 extern const char kPageInfoRefactoringDescription[];
 
-// Title and description for the flag to enable leak detection for entered
-// credentials.
-extern const char kPasswordLeakDetectionName[];
-extern const char kPasswordLeakDetectionDescription[];
-
 // Title and description for the flag that reload the page when the renderer
 // crashes.
 extern const char kReloadSadTabName[];

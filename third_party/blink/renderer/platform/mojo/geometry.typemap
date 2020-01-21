@@ -18,9 +18,7 @@ traits_headers = [
 ]
 
 # Note: consumers of this typemap must themselves depend on platform.
-deps = [
-  "//mojo/public/cpp/bindings",
-]
+deps = [ "//mojo/public/cpp/bindings" ]
 
 public_deps = [
   "//third_party/blink/public:blink_headers",
@@ -34,7 +32,7 @@ public_deps = [
 type_mappings = [
   "gfx.mojom.Point=::gfx::Point",
   "gfx.mojom.PointF=::gfx::PointF",
-  "gfx.mojom.Point3F=::blink::FloatPoint3D",
+  "gfx.mojom.Point3F=::gfx::Point3F",
   "gfx.mojom.Quaternion=::gfx::Quaternion",
   "gfx.mojom.RectF=::blink::WebFloatRect",
   "gfx.mojom.Rect=::blink::WebRect",

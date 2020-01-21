@@ -1399,7 +1399,7 @@ ModelTypeSet ProfileSyncService::GetModelTypesForTransportOnlyMode() const {
   }
 
   // Outside the #if so non-Chrome OS developers will hit it before uploading.
-  static_assert(40 == ModelType::NUM_ENTRIES,
+  static_assert(41 == ModelType::NUM_ENTRIES,
                 "If a new ModelType is Chrome OS-only and uses OS sync "
                 "consent, add it below.");
 #if defined(OS_CHROMEOS)

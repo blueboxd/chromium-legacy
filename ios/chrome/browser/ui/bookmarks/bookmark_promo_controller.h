@@ -7,13 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
 @protocol SigninPresenter;
 @class SigninPromoViewConfigurator;
 @class SigninPromoViewMediator;
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 @protocol BookmarkPromoControllerDelegate
 

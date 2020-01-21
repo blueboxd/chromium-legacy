@@ -34,4 +34,8 @@ content::WebContents* CastAppController::GetWebContents() {
   return contents_;
 }
 
+void CastAppController::WebContentsDestroyed() {
+  contents_ = nullptr;
+}
+
 }  // namespace chromecast

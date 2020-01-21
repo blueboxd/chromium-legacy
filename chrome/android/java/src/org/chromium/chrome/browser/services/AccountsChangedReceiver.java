@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
+import org.chromium.chrome.browser.signin.SigninPreferencesManager;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
@@ -52,7 +53,7 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
             startBrowserIfNeededAndValidateAccounts();
         } else {
             // Notify SigninHelper of changed accounts (via shared prefs).
-            SigninHelper.markAccountsChangedPref();
+            SigninPreferencesManager.getInstance().markAccountsChangedPref();
         }
     }
 
@@ -73,7 +74,7 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
             public void onStartupFailure() {
                 // Startup failed. So notify SigninHelper of changed accounts via
                 // shared prefs.
-                SigninHelper.markAccountsChangedPref();
+                SigninPreferencesManager.getInstance().markAccountsChangedPref();
             }
         };
         ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);

@@ -87,28 +87,42 @@ class AppServiceProxy : public KeyedService,
       bool allow_placeholder_icon,
       apps::mojom::Publisher::LoadIconCallback callback) override;
 
-  // TODO: Provide comments for public API methods.
+  // Launches the app for the given |app_id|. |event_flags| provides additional
+  // context about the action which launches the app (e.g. a middle click
+  // indicating opening a background tab). |launch_source| is the possible app
+  // launch sources, e.g. from Shelf, from the search box, etc. |display_id| is
+  // the id of the display from which the app is launched.
+  // display::kInvalidDisplayId means that the display does not exist or is not
+  // set.
   void Launch(const std::string& app_id,
               int32_t event_flags,
               apps::mojom::LaunchSource launch_source,
               int64_t display_id);
+
+  // Launches an app for the given |app_id|, passing |intent| to the app.
+  // |launch_source| is the possible app launch sources. |display_id| is the id
+  // of the display from which the app is launched.
   void LaunchAppWithIntent(const std::string& app_id,
                            apps::mojom::IntentPtr intent,
                            apps::mojom::LaunchSource launch_source,
                            int64_t display_id);
+
+  // Launches an app for the given |app_id|, passing |url| to the app.
+  // |launch_source| is the possible app launch sources. |display_id| is the id
+  // of the display from which the app is launched.
   void LaunchAppWithUrl(const std::string& app_id,
                         GURL url,
                         apps::mojom::LaunchSource launch_source,
                         int64_t display_id);
+
+  // Sets |permission| for the app identified by |app_id|.
   void SetPermission(const std::string& app_id,
                      apps::mojom::PermissionPtr permission);
+
+  // Uninstalls an app for the given |app_id|. If |parent_window| is specified,
+  // the uninstall dialog will be created as a modal dialog anchored at
+  // |parent_window|. Otherwise, the browser window will be used as the anchor.
   void Uninstall(const std::string& app_id, gfx::NativeWindow parent_window);
-  void OnUninstallDialogClosed(apps::mojom::AppType app_type,
-                               const std::string& app_id,
-                               bool uninstall,
-                               bool clear_site_data,
-                               bool report_abuse,
-                               UninstallDialog* uninstall_dialog);
 
   // Pauses apps. |pause_data|'s key is the app_id. |pause_data|'s PauseData
   // is the time limit setting for the app, which is shown in the pause app
@@ -121,28 +135,33 @@ class AppServiceProxy : public KeyedService,
   // as false directly and removes the paused app icon effect.
   void UnpauseApps(const std::set<std::string>& app_ids);
 
-  // Called when the user clicks the 'OK' button of the pause app dialog.
-  // AppService stops the running app and applies the paused app icon effect.
-  void OnPauseDialogClosed(apps::mojom::AppType app_type,
-                           const std::string& app_id);
-
   // Returns the menu items for the given |app_id|.
   void GetMenuModel(const std::string& app_id,
                     apps::mojom::MenuType menu_type,
                     GetMenuModelCallback callback);
 
+  // Opens native settings for the app with |app_id|.
   void OpenNativeSettings(const std::string& app_id);
 
   void FlushMojoCallsForTesting();
   apps::IconLoader* OverrideInnerIconLoaderForTesting(
       apps::IconLoader* icon_loader);
   void ReInitializeCrostiniForTesting(Profile* profile);
+
+  // Returns a list of apps (represented by their ids) which can handle |url|.
   std::vector<std::string> GetAppIdsForUrl(const GURL& url);
+
+  // Returns a list of apps (represented by their ids) which can handle
+  // |intent|.
   std::vector<std::string> GetAppIdsForIntent(apps::mojom::IntentPtr intent);
+
+  // Sets |extension_apps_| and |web_apps_| to observe the ARC apps to set the
+  // badge on the equivalent Chrome app's icon, when ARC is available.
   void SetArcIsRegistered();
-  // Add a preferred app for |url|.
+
+  // Adds a preferred app for |url|.
   void AddPreferredApp(const std::string& app_id, const GURL& url);
-  // Add a preferred app for |intent|.
+  // Adds a preferred app for |intent|.
   void AddPreferredApp(const std::string& app_id,
                        const apps::mojom::IntentPtr& intent);
 
@@ -231,6 +250,20 @@ class AppServiceProxy : public KeyedService,
       apps::mojom::IntentFilterPtr intent_filter) override;
   void InitializePreferredApps(base::Value preferred_apps) override;
 
+  // Invoked when the uninstall dialog is closed. The app for the given
+  // |app_type| and |app_id| will be uninstalled directly if |uninstall| is
+  // true. |clear_site_data| is available for bookmark apps only. If true, any
+  // site data associated with the app will be removed. |report_abuse| is
+  // available for Chrome Apps only. If true, the app will be reported for abuse
+  // to the Web Store. |uninstall_dialog| will be removed from
+  // |uninstall_dialogs_|.
+  void OnUninstallDialogClosed(apps::mojom::AppType app_type,
+                               const std::string& app_id,
+                               bool uninstall,
+                               bool clear_site_data,
+                               bool report_abuse,
+                               UninstallDialog* uninstall_dialog);
+
   void LoadIconForPauseDialog(const apps::AppUpdate& update,
                               const PauseData& pause_data);
 
@@ -244,6 +277,11 @@ class AppServiceProxy : public KeyedService,
   void UpdatePausedStatus(apps::mojom::AppType app_type,
                           const std::string& app_id,
                           bool paused);
+
+  // Invoked when the user clicks the 'OK' button of the pause app dialog.
+  // AppService stops the running app and applies the paused app icon effect.
+  void OnPauseDialogClosed(apps::mojom::AppType app_type,
+                           const std::string& app_id);
 
   // apps::AppRegistryCache::Observer overrides:
   void OnAppUpdate(const apps::AppUpdate& update) override;

@@ -9,15 +9,12 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 class BrowserObserver;
 @class CommandDispatcher;
 @class TabModel;
 class WebStateList;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // Browser is the model for a window containing multiple tabs. Instances
 // are owned by a BrowserList to allow multiple windows for a single user

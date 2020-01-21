@@ -10,7 +10,6 @@
 #pinKeyboard {
   --pin-keyboard-pin-input-style: {
     width: 192px;
-    padding-bottom: 24px;
   };
   --pin-keyboard-number-color: var(--google-grey-900);
   --cr-icon-button-margin-start: 5px;
@@ -19,9 +18,8 @@
 #errorContainer {
   color: var(--google-red-600);
   font-size: 12px;
-  position: absolute;
+  padding: 1px 0 3px;
   text-align: center;
-  top: 36px;
   width: 100%;
 }
 
@@ -29,4 +27,9 @@
   --iron-icon-width: 20px;
   --iron-icon-height: 20px;
   margin-inline-end: 3px;
+}
+
+/* Allows to hide the element while still consuming the space that it needs. */
+[invisible] {
+  visibility: hidden;
 }

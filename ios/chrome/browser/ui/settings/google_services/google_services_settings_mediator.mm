@@ -190,14 +190,11 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
           initWithPrefService:localPrefService
                      prefName:prefs::kMetricsReportingWifiOnly];
     }
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kLeakDetection)) {
-      _passwordLeakCheckEnabled = [[PrefBackedBoolean alloc]
-          initWithPrefService:userPrefService
-                     prefName:password_manager::prefs::
-                                  kPasswordLeakDetectionEnabled];
-      _passwordLeakCheckEnabled.observer = self;
-    }
+    _passwordLeakCheckEnabled = [[PrefBackedBoolean alloc]
+        initWithPrefService:userPrefService
+                   prefName:password_manager::prefs::
+                                kPasswordLeakDetectionEnabled];
+    _passwordLeakCheckEnabled.observer = self;
     _anonymizedDataCollectionPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:unified_consent::prefs::
@@ -520,8 +517,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         switchItem.on = self.anonymizedDataCollectionPreference.value;
         break;
       case ItemTypePasswordLeakCheckSwitch:
-        DCHECK(base::FeatureList::IsEnabled(
-            password_manager::features::kLeakDetection));
         [self updateLeakCheckItem];
         break;
       case IdentityItemType:
@@ -590,25 +585,15 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
                       dataType:0];
     betterSearchAndBrowsingItemType.accessibilityIdentifier =
         kBetterSearchAndBrowsingItemAccessibilityID;
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kLeakDetection)) {
-      _nonPersonalizedItems = @[
-        autocompleteSearchesAndURLsItem, self.passwordLeakCheckItem,
-        improveChromeItem, betterSearchAndBrowsingItemType
-      ];
-    } else {
-      _nonPersonalizedItems = @[
-        autocompleteSearchesAndURLsItem, improveChromeItem,
-        betterSearchAndBrowsingItemType
-      ];
-    }
+    _nonPersonalizedItems = @[
+      autocompleteSearchesAndURLsItem, self.passwordLeakCheckItem,
+      improveChromeItem, betterSearchAndBrowsingItemType
+    ];
   }
   return _nonPersonalizedItems;
 }
 
 - (SettingsSwitchItem*)passwordLeakCheckItem {
-  DCHECK(
-      base::FeatureList::IsEnabled(password_manager::features::kLeakDetection));
   if (!_passwordLeakCheckItem) {
     SettingsSwitchItem* passwordLeakCheckItem = [[SettingsSwitchItem alloc]
         initWithType:ItemTypePasswordLeakCheckSwitch];
@@ -702,11 +687,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 // Updates the detail text and on state of the leak check item based on the
 // state.
 - (void)updateLeakCheckItem {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kLeakDetection)) {
-    return;
-  }
-
   self.passwordLeakCheckItem.enabled = self.isAuthenticated;
   self.passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
 
@@ -722,11 +702,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 // Updates leak item and asks the consumer to reload it.
 - (void)updateLeakCheckItemAndReload {
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kLeakDetection)) {
-    [self updateLeakCheckItem];
-    [self.consumer reloadItem:self.passwordLeakCheckItem];
-  }
+  [self updateLeakCheckItem];
+  [self.consumer reloadItem:self.passwordLeakCheckItem];
 }
 
 #pragma mark - GoogleServicesSettingsViewControllerModelDelegate

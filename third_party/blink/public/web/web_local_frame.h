@@ -176,9 +176,6 @@ class WebLocalFrame : public WebFrame {
 
   // Hierarchy ----------------------------------------------------------
 
-  // Returns true if the current frame is a local root.
-  virtual bool IsLocalRoot() const = 0;
-
   // Returns true if the current frame is a provisional frame.
   // TODO(https://crbug.com/578349): provisional frames are a hack that should
   // be removed.
@@ -281,9 +278,6 @@ class WebLocalFrame : public WebFrame {
 
   // CSS3 Paged Media ----------------------------------------------------
 
-  // Returns true if page box (margin boxes and page borders) is visible.
-  virtual bool IsPageBoxVisible(int page_index) = 0;
-
   // Returns true if the page style has custom size information.
   virtual bool HasCustomPageSizeStyle(int page_index) = 0;
 
@@ -297,11 +291,6 @@ class WebLocalFrame : public WebFrame {
                                           int& margin_right,
                                           int& margin_bottom,
                                           int& margin_left) = 0;
-
-  // Returns the value for a page property that is only defined when printing.
-  // printBegin must have been called before this method.
-  virtual WebString PageProperty(const WebString& property_name,
-                                 int page_index) = 0;
 
   // Scripting --------------------------------------------------------------
 
@@ -414,10 +403,6 @@ class WebLocalFrame : public WebFrame {
       mojo::ScopedInterfaceEndpointHandle devtools_agent_request) = 0;
 
   // Editing -------------------------------------------------------------
-
-  virtual void SetMarkedText(const WebString& text,
-                             unsigned location,
-                             unsigned length) = 0;
   virtual void UnmarkText() = 0;
   virtual bool HasMarkedText() const = 0;
 
@@ -541,11 +526,6 @@ class WebLocalFrame : public WebFrame {
 
   // If the provided node is an image that failed to load, reload it.
   virtual void ReloadImage(const WebNode&) = 0;
-
-  // Feature usage logging --------------------------------------------------
-
-  virtual void DidCallAddSearchProvider() = 0;
-  virtual void DidCallIsSearchProviderInstalled() = 0;
 
   // Iframe sandbox ---------------------------------------------------------
 

@@ -83,7 +83,8 @@ class PlatformViewsRpcInstance : public WebContentController::Client,
   bool errored_ = false;
   std::string error_message_;
   bool send_pending_ = false;
-  bool destroying_ = false;
+  // Reads are always pending until disabled by the read path.
+  bool read_pending_ = true;
   std::deque<std::unique_ptr<webview::WebviewResponse>> pending_messages_;
 
   grpc::WriteOptions write_options_;

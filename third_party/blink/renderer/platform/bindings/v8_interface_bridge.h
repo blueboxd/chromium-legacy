@@ -51,8 +51,8 @@ class PLATFORM_EXPORT V8InterfaceBridgeBase {
 template <class V8T, class T>
 class V8InterfaceBridge : public V8InterfaceBridgeBase {
  public:
-  static T* ToBlinkUnsafe(v8::Local<v8::Object> receiver) {
-    return ToScriptWrappable(receiver)->ToImpl<T>();
+  static T* ToBlinkUnsafe(v8::Local<v8::Object> value) {
+    return ToScriptWrappable(value)->ToImpl<T>();
   }
 
   static bool HasInstance(v8::Isolate* isolate, v8::Local<v8::Value> value) {
@@ -63,6 +63,14 @@ class V8InterfaceBridge : public V8InterfaceBridgeBase {
   // Migration adapter
   static bool HasInstance(v8::Local<v8::Value> value, v8::Isolate* isolate) {
     return HasInstance(isolate, value);
+  }
+
+  static T* ToImpl(v8::Local<v8::Object> value) { return ToBlinkUnsafe(value); }
+
+  static T* ToImplWithTypeCheck(v8::Isolate* isolate,
+                                v8::Local<v8::Value> value) {
+    return HasInstance(isolate, value) ? ToBlinkUnsafe(value.As<v8::Object>())
+                                       : nullptr;
   }
 
   static void InstallContextDependentAdapter(

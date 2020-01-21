@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_metrics.h"
+#include "ash/public/cpp/app_menu_constants.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/metrics/histogram_macros.h"
@@ -16,6 +17,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
@@ -38,6 +40,7 @@
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/arc/arc_service_manager.h"
@@ -351,7 +354,33 @@ void WebApps::UnpauseApps(const std::string& app_id) {
 void WebApps::GetMenuModel(const std::string& app_id,
                            apps::mojom::MenuType menu_type,
                            GetMenuModelCallback callback) {
-  std::move(callback).Run(apps::mojom::MenuItems::New());
+  const web_app::WebApp* web_app = GetWebApp(app_id);
+  if (!web_app) {
+    std::move(callback).Run(apps::mojom::MenuItems::New());
+    return;
+  }
+
+  const bool is_system_web_app = web_app->IsSystemApp();
+  apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
+
+  if (!is_system_web_app) {
+    CreateOpenNewSubmenu(
+        web_app->display_mode() == web_app::DisplayMode::kStandalone
+            ? IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW
+            : IDS_APP_LIST_CONTEXT_MENU_NEW_TAB,
+        &menu_items);
+  }
+
+  if (provider_->install_finalizer().CanUserUninstallExternalApp(app_id)) {
+    AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, &menu_items);
+  }
+
+  if (!is_system_web_app) {
+    AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
+                   &menu_items);
+  }
+
+  std::move(callback).Run(std::move(menu_items));
 }
 
 void WebApps::OpenNativeSettings(const std::string& app_id) {

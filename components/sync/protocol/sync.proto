@@ -52,6 +52,7 @@ import "search_engine_specifics.proto";
 import "security_event_specifics.proto";
 import "send_tab_to_self_specifics.proto";
 import "session_specifics.proto";
+import "sharing_message_specifics.proto";
 import "sync_enums.proto";
 import "synced_notification_app_info_specifics.proto";
 import "synced_notification_specifics.proto";
@@ -164,6 +165,7 @@ message EntitySpecifics {
     WifiConfigurationSpecifics wifi_configuration = 662827;
     OsPreferenceSpecifics os_preference = 702141;
     OsPriorityPreferenceSpecifics os_priority_preference = 703915;
+    SharingMessageSpecifics sharing_message = 728866;
   }
   reserved 218175;
   reserved "wifi_credential";

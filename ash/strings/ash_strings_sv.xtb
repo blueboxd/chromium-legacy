@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">överskanning</translation>
 <translation id="119944043368869598">Ta bort alla</translation>
 <translation id="1247372569136754018">Mikrofon (inbyggd)</translation>
-<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> Administratören har gjort den här inställningen obligatorisk.</translation>
 <translation id="1252999807265626933">Laddar från <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Vad är det för väder?</translation>
 <translation id="1267032506238418139">Kortkommandot har ändrats</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">Anslut till andra Wi-Fi-nätverk</translation>
 <translation id="2718395828230677721">Nattljus</translation>
 <translation id="2727977024730340865">Ansluten till en laddare med låg effekt. Batteriet kanske inte laddas ordentligt.</translation>
-<translation id="2761704814324807722">Statusfältet, tid <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + Sök</translation>
 <translation id="2803734122639935495">Lås upp med lösenordet</translation>
 <translation id="2819276065543622893">Du loggas nu ut.</translation>

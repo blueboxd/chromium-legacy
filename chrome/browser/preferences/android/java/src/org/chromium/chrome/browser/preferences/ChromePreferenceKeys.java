@@ -430,6 +430,11 @@ public final class ChromePreferenceKeys {
     public static final String LOCALE_MANAGER_WAS_IN_SPECIAL_LOCALE =
             "LocaleManager_WAS_IN_SPECIAL_LOCALE";
 
+    public static final String NOTIFICATIONS_LAST_SHOWN_NOTIFICATION_TYPE =
+            "NotificationUmaTracker.LastShownNotificationType";
+    public static final String NOTIFICATIONS_NEXT_TRIGGER =
+            "notification_trigger_scheduler.next_trigger";
+
     public static final String NTP_SNIPPETS_IS_SCHEDULED = "ntp_snippets.is_scheduled";
 
     /**
@@ -494,6 +499,19 @@ public final class ChromePreferenceKeys {
     public static final String SHARING_LAST_SHARED_CLASS_NAME = "last_shared_class_name";
     public static final String SHARING_LAST_SHARED_PACKAGE_NAME = "last_shared_package_name";
 
+    public static final String SIGNIN_ACCOUNTS_CHANGED = "prefs_sync_accounts_changed";
+
+    /**
+     * Holds the new account's name if the currently signed in account has been renamed.
+     */
+    public static final String SIGNIN_ACCOUNT_RENAMED = "prefs_sync_account_renamed";
+
+    /**
+     * Holds the last read index of all the account changed events of the current signed in account.
+     */
+    public static final String SIGNIN_ACCOUNT_RENAME_EVENT_INDEX =
+            "prefs_sync_account_rename_event_index";
+
     /**
      * Generic signin and sync promo preferences.
      */
@@ -529,6 +547,14 @@ public final class ChromePreferenceKeys {
             "settings_personalized_signin_promo_dismissed";
 
     public static final String SNAPSHOT_DATABASE_REMOVED = "snapshot_database_removed";
+
+    public static final String SURVEY_DATE_LAST_ROLLED = "last_rolled_for_chrome_survey_key";
+    /**
+     *  The survey questions for this survey are the same as those in the survey used for Chrome
+     *  Home, so we reuse the old infobar key to prevent the users from seeing the same survey more
+     *  than once.
+     */
+    public static final String SURVEY_INFO_BAR_DISPLAYED = "chrome_home_survey_info_bar_displayed";
 
     public static final String SYNC_SESSIONS_UUID = "chromium.sync.sessions.id";
 
@@ -773,6 +799,8 @@ public final class ChromePreferenceKeys {
                 LOCALE_MANAGER_PROMO_SHOWN,
                 LOCALE_MANAGER_SEARCH_ENGINE_PROMO_SHOW_STATE,
                 LOCALE_MANAGER_WAS_IN_SPECIAL_LOCALE,
+                NOTIFICATIONS_LAST_SHOWN_NOTIFICATION_TYPE,
+                NOTIFICATIONS_NEXT_TRIGGER,
                 NTP_SNIPPETS_IS_SCHEDULED,
                 OFFLINE_INDICATOR_V2_ENABLED,
                 PAYMENTS_PAYMENT_COMPLETE_ONCE,
@@ -795,6 +823,9 @@ public final class ChromePreferenceKeys {
                 SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP,
                 SHARING_LAST_SHARED_CLASS_NAME,
                 SHARING_LAST_SHARED_PACKAGE_NAME,
+                SIGNIN_ACCOUNTS_CHANGED,
+                SIGNIN_ACCOUNT_RENAMED,
+                SIGNIN_ACCOUNT_RENAME_EVENT_INDEX,
                 SIGNIN_AND_SYNC_PROMO_SHOW_COUNT,
                 SIGNIN_PROMO_IMPRESSIONS_COUNT_BOOKMARKS,
                 SIGNIN_PROMO_IMPRESSIONS_COUNT_SETTINGS,
@@ -806,6 +837,8 @@ public final class ChromePreferenceKeys {
                 SIGNIN_PROMO_SETTINGS_PERSONALIZED_DISMISSED,
                 SNAPSHOT_DATABASE_REMOVED,
                 START_SURFACE_SINGLE_PANE_ENABLED_KEY,
+                SURVEY_DATE_LAST_ROLLED,
+                SURVEY_INFO_BAR_DISPLAYED,
                 SYNC_SESSIONS_UUID,
                 TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF,
                 TAB_ID_MANAGER_NEXT_ID,

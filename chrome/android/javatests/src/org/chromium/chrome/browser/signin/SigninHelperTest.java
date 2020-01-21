@@ -45,36 +45,6 @@ public class SigninHelperTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testAccountsChangedPref() {
-        Assert.assertEquals("Should never return true before the pref has ever been set.", false,
-                SigninHelper.checkAndClearAccountsChangedPref());
-        Assert.assertEquals("Should never return true before the pref has ever been set.", false,
-                SigninHelper.checkAndClearAccountsChangedPref());
-
-        // Mark the pref as set.
-        SigninHelper.markAccountsChangedPref();
-
-        Assert.assertEquals("Should return true first time after marking accounts changed", true,
-                SigninHelper.checkAndClearAccountsChangedPref());
-        Assert.assertEquals("Should only return true first time after marking accounts changed",
-                false, SigninHelper.checkAndClearAccountsChangedPref());
-        Assert.assertEquals("Should only return true first time after marking accounts changed",
-                false, SigninHelper.checkAndClearAccountsChangedPref());
-
-        // Mark the pref as set again.
-        SigninHelper.markAccountsChangedPref();
-
-        Assert.assertEquals("Should return true first time after marking accounts changed", true,
-                SigninHelper.checkAndClearAccountsChangedPref());
-        Assert.assertEquals("Should only return true first time after marking accounts changed",
-                false, SigninHelper.checkAndClearAccountsChangedPref());
-        Assert.assertEquals("Should only return true first time after marking accounts changed",
-                false, SigninHelper.checkAndClearAccountsChangedPref());
-    }
-
-    @Test
-    @SmallTest
-    @RetryOnFailure
     public void testSimpleAccountRename() {
         setSignedInAccountName("A");
         mEventChecker.insertRenameEvent("A", "B");
@@ -151,6 +121,6 @@ public class SigninHelperTest {
     }
 
     private String getNewSignedInAccountName() {
-        return SigninHelper.getNewSignedInAccountName();
+        return SigninPreferencesManager.getInstance().getNewSignedInAccountName();
     }
 }

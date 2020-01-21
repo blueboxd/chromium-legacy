@@ -848,7 +848,7 @@ class CrostiniManager : public KeyedService,
   std::multimap<ContainerId, CrostiniManager::RestartId>
       restarters_by_container_;
 
-  std::map<CrostiniManager::RestartId, scoped_refptr<CrostiniRestarter>>
+  std::map<CrostiniManager::RestartId, std::unique_ptr<CrostiniRestarter>>
       restarters_by_id_;
 
   // True when the installer dialog is showing. At that point, it is invalid

@@ -118,11 +118,7 @@ LeakDialogType GetLeakDialogType(CredentialLeakType leak_type) {
 }
 
 GURL GetPasswordCheckupURL() {
-  std::string value = base::GetFieldTrialParamValueByFeature(
-      password_manager::features::kLeakDetection, "leak-check-url");
-  if (value.empty())
-    return GURL(password_manager::kPasswordCheckupURL);
-  return GURL(value);
+  return GURL(kPasswordCheckupURL);
 }
 
 }  // namespace password_manager

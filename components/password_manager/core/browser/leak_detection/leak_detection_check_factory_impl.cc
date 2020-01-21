@@ -25,10 +25,7 @@ LeakDetectionCheckFactoryImpl::TryCreateLeakCheck(
     delegate->OnError(LeakDetectionError::kNotSignIn);
     return nullptr;
   }
-  // Instantiate the field trial right before the feature can be used. Thus,
-  // the experiment groups will only contain the users who can use the feature.
-  if (!base::FeatureList::IsEnabled(features::kLeakDetection))
-    return nullptr;
+
   return std::make_unique<AuthenticatedLeakCheck>(
       delegate, identity_manager, std::move(url_loader_factory));
 }

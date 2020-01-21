@@ -314,6 +314,12 @@ template("chrome_public_common_apk_or_module_tmpl") {
 template("monochrome_public_common_apk_or_module_tmpl") {
   _is_bundle_module = defined(invoker.target_type) &&
                       invoker.target_type == "android_app_bundle_module"
+  if (_is_bundle_module) {
+    assert(
+        defined(invoker.is_base_module),
+        "_is_bundle_module is true but the invoker does not define is_base_module!")
+  }
+
   if (defined(invoker.enable_multidex)) {
     _enable_multidex = invoker.enable_multidex
   } else {
@@ -340,6 +346,33 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       "//chrome/android:chrome_public_non_pak_assets",
       "//components/crash/android:handler_java",
     ]
+
+    if (_is_bundle_module && invoker.is_base_module && enable_arcore) {
+      # AR DFM is disabled - bring in the ar_java target along with ARCore SDK
+      # and set the loadable_modules / secondary_abi_loadable_modules to what
+      # would be brought in by the module.
+      # This needs to happen for monochrome & trichrome builds of base module if ARCore is enabled.
+
+      _deps += [
+        "//chrome/browser/android/vr:ar_java",
+        "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
+      ]
+
+      _libarcore_dir = get_label_info(
+                           "//third_party/arcore-android-sdk-client:com_google_ar_core_java($default_toolchain)",
+                           "target_out_dir") + "/com_google_ar_core_java/jni"
+
+      if (android_64bit_target_cpu) {
+        if (invoker.is_64_bit_browser) {
+          loadable_modules = [ "$_libarcore_dir/arm64-v8a/libarcore_sdk_c.so" ]
+        } else {
+          secondary_abi_loadable_modules =
+              [ "$_libarcore_dir/armeabi-v7a/libarcore_sdk_c.so" ]
+        }
+      } else {
+        loadable_modules = [ "$_libarcore_dir/armeabi-v7a/libarcore_sdk_c.so" ]
+      }
+    }
 
     if (is_monochrome) {
       product_config_java_packages = [

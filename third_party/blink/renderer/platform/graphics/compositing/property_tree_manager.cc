@@ -418,7 +418,9 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
     // cache a lookup of transform node to scroll translation transform node.
     const auto& scroll_ancestor = transform_node.NearestScrollTranslationNode();
     sticky_data.scroll_ancestor = EnsureCompositorScrollNode(scroll_ancestor);
-    if (scroll_ancestor.ScrollNode()->ScrollsOuterViewport())
+    const auto& scroll_ancestor_compositor_node =
+        *GetScrollTree().Node(sticky_data.scroll_ancestor);
+    if (scroll_ancestor_compositor_node.scrolls_outer_viewport)
       GetTransformTree().AddNodeAffectedByOuterViewportBoundsDelta(id);
     if (auto shifting_sticky_box_element_id =
             sticky_data.constraints.nearest_element_shifting_sticky_box) {
@@ -530,14 +532,8 @@ void PropertyTreeManager::CreateCompositorScrollNode(
       scroll_node.UserScrollableHorizontal();
   compositor_node.user_scrollable_vertical =
       scroll_node.UserScrollableVertical();
-  compositor_node.scrolls_inner_viewport = scroll_node.ScrollsInnerViewport();
-  compositor_node.scrolls_outer_viewport = scroll_node.ScrollsOuterViewport();
   compositor_node.prevent_viewport_scrolling_from_inner =
       scroll_node.PreventViewportScrollingFromInner();
-
-  // |scrolls_using_viewport| should only ever be set on the inner scroll node.
-  DCHECK(!compositor_node.prevent_viewport_scrolling_from_inner ||
-         compositor_node.scrolls_inner_viewport);
 
   compositor_node.max_scroll_offset_affected_by_page_scale =
       scroll_node.MaxScrollOffsetAffectedByPageScale();
@@ -575,6 +571,20 @@ int PropertyTreeManager::EnsureCompositorScrollNode(
   int id = scroll_node->CcNodeId(new_sequence_number_);
   DCHECK(GetScrollTree().Node(id));
   return id;
+}
+
+int PropertyTreeManager::EnsureCompositorInnerScrollNode(
+    const TransformPaintPropertyNode& scroll_offset_translation) {
+  int node_id = EnsureCompositorScrollNode(scroll_offset_translation);
+  GetScrollTree().Node(node_id)->scrolls_inner_viewport = true;
+  return node_id;
+}
+
+int PropertyTreeManager::EnsureCompositorOuterScrollNode(
+    const TransformPaintPropertyNode& scroll_offset_translation) {
+  int node_id = EnsureCompositorScrollNode(scroll_offset_translation);
+  GetScrollTree().Node(node_id)->scrolls_outer_viewport = true;
+  return node_id;
 }
 
 void PropertyTreeManager::EmitClipMaskLayer() {

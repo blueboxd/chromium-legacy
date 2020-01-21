@@ -47,6 +47,15 @@ Polymer({
     },
 
     /**
+     * Whether the input is currently non-empty.
+     * @private
+     */
+    hasValue_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Whether the user has made changes in the input field since the dialog
      * was initialized or reset.
      * @private
@@ -57,13 +66,23 @@ Polymer({
     },
 
     /**
+     * Whether the user can change the value in the input field.
+     * @private
+     */
+    canEdit_: {
+      type: Boolean,
+      computed:
+          'computeCanEdit_(parameters.attemptsLeft, processingCompletion_)',
+    },
+
+    /**
      * Whether the user can submit a login request.
      * @private
      */
     canSubmit_: {
       type: Boolean,
-      computed:
-          'computeCanSubmit_(parameters.attemptsLeft, processingCompletion_)',
+      computed: 'computeCanSubmit_(parameters.attemptsLeft, ' +
+          'hasValue_, processingCompletion_)',
     },
   },
 
@@ -93,13 +112,26 @@ Polymer({
   },
 
   /**
-   * Returns whether the user can make more attempts to log in.
-   * @param {OobeTypes.SecurityTokenPinDialogParameters} parameters
+   * Computes the value of the canEdit_ property.
+   * @param {number} attemptsLeft
+   * @param {boolean} processingCompletion
    * @return {boolean}
    * @private
    */
-  computeCanSubmit_(attemptsLeft, processingCompletion) {
+  computeCanEdit_(attemptsLeft, processingCompletion) {
     return attemptsLeft != 0 && !processingCompletion;
+  },
+
+  /**
+   * Computes the value of the canSubmit_ property.
+   * @param {number} attemptsLeft
+   * @param {boolean} hasValue
+   * @param {boolean} processingCompletion
+   * @return {boolean}
+   * @private
+   */
+  computeCanSubmit_(attemptsLeft, hasValue, processingCompletion) {
+    return attemptsLeft != 0 && hasValue && !processingCompletion;
   },
 
   /**
@@ -115,10 +147,9 @@ Polymer({
    * @private
    */
   onSubmit_() {
-    if (this.processingCompletion_) {
-      // Race condition: This could happen if the previous request has not yet
-      // been completed before the next one is sent (for example by pressing
-      // Enter twice)
+    if (!this.canSubmit_) {
+      // Disallow submitting when it's not allowed or while proceeding the
+      // previous submission.
       return;
     }
     this.processingCompletion_ = true;
@@ -133,15 +164,18 @@ Polymer({
     // Reset the dialog to the initial state.
     this.$.pinKeyboard.value = '';
     this.processingCompletion_ = false;
+    this.hasValue_ = false;
     this.userEdited_ = false;
     this.$.pinKeyboard.focusInput();
   },
 
   /**
    * Observer that is called when the user changes the PIN input field.
+   * @param {!CustomEvent<{pin: string}>} e
    * @private
    */
-  onPinChange_() {
+  onPinChange_(e) {
+    this.hasValue_ = e.detail.pin.length > 0;
     this.userEdited_ = true;
   },
 

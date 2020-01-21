@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="az">
+<translation id="1337778609052285767">Cari parol parolun mürəkkəblik tələblərinə cavab vermir. Administratorunuz ilə əlaqə saxlayın.</translation>
 <translation id="1337821341856692531">Cari Windows parolunu daxil etmədən davam etmklə geri qaytarılması mümkün olmayan məlumatlar silinə bilər.</translation>
 <translation id="1383286653814676580">Google Kredensial Provayderinin giriş səhifəsini açmaq üçün istifadə edilir.</translation>
 <translation id="1894475569413661128">İş hesabından istifadə edərək daxil olun.</translation>
@@ -10,12 +11,15 @@
 <translation id="2679096858700291438">Yanlış Windows parolu daxil etdiniz. Yenidən sınayın.</translation>
 <translation id="2831078752570172210">Hesabınız kilidlənib. Sistem administratoru ilə əlaqə saxlayın.</translation>
 <translation id="2844349213149998955">Bu cihazda şəxsi hesaba girişə icazə verilmir. İş hesabı ilə daxil olun.</translation>
+<translation id="2995851317559936311">Parol dəyişikliyinə yalnız domen nizamlayıcısında icazə verilir. Administratorunuz ilə əlaqə saxlayın.</translation>
 <translation id="3306357053520292004">Bu kompüterdəki istifadəçi artıq bu hesabdan istifadə edərək əlavə edildi. Fərqli hesab ilə daxil olun.</translation>
 <translation id="3926852373333893095">Yalnız GSuite Enterprise istifadəçilərinin girişinə icazə verilir.</translation>
 <translation id="4057329986137569701">Daxili xəta baş verdi.</translation>
 <translation id="4267670563222825190">Hesabınız üçün Domen istifadəçisi tapılmadı. Administrator ilə əlaqə saxlayın.</translation>
 <translation id="4300229033992784001">Hesab parolu dəyişib. Windows hesabını iş hesabı ilə sinxronizasiya etmək üçün Windows parolunu daxil edin.</translation>
+<translation id="4669462973597624151">Parol dəyişmək cəhdi alınmadı. Administratorunuz ilə əlaqə saxlayın.</translation>
 <translation id="4706454071748629324">Yeni istifadəçi əlavə etmək alınmadı. Bu kompüter iş hesabından istifadə edərək yalnız bir istifadəçinin yaradılmasına icazə verir</translation>
+<translation id="5186761973554910131">Parol dəyişmə cəhdi zamanı yanlış kompüter adı təqdim edildi. Administratorunuz ilə əlaqə saxlayın.</translation>
 <translation id="6033715878377252112">Windows köməkçisi üçün Google Kredensial Provayderi</translation>
 <translation id="6149399665202317746">Windows üçün Google Kredensial Provayderi</translation>
 <translation id="6239180560789153226">Cihazda bərpa məlumatı yoxdur. Google iş hesabından istifadə edərək daxil olun.</translation>
@@ -27,6 +31,7 @@
 <translation id="7536769223115622137">İş hesabı əlavə edin</translation>
 <translation id="7811865856574012727">Administrator aşağıdakı domenlərə cihaz girişini məhdudlaşdırıb: <ph name="EMAIL_DOMAINS" />. Doğru iş hesabı ilə yenidən cəhd edin.</translation>
 <translation id="7856245195110636219">Cari Windows parolunu daxil etmədən davam etmək mümkün deyil. Sistem administratoru ilə əlaqə saxlayın.</translation>
+<translation id="8109730953933509335">Etibarsız istifadəçi profili üzrə parol dəyişikliyinə cəhd edildi. Administratorunuz ilə əlaqə saxlayın.</translation>
 <translation id="8639729688781680518">Windows Parolunu Unutmuşam</translation>
 <translation id="866458870819756755">Hesab yaradılmadı.</translation>
 <translation id="8875753657315897487">İş hesabından istifadə edərək daxil olun</translation>

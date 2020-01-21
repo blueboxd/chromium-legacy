@@ -26,9 +26,10 @@ namespace content {
 class MockDedicatedWorker
     : public blink::mojom::DedicatedWorkerHostFactoryClient {
  public:
-  explicit MockDedicatedWorker(GlobalFrameRoutingId render_frame_host_id) {
-    CreateDedicatedWorkerHostFactory(render_frame_host_id, render_frame_host_id,
-                                     url::Origin(),
+  MockDedicatedWorker(int worker_process_id,
+                      GlobalFrameRoutingId render_frame_host_id) {
+    CreateDedicatedWorkerHostFactory(worker_process_id, render_frame_host_id,
+                                     render_frame_host_id, url::Origin(),
                                      factory_.BindNewPipeAndPassReceiver());
 
     if (base::FeatureList::IsEnabled(blink::features::kPlzDedicatedWorker)) {
@@ -185,8 +186,8 @@ TEST_P(DedicatedWorkerServiceImplTest, ObserveWorkerCreationAndDestruction) {
   // Create the dedicated worker.
   GlobalFrameRoutingId ancestor_render_frame_host_id =
       render_frame_host->GetGlobalFrameRoutingId();
-  auto mock_dedicated_worker =
-      std::make_unique<MockDedicatedWorker>(ancestor_render_frame_host_id);
+  auto mock_dedicated_worker = std::make_unique<MockDedicatedWorker>(
+      render_frame_host->GetProcess()->GetID(), ancestor_render_frame_host_id);
   RunUntilWorkerEvent();
 
   // The service sent a OnWorkerStarted() notification.

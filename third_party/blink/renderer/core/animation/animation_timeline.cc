@@ -81,7 +81,8 @@ void AnimationTimeline::ServiceAnimations(TimingUpdateReason reason) {
   for (Animation* animation : animations_needing_update_)
     animations.push_back(animation);
 
-  std::sort(animations.begin(), animations.end(), Animation::HasLowerPriority);
+  std::sort(animations.begin(), animations.end(),
+            Animation::HasLowerCompositeOrdering);
 
   for (Animation* animation : animations) {
     if (!animation->Update(reason))

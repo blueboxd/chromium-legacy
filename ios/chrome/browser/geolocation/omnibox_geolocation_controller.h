@@ -7,13 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 namespace web {
 class NavigationItem;

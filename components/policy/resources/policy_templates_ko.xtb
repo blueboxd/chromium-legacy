@@ -468,7 +468,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
         구성된 허용 목록은 애플리케이션과 URL에 적용되어, 앱별 시간 제한으로 인해 차단되지 않도록 합니다.
         허용 목록에 포함된 URL에 접속한 시간은 Chrome 시간 제한에 포함되지 않습니다.
         URL 정규식을 |url_list|에 추가하여 목록 내 정규식과 일치하는 URL을 허용합니다.
-        |app_id| 및 |app_type|과 함께 앱을 |app_list|에 추가하여 앱을 허용합니다.
+        |app_id| 및 |app_type|과 함께 앱을 |app_list|에 추가하여 허용합니다.
        </translation>
 <translation id="1715151459541210849">음성기록 접근성 기능 사용</translation>
 <translation id="1717817358640580294">이 정책이 설정되지 않은 경우 Chrome 정리도구가 원치 않은 소프트웨어를 발견하면 SafeBrowsingExtendedReportingEnabled에서 설정한 정책에 따라 Google에 검사 관련 메타데이터를 보고할 수 있습니다. 그런 다음 Chrome 정리도구가 사용자에게 원치 않은 소프트웨어를 삭제할 것인지 묻습니다. 사용자는 Google과 정리 결과를 공유하여 향후 원치 않은 소프트웨어 감지를 도울 것인지 여부를 선택할 수 있습니다. 이러한 결과에는 Chrome 개인정보 보호 백서에 명시된 바와 같이 파일 메타데이터, 자동 설치된 확장 프로그램, 레지스트리 키가 포함됩니다.
@@ -3834,7 +3834,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책이 True로 설정되거나 설정되지 않으면 스마트 밝기 낮추기 모델이 사용되며 화면이 어두워질 때까지의 시간을 연장하도록 허용됩니다. 이 정책이 False로 설정되면 스마트 밝기 낮추기 모델이 화면 밝기 낮추기에 영향을 주지 않습니다.</translation>
 <translation id="6972540544240464302">작업 스케줄러 설정 선택</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
-<translation id="6991078864332103177">이 정책은 OS 로그인 정보, <ph name="PRODUCT_NAME" /> 프로필 로그인 정보, <ph name="PRODUCT_NAME" /> 프로필 이름, <ph name="PRODUCT_NAME" /> 프로필 경로, <ph name="PRODUCT_NAME" /> 실행 가능한 경로와 같이 사용자를 식별하는 데 사용할 수 있는 정보의 보고 여부를 제어합니다.
+<translation id="6991078864332103177">이 정책은 OS 로그인 정보, <ph name="PRODUCT_NAME" /> 프로필 로그인 정보, <ph name="PRODUCT_NAME" /> 프로필 이름, <ph name="PRODUCT_NAME" /> 프로필 경로, <ph name="PRODUCT_NAME" /> 실행 경로와 같이 사용자를 식별하는 데 사용할 수 있는 정보의 보고 여부를 제어합니다.
 
       이 정책이 설정되어 있지 않거나 True로 설정되어 있으면 사용자 식별에 사용될 수 있는 정보가 수집됩니다.
       이 정책이 False로 설정되어 있으면 사용자를 식별하는 데 사용할 수 있는 정보가 수집되지 않습니다.

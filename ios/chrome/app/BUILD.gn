@@ -228,7 +228,6 @@ source_set("app_internal") {
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/ui/settings/google_services",
-    "//ios/chrome/browser/ui/signin_interaction",
     "//ios/chrome/browser/ui/tab_grid",
     "//ios/chrome/browser/ui/tab_grid:tab_grid_ui",
     "//ios/chrome/browser/ui/table_view",

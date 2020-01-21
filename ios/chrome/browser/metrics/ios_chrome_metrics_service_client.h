@@ -21,15 +21,12 @@
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/ukm/observers/history_delete_observer.h"
 #include "components/ukm/observers/ukm_consent_state_observer.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/metrics/incognito_web_state_observer.h"
 #include "ios/web/public/deprecated/global_web_state_observer.h"
 
 class IOSChromeStabilityMetricsProvider;
 class PrefRegistrySimple;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 namespace metrics {
 class MetricsService;

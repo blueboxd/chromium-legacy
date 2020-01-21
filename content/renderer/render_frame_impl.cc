@@ -4428,14 +4428,7 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   // track of that on the widget to help the browser process detect when stale
   // compositor frames are being shown after a commit.
   if (is_main_frame_) {
-    GetLocalRootRenderWidget()->DidNavigate();
-
-    // Update the URL and the document source id used to key UKM metrics in the
-    // compositor if the navigation is not in the same document, which
-    // represents a new UKM source.
-    // Note that this is only done for the main frame since the metrics for all
-    // frames are keyed to the main frame's URL.
-    GetLocalRootRenderWidget()->layer_tree_host()->SetSourceURL(
+    GetLocalRootRenderWidget()->DidNavigate(
         frame_->GetDocument().GetUkmSourceId(), GetLoadingUrl());
   }
 

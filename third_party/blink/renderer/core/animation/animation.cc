@@ -90,6 +90,28 @@ double Min(base::Optional<double> a, double b) {
   return b;
 }
 
+Animation::AnimationClassPriority AnimationPriority(
+    const Animation* animation) {
+  // According to the spec:
+  // https://drafts.csswg.org/web-animations/#animation-class,
+  // CSS tranisiton has a lower composite order than the CSS animation, and CSS
+  // animation has a lower composite order than other animations. Thus,CSS
+  // transitions are to appear before CSS animations and CSS animations are to
+  // appear before other animations
+  // TODO: When animations are disassociated from their element they are sorted
+  // by their sequence number, i.e. kDefaultPriority. See
+  // https://drafts.csswg.org/css-animations-2/#animation-composite-order and
+  // https://drafts.csswg.org/css-transitions-2/#animation-composite-order
+  Animation::AnimationClassPriority priority;
+  if (animation->IsCSSTransition())
+    priority = Animation::AnimationClassPriority::kCssTransitionPriority;
+  else if (animation->IsCSSAnimation())
+    priority = Animation::AnimationClassPriority::kCssAnimationPriority;
+  else
+    priority = Animation::AnimationClassPriority::kDefaultPriority;
+  return priority;
+}
+
 void RecordCompositorAnimationFailureReasons(
     CompositorAnimations::FailureReasons failure_reasons) {
   // UMA_HISTOGRAM_ENUMERATION requires that the enum_max must be strictly
@@ -411,6 +433,15 @@ void Animation::PostCommit(double timeline_time) {
     DCHECK_EQ(start_time_.value(), compositor_state_->start_time.value());
     compositor_state_->pending_action = kNone;
   }
+}
+
+bool Animation::HasLowerCompositeOrdering(const Animation* animation1,
+                                          const Animation* animation2) {
+  AnimationClassPriority priority1 = AnimationPriority(animation1);
+  AnimationClassPriority priority2 = AnimationPriority(animation2);
+  if (priority1 != priority2)
+    return priority1 < priority2;
+  return animation1->SequenceNumber() < animation2->SequenceNumber();
 }
 
 void Animation::NotifyReady(double ready_time) {

@@ -85,13 +85,11 @@
               label="$i18n{safeBrowsingEnableProtection}"
               sub-label="$i18n{safeBrowsingEnableProtectionDesc}">
           </settings-toggle-button>
-          <template is="dom-if" if="[[passwordsLeakDetectionEnabled_]]">
-            <settings-passwords-leak-detection-toggle
-                id="passwordsLeakDetectionToggle"
-                prefs="{{prefs}}"
-                sync-status="[[syncStatus]]">
-            </settings-passwords-leak-detection-toggle>
-          </template>
+          <settings-passwords-leak-detection-toggle
+              id="passwordsLeakDetectionToggle"
+              prefs="{{prefs}}"
+              sync-status="[[syncStatus]]">
+          </settings-passwords-leak-detection-toggle>
           <settings-toggle-button id="safeBrowsingReportingToggle"
               pref="[[safeBrowsingReportingPref_]]" no-set-pref
               label="$i18n{safeBrowsingEnableExtendedReporting}"

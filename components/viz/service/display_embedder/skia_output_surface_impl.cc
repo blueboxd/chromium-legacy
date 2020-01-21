@@ -393,7 +393,7 @@ SkiaOutputSurfaceImpl::CreateImageContext(
                                             std::move(color_space));
 }
 
-void SkiaOutputSurfaceImpl::SkiaSwapBuffers(OutputSurfaceFrame frame) {
+void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!current_paint_);
 
@@ -819,10 +819,6 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
   }
   NOTREACHED();
   return GrBackendFormat();
-}
-
-void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {
-  NOTREACHED();
 }
 
 uint32_t SkiaOutputSurfaceImpl::GetFramebufferCopyTextureFormat() {

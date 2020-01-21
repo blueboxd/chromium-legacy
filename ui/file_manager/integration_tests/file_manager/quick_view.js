@@ -1276,6 +1276,109 @@
   };
 
   /**
+   * Tests that Quick View displays text files when multiple files are
+   * selected.
+   */
+  testcase.openQuickViewWithMultipleFilesText = async () => {
+    const caller = getCaller();
+
+    /**
+     * The <webview> resides in the <files-safe-media type="image"> shadow DOM,
+     * which is a child of the #quick-view shadow DOM.
+     */
+    const webView =
+        ['#quick-view', 'files-safe-media[type="image"]', 'webview'];
+
+    const files = [ENTRIES.tallText, ENTRIES.hello, ENTRIES.smallJpeg];
+    const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, files, []);
+
+    // Add item 1 to the check-selection, ENTRIES.smallJpeg.
+    const downKey = ['#file-list', 'ArrowDown', false, false, false];
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, downKey),
+        'ArrowDown failed');
+    const ctrlSpace = ['#file-list', ' ', true, false, false];
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlSpace),
+        'Ctrl+Space failed');
+
+    // Add item 3 to the check-selection, ENTRIES.hello.
+    const ctrlDown = ['#file-list', 'ArrowDown', true, false, false];
+    for (let i = 0; i < 2; i++) {
+      chrome.test.assertTrue(
+          !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlDown),
+          'Ctrl+ArrowDown failed');
+    }
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlSpace),
+        'Ctrl+Space failed');
+
+    // Check: both items should be selected.
+    const selectedRows = await remoteCall.callRemoteTestUtil(
+        'deepQueryAllElements', appId, ['#file-list li[selected]']);
+    chrome.test.assertEq(2, selectedRows.length);
+    chrome.test.assertTrue(
+        selectedRows[0].attributes['file-name'].includes(['small']));
+    chrome.test.assertTrue(
+        selectedRows[1].attributes['file-name'].includes(['hello']));
+
+    // Attempt to open Quick View via its keyboard shortcut.
+    const space = ['#file-list', ' ', false, false, false];
+    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, space);
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewImageLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || elements[0].attributes.loaded !== '') {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+
+    // Check: the image file should be displayed in the content panel.
+    await repeatUntil(async () => {
+      return checkWebViewImageLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [webView, ['display']]));
+    });
+
+    /**
+     * The text <webview> resides in the #quick-view shadow DOM, as a child of
+     * the #dialog element.
+     */
+    const textView = ['#quick-view', '#dialog[open] webview.text-content'];
+
+    // Press the down arrow key to select the next file.
+    const downArrow = ['#quick-view', 'ArrowDown', false, false, false];
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, downArrow));
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewTextLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || !elements[0].attributes.src) {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+
+    // Check: the text file should be displayed in the content panel.
+    await repeatUntil(async () => {
+      return checkWebViewTextLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [textView, ['display']]));
+    });
+
+    // Check: the open button should be displayed.
+    await remoteCall.waitForElement(
+        appId, ['#quick-view', '#open-button:not([hidden])']);
+  };
+
+  /**
    * Tests that the content panel changes when using the up/down arrow keys
    * when multiple files are selected.
    */

@@ -11,6 +11,7 @@
 <translation id="1206693055195146388">ਸਲਾਈਡਰ</translation>
 <translation id="1211441953136645838">ਵਿਸ਼ੇਸ਼ ਜਾਣਕਾਰੀ</translation>
 <translation id="1281252709823657822">ਡਾਇਲੌਗ</translation>
+<translation id="1306460908038601864">ਬੰਦ</translation>
 <translation id="1335095011850992622">ਕ੍ਰੈਡਿਟ</translation>
 <translation id="1342835525016946179">ਲੇਖ</translation>
 <translation id="1359897965706325498">ਬੈਨਰ</translation>
@@ -129,6 +130,7 @@
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">ਕਿਰਪਾ ਕਰਕੇ  '<ph name="ATSIGN" />' ਤੋਂ ਬਾਅਦ ਇੱਕ ਭਾਗ ਦਰਜ ਕਰੋ। '<ph name="INVALIDADDRESS" />' ਅਧੂਰਾ ਹੈ।</translation>
 <translation id="5334352251556557839">ਮੀਡੀਆ ਚਲਾਇਆ ਨਹੀਂ ਜਾ ਸਕਿਆ।</translation>
+<translation id="537648784377940524">ਘੱਟੋ ਘੱਟ ਤਾਰੀਖ (<ph name="MIN_DATE_OR_TIME" />) ਵੱਧ ਤੋਂ ਵੱਧ ਤਾਰੀਖ (<ph name="MAX_DATE_OR_TIME" />) ਤੋਂ ਪਹਿਲਾਂ ਆਉਣੀ ਲਾਜ਼ਮੀ ਹੈ।</translation>
 <translation id="5406322316791861025">ਅੰਕ</translation>
 <translation id="5453733299334684579">ਟ੍ਰੀ ਆਈਟਮ</translation>
 <translation id="5466621249238537318">ਕਿਰਪਾ ਕਰਕੇ ਇੱਕ ਜਾਂ ਵੱਧ ਫਾਈਲਾਂ ਚੁਣੋ।</translation>

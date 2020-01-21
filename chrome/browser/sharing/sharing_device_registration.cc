@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/sharing/buildflags.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sharing_constants.h"
@@ -252,6 +253,9 @@ SharingDeviceRegistration::GetEnabledFeatures() const {
     enabled_features.insert(SharingSpecificFields::REMOTE_COPY);
   if (IsPeerConnectionSupported())
     enabled_features.insert(SharingSpecificFields::PEER_CONNECTION);
+#if BUILDFLAG(ENABLE_DISCOVERY)
+  enabled_features.insert(SharingSpecificFields::DISCOVERY);
+#endif
 
   return enabled_features;
 }

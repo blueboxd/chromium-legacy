@@ -752,6 +752,20 @@ void V8DOMConfiguration::InstallMethod(
                         interface_template, signature, method, world);
 }
 
+void V8DOMConfiguration::InstallMethods(v8::Isolate* isolate,
+                                        const DOMWrapperWorld& world,
+                                        v8::Local<v8::Object> instance,
+                                        v8::Local<v8::Object> prototype,
+                                        v8::Local<v8::Function> interface,
+                                        v8::Local<v8::Signature> signature,
+                                        const MethodConfiguration* methods,
+                                        size_t method_count) {
+  for (size_t i = 0; i < method_count; ++i) {
+    InstallMethodInternal(isolate, instance, prototype, interface, signature,
+                          methods[i], world);
+  }
+}
+
 void V8DOMConfiguration::InstallMethod(v8::Isolate* isolate,
                                        const DOMWrapperWorld& world,
                                        v8::Local<v8::Object> instance,

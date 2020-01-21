@@ -1916,6 +1916,42 @@ TEST_F(AccountReconcilorMirrorTest, GetAccountsFromCookieSuccess) {
   ASSERT_EQ(0u, accounts_in_cookie_jar_info.signed_out_accounts.size());
 }
 
+// Checks that calling EnableReconcile() while the reconcilor is already running
+// doesn't have any effect. Regression test for https://crbug.com/1043651
+TEST_F(AccountReconcilorMirrorTest, EnableReconcileWhileAlreadyRunning) {
+  AccountInfo account_info = ConnectProfileToAccount("user@gmail.com");
+  const CoreAccountId account_id = account_info.account_id;
+  signin::SetListAccountsResponseOneAccountWithParams(
+      {account_info.email, account_info.gaia, false /* valid */,
+       false /* signed_out */, true /* verified */},
+      &test_url_loader_factory_);
+
+  std::vector<CoreAccountId> accounts_to_send = {account_id};
+  const signin::MultiloginParameters params(
+      gaia::MultiloginMode::MULTILOGIN_UPDATE_COOKIE_ACCOUNTS_ORDER,
+      accounts_to_send);
+  EXPECT_CALL(*GetMockReconcilor(), PerformSetCookiesAction(params));
+
+  AccountReconcilor* reconcilor = GetMockReconcilor();
+  ASSERT_TRUE(reconcilor);
+
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_SCHEDULED,
+            reconcilor->GetState());
+  reconcilor->StartReconcile();
+  EXPECT_EQ(signin_metrics::ACCOUNT_RECONCILOR_RUNNING, reconcilor->GetState());
+  reconcilor->EnableReconcile();
+  EXPECT_EQ(signin_metrics::ACCOUNT_RECONCILOR_RUNNING, reconcilor->GetState());
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_RUNNING, reconcilor->GetState());
+
+  signin::AccountsInCookieJarInfo accounts_in_cookie_jar_info =
+      identity_test_env()->identity_manager()->GetAccountsInCookieJar();
+  ASSERT_TRUE(accounts_in_cookie_jar_info.accounts_are_fresh);
+  ASSERT_EQ(1u, accounts_in_cookie_jar_info.signed_in_accounts.size());
+  ASSERT_EQ(account_id, accounts_in_cookie_jar_info.signed_in_accounts[0].id);
+  ASSERT_EQ(0u, accounts_in_cookie_jar_info.signed_out_accounts.size());
+}
+
 TEST_F(AccountReconcilorMirrorTest, GetAccountsFromCookieFailure) {
   ConnectProfileToAccount("user@gmail.com");
   signin::SetListAccountsResponseWithUnexpectedServiceResponse(

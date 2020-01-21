@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -100,8 +99,7 @@ public class SyncPreferenceUtils {
                     : SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS;
         }
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
-                && !profileSyncService.isFirstSetupComplete()) {
+        if (!profileSyncService.isFirstSetupComplete()) {
             return SyncError.SYNC_SETUP_INCOMPLETE;
         }
 
@@ -130,7 +128,6 @@ public class SyncPreferenceUtils {
             case SyncError.TRUSTED_VAULT_KEY_REQUIRED_FOR_PASSWORDS:
                 return context.getString(R.string.hint_sync_retrieve_keys);
             case SyncError.SYNC_SETUP_INCOMPLETE:
-                assert ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID);
                 return context.getString(R.string.hint_sync_settings_not_confirmed_description);
             case SyncError.NO_ERROR:
             default:
@@ -159,8 +156,7 @@ public class SyncPreferenceUtils {
             return res.getString(R.string.sync_is_disabled_by_administrator);
         }
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
-                && !profileSyncService.isFirstSetupComplete()) {
+        if (!profileSyncService.isFirstSetupComplete()) {
             return res.getString(R.string.sync_settings_not_confirmed);
         }
 
@@ -217,8 +213,7 @@ public class SyncPreferenceUtils {
                     context, R.drawable.ic_sync_error_40dp, R.color.default_icon_color);
         }
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
-                && !profileSyncService.isFirstSetupComplete()) {
+        if (!profileSyncService.isFirstSetupComplete()) {
             return UiUtils.getTintedDrawable(
                     context, R.drawable.ic_sync_error_40dp, R.color.default_red);
         }

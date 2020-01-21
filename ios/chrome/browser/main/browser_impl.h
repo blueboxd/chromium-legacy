@@ -10,15 +10,12 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 @class SceneState;
 @class TabModel;
 class WebStateList;
 class WebStateListDelegate;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // Browser is the model for a window containing multiple tabs. Instances
 // are owned by a BrowserList to allow multiple windows for a single user

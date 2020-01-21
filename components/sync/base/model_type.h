@@ -136,6 +136,8 @@ enum ModelType {
   OS_PREFERENCES,
   // Synced before other user types. Never encrypted. Chrome OS only.
   OS_PRIORITY_PREFERENCES,
+  // Commit only sharing message object.
+  SHARING_MESSAGE,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered
@@ -227,7 +229,8 @@ enum class ModelTypeForHistograms {
   kWebApps = 45,
   kOsPreferences = 46,
   kOsPriorityPreferences = 47,
-  kMaxValue = kOsPriorityPreferences
+  kSharingMessage = 48,
+  kMaxValue = kSharingMessage
 };
 
 // Used to mark the type of EntitySpecifics that has no actual data.
@@ -257,7 +260,8 @@ constexpr ModelTypeSet ProtocolTypes() {
       SUPERVISED_USER_SETTINGS, APP_LIST, SUPERVISED_USER_WHITELISTS,
       ARC_PACKAGE, PRINTERS, READING_LIST, USER_EVENTS, NIGORI,
       DEPRECATED_EXPERIMENTS, USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS,
-      WEB_APPS, WIFI_CONFIGURATIONS, OS_PREFERENCES, OS_PRIORITY_PREFERENCES);
+      WEB_APPS, WIFI_CONFIGURATIONS, OS_PREFERENCES, OS_PRIORITY_PREFERENCES,
+      SHARING_MESSAGE);
 }
 
 // These are the normal user-controlled types. This is to distinguish from
@@ -270,7 +274,8 @@ constexpr ModelTypeSet UserTypes() {
 // User types, which are not user-controlled.
 constexpr ModelTypeSet AlwaysPreferredUserTypes() {
   return ModelTypeSet(DEVICE_INFO, USER_CONSENTS, SECURITY_EVENTS,
-                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS);
+                      SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS,
+                      SHARING_MESSAGE);
 }
 
 // User types which are always encrypted.
@@ -319,7 +324,8 @@ constexpr bool IsControlType(ModelType model_type) {
 
 // Types that may commit data, but should never be included in a GetUpdates.
 constexpr ModelTypeSet CommitOnlyTypes() {
-  return ModelTypeSet(USER_EVENTS, USER_CONSENTS, SECURITY_EVENTS);
+  return ModelTypeSet(USER_EVENTS, USER_CONSENTS, SECURITY_EVENTS,
+                      SHARING_MESSAGE);
 }
 
 // User types that can be encrypted, which is a subset of UserTypes() and a

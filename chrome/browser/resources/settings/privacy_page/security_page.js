@@ -22,14 +22,6 @@ Polymer({
       }
     },
 
-    /** @private */
-    passwordsLeakDetectionEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('passwordsLeakDetectionEnabled');
-      },
-    },
-
     /** @private {chrome.settingsPrivate.PrefObject} */
     safeBrowsingReportingPref_: {
       type: Object,

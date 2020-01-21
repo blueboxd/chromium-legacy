@@ -117,7 +117,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebDocument GetDocument() const override;
   WebString AssignedName() const override;
   void SetName(const WebString&) override;
-  bool IsLocalRoot() const override;
   bool IsProvisional() const override;
   WebLocalFrameImpl* LocalRoot() override;
   WebFrameWidget* FrameWidget() const override;
@@ -146,7 +145,6 @@ class CORE_EXPORT WebLocalFrameImpl final
                          bool had_redirect,
                          const WebSourceLocation&) override;
   void SendOrientationChangeEvent() override;
-  bool IsPageBoxVisible(int page_index) override;
   bool HasCustomPageSizeStyle(int page_index) override;
   void PageSizeAndMarginsInPixels(int page_index,
                                   WebDoubleSize& page_size,
@@ -154,8 +152,6 @@ class CORE_EXPORT WebLocalFrameImpl final
                                   int& margin_right,
                                   int& margin_bottom,
                                   int& margin_left) override;
-  WebString PageProperty(const WebString& property_name,
-                         int page_index) override;
   void ExecuteScript(const WebScriptSource&) override;
   void ExecuteScriptInIsolatedWorld(int32_t world_id,
                                     const WebScriptSource&) override;
@@ -196,9 +192,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void BindDevToolsAgent(
       mojo::ScopedInterfaceEndpointHandle devtools_agent_host_ptr_info,
       mojo::ScopedInterfaceEndpointHandle devtools_agent_request) override;
-  void SetMarkedText(const WebString&,
-                     unsigned location,
-                     unsigned length) override;
   void UnmarkText() override;
   bool HasMarkedText() const override;
   WebRange MarkedRange() const override;
@@ -254,8 +247,6 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebVector<WebString>& words) override;
   void SetContentSettingsClient(WebContentSettingsClient*) override;
   void ReloadImage(const WebNode&) override;
-  void DidCallAddSearchProvider() override;
-  void DidCallIsSearchProviderInstalled() override;
   WebSandboxFlags EffectiveSandboxFlagsForTesting() const override;
   bool IsAllowedToDownload() const override;
   bool FindForTesting(int identifier,

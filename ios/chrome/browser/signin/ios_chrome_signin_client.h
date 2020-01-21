@@ -12,11 +12,8 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/signin/ios/browser/wait_for_network_callback_helper.h"
 #include "components/signin/public/base/signin_client.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "net/cookies/cookie_change_dispatcher.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // Concrete implementation of SigninClient for //ios/chrome.
 class IOSChromeSigninClient : public SigninClient {

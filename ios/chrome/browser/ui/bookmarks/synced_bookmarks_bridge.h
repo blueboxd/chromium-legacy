@@ -8,14 +8,11 @@
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 
 namespace signin {
 class IdentityManager;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 namespace sync_bookmarks {

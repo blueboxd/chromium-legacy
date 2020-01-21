@@ -297,12 +297,6 @@ extern const char kDisableAudioForDesktopShareDescription[];
 extern const char kDisableBestEffortTasksName[];
 extern const char kDisableBestEffortTasksDescription[];
 
-extern const char kDisableIpcFloodingProtectionName[];
-extern const char kDisableIpcFloodingProtectionDescription[];
-
-extern const char kDisablePushStateThrottleName[];
-extern const char kDisablePushStateThrottleDescription[];
-
 extern const char kDisallowDocWrittenScriptsUiName[];
 extern const char kDisallowDocWrittenScriptsUiDescription[];
 
@@ -1002,9 +996,6 @@ extern const char kPassiveMixedContentWarningDescription[];
 
 extern const char kPasswordImportName[];
 extern const char kPasswordImportDescription[];
-
-extern const char kPasswordLeakDetectionName[];
-extern const char kPasswordLeakDetectionDescription[];
 
 extern const char kForceWebContentsDarkModeName[];
 extern const char kForceWebContentsDarkModeDescription[];

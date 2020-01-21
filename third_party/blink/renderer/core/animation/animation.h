@@ -82,6 +82,15 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
     kFinished
   };
 
+  // Priority for sorting getAnimation by Animation class, arranged from lowest
+  // priority to highest priority as per spec:
+  // https://drafts.csswg.org/web-animations/#dom-document-getanimations
+  enum AnimationClassPriority {
+    kCssTransitionPriority,
+    kCssAnimationPriority,
+    kDefaultPriority
+  };
+
   static Animation* Create(AnimationEffect*,
                            AnimationTimeline*,
                            ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -225,12 +234,11 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void PostCommit(double timeline_time);
 
   unsigned SequenceNumber() const override { return sequence_number_; }
+
   int CompositorGroup() const { return compositor_group_; }
 
-  static bool HasLowerPriority(const Animation* animation1,
-                               const Animation* animation2) {
-    return animation1->SequenceNumber() < animation2->SequenceNumber();
-  }
+  static bool HasLowerCompositeOrdering(const Animation* animation1,
+                                        const Animation* animation2);
 
   bool EffectSuppressed() const override { return effect_suppressed_; }
   void SetEffectSuppressed(bool);

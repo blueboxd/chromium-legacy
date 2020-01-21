@@ -298,6 +298,29 @@ bool DeepScanningDialogDelegate::FileTypeSupported(const bool for_malware_scan,
   return false;
 }
 
+bool DeepScanningDialogDelegate::ResultShouldAllowDataUse(
+    BinaryUploadService::Result result) {
+  // Keep this implemented as a switch instead of a simpler if statement so that
+  // new values added to BinaryUploadService::Result cause a compiler error.
+  switch (result) {
+    case BinaryUploadService::Result::SUCCESS:
+    case BinaryUploadService::Result::UPLOAD_FAILURE:
+    case BinaryUploadService::Result::TIMEOUT:
+    case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
+    // UNAUTHORIZED allows data usage since it's a result only obtained if the
+    // browser is not authorized to perform deep scanning. It does not make
+    // sense to block data in this situation since no actual scanning of the
+    // data was performed, so it's allowed.
+    case BinaryUploadService::Result::UNAUTHORIZED:
+    case BinaryUploadService::Result::UNKNOWN:
+      return true;
+
+    case BinaryUploadService::Result::FILE_TOO_LARGE:
+    case BinaryUploadService::Result::FILE_ENCRYPTED:
+      return false;
+  }
+}
+
 // static
 bool DeepScanningDialogDelegate::IsEnabled(Profile* profile,
                                            GURL url,
@@ -443,8 +466,8 @@ void DeepScanningDialogDelegate::StringRequestCallback(
       content_size, result, response);
 
   text_request_complete_ = true;
-  bool text_complies = (result == BinaryUploadService::Result::SUCCESS &&
-                        DlpTriggeredRulesOK(response.dlp_scan_verdict()));
+  bool text_complies = ResultShouldAllowDataUse(result) &&
+                       DlpTriggeredRulesOK(response.dlp_scan_verdict());
   std::fill(result_.text_results.begin(), result_.text_results.end(),
             text_complies);
   MaybeCompleteScanRequest();
@@ -475,9 +498,7 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
                      MalwareDeepScanningVerdict::MALWARE;
   }
 
-  bool file_complies = (result == BinaryUploadService::Result::SUCCESS ||
-                        result == BinaryUploadService::Result::UNAUTHORIZED) &&
-                       dlp_ok && malware_ok;
+  bool file_complies = ResultShouldAllowDataUse(result) && dlp_ok && malware_ok;
   result_.paths_results[index] = file_complies;
 
   ++file_result_count_;

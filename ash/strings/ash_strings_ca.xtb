@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">ajusta la mida</translation>
 <translation id="119944043368869598">Esborra-ho tot</translation>
 <translation id="1247372569136754018">Micròfon (intern)</translation>
-<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> L'administrador aplica aquesta opció de configuració.</translation>
 <translation id="1252999807265626933">S'està carregant amb: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">Quin temps fa?</translation>
 <translation id="1267032506238418139">Canvi de drecera</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">Uneix-te a altres xarxes Wi-Fi</translation>
 <translation id="2718395828230677721">Llum nocturna</translation>
 <translation id="2727977024730340865">S'ha connectat a un carregador de baix consum. És possible que la càrrega de la bateria no sigui fiable.</translation>
-<translation id="2761704814324807722">Safata d'estat. Hora: <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+Cerca</translation>
 <translation id="2803734122639935495">Per desbloquejar el dispositiu, introdueix la contrasenya</translation>
 <translation id="2819276065543622893">Ara se us tancarà la sessió.</translation>

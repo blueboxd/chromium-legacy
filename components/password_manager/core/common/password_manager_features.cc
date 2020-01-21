@@ -53,10 +53,6 @@ const base::Feature kFillOnAccountSelect = {"fill-on-account-select",
 const base::Feature kGooglePasswordManager = {
     "google-password-manager", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Analyses the credentials submitted by user for leak detection.
-const base::Feature kLeakDetection = {"PasswordLeakDetection",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables storing leaked credentials in the database.
 const base::Feature kLeakHistory = {"PasswordLeakHistory",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

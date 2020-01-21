@@ -1,0 +1,53 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for sharing message.
+
+// If you change or add any fields in this file, update proto_visitors.h and
+// potentially proto_enum_conversions.{h, cc}.
+
+syntax = "proto2";
+
+option java_multiple_files = true;
+option java_package = "org.chromium.components.sync.protocol";
+
+option optimize_for = LITE_RUNTIME;
+
+package sync_pb;
+
+message SharingMessageSpecifics {
+  message ServerChannelConfiguration {
+    // Where to send the message to.
+    optional string channel_id = 1;
+    // Optional cookie set on the original request.
+    optional bytes session_cookie = 2;
+  }
+
+  message FCMChannelConfiguration {
+    // FCM registration token of target device.
+    optional string token = 1;
+
+    // Time to live for a FCM message (in seconds) - if specified, the message
+    // will expire based on the TTL.
+    optional int32 ttl = 2;
+
+    // Priority level of a FCM message. 5 = normal, 10 = high.
+    optional int32 priority = 3;
+  }
+
+  oneof channel_configuration {
+    // FCM channel configuration. Message will be delivered as a FCM message.
+    FCMChannelConfiguration fcm_channel_configuration = 1;
+
+    // Server channel configuration. Message will be delivered through server
+    // channel.
+    ServerChannelConfiguration server_channel_configuration = 2;
+  }
+
+  // Payload encrypted using the target user keys according to WebPush
+  // encryption scheme. The payload has to be a valid
+  // chrome/browser/sharing/proto/sharing_message.proto serialized using
+  // SerializeToString.
+  optional bytes payload = 3;
+}

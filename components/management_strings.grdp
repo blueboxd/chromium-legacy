@@ -111,7 +111,7 @@
       Which extensions you have installed
     </message>
     <message name="IDS_MANAGEMENT_REPORT_ANDROID_APPLICATIONS" desc="Message stating that administrators can see user's installed Android applications.">
-      Which Android applications you have installed
+      Which Google Play apps you have installed
     </message>
   </if>
 

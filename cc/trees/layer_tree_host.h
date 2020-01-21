@@ -424,10 +424,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return painted_device_scale_factor_;
   }
 
-  // Clears image caches and resets the scheduling history for the content
-  // produced by this host so far.
-  void ClearCachesOnNextCommit();
-
   // If this LayerTreeHost needs a valid viz::LocalSurfaceId then commits will
   // be deferred until a valid viz::LocalSurfaceId is provided.
   void SetLocalSurfaceIdAllocationFromParent(

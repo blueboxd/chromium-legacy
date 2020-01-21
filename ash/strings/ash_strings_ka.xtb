@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">არასამუშაო არე</translation>
 <translation id="119944043368869598">ყველაფრის გასუფთავება</translation>
 <translation id="1247372569136754018">მიკროფონი (შიდა)</translation>
-<translation id="1249456112629248620"><ph name="FEATURE_NAME" /> ეს პარამეტრი იძულებითაა დაყენებული თქვენი ადმინისტრატორის მიერ.</translation>
 <translation id="1252999807265626933">იტენება წყაროდან: <ph name="POWER_SOURCE" /></translation>
 <translation id="1255033239764210633">რა ამინდია?</translation>
 <translation id="1267032506238418139">მალსახმობის ცვლილება</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">სხვა Wi-Fi ქსელებში გაწევრიანება</translation>
 <translation id="2718395828230677721">ღამის განათება</translation>
 <translation id="2727977024730340865">შეერთებულია დაბალი სიმძლავრის დამტენთან. ბატარეის დატენვა შეიძლება არ იყოს სანდო.</translation>
-<translation id="2761704814324807722">სტატუსი უჯრა, დრო <ph name="TIME" />, <ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt+ძიება</translation>
 <translation id="2803734122639935495">განსაბლოკად შეიყვანეთ თქვენი პაროლი</translation>
 <translation id="2819276065543622893">თქვენ ახლა გამოხვალთ.</translation>

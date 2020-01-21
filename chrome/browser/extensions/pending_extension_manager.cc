@@ -106,11 +106,13 @@ bool PendingExtensionManager::HasHighPriorityPendingExtension() const {
 }
 
 void PendingExtensionManager::ExpectPolicyReinstallForCorruption(
-    const ExtensionId& id) {
+    const ExtensionId& id,
+    PolicyReinstallReason reason_for_uma) {
   if (base::Contains(expected_policy_reinstalls_, id))
     return;
   expected_policy_reinstalls_[id] = base::TimeTicks::Now();
-  UMA_HISTOGRAM_BOOLEAN("Extensions.CorruptPolicyExtensionDetected2", true);
+  UMA_HISTOGRAM_ENUMERATION("Extensions.CorruptPolicyExtensionDetected3",
+                            reason_for_uma);
 }
 
 bool PendingExtensionManager::IsPolicyReinstallForCorruptionExpected(

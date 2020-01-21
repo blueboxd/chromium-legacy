@@ -37,7 +37,7 @@
 <translation id="2038229918502634450">Hosten genstarter af hensyn til en ændring af politikken.</translation>
 <translation id="2046651113449445291">Følgende klienter er parret med denne computer og kan oprette forbindelse uden at angive en pinkode. Du kan altid trække denne tilladelse tilbage, enten for hver enkelt eller for alle klienter.</translation>
 <translation id="2078880767960296260">Hostproces</translation>
-<translation id="20876857123010370">Musemarkør</translation>
+<translation id="20876857123010370">Touchplade</translation>
 <translation id="2089514346391228378">Fjernforbindelserne til denne computer er blevet aktiveret.</translation>
 <translation id="2198363917176605566">Hvis du vil bruge <ph name="PRODUCT_NAME" />, skal du give tilladelsen "Skærmoptagelse", så skærmindholdet på denne Mac kan sendes til fjerncomputeren.
 
@@ -202,7 +202,7 @@ Hvis "<ph name="SERVICE_SCRIPT_NAME" />" allerede er markeret, skal du fjerne ma
 <translation id="5750083143895808682">Du er logget ind som <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="5773590752998175013">Dato for parring</translation>
 <translation id="579702532610384533">Genopret forbindelse</translation>
-<translation id="5810269635982033450">Skærmen fungere som trackpad</translation>
+<translation id="5810269635982033450">Skærmen fungerer som touchplade</translation>
 <translation id="5823658491130719298">Åbn Chrome på den computer, du vil have fjernadgang til, og gå til <ph name="INSTALLATION_LINK" /></translation>
 <translation id="5841343754884244200">Valgmuligheder for visning</translation>
 <translation id="5843054235973879827">Hvorfor er det sikkert?</translation>

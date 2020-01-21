@@ -66,9 +66,8 @@ ArCoreConsentPrompt::ArCoreConsentPrompt() : weak_ptr_factory_(this) {}
 
 ArCoreConsentPrompt::~ArCoreConsentPrompt() = default;
 
-void ArCoreConsentPrompt::OnUserConsentResult(
-    JNIEnv* env,
-    jboolean is_granted) {
+void ArCoreConsentPrompt::OnUserConsentResult(JNIEnv* env,
+                                              jboolean is_granted) {
   jdelegate_.Reset();
 
   if (!on_user_consent_callback_)
@@ -139,9 +138,8 @@ void ArCoreConsentPrompt::RequestInstallSupportedArCore() {
       GetTabFromRenderer(render_process_id_, render_frame_id_));
 }
 
-void ArCoreConsentPrompt::OnRequestInstallArModuleResult(
-    JNIEnv* env,
-    bool success) {
+void ArCoreConsentPrompt::OnRequestInstallArModuleResult(JNIEnv* env,
+                                                         bool success) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -150,9 +148,8 @@ void ArCoreConsentPrompt::OnRequestInstallArModuleResult(
   }
 }
 
-void ArCoreConsentPrompt::OnRequestInstallSupportedArCoreResult(
-    JNIEnv* env,
-    bool success) {
+void ArCoreConsentPrompt::OnRequestInstallSupportedArCoreResult(JNIEnv* env,
+                                                                bool success) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(on_request_arcore_install_or_update_result_callback_);
@@ -162,15 +159,14 @@ void ArCoreConsentPrompt::OnRequestInstallSupportedArCoreResult(
 
 void ArCoreConsentPrompt::RequestArModule() {
   DVLOG(1) << __func__;
-  if (ShouldRequestInstallArModule()) {
-    if (!CanRequestInstallArModule()) {
-      OnRequestArModuleResult(false);
-      return;
-    }
 
-    on_request_ar_module_result_callback_ = base::BindOnce(
-        &ArCoreConsentPrompt::OnRequestArModuleResult, GetWeakPtr());
-    RequestInstallArModule();
+  if (ShouldRequestInstallArModule()) {
+    // AR DFM is disabled - if we think we should install AR module, then it
+    // means that we are using a build that does not support AR capabilities.
+    // Treat this as if the AR module installation failed.
+    LOG(WARNING) << "AR is not supported on this build";
+
+    OnRequestArModuleResult(false);
     return;
   }
 

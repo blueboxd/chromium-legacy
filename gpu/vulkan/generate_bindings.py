@@ -30,6 +30,7 @@ VULKAN_INSTANCE_FUNCTIONS = [
     'functions': [
       'vkCreateDevice',
       'vkDestroyInstance',
+      'vkEnumerateDeviceExtensionProperties',
       'vkEnumerateDeviceLayerProperties',
       'vkEnumeratePhysicalDevices',
       'vkGetDeviceProcAddr',

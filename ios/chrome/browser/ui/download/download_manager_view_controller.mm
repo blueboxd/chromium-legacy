@@ -103,9 +103,6 @@ NSString* GetSizeString(long long size_in_bytes) {
 // self.closeButton or to self.actionButton (when visible).
 @property(nonatomic) NSLayoutConstraint* statusLabelTrailingConstraint;
 
-// UILayoutGuide for action button. Used in delegate callbacks.
-@property(nonatomic) UILayoutGuide* actionButtonGuide;
-
 // UILayoutGuide for adding bottom margin to Download Manager view.
 @property(nonatomic) UILayoutGuide* bottomMarginGuide;
 
@@ -130,7 +127,6 @@ NSString* GetSizeString(long long size_in_bytes) {
 @synthesize installDriveControlsRowTrailingConstraint =
     _installDriveControlsRowTrailingConstraint;
 @synthesize statusLabelTrailingConstraint = _statusLabelTrailingConstraint;
-@synthesize actionButtonGuide = _actionButtonGuide;
 @synthesize bottomMarginGuide = _bottomMarginGuide;
 
 #pragma mark - UIViewController overrides
@@ -151,8 +147,6 @@ NSString* GetSizeString(long long size_in_bytes) {
   [self.installDriveControlsRow addSubview:self.installDriveLabel];
   [self.installDriveControlsRow addSubview:self.horizontalLine];
 
-  self.actionButtonGuide = [[UILayoutGuide alloc] init];
-  [self.view addLayoutGuide:self.actionButtonGuide];
   self.bottomMarginGuide = [[UILayoutGuide alloc] init];
   [self.view addLayoutGuide:self.bottomMarginGuide];
 }
@@ -311,9 +305,6 @@ NSString* GetSizeString(long long size_in_bytes) {
     [horizontalLine.trailingAnchor
         constraintEqualToAnchor:installDriveRow.trailingAnchor],
   ]];
-
-  // constraint actionButtonGuide to action button.
-  AddSameConstraints(self.actionButtonGuide, actionButton);
 
   [self updateConstraintsForTraitCollection:self.traitCollection];
 
@@ -564,11 +555,9 @@ NSString* GetSizeString(long long size_in_bytes) {
       break;
     }
     case kDownloadManagerStateSucceeded: {
-      SEL selector = @selector
-          (downloadManagerViewController:presentOpenInMenuWithLayoutGuide:);
+      SEL selector = @selector(presentOpenInForDownloadManagerViewController:);
       if ([_delegate respondsToSelector:selector]) {
-        [_delegate downloadManagerViewController:self
-                presentOpenInMenuWithLayoutGuide:self.actionButtonGuide];
+        [_delegate presentOpenInForDownloadManagerViewController:self];
       }
       break;
     }

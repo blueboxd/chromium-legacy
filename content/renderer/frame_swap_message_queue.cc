@@ -154,15 +154,4 @@ void FrameSwapMessageQueue::TransferMessages(
   source->clear();
 }
 
-void FrameSwapMessageQueue::NotifyFramesAreDiscarded(
-    bool frames_are_discarded) {
-  DCHECK_CALLED_ON_VALID_THREAD(impl_thread_checker_);
-  frames_are_discarded_ = frames_are_discarded;
-}
-
-bool FrameSwapMessageQueue::AreFramesDiscarded() {
-  DCHECK_CALLED_ON_VALID_THREAD(impl_thread_checker_);
-  return frames_are_discarded_;
-}
-
 }  // namespace content

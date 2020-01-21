@@ -1293,10 +1293,6 @@ void LayerTreeHost::SetExternalPageScaleFactor(
   SetNeedsCommit();
 }
 
-void LayerTreeHost::ClearCachesOnNextCommit() {
-  clear_caches_on_next_commit_ = true;
-}
-
 void LayerTreeHost::SetLocalSurfaceIdAllocationFromParent(
     const viz::LocalSurfaceIdAllocation&
         local_surface_id_allocation_from_parent) {
@@ -1797,6 +1793,9 @@ void LayerTreeHost::RequestBeginMainFrameNotExpected(bool new_state) {
 }
 
 void LayerTreeHost::SetSourceURL(ukm::SourceId source_id, const GURL& url) {
+  // Clears image caches and resets the scheduling history for the content
+  // produced by this host so far.
+  clear_caches_on_next_commit_ = true;
   proxy_->SetSourceURL(source_id, url);
 }
 

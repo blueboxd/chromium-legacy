@@ -10,12 +10,9 @@
 #include "base/callback_forward.h"
 #include "base/strings/string_piece.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 class PrefService;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // Wrapper around a browsing data volume counter that bridges the update counter
 // UI callback to the UI.

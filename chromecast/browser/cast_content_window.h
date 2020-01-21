@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
@@ -203,6 +204,10 @@ class CastContentWindow {
   // Use this to stash custom data for this class. This data will be visible to
   // the window manager.
   virtual void SetHostContext(base::Value host_context) = 0;
+
+  // Set a callback that can be queried for if the owner can handle a "back"
+  // gesture. If not set the default is to assume that gestures are unhandled.
+  virtual void SetCanGoBackQuery(base::RepeatingCallback<bool()> can_go_back);
 
   // Notify the window that its visibility type has changed. This should only
   // ever be called by the window manager.

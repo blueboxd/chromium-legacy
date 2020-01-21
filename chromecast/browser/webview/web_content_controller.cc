@@ -406,7 +406,11 @@ void WebContentController::HandleSetAutoMediaPlaybackPolicy(
 }
 
 viz::SurfaceId WebContentController::GetSurfaceId() {
-  auto* rwhv = GetWebContents()->GetRenderWidgetHostView();
+  content::WebContents* web_contents = GetWebContents();
+  // Web contents are destroyed before controller for cast apps.
+  if (!web_contents)
+    return viz::SurfaceId();
+  auto* rwhv = web_contents->GetRenderWidgetHostView();
   if (!rwhv)
     return viz::SurfaceId();
   auto frame_sink_id = rwhv->GetRenderWidgetHost()->GetFrameSinkId();

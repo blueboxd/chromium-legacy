@@ -159,9 +159,9 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
   void OnScriptLoadFailed() override;
   void OnFeatureUsed(blink::mojom::WebFeature feature) override;
 
-  // RenderProcessHost:
-  void RenderProcessHostDestroyed(
-      RenderProcessHost* render_process_host) override;
+  // RenderProcessHostObserver:
+  void RenderProcessExited(RenderProcessHost* render_process_host,
+                           const ChildProcessTerminationInfo& info) override;
 
   // Returns the frame ids of this worker's clients.
   std::vector<GlobalFrameRoutingId> GetRenderFrameIDsForWorker();

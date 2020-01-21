@@ -826,6 +826,9 @@ scooby doo
       @CalledByNativeJavaTest
       public void testOtherFoo() {}
 
+      @DisabledCalledByNativeJavaTest
+      public void testDisabledFoo() {}
+
       @CalledByNativeJavaTest
       public void testLongNameActionServiceModelProducerDelegateProxyObserverMediatorFactoryConsumerImplForTesting() {}
 
@@ -876,6 +879,19 @@ scooby doo
             env_call=('Void', ''),
             unchecked=False,
             gen_test_method=True,
+        ),
+        CalledByNative(
+            return_type='void',
+            system_class=False,
+            static=False,
+            name='testDisabledFoo',
+            method_id_var_name='testDisabledFoo',
+            java_class_name='',
+            params=[],
+            env_call=('Void', ''),
+            unchecked=False,
+            gen_test_method=True,
+            test_disabled=True,
         ),
         CalledByNative(
             return_type='void',

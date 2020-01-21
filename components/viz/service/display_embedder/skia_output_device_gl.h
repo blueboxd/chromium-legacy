@@ -61,6 +61,8 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
   void PostSubBuffer(const gfx::Rect& rect,
                      BufferPresentedCallback feedback,
                      std::vector<ui::LatencyInfo> latency_info) override;
+  void CommitOverlayPlanes(BufferPresentedCallback feedback,
+                           std::vector<ui::LatencyInfo> latency_info) override;
   void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
   void SetGpuVSyncEnabled(bool enabled) override;
 #if defined(OS_WIN)
@@ -86,6 +88,7 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
 
   gpu::SharedContextState* const context_state_;
   scoped_refptr<gl::GLSurface> gl_surface_;
+  const bool supports_async_swap_;
 
   sk_sp<SkSurface> sk_surface_;
 

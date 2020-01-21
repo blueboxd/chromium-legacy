@@ -100,7 +100,6 @@ void MockRenderProcessHost::SimulateRenderProcessExit(
   termination_info.status = status;
   termination_info.exit_code = exit_code;
   termination_info.renderer_has_visible_clients = VisibleClientCount() > 0;
-  termination_info.renderer_was_subframe = GetFrameDepth() > 0;
   NotificationService::current()->Notify(
       NOTIFICATION_RENDERER_PROCESS_CLOSED, Source<RenderProcessHost>(this),
       Details<ChildProcessTerminationInfo>(&termination_info));
@@ -268,6 +267,15 @@ static void DeleteIt(base::WeakPtr<MockRenderProcessHost> h) {
 
 void MockRenderProcessHost::Cleanup() {
   if (listeners_.IsEmpty()) {
+    if (IsInitializedAndNotDead()) {
+      ChildProcessTerminationInfo termination_info;
+      termination_info.status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
+      termination_info.exit_code = 0;
+      termination_info.renderer_has_visible_clients = VisibleClientCount() > 0;
+      for (auto& observer : observers_)
+        observer.RenderProcessExited(this, termination_info);
+    }
+
     for (auto& observer : observers_)
       observer.RenderProcessHostDestroyed(this);
     // Post the delete of |this| as a WeakPtr so that if |this| is deleted by a

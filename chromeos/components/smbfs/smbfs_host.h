@@ -11,14 +11,9 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "chromeos/components/smbfs/mojom/smbfs.mojom.h"
+#include "chromeos/disks/mount_point.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-
-namespace chromeos {
-namespace disks {
-class DiskMountManager;
-}  // namespace disks
-}  // namespace chromeos
 
 namespace smbfs {
 
@@ -36,23 +31,23 @@ class COMPONENT_EXPORT(SMBFS) SmbFsHost {
     virtual void OnDisconnected() = 0;
   };
 
-  SmbFsHost(const base::FilePath& mount_path,
+  SmbFsHost(std::unique_ptr<chromeos::disks::MountPoint> mount_point,
             Delegate* delegate,
-            chromeos::disks::DiskMountManager* disk_mount_manager,
             mojo::Remote<mojom::SmbFs> smbfs_remote,
             mojo::PendingReceiver<mojom::SmbFsDelegate> delegate_receiver);
   ~SmbFsHost();
 
   // Returns the path where SmbFS is mounted.
-  const base::FilePath& mount_path() const { return mount_path_; }
+  const base::FilePath& mount_path() const {
+    return mount_point_->mount_path();
+  }
 
  private:
   // Mojo disconnection handler.
   void OnDisconnect();
 
-  const base::FilePath mount_path_;
+  const std::unique_ptr<chromeos::disks::MountPoint> mount_point_;
   Delegate* const delegate_;
-  chromeos::disks::DiskMountManager* const disk_mount_manager_;
 
   mojo::Remote<mojom::SmbFs> smbfs_;
   std::unique_ptr<mojom::SmbFsDelegate> delegate_impl_;

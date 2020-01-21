@@ -66,6 +66,12 @@ class QuickViewController {
     this.entries_ = [];
 
     /**
+     * The tasks for the entry currently shown in Quick View.
+     * @private {?FileTasks}
+     */
+    this.tasks_ = null;
+
+    /**
      * The current selection index of this.entries_.
      * @private {number}
      */
@@ -141,7 +147,7 @@ class QuickViewController {
    * @private
    */
   onOpenInNewButtonTap_(event) {
-    this.taskController_.executeDefaultTask();
+    this.tasks_ && this.tasks_.executeDefault();
     this.quickView_.close();
   }
 
@@ -294,6 +300,7 @@ class QuickViewController {
    */
   getAvailableTasks_(entry) {
     return this.taskController_.getEntryFileTasks(entry).then(tasks => {
+      this.tasks_ = tasks;
       return tasks.getTaskItems();
     });
   }

@@ -398,7 +398,7 @@
 <translation id="2687555958734450033">자동 맞춤</translation>
 <translation id="2691924980723297736">안전 경고</translation>
 <translation id="2699302886720511147">사용할 수 있는 카드</translation>
-<translation id="2701514975700770343">뒷면이 위로</translation>
+<translation id="2701514975700770343">인쇄면이 아래로</translation>
 <translation id="2702801445560668637">읽기 목록</translation>
 <translation id="2704283930420550640">값이 형식과 일치하지 않습니다.</translation>
 <translation id="2705137772291741111">사이트의 저장된(캐시된) 사본을 읽을 수 없습니다.</translation>
@@ -1693,7 +1693,7 @@
 <translation id="8571890674111243710">페이지를 <ph name="LANGUAGE" />(으)로 번역 중...</translation>
 <translation id="8574899947864779331">Touch ID를 사용하여 빠르게 카드 확인</translation>
 <translation id="858637041960032120">번호 추가</translation>
-<translation id="8589998999637048520">화질이 더 좋음</translation>
+<translation id="8589998999637048520">고품질 순</translation>
 <translation id="860043288473659153">카드 명의자 이름</translation>
 <translation id="8616822740383114808">‘<ph name="SETTINGS_PAGE" />’의 ‘<ph name="ENFORCING_SETTING" />’(으)로 인해 시행된 설정입니다.</translation>
 <translation id="861775596732816396">크기 4</translation>

@@ -13,6 +13,8 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
+#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_device_source.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
@@ -70,6 +72,10 @@ ChildThreadImpl::Options GetOptions() {
 
 viz::VizMainImpl::ExternalDependencies CreateVizMainDependencies() {
   viz::VizMainImpl::ExternalDependencies deps;
+  if (!base::PowerMonitor::IsInitialized()) {
+    deps.power_monitor_source =
+        std::make_unique<base::PowerMonitorDeviceSource>();
+  }
   if (GetContentClient()->gpu()) {
     deps.sync_point_manager = GetContentClient()->gpu()->GetSyncPointManager();
     deps.shared_image_manager =

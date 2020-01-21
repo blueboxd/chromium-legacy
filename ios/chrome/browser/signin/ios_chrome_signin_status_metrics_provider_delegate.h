@@ -9,11 +9,8 @@
 
 #include "base/macros.h"
 #include "components/signin/core/browser/signin_status_metrics_provider_delegate.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/signin/identity_manager_factory_observer.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 class IOSChromeSigninStatusMetricsProviderDelegate
     : public SigninStatusMetricsProviderDelegate,

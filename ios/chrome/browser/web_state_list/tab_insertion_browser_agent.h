@@ -7,12 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/main/browser_user_data.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 
-namespace ios {
-class ChromeBrowserState;
-}
 namespace web {
 class WebState;
 }

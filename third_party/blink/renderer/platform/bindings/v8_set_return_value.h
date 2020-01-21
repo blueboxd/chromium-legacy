@@ -16,10 +16,10 @@ namespace blink {
 
 namespace bindings {
 
-template <typename CallbackInfo, typename Value, typename... ExtraArgs>
-void V8SetReturnValue(const CallbackInfo& info,
-                      const Value& value,
-                      ExtraArgs... extra_args);
+// V8SetReturnValue sets a return value in a V8 callback function.  The first
+// two arguments are fixed as v8::{Function,Property}CallbackInfo and the
+// return value.  V8SetReturnValue may take more arguments as optimization hints
+// depending on the return value type.
 
 struct V8ReturnValue {
   // Support compile-time overload resolution by making each value have its own

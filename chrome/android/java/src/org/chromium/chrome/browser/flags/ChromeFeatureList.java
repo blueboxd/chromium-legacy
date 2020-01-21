@@ -304,7 +304,6 @@ public abstract class ChromeFeatureList {
     public static final String OVERSCROLL_HISTORY_NAVIGATION = "OverscrollHistoryNavigation";
     public static final String PAINT_PREVIEW_TEST = "PaintPreviewTest";
     public static final String PASSWORD_EDITING_ANDROID = "PasswordEditingAndroid";
-    public static final String PASSWORD_LEAK_DETECTION = "PasswordLeakDetection";
     public static final String PASSWORD_MANAGER_ONBOARDING_ANDROID =
             "PasswordManagerOnboardingAndroid";
     public static final String PAY_WITH_GOOGLE_V1 = "PayWithGoogleV1";
@@ -345,7 +344,6 @@ public abstract class ChromeFeatureList {
     public static final String SUBRESOURCE_FILTER = "SubresourceFilter";
     public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
             "SwapPixelFormatToFixConvertFromTranslucent";
-    public static final String SYNC_MANUAL_START_ANDROID = "SyncManualStartAndroid";
     public static final String SYNC_USE_SESSIONS_UNREGISTER_DELAY =
             "SyncUseSessionsUnregisterDelay";
     public static final String TAB_ENGAGEMENT_REPORTING_ANDROID = "TabEngagementReportingAndroid";

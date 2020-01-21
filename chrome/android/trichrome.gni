@@ -33,7 +33,6 @@ trichrome_jinja_variables = [
   "trichrome_library=$trichrome_library_package",
   "trichrome_certdigest=$trichrome_certdigest",
   "use32bitAbi=android:use32bitAbi=\"true\"",
-  "include_arcore_manifest_flag=true",
 ]
 
 trichrome_synchronized_proguard =

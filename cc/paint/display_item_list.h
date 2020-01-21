@@ -91,8 +91,6 @@ class CC_PAINT_EXPORT DisplayItemList
     return offset;
   }
 
-  UsageHint GetUsageHint() const { return usage_hint_; }
-
   // Called by blink::PaintChunksToCcLayer when an effect ends, to update the
   // bounds of a SaveLayer[Alpha]Op which was emitted when the effect started.
   // This is needed because blink doesn't know the bounds when an effect starts.

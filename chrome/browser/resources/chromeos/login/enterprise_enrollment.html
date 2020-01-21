@@ -5,14 +5,14 @@
 <link rel="import" href="chrome://oobe/custom_elements.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="stylesheet" href="gaia_card_parameters.css">
 
 <dom-module id="enterprise-enrollment">
   <template>
+    <link rel="stylesheet" href="gaia_card_parameters.css">
+    <link rel="stylesheet" href="oobe_flex_layout.css">
+    <link rel="stylesheet" href="oobe_dialog_host.css">
+    <link rel="stylesheet" href="enterprise_enrollment.css">
     <div id="oauth-enroll-step-contents">
-      <link rel="stylesheet" href="oobe_flex_layout.css">
-      <link rel="stylesheet" href="oobe_dialog_host.css">
-      <link rel="stylesheet" href="enterprise_enrollment.css">
       <div id="step-signin" hidden$="[[!eq_(currentStep_, 'signin')]]">
         <oobe-dialog class="gaia-dialog" role="dialog"
             id="enrollment-gaia-dialog" has-buttons no-header

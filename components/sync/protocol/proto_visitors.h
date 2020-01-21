@@ -36,6 +36,7 @@
 #include "components/sync/protocol/search_engine_specifics.pb.h"
 #include "components/sync/protocol/send_tab_to_self_specifics.pb.h"
 #include "components/sync/protocol/session_specifics.pb.h"
+#include "components/sync/protocol/sharing_message_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/protocol/theme_specifics.pb.h"
 #include "components/sync/protocol/typed_url_specifics.pb.h"
@@ -369,7 +370,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(40 == ModelType::NUM_ENTRIES,
+  static_assert(41 == ModelType::NUM_ENTRIES,
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
@@ -403,6 +404,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(security_event);
   VISIT(send_tab_to_self);
   VISIT(session);
+  VISIT(sharing_message);
   VISIT(theme);
   VISIT(typed_url);
   VISIT(user_consent);
@@ -790,6 +792,25 @@ VISIT_PROTO_FIELDS(const sync_pb::SessionWindow& proto) {
   VISIT(selected_tab_index);
   VISIT_REP(tab);
   VISIT_ENUM(browser_type);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::SharingMessageSpecifics& proto) {
+  VISIT(fcm_channel_configuration);
+  VISIT(server_channel_configuration);
+  VISIT_BYTES(payload);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::SharingMessageSpecifics::ServerChannelConfiguration& proto) {
+  VISIT(channel_id);
+  VISIT_BYTES(session_cookie);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::SharingMessageSpecifics::FCMChannelConfiguration& proto) {
+  VISIT(token);
+  VISIT(ttl);
+  VISIT(priority);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SyncCycleCompletedEventInfo& proto) {

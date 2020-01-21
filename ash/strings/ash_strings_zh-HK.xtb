@@ -19,7 +19,6 @@
 <translation id="1195412055398077112">溢出掃描描</translation>
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1247372569136754018">麥克風 (內置)</translation>
-<translation id="1249456112629248620">「<ph name="FEATURE_NAME" />」這項設定由管理員強制執行。</translation>
 <translation id="1252999807265626933">正在使用 <ph name="POWER_SOURCE" />充電</translation>
 <translation id="1255033239764210633">天氣點樣？</translation>
 <translation id="1267032506238418139">快速鍵有變動</translation>
@@ -138,7 +137,6 @@
 <translation id="2704781753052663061">加入其他 Wi-Fi 網絡</translation>
 <translation id="2718395828230677721">夜燈模式</translation>
 <translation id="2727977024730340865">使用低功率充電器，可能導致充電狀態不穩定。</translation>
-<translation id="2761704814324807722">狀態匣：時間 <ph name="TIME" />，<ph name="BATTERY" /></translation>
 <translation id="2792498699870441125">Alt + 搜尋鍵</translation>
 <translation id="2803734122639935495">如要解鎖，請輸入您的密碼</translation>
 <translation id="2819276065543622893">現在即將登出。</translation>

@@ -62,11 +62,11 @@ class TextCodecUTF8 : public TextCodec {
   EncodeIntoResult EncodeInto(const UChar*,
                               wtf_size_t length,
                               unsigned char* destination,
-                              wtf_size_t capacity) override;
+                              size_t capacity) override;
   EncodeIntoResult EncodeInto(const LChar*,
                               wtf_size_t length,
                               unsigned char* destination,
-                              wtf_size_t capacity) override;
+                              size_t capacity) override;
 
   template <typename CharType>
   std::string EncodeCommon(const CharType* characters, wtf_size_t length);
@@ -74,7 +74,7 @@ class TextCodecUTF8 : public TextCodec {
   EncodeIntoResult EncodeIntoCommon(const CharType* characters,
                                     wtf_size_t length,
                                     unsigned char* destination,
-                                    wtf_size_t capacity);
+                                    size_t capacity);
 
   template <typename CharType>
   bool HandlePartialSequence(CharType*& destination,

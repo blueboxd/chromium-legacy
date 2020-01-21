@@ -859,7 +859,7 @@
   {
     "name": "download-auto-resumption-native",
     "owners": [ "shaktisahu", "qinmin" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 86
   },
   {
     "name": "draw-vertically-edge-to-edge",
@@ -1603,7 +1603,7 @@
   {
     "name": "enable-new-download-backend",
     "owners": [ "shaktisahu", "dtrainor" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 86
   },
   {
     "name": "enable-noscript-previews",

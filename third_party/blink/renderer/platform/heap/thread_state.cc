@@ -1239,7 +1239,7 @@ void ThreadState::IncrementalMarkingStep(BlinkGC::StackState stack_state,
 
 bool ThreadState::ConcurrentMarkingStep() {
   current_gc_data_.visitor->FlushMarkingWorklists();
-  if (!Heap().GetMarkingWorklist()->IsGlobalPoolEmpty()) {
+  if (Heap().HasWorkForConcurrentMarking()) {
     ScheduleConcurrentMarking();
     return false;
   }

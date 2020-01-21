@@ -7,10 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
 @protocol ApplicationSettingsCommands;
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 // View controller that presents the signed in accounts when they have changed
 // while the application was in background.

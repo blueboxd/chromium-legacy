@@ -496,7 +496,6 @@ void CommandLine::ParseFromString(StringPieceType command_line) {
             ::GetProcAddress(downlevel_shell32_dll, "CommandLineToArgvW"));
     if (command_line_to_argv_w_proc)
       args = command_line_to_argv_w_proc(command_line.data(), &num_args);
-    ::FreeLibrary(downlevel_shell32_dll);
   } else {
     // Since the apiset is not available, allow the delayload of shell32.dll
     // to take place.
@@ -508,6 +507,9 @@ void CommandLine::ParseFromString(StringPieceType command_line) {
   StringVector argv(args, args + num_args);
   InitFromArgv(argv);
   LocalFree(args);
+
+  if (downlevel_shell32_dll)
+    ::FreeLibrary(downlevel_shell32_dll);
 }
 #endif
 

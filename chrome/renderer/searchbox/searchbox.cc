@@ -451,6 +451,10 @@ void SearchBox::StopAutocomplete(bool clear_result) {
   embedded_search_service_->StopAutocomplete(clear_result);
 }
 
+void SearchBox::LogCharTypedToRepaintLatency(uint32_t latency_ms) {
+  embedded_search_service_->LogCharTypedToRepaintLatency(latency_ms);
+}
+
 void SearchBox::BlocklistPromo(const std::string& promo_id) {
   embedded_search_service_->BlocklistPromo(promo_id);
 }

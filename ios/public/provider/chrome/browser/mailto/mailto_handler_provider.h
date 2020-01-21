@@ -6,11 +6,9 @@
 #define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_MAILTO_MAILTO_HANDLER_PROVIDER_H_
 
 #import <UIKit/UIKit.h>
-#include "base/macros.h"
 
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
+#include "base/macros.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 @class ChromeIdentity;
 

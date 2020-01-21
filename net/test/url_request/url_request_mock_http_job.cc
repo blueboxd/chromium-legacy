@@ -160,9 +160,9 @@ void URLRequestMockHTTPJob::OnReadComplete(net::IOBuffer* buffer, int result) {
 void URLRequestMockHTTPJob::Start() {
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::Bind(&DoFileIO, file_path_),
-      base::Bind(&URLRequestMockHTTPJob::SetHeadersAndStart,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&DoFileIO, file_path_),
+      base::BindOnce(&URLRequestMockHTTPJob::SetHeadersAndStart,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void URLRequestMockHTTPJob::SetHeadersAndStart(const std::string& raw_headers) {

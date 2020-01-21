@@ -160,6 +160,7 @@ class CrostiniManager : public KeyedService,
   struct RestartOptions {
     // This normally will not have effect on existing container.
     base::Optional<std::string> container_username;
+    base::Optional<int64_t> disk_size;
 
     RestartOptions();
     ~RestartOptions();
@@ -848,7 +849,7 @@ class CrostiniManager : public KeyedService,
   std::multimap<ContainerId, CrostiniManager::RestartId>
       restarters_by_container_;
 
-  std::map<CrostiniManager::RestartId, std::unique_ptr<CrostiniRestarter>>
+  std::map<CrostiniManager::RestartId, scoped_refptr<CrostiniRestarter>>
       restarters_by_id_;
 
   // True when the installer dialog is showing. At that point, it is invalid

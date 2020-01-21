@@ -230,8 +230,9 @@ void InputMethodSyncer::MergeSyncedPrefs() {
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&CheckAndResolveLocales, languages),
-      base::Bind(&InputMethodSyncer::FinishMerge, weak_factory_.GetWeakPtr()));
+      base::BindOnce(&CheckAndResolveLocales, languages),
+      base::BindOnce(&InputMethodSyncer::FinishMerge,
+                     weak_factory_.GetWeakPtr()));
 }
 
 std::string InputMethodSyncer::AddSupportedInputMethodValues(

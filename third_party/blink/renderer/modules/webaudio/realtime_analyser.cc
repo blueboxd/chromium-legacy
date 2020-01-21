@@ -154,11 +154,11 @@ void RealtimeAnalyser::DoFFTAnalysis() {
   // Do the analysis.
   analysis_frame_->DoFFT(temp_p);
 
-  const float* real_p = analysis_frame_->RealData();
-  float* imag_p = analysis_frame_->ImagData();
+  const AudioFloatArray& real = analysis_frame_->RealData();
+  AudioFloatArray& imag = analysis_frame_->ImagData();
 
   // Blow away the packed nyquist component.
-  imag_p[0] = 0;
+  imag[0] = 0;
 
   // Normalize so than an input sine wave at 0dBfs registers as 0dBfs (undo FFT
   // scaling factor).
@@ -174,8 +174,12 @@ void RealtimeAnalyser::DoFFTAnalysis() {
   // previous result.
   float* destination = MagnitudeBuffer().Data();
   size_t n = MagnitudeBuffer().size();
+  DCHECK_GE(real.size(), n);
+  const float* real_p_data = real.Data();
+  DCHECK_GE(imag.size(), n);
+  const float* imag_p_data = imag.Data();
   for (size_t i = 0; i < n; ++i) {
-    std::complex<double> c(real_p[i], imag_p[i]);
+    std::complex<double> c(real_p_data[i], imag_p_data[i]);
     double scalar_magnitude = abs(c) * magnitude_scale;
     destination[i] = float(k * destination[i] + (1 - k) * scalar_magnitude);
   }

@@ -4,7 +4,7 @@
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
 # Tests that passes only with OOR-CORS.
-# These tests should not pass at linux-blink-cors-rel fyi bot.
+# Following tests should not pass at linux-blink-cors-rel fyi bot.
 # TODO(cbur.com/1001450): Remove this file after removing the OOR-CORS releted
 # enterprise policies.
 crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.html [ Skip ]
@@ -25,6 +25,21 @@ crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-pref
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.worker.html [ Skip ]
 crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.html [ Skip ]
 
+# Timing-Allow-Origin checks are only completely correct with OOR-CORS.
+crbug.com/1042580 external/wpt/element-timing/multiple-redirects-TAO.html [ Skip ]
+crbug.com/1042580 external/wpt/element-timing/redirects-tao-star.html [ Skip ]
+crbug.com/1042580 external/wpt/largest-contentful-paint/multiple-redirects-TAO.html [ Skip ]
+crbug.com/1042580 external/wpt/largest-contentful-paint/redirects-tao-star.html [ Skip ]
+crbug.com/1042580 virtual/scalefactor200/external/wpt/element-timing/multiple-redirects-TAO.html [ Skip ]
+crbug.com/1042580 virtual/scalefactor200/external/wpt/element-timing/redirects-tao-star.html [ Skip ]
+crbug.com/1042580 virtual/scalefactor200/external/wpt/largest-contentful-paint/multiple-redirects-TAO.html [ Skip ]
+crbug.com/1042580 virtual/scalefactor200/external/wpt/largest-contentful-paint/redirects-tao-star.html [ Skip ]
+crbug.com/1042580 virtual/scalefactor200withoutzoom/external/wpt/element-timing/multiple-redirects-TAO.html [ Skip ]
+crbug.com/1042580 virtual/scalefactor200withoutzoom/external/wpt/element-timing/redirects-tao-star.html [ Skip ]
+crbug.com/1042580 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/multiple-redirects-TAO.html [ Skip ]
+crbug.com/1042580 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/redirects-tao-star.html [ Skip ]
+
+
 # The fetch-request-xhr.https.html fails on some checks, but has an expectation
 # file to ignore text diffs. It also fails on the same checks even without
 # OOR-CORS, but with different texts. Just mark them as Failure.
@@ -34,9 +49,3 @@ crbug.com/870173 virtual/cache-storage-high-priority-match/external/wpt/service-
 crbug.com/870173 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 crbug.com/870173 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
-
-# Timing-Allow-Origin checks are only completely correct with OOR-CORS.
-crbug.com/1042580 external/wpt/element-timing/multiple-redirects-TAO.html [ Failure ]
-crbug.com/1042580 external/wpt/element-timing/redirects-tao-star.html [ Failure ]
-crbug.com/1042580 external/wpt/largest-contentful-paint/multiple-redirects-TAO.html [ Failure ]
-crbug.com/1042580 external/wpt/largest-contentful-paint/redirects-tao-star.html [ Failure ]

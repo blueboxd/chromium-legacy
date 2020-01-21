@@ -2052,27 +2052,29 @@ TEST_P(PasswordFormManagerTest, iOSPresavedGeneratedPassword) {
   EXPECT_CALL(form_saver, UpdateReplace(_, _, base::string16(), _))
       .WillOnce(SaveArg<0>(&saved_form));
 
-  form_manager_->UpdateGeneratedPasswordOnUserInput(
-      form_to_presave.name, generation_element, changed_password);
+  form_manager_->UpdateStateOnUserInput(form_to_presave.name,
+                                        generation_element, changed_password);
   EXPECT_EQ(username_field.value, saved_form.username_value);
   EXPECT_EQ(changed_password, saved_form.password_value);
 }
 
-TEST_P(PasswordFormManagerTest, UpdateGeneratedPasswordBeforePresaving) {
+TEST_P(PasswordFormManagerTest, iOSUpdateStateWithoutPresaving) {
   TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
   fetcher_->NotifyFetchCompleted();
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
 
-  FormData form_to_presave = observed_form_;
-  const base::string16 generation_element =
-      form_to_presave.fields[kPasswordFieldIndex].unique_id;
-  const base::string16 generation_field_value = ASCIIToUTF16("some_password");
+  const base::string16 password_field =
+      observed_form_.fields[kPasswordFieldIndex].unique_id;
+  const base::string16 new_field_value = ASCIIToUTF16("some_password");
 
   // Check that nothing is saved on changing password, in case when there was no
   // pre-saving.
   EXPECT_CALL(form_saver, Save(_, _, _)).Times(0);
-  form_manager_->UpdateGeneratedPasswordOnUserInput(
-      form_to_presave.name, generation_element, generation_field_value);
+  EXPECT_TRUE(form_manager_->UpdateStateOnUserInput(
+      observed_form_.name, password_field, new_field_value));
+
+  EXPECT_EQ(new_field_value,
+            form_manager_->observed_form().fields[kPasswordFieldIndex].value);
 }
 
 #endif  // defined(OS_IOS)
@@ -2330,6 +2332,7 @@ class MockPasswordSaveManager : public PasswordSaveManager {
   std::unique_ptr<PasswordSaveManager> Clone() override {
     return std::make_unique<MockPasswordSaveManager>();
   }
+  MOCK_METHOD0(MoveCredentialsToAccountStore, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordSaveManager);
@@ -2519,6 +2522,12 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, PermanentlyBlacklist) {
               PermanentlyBlacklist(PasswordStore::FormDigest(observed_form_)));
   form_manager_->PermanentlyBlacklist();
   EXPECT_TRUE(form_manager_->IsBlacklisted());
+}
+
+TEST_F(PasswordFormManagerTestWithMockedSaver, MoveCredentialsToAccountStore) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  EXPECT_CALL(*mock_password_save_manager(), MoveCredentialsToAccountStore());
+  form_manager_->MoveCredentialsToAccountStore();
 }
 
 TEST_F(PasswordFormManagerTestWithMockedSaver, IsNewLogin) {

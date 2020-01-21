@@ -85,6 +85,17 @@ class VariationsService
     virtual ~Observer() {}
   };
 
+  // The values of the ChromeVariations policy. Those should be kept in sync
+  // with the values defined in policy_templates.json!
+  enum class RestrictionPolicyValues {
+    // No restrictions applied by policy. Default value when policy not set.
+    NO_RESTRICTIONS = 0,
+    // Only critical security variations should be applied.
+    CRITICAL_ONLY = 1,
+    // All variations disabled. Disables the variations framework altogether.
+    ALL = 2
+  };
+
   ~VariationsService() override;
 
   // Enum used to choose whether GetVariationsServerURL will return an HTTPS

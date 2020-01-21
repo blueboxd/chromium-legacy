@@ -28,6 +28,7 @@ extern const char kVariationsSafeSeedSessionConsistencyCountry[];
 extern const char kVariationsSafeSeedSignature[];
 extern const char kVariationsSeedDate[];
 extern const char kVariationsSeedSignature[];
+extern const char kVariationsRestrictionsByPolicy[];
 
 }  // namespace prefs
 }  // namespace variations

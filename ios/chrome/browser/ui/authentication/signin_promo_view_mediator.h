@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
 
@@ -20,8 +21,6 @@ enum class AccessPoint;
 }
 
 namespace ios {
-class ChromeBrowserState;
-
 // Enums for the sign-in promo view state. Those states are sequential, with no
 // way to go backwards. All states can be skipped except |NeverVisible| and
 // |Invalid|.

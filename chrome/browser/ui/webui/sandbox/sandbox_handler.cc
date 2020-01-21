@@ -132,9 +132,9 @@ void SandboxHandler::HandleRequestSandboxDiagnostics(
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&FetchBrowserChildProcesses),
-      base::Bind(&SandboxHandler::FetchBrowserChildProcessesCompleted,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FetchBrowserChildProcesses),
+      base::BindOnce(&SandboxHandler::FetchBrowserChildProcessesCompleted,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void SandboxHandler::FetchBrowserChildProcessesCompleted(

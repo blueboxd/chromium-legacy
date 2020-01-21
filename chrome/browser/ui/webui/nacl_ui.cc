@@ -374,10 +374,10 @@ void NaClDomHandler::MaybeRespondToPage() {
     base::PostTaskAndReplyWithResult(
         FROM_HERE,
         {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::Bind(&CheckPathAndVersion, version_string),
-        base::Bind(&NaClDomHandler::DidCheckPathAndVersion,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Owned(version_string)));
+        base::BindOnce(&CheckPathAndVersion, version_string),
+        base::BindOnce(&NaClDomHandler::DidCheckPathAndVersion,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       base::Owned(version_string)));
     return;
   }
 

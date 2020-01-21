@@ -30,6 +30,10 @@ namespace chromeos {
 const char RecentDriveSource::kLoadHistogramName[] =
     "FileBrowser.Recent.LoadDrive";
 
+const char kAudioMimeType[] = "audio";
+const char kImageMimeType[] = "image";
+const char kVideoMimeType[] = "video";
+
 RecentDriveSource::RecentDriveSource(Profile* profile) : profile_(profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -64,6 +68,20 @@ void RecentDriveSource::GetRecentFiles(Params params) {
       drivefs::mojom::QueryParameters::SortField::kLastModified;
   query_params->sort_direction =
       drivefs::mojom::QueryParameters::SortDirection::kDescending;
+  switch (params_->file_type()) {
+    case FileType::kAudio:
+      query_params->mime_type = kAudioMimeType;
+      break;
+    case FileType::kImage:
+      query_params->mime_type = kImageMimeType;
+      break;
+    case FileType::kVideo:
+      query_params->mime_type = kVideoMimeType;
+      break;
+    default:
+      // Leave the mime_type null to query all files.
+      break;
+  }
   integration_service->GetDriveFsInterface()->StartSearchQuery(
       search_query_.BindNewPipeAndPassReceiver(), std::move(query_params));
   search_query_->GetNextPage(base::BindOnce(

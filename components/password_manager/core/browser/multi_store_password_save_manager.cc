@@ -135,4 +135,32 @@ bool MultiStorePasswordSaveManager::IsAccountStoreActive() {
          password_manager::ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION;
 }
 
+void MultiStorePasswordSaveManager::MoveCredentialsToAccountStore() {
+  // TODO(crbug.com/1032992): There are other rare corner cases that should
+  // still be handled: 0. Moving PSL matched credentials doesn't work now
+  // because of
+  // https://cs.chromium.org/chromium/src/components/password_manager/core/browser/login_database.cc?l=1318&rcl=e32055d4843e9fc1fa920c5f1f83c1313607e28a
+  // 1. Credential exists only in the profile store but with an outdated
+  // password.
+  // 2. Credentials exist in both stores.
+  // 3. Credentials exist in both stores while one of them of outdated. (profile
+  // or remote).
+  // 4. Credential exists only in the profile store but a PSL matched one exists
+  // in both profile and account store.
+
+  const std::vector<const PasswordForm*> account_store_matches =
+      AccountStoreMatches(form_fetcher_->GetBestMatches());
+  for (const PasswordForm* match :
+       ProfileStoreMatches(form_fetcher_->GetBestMatches())) {
+    DCHECK(!match->IsUsingAccountStore());
+    // Ignore credentials matches for other usernames.
+    if (match->username_value != pending_credentials_.username_value)
+      continue;
+
+    account_store_form_saver_->Save(*match, account_store_matches,
+                                    /*old_password=*/base::string16());
+    form_saver_->Remove(*match);
+  }
+}
+
 }  // namespace password_manager

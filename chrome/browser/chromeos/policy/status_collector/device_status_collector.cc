@@ -607,8 +607,9 @@ class DeviceStatusCollectorState : public StatusCollectorState {
     base::PostTaskAndReplyWithResult(
         FROM_HERE,
         {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::Bind(volume_info_fetcher, mount_points),
-        base::Bind(&DeviceStatusCollectorState::OnVolumeInfoReceived, this));
+        base::BindOnce(volume_info_fetcher, mount_points),
+        base::BindOnce(&DeviceStatusCollectorState::OnVolumeInfoReceived,
+                       this));
   }
 
   // Queues an async callback to query CPU temperature information.
@@ -618,8 +619,9 @@ class DeviceStatusCollectorState : public StatusCollectorState {
     base::PostTaskAndReplyWithResult(
         FROM_HERE,
         {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        cpu_temp_fetcher,
-        base::Bind(&DeviceStatusCollectorState::OnCPUTempInfoReceived, this));
+        base::BindOnce(cpu_temp_fetcher),
+        base::BindOnce(&DeviceStatusCollectorState::OnCPUTempInfoReceived,
+                       this));
   }
 
   bool FetchAndroidStatus(
@@ -988,16 +990,16 @@ DeviceStatusCollector::DeviceStatusCollector(
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&chromeos::version_loader::GetVersion,
-                 chromeos::version_loader::VERSION_FULL),
-      base::Bind(&DeviceStatusCollector::OnOSVersion,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&chromeos::version_loader::GetVersion,
+                     chromeos::version_loader::VERSION_FULL),
+      base::BindOnce(&DeviceStatusCollector::OnOSVersion,
+                     weak_factory_.GetWeakPtr()));
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&ReadFirmwareVersion),
-      base::Bind(&DeviceStatusCollector::OnOSFirmware,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ReadFirmwareVersion),
+      base::BindOnce(&DeviceStatusCollector::OnOSFirmware,
+                     weak_factory_.GetWeakPtr()));
   chromeos::tpm_util::GetTpmVersion(base::BindOnce(
       &DeviceStatusCollector::OnTpmVersion, weak_factory_.GetWeakPtr()));
 
@@ -1178,9 +1180,9 @@ void DeviceStatusCollector::SampleResourceUsage() {
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      cpu_statistics_fetcher_,
-      base::Bind(&DeviceStatusCollector::ReceiveCPUStatistics,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(cpu_statistics_fetcher_),
+      base::BindOnce(&DeviceStatusCollector::ReceiveCPUStatistics,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void DeviceStatusCollector::ReceiveCPUStatistics(const std::string& stats) {

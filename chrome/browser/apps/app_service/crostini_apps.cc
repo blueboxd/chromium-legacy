@@ -18,11 +18,36 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
+#include "ui/strings/grit/ui_strings.h"
 
 // TODO(crbug.com/826982): the equivalent of
 // CrostiniAppModelBuilder::MaybeCreateRootFolder. Does some sort of "root
 // folder" abstraction belong here (on the publisher side of the App Service)
 // or should we hard-code that in one particular subscriber (the App List UI)?
+
+namespace {
+
+bool ShouldShowDisplayDensityMenuItem(const std::string& app_id,
+                                      apps::mojom::MenuType menu_type,
+                                      int64_t display_id) {
+  // The default terminal app is crosh in a Chrome window and it doesn't run in
+  // the Crostini container so it doesn't support display density the same way.
+  if (menu_type != apps::mojom::MenuType::kShelf ||
+      app_id == crostini::GetTerminalId()) {
+    return false;
+  }
+
+  display::Display d;
+  if (!display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id, &d)) {
+    return true;
+  }
+
+  return d.device_scale_factor() != 1.0;
+}
+
+}  // namespace
 
 namespace apps {
 
@@ -177,8 +202,14 @@ void CrostiniApps::UnpauseApps(const std::string& app_id) {
 
 void CrostiniApps::GetMenuModel(const std::string& app_id,
                                 apps::mojom::MenuType menu_type,
+                                int64_t display_id,
                                 GetMenuModelCallback callback) {
   apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
+
+  if (menu_type == apps::mojom::MenuType::kShelf) {
+    AddCommandItem(ash::MENU_NEW_WINDOW, IDS_APP_LIST_NEW_WINDOW, &menu_items);
+  }
+
   if (crostini::IsUninstallable(profile_, app_id)) {
     AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, &menu_items);
   }
@@ -187,6 +218,31 @@ void CrostiniApps::GetMenuModel(const std::string& app_id,
       crostini::IsCrostiniRunning(profile_)) {
     AddCommandItem(ash::STOP_APP, IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM,
                    &menu_items);
+  }
+
+  if (ShouldAddOpenItem(app_id, menu_type, profile_)) {
+    AddCommandItem(ash::MENU_OPEN_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC,
+                   &menu_items);
+  }
+
+  if (ShouldAddCloseItem(app_id, menu_type, profile_)) {
+    AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, &menu_items);
+  }
+
+  // Offer users the ability to toggle per-application UI scaling.
+  // Some apps have high-density display support and do not require scaling
+  // to match the system display density, but others are density-unaware and
+  // look better when scaled to match the display density.
+  if (ShouldShowDisplayDensityMenuItem(app_id, menu_type, display_id)) {
+    base::Optional<crostini::CrostiniRegistryService::Registration>
+        registration = registry_->GetRegistration(app_id);
+    if (registration->IsScaled()) {
+      AddCommandItem(ash::CROSTINI_USE_HIGH_DENSITY,
+                     IDS_CROSTINI_USE_HIGH_DENSITY, &menu_items);
+    } else {
+      AddCommandItem(ash::CROSTINI_USE_LOW_DENSITY,
+                     IDS_CROSTINI_USE_LOW_DENSITY, &menu_items);
+    }
   }
 
   std::move(callback).Run(std::move(menu_items));

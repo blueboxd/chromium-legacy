@@ -683,8 +683,8 @@ void MTPDeviceDelegateImplLinux::CopyFileLocal(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      create_temporary_file_callback,
-      base::Bind(
+      base::BindOnce(create_temporary_file_callback),
+      base::BindOnce(
           &MTPDeviceDelegateImplLinux::OnDidCreateTemporaryFileToCopyFileLocal,
           weak_ptr_factory_.GetWeakPtr(), source_file_path, device_file_path,
           progress_callback, success_callback, error_callback));
@@ -1512,10 +1512,11 @@ void MTPDeviceDelegateImplLinux::OnGetDestFileInfoErrorToCopyFileFromLocal(
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&OpenFileDescriptor, source_file_path, O_RDONLY),
-      base::Bind(&MTPDeviceDelegateImplLinux::OnDidOpenFDToCopyFileFromLocal,
-                 weak_ptr_factory_.GetWeakPtr(), device_file_path,
-                 success_callback, error_callback));
+      base::BindOnce(&OpenFileDescriptor, source_file_path, O_RDONLY),
+      base::BindOnce(
+          &MTPDeviceDelegateImplLinux::OnDidOpenFDToCopyFileFromLocal,
+          weak_ptr_factory_.GetWeakPtr(), device_file_path, success_callback,
+          error_callback));
 }
 
 void MTPDeviceDelegateImplLinux::OnDidCreateSingleDirectory(

@@ -118,6 +118,21 @@ IN_PROC_BROWSER_TEST_P(AncestorThrottleTest, RedirectFails) {
                   .opaque());
 }
 
+// Check that we don't process CSP for 204 responses.
+IN_PROC_BROWSER_TEST_P(AncestorThrottleTest, Response204CSP) {
+  GURL parent_url(
+      embedded_test_server()->GetURL("foo.com", "/page_with_iframe.html"));
+  GURL iframe_url(embedded_test_server()->GetURL(
+      "foo.com", "/response204-csp-frame-ancestors-none"));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  EXPECT_TRUE(NavigateToURL(web_contents, parent_url));
+  EXPECT_TRUE(NavigateIframeToURL(web_contents, "test_iframe", iframe_url));
+
+  // Not crashing means that the test succeeded.
+}
+
 INSTANTIATE_TEST_SUITE_P(All, AncestorThrottleTest, ::testing::Bool());
 
 }  // namespace

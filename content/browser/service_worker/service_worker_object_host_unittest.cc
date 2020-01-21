@@ -116,9 +116,8 @@ class ServiceWorkerObjectHostTest : public testing::Test {
 
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope;
-    registration_ = new ServiceWorkerRegistration(
-        options, helper_->context()->storage()->NewRegistrationId(),
-        helper_->context()->AsWeakPtr());
+    registration_ =
+        helper_->context()->registry()->CreateNewRegistration(options);
     version_ = new ServiceWorkerVersion(
         registration_.get(), script_url, blink::mojom::ScriptType::kClassic,
         helper_->context()->storage()->NewVersionId(),

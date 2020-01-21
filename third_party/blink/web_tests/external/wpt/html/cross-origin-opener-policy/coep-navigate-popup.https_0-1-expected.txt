@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+PASS Popup navigating to same-origin with coop/coep
+FAIL Popup navigating to same-site with coop/coep assert_equals: name expected "" but got "Popup-navigating-to-same-site-with-coop/coep"
+FAIL Popup navigating to same-origin with no coop/coep assert_equals: name expected "" but got "Popup-navigating-to-same-origin-with-no-coop/coep"
+FAIL Popup navigating to same-site with no coop/coep assert_equals: name expected "" but got "Popup-navigating-to-same-site-with-no-coop/coep"
+Harness: the test ran to completion.
+

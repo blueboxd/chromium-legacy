@@ -149,7 +149,8 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
 
   # These tests are only run on WebRTC CI.
   'AppRTCMobileTest',
-  'android_junit_tests',
+  'android_examples_junit_tests',
+  'android_sdk_junit_tests',
   'audio_decoder_unittests',
   'common_audio_unittests',
   'common_video_unittests',

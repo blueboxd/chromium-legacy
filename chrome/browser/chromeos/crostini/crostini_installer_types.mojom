@@ -34,3 +34,9 @@ enum InstallerError {
   kErrorCreateContainer,
   kErrorUnknown,
 };
+
+struct DiskSliderTick {
+  int64 value;        // Size in bytes.
+  string label;       // Localised human-readable value e.g. 4.6GB.
+  string aria_value;  // Value for e.g. screen readers.
+};

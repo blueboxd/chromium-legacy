@@ -52,8 +52,6 @@ class ArcApps : public KeyedService,
 
  private:
   using AppIdToTaskIds = std::map<std::string, std::set<int>>;
-  using GetMenuModelCallback =
-      base::OnceCallback<void(apps::mojom::MenuItemsPtr)>;
   using TaskIdToAppId = std::map<int, std::string>;
 
   ArcApps(Profile* profile, apps::AppServiceProxy* proxy);
@@ -88,7 +86,8 @@ class ArcApps : public KeyedService,
   void UnpauseApps(const std::string& app_id) override;
   void GetMenuModel(const std::string& app_id,
                     apps::mojom::MenuType menu_type,
-                    GetMenuModelCallback callback);
+                    int64_t display_id,
+                    GetMenuModelCallback callback) override;
   void OpenNativeSettings(const std::string& app_id) override;
   void OnPreferredAppSet(const std::string& app_id,
                          apps::mojom::IntentFilterPtr intent_filter,

@@ -42,9 +42,9 @@ void CryptohomeWebUIHandler::OnPageLoaded(const base::ListValue* args) {
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(&crypto::IsTPMTokenReady, base::Closure()),
-      base::Bind(&CryptohomeWebUIHandler::DidGetNSSUtilInfoOnUIThread,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&crypto::IsTPMTokenReady, base::Closure()),
+      base::BindOnce(&CryptohomeWebUIHandler::DidGetNSSUtilInfoOnUIThread,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CryptohomeWebUIHandler::DidGetNSSUtilInfoOnUIThread(

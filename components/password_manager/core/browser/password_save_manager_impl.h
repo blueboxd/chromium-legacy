@@ -63,6 +63,8 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   // Signals that the user cancels password generation.
   void PasswordNoLongerGenerated() override;
 
+  void MoveCredentialsToAccountStore() override;
+
   bool IsNewLogin() const override;
   bool IsPasswordUpdate() const override;
   bool HasGeneratedPassword() const override;
@@ -105,6 +107,9 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   PendingCredentialsState pending_credentials_state_ =
       PendingCredentialsState::NONE;
 
+  // FormFetcher instance which owns the login data from PasswordStore.
+  const FormFetcher* form_fetcher_;
+
  private:
   // Create pending credentials from provisionally saved form when this form
   // represents credentials that were not previously saved.
@@ -127,9 +132,6 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
 
   // Handles the user flows related to the generation.
   std::unique_ptr<PasswordGenerationManager> generation_manager_;
-
-  // FormFetcher instance which owns the login data from PasswordStore.
-  const FormFetcher* form_fetcher_;
 
   // Takes care of recording metrics and events for |*this|.
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;

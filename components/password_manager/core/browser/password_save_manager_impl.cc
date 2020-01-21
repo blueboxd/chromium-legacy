@@ -331,6 +331,11 @@ void PasswordSaveManagerImpl::PasswordNoLongerGenerated() {
       PasswordFormMetricsRecorder::GeneratedPasswordStatus::kPasswordDeleted);
 }
 
+void PasswordSaveManagerImpl::MoveCredentialsToAccountStore() {
+  // Moving credentials is only supported in MultiStorePasswordSaveManager.
+  NOTREACHED();
+}
+
 bool PasswordSaveManagerImpl::IsNewLogin() const {
   return pending_credentials_state_ == PendingCredentialsState::NEW_LOGIN ||
          pending_credentials_state_ == PendingCredentialsState::AUTOMATIC_SAVE;

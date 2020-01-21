@@ -459,6 +459,10 @@ const base::Feature kRunVideoCaptureServiceInBrowserProcess{
     "RunVideoCaptureServiceInBrowserProcess",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables saving pages as Web Bundle.
+const base::Feature kSavePageAsWebBundle{"SavePageAsWebBundle",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Make sendBeacon throw for a Blob with a non simple type.
 const base::Feature kSendBeaconThrowForBlobWithNonSimpleType{
     "SendBeaconThrowForBlobWithNonSimpleType",

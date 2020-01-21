@@ -779,9 +779,9 @@ void OfflinePageBridge::GetLoadUrlParamsForOpeningMhtmlFileOrContent(
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&ArchiveValidator::GetSizeAndComputeDigest, file_path),
-      base::Bind(&OfflinePageBridge::GetSizeAndComputeDigestDone,
-                 weak_ptr_factory_.GetWeakPtr(), j_callback_ref, url));
+      base::BindOnce(&ArchiveValidator::GetSizeAndComputeDigest, file_path),
+      base::BindOnce(&OfflinePageBridge::GetSizeAndComputeDigestDone,
+                     weak_ptr_factory_.GetWeakPtr(), j_callback_ref, url));
 }
 
 jboolean OfflinePageBridge::IsShowingTrustedOfflinePage(
@@ -815,11 +815,11 @@ void OfflinePageBridge::GetPageByOfflineIdDone(
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&ArchiveValidator::ValidateFile, offline_page->file_path,
-                 offline_page->file_size, offline_page->digest),
-      base::Bind(&ValidateFileCallback, launch_location, j_callback_obj,
-                 offline_page->offline_id, offline_page->url,
-                 offline_page->file_path));
+      base::BindOnce(&ArchiveValidator::ValidateFile, offline_page->file_path,
+                     offline_page->file_size, offline_page->digest),
+      base::BindOnce(&ValidateFileCallback, launch_location, j_callback_obj,
+                     offline_page->offline_id, offline_page->url,
+                     offline_page->file_path));
 }
 
 void OfflinePageBridge::GetSizeAndComputeDigestDone(

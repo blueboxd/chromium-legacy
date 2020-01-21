@@ -131,8 +131,8 @@ FFTFrame::FFTFrame(const FFTFrame& frame)
 
   // Copy/setup frame data
   unsigned nbytes = sizeof(float) * fft_size_;
-  memcpy(RealData(), frame.frame_.realp, nbytes);
-  memcpy(ImagData(), frame.frame_.imagp, nbytes);
+  memcpy(RealData().Data(), frame.frame_.realp, nbytes);
+  memcpy(ImagData().Data(), frame.frame_.imagp, nbytes);
 }
 
 FFTFrame::~FFTFrame() {}

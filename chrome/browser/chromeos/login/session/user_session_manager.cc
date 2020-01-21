@@ -711,8 +711,8 @@ void UserSessionManager::InitRlz(Profile* profile) {
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&CollectRlzParams),
-      base::Bind(&UserSessionManager::InitRlzImpl, AsWeakPtr(), profile));
+      base::BindOnce(&CollectRlzParams),
+      base::BindOnce(&UserSessionManager::InitRlzImpl, AsWeakPtr(), profile));
 #endif
 }
 

@@ -93,11 +93,11 @@ void MTPReadFileWorker::OnDidReadDataChunkFromDeviceFile(
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&WriteDataChunkIntoSnapshotFileOnFileThread,
-                 snapshot_file_details_ptr->snapshot_file_path(), data),
-      base::Bind(&MTPReadFileWorker::OnDidWriteDataChunkIntoSnapshotFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(&snapshot_file_details)));
+      base::BindOnce(&WriteDataChunkIntoSnapshotFileOnFileThread,
+                     snapshot_file_details_ptr->snapshot_file_path(), data),
+      base::BindOnce(&MTPReadFileWorker::OnDidWriteDataChunkIntoSnapshotFile,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::Passed(&snapshot_file_details)));
 }
 
 void MTPReadFileWorker::OnDidWriteDataChunkIntoSnapshotFile(

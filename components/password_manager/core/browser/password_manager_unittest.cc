@@ -659,8 +659,8 @@ TEST_F(PasswordManagerTest, EditingGeneratedPasswordOnIOS) {
                            FormHasUniqueKey(presaved_form)))
       .WillOnce(SaveArg<0>(&presaved_form));
 
-  manager()->UpdateGeneratedPasswordOnUserInput(
-      form_data.name, generation_element, generated_password);
+  manager()->UpdateStateOnUserInput(form_data.name, generation_element,
+                                    generated_password);
   Mock::VerifyAndClearExpectations(store_.get());
 
   // Test when the user is changing the username, presaved credential is
@@ -671,8 +671,7 @@ TEST_F(PasswordManagerTest, EditingGeneratedPasswordOnIOS) {
                   FormUsernamePasswordAre(username, generated_password),
                   FormHasUniqueKey(presaved_form)));
 
-  manager()->UpdateGeneratedPasswordOnUserInput(form_data.name,
-                                                username_element, username);
+  manager()->UpdateStateOnUserInput(form_data.name, username_element, username);
 }
 
 TEST_F(PasswordManagerTest, SavingGeneratedPasswordOnIOS) {
@@ -698,8 +697,8 @@ TEST_F(PasswordManagerTest, SavingGeneratedPasswordOnIOS) {
 
   EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, _));
   // Test when the user is changing the generated password.
-  manager()->UpdateGeneratedPasswordOnUserInput(
-      form_data.name, generation_element, generated_password);
+  manager()->UpdateStateOnUserInput(form_data.name, generation_element,
+                                    generated_password);
 
   // The user is submitting the form.
   form_data.fields[0].value = username;

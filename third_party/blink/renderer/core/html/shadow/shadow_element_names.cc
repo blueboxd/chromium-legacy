@@ -104,6 +104,11 @@ const AtomicString& TextFieldContainer() {
   return name;
 }
 
+const AtomicString& FileUploadButton() {
+  DEFINE_STATIC_LOCAL(AtomicString, name, ("file-upload-button"));
+  return name;
+}
+
 const AtomicString& OptGroupLabel() {
   DEFINE_STATIC_LOCAL(AtomicString, name, ("optgroup-label"));
   return name;

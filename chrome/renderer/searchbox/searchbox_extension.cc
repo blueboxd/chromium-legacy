@@ -616,6 +616,7 @@ class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings> {
   static void QueryAutocomplete(const base::string16& input,
                                 bool prevent_inline_autocomplete);
   static void StopAutocomplete(bool clear_result);
+  static void LogCharTypedToRepaintLatency(uint32_t latency_ms);
   static void StartCapturingKeyStrokes();
   static void StopCapturingKeyStrokes();
   static void OpenAutocompleteMatch(int line,
@@ -651,6 +652,8 @@ gin::ObjectTemplateBuilder SearchBoxBindings::GetObjectTemplateBuilder(
       .SetMethod("paste", &SearchBoxBindings::Paste)
       .SetMethod("queryAutocomplete", &SearchBoxBindings::QueryAutocomplete)
       .SetMethod("stopAutocomplete", &SearchBoxBindings::StopAutocomplete)
+      .SetMethod("logCharTypedToRepaintLatency",
+                 &SearchBoxBindings::LogCharTypedToRepaintLatency)
       .SetMethod("startCapturingKeyStrokes",
                  &SearchBoxBindings::StartCapturingKeyStrokes)
       .SetMethod("stopCapturingKeyStrokes",
@@ -728,6 +731,14 @@ void SearchBoxBindings::StopAutocomplete(bool clear_result) {
   if (!search_box)
     return;
   search_box->StopAutocomplete(clear_result);
+}
+
+// static
+void SearchBoxBindings::LogCharTypedToRepaintLatency(uint32_t latency_ms) {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box)
+    return;
+  search_box->LogCharTypedToRepaintLatency(latency_ms);
 }
 
 // static

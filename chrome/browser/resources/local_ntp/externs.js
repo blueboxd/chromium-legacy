@@ -410,6 +410,8 @@ window.chrome.embeddedSearch.searchBox;
 /** @param {number} line */
 window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch;
 window.chrome.embeddedSearch.searchBox.isKeyCaptureEnabled;
+/** @param {number} latencyMs */
+window.chrome.embeddedSearch.searchBox.logCharTypedToRepaintLatency;
 window.chrome.embeddedSearch.searchBox.paste;
 window.chrome.embeddedSearch.searchBox.rtl;
 window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes;

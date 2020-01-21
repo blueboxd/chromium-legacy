@@ -63,6 +63,8 @@ import java.util.regex.Pattern;
         sdk_is_less_than = Build.VERSION_CODES.LOLLIPOP)
 @Features.EnableFeatures({ChromeFeatureList.CCT_EXTERNAL_LINK_HANDLING,
         ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE})
+@Features.DisableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
+        ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
 public class ExternalNavigationHandlerTest {
     // clang-format on
     @Rule

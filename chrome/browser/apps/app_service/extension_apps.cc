@@ -647,6 +647,7 @@ void ExtensionApps::UnpauseApps(const std::string& app_id) {
 
 void ExtensionApps::GetMenuModel(const std::string& app_id,
                                  apps::mojom::MenuType menu_type,
+                                 int64_t display_id,
                                  GetMenuModelCallback callback) {
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile_);
@@ -677,7 +678,7 @@ void ExtensionApps::GetMenuModel(const std::string& app_id,
         &menu_items);
   }
 
-  if (!is_platform_app &&
+  if (!is_platform_app && menu_type == apps::mojom::MenuType::kAppList &&
       extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_) &&
       extensions::OptionsPageInfo::HasOptionsPage(extension)) {
     AddCommandItem(ash::OPTIONS, IDS_NEW_TAB_APP_OPTIONS, &menu_items);

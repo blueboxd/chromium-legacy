@@ -81,11 +81,19 @@ interface AppService {
       AppType app_type,
       string app_id);
 
+  // Returns the menu items for an app with |app_id|.
+  GetMenuModel(
+      AppType app_type,
+      string app_id,
+      MenuType menu_type,
+      int64 display_id) => (MenuItems menu_items);
+
+  // Opens native settings for the app with |app_id|.
   OpenNativeSettings(
       AppType app_type,
       string app_id);
 
-  // Set app identified by |app_id| as preferred app for |intent_filter|.
+  // Sets app identified by |app_id| as preferred app for |intent_filter|.
   // |intent| is needed to set the preferred app in ARC.
   // If the request is |from_publisher|, we would not sync the preferred
   // app back to the publisher.
@@ -96,10 +104,10 @@ interface AppService {
       Intent? intent,
       bool from_publisher);
 
-  // Remove all preferred app setting for an |app_id|.
+  // Removes all preferred app setting for an |app_id|.
   RemovePreferredApp(AppType app_type, string app_id);
 
-  // Reset app identified by |app_id| as preferred app for |intent_filter|.
+  // Resets app identified by |app_id| as preferred app for |intent_filter|.
   RemovePreferredAppForFilter(
       AppType app_type,
       string app_id,
@@ -160,6 +168,13 @@ interface Publisher {
   UnpauseApps(
       string app_id);
 
+  // Returns the menu items for an app with |app_id|.
+  GetMenuModel(
+      string app_id,
+      MenuType menu_type,
+      int64 display_id) => (MenuItems menu_items);
+
+  // Opens native settings for the app with |app_id|.
   OpenNativeSettings(
       string app_id);
 

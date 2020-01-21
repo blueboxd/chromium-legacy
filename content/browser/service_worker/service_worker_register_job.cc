@@ -422,16 +422,16 @@ void ServiceWorkerRegisterJob::OnUpdateCheckFinished(
 void ServiceWorkerRegisterJob::RegisterAndContinue() {
   SetPhase(REGISTER);
 
-  int64_t registration_id = context_->storage()->NewRegistrationId();
-  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId) {
+  blink::mojom::ServiceWorkerRegistrationOptions options(
+      scope_, worker_script_type_, update_via_cache_);
+  scoped_refptr<ServiceWorkerRegistration> new_registration =
+      context_->registry()->CreateNewRegistration(options);
+  if (!new_registration) {
     Complete(blink::ServiceWorkerStatusCode::kErrorAbort);
     return;
   }
 
-  blink::mojom::ServiceWorkerRegistrationOptions options(
-      scope_, worker_script_type_, update_via_cache_);
-  set_registration(new ServiceWorkerRegistration(options, registration_id,
-                                                 context_->AsWeakPtr()));
+  set_registration(std::move(new_registration));
   AddRegistrationToMatchingProviderHosts(registration());
   UpdateAndContinue();
 }

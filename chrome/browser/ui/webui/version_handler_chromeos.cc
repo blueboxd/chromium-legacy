@@ -22,22 +22,22 @@ void VersionHandlerChromeOS::HandleRequestVersionInfo(
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&chromeos::version_loader::GetVersion,
-                 chromeos::version_loader::VERSION_FULL),
-      base::Bind(&VersionHandlerChromeOS::OnVersion,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&chromeos::version_loader::GetVersion,
+                     chromeos::version_loader::VERSION_FULL),
+      base::BindOnce(&VersionHandlerChromeOS::OnVersion,
+                     weak_factory_.GetWeakPtr()));
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&chromeos::version_loader::GetFirmware),
-      base::Bind(&VersionHandlerChromeOS::OnOSFirmware,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&chromeos::version_loader::GetFirmware),
+      base::BindOnce(&VersionHandlerChromeOS::OnOSFirmware,
+                     weak_factory_.GetWeakPtr()));
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&chromeos::version_loader::GetARCVersion),
-      base::Bind(&VersionHandlerChromeOS::OnARCVersion,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&chromeos::version_loader::GetARCVersion),
+      base::BindOnce(&VersionHandlerChromeOS::OnARCVersion,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void VersionHandlerChromeOS::OnVersion(const std::string& version) {

@@ -134,11 +134,11 @@ int32_t PepperFlashBrowserHost::OnGetLocalDataRestrictions(
   } else {
     base::PostTaskAndReplyWithResult(
         FROM_HERE, {BrowserThread::UI},
-        base::Bind(&GetCookieSettings, render_process_id_),
-        base::Bind(&PepperFlashBrowserHost::GetLocalDataRestrictions,
-                   weak_factory_.GetWeakPtr(),
-                   context->MakeReplyMessageContext(), document_url,
-                   plugin_url));
+        base::BindOnce(&GetCookieSettings, render_process_id_),
+        base::BindOnce(&PepperFlashBrowserHost::GetLocalDataRestrictions,
+                       weak_factory_.GetWeakPtr(),
+                       context->MakeReplyMessageContext(), document_url,
+                       plugin_url));
   }
   return PP_OK_COMPLETIONPENDING;
 }

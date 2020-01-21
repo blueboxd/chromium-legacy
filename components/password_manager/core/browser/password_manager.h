@@ -193,14 +193,12 @@ class PasswordManager : public FormSubmissionObserver {
                                 const base::string16& generated_password,
                                 const base::string16& generation_element);
 
-  // Updates the presaved credential with the generated password when the user
-  // types in field with |field_identifier|, which is in form with
-  // |form_identifier| and the field value is |field_value|. |driver|
-  // corresponds to the form parent frame.
-  void UpdateGeneratedPasswordOnUserInput(
-      const base::string16& form_identifier,
-      const base::string16& field_identifier,
-      const base::string16& field_value);
+  // Updates the state if the PasswordFormManager which corresponds to the form
+  // with |form_identifier|. In case if there is a presaved credential it
+  // updates the presaved credential.
+  void UpdateStateOnUserInput(const base::string16& form_identifier,
+                              const base::string16& field_identifier,
+                              const base::string16& field_value);
 
   // Stops treating a password as generated. |driver| corresponds to the
   // form parent frame.

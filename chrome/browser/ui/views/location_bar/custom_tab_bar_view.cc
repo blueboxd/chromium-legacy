@@ -83,10 +83,9 @@ class CustomTabBarTitleOriginView : public views::View {
  public:
   CustomTabBarTitleOriginView() {
     auto title_label = std::make_unique<views::Label>(
-        base::string16(), CONTEXT_BODY_TEXT_LARGE,
-        views::style::TextStyle::STYLE_PRIMARY);
+        base::string16(), views::style::CONTEXT_LABEL);
     auto location_label = std::make_unique<views::Label>(
-        base::string16(), CONTEXT_BODY_TEXT_SMALL,
+        base::string16(), views::style::CONTEXT_LABEL,
         views::style::STYLE_SECONDARY,
         gfx::DirectionalityMode::DIRECTIONALITY_AS_URL);
 

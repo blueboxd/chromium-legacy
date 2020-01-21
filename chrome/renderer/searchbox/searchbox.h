@@ -204,6 +204,10 @@ class SearchBox : public content::RenderFrameObserver,
   // |clear_result| is true.
   void StopAutocomplete(bool clear_result);
 
+  // Logs the time it took in milliseconds since the first character (in a
+  // series of characters) was typed until Autocomplete results were painted.
+  void LogCharTypedToRepaintLatency(uint32_t latency_ms);
+
   // Called when a user dismisses a promo.
   void BlocklistPromo(const std::string& promo_id);
 

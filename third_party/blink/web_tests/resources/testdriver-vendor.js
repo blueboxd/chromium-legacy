@@ -390,6 +390,14 @@
       throw "Could not remove authenticator";
   }
 
+  window.test_driver_internal.set_permission = function(permission_params) {
+    // TODO(https://crbug.com/977612): Chromium currently lacks support for
+    // |permission_params.one_realm| and will always consider it is set to false.
+    return internals.setPermission(permission_params.descriptor,
+                                   permission_params.state,
+                                   location.origin, location.origin);
+  }
+
   // Enable automation so we don't wait for user input on unimplemented APIs
   window.test_driver_internal.in_automation = true;
 

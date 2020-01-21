@@ -927,7 +927,8 @@ bool Controller::Start(const GURL& deeplink_url,
       IDS_AUTOFILL_ASSISTANT_LOADING, base::UTF8ToUTF16(deeplink_url_.host())));
   SetProgress(kAutostartInitialProgress);
 
-  if (IsNavigatingToNewDocument()) {
+  if (base::FeatureList::IsEnabled(features::kAutofillAssistantChromeEntry) &&
+      IsNavigatingToNewDocument()) {
     start_after_navigation_ = base::BindOnce(&Controller::EnterStateSilent,
                                              weak_ptr_factory_.GetWeakPtr(),
                                              AutofillAssistantState::STARTING);

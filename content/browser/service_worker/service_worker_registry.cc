@@ -64,6 +64,16 @@ ServiceWorkerRegistry::ServiceWorkerRegistry(
 
 ServiceWorkerRegistry::~ServiceWorkerRegistry() = default;
 
+scoped_refptr<ServiceWorkerRegistration>
+ServiceWorkerRegistry::CreateNewRegistration(
+    blink::mojom::ServiceWorkerRegistrationOptions options) {
+  int64_t registration_id = storage()->NewRegistrationId();
+  if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId)
+    return nullptr;
+  return base::MakeRefCounted<ServiceWorkerRegistration>(
+      std::move(options), registration_id, context_->AsWeakPtr());
+}
+
 void ServiceWorkerRegistry::FindRegistrationForClientUrl(
     const GURL& client_url,
     FindRegistrationCallback callback) {

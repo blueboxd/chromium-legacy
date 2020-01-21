@@ -10,4 +10,8 @@ include_rules = [
   # Do not allow inclusion of forwarding header in the provider code as the
   # provider is not allowed to depends on //ios/chrome.
   "-ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h",
+
+  # To allow moving ChromeBrowserState to the global namespace, permit the
+  # use of chrome_browser_state_forward.h.
+  "+ios/chrome/browser/browser_state/chrome_browser_state_forward.h",
 ]

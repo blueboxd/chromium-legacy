@@ -69,15 +69,16 @@ class RecentDiskSourceTest : public testing::Test {
     return file.SetTimes(time, time);
   }
 
-  std::vector<RecentFile> GetRecentFiles(size_t max_files,
-                                         const base::Time& cutoff_time) {
+  std::vector<RecentFile> GetRecentFiles(
+      size_t max_files,
+      const base::Time& cutoff_time,
+      RecentSource::FileType file_type = RecentSource::FileType::kAll) {
     std::vector<RecentFile> files;
 
     base::RunLoop run_loop;
 
     source_->GetRecentFiles(RecentSource::Params(
-        file_system_context_.get(), origin_, max_files, cutoff_time,
-        RecentSource::FileType::kAll,
+        file_system_context_.get(), origin_, max_files, cutoff_time, file_type,
         base::BindOnce(
             [](base::RunLoop* run_loop, std::vector<RecentFile>* out_files,
                std::vector<RecentFile> files) {
@@ -211,6 +212,72 @@ TEST_F(RecentDiskSourceTest, MaxDepth) {
   EXPECT_EQ(base::Time::FromJavaTime(2000), files[0].last_modified());
   EXPECT_EQ("1.jpg", files[1].url().path().BaseName().value());
   EXPECT_EQ(base::Time::FromJavaTime(1000), files[1].last_modified());
+}
+
+TEST_F(RecentDiskSourceTest, GetAudioFiles) {
+  // Oldest
+  ASSERT_TRUE(CreateEmptyFile("1.jpg", base::Time::FromJavaTime(1000)));
+  ASSERT_TRUE(CreateEmptyFile("2.mp4", base::Time::FromJavaTime(2000)));
+  ASSERT_TRUE(CreateEmptyFile("3.png", base::Time::FromJavaTime(3000)));
+  ASSERT_TRUE(CreateEmptyFile("4.mp3", base::Time::FromJavaTime(4000)));
+  ASSERT_TRUE(CreateEmptyFile("5.gif", base::Time::FromJavaTime(5000)));
+  ASSERT_TRUE(CreateEmptyFile("6.webm", base::Time::FromJavaTime(6000)));
+  // Newest
+
+  std::vector<RecentFile> files =
+      GetRecentFiles(6, base::Time(), RecentSource::FileType::kAudio);
+
+  std::sort(files.begin(), files.end(), RecentFileComparator());
+
+  ASSERT_EQ(1u, files.size());
+  EXPECT_EQ("4.mp3", files[0].url().path().BaseName().value());
+  EXPECT_EQ(base::Time::FromJavaTime(4000), files[0].last_modified());
+}
+
+TEST_F(RecentDiskSourceTest, GetImageFiles) {
+  // Oldest
+  ASSERT_TRUE(CreateEmptyFile("1.jpg", base::Time::FromJavaTime(1000)));
+  ASSERT_TRUE(CreateEmptyFile("2.mp4", base::Time::FromJavaTime(2000)));
+  ASSERT_TRUE(CreateEmptyFile("3.png", base::Time::FromJavaTime(3000)));
+  ASSERT_TRUE(CreateEmptyFile("4.mp3", base::Time::FromJavaTime(4000)));
+  ASSERT_TRUE(CreateEmptyFile("5.gif", base::Time::FromJavaTime(5000)));
+  ASSERT_TRUE(CreateEmptyFile("6.webm", base::Time::FromJavaTime(6000)));
+  // Newest
+
+  std::vector<RecentFile> files =
+      GetRecentFiles(6, base::Time(), RecentSource::FileType::kImage);
+
+  std::sort(files.begin(), files.end(), RecentFileComparator());
+
+  ASSERT_EQ(3u, files.size());
+  EXPECT_EQ("5.gif", files[0].url().path().BaseName().value());
+  EXPECT_EQ(base::Time::FromJavaTime(5000), files[0].last_modified());
+  EXPECT_EQ("3.png", files[1].url().path().BaseName().value());
+  EXPECT_EQ(base::Time::FromJavaTime(3000), files[1].last_modified());
+  EXPECT_EQ("1.jpg", files[2].url().path().BaseName().value());
+  EXPECT_EQ(base::Time::FromJavaTime(1000), files[2].last_modified());
+}
+
+TEST_F(RecentDiskSourceTest, GetVideoFiles) {
+  // Oldest
+  ASSERT_TRUE(CreateEmptyFile("1.jpg", base::Time::FromJavaTime(1000)));
+  ASSERT_TRUE(CreateEmptyFile("2.mp4", base::Time::FromJavaTime(2000)));
+  ASSERT_TRUE(CreateEmptyFile("3.png", base::Time::FromJavaTime(3000)));
+  ASSERT_TRUE(CreateEmptyFile("4.mp3", base::Time::FromJavaTime(4000)));
+  ASSERT_TRUE(CreateEmptyFile("5.gif", base::Time::FromJavaTime(5000)));
+  ASSERT_TRUE(CreateEmptyFile("6.webm", base::Time::FromJavaTime(6000)));
+  // Newest
+
+  std::vector<RecentFile> files =
+      GetRecentFiles(6, base::Time(), RecentSource::FileType::kVideo);
+
+  std::sort(files.begin(), files.end(), RecentFileComparator());
+
+  ASSERT_EQ(2u, files.size());
+  EXPECT_EQ("6.webm", files[0].url().path().BaseName().value());
+  EXPECT_EQ(base::Time::FromJavaTime(6000), files[0].last_modified());
+  EXPECT_EQ("2.mp4", files[1].url().path().BaseName().value());
+  EXPECT_EQ(base::Time::FromJavaTime(2000), files[1].last_modified());
 }
 
 TEST_F(RecentDiskSourceTest, GetRecentFiles_UmaStats) {

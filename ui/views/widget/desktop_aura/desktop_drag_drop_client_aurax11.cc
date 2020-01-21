@@ -200,46 +200,6 @@ void DesktopDragDropClientAuraX11::Init() {
   move_loop_ = CreateMoveLoop(this);
 }
 
-void DesktopDragDropClientAuraX11::OnBeginForeignDrag(XID window) {
-  DCHECK(target_current_context());
-  DCHECK(!target_current_context()->source_client());
-
-  ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
-  source_window_events_ =
-      std::make_unique<ui::XScopedEventSelector>(window, PropertyChangeMask);
-}
-
-void DesktopDragDropClientAuraX11::OnEndForeignDrag() {
-  DCHECK(target_current_context());
-  DCHECK(!target_current_context()->source_client());
-
-  ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
-}
-
-void DesktopDragDropClientAuraX11::OnBeforeDragLeave() {
-  NotifyDragLeave();
-}
-
-void DesktopDragDropClientAuraX11::UpdateCursor(
-    ui::DragDropTypes::DragOperation negotiated_operation) {
-  ui::CursorType cursor_type = ui::CursorType::kNull;
-  switch (negotiated_operation) {
-    case ui::DragDropTypes::DRAG_NONE:
-      cursor_type = ui::CursorType::kDndNone;
-      break;
-    case ui::DragDropTypes::DRAG_MOVE:
-      cursor_type = ui::CursorType::kDndMove;
-      break;
-    case ui::DragDropTypes::DRAG_COPY:
-      cursor_type = ui::CursorType::kDndCopy;
-      break;
-    case ui::DragDropTypes::DRAG_LINK:
-      cursor_type = ui::CursorType::kDndLink;
-      break;
-  }
-  move_loop_->UpdateCursor(cursor_manager_->GetInitializedCursor(cursor_type));
-}
-
 int DesktopDragDropClientAuraX11::StartDragAndDrop(
     std::unique_ptr<ui::OSExchangeData> data,
     aura::Window* root_window,
@@ -253,7 +213,6 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
   set_source_current_window(x11::None);
   DCHECK(!g_current_drag_drop_client);
   g_current_drag_drop_client = this;
-  set_source_state(SourceState::kOther);
   InitDrag(operation);
 
   const ui::OSExchangeData::Provider* provider = &data->provider();
@@ -397,10 +356,6 @@ std::unique_ptr<X11MoveLoop> DesktopDragDropClientAuraX11::CreateMoveLoop(
   return base::WrapUnique(new X11WholeScreenMoveLoop(this));
 }
 
-void DesktopDragDropClientAuraX11::EndMoveLoop() {
-  move_loop_->EndMoveLoop();
-}
-
 void DesktopDragDropClientAuraX11::DragTranslate(
     const gfx::Point& root_window_location,
     std::unique_ptr<ui::OSExchangeData>* data,
@@ -472,9 +427,9 @@ void DesktopDragDropClientAuraX11::NotifyDragLeave() {
   target_window_ = nullptr;
 }
 
-ui::SelectionFormatMap DesktopDragDropClientAuraX11::GetFormatMap() const {
-  return source_provider_ ? source_provider_->GetFormatMap()
-                          : ui::SelectionFormatMap();
+std::unique_ptr<ui::XTopmostWindowFinder>
+DesktopDragDropClientAuraX11::CreateWindowFinder() {
+  return std::make_unique<X11TopmostWindowFinder>();
 }
 
 int DesktopDragDropClientAuraX11::GetDragOperation(
@@ -490,6 +445,56 @@ int DesktopDragDropClientAuraX11::GetDragOperation(
                         drag_operation != ui::DragDropTypes::DRAG_NONE);
 
   return drag_operation;
+}
+
+void DesktopDragDropClientAuraX11::UpdateCursor(
+    ui::DragDropTypes::DragOperation negotiated_operation) {
+  ui::CursorType cursor_type = ui::CursorType::kNull;
+  switch (negotiated_operation) {
+    case ui::DragDropTypes::DRAG_NONE:
+      cursor_type = ui::CursorType::kDndNone;
+      break;
+    case ui::DragDropTypes::DRAG_MOVE:
+      cursor_type = ui::CursorType::kDndMove;
+      break;
+    case ui::DragDropTypes::DRAG_COPY:
+      cursor_type = ui::CursorType::kDndCopy;
+      break;
+    case ui::DragDropTypes::DRAG_LINK:
+      cursor_type = ui::CursorType::kDndLink;
+      break;
+  }
+  move_loop_->UpdateCursor(cursor_manager_->GetInitializedCursor(cursor_type));
+}
+
+ui::SelectionFormatMap DesktopDragDropClientAuraX11::GetFormatMap() const {
+  return source_provider_ ? source_provider_->GetFormatMap()
+                          : ui::SelectionFormatMap();
+}
+
+void DesktopDragDropClientAuraX11::RetrieveTargets(
+    std::vector<Atom>* targets) const {
+  source_provider_->RetrieveTargets(targets);
+}
+
+void DesktopDragDropClientAuraX11::OnBeginForeignDrag(XID window) {
+  DCHECK(target_current_context());
+  DCHECK(!target_current_context()->source_client());
+
+  ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
+  source_window_events_ =
+      std::make_unique<ui::XScopedEventSelector>(window, PropertyChangeMask);
+}
+
+void DesktopDragDropClientAuraX11::OnEndForeignDrag() {
+  DCHECK(target_current_context());
+  DCHECK(!target_current_context()->source_client());
+
+  ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+}
+
+void DesktopDragDropClientAuraX11::OnBeforeDragLeave() {
+  NotifyDragLeave();
 }
 
 int DesktopDragDropClientAuraX11::PerformDrop() {
@@ -529,14 +534,8 @@ int DesktopDragDropClientAuraX11::PerformDrop() {
   return drag_operation;
 }
 
-void DesktopDragDropClientAuraX11::RetrieveTargets(
-    std::vector<Atom>* targets) const {
-  source_provider_->RetrieveTargets(targets);
-}
-
-std::unique_ptr<ui::XTopmostWindowFinder>
-DesktopDragDropClientAuraX11::CreateWindowFinder() {
-  return std::make_unique<X11TopmostWindowFinder>();
+void DesktopDragDropClientAuraX11::EndMoveLoop() {
+  move_loop_->EndMoveLoop();
 }
 
 }  // namespace views

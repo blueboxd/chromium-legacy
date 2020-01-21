@@ -63,6 +63,7 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
   void OnNoInteraction(bool is_update) override;
   void PermanentlyBlacklist() override;
   void OnPasswordsRevealed() override;
+  void MoveCredentialsToAccountStore() override;
 
  private:
   PasswordForm pending_form_;
@@ -169,6 +170,8 @@ void PasswordDataForUI::OnNoInteraction(bool is_update) {
 void PasswordDataForUI::PermanentlyBlacklist() {}
 
 void PasswordDataForUI::OnPasswordsRevealed() {}
+
+void PasswordDataForUI::MoveCredentialsToAccountStore() {}
 
 // Returns a form from |matches| that causes a name conflict with |generated|.
 const PasswordForm* FindUsernameConflict(

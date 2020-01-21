@@ -108,6 +108,7 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
                void(const base::string16& input,
                     bool prevent_inline_autocomplete));
   MOCK_METHOD1(StopAutocomplete, void(bool clear_result));
+  MOCK_METHOD1(LogCharTypedToRepaintLatency, void(uint32_t latency_ms));
   MOCK_METHOD1(BlocklistPromo, void(const std::string& promo_id));
   MOCK_METHOD5(OpenExtensionsPage,
                void(double button,
@@ -163,6 +164,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD1(ShouldProcessAutocompleteMatchImageAvailable, bool(bool));
   MOCK_METHOD1(ShouldProcessQueryAutocomplete, bool(bool));
   MOCK_METHOD0(ShouldProcessStopAutocomplete, bool());
+  MOCK_METHOD0(ShouldProcessLogCharTypedToRepaintLatency, bool());
   MOCK_METHOD0(ShouldProcessBlocklistPromo, bool());
   MOCK_METHOD0(ShouldProcessOpenExtensionsPage, bool());
   MOCK_METHOD1(ShouldProcessOpenAutocompleteMatch, bool(bool));
@@ -1212,4 +1214,28 @@ TEST_F(SearchIPCRouterTest, IgnoreStopAutoComplete) {
       .WillOnce(Return(false));
 
   GetSearchIPCRouter().StopAutocomplete(false);
+}
+
+TEST_F(SearchIPCRouterTest, SendLogCharTypedToRepaintLatency) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*policy, ShouldProcessLogCharTypedToRepaintLatency())
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(*mock_delegate(), LogCharTypedToRepaintLatency(_)).Times(1);
+
+  GetSearchIPCRouter().LogCharTypedToRepaintLatency(0);
+}
+
+TEST_F(SearchIPCRouterTest, IgnoreLogCharTypedToRepaintLatency) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*policy, ShouldProcessLogCharTypedToRepaintLatency())
+      .Times(1)
+      .WillOnce(Return(false));
+  EXPECT_CALL(*mock_delegate(), LogCharTypedToRepaintLatency(_)).Times(0);
+
+  GetSearchIPCRouter().LogCharTypedToRepaintLatency(0);
 }

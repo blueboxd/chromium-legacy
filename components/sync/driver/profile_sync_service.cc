@@ -694,7 +694,6 @@ SyncService::DisableReasonSet ProfileSyncService::GetDisableReasons() const {
   // If Sync is disabled via command line flag, then ProfileSyncService
   // shouldn't even be instantiated.
   DCHECK(switches::IsSyncAllowedByFlag());
-
   DisableReasonSet result;
   if (!user_settings_->IsSyncAllowedByPlatform()) {
     result.Put(DISABLE_REASON_PLATFORM_OVERRIDE);
@@ -715,7 +714,11 @@ SyncService::DisableReasonSet ProfileSyncService::GetDisableReasons() const {
     result.Put(DISABLE_REASON_UNRECOVERABLE_ERROR);
   }
   if (base::FeatureList::IsEnabled(switches::kStopSyncInPausedState)) {
-    if (auth_manager_->IsSyncPaused()) {
+    // Some crashes on Chrome OS (crbug.com/1043642) suggest that
+    // ProfileSyncService gets called after its shutdown. It's not clear why
+    // this actually happens. To avoid crashes check that |auth_manager_| isn't
+    // null.
+    if (auth_manager_ && auth_manager_->IsSyncPaused()) {
       result.Put(DISABLE_REASON_PAUSED);
     }
   }

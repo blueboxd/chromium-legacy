@@ -1052,9 +1052,9 @@ void NaClProcessHost::OnResolveFileToken(uint64_t file_token_lo,
       // USER_BLOCKING because it is on the critical path of displaying the
       // official virtual keyboard on Chrome OS. https://crbug.com/976542
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::Bind(OpenNaClReadExecImpl, file_path, true /* is_executable */),
-      base::Bind(&NaClProcessHost::FileResolved, weak_factory_.GetWeakPtr(),
-                 file_token_lo, file_token_hi, file_path));
+      base::BindOnce(OpenNaClReadExecImpl, file_path, true /* is_executable */),
+      base::BindOnce(&NaClProcessHost::FileResolved, weak_factory_.GetWeakPtr(),
+                     file_token_lo, file_token_hi, file_path));
 }
 
 void NaClProcessHost::FileResolved(

@@ -151,6 +151,10 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessStopAutocomplete() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldProcessLogCharTypedToRepaintLatency() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldProcessBlocklistPromo() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }

@@ -52,6 +52,7 @@ const AtomicString& PasswordRevealButton();
 CORE_EXPORT const AtomicString& SliderThumb();
 const AtomicString& SliderTrack();
 const AtomicString& TextFieldContainer();
+const AtomicString& FileUploadButton();
 const AtomicString& OptGroupLabel();
 
 }  // namespace shadow_element_names

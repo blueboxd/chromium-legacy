@@ -355,8 +355,7 @@ CreateServiceWorkerRegistrationAndVersion(ServiceWorkerContextCore* context,
 
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = scope;
-  auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
-      options, storage->NewRegistrationId(), context->AsWeakPtr());
+  auto registration = context->registry()->CreateNewRegistration(options);
   auto version = base::MakeRefCounted<ServiceWorkerVersion>(
       registration.get(), script, blink::mojom::ScriptType::kClassic,
       storage->NewVersionId(), context->AsWeakPtr());

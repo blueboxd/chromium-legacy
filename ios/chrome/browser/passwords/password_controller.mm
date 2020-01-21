@@ -370,12 +370,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     }
   }
 
-  if (self.isPasswordGenerated) {
-    // Always update, in case, for example, that username has been edited.
-    self.passwordManager->UpdateGeneratedPasswordOnUserInput(
-        SysNSStringToUTF16(formName), SysNSStringToUTF16(fieldIdentifier),
-        SysNSStringToUTF16(typedValue));
-  }
+  self.passwordManager->UpdateStateOnUserInput(
+      SysNSStringToUTF16(formName), SysNSStringToUTF16(fieldIdentifier),
+      SysNSStringToUTF16(typedValue));
 }
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName

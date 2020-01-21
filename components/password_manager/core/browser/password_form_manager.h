@@ -154,6 +154,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   void OnNoInteraction(bool is_update) override;
   void PermanentlyBlacklist() override;
   void OnPasswordsRevealed() override;
+  void MoveCredentialsToAccountStore() override;
 
   bool IsNewLogin() const;
   FormFetcher* GetFormFetcher();
@@ -180,14 +181,13 @@ class PasswordFormManager : public PasswordFormManagerForUI,
                                 const base::string16& generated_password,
                                 const base::string16& generation_element);
 
-  // Updates the presaved credential with the generated password when the user
-  // types in field with |field_identifier|, which is in form with
-  // |form_identifier| and the field value is |field_value|. Return true if
-  // |*this| manages a form with name |form_identifier|.
-  bool UpdateGeneratedPasswordOnUserInput(
-      const base::string16& form_identifier,
-      const base::string16& field_identifier,
-      const base::string16& field_value);
+  // Return false and do nothing if |form_identifier| does not correspond to
+  // |observed_form_|. Otherwise set a value of the field with
+  // |field_identifier| of |observed_form_| to |field_value|. In case if there
+  // is a presaved credential this function updates the presaved credential.
+  bool UpdateStateOnUserInput(const base::string16& form_identifier,
+                              const base::string16& field_identifier,
+                              const base::string16& field_value);
 #endif  // defined(OS_IOS)
 
   // Create a copy of |*this| which can be passed to the code handling
@@ -211,6 +211,9 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   FormSaver* form_saver() const {
     return password_save_manager_->GetFormSaver();
   }
+
+  const autofill::FormData& observed_form() { return observed_form_; }
+
 #endif
 
  protected:

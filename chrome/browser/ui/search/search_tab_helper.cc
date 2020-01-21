@@ -780,6 +780,11 @@ void SearchTabHelper::StopAutocomplete(bool clear_result) {
     time_of_first_autocomplete_query_ = base::TimeTicks();
 }
 
+void SearchTabHelper::LogCharTypedToRepaintLatency(uint32_t latency_ms) {
+  UMA_HISTOGRAM_TIMES("NewTabPage.Realbox.CharTypedToRepaintLatency.ToPaint",
+                      base::TimeDelta::FromMillisecondsD(latency_ms));
+}
+
 void SearchTabHelper::BlocklistPromo(const std::string& promo_id) {
   auto* promo_service = PromoServiceFactory::GetForProfile(profile());
   if (!promo_service) {

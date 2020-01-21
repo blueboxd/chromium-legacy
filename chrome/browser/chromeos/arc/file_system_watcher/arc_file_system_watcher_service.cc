@@ -267,9 +267,9 @@ void ArcFileSystemWatcherService::FileSystemWatcher::DelayBuildTimestampMap() {
   DCHECK(outstanding_task_);
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::Bind(&BuildTimestampMapCallback, cros_dir_, android_dir_),
-      base::Bind(&FileSystemWatcher::OnBuildTimestampMap,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BuildTimestampMapCallback, cros_dir_, android_dir_),
+      base::BindOnce(&FileSystemWatcher::OnBuildTimestampMap,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcFileSystemWatcherService::FileSystemWatcher::OnBuildTimestampMap(

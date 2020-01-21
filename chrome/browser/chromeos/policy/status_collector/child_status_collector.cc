@@ -161,10 +161,10 @@ ChildStatusCollector::ChildStatusCollector(
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindRepeating(&chromeos::version_loader::GetVersion,
-                          chromeos::version_loader::VERSION_FULL),
-      base::BindRepeating(&ChildStatusCollector::OnOSVersion,
-                          weak_factory_.GetWeakPtr()));
+      base::BindOnce(&chromeos::version_loader::GetVersion,
+                     chromeos::version_loader::VERSION_FULL),
+      base::BindOnce(&ChildStatusCollector::OnOSVersion,
+                     weak_factory_.GetWeakPtr()));
 
   DCHECK(pref_service_->GetInitializationStatus() !=
          PrefService::INITIALIZATION_STATUS_WAITING);

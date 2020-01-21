@@ -43,8 +43,14 @@ bool WorkerModulatorImpl::IsDynamicImportForbidden(String* reason) {
     return false;
   }
 
-  // TODO(nhiroki): Support module loading for SharedWorker and Service Worker.
-  // (https://crbug.com/680046)
+  // TODO(https://crbug.com/824646): Remove this flag check once module loading
+  // for SharedWorker is enabled by default.
+  if (GetExecutionContext()->IsSharedWorkerGlobalScope() &&
+      RuntimeEnabledFeatures::ModuleSharedWorkerEnabled()) {
+    return false;
+  }
+
+  // TODO(https://crbug.com/824647): Support module loading for Service Worker.
   *reason =
       "Module scripts are not supported on WorkerGlobalScope yet (see "
       "https://crbug.com/680046).";

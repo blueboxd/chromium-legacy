@@ -34,16 +34,18 @@ class CrostiniInstallerPageHandler
   ~CrostiniInstallerPageHandler() override;
 
   // chromeos::crostini_installer::mojom::PageHandler:
-  void Install() override;
+  void Install(int64_t disk_size) override;
   void Cancel() override;
   void CancelBeforeStart() override;
   void Close() override;
+  void RequestAmountOfFreeDiskSpace() override;
 
  private:
   void OnProgressUpdate(crostini::mojom::InstallerState installer_state,
                         double progress_fraction);
   void OnInstallFinished(crostini::mojom::InstallerError error);
   void OnCanceled();
+  void OnAmountOfFreeDiskSpace(int64_t free_bytes);
 
   crostini::CrostiniInstallerUIDelegate* installer_ui_delegate_;
   mojo::Receiver<chromeos::crostini_installer::mojom::PageHandler> receiver_;

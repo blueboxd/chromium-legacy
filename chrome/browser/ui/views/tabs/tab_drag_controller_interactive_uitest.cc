@@ -2312,6 +2312,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   EXPECT_FALSE(browser2->window()->IsMaximized());
 }
 
+#if !defined(OS_MACOSX)
 namespace {
 
 // Invoked from the nested run loop.
@@ -2361,6 +2362,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
     EXPECT_FALSE(browser->window()->IsMaximized());
   }
 }
+#endif
 
 namespace {
 

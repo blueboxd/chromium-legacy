@@ -16,7 +16,10 @@ source_set("voice") {
     "voice_search_provider.h",
     "voice_search_provider.mm",
   ]
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/browser_state:forward",
+  ]
 }
 
 source_set("test_support") {

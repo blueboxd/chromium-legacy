@@ -322,11 +322,12 @@ void CreateMTPDeviceAsyncDelegate(
   base::string16* storage_object_id = new base::string16;
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::UI},
-      base::Bind(&GetStorageInfoOnUIThread, device_location,
-                 base::Unretained(pnp_device_id),
-                 base::Unretained(storage_object_id)),
-      base::Bind(&OnGetStorageInfoCreateDelegate, device_location, callback,
-                 base::Owned(pnp_device_id), base::Owned(storage_object_id)));
+      base::BindOnce(&GetStorageInfoOnUIThread, device_location,
+                     base::Unretained(pnp_device_id),
+                     base::Unretained(storage_object_id)),
+      base::BindOnce(&OnGetStorageInfoCreateDelegate, device_location, callback,
+                     base::Owned(pnp_device_id),
+                     base::Owned(storage_object_id)));
 }
 
 // MTPDeviceDelegateImplWin ---------------------------------------------------

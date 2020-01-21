@@ -492,6 +492,14 @@ void SearchIPCRouter::StopAutocomplete(bool clear_result) {
   delegate_->StopAutocomplete(clear_result);
 }
 
+void SearchIPCRouter::LogCharTypedToRepaintLatency(uint32_t latency_ms) {
+  if (!policy_->ShouldProcessLogCharTypedToRepaintLatency()) {
+    return;
+  }
+
+  delegate_->LogCharTypedToRepaintLatency(latency_ms);
+}
+
 void SearchIPCRouter::BlocklistPromo(const std::string& promo_id) {
   if (!policy_->ShouldProcessBlocklistPromo()) {
     return;

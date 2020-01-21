@@ -628,14 +628,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, EmptyUpdatesAreIgnored) {
 
 // If the server sends the same cards and addresses again, they should not
 // change on the client. We should also not overwrite existing metadata.
-// Flaky on ASan/TSan only. http://crbug.com/997912
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
-#define MAYBE_SameUpdatesAreIgnored DISABLED_SameUpdatesAreIgnored
-#else
-#define MAYBE_SameUpdatesAreIgnored SameUpdatesAreIgnored
-#endif
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       MAYBE_SameUpdatesAreIgnored) {
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, SameUpdatesAreIgnored) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001",
                             kDefaultBillingAddressID),
@@ -692,14 +685,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // If the server sends the same cards and addresses with changed data, they
 // should change on the client.
-// Flaky on Mac/Linux/ChromeOS only. http://crbug.com/997825
-#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define MAYBE_ChangedEntityGetsUpdated DISABLED_ChangedEntityGetsUpdated
-#else
-#define MAYBE_ChangedEntityGetsUpdated ChangedEntityGetsUpdated
-#endif
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       MAYBE_ChangedEntityGetsUpdated) {
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ChangedEntityGetsUpdated) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0002",
                             kDefaultBillingAddressID),
@@ -802,9 +788,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // Wallet data should get cleared from the database when the wallet sync type
 // flag is disabled.
-// Test is flaky: https://crbug.com/997786
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       DISABLED_ClearOnDisableWalletSync) {
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableWalletSync) {
   GetFakeServer()->SetWalletData({CreateDefaultSyncWalletAddress(),
                                   CreateDefaultSyncWalletCard(),
                                   CreateDefaultSyncPaymentsCustomerData(),
@@ -876,16 +860,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // Wallet data present on the client should be cleared in favor of the new data
 // synced down form the server.
-// Flaky (mostly) on ASan/TSan. http://crbug.com/998130
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
-#define MAYBE_NewWalletCardRemovesExistingCardAndProfile \
-  DISABLED_NewWalletCardRemovesExistingCardAndProfile
-#else
-#define MAYBE_NewWalletCardRemovesExistingCardAndProfile \
-  NewWalletCardRemovesExistingCardAndProfile
-#endif
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       MAYBE_NewWalletCardRemovesExistingCardAndProfile) {
+                       NewWalletCardRemovesExistingCardAndProfile) {
   ASSERT_TRUE(SetupSync());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
@@ -961,15 +937,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // Wallet data present on the client should be cleared in favor of the new data
 // synced down form the server.
-// Flaky (mostly) on ASan/TSan. http://crbug.com/998130
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
-#define MAYBE_NewWalletDataRemovesExistingData \
-  DISABLED_NewWalletDataRemovesExistingData
-#else
-#define MAYBE_NewWalletDataRemovesExistingData NewWalletDataRemovesExistingData
-#endif
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       MAYBE_NewWalletDataRemovesExistingData) {
+                       NewWalletDataRemovesExistingData) {
   ASSERT_TRUE(SetupSync());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
@@ -1085,16 +1054,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // Tests that a server billing address id set on a card on the client is
 // overwritten when that same card is synced again.
-// Flaky (mostly) on ASan/TSan. http://crbug.com/998130
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
-#define MAYBE_SameWalletCard_DiscardsOldServerBillingAddressId \
-  DISABLED_SameWalletCard_DiscardsOldServerBillingAddressId
-#else
-#define MAYBE_SameWalletCard_DiscardsOldServerBillingAddressId \
-  SameWalletCard_DiscardsOldServerBillingAddressId
-#endif
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
-                       MAYBE_SameWalletCard_DiscardsOldServerBillingAddressId) {
+                       SameWalletCard_DiscardsOldServerBillingAddressId) {
   ASSERT_TRUE(SetupSync());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);

@@ -130,9 +130,9 @@ void DMTokenStorage::EncryptAndStoreToken() {
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&EncryptToken, system_salt_, dm_token_),
-      base::Bind(&DMTokenStorage::OnTokenEncrypted,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&EncryptToken, system_salt_, dm_token_),
+      base::BindOnce(&DMTokenStorage::OnTokenEncrypted,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DMTokenStorage::OnTokenEncrypted(const std::string& encrypted_dm_token) {
@@ -154,9 +154,9 @@ void DMTokenStorage::LoadAndDecryptToken() {
     base::PostTaskAndReplyWithResult(
         FROM_HERE,
         {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::Bind(&DecryptToken, system_salt_, encrypted_dm_token),
-        base::Bind(&DMTokenStorage::FlushRetrieveTokenCallback,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&DecryptToken, system_salt_, encrypted_dm_token),
+        base::BindOnce(&DMTokenStorage::FlushRetrieveTokenCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
   } else {
     DLOG(ERROR) << "No DM token in the local state.";
     FlushRetrieveTokenCallback(std::string());

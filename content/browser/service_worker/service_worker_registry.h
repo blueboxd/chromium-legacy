@@ -68,6 +68,12 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
 
   ServiceWorkerStorage* storage() const { return storage_.get(); }
 
+  // Creates a new in-memory representation of registration. Can be null when
+  // storage is disabled. This method must be called after storage is
+  // initialized.
+  scoped_refptr<ServiceWorkerRegistration> CreateNewRegistration(
+      blink::mojom::ServiceWorkerRegistrationOptions options);
+
   // TODO(crbug.com/1039200): Move corresponding comments from
   // ServiceWorkerStorage.
   void FindRegistrationForClientUrl(const GURL& client_url,

@@ -39,6 +39,8 @@ class MultiStorePasswordSaveManager : public PasswordSaveManagerImpl {
 
   std::unique_ptr<PasswordSaveManager> Clone() override;
 
+  void MoveCredentialsToAccountStore() override;
+
  protected:
   FormSaver* GetFormSaverForGeneration() override;
 

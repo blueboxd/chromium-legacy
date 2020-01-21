@@ -13,11 +13,14 @@ const InstallerError = crostini.mojom.InstallerError;
 
 class FakePageHandler extends TestBrowserProxy {
   constructor() {
-    super(['install', 'cancel', 'cancelBeforeStart', 'close']);
+    super([
+      'install', 'cancel', 'cancelBeforeStart', 'close',
+      'requestAmountOfFreeDiskSpace'
+    ]);
   }
 
   /** @override */
-  install() {
+  install(diskSize, username) {
     this.methodCalled('install');
   }
 
@@ -34,6 +37,11 @@ class FakePageHandler extends TestBrowserProxy {
   /** @override */
   close() {
     this.methodCalled('close');
+  }
+
+  /** @override */
+  requestAmountOfFreeDiskSpace() {
+    this.methodCalled('requestAmountOfFreeDiskSpace');
   }
 }
 
@@ -74,7 +82,7 @@ suite('<crostini-installer-app>', () => {
   };
 
   const getInstallButton = () => {
-    return app.$$('.action-button');
+    return app.$$('#install');
   };
 
   const getCancelButton = () => {

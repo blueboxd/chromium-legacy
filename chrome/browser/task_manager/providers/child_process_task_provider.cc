@@ -82,9 +82,9 @@ void ChildProcessTaskProvider::StartUpdating() {
 
   // First, get the pre-existing child processes data.
   base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::IO}, base::Bind(&CollectChildProcessData),
-      base::Bind(&ChildProcessTaskProvider::ChildProcessDataCollected,
-                 weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, {BrowserThread::IO}, base::BindOnce(&CollectChildProcessData),
+      base::BindOnce(&ChildProcessTaskProvider::ChildProcessDataCollected,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ChildProcessTaskProvider::StopUpdating() {

@@ -57,8 +57,6 @@ class AppServiceProxy : public KeyedService,
                         public apps::mojom::Subscriber,
                         public apps::AppRegistryCache::Observer {
  public:
-  using GetMenuModelCallback =
-      base::OnceCallback<void(apps::mojom::MenuItemsPtr)>;
   using OnPauseDialogClosedCallback = base::OnceCallback<void()>;
 
   explicit AppServiceProxy(Profile* profile);
@@ -135,10 +133,12 @@ class AppServiceProxy : public KeyedService,
   // as false directly and removes the paused app icon effect.
   void UnpauseApps(const std::set<std::string>& app_ids);
 
-  // Returns the menu items for the given |app_id|.
+  // Returns the menu items for the given |app_id|. |display_id| is the id of
+  // the display from which the app is launched.
   void GetMenuModel(const std::string& app_id,
                     apps::mojom::MenuType menu_type,
-                    GetMenuModelCallback callback);
+                    int64_t display_id,
+                    apps::mojom::Publisher::GetMenuModelCallback callback);
 
   // Opens native settings for the app with |app_id|.
   void OpenNativeSettings(const std::string& app_id);

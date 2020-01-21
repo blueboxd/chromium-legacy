@@ -124,6 +124,12 @@ android_resources("devui_launcher_icon_resources") {
   android_manifest = "java/DeveloperUiLauncherManifest.xml"
 }
 
+android_resources("monochrome_devui_launcher_icon_resources") {
+  resource_dirs = []
+  android_manifest = "java/MonochromeDeveloperUiLauncherManifest.xml"
+  custom_package = "org.chromium.android_webview.devui.icon"
+}
+
 jinja_template("system_webview_manifest") {
   input = "java/AndroidManifest.xml"
   output = system_webview_android_manifest

@@ -182,11 +182,11 @@ void ComponentExtensionIMEManagerImpl::Load(Profile* profile,
       // virtual keyboard. See https://crbug.com/976542
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::Bind(&CheckFilePath, base::Unretained(copied_file_path)),
-      base::Bind(&OnFilePathChecked, base::Unretained(profile),
-                 base::Owned(new std::string(extension_id)),
-                 base::Owned(new std::string(manifest)),
-                 base::Owned(copied_file_path)));
+      base::BindOnce(&CheckFilePath, base::Unretained(copied_file_path)),
+      base::BindOnce(&OnFilePathChecked, base::Unretained(profile),
+                     base::Owned(new std::string(extension_id)),
+                     base::Owned(new std::string(manifest)),
+                     base::Owned(copied_file_path)));
 }
 
 void ComponentExtensionIMEManagerImpl::Unload(Profile* profile,

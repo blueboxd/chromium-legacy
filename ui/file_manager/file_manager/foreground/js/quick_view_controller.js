@@ -295,14 +295,11 @@ class QuickViewController {
 
   /**
    * @param {!FileEntry} entry
-   * @return {!Promise<!Array<!chrome.fileManagerPrivate.FileTask>>}
+   * @return {!Promise<!FileTasks>}
    * @private
    */
   getAvailableTasks_(entry) {
-    return this.taskController_.getEntryFileTasks(entry).then(tasks => {
-      this.tasks_ = tasks;
-      return tasks.getTaskItems();
-    });
+    return this.taskController_.getEntryFileTasks(entry);
   }
 
   /**
@@ -322,6 +319,7 @@ class QuickViewController {
     assert(this.entries_.length > 0);
     const entry = this.entries_[this.currentSelection_];
     this.quickViewModel_.setSelectedEntry(entry);
+    this.tasks_ = null;
 
     requestIdleCallback(() => {
       this.quickViewUma_.onEntryChanged(entry);
@@ -334,9 +332,7 @@ class QuickViewController {
         ])
         .then(values => {
           const items = (/**@type{Array<MetadataItem>}*/ (values[0]));
-          const tasks =
-              (/**@type{!Array<!chrome.fileManagerPrivate.FileTask>}*/ (
-                  values[1]));
+          const tasks = (/**@type{!FileTasks}*/ (values[1]));
           return this.onMetadataLoaded_(entry, items, tasks);
         })
         .catch(error => {
@@ -354,10 +350,12 @@ class QuickViewController {
    *
    * @param {!FileEntry} entry
    * @param {Array<MetadataItem>} items
-   * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
+   * @param {!FileTasks} fileTasks
    * @private
    */
-  onMetadataLoaded_(entry, items, tasks) {
+  onMetadataLoaded_(entry, items, fileTasks) {
+    const tasks = fileTasks.getTaskItems();
+
     return this.getQuickViewParameters_(entry, items, tasks).then(params => {
       if (this.quickViewModel_.getSelectedEntry() != entry) {
         return;  // Bail: there's no point drawing a stale selection.
@@ -374,6 +372,8 @@ class QuickViewController {
         autoplay: params.autoplay || false,
         browsable: params.browsable || false,
       });
+
+      this.tasks_ = fileTasks;
     });
   }
 

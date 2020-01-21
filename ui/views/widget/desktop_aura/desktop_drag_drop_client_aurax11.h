@@ -101,9 +101,6 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
       X11MoveLoopDelegate* delegate);
 
  private:
-  // Ends the move loop.
-  void EndMoveLoop() override;
-
   // When we receive a position X11 message, we need to translate that into
   // the underlying aura::Window representation, as moves internal to the X11
   // window can cause internal drag leave and enter messages.
@@ -116,25 +113,18 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // then unsubscribes |target_window_| from ourselves and forgets it.
   void NotifyDragLeave();
 
-  // This returns a representation of the data we're offering in this
-  // drag. This is done to bypass an asynchronous roundtrip with the X11
-  // server.
-  ui::SelectionFormatMap GetFormatMap() const override;
-
-  // Handling XdndPosition can be paused while waiting for more data; this is
-  // called either synchronously from OnXdndPosition, or asynchronously after
-  // we've received data requested from the other window.
+  // ui::XDragDropClient
+  std::unique_ptr<ui::XTopmostWindowFinder> CreateWindowFinder() override;
   int GetDragOperation(const gfx::Point& screen_point) override;
-  int PerformDrop() override;
-  void OnBeginForeignDrag(XID window) override;
-  void OnEndForeignDrag() override;
   void UpdateCursor(
       ui::DragDropTypes::DragOperation negotiated_operation) override;
-  void OnBeforeDragLeave() override;
-
+  ui::SelectionFormatMap GetFormatMap() const override;
   void RetrieveTargets(std::vector<Atom>* targets) const override;
-
-  std::unique_ptr<ui::XTopmostWindowFinder> CreateWindowFinder() override;
+  void OnBeginForeignDrag(XID window) override;
+  void OnEndForeignDrag() override;
+  void OnBeforeDragLeave() override;
+  int PerformDrop() override;
+  void EndMoveLoop() override;
 
   // A nested run loop that notifies this object of events through the
   // X11MoveLoopDelegate interface.

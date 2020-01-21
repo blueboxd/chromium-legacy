@@ -110,9 +110,9 @@ void SupportedImageTypeValidator::StartPreWriteValidation(
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(&ReadOnFileThread, path_),
-      base::Bind(&SupportedImageTypeValidator::OnFileOpen,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ReadOnFileThread, path_),
+      base::BindOnce(&SupportedImageTypeValidator::OnFileOpen,
+                     weak_factory_.GetWeakPtr()));
 }
 
 SupportedImageTypeValidator::SupportedImageTypeValidator(

@@ -99,19 +99,10 @@ BASE_EXPORT bool PostTaskAndReply(const Location& from_here,
                                   OnceClosure reply);
 
 // Equivalent to calling PostTaskAndReplyWithResult with default TaskTraits.
-//
-// Though RepeatingCallback is convertible to OnceCallback, we need a
-// CallbackType template since we can not use template deduction and object
-// conversion at once on the overload resolution.
-// TODO(crbug.com/714018): Update all callers of the RepeatingCallback version
-// to use OnceCallback and remove the CallbackType template.
-template <template <typename> class CallbackType,
-          typename TaskReturnType,
-          typename ReplyArgType,
-          typename = EnableIfIsBaseCallback<CallbackType>>
+template <typename TaskReturnType, typename ReplyArgType>
 bool PostTaskAndReplyWithResult(const Location& from_here,
-                                CallbackType<TaskReturnType()> task,
-                                CallbackType<void(ReplyArgType)> reply) {
+                                OnceCallback<TaskReturnType()> task,
+                                OnceCallback<void(ReplyArgType)> reply) {
   return PostTaskAndReplyWithResult(from_here, {ThreadPool()}, std::move(task),
                                     std::move(reply));
 }
@@ -148,20 +139,11 @@ BASE_EXPORT bool PostTaskAndReply(const Location& from_here,
 // or thread and same TaskTraits if applicable) when |task| completes. Returns
 // false if the task definitely won't run because of current shutdown state. Can
 // only be called when SequencedTaskRunnerHandle::IsSet().
-//
-// Though RepeatingCallback is convertible to OnceCallback, we need a
-// CallbackType template since we can not use template deduction and object
-// conversion at once on the overload resolution.
-// TODO(crbug.com/714018): Update all callers of the RepeatingCallback version
-// to use OnceCallback and remove the CallbackType template.
-template <template <typename> class CallbackType,
-          typename TaskReturnType,
-          typename ReplyArgType,
-          typename = EnableIfIsBaseCallback<CallbackType>>
+template <typename TaskReturnType, typename ReplyArgType>
 bool PostTaskAndReplyWithResult(const Location& from_here,
                                 const TaskTraits& traits,
-                                CallbackType<TaskReturnType()> task,
-                                CallbackType<void(ReplyArgType)> reply) {
+                                OnceCallback<TaskReturnType()> task,
+                                OnceCallback<void(ReplyArgType)> reply) {
   auto* result = new std::unique_ptr<TaskReturnType>();
   return PostTaskAndReply(
       from_here, traits,

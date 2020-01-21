@@ -370,34 +370,44 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
   return finished;
 }
 
+bool ThreadHeap::HasWorkForConcurrentMarking() const {
+  return !marking_worklist_->IsGlobalPoolEmpty() ||
+         !write_barrier_worklist_->IsGlobalPoolEmpty();
+}
+
 bool ThreadHeap::AdvanceConcurrentMarking(ConcurrentMarkingVisitor* visitor,
                                           base::TimeTicks deadline) {
-  bool finished = false;
-  // Iteratively mark all objects that are reachable from the objects
-  // currently pushed onto the marking worklist.
-  finished = DrainWorklistWithDeadline(
-      deadline, marking_worklist_.get(),
-      [visitor](const MarkingItem& item) {
-        HeapObjectHeader* header =
-            HeapObjectHeader::FromPayload(item.base_object_payload);
-        DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
-        item.callback(visitor, item.base_object_payload);
-        visitor->AccountMarkedBytesSafe(header);
-      },
-      visitor->task_id());
-  if (!finished)
-    return false;
+  bool finished;
+  do {
+    // Iteratively mark all objects that are reachable from the objects
+    // currently pushed onto the marking worklist.
+    finished = DrainWorklistWithDeadline(
+        deadline, marking_worklist_.get(),
+        [visitor](const MarkingItem& item) {
+          HeapObjectHeader* header =
+              HeapObjectHeader::FromPayload(item.base_object_payload);
+          DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
+          item.callback(visitor, item.base_object_payload);
+          visitor->AccountMarkedBytesSafe(header);
+        },
+        visitor->task_id());
+    if (!finished)
+      break;
 
-  finished = DrainWorklistWithDeadline(
-      deadline, write_barrier_worklist_.get(),
-      [visitor](HeapObjectHeader* header) {
-        DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
-        GCInfoTable::Get()
-            .GCInfoFromIndex(header->GcInfoIndex())
-            ->trace(visitor, header->Payload());
-        visitor->AccountMarkedBytes(header);
-      },
-      visitor->task_id());
+    finished = DrainWorklistWithDeadline(
+        deadline, write_barrier_worklist_.get(),
+        [visitor](HeapObjectHeader* header) {
+          DCHECK(!ConcurrentMarkingVisitor::IsInConstruction(header));
+          GCInfoTable::Get()
+              .GCInfoFromIndex(header->GcInfoIndex())
+              ->trace(visitor, header->Payload());
+          visitor->AccountMarkedBytes(header);
+        },
+        visitor->task_id());
+    if (!finished)
+      break;
+  } while (HasWorkForConcurrentMarking());
+
   return finished;
 }
 

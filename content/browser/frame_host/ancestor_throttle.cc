@@ -187,10 +187,11 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
     return NavigationThrottle::PROCEED;
   }
 
-  // Downloads should be exempt from checking for X-Frame-Options, so
-  // proceed if this is a download.
-  if (request->IsDownload())
+  // 204/205 responses and downloads are not sent to the renderer and don't need
+  // to be checked.
+  if (is_response_check && !request->response_should_be_rendered()) {
     return NavigationThrottle::PROCEED;
+  }
 
   // Evaluate whether the navigation should be allowed or blocked based on
   // existing content-security-policy on the response.

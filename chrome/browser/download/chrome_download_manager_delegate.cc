@@ -1090,9 +1090,9 @@ void ChromeDownloadManagerDelegate::GetFileMimeType(
     const base::FilePath& path,
     const GetFileMimeTypeCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskAndReplyWithResult(FROM_HERE,
-                                   {base::ThreadPool(), base::MayBlock()},
-                                   base::Bind(&GetMimeType, path), callback);
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::BindOnce(&GetMimeType, path), base::BindOnce(callback));
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)

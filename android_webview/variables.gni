@@ -2,11 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/android/channel.gni")
 import("//weblayer/variables.gni")
 
 declare_args() {
-  # Show a launcher icon to open WebView developer UI, off by default.
-  webview_devui_show_icon = false
+  # Show a launcher icon to open WebView developer UI, enabled by default for dev and canary
+  # channels. The icon for Monochrome is always hidden by default (https://crbug.com/1026062)
+  # TODO(https://crbug.com/1002589): add beta channel when approved
+  webview_devui_show_icon =
+      android_channel == "canary" || android_channel == "dev"
 }
 
 system_webview_android_manifest =

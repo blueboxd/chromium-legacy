@@ -33,6 +33,7 @@
 namespace {
 void AddStringResources(content::WebUIDataSource* source) {
   static constexpr webui::LocalizedString kStrings[] = {
+      {"next", IDS_CROSTINI_INSTALLER_NEXT_BUTTON},
       {"install", IDS_CROSTINI_INSTALLER_INSTALL_BUTTON},
       {"retry", IDS_CROSTINI_INSTALLER_RETRY_BUTTON},
       {"close", IDS_APP_CLOSE},
@@ -68,6 +69,9 @@ void AddStringResources(content::WebUIDataSource* source) {
       {"fetchSshKeysMessage", IDS_CROSTINI_INSTALLER_FETCH_SSH_KEYS_MESSAGE},
       {"mountContainerMessage", IDS_CROSTINI_INSTALLER_MOUNT_CONTAINER_MESSAGE},
       {"cancelingMessage", IDS_CROSTINI_INSTALLER_CANCELING},
+
+      {"configureMessage", IDS_CROSTINI_INSTALLER_CONFIGURE_MESSAGE},
+      {"diskSizeMessage", IDS_CROSTINI_INSTALLER_DISK_SIZE_MESSAGE},
   };
   AddLocalizedStringsBulk(source, kStrings);
 
@@ -110,6 +114,9 @@ CrostiniInstallerUI::CrostiniInstallerUI(content::WebUI* web_ui)
   source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources chrome://test 'self';");
   AddStringResources(source);
+  source->AddBoolean(
+      "diskResizingEnabled",
+      base::FeatureList::IsEnabled(chromeos::features::kCrostiniDiskResizing));
 
   source->AddResourcePath("app.js", IDR_CROSTINI_INSTALLER_APP_JS);
   source->AddResourcePath("browser_proxy.js",

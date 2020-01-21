@@ -426,8 +426,12 @@ void PermissionRequestManager::ScheduleDequeueRequestIfNeeded() {
 }
 
 void PermissionRequestManager::ShowBubble() {
+  // There is a race condition where the request might have been removed already
+  // so double-checking that there is a request in progress (crbug.com/1041222).
+  if (!IsRequestInProgress())
+    return;
+
   DCHECK(!view_);
-  DCHECK(IsRequestInProgress());
   DCHECK(web_contents()->IsDocumentOnLoadCompletedInMainFrame());
   DCHECK(current_request_ui_to_use_);
 

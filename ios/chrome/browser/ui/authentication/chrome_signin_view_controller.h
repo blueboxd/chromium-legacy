@@ -11,6 +11,7 @@
 
 #include "base/auto_reset.h"
 #include "base/timer/timer.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/signin/constants.h"
 
 @protocol ApplicationCommands;
@@ -18,10 +19,6 @@
 class Browser;
 @class ChromeIdentity;
 @class ChromeSigninViewController;
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 namespace signin_metrics {
 enum class AccessPoint;

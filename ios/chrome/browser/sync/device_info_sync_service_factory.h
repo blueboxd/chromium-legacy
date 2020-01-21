@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 namespace base {
 template <typename T>
@@ -20,10 +21,6 @@ namespace syncer {
 class DeviceInfoSyncService;
 class DeviceInfoTracker;
 }  // namespace syncer
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 // Singleton that owns all DeviceInfoSyncService and associates them with
 // ios::ChromeBrowserState.

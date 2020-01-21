@@ -323,6 +323,19 @@ class ProfileSyncServiceTest : public ::testing::Test {
   std::unique_ptr<ProfileSyncService> service_;
 };
 
+class ProfileSyncServiceTestWithStopSyncInPausedState
+    : public ProfileSyncServiceTest {
+ public:
+  ProfileSyncServiceTestWithStopSyncInPausedState() {
+    override_features_.InitAndEnableFeature(switches::kStopSyncInPausedState);
+  }
+
+  ~ProfileSyncServiceTestWithStopSyncInPausedState() override = default;
+
+ private:
+  base::test::ScopedFeatureList override_features_;
+};
+
 // Gets the now time used for testing user demographics.
 base::Time GetNowTime() {
   base::Time now;
@@ -1523,6 +1536,17 @@ TEST_F(ProfileSyncServiceTest, GetExperimentalAuthenticationKeyLocalSync) {
 
   EXPECT_TRUE(service()->GetExperimentalAuthenticationSecretForTest().empty());
   EXPECT_FALSE(service()->GetExperimentalAuthenticationKey());
+}
+
+// Regression test for crbug.com/1043642, can be removed once
+// ProfileSyncService usages after shutdown are addressed.
+TEST_F(ProfileSyncServiceTestWithStopSyncInPausedState,
+       ShouldProvideDisableReasonsAfterShutdown) {
+  CreateService(ProfileSyncService::AUTO_START);
+  InitializeForFirstSync();
+  SignIn();
+  service()->Shutdown();
+  EXPECT_FALSE(service()->GetDisableReasons().Empty());
 }
 
 }  // namespace

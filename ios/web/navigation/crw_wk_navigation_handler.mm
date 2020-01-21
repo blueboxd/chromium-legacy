@@ -757,7 +757,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   web::NavigationContextImpl* context =
       [self.navigationStates contextForNavigation:navigation];
-  if (!web::IsWKWebViewSSLCertError(context->GetError())) {
+  if (context && !web::IsWKWebViewSSLCertError(context->GetError())) {
     _certVerificationErrors->Clear();
   }
 
@@ -945,8 +945,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // Sometimes |webView:didFinishNavigation| arrives before
   // |webView:didCommitNavigation|. Explicitly trigger post-commit processing.
   bool navigationCommitted =
-      [self.navigationStates stateForNavigation:navigation] ==
-      web::WKNavigationState::COMMITTED;
+      [self.navigationStates isCommittedNavigation:navigation];
   UMA_HISTOGRAM_BOOLEAN("IOS.WKWebViewFinishBeforeCommit",
                         !navigationCommitted);
   if (!navigationCommitted) {

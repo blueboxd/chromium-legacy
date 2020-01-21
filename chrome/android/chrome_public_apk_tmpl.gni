@@ -419,8 +419,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
       ]
 
       if (webview_devui_show_icon) {
-        _deps +=
-            [ "//android_webview/nonembedded:devui_launcher_icon_resources" ]
+        _deps += [ "//android_webview/nonembedded:monochrome_devui_launcher_icon_resources" ]
       }
 
       if (_include_primary_support) {

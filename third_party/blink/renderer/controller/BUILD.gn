@@ -73,6 +73,10 @@ jumbo_component("controller") {
     ]
   }
   if (is_mac) {
+    sources += [
+      "memory_usage_monitor_mac.cc",
+      "memory_usage_monitor_mac.h",
+    ]
     libs = [
       "AppKit.framework",
       "Foundation.framework",
@@ -174,6 +178,12 @@ jumbo_source_set("blink_unittests_sources") {
       "memory_usage_monitor_test.cc",
       "oom_intervention_impl_test.cc",
       "user_level_memory_pressure_signal_generator_test.cc",
+    ]
+  }
+
+  if (is_mac) {
+    sources += [
+      "memory_usage_monitor_test.cc",
     ]
   }
 

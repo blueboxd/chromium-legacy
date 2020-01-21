@@ -516,6 +516,17 @@ class CONTENT_EXPORT NavigationRequest
 
   std::unique_ptr<PeakGpuMemoryTracker> TakePeakGpuMemoryTracker();
 
+  // Returns true for navigation responses to be rendered in a renderer process.
+  // This excludes:
+  //  - 204/205 navigation responses.
+  //  - downloads.
+  //
+  // Must not be called before having received the response.
+  bool response_should_be_rendered() const {
+    DCHECK_GE(state_, WILL_PROCESS_RESPONSE);
+    return response_should_be_rendered_;
+  }
+
  private:
   friend class NavigationRequestTest;
 

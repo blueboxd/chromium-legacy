@@ -7,8 +7,10 @@
 #include "base/logging.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/send_tab_to_self_command.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_modal_delegate.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_modal_positioner.h"
@@ -35,7 +37,8 @@
 
 - (void)start {
   send_tab_to_self::SendTabToSelfSyncService* syncService =
-      SendTabToSelfSyncServiceFactory::GetForBrowserState(self.browserState);
+      SendTabToSelfSyncServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   // This modal should not be launched in incognito mode where syncService is
   // undefined.
   DCHECK(syncService);
@@ -111,8 +114,9 @@
   SendTabToSelfCommand* command =
       [[SendTabToSelfCommand alloc] initWithTargetDeviceID:cacheGUID
                                           targetDeviceName:deviceName];
-
-  [self.dispatcher sendTabToSelf:command];
+  id<BrowserCommands> handler =
+      HandlerForProtocol(self.browser->GetCommandDispatcher(), BrowserCommands);
+  [handler sendTabToSelf:command];
   [self stop];
 }
 

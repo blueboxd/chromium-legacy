@@ -55,6 +55,17 @@
     justify-content: flex-end;
     margin: 32px 0;
   }
+
+  #labels {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+  }
+  div.outer {
+      align-items: stretch;
+      display: flex;
+      flex-direction: column;
+  }
 </style>
 
 <div id="main">
@@ -70,6 +81,21 @@
       <span>$i18n{promptMessage} </span>
       <a href="$i18n{learnMoreUrl}" target="_blank">$i18n{learnMore}</a>
     </div>
+    <div id="configure-message" hidden="[[!isState_(state_, State.CONFIGURE)]]">
+      <div>$i18n{configureMessage}</div>
+      <div>$i18n{diskSizeMessage}</div>
+      <div class="outer">
+        <cr-slider id="diskSlider" pin="true"
+                   value="[[defaultDiskSizeTick_]]"
+                   area-describedby="configure-message"
+                   ticks="[[diskSizeTicks_]]">
+        </cr-slider>
+        <div id="labels">
+          <div id="label-begin">[[minDisk_]]</div>
+          <div id="label-end">[[maxDisk_]]</div>
+        </div>
+      </div>
+    </div>
     <div id="installing-message"
         hidden="[[!isState_(state_, State.INSTALLING)]]">
       <div>[[getProgressMessage_(installerState_)]]</div>
@@ -83,7 +109,6 @@
       <div>$i18n{cancelingMessage}</div>
       <paper-progress class="progress-bar" indeterminate></paper-progress>
     </div>
-
   </div>
   <img id="img-linux-illustration" src="images/linux_illustration.png" alt="">
   <div id="button-container">
@@ -91,9 +116,14 @@
         disabled="[[isState_(state_, State.CANCELING)]]">
       $i18n{cancel}
     </cr-button>
-    <cr-button class="action-button" on-click="onInstallButtonClick_"
+    <cr-button id="next" class="action-button" on-click="onNextButtonClick_"
         aria-describedby="title" aria-details="prompt-message"
-        hidden="[[!canInstall_(state_)]]">
+        hidden="[[!showNextButton_(state_)]]">
+      [[getNextButtonLabel_()]]
+    </cr-button>
+    <cr-button id="install" class="action-button"
+      on-click="onInstallButtonClick_" aria-describedby="title"
+      aria-details="prompt-message" hidden="[[!canInstall_(state_)]]">
       [[getInstallButtonLabel_(state_)]]
     </cr-button>
   </div>

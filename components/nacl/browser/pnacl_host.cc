@@ -379,9 +379,9 @@ void PnaclHost::CheckCacheQueryReady(
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&FileProxy::Write, base::Unretained(proxy),
-                 pt->nexe_read_buffer),
-      base::Bind(&FileProxy::WriteDone, base::Owned(proxy), entry->first));
+      base::BindOnce(&FileProxy::Write, base::Unretained(proxy),
+                     pt->nexe_read_buffer),
+      base::BindOnce(&FileProxy::WriteDone, base::Owned(proxy), entry->first));
 }
 
 //////////////////// GetNexeFd miss path
@@ -454,9 +454,9 @@ void PnaclHost::TranslationFinished(int render_process_id,
     base::PostTaskAndReplyWithResult(
         FROM_HERE,
         {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::Bind(&PnaclHost::CopyFileToBuffer, Passed(&file)),
-        base::Bind(&PnaclHost::StoreTranslatedNexe, base::Unretained(this),
-                   id));
+        base::BindOnce(&PnaclHost::CopyFileToBuffer, Passed(&file)),
+        base::BindOnce(&PnaclHost::StoreTranslatedNexe, base::Unretained(this),
+                       id));
   }
 
   if (!store_nexe) {

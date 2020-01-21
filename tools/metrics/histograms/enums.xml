@@ -19204,6 +19204,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="660" label="ReportDeviceGraphicsStatus"/>
   <int value="661" label="DeviceLoginScreenAccessibilityShortcutsEnabled"/>
   <int value="662" label="LocalDiscoveryEnabled"/>
+  <int value="663" label="ChromeVariations"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

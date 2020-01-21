@@ -241,17 +241,19 @@ void PeriodicWave::CreateBandLimitedTables(const float* real_data,
   for (unsigned range_index = 0; range_index < NumberOfRanges();
        ++range_index) {
     // This FFTFrame is used to cull partials (represented by frequency bins).
-    float* real_p = frame.RealData();
-    float* imag_p = frame.ImagData();
+    AudioFloatArray& real = frame.RealData();
+    DCHECK_GE(real.size(), number_of_components);
+    AudioFloatArray& imag = frame.ImagData();
+    DCHECK_GE(imag.size(), number_of_components);
 
     // Copy from loaded frequency data and generate the complex conjugate
     // because of the way the inverse FFT is defined versus the values in the
     // arrays.  Need to scale the data by fftSize to remove the scaling that the
     // inverse IFFT would do.
     float scale = fft_size;
-    vector_math::Vsmul(real_data, 1, &scale, real_p, 1, number_of_components);
+    vector_math::Vsmul(real_data, 1, &scale, real.Data(), 1, number_of_components);
     scale = -scale;
-    vector_math::Vsmul(imag_data, 1, &scale, imag_p, 1, number_of_components);
+    vector_math::Vsmul(imag_data, 1, &scale, imag.Data(), 1, number_of_components);
 
     // Find the starting bin where we should start culling.  We need to clear
     // out the highest frequencies to band-limit the waveform.
@@ -262,13 +264,13 @@ void PeriodicWave::CreateBandLimitedTables(const float* real_data,
     // pitch range.
     for (i = std::min(number_of_components, number_of_partials + 1);
          i < half_size; ++i) {
-      real_p[i] = 0;
-      imag_p[i] = 0;
+      real[i] = 0;
+      imag[i] = 0;
     }
 
     // Clear packed-nyquist and any DC-offset.
-    real_p[0] = 0;
-    imag_p[0] = 0;
+    real[0] = 0;
+    imag[0] = 0;
 
     // Create the band-limited table.
     unsigned wave_size = PeriodicWaveSize();

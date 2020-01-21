@@ -44,9 +44,9 @@ void VersionUpdaterWin::OnUpdateCheckComplete(
         FROM_HERE,
         {base::ThreadPool(), base::MayBlock(),
          base::TaskPriority::USER_VISIBLE},
-        base::Bind(&upgrade_util::IsUpdatePendingRestart),
-        base::Bind(&VersionUpdaterWin::OnPendingRestartCheck,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&upgrade_util::IsUpdatePendingRestart),
+        base::BindOnce(&VersionUpdaterWin::OnPendingRestartCheck,
+                       weak_factory_.GetWeakPtr()));
     // Early exit since callback_ will be Run in OnPendingRestartCheck.
     return;
   }

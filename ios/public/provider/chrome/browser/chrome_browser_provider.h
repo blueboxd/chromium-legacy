@@ -15,6 +15,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 class AppDistributionProvider;
 class BrandedImageProvider;
@@ -45,7 +46,6 @@ class Browser;
 namespace ios {
 
 class ChromeBrowserProvider;
-class ChromeBrowserState;
 class ChromeIdentityService;
 class GeolocationUpdaterProvider;
 class SigninErrorProvider;

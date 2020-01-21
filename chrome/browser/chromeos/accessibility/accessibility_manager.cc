@@ -965,10 +965,10 @@ void AccessibilityManager::CheckBrailleState() {
     scoped_braille_observer_.Add(braille_controller);
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
-      base::Bind(&BrailleController::GetDisplayState,
-                 base::Unretained(braille_controller)),
-      base::Bind(&AccessibilityManager::ReceiveBrailleDisplayState,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&BrailleController::GetDisplayState,
+                     base::Unretained(braille_controller)),
+      base::BindOnce(&AccessibilityManager::ReceiveBrailleDisplayState,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AccessibilityManager::ReceiveBrailleDisplayState(

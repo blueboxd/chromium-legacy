@@ -90,9 +90,8 @@ class ServiceWorkerVersionTest : public testing::Test {
     scope_ = GURL("https://www.example.com/test/");
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope_;
-    registration_ = new ServiceWorkerRegistration(
-        options, helper_->context()->storage()->NewRegistrationId(),
-        helper_->context()->AsWeakPtr());
+    registration_ =
+        helper_->context()->registry()->CreateNewRegistration(options);
     version_ = new ServiceWorkerVersion(
         registration_.get(),
         GURL("https://www.example.com/test/service_worker.js"),
@@ -1115,9 +1114,8 @@ TEST_F(ServiceWorkerVersionTest, BadOrigin) {
   const GURL scope("bad-origin://www.example.com/test/");
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = scope;
-  auto registration = base::MakeRefCounted<ServiceWorkerRegistration>(
-      options, helper_->context()->storage()->NewRegistrationId(),
-      helper_->context()->AsWeakPtr());
+  auto registration =
+      helper_->context()->registry()->CreateNewRegistration(options);
   auto version = base::MakeRefCounted<ServiceWorkerVersion>(
       registration_.get(),
       GURL("bad-origin://www.example.com/test/service_worker.js"),

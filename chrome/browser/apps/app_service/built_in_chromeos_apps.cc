@@ -192,6 +192,7 @@ void BuiltInChromeOsApps::UnpauseApps(const std::string& app_id) {
 
 void BuiltInChromeOsApps::GetMenuModel(const std::string& app_id,
                                        apps::mojom::MenuType menu_type,
+                                       int64_t display_id,
                                        GetMenuModelCallback callback) {
   apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
 

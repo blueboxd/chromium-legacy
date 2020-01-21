@@ -635,9 +635,13 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
     entity_kv.second->ClearTransientSyncState();
   }
 
-  // TODO(crbug.com/1034923): Propagate failed items to bridge.
   base::Optional<ModelError> error = bridge_->ApplySyncChanges(
       std::move(metadata_change_list), std::move(entity_change_list));
+
+  if (!error_response_list.empty()) {
+    bridge_->OnCommitAttemptErrors(error_response_list);
+  }
+
   if (error) {
     ReportError(*error);
   }

@@ -3498,6 +3498,9 @@
   <message name="IDS_CROSTINI_INSTALLER_BODY" desc="Description for the Crostini installer, a dialog for installing Linux.">
     Get tools for developing websites, Android apps, and more. Installing Linux will download <ph name="DOWNLOAD_SIZE">$1<ex>300MB</ex></ph> of data.
   </message>
+  <message name="IDS_CROSTINI_INSTALLER_NEXT_BUTTON" desc="Label for the button in the Crostini installer dialog to progress to the next page.">
+    Next
+  </message>
   <message name="IDS_CROSTINI_INSTALLER_INSTALL_BUTTON" desc="Label for the button in the Crostini installer dialog to begin installing Linux.">
     Install
   </message>
@@ -3578,6 +3581,12 @@
   </message>
   <message name="IDS_CROSTINI_INSTALLER_UNKNOWN_ERROR" desc="Text shown in the Crostini installer dialog when some unknown error happens">
     Something went wrong. Please try again.
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_CONFIGURE_MESSAGE" desc="Text shown in the Crostini installer dialog describing the purpose of the page for entering extra user-specified options">
+    Change how Linux apps will work.
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_DISK_SIZE_MESSAGE" desc="Text shown in the Crostini installer dialog describing how and why to choose the initial size of the Crostini disk">
+    Disk space to reserve for Crostini (you can change this later).
   </message>
   <message name="IDS_CROSTINI_UNINSTALLER_TITLE" desc="Title of the Crostini uninstaller, a dialog for uninstalling Linux, the associated VM and Linux files.">
     Delete Linux (Beta)

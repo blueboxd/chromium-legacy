@@ -59,6 +59,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
       bool is_active_tab) override;
   bool ShouldProcessQueryAutocomplete(bool is_active_tab) override;
   bool ShouldProcessStopAutocomplete() override;
+  bool ShouldProcessLogCharTypedToRepaintLatency() override;
   bool ShouldProcessBlocklistPromo() override;
   bool ShouldProcessOpenExtensionsPage() override;
   bool ShouldProcessOpenAutocompleteMatch(bool is_active_tab) override;

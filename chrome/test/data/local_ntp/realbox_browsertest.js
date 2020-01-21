@@ -144,6 +144,9 @@ test.realbox1.setUp = test.realbox2.setUp = function() {
       deleteAutocompleteMatch(line) {
         test.realbox.deletedLines.push(line);
       },
+      logCharTypedToRepaintLatency(latencyMs) {
+        test.realbox.latencies.push(latencyMs);
+      },
       openAutocompleteMatch(index, url, button, alt, ctrl, meta, shift) {
         test.realbox.opens.push({index, url, button, alt, ctrl, meta, shift});
       },
@@ -155,6 +158,7 @@ test.realbox1.setUp = test.realbox2.setUp = function() {
   };
 
   test.realbox.deletedLines = [];
+  test.realbox.latencies = [];
   test.realbox.opens = [];
   test.realbox.queries = [];
 
@@ -1363,4 +1367,54 @@ test.realbox2.testEntityMatchImage = function() {
           .getElementsByClassName(test.realbox.CLASSES.MATCH_IMAGE)[0]
           .src);
   assertEquals('transparent', imageContainerEl.style.backgroundColor);
+};
+
+test.realbox2.testCharTypedToRepaintLatency = function() {
+  // Insert a few characters into the input.
+  test.realbox.realboxEl.value = 'h';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+  test.realbox.realboxEl.value = 'he';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  // The responsiveness metric is not recorded until the results are painted.
+  assertEquals(0, test.realbox.latencies.length);
+
+  chrome.embeddedSearch.searchBox.autocompleteresultchanged({
+    input: test.realbox.realboxEl.value,
+    matches: [test.realbox.getSearchMatch()],
+  });
+  // The responsiveness metric is recorded after the results are painted.
+  assertEquals(1, test.realbox.latencies.length);
+
+  // Delete the last character.
+  test.realbox.realboxEl.value = 'h';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  chrome.embeddedSearch.searchBox.autocompleteresultchanged({
+    input: test.realbox.realboxEl.value,
+    matches: [test.realbox.getSearchMatch(
+        {contents: 'h', inlineAutocompletion: 'e'})],
+  });
+  // The responsiveness metric is not recorded when characters are deleted.
+  assertEquals(1, test.realbox.latencies.length);
+
+  // Insert a character into the input while the default match has
+  // inlineAutocompletion.
+  test.realbox.realboxEl.selectionStart = 1;
+  test.realbox.realboxEl.selectionEnd = 2;
+  const keyEvent = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'e',
+  });
+  test.realbox.realboxEl.dispatchEvent(keyEvent);
+  assertTrue(keyEvent.defaultPrevented);
+
+  chrome.embeddedSearch.searchBox.autocompleteresultchanged({
+    input: test.realbox.realboxEl.value,
+    matches: [test.realbox.getSearchMatch()],
+  });
+  // The responsiveness metric is recorded when the default match has
+  // inlineAutocompletion
+  assertEquals(2, test.realbox.latencies.length);
 };

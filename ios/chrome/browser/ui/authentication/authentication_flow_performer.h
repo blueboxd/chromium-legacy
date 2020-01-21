@@ -10,15 +10,12 @@
 #import <UIKit/UIKit.h>
 
 #import "base/ios/block_types.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/authentication/authentication_flow_performer_delegate.h"
 
 class Browser;
 @protocol BrowsingDataCommands;
 @class ChromeIdentity;
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 // Performs the sign-in steps and user interactions as part of the sign-in flow.
 @interface AuthenticationFlowPerformer : NSObject

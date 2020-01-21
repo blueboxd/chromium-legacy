@@ -134,17 +134,19 @@ bool InstallServiceWorkItemImpl::DoImpl() {
   scm_.Set(::OpenSCManager(nullptr, nullptr,
                            SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE));
   if (!scm_.IsValid()) {
-    DPLOG(ERROR) << "::OpenSCManager Failed";
+    PLOG(ERROR) << "::OpenSCManager Failed";
     RecordServiceInstallResult(ServiceInstallResult::kFailedOpenSCManager);
     RecordWin32ApiErrorCode(kOpenSCManager);
     return false;
   }
 
   if (!OpenService()) {
+    VPLOG(1) << "Attempting to install new service following failure to open";
     const bool succeeded = InstallNewService();
     if (succeeded) {
       RecordServiceInstallResult(ServiceInstallResult::kSucceededFreshInstall);
     } else {
+      PLOG(ERROR) << "Failed to install service";
       RecordServiceInstallResult(ServiceInstallResult::kFailedFreshInstall);
       RecordWin32ApiErrorCode(kCreateService);
     }
@@ -180,6 +182,7 @@ bool InstallServiceWorkItemImpl::DoImpl() {
     return true;
   }
 
+  PLOG(ERROR) << "Failed to install service with new name";
   RecordServiceInstallResult(
       ServiceInstallResult::kFailedInstallNewAfterFailedUpgrade);
   RecordWin32ApiErrorCode(kCreateService);

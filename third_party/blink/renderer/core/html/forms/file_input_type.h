@@ -93,6 +93,7 @@ class CORE_EXPORT FileInputType final : public InputType,
   void MultipleAttributeChanged() override;
   String DefaultToolTip(const InputTypeView&) const override;
   void CopyNonAttributeProperties(const HTMLInputElement&) override;
+  void UpdateView() override;
 
   // KeyboardClickableInputTypeView overrides.
   void HandleKeypressEvent(KeyboardEvent&) override;

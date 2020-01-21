@@ -353,6 +353,7 @@ void WebApps::UnpauseApps(const std::string& app_id) {
 
 void WebApps::GetMenuModel(const std::string& app_id,
                            apps::mojom::MenuType menu_type,
+                           int64_t display_id,
                            GetMenuModelCallback callback) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
   if (!web_app) {

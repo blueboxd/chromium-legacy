@@ -32,9 +32,7 @@ source_set("test_support") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [
-    "service_connection_unittest.cc",
-  ]
+  sources = [ "service_connection_unittest.cc" ]
   deps = [
     ":cpp",
     ":test_support",

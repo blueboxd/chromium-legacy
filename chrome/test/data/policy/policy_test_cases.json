@@ -2850,6 +2850,18 @@
     ]
   },
 
+  "ChromeVariations": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "ChromeVariations": 1
+        },
+        "prefs": { "variations_restrictions_by_policy": { "local_state": true } }
+      }
+    ]
+  },
+
   "DataCompressionProxyEnabled": {
     "os": [
       "android"

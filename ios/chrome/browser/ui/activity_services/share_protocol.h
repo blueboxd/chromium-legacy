@@ -8,16 +8,14 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
 @protocol ActivityServicePassword;
 @protocol ActivityServicePositioner;
 @protocol ActivityServicePresentation;
 @protocol BrowserCommands;
 @class ShareToData;
 @protocol SnackbarCommands;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 namespace ShareTo {
 

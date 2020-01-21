@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_slider/cr_slider.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import './strings.m.js';
@@ -20,6 +21,7 @@ import {BrowserProxy} from './browser_proxy.js';
  */
 const State = {
   PROMPT: 'prompt',
+  CONFIGURE: 'configure',
   INSTALLING: 'installing',
   ERROR: 'error',
   CANCELING: 'canceling',
@@ -34,7 +36,7 @@ Polymer({
   _template: html`{__html_template__}`,
 
   properties: {
-    /** @private */
+    /** @private {!State} */
     state_: {
       type: String,
       value: State.PROMPT,
@@ -63,6 +65,35 @@ Polymer({
       type: Object,
       value: State,
     },
+
+    /**
+     * @private
+     */
+    minDisk_: {
+      type: String,
+    },
+
+    /**
+     * @private
+     */
+    maxDisk_: {
+      type: String,
+    },
+
+    /**
+     * @private
+     */
+    defaultDiskSizeTick_: {
+      type: Number,
+    },
+
+    diskSizeTicks_: {
+      type: Array,
+    },
+
+    chosenDiskSize_: {
+      type: Number,
+    },
   },
 
   /** @override */
@@ -86,6 +117,21 @@ Polymer({
         }
       }),
       callbackRouter.onCanceled.addListener(() => this.closeDialog_()),
+      callbackRouter.onAmountOfFreeDiskSpace.addListener(
+          (ticks, defaultIndex, min, max) => {
+            if (ticks.length === 0) {
+              // Error getting the data we need for the slider e.g. unable to
+              // get the amount of free space.
+              // TODO(crbug/1043838): Handle this e.g. show an error to the
+              // user.
+            } else {
+              this.defaultDiskSizeTick_ = defaultIndex;
+              this.diskSizeTicks_ = ticks;
+
+              this.minDisk_ = ticks[0].label;
+              this.maxDisk_ = ticks[ticks.length - 1].label;
+            }
+          }),
     ];
 
     document.addEventListener('keyup', event => {
@@ -95,6 +141,7 @@ Polymer({
       }
     });
 
+    BrowserProxy.getInstance().handler.requestAmountOfFreeDiskSpace();
     this.$$('.action-button').focus();
   },
 
@@ -105,18 +152,29 @@ Polymer({
   },
 
   /** @private */
+  onNextButtonClick_() {
+    assert(this.state_ === State.PROMPT);
+    this.state_ = State.CONFIGURE;
+  },
+
+  /** @private */
   onInstallButtonClick_() {
-    assert(this.state_ === State.PROMPT || this.state_ === State.ERROR);
+    assert(this.canInstall_(this.state_));
+    var diskSize = 0;
+    if (loadTimeData.getBoolean('diskResizingEnabled')) {
+      diskSize = this.diskSizeTicks_[this.$.diskSlider.value].value;
+    }
     this.installerState_ = InstallerState.kStart;
     this.installerProgress_ = 0;
     this.state_ = State.INSTALLING;
-    BrowserProxy.getInstance().handler.install();
+    BrowserProxy.getInstance().handler.install(diskSize);
   },
 
   /** @private */
   onCancelButtonClick_() {
     switch (this.state_) {
       case State.PROMPT:
+      case State.CONFIGURE:
         BrowserProxy.getInstance().handler.cancelBeforeStart();
         this.closeDialog_();
         break;
@@ -150,6 +208,7 @@ Polymer({
     let titleId;
     switch (state) {
       case State.PROMPT:
+      case State.CONFIGURE:
         titleId = 'promptTitle';
         break;
       case State.INSTALLING:
@@ -183,7 +242,29 @@ Polymer({
    * @private
    */
   canInstall_(state) {
-    return state === State.PROMPT || state === State.ERROR;
+    if (loadTimeData.getBoolean('diskResizingEnabled')) {
+      return state === State.CONFIGURE || state === State.ERROR;
+    } else {
+      return state === State.PROMPT || state === State.ERROR;
+    }
+  },
+
+  /**
+   * @param {State} state
+   * @returns {boolean}
+   * @private
+   */
+  showNextButton_(state) {
+    return loadTimeData.getBoolean('diskResizingEnabled') &&
+        state === State.PROMPT;
+  },
+
+  /**
+   * @returns {string}
+   * @private
+   */
+  getNextButtonLabel_() {
+    return loadTimeData.getString('next');
   },
 
   /**
@@ -192,13 +273,20 @@ Polymer({
    * @private
    */
   getInstallButtonLabel_(state) {
+    if (!loadTimeData.getBoolean('diskResizingEnabled') &&
+        state === State.PROMPT) {
+      // TODO(dmunro): Remove all the flag checks once we're rolled out and no
+      // longer need them.
+      return loadTimeData.getString('install');
+    }
     switch (state) {
-      case State.PROMPT:
+      case State.CONFIGURE:
         return loadTimeData.getString('install');
       case State.ERROR:
         return loadTimeData.getString('retry');
+      default:
+        return '';
     }
-    return '';
   },
 
   /**

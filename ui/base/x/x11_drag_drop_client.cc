@@ -282,7 +282,7 @@ void XDragDropClient::OnXdndStatus(const XClientMessageEvent& event) {
       EndMoveLoop();
       return;
     }
-    set_source_state(SourceState::kDropped);
+    source_state_ = SourceState::kDropped;
     SendXdndDrop(source_window);
     return;
   }
@@ -352,6 +352,7 @@ void XDragDropClient::OnSelectionNotify(const XSelectionEvent& xselection) {
 }
 
 void XDragDropClient::InitDrag(int operation) {
+  source_state_ = SourceState::kOther;
   waiting_on_status_ = false;
   next_position_message_.reset();
   status_received_since_enter_ = false;
@@ -404,7 +405,7 @@ void XDragDropClient::HandleMouseReleased() {
       if (status_received_since_enter()) {
         // If we are waiting for an XdndStatus message, we need to wait for it
         // to complete.
-        set_source_state(SourceState::kPendingDrop);
+        source_state_ = SourceState::kPendingDrop;
 
         // Start timer to end the move loop if the target takes too long to send
         // the XdndStatus and XdndFinished messages.
@@ -425,7 +426,7 @@ void XDragDropClient::HandleMouseReleased() {
       StartEndMoveLoopTimer();
 
       // We have negotiated an action with the other end.
-      set_source_state(SourceState::kDropped);
+      source_state_ = SourceState::kDropped;
       SendXdndDrop(source_current_window());
       return;
     }

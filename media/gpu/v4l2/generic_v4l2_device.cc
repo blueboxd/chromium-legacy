@@ -272,14 +272,6 @@ scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
   size_t num_planes = handle.planes.size();
   DCHECK_LE(num_planes, 3u);
 
-  gfx::NativePixmapHandle native_pixmap_handle;
-
-  for (size_t p = 0; p < num_planes; ++p) {
-    native_pixmap_handle.planes.emplace_back(
-        handle.planes[p].stride, handle.planes[p].offset, handle.planes[p].size,
-        std::move(handle.planes[p].fd));
-  }
-
   gfx::BufferFormat buffer_format = gfx::BufferFormat::BGRA_8888;
   switch (fourcc.ToV4L2PixFmt()) {
     case DRM_FORMAT_ARGB8888:
@@ -299,7 +291,7 @@ scoped_refptr<gl::GLImage> GenericV4L2Device::CreateGLImage(
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
           ->CreateNativePixmapFromHandle(0, size, buffer_format,
-                                         std::move(native_pixmap_handle));
+                                         std::move(handle));
 
   DCHECK(pixmap);
 

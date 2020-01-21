@@ -388,6 +388,10 @@ void PasswordFormManager::OnPasswordsRevealed() {
   votes_uploader_.set_has_passwords_revealed_vote(true);
 }
 
+void PasswordFormManager::MoveCredentialsToAccountStore() {
+  password_save_manager_->MoveCredentialsToAccountStore();
+}
+
 bool PasswordFormManager::IsNewLogin() const {
   return password_save_manager_->IsNewLogin();
 }
@@ -460,16 +464,13 @@ void PasswordFormManager::PresaveGeneratedPassword(
   votes_uploader_.set_generation_element(generation_element);
 }
 
-bool PasswordFormManager::UpdateGeneratedPasswordOnUserInput(
+bool PasswordFormManager::UpdateStateOnUserInput(
     const base::string16& form_identifier,
     const base::string16& field_identifier,
     const base::string16& field_value) {
-  if (observed_form_.name != form_identifier || !HasGeneratedPassword()) {
-    // *this might not have generated password, because
-    // 1.This function is called before PresaveGeneratedPassword, or
-    // 2.There are multiple forms with the same |form_identifier|
+  if (observed_form_.name != form_identifier)
     return false;
-  }
+
   bool form_data_changed = false;
   for (FormFieldData& field : observed_form_.fields) {
     if (field.unique_id == field_identifier) {
@@ -478,6 +479,10 @@ bool PasswordFormManager::UpdateGeneratedPasswordOnUserInput(
       break;
     }
   }
+
+  if (!HasGeneratedPassword())
+    return true;
+
   base::string16 generated_password =
       password_save_manager_->GetGeneratedPassword();
   if (votes_uploader_.get_generation_element() == field_identifier) {

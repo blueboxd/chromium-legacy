@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -248,9 +249,8 @@ void FileInputType::SetValue(const String&,
     return;
 
   file_list_->clear();
-  if (auto* layout_object = GetElement().GetLayoutObject())
-    layout_object->SetShouldDoFullPaintInvalidation();
   GetElement().SetNeedsValidityCheck();
+  UpdateView();
 }
 
 FileList* FileInputType::CreateFileList(const FileChooserFileInfoList& files,
@@ -324,14 +324,17 @@ void FileInputType::CreateShadowSubtree() {
           GetElement().Multiple() ? IDS_FORM_MULTIPLE_FILES_BUTTON_LABEL
                                   : IDS_FORM_FILE_BUTTON_LABEL)));
   button->SetShadowPseudoId(AtomicString("-webkit-file-upload-button"));
+  button->setAttribute(html_names::kIdAttr,
+                       shadow_element_names::FileUploadButton());
   button->SetActive(GetElement().CanReceiveDroppedFiles());
   GetElement().UserAgentShadowRoot()->AppendChild(button);
 }
 
 HTMLInputElement* FileInputType::UploadButton() const {
-  Node* node = GetElement().UserAgentShadowRoot()->firstChild();
-  CHECK(!node || IsA<HTMLInputElement>(node));
-  return To<HTMLInputElement>(node);
+  Element* element = GetElement().UserAgentShadowRoot()->getElementById(
+      shadow_element_names::FileUploadButton());
+  CHECK(!element || IsA<HTMLInputElement>(element));
+  return To<HTMLInputElement>(element);
 }
 
 void FileInputType::DisabledAttributeChanged() {
@@ -373,10 +376,7 @@ bool FileInputType::SetFiles(FileList* files) {
 
   GetElement().NotifyFormStateChanged();
   GetElement().SetNeedsValidityCheck();
-
-  if (GetElement().GetLayoutObject())
-    GetElement().GetLayoutObject()->SetShouldDoFullPaintInvalidation();
-
+  UpdateView();
   return files_changed;
 }
 
@@ -518,6 +518,11 @@ void FileInputType::WillOpenPopup() {
     UseCounter::Count(GetElement().GetDocument(),
                       WebFeature::kPopupOpenWhileFileChooserOpened);
   }
+}
+
+void FileInputType::UpdateView() {
+  if (auto* layout_object = GetElement().GetLayoutObject())
+    layout_object->SetShouldDoFullPaintInvalidation();
 }
 
 }  // namespace blink

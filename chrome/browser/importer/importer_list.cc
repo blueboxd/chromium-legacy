@@ -195,10 +195,10 @@ void ImporterList::DetectSourceProfiles(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::Bind(&DetectSourceProfilesWorker, locale,
-                 include_interactive_profiles),
-      base::Bind(&ImporterList::SourceProfilesLoaded,
-                 weak_ptr_factory_.GetWeakPtr(), profiles_loaded_callback));
+      base::BindOnce(&DetectSourceProfilesWorker, locale,
+                     include_interactive_profiles),
+      base::BindOnce(&ImporterList::SourceProfilesLoaded,
+                     weak_ptr_factory_.GetWeakPtr(), profiles_loaded_callback));
 }
 
 const importer::SourceProfile& ImporterList::GetSourceProfileAt(

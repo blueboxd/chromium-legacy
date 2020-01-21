@@ -492,6 +492,7 @@ void ArcApps::UnpauseApps(const std::string& app_id) {
 
 void ArcApps::GetMenuModel(const std::string& app_id,
                            apps::mojom::MenuType menu_type,
+                           int64_t display_id,
                            GetMenuModelCallback callback) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   if (!prefs) {
@@ -523,6 +524,11 @@ void ArcApps::GetMenuModel(const std::string& app_id,
   if (app_info->ready) {
     AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
                    &menu_items);
+  }
+
+  if (menu_type == apps::mojom::MenuType::kShelf &&
+      base::Contains(app_id_to_task_ids_, app_id)) {
+    AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, &menu_items);
   }
 
   std::move(callback).Run(std::move(menu_items));

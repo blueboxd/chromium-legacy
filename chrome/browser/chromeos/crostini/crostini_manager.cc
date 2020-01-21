@@ -127,7 +127,8 @@ CrostiniManager::RestartOptions& CrostiniManager::RestartOptions::operator=(
     RestartOptions&&) = default;
 
 class CrostiniManager::CrostiniRestarter
-    : public crostini::VmShutdownObserver,
+    : public base::RefCountedThreadSafe<CrostiniRestarter>,
+      public crostini::VmShutdownObserver,
       public chromeos::disks::DiskMountManager::Observer,
       public chromeos::SchedulerConfigurationManagerBase::Observer {
  public:
@@ -166,15 +167,13 @@ class CrostiniManager::CrostiniRestarter
       base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(&CrostiniRestarter::StartLxdContainerFinished,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         CrostiniResult::SUCCESS));
+                         base::WrapRefCounted(this), CrostiniResult::SUCCESS));
       return;
     }
 
     StartStage(mojom::InstallerState::kInstallImageLoader);
-    crostini_manager_->InstallTerminaComponent(
-        base::BindOnce(&CrostiniRestarter::LoadComponentFinished,
-                       weak_ptr_factory_.GetWeakPtr()));
+    crostini_manager_->InstallTerminaComponent(base::BindOnce(
+        &CrostiniRestarter::LoadComponentFinished, base::WrapRefCounted(this)));
   }
 
   void AddObserver(CrostiniManager::RestartObserver* observer) {
@@ -228,6 +227,9 @@ class CrostiniManager::CrostiniRestarter
   bool is_aborted() const { return is_aborted_; }
   CrostiniResult result_ = CrostiniResult::NEVER_FINISHED;
 
+ private:
+  friend class base::RefCountedThreadSafe<CrostiniRestarter>;
+
   ~CrostiniRestarter() override {
     // Do not record results if this restart was triggered by the installer.
     // The crostini installer has its own histograms that should be kept
@@ -244,7 +246,6 @@ class CrostiniManager::CrostiniRestarter
       mount_manager->RemoveObserver(this);
   }
 
- private:
   void StartStage(mojom::InstallerState stage) {
     for (auto& observer : observer_list_) {
       observer.OnStageStarted(stage);
@@ -273,8 +274,8 @@ class CrostiniManager::CrostiniRestarter
     // Set the pref here, after we first successfully install something
     profile_->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
     StartStage(mojom::InstallerState::kStartConcierge);
-    crostini_manager_->StartConcierge(base::BindOnce(
-        &CrostiniRestarter::ConciergeStarted, weak_ptr_factory_.GetWeakPtr()));
+    crostini_manager_->StartConcierge(
+        base::BindOnce(&CrostiniRestarter::ConciergeStarted, this));
   }
 
   void ConciergeStarted(bool is_started) {
@@ -291,7 +292,7 @@ class CrostiniManager::CrostiniRestarter
     }
 
     // Allow concierge to choose an appropriate disk image size.
-    int64_t disk_size_available = 0;
+    int64_t disk_size_available = options_.disk_size.value_or(0);
     // If we have an already existing disk, CreateDiskImage will just return its
     // path so we can pass it to StartTerminaVm.
     StartStage(mojom::InstallerState::kCreateDiskImage);
@@ -299,8 +300,8 @@ class CrostiniManager::CrostiniRestarter
         base::FilePath(vm_name_),
         vm_tools::concierge::StorageLocation::STORAGE_CRYPTOHOME_ROOT,
         disk_size_available,
-        base::BindOnce(&CrostiniRestarter::CreateDiskImageFinished,
-                       weak_ptr_factory_.GetWeakPtr(), disk_size_available));
+        base::BindOnce(&CrostiniRestarter::CreateDiskImageFinished, this,
+                       disk_size_available));
   }
 
   void CreateDiskImageFinished(int64_t disk_size_available,
@@ -346,8 +347,7 @@ class CrostiniManager::CrostiniRestarter
     StartStage(mojom::InstallerState::kStartTerminaVm);
     crostini_manager_->StartTerminaVm(
         vm_name_, disk_path_, num_cores_disabled,
-        base::BindOnce(&CrostiniRestarter::StartTerminaVmFinished,
-                       weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CrostiniRestarter::StartTerminaVmFinished, this));
   }
 
   void StartTerminaVmFinished(bool success) {
@@ -368,15 +368,13 @@ class CrostiniManager::CrostiniRestarter
             crostini::prefs::kReportCrostiniUsageEnabled) &&
         vm_name_ == kCrostiniDefaultVmName &&
         container_name_ == kCrostiniDefaultContainerName) {
-      crostini_manager_->GetTerminaVmKernelVersion(
-          base::BindOnce(&CrostiniRestarter::GetTerminaVmKernelVersionFinished,
-                         weak_ptr_factory_.GetWeakPtr()));
+      crostini_manager_->GetTerminaVmKernelVersion(base::BindOnce(
+          &CrostiniRestarter::GetTerminaVmKernelVersionFinished, this));
     }
     StartStage(mojom::InstallerState::kCreateContainer);
     crostini_manager_->CreateLxdContainer(
         vm_name_, container_name_,
-        base::BindOnce(&CrostiniRestarter::CreateLxdContainerFinished,
-                       weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CrostiniRestarter::CreateLxdContainerFinished, this));
   }
 
   void GetTerminaVmKernelVersionFinished(
@@ -412,7 +410,7 @@ class CrostiniManager::CrostiniRestarter
         options_.container_username.value_or(
             DefaultContainerUserNameForProfile(profile_)),
         base::BindOnce(&CrostiniRestarter::SetUpLxdContainerUserFinished,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       this));
   }
 
   void SetUpLxdContainerUserFinished(bool success) {
@@ -432,8 +430,7 @@ class CrostiniManager::CrostiniRestarter
     StartStage(mojom::InstallerState::kStartContainer);
     crostini_manager_->StartLxdContainer(
         vm_name_, container_name_,
-        base::BindOnce(&CrostiniRestarter::StartLxdContainerFinished,
-                       weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&CrostiniRestarter::StartLxdContainerFinished, this));
   }
 
   void StartLxdContainerFinished(CrostiniResult result) {
@@ -471,8 +468,8 @@ class CrostiniManager::CrostiniRestarter
       StartStage(mojom::InstallerState::kFetchSshKeys);
       crostini_manager_->GetContainerSshKeys(
           vm_name_, container_name_,
-          base::BindOnce(&CrostiniRestarter::GetContainerSshKeysFinished,
-                         weak_ptr_factory_.GetWeakPtr(), info->username));
+          base::BindOnce(&CrostiniRestarter::GetContainerSshKeysFinished, this,
+                         info->username));
     } else {
       FinishRestart(result);
     }
@@ -586,8 +583,6 @@ class CrostiniManager::CrostiniRestarter
   bool is_running_ = false;
 
   static CrostiniManager::RestartId next_restart_id_;
-
-  base::WeakPtrFactory<CrostiniRestarter> weak_ptr_factory_{this};
 };
 
 CrostiniManager::RestartId
@@ -1853,25 +1848,20 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostiniWithOptions(
     return kUninitializedRestartId;
   }
 
-  auto restarter = std::make_unique<CrostiniRestarter>(
+  auto restarter = base::MakeRefCounted<CrostiniRestarter>(
       profile_, this, std::move(vm_name), std::move(container_name),
       std::move(options), std::move(callback));
-  auto restart_id = restarter->restart_id();
   if (observer)
     restarter->AddObserver(observer);
   auto key = ContainerId(restarter->vm_name(), restarter->container_name());
-  restarters_by_container_.emplace(key, restart_id);
-  restarters_by_id_[restart_id] = std::move(restarter);
+  restarters_by_container_.emplace(key, restarter->restart_id());
+  restarters_by_id_[restarter->restart_id()] = restarter;
   if (restarters_by_container_.count(key) > 1) {
     VLOG(1) << "Already restarting " << key;
   } else {
-    // ::Restart needs to be called after the restarter is inserted into
-    // restarters_by_id_ because some tests will make the restart process
-    // complete before ::Restart returns.
-    restarters_by_id_[restart_id]->Restart();
+    restarter->Restart();
   }
-
-  return restart_id;
+  return restarter->restart_id();
 }
 
 void CrostiniManager::AbortRestartCrostini(
@@ -1911,7 +1901,8 @@ void CrostiniManager::OnAbortRestartCrostini(
   // Kick off the "next" (in no order) pending Restart() if any.
   auto pending_it = restarters_by_container_.find(key);
   if (pending_it != restarters_by_container_.end()) {
-    restarters_by_id_[pending_it->second]->Restart();
+    auto restarter = restarters_by_id_[pending_it->second];
+    restarter->Restart();
   }
 
   std::move(callback).Run();
@@ -2823,7 +2814,7 @@ void CrostiniManager::RemoveCrostini(std::string vm_name,
           },
           crostini_remover));
 
-  for (const auto& restarter_it : restarters_by_id_) {
+  for (auto restarter_it : restarters_by_id_) {
     AbortRestartCrostini(restarter_it.first, abort_callback);
   }
 }
@@ -2839,11 +2830,11 @@ void CrostiniManager::FinishRestart(CrostiniRestarter* restarter,
                                     CrostiniResult result) {
   auto key = ContainerId(restarter->vm_name(), restarter->container_name());
   auto range = restarters_by_container_.equal_range(key);
-  std::vector<std::unique_ptr<CrostiniRestarter>> pending_restarters;
+  std::vector<scoped_refptr<CrostiniRestarter>> pending_restarters;
   // Erase first, because restarter->RunCallback() may modify our maps.
   for (auto it = range.first; it != range.second; ++it) {
     CrostiniManager::RestartId restart_id = it->second;
-    pending_restarters.emplace_back(std::move(restarters_by_id_[restart_id]));
+    pending_restarters.emplace_back(restarters_by_id_[restart_id]);
     restarters_by_id_.erase(restart_id);
   }
   restarters_by_container_.erase(range.first, range.second);

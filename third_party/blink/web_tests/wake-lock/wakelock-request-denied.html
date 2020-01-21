@@ -3,12 +3,13 @@
 <body>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testdriver.js"></script>
+<script src="../resources/testdriver-vendor.js"></script>
 <script>
 'use strict';
 
 promise_test(async t => {
-  await internals.setPermission({name: 'wake-lock', type: 'screen'}, 'denied',
-                                location.origin, location.origin);
+  await test_driver.set_permission({name: 'wake-lock', type: 'screen'}, 'denied', false);
   return promise_rejects(t, "NotAllowedError", navigator.wakeLock.request('screen'));
 }, 'Denied requests should abort with NotAllowedError');
 </script>

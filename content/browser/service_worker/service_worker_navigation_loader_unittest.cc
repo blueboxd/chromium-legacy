@@ -342,8 +342,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = GURL("https://example.com/");
     registration_ =
-        new ServiceWorkerRegistration(options, storage()->NewRegistrationId(),
-                                      helper_->context()->AsWeakPtr());
+        helper_->context()->registry()->CreateNewRegistration(options);
     version_ = new ServiceWorkerVersion(
         registration_.get(), GURL("https://example.com/service_worker.js"),
         blink::mojom::ScriptType::kClassic, storage()->NewVersionId(),

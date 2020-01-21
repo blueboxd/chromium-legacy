@@ -680,13 +680,13 @@ void PasswordManager::PresaveGeneratedPassword(
   }
 }
 
-void PasswordManager::UpdateGeneratedPasswordOnUserInput(
+void PasswordManager::UpdateStateOnUserInput(
     const base::string16& form_identifier,
     const base::string16& field_identifier,
     const base::string16& field_value) {
   for (std::unique_ptr<PasswordFormManager>& manager : form_managers_) {
-    if (manager->UpdateGeneratedPasswordOnUserInput(
-            form_identifier, field_identifier, field_value)) {
+    if (manager->UpdateStateOnUserInput(form_identifier, field_identifier,
+                                        field_value)) {
       break;
     }
   }

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -21,6 +22,7 @@
 #include "components/sync/base/sync_mode.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/data_type_activation_response.h"
+#include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/fake_model_type_sync_bridge.h"
@@ -165,6 +167,18 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
     }
   }
 
+  void OnCommitAttemptErrors(
+      const FailedCommitResponseDataList& error_response_list) override {
+    if (!on_commit_attempt_errors_callback_.is_null()) {
+      std::move(on_commit_attempt_errors_callback_).Run(error_response_list);
+    }
+  }
+
+  void SetOnCommitAttemptErrorsCallback(
+      base::OnceCallback<void(const FailedCommitResponseDataList&)> callback) {
+    on_commit_attempt_errors_callback_ = std::move(callback);
+  }
+
  private:
   void CaptureDataCallback(DataCallback callback,
                            std::unique_ptr<DataBatch> data) {
@@ -186,6 +200,9 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
   // Whether to return GetData results synchronously. Overrides the default
   // callback capture behavior if set to true.
   bool synchronous_data_callback_ = false;
+
+  base::OnceCallback<void(const FailedCommitResponseDataList&)>
+      on_commit_attempt_errors_callback_;
 };
 
 }  // namespace
@@ -2427,6 +2444,57 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   EXPECT_FALSE(type_processor()->IsTrackingEntityForTest(kStorageKey1));
   EXPECT_FALSE(db()->HasMetadata(kStorageKey1));
   EXPECT_TRUE(type_processor()->IsTrackingEntityForTest(kStorageKey2));
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldPropagateFailedCommitItemsToBridgeWhenCommitCompleted) {
+  FailedCommitResponseData response_data;
+  response_data.client_tag_hash = GetHash("dummy tag");
+  response_data.response_type = sync_pb::CommitResponse::TRANSIENT_ERROR;
+
+  FailedCommitResponseDataList failed_list;
+  failed_list.push_back(response_data);
+
+  FailedCommitResponseDataList actual_error_response_list;
+
+  auto on_commit_attempt_errors_callback = base::BindOnce(
+      [](FailedCommitResponseDataList* actual_error_response_list,
+         const FailedCommitResponseDataList& error_response_list) {
+        // We put expectations outside of the callback, so that they fail if
+        // callback is not ran.
+        *actual_error_response_list = error_response_list;
+      },
+      &actual_error_response_list);
+
+  bridge()->SetOnCommitAttemptErrorsCallback(
+      std::move(on_commit_attempt_errors_callback));
+
+  type_processor()->OnCommitCompleted(
+      model_type_state(),
+      /*committed_response_list=*/CommitResponseDataList(), failed_list);
+
+  ASSERT_EQ(1u, actual_error_response_list.size());
+  EXPECT_EQ(response_data.client_tag_hash,
+            actual_error_response_list[0].client_tag_hash);
+  EXPECT_EQ(response_data.response_type,
+            actual_error_response_list[0].response_type);
+}
+
+TEST_F(ClientTagBasedModelTypeProcessorTest,
+       ShouldNotPropagateFailedCommitAttemptToBridgeWhenNoFailedItems) {
+  auto on_commit_attempt_errors_callback = base::BindOnce(
+      [](const FailedCommitResponseDataList& error_response_list) {
+        ADD_FAILURE()
+            << "OnCommitAttemptErrors is called when no failed items.";
+      });
+
+  bridge()->SetOnCommitAttemptErrorsCallback(
+      std::move(on_commit_attempt_errors_callback));
+
+  type_processor()->OnCommitCompleted(
+      model_type_state(),
+      /*committed_response_list=*/CommitResponseDataList(),
+      /*rror_response_list=*/FailedCommitResponseDataList());
 }
 
 class CommitOnlyClientTagBasedModelTypeProcessorTest

@@ -492,9 +492,9 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
           FROM_HERE,
           {base::ThreadPool(), base::MayBlock(),
            base::TaskPriority::BEST_EFFORT},
-          base::Bind(&ReadNotificationImage, file_path),
-          base::Bind(&DownloadItemNotification::OnImageLoaded,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&ReadNotificationImage, file_path),
+          base::BindOnce(&DownloadItemNotification::OnImageLoaded,
+                         weak_factory_.GetWeakPtr()));
     }
   }
 }
@@ -544,9 +544,9 @@ void DownloadItemNotification::OnImageDecoded(const SkBitmap& decoded_bitmap) {
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&CropImage, decoded_bitmap),
-      base::Bind(&DownloadItemNotification::OnImageCropped,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&CropImage, decoded_bitmap),
+      base::BindOnce(&DownloadItemNotification::OnImageCropped,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void DownloadItemNotification::OnImageCropped(const SkBitmap& bitmap) {

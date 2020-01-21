@@ -1,3 +1,4 @@
+
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -277,6 +278,14 @@ let enterWasPressed = false;
 const imageUrlToDataUrlCache = {};
 
 /**
+ * The time of the first character insert operation that has not yet been
+ * painted in floating point milliseconds. Used to measure the realbox
+ * responsiveness with a histogram.
+ * @type {number}
+ */
+let charTypedTime = 0;
+
+/**
  * True if dark mode is enabled.
  * @type {boolean}
  */
@@ -345,6 +354,7 @@ function autocompleteResultChanged(result) {
   }
 
   renderAutocompleteMatches(result.matches);
+
   autocompleteResult = result;
 
   $(IDS.REALBOX).focus();
@@ -1343,6 +1353,12 @@ function onRealboxInput() {
 
   updateRealboxOutput({inline: '', text: realboxValue});
 
+  const charTyped = !isDeletingInput && !!realboxValue.trim();
+  // If a character has been typed, update |charTypedTime|. Otherwise reset it.
+  // If |charTypedTime| is not 0, there's a pending typed character for which
+  // the results have not been painted yet. In that case, keep the earlier time.
+  charTypedTime = charTyped ? charTypedTime || window.performance.now() : 0;
+
   if (realboxValue.trim()) {
     queryAutocomplete(realboxValue);
   } else {
@@ -1422,6 +1438,12 @@ function onRealboxWrapperKeydown(e) {
         inline: lastOutput.inline.substr(1),
         text: assert(lastOutput.text + key),
       });
+
+      // If |charTypedTime| is not 0, there's a pending typed character for
+      // which the results have not been painted yet. In that case, keep the
+      // earlier time.
+      charTypedTime = charTypedTime || window.performance.now();
+
       queryAutocomplete(lastOutput.text);
       e.preventDefault();
       return;
@@ -1770,9 +1792,15 @@ function renderAutocompleteMatches(matches) {
     realboxMatchesEl.append(matchEl);
   }
 
+  if (charTypedTime) {
+    window.chrome.embeddedSearch.searchBox.logCharTypedToRepaintLatency(
+        Math.floor(window.performance.now() - charTypedTime));
+    charTypedTime = 0;
+  }
+
   // When the matches are replaced, the focus gets dropped temporariliy as the
   // focused element is being deleted from the DOM. Stop listening to 'focusout'
-  // event and retore it immediately after since we don't want to stop
+  // event and restore it immediately after since we don't want to stop
   // autocomplete in those cases.
   const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
   realboxWrapper.removeEventListener('focusout', onRealboxWrapperFocusOut);

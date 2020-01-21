@@ -80,7 +80,6 @@ class ColorInputType final : public InputType,
   bool TypeShouldForceLegacyLayout() const override;
 
   Color ValueAsColor() const;
-  void EndColorChooser();
   HTMLElement* ShadowColorSwatch() const;
 
   Member<ColorChooser> chooser_;

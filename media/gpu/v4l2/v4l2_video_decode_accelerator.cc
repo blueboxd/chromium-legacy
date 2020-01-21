@@ -470,7 +470,6 @@ void V4L2VideoDecodeAccelerator::CreateEGLImageFor(
     int32_t picture_buffer_id,
     gfx::NativePixmapHandle handle,
     GLuint texture_id,
-    const gfx::Size& size,
     const Fourcc fourcc) {
   DVLOGF(3) << "index=" << buffer_index;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
@@ -494,8 +493,8 @@ void V4L2VideoDecodeAccelerator::CreateEGLImageFor(
   V4L2Device* egl_device =
       image_processor_device_ ? image_processor_device_.get() : device_.get();
   EGLImageKHR egl_image = egl_device->CreateEGLImage(
-      egl_display_, gl_context->GetHandle(), texture_id, size, buffer_index,
-      fourcc, std::move(handle));
+      egl_display_, gl_context->GetHandle(), texture_id, visible_size_,
+      buffer_index, fourcc, std::move(handle));
   if (egl_image == EGL_NO_IMAGE_KHR) {
     VLOGF(1) << "could not create EGLImageKHR,"
              << " index=" << buffer_index << " texture_id=" << texture_id;
@@ -725,7 +724,7 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
           FROM_HERE,
           base::BindOnce(&V4L2VideoDecodeAccelerator::CreateEGLImageFor,
                          weak_this_, index, picture_buffer_id,
-                         std::move(handle), iter->texture_id, egl_image_size_,
+                         std::move(handle), iter->texture_id,
                          *egl_image_format_fourcc_));
 
       // Early return, AssignEGLImage will make the buffer available for
@@ -2696,8 +2695,7 @@ void V4L2VideoDecodeAccelerator::FrameProcessed(
             &V4L2VideoDecodeAccelerator::CreateEGLImageFor, weak_this_,
             ip_buffer_index, ip_output_record.picture_id,
             CreateGpuMemoryBufferHandle(frame.get()).native_pixmap_handle,
-            ip_output_record.texture_id, egl_image_size_,
-            *egl_image_format_fourcc_));
+            ip_output_record.texture_id, *egl_image_format_fourcc_));
   }
 
   // Remove our job from the IP jobs queue

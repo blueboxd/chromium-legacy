@@ -40,6 +40,7 @@ class MockPasswordFormManagerForUI : public PasswordFormManagerForUI {
   MOCK_METHOD1(OnNoInteraction, void(bool));
   MOCK_METHOD0(PermanentlyBlacklist, void());
   MOCK_METHOD0(OnPasswordsRevealed, void());
+  MOCK_METHOD0(MoveCredentialsToAccountStore, void());
 
   DISALLOW_COPY_AND_ASSIGN(MockPasswordFormManagerForUI);
 };

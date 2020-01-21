@@ -164,7 +164,8 @@ void ColorInputType::HandleDOMActivateEvent(Event& event) {
 }
 
 void ColorInputType::ClosePopupView() {
-  EndColorChooser();
+  if (chooser_)
+    chooser_->EndChooser();
 }
 
 bool ColorInputType::ShouldRespectListAttribute() {
@@ -203,11 +204,6 @@ void ColorInputType::DidEndChooser() {
   if (LayoutTheme::GetTheme().IsModalColorChooser())
     GetElement().EnqueueChangeEvent();
   chooser_.Clear();
-}
-
-void ColorInputType::EndColorChooser() {
-  if (chooser_)
-    chooser_->EndChooser();
 }
 
 void ColorInputType::UpdateView() {

@@ -14,7 +14,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/location.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -60,7 +59,6 @@
 #include "content/public/test/simple_url_loader_test_helper.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
-#include "net/base/address_list.h"
 #include "net/base/filename_util.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -69,7 +67,6 @@
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_util.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/dns/public/resolve_error_info.h"
 #include "net/http/http_response_headers.h"
 #include "net/reporting/reporting_policy.h"
 #include "net/ssl/ssl_config.h"
@@ -88,11 +85,9 @@
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
-#include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
-#include "services/network/test/test_dns_util.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -108,9 +103,6 @@
 #endif
 
 namespace {
-
-constexpr char kHostname[] = "foo.test";
-constexpr char kAddress[] = "5.8.13.21";
 
 const char kCacheRandomPath[] = "/cacherandom";
 
@@ -243,8 +235,6 @@ class NetworkContextConfigurationBrowserTest
   void SetUpOnMainThread() override {
     // Used in a bunch of proxy tests. Should not resolve.
     host_resolver()->AddSimulatedFailure("does.not.resolve.test");
-
-    host_resolver()->AddRule(kHostname, kAddress);
 
     controllable_http_response_ =
         std::make_unique<net::test_server::ControllableHttpResponse>(
@@ -1117,57 +1107,6 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
     ASSERT_TRUE(simple_loader_helper.response_body());
     EXPECT_EQ(original_response, *simple_loader_helper.response_body());
   }
-}
-
-// Make sure that NetworkContexts have separate DNS caches.
-IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest,
-                       DnsCacheIsolation) {
-  net::NetworkIsolationKey network_isolation_key =
-      net::NetworkIsolationKey::CreateTransient();
-  net::HostPortPair host_port_pair(kHostname, 0);
-
-  // Resolve |host_port_pair|, which should succeed and put it in the
-  // NetworkContext's cache.
-  network::DnsLookupResult result =
-      network::BlockingDnsLookup(network_context(), host_port_pair,
-                                 nullptr /* params */, network_isolation_key);
-  EXPECT_EQ(net::OK, result.error);
-  ASSERT_TRUE(result.resolved_addresses.has_value());
-  ASSERT_EQ(1u, result.resolved_addresses->size());
-  EXPECT_EQ(kAddress,
-            result.resolved_addresses.value()[0].ToStringWithoutPort());
-
-  // Do a cache-only lookup using the original network context, which should
-  // return the same result it initially did. This is done immediately after the
-  // lookup, as a race mitigation to minimize the chance of the cache entry
-  // expiring before this check.
-  network::mojom::ResolveHostParametersPtr params =
-      network::mojom::ResolveHostParameters::New();
-  // Cache only lookup.
-  params->source = net::HostResolverSource::LOCAL_ONLY;
-  result = network::BlockingDnsLookup(network_context(), host_port_pair,
-                                      std::move(params), network_isolation_key);
-  EXPECT_EQ(net::OK, result.error);
-  ASSERT_TRUE(result.resolved_addresses.has_value());
-  ASSERT_EQ(1u, result.resolved_addresses->size());
-  EXPECT_EQ(kAddress,
-            result.resolved_addresses.value()[0].ToStringWithoutPort());
-
-  // Make a cache-only request for the same hostname, for each other network
-  // context, and make sure no result is returned. It's possible for the entry
-  // to expire during this test run, so on regression, this step may flakily
-  // pass.
-  ForEachOtherContext(
-      base::BindLambdaForTesting([&](NetworkContextType network_context_type) {
-        network::mojom::ResolveHostParametersPtr params =
-            network::mojom::ResolveHostParameters::New();
-        // Cache only lookup.
-        params->source = net::HostResolverSource::LOCAL_ONLY;
-        network::DnsLookupResult result = network::BlockingDnsLookup(
-            GetNetworkContextForContextType(network_context_type),
-            host_port_pair, std::move(params), network_isolation_key);
-        EXPECT_EQ(net::ERR_DNS_CACHE_MISS, result.error);
-      }));
 }
 
 // Visits a URL with an HSTS header, and makes sure it is respected.

@@ -676,8 +676,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&version_loader::GetVersion, version_loader::VERSION_FULL),
-      base::Bind(&ChromeOSVersionCallback));
+      base::BindOnce(&version_loader::GetVersion, version_loader::VERSION_FULL),
+      base::BindOnce(&ChromeOSVersionCallback));
 
   arc_kiosk_app_manager_.reset(new ArcKioskAppManager());
   web_kiosk_app_manager_.reset(new WebKioskAppManager());

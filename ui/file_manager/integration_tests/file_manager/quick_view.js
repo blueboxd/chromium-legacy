@@ -67,6 +67,48 @@
   }
 
   /**
+   * Opens the Quick View dialog with given file |names|. The files must be
+   * present and check-selected in the Files app file list.
+   *
+   * @param {string} appId Files app windowId.
+   * @param {Array<string>} names File names.
+   */
+  async function openQuickViewMultipleSelection(appId, names) {
+    const caller = getCaller();
+
+    function checkQuickViewElementsDisplayBlock(elements) {
+      const haveElements = Array.isArray(elements) && elements.length !== 0;
+      if (!haveElements || elements[0].styles.display !== 'block') {
+        return pending(caller, 'Waiting for Quick View to open.');
+      }
+      return;
+    }
+
+    // Get the file-list rows that are check-selected (multi-selected).
+    const selectedRows = await remoteCall.callRemoteTestUtil(
+        'deepQueryAllElements', appId, ['#file-list li[selected]']);
+
+    // Check: the selection should contain the given file names.
+    chrome.test.assertEq(names.length, selectedRows.length);
+    for (let i = 0; i < names.length; i++) {
+      chrome.test.assertTrue(
+          selectedRows[i].attributes['file-name'].includes(names[i]));
+    }
+
+    // Open Quick View via its keyboard shortcut.
+    const space = ['#file-list', ' ', false, false, false];
+    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, space);
+
+    // Check: the Quick View dialog should be shown.
+    await repeatUntil(async () => {
+      const elements = ['#quick-view', '#dialog[open]'];
+      return checkQuickViewElementsDisplayBlock(
+          await remoteCall.callRemoteTestUtil(
+              'deepQueryAllElements', appId, [elements, ['display']]));
+    });
+  }
+
+  /**
    * Assuming that Quick View is currently open per openQuickView above, closes
    * the Quick View dialog.
    *
@@ -1239,18 +1281,8 @@
         !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlSpace),
         'Ctrl+Space failed');
 
-    // Check: both items should be selected.
-    const selectedRows = await remoteCall.callRemoteTestUtil(
-        'deepQueryAllElements', appId, ['#file-list li[selected]']);
-    chrome.test.assertEq(2, selectedRows.length);
-    chrome.test.assertTrue(
-        selectedRows[0].attributes['file-name'].includes(['Desktop']));
-    chrome.test.assertTrue(
-        selectedRows[1].attributes['file-name'].includes(['hello']));
-
-    // Open Quick View via its keyboard shortcut.
-    const space = ['#file-list', ' ', false, false, false];
-    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, space);
+    // Open Quick View with the check-selected files.
+    await openQuickViewMultipleSelection(appId, ['Desktop', 'hello']);
 
     // Wait for the Quick View <webview> to load and display its content.
     function checkWebViewImageLoaded(elements) {
@@ -1313,18 +1345,8 @@
         !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlSpace),
         'Ctrl+Space failed');
 
-    // Check: both items should be selected.
-    const selectedRows = await remoteCall.callRemoteTestUtil(
-        'deepQueryAllElements', appId, ['#file-list li[selected]']);
-    chrome.test.assertEq(2, selectedRows.length);
-    chrome.test.assertTrue(
-        selectedRows[0].attributes['file-name'].includes(['small']));
-    chrome.test.assertTrue(
-        selectedRows[1].attributes['file-name'].includes(['hello']));
-
-    // Attempt to open Quick View via its keyboard shortcut.
-    const space = ['#file-list', ' ', false, false, false];
-    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, space);
+    // Open Quick View with the check-selected files.
+    await openQuickViewMultipleSelection(appId, ['small', 'hello']);
 
     // Wait for the Quick View <webview> to load and display its content.
     function checkWebViewImageLoaded(elements) {
@@ -1379,6 +1401,99 @@
   };
 
   /**
+   * Tests that Quick View displays pdf files when multiple files are
+   * selected.
+   */
+  testcase.openQuickViewWithMultipleFilesPdf = async () => {
+    const caller = getCaller();
+
+    /**
+     * The <webview> resides in the <files-safe-media type="image"> shadow DOM,
+     * which is a child of the #quick-view shadow DOM.
+     */
+    const webView =
+        ['#quick-view', 'files-safe-media[type="image"]', 'webview'];
+
+    const files = [ENTRIES.tallPdf, ENTRIES.desktop, ENTRIES.smallJpeg];
+    const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, files, []);
+
+    // Add item 1 to the check-selection, ENTRIES.smallJpeg.
+    const downKey = ['#file-list', 'ArrowDown', false, false, false];
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, downKey),
+        'ArrowDown failed');
+    const ctrlSpace = ['#file-list', ' ', true, false, false];
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlSpace),
+        'Ctrl+Space failed');
+
+    // Add item 3 to the check-selection, ENTRIES.tallPdf.
+    const ctrlDown = ['#file-list', 'ArrowDown', true, false, false];
+    for (let i = 0; i < 2; i++) {
+      chrome.test.assertTrue(
+          !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlDown),
+          'Ctrl+ArrowDown failed');
+    }
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlSpace),
+        'Ctrl+Space failed');
+
+    // Open Quick View with the check-selected files.
+    await openQuickViewMultipleSelection(appId, ['small', 'tall']);
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewImageLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || elements[0].attributes.loaded !== '') {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+
+    // Check: the image file should be displayed in the content panel.
+    await repeatUntil(async () => {
+      return checkWebViewImageLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [webView, ['display']]));
+    });
+
+    /**
+     * The PDF <webview> resides in the #quick-view shadow DOM, as a child of
+     * the #dialog element.
+     */
+    const pdfView = ['#quick-view', '#dialog[open] webview.content'];
+
+    // Press the down arrow key to select the next file.
+    const downArrow = ['#quick-view', 'ArrowDown', false, false, false];
+    chrome.test.assertTrue(
+        await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, downArrow));
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewPdfLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || !elements[0].attributes.src) {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+
+    // Check: the pdf file should be displayed in the content panel.
+    await repeatUntil(async () => {
+      return checkWebViewPdfLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [pdfView, ['display']]));
+    });
+
+    // Check: the open button should be displayed.
+    await remoteCall.waitForElement(
+        appId, ['#quick-view', '#open-button:not([hidden])']);
+  };
+
+  /**
    * Tests that the content panel changes when using the up/down arrow keys
    * when multiple files are selected.
    */
@@ -1416,18 +1531,8 @@
         !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlSpace),
         'Ctrl+Space failed');
 
-    // Check: both items should be selected.
-    const selectedRows = await remoteCall.callRemoteTestUtil(
-        'deepQueryAllElements', appId, ['#file-list li[selected]']);
-    chrome.test.assertEq(2, selectedRows.length);
-    chrome.test.assertTrue(
-        selectedRows[0].attributes['file-name'].includes(['tall']));
-    chrome.test.assertTrue(
-        selectedRows[1].attributes['file-name'].includes(['hello']));
-
-    // Attempt to open Quick View via its keyboard shortcut.
-    const space = ['#file-list', ' ', false, false, false];
-    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, space);
+    // Open Quick View with the check-selected files.
+    await openQuickViewMultipleSelection(appId, ['tall', 'hello']);
 
     // Wait for the Quick View <webview> to load and display its content.
     function checkWebViewTextLoaded(elements) {
@@ -1516,18 +1621,8 @@
         !!await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlSpace),
         'Ctrl+Space failed');
 
-    // Check: both items should be selected.
-    const selectedRows = await remoteCall.callRemoteTestUtil(
-        'deepQueryAllElements', appId, ['#file-list li[selected]']);
-    chrome.test.assertEq(2, selectedRows.length);
-    chrome.test.assertTrue(
-        selectedRows[0].attributes['file-name'].includes(['tall']));
-    chrome.test.assertTrue(
-        selectedRows[1].attributes['file-name'].includes(['hello']));
-
-    // Attempt to open Quick View via its keyboard shortcut.
-    const space = ['#file-list', ' ', false, false, false];
-    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, space);
+    // Open Quick View with the check-selected files.
+    await openQuickViewMultipleSelection(appId, ['tall', 'hello']);
 
     // Wait for the Quick View <webview> to load and display its content.
     function checkWebViewTextLoaded(elements) {

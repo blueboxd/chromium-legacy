@@ -6,8 +6,11 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/strcat.h"
 #include "chromeos/components/drivefs/drivefs_bootstrap.h"
+#include "chromeos/disks/mount_point.h"
 
 namespace drivefs {
 
@@ -19,74 +22,60 @@ constexpr char kMyFilesOption[] = "myfiles=";
 constexpr char kMountScheme[] = "drivefs://";
 constexpr base::TimeDelta kMountTimeout = base::TimeDelta::FromSeconds(20);
 
-class DiskMounterImpl : public DiskMounter,
-                        public chromeos::disks::DiskMountManager::Observer {
+class DiskMounterImpl : public DiskMounter {
  public:
   explicit DiskMounterImpl(
       chromeos::disks::DiskMountManager* disk_mount_manager)
       : disk_mount_manager_(disk_mount_manager) {}
 
-  ~DiskMounterImpl() override {
-    disk_mount_manager_->RemoveObserver(this);
-    if (!mount_path_.empty()) {
-      Unmount();
-    }
-  }
+  ~DiskMounterImpl() override = default;
 
   void Mount(const base::UnguessableToken& token,
              const base::FilePath& data_path,
              const base::FilePath& my_files_path,
              const std::string& desired_mount_dir_name,
              base::OnceCallback<void(base::FilePath)> callback) override {
-    DCHECK(mount_path_.empty());
+    DCHECK(!mount_point_);
     DCHECK(callback_.is_null());
     callback_ = std::move(callback);
 
-    disk_mount_manager_->AddObserver(this);
     source_path_ = base::StrCat({kMountScheme, token.ToString()});
     std::string datadir_option =
         base::StrCat({kDataDirOption, data_path.value()});
-    disk_mount_manager_->MountPath(
-        source_path_, "", desired_mount_dir_name,
+
+    chromeos::disks::MountPoint::Mount(
+        disk_mount_manager_, source_path_, "", desired_mount_dir_name,
         {datadir_option, base::StrCat({kMyFilesOption, my_files_path.value()})},
         chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-        chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
+        chromeos::MOUNT_ACCESS_MODE_READ_WRITE,
+        base::BindOnce(&DiskMounterImpl::OnMountDone,
+                       weak_factory_.GetWeakPtr()));
   }
 
  private:
-  void Unmount() {
-    disk_mount_manager_->RemoveObserver(this);
-    if (!mount_path_.empty()) {
-      disk_mount_manager_->UnmountPath(mount_path_.value(), {});
-      mount_path_.clear();
-    }
-  }
+  // MountPoint::Mount() done callback.
+  void OnMountDone(chromeos::MountError error_code,
+                   std::unique_ptr<chromeos::disks::MountPoint> mount_point) {
+    DCHECK(callback_);
 
-  // DiskMountManager::Observer:
-  void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
-                    chromeos::MountError error_code,
-                    const chromeos::disks::DiskMountManager::MountPointInfo&
-                        mount_info) override {
-    if (mount_info.mount_type != chromeos::MOUNT_TYPE_NETWORK_STORAGE ||
-        mount_info.source_path != source_path_ ||
-        event != chromeos::disks::DiskMountManager::MOUNTING) {
+    if (error_code != chromeos::MOUNT_ERROR_NONE) {
+      LOG(WARNING) << "DriveFs mount failed with error: " << error_code;
+      std::move(callback_).Run({});
       return;
     }
-    DCHECK(mount_path_.empty());
-    DCHECK(!callback_.is_null());
-    if (error_code == chromeos::MOUNT_ERROR_NONE) {
-      disk_mount_manager_->RemoveObserver(this);
-      DCHECK(!mount_info.mount_path.empty());
-      mount_path_ = base::FilePath(mount_info.mount_path);
-    }
-    std::move(callback_).Run(mount_path_);
+
+    DCHECK(mount_point);
+    mount_point_ = std::move(mount_point);
+    std::move(callback_).Run(mount_point_->mount_path());
   }
 
   chromeos::disks::DiskMountManager* const disk_mount_manager_;
   base::OnceCallback<void(base::FilePath)> callback_;
   // The path passed to cros-disks to mount.
   std::string source_path_;
-  base::FilePath mount_path_;
+  std::unique_ptr<chromeos::disks::MountPoint> mount_point_;
+
+  base::WeakPtrFactory<DiskMounterImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DiskMounterImpl);
 };

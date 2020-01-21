@@ -145,7 +145,7 @@ internal::ResultCode FillAntiVirusProductsFromWSC(
     return internal::ResultCode::kFailedToGetProductCount;
 
   for (LONG i = 0; i < product_count; i++) {
-    IWscProduct* product = nullptr;
+    Microsoft::WRL::ComPtr<IWscProduct> product;
     result = product_list->get_Item(i, &product);
     if (FAILED(result))
       return internal::ResultCode::kFailedToGetItem;

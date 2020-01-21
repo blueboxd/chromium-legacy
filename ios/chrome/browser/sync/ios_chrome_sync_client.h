@@ -12,13 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "components/browser_sync/browser_sync_client.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 namespace autofill {
 class AutofillWebDataService;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 namespace password_manager {

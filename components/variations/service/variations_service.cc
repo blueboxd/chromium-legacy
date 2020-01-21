@@ -462,6 +462,11 @@ void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
   // This preference keeps track of the country code used to filter
   // permanent-consistency studies.
   registry->RegisterListPref(prefs::kVariationsPermanentConsistencyCountry);
+  // This preference keeps track of ChromeVariations enum policy which
+  // allows the admin to restrict the set of variations applied.
+  registry->RegisterIntegerPref(
+      prefs::kVariationsRestrictionsByPolicy,
+      static_cast<int>(RestrictionPolicyValues::NO_RESTRICTIONS));
 }
 
 // static

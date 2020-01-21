@@ -96,11 +96,10 @@ class FakePublisher : public apps::mojom::Publisher {
                  bool clear_site_data,
                  bool report_abuse) override {}
 
-  using GetMenuModelCallback =
-      base::OnceCallback<void(apps::mojom::MenuItemsPtr)>;
   void GetMenuModel(const std::string& app_id,
                     apps::mojom::MenuType menu_type,
-                    GetMenuModelCallback callback) {}
+                    int64_t display_id,
+                    GetMenuModelCallback callback) override {}
 
   void PauseApp(const std::string& app_id) override {}
   void UnpauseApps(const std::string& app_id) override {}

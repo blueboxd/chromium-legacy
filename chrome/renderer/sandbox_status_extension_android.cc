@@ -116,9 +116,9 @@ void SandboxStatusExtension::GetSandboxStatus(gin::Arguments* args) {
 
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {base::ThreadPool(), base::MayBlock()},
-      base::Bind(&SandboxStatusExtension::ReadSandboxStatus, this),
-      base::Bind(&SandboxStatusExtension::RunCallback, this,
-                 base::Passed(&global_callback)));
+      base::BindOnce(&SandboxStatusExtension::ReadSandboxStatus, this),
+      base::BindOnce(&SandboxStatusExtension::RunCallback, this,
+                     base::Passed(&global_callback)));
 }
 
 std::unique_ptr<base::Value> SandboxStatusExtension::ReadSandboxStatus() {

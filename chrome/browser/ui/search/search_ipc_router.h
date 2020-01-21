@@ -161,6 +161,8 @@ class SearchIPCRouter : public content::WebContentsObserver,
 
     virtual void StopAutocomplete(bool clear_result) = 0;
 
+    virtual void LogCharTypedToRepaintLatency(uint32_t latency_ms) = 0;
+
     virtual void BlocklistPromo(const std::string& promo_id) = 0;
 
     virtual void OpenExtensionsPage(double button,
@@ -223,6 +225,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
         bool is_active_tab) = 0;
     virtual bool ShouldProcessQueryAutocomplete(bool is_active_tab) = 0;
     virtual bool ShouldProcessStopAutocomplete() = 0;
+    virtual bool ShouldProcessLogCharTypedToRepaintLatency() = 0;
     virtual bool ShouldProcessBlocklistPromo() = 0;
     virtual bool ShouldProcessOpenExtensionsPage() = 0;
     virtual bool ShouldProcessOpenAutocompleteMatch(bool is_active_tab) = 0;
@@ -343,6 +346,7 @@ class SearchIPCRouter : public content::WebContentsObserver,
   void QueryAutocomplete(const base::string16& input,
                          bool prevent_inline_autocomplete) override;
   void StopAutocomplete(bool clear_result) override;
+  void LogCharTypedToRepaintLatency(uint32_t latency_ms) override;
   void BlocklistPromo(const std::string& promo_id) override;
   void OpenExtensionsPage(double button,
                           bool alt_key,

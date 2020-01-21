@@ -76,6 +76,10 @@ class PasswordSaveManager {
   // Signals that the user cancels password generation.
   virtual void PasswordNoLongerGenerated() = 0;
 
+  // Moves the pending credentials together with any other PSL matched ones from
+  // the profile store to the account store.
+  virtual void MoveCredentialsToAccountStore() = 0;
+
   virtual bool IsNewLogin() const = 0;
   virtual bool IsPasswordUpdate() const = 0;
   virtual bool HasGeneratedPassword() const = 0;

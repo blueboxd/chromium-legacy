@@ -54,6 +54,11 @@ void ModelTypeSyncBridge::ApplyStopSyncChanges(
   }
 }
 
+void ModelTypeSyncBridge::OnCommitAttemptErrors(
+    const syncer::FailedCommitResponseDataList& error_response_list) {
+  // By default the bridge just ignores failed commit items.
+}
+
 size_t ModelTypeSyncBridge::EstimateSyncOverheadMemoryUsage() const {
   return 0U;
 }

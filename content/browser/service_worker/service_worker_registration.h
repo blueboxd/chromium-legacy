@@ -71,6 +71,8 @@ class CONTENT_EXPORT ServiceWorkerRegistration
     kUninstalled,
   };
 
+  // The constructor should be called only from ServiceWorkerRegistry other than
+  // tests.
   ServiceWorkerRegistration(
       const blink::mojom::ServiceWorkerRegistrationOptions& options,
       int64_t registration_id,

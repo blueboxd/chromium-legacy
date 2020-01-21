@@ -95,6 +95,10 @@ class PasswordFormManagerForUI {
 
   // Called when the passwords were shown on on the bubble without obfuscation.
   virtual void OnPasswordsRevealed() = 0;
+
+  // A user opted to move the credentials used for a successful login from the
+  // profile store to the account store.
+  virtual void MoveCredentialsToAccountStore() = 0;
 };
 
 }  // namespace  password_manager

@@ -14,15 +14,12 @@
 #include "base/macros.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/sync_sessions/local_session_event_router.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/tabs/tab_model_list_observer.h"
 #include "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #include "ios/web/public/web_state_observer.h"
 
 class GURL;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 namespace sync_sessions {
 class SyncSessionsClient;

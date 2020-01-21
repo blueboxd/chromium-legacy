@@ -511,9 +511,9 @@ ExtensionFunction::ResponseAction ProcessesTerminateFunction::Run() {
   // IO thread.
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::IO},
-      base::Bind(&ProcessesTerminateFunction::GetProcessHandleOnIO, this,
-                 child_process_host_id_),
-      base::Bind(&ProcessesTerminateFunction::OnProcessHandleOnUI, this));
+      base::BindOnce(&ProcessesTerminateFunction::GetProcessHandleOnIO, this,
+                     child_process_host_id_),
+      base::BindOnce(&ProcessesTerminateFunction::OnProcessHandleOnUI, this));
 
   // Promise to respond later.
   return RespondLater();

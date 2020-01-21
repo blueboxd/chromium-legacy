@@ -1705,8 +1705,8 @@ DeveloperPrivateRequestFileSourceFunction::Run() {
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::Bind(&ReadFileToString, extension->path().Append(path_suffix)),
-      base::Bind(&DeveloperPrivateRequestFileSourceFunction::Finish, this));
+      base::BindOnce(&ReadFileToString, extension->path().Append(path_suffix)),
+      base::BindOnce(&DeveloperPrivateRequestFileSourceFunction::Finish, this));
 
   return RespondLater();
 }

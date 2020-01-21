@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_MACHINE_LEARNING_USER_SETTINGS_EVENT_LOGGER_H_
 
 #include "ash/system/machine_learning/user_settings_event.pb.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 
 namespace ash {
 namespace ml {
@@ -20,14 +21,24 @@ class UserSettingsEventLogger {
   // exist in the current process.
   static void CreateInstance();
   static void DeleteInstance();
+  // Gets the current instance of the logger.
   static UserSettingsEventLogger* Get();
 
-  // Logs a settings change event to UKM.
-  void LogUkmEvent();
+  // Logs an event to UKM that the user has connected to the given network.
+  void LogNetworkUkmEvent(
+      const chromeos::network_config::mojom::NetworkStateProperties& network);
 
  private:
   UserSettingsEventLogger();
   ~UserSettingsEventLogger();
+
+  // Populates contextual information shared by all settings events.
+  void PopulateSharedFeatures(UserSettingsEvent* event);
+
+  // Sends the given event to UKM.
+  void SendToUkm(const UserSettingsEvent& event);
+
+  bool used_cellular_in_session_;
 
   static UserSettingsEventLogger* instance_;
 };

@@ -189,15 +189,6 @@ public class ExternalNavigationHandler {
 
         String browserFallbackUrl =
                 IntentUtils.safeGetStringExtra(targetIntent, EXTRA_BROWSER_FALLBACK_URL);
-        // TOOD(b/145195894): This is temporary workaround. The fallback URL should be configured
-        // in the intent directly on the SRP page. This is here for testing purposes and will be
-        // removed as soon as the SRP intents are updated.
-        if (browserFallbackUrl == null
-                && AutofillAssistantFacade.isAutofillAssistantByIntentTriggeringEnabled(
-                        targetIntent)
-                && mDelegate.isSerpReferrer()) {
-            browserFallbackUrl = targetIntent.getDataString();
-        }
         if (browserFallbackUrl != null
                 && !UrlUtilities.isValidForIntentFallbackNavigation(browserFallbackUrl)) {
             browserFallbackUrl = null;

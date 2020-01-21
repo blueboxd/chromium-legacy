@@ -345,8 +345,7 @@ TEST_F(ServiceWorkerRegistrationTest, NavigationPreload) {
   blink::mojom::ServiceWorkerRegistrationOptions options;
   options.scope = kScope;
   scoped_refptr<ServiceWorkerRegistration> registration =
-      base::MakeRefCounted<ServiceWorkerRegistration>(
-          options, storage()->NewRegistrationId(), context()->AsWeakPtr());
+      context()->registry()->CreateNewRegistration(options);
   scoped_refptr<ServiceWorkerVersion> version_1 =
       base::MakeRefCounted<ServiceWorkerVersion>(
           registration.get(), kScript, blink::mojom::ScriptType::kClassic,
@@ -394,8 +393,7 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest,
 
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = kScope;
-    registration_ = base::MakeRefCounted<ServiceWorkerRegistration>(
-        options, storage()->NewRegistrationId(), context()->AsWeakPtr());
+    registration_ = context()->registry()->CreateNewRegistration(options);
 
     // Create an active version.
     scoped_refptr<ServiceWorkerVersion> version_1 =
@@ -881,12 +879,11 @@ class ServiceWorkerRegistrationObjectHostTest
     return status.value();
   }
 
-  scoped_refptr<ServiceWorkerRegistration> CreateRegistration(
+  scoped_refptr<ServiceWorkerRegistration> CreateNewRegistration(
       const GURL& scope) {
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope;
-    return base::MakeRefCounted<ServiceWorkerRegistration>(
-        options, storage()->NewRegistrationId(), context()->AsWeakPtr());
+    return context()->registry()->CreateNewRegistration(options);
   }
 
   scoped_refptr<ServiceWorkerVersion> CreateVersion(
@@ -914,7 +911,7 @@ class ServiceWorkerRegistrationObjectHostTest
 
     // Prepare ServiceWorkerRegistration and ServiceWorkerVersion.
     scoped_refptr<ServiceWorkerRegistration> registration =
-        CreateRegistration(scope);
+        CreateNewRegistration(scope);
     scoped_refptr<ServiceWorkerVersion> version =
         CreateVersion(registration.get(), script_url);
 
@@ -1113,7 +1110,7 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateRegistration(kScope);
+      CreateNewRegistration(kScope);
   scoped_refptr<ServiceWorkerVersion> version =
       CreateVersion(registration.get(), kScriptUrl);
 
@@ -1144,7 +1141,7 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
   const GURL kScope("https://www.example.com/");
   const GURL kScriptUrl("https://www.example.com/sw.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
-      CreateRegistration(kScope);
+      CreateNewRegistration(kScope);
 
   scoped_refptr<ServiceWorkerVersion> version =
       CreateVersion(registration.get(), kScriptUrl);

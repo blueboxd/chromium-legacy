@@ -250,10 +250,10 @@ void StorageHandler::UpdateMyFilesSize() {
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::Bind(&StorageHandler::ComputeLocalFilesSize, base::Unretained(this),
-                 my_files_path),
-      base::Bind(&StorageHandler::OnGetMyFilesSize,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&StorageHandler::ComputeLocalFilesSize,
+                     base::Unretained(this), my_files_path),
+      base::BindOnce(&StorageHandler::OnGetMyFilesSize,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 int64_t StorageHandler::ComputeLocalFilesSize(

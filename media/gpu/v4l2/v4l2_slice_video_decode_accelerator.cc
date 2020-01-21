@@ -1381,7 +1381,6 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
     gfx::NativePixmapHandle handle,
     GLuint client_texture_id,
     GLuint texture_id,
-    const gfx::Size& size,
     const Fourcc fourcc) {
   DVLOGF(3) << "index=" << buffer_index;
   DCHECK(child_task_runner_->BelongsToCurrentThread());
@@ -1402,8 +1401,8 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
 
   V4L2Device* gl_device =
       image_processor_device_ ? image_processor_device_.get() : device_.get();
-  scoped_refptr<gl::GLImage> gl_image =
-      gl_device->CreateGLImage(size, fourcc, std::move(handle));
+  scoped_refptr<gl::GLImage> gl_image = gl_device->CreateGLImage(
+      decoder_->GetVisibleRect().size(), fourcc, std::move(handle));
   if (!gl_image) {
     VLOGF(1) << "Could not create GLImage,"
              << " index=" << buffer_index << " texture_id=" << texture_id;
@@ -1570,7 +1569,7 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
         base::BindOnce(&V4L2SliceVideoDecodeAccelerator::CreateGLImageFor,
                        weak_this_, index, picture_buffer_id, std::move(handle),
                        iter->client_texture_id, iter->texture_id,
-                       gl_image_size_, *gl_image_format_fourcc_));
+                       *gl_image_format_fourcc_));
   }
 
   // Buffer is now ready to be used.
@@ -2231,7 +2230,7 @@ void V4L2SliceVideoDecodeAccelerator::FrameProcessed(
             ip_buffer_index, ip_output_record.picture_id,
             CreateGpuMemoryBufferHandle(frame.get()).native_pixmap_handle,
             ip_output_record.client_texture_id, ip_output_record.texture_id,
-            gl_image_size_, *gl_image_format_fourcc_));
+            *gl_image_format_fourcc_));
   }
 
   DCHECK(!surfaces_at_ip_.empty());

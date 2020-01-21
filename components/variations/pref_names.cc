@@ -94,5 +94,11 @@ const char kVariationsSeedDate[] = "variations_seed_date";
 // Digital signature of the binary variations seed data, base64-encoded.
 const char kVariationsSeedSignature[] = "variations_seed_signature";
 
+// Reflects the state of the "ChromeVariations" policy which determines
+// if and which variations should be enabled for the client. The possible
+// values are defined in the VariationsService::RestrictionPolicyValues enum.
+const char kVariationsRestrictionsByPolicy[] =
+    "variations_restrictions_by_policy";
+
 }  // namespace prefs
 }  // namespace variations

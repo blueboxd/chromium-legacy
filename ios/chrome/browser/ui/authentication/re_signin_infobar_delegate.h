@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ui/gfx/image/image.h"
 
 @protocol SigninPresenter;
@@ -17,10 +18,6 @@
 namespace infobars {
 class InfoBarManager;
 }  // namespace infobars
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 namespace web {
 class WebState;

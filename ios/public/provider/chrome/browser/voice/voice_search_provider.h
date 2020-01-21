@@ -10,14 +10,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 @protocol ApplicationCommands;
 class AudioSessionController;
 class VoiceSearchController;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // VoiceSearchProvider allows embedders to provide functionality related to
 // voice search.

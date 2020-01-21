@@ -221,16 +221,12 @@ public class AutofillAssistantFacade {
     }
 
     public static boolean isAutofillAssistantEnabled(Intent intent) {
-        // Check for configuration first for early return to prevent test failures on checking
-        // feature flags.
-        return AutofillAssistantFacade.isConfigured(intent.getExtras())
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT);
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT)
+                && AutofillAssistantFacade.isConfigured(intent.getExtras());
     }
 
     public static boolean isAutofillAssistantByIntentTriggeringEnabled(Intent intent) {
-        // Check for configuration first for early return to prevent test failures on checking
-        // feature flags.
-        return AutofillAssistantFacade.isAutofillAssistantEnabled(intent)
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY);
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY)
+                && AutofillAssistantFacade.isAutofillAssistantEnabled(intent);
     }
 }

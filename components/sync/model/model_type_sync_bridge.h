@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/model_type_change_processor.h"
 
@@ -161,6 +162,11 @@ class ModelTypeSyncBridge {
   // to implement deletion by other means).
   virtual void ApplyStopSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list);
+
+  // Called only when some items in a commit haven't been committed due to an
+  // error.
+  virtual void OnCommitAttemptErrors(
+      const syncer::FailedCommitResponseDataList& error_response_list);
 
   // Returns an estimate of memory usage attributed to sync (that is, excludes
   // the actual model). Because the resulting UMA metrics are often used to

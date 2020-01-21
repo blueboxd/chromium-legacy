@@ -83,10 +83,10 @@ class PLATFORM_EXPORT FFTFrame {
   // least |fft_size_| elements.
   void DoInverseFFT(float* data);
 
-  float* RealData() { return real_data_.Data(); }
-  const float* RealData() const { return real_data_.Data(); }
-  float* ImagData() { return imag_data_.Data(); }
-  const float* ImagData() const { return imag_data_.Data(); }
+  AudioFloatArray& RealData() { return real_data_; }
+  const AudioFloatArray& RealData() const { return real_data_; }
+  AudioFloatArray& ImagData() { return imag_data_; }
+  const AudioFloatArray& ImagData() const { return imag_data_; }
 
   unsigned FftSize() const { return fft_size_; }
   unsigned Log2FFTSize() const { return log2fft_size_; }

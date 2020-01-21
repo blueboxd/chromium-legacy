@@ -302,6 +302,8 @@ class PLATFORM_EXPORT ThreadHeap {
   bool AdvanceMarking(MarkingVisitor*, base::TimeTicks deadline);
   void VerifyMarking();
 
+  // Returns true if concurrent markers will have work to steal
+  bool HasWorkForConcurrentMarking() const;
   // Returns true if marker is done
   bool AdvanceConcurrentMarking(ConcurrentMarkingVisitor*, base::TimeTicks);
 

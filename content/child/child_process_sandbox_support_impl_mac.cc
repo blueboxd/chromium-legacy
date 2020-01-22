@@ -30,7 +30,7 @@ WebSandboxSupportMac::WebSandboxSupportMac() {
 WebSandboxSupportMac::~WebSandboxSupportMac() = default;
 
 bool WebSandboxSupportMac::LoadFont(CTFontRef font,
-                                    CGFontRef* out,
+                                    CTFontRef* out,
                                     uint32_t* font_id) {
   if (!sandbox_support_)
     return false;
@@ -55,7 +55,7 @@ bool WebSandboxSupportMac::LoadFont(CTFontRef font,
   // TODO(jeremy): Need to call back into the requesting process to make sure
   // that the font isn't already activated, based on the font id.  If it's
   // already activated, don't reactivate it here - https://crbug.com/72727 .
-  return FontLoader::CGFontRefFromBuffer(
+  return FontLoader::CTFontRefFromBuffer(
       std::move(font_data), static_cast<uint32_t>(font_data_size), out);
 }
 

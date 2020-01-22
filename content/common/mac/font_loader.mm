@@ -141,21 +141,23 @@ void FontLoader::LoadFont(const base::string16& font_name,
 }
 
 // static
-bool FontLoader::CGFontRefFromBuffer(mojo::ScopedSharedBufferHandle font_data,
+bool FontLoader::CTFontRefFromBuffer(mojo::ScopedSharedBufferHandle font_data,
                                      uint32_t font_data_size,
-                                     CGFontRef* out) {
+                                     CTFontRef* out) {
   *out = NULL;
   mojo::ScopedSharedBufferMapping mapping = font_data->Map(font_data_size);
   if (!mapping)
     return false;
 
   NSData* data = [NSData dataWithBytes:mapping.get() length:font_data_size];
+  base::ScopedCFTypeRef<CTFontDescriptorRef> data_descriptor(
+      CTFontManagerCreateFontDescriptorFromData(base::mac::NSToCFCast(data)));
   base::ScopedCFTypeRef<CGDataProviderRef> provider(
       CGDataProviderCreateWithCFData(base::mac::NSToCFCast(data)));
   if (!provider)
     return false;
 
-  *out = CGFontCreateWithDataProvider(provider.get());
+  *out = CTFontCreateWithFontDescriptor(data_descriptor.get(), 0, nullptr);
 
   if (*out == NULL)
     return false;

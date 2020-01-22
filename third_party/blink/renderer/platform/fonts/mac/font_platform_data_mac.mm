@@ -94,20 +94,20 @@ static sk_sp<SkTypeface> LoadFromBrowserProcess(NSFont* ns_font,
     return nullptr;
   }
 
-  CGFontRef loaded_cg_font;
+  CTFontRef loaded_ct_font;
   uint32_t font_id;
   if (!sandbox_support->LoadFont(base::mac::NSToCFCast(ns_font),
-                                 &loaded_cg_font, &font_id)) {
+                                 &loaded_ct_font, &font_id)) {
     // TODO crbug.com/461279: Make this appear in the inspector console?
     DLOG(ERROR)
         << "Loading user font \"" << [[ns_font familyName] UTF8String]
         << "\" from non system location failed. Corrupt or missing font file?";
     return nullptr;
   }
-  base::ScopedCFTypeRef<CGFontRef> cg_font(loaded_cg_font);
-  base::ScopedCFTypeRef<CTFontRef> ct_font(CTFontCreateWithGraphicsFont(
-      cg_font, text_size, 0, CascadeToLastResortFontDescriptor()));
-  sk_sp<SkTypeface> return_font(SkCreateTypefaceFromCTFont(ct_font, cg_font));
+  base::ScopedCFTypeRef<CTFontRef> ct_font_base(loaded_ct_font);
+  base::ScopedCFTypeRef<CTFontRef> ct_font(CTFontCreateCopyWithAttributes(
+      ct_font_base, text_size, 0, CascadeToLastResortFontDescriptor()));
+  sk_sp<SkTypeface> return_font(SkCreateTypefaceFromCTFont(ct_font));
 
   if (!return_font.get())
     // TODO crbug.com/461279: Make this appear in the inspector console?

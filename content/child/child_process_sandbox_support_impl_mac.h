@@ -24,7 +24,7 @@ class WebSandboxSupportMac : public blink::WebSandboxSupport {
   ~WebSandboxSupportMac() override;
 
   // blink::WebSandboxSupport:
-  bool LoadFont(CTFontRef font, CGFontRef* out, uint32_t* font_id) override;
+  bool LoadFont(CTFontRef font, CTFontRef* out, uint32_t* font_id) override;
   SkColor GetSystemColor(blink::MacSystemColorID color_id) override;
 
  private:

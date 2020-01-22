@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_MAC_FONT_LOADER_H_
 #define CONTENT_COMMON_MAC_FONT_LOADER_H_
 
-#include <CoreGraphics/CoreGraphics.h>
+#include <CoreText/CoreText.h>
 #include <stdint.h>
 
 #include <memory>
@@ -49,20 +49,19 @@ class FontLoader {
                        LoadedCallback callback);
 
   // Given a shared memory buffer containing the raw data for a font file, load
-  // the font and return a CGFontRef.
+  // the font and return a CTFontRef.
   //
   // |data| - A shared memory handle pointing to the raw data from a font file.
   // |data_size| - Size of |data|.
   //
   // On return:
   //  returns true on success, false on failure.
-  //  |out| - A CGFontRef corresponding to the designated font.
-  //  The caller is responsible for releasing this value via CGFontRelease()
-  //  when done.
+  //  |out| - A CTFontRef corresponding to the designated font.
+  //  The caller is responsible for releasing this value via CFRelease().
   CONTENT_EXPORT
-  static bool CGFontRefFromBuffer(mojo::ScopedSharedBufferHandle font_data,
+  static bool CTFontRefFromBuffer(mojo::ScopedSharedBufferHandle font_data,
                                   uint32_t font_data_size,
-                                  CGFontRef* out);
+                                  CTFontRef* out);
 
   CONTENT_EXPORT
   static std::unique_ptr<ResultInternal> LoadFontForTesting(

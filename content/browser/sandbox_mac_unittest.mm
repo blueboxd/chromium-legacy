@@ -211,17 +211,17 @@ MULTIPROCESS_TEST_MAIN(FontLoadingProcess) {
       font_shmem->Clone(mojo::SharedBufferHandle::AccessMode::READ_ONLY);
   CHECK(shmem_handle.is_valid());
 
-  base::ScopedCFTypeRef<CGFontRef> cgfont;
-  CHECK(FontLoader::CGFontRefFromBuffer(
-      std::move(shmem_handle), font_data_length, cgfont.InitializeInto()));
-  CHECK(cgfont);
+  base::ScopedCFTypeRef<CTFontRef> ctfont_base;
+  CHECK(FontLoader::CTFontRefFromBuffer(
+      std::move(shmem_handle), font_data_length, ctfont_base.InitializeInto()));
+  CHECK(ctfont_base);
 
-  base::ScopedCFTypeRef<CTFontRef> ctfont(
-      CTFontCreateWithGraphicsFont(cgfont.get(), 16.0, NULL, NULL));
-  CHECK(ctfont);
+  base::ScopedCFTypeRef<CTFontRef> sized_ctfont(CTFontCreateCopyWithAttributes(
+      ctfont_base.get(), 16.0, nullptr, nullptr));
+  CHECK(sized_ctfont);
 
   // Do something with the font to make sure it's loaded.
-  CGFloat cap_height = CTFontGetCapHeight(ctfont);
+  CGFloat cap_height = CTFontGetCapHeight(sized_ctfont);
   CHECK(cap_height > 0.0);
 
   return 0;

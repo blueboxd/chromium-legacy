@@ -49,11 +49,11 @@ class WebSandboxSupport {
   // to the on-disk font file.
   //
   // If this function succeeds, the caller assumes ownership of the |out|
-  // parameter and must call CGFontRelease() to unload it when done.
+  // parameter and must call CFRelease() on the CTFontRef.
   //
   // Returns: true on success, false on error.
   virtual bool LoadFont(CTFontRef src_font,
-                        CGFontRef* out,
+                        CTFontRef* out,
                         uint32_t* font_id) = 0;
 
   // Returns the system's preferred value for a named color.

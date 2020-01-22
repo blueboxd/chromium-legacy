@@ -604,10 +604,6 @@ WebLocalFrame* WebLocalFrame::FrameForContext(v8::Local<v8::Context> context) {
   return WebLocalFrameImpl::FromFrame(ToLocalFrameIfNotDetached(context));
 }
 
-WebLocalFrame* WebLocalFrame::FromFrameOwnerElement(const WebElement& element) {
-  return WebLocalFrameImpl::FromFrameOwnerElement(element);
-}
-
 bool WebLocalFrameImpl::IsWebLocalFrame() const {
   return true;
 }
@@ -1486,10 +1482,6 @@ void WebLocalFrameImpl::DeleteSurroundingTextInCodePoints(int before,
       before, after);
 }
 
-void WebLocalFrameImpl::SetCaretVisible(bool visible) {
-  GetFrame()->Selection().SetCaretVisible(visible);
-}
-
 WebPlugin* WebLocalFrameImpl::FocusedPluginIfInputMethodSupported() {
   WebPluginContainerImpl* container = GetFrame()->GetWebPluginContainer();
   if (container && container->SupportsInputMethod())
@@ -1970,13 +1962,6 @@ WebLocalFrameImpl* WebLocalFrameImpl::FromFrame(LocalFrame& frame) {
   if (!client || !client->IsLocalFrameClientImpl())
     return nullptr;
   return To<WebLocalFrameImpl>(client->GetWebFrame());
-}
-
-WebLocalFrameImpl* WebLocalFrameImpl::FromFrameOwnerElement(Element* element) {
-  auto* frame_owner_element = DynamicTo<HTMLFrameOwnerElement>(element);
-  if (!frame_owner_element)
-    return nullptr;
-  return FromFrame(To<LocalFrame>(frame_owner_element->ContentFrame()));
 }
 
 WebViewImpl* WebLocalFrameImpl::ViewImpl() const {

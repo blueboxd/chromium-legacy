@@ -93,7 +93,6 @@ class AssociatedInterfaceProvider;
 class BrowserInterfaceBrokerProxy;
 class WebComputedAXTree;
 class WebContentDecryptionModule;
-class WebCookieJar;
 class WebDedicatedWorkerHostFactoryClient;
 class WebDocumentLoader;
 class WebEncryptedMediaClient;
@@ -191,9 +190,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   }
 
   // Services ------------------------------------------------------------
-
-  // A frame specific cookie jar.  May return null.
-  virtual WebCookieJar* CookieJar() { return nullptr; }
 
   // Returns a blame context for attributing work belonging to this frame.
   virtual BlameContext* GetFrameBlameContext() { return nullptr; }

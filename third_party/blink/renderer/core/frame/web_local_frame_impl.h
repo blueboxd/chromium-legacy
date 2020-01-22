@@ -226,7 +226,6 @@ class CORE_EXPORT WebLocalFrameImpl final
       int composition_end,
       const WebVector<WebImeTextSpan>& ime_text_spans) override;
   void ExtendSelectionAndDelete(int before, int after) override;
-  void SetCaretVisible(bool) override;
   void MoveRangeSelectionExtent(const gfx::Point&) override;
   void ReplaceSelection(const WebString&) override;
   void DeleteSurroundingText(int before, int after) override;
@@ -388,7 +387,6 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   static WebLocalFrameImpl* FromFrame(LocalFrame*);
   static WebLocalFrameImpl* FromFrame(LocalFrame&);
-  static WebLocalFrameImpl* FromFrameOwnerElement(Element*);
 
   WebViewImpl* ViewImpl() const;
 

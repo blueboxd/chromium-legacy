@@ -137,10 +137,6 @@ class WebLocalFrame : public WebFrame {
   // correspond to a frame (e.g., workers).
   BLINK_EXPORT static WebLocalFrame* FrameForContext(v8::Local<v8::Context>);
 
-  // Returns the frame inside a given frame or iframe element. Returns 0 if
-  // the given element is not a frame, iframe or if the frame is empty.
-  BLINK_EXPORT static WebLocalFrame* FromFrameOwnerElement(const WebElement&);
-
   virtual WebLocalFrameClient* Client() const = 0;
 
   // Initialization ---------------------------------------------------------
@@ -483,8 +479,6 @@ class WebLocalFrame : public WebFrame {
       int composition_end,
       const WebVector<WebImeTextSpan>& ime_text_spans) = 0;
   virtual void ExtendSelectionAndDelete(int before, int after) = 0;
-
-  virtual void SetCaretVisible(bool) = 0;
 
   // Moves the selection extent point. This function does not allow the
   // selection to collapse. If the new extent is set to the same position as

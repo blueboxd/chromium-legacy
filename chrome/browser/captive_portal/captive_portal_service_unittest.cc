@@ -15,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/captive_portal/captive_portal_testing_utils.h"
+#include "components/embedder_support/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
@@ -134,8 +135,8 @@ class CaptivePortalServiceTest : public testing::Test,
 
   // Sets the captive portal checking preference.
   void EnableCaptivePortalDetectionPreference(bool enabled) {
-    profile()->GetPrefs()->SetBoolean(prefs::kAlternateErrorPagesEnabled,
-                                      enabled);
+    profile()->GetPrefs()->SetBoolean(
+        embedder_support::kAlternateErrorPagesEnabled, enabled);
   }
 
   // Triggers a captive portal check, then simulates the URL request

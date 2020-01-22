@@ -608,7 +608,12 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
                                 draw_timer->Elapsed().InMicroseconds());
         break;
     }
+  } else {
+    TRACE_EVENT_INSTANT0("viz", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
+  }
 
+  bool should_swap = should_draw && size_matches;
+  if (should_swap) {
     PresentationGroupTiming presentation_group_timing;
     presentation_group_timing.OnDraw(draw_timer->Begin());
 
@@ -624,12 +629,7 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
     }
     pending_presentation_group_timings_.emplace_back(
         std::move(presentation_group_timing));
-  } else {
-    TRACE_EVENT_INSTANT0("viz", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
-  }
 
-  bool should_swap = should_draw && size_matches;
-  if (should_swap) {
     TRACE_EVENT_ASYNC_STEP_INTO0("viz,benchmark",
                                  "Graphics.Pipeline.DrawAndSwap",
                                  swapped_trace_id_, "WaitForSwap");

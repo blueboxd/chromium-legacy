@@ -22,6 +22,7 @@
 #include "components/component_updater/pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/drive/drive_pref_names.h"
+#include "components/embedder_support/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -145,7 +146,7 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   s_whitelist = new PrefsUtil::TypedPrefMap();
 
   // Miscellaneous
-  (*s_whitelist)[::prefs::kAlternateErrorPagesEnabled] =
+  (*s_whitelist)[::embedder_support::kAlternateErrorPagesEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[autofill::prefs::kAutofillProfileEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;

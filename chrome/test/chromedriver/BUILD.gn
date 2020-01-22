@@ -283,7 +283,7 @@ source_set("lib") {
     "//chrome/common:version_header",
     "//chrome/test/chromedriver/constants:version_header",
     "//components/crx_file",
-    "//components/embedder_support:switches",
+    "//components/embedder_support",
     "//components/version_info:generate_version_info",
     "//crypto",
     "//net",

@@ -188,7 +188,6 @@ extern const char kShowFullscreenToolbar[];
 extern const char kAllowJavascriptAppleEvents[];
 #endif
 extern const char kPromptForDownload[];
-extern const char kAlternateErrorPagesEnabled[];
 extern const char kQuicAllowed[];
 extern const char kNetworkQualities[];
 extern const char kNetworkEasterEggHighScore[];

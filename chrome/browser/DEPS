@@ -94,7 +94,7 @@ include_rules = [
   "+components/download/public/task",
   "+components/download/quarantine",
   "+components/drive",
-  "+components/embedder_support/android/delegate",
+  "+components/embedder_support",
   "+components/encrypted_messages",
   "+components/exo",
   "+components/favicon_base",

@@ -48,6 +48,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/embedder_support/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
@@ -1047,7 +1048,8 @@ void CaptivePortalBrowserTest::SetUpCommandLine(
 
 void CaptivePortalBrowserTest::EnableCaptivePortalDetection(
     Profile* profile, bool enabled) {
-  profile->GetPrefs()->SetBoolean(prefs::kAlternateErrorPagesEnabled, enabled);
+  profile->GetPrefs()->SetBoolean(embedder_support::kAlternateErrorPagesEnabled,
+                                  enabled);
 }
 
 void CaptivePortalBrowserTest::RespondToProbeRequests(bool enabled) {

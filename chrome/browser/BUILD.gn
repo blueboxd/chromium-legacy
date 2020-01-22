@@ -2012,6 +2012,7 @@ jumbo_static_library("browser") {
     "//components/download/content/factory",
     "//components/download/database",
     "//components/download/public/background_service:public",
+    "//components/embedder_support",
     "//components/encrypted_messages",
     "//components/error_page/common",
     "//components/favicon/content",

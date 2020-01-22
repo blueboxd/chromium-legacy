@@ -176,6 +176,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   bool HasPendingSurfaces(const BeginFrameArgs& args) const;
 
  private:
+  friend class DisplayTest;
   // PresentationGroupTiming stores rendering pipeline stage timings associated
   // with a call to Display::DrawAndSwap along with a list of
   // Surface::PresentationHelper's for each aggregated Surface that will be

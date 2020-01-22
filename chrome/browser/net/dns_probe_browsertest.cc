@@ -26,6 +26,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/embedder_support/pref_names.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
@@ -435,7 +436,7 @@ void DnsProbeBrowserTest::SetUpOnMainThread() {
   NetErrorTabHelper::set_state_for_testing(NetErrorTabHelper::TESTING_DEFAULT);
 
   browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kAlternateErrorPagesEnabled, true);
+      embedder_support::kAlternateErrorPagesEnabled, true);
 
   base::PostTask(FROM_HERE, {BrowserThread::IO},
                  BindOnce(&DnsProbeBrowserTestIOThreadHelper::SetUpOnIOThread,
@@ -994,7 +995,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeSuccessfulProbesTest, NoProbeInSubframe) {
 IN_PROC_BROWSER_TEST_F(DnsProbeUnreachableProbesTest, ProbesDisabled) {
   // Disable probes (And corrections).
   browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kAlternateErrorPagesEnabled, false);
+      embedder_support::kAlternateErrorPagesEnabled, false);
 
   SetCorrectionServiceBroken(true);
 
@@ -1012,7 +1013,7 @@ IN_PROC_BROWSER_TEST_F(DnsProbeUnreachableProbesTest, ProbesDisabled) {
 IN_PROC_BROWSER_TEST_F(DnsProbeFailingProbesTest, CorrectionsDisabled) {
   // Disable corrections.
   browser()->profile()->GetPrefs()->SetBoolean(
-      prefs::kAlternateErrorPagesEnabled, false);
+      embedder_support::kAlternateErrorPagesEnabled, false);
   // Requests to the correction service should work if any are made, so the test
   // fails if that happens unexpectedly.
   SetCorrectionServiceBroken(false);

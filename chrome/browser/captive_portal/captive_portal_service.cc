@@ -11,8 +11,8 @@
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/common/pref_names.h"
 #include "components/captive_portal/captive_portal_types.h"
+#include "components/embedder_support/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -198,7 +198,7 @@ CaptivePortalService::CaptivePortalService(
   // |resolve_errors_with_web_service_| must be initialized and |backoff_entry_|
   // created before the call to UpdateEnabledState.
   resolve_errors_with_web_service_.Init(
-      prefs::kAlternateErrorPagesEnabled, pref_service,
+      embedder_support::kAlternateErrorPagesEnabled, pref_service,
       base::Bind(&CaptivePortalService::UpdateEnabledState,
                  base::Unretained(this)));
   ResetBackoffEntry(last_detection_result_);

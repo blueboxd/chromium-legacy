@@ -439,9 +439,6 @@ const char kAllowJavascriptAppleEvents[] =
 // a file (true) or just download it automatically.
 const char kPromptForDownload[] = "download.prompt_for_download";
 
-// A boolean pref set to true if we're using Link Doctor error pages.
-const char kAlternateErrorPagesEnabled[] = "alternate_error_pages.enabled";
-
 // Controls if the QUIC protocol is allowed.
 const char kQuicAllowed[] = "net.quic_allowed";
 

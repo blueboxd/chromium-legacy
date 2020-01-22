@@ -51,6 +51,7 @@
 #include "components/content_settings/core/browser/cookie_settings_policy_handler.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/embedder_support/pref_names.h"
 #include "components/history/core/common/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -159,7 +160,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kURLsToRestoreOnStartup,
     base::Value::Type::LIST },
   { key::kAlternateErrorPagesEnabled,
-    prefs::kAlternateErrorPagesEnabled,
+    embedder_support::kAlternateErrorPagesEnabled,
     base::Value::Type::BOOLEAN },
   { key::kSearchSuggestEnabled,
     prefs::kSearchSuggestEnabled,

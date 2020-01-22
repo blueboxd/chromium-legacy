@@ -87,6 +87,7 @@
   "ui-slow-animations",
   "update-menu-item-custom-summary",
   "use-angle",
+  "use-fake-device-for-media-stream",
   "use_messages_staging_url",
   "use-sync-sandbox",
   "wallet-service-use-sandbox",

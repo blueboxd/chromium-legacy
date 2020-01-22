@@ -98,7 +98,7 @@ TEST_F(PrefsTest, TestIndex) {
             GetPrefName(OFFER_TRANSLATE_ENABLED));
   EXPECT_EQ(prefs::kNotificationsVibrateEnabled,
             GetPrefName(NOTIFICATIONS_VIBRATE_ENABLED));
-  EXPECT_EQ(prefs::kAlternateErrorPagesEnabled,
+  EXPECT_EQ(embedder_support::kAlternateErrorPagesEnabled,
             GetPrefName(ALTERNATE_ERROR_PAGES_ENABLED));
   EXPECT_EQ(prefs::kGoogleServicesLastUsername,
             GetPrefName(SYNC_LAST_ACCOUNT_NAME));

@@ -16,6 +16,7 @@
 #include "components/feed/core/pref_names.h"
 #endif  // BUILDFLAG(ENABLE_FEED_IN_CHROME)
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/embedder_support/pref_names.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/offline_pages/core/prefetch/prefetch_prefs.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -115,7 +116,7 @@ const char* const kPrefsExposedToJava[] = {
     prefs::kPrintingEnabled,
     prefs::kOfferTranslateEnabled,
     prefs::kNotificationsVibrateEnabled,
-    prefs::kAlternateErrorPagesEnabled,
+    embedder_support::kAlternateErrorPagesEnabled,
     prefs::kGoogleServicesLastUsername,
     prefs::kWebKitPasswordEchoEnabled,
     prefs::kWebKitForceDarkModeEnabled,

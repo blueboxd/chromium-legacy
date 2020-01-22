@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
+#include "components/embedder_support/pref_names.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -214,7 +215,7 @@ void NetErrorTabHelper::OnSetIsShowingDownloadButtonInErrorPage(
 // static
 void NetErrorTabHelper::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* prefs) {
-  // prefs::kAlternateErrorPagesEnabled is registered by
+  // embedder_support::kAlternateErrorPagesEnabled is registered by
   // NavigationCorrectionTabObserver.
 
   prefs->RegisterIntegerPref(prefs::kNetworkEasterEggHighScore, 0,
@@ -227,8 +228,7 @@ void NetErrorTabHelper::InitializePref(WebContents* contents) {
   BrowserContext* browser_context = contents->GetBrowserContext();
   Profile* profile = Profile::FromBrowserContext(browser_context);
   resolve_errors_with_web_service_.Init(
-      prefs::kAlternateErrorPagesEnabled,
-      profile->GetPrefs());
+      embedder_support::kAlternateErrorPagesEnabled, profile->GetPrefs());
   easter_egg_high_score_.Init(prefs::kNetworkEasterEggHighScore,
                               profile->GetPrefs());
 }

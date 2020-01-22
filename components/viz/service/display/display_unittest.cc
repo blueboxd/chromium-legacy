@@ -213,6 +213,10 @@ class DisplayTest : public testing::Test {
 
   void LatencyInfoCapTest(bool over_capacity);
 
+  size_t pending_presentation_group_timings_size() {
+    return display_->pending_presentation_group_timings_.size();
+  }
+
   ServerSharedBitmapManager shared_bitmap_manager_;
   FrameSinkManagerImpl manager_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
@@ -4137,6 +4141,56 @@ TEST_F(DisplayTest, DisplayTransformHint) {
     EXPECT_EQ(++expected_frame_sent, output_surface_->num_sent_frames());
     EXPECT_EQ(test.expected_size,
               software_output_device_->viewport_pixel_size());
+  }
+
+  TearDownDisplay();
+}
+
+TEST_F(DisplayTest, DisplaySizeMismatch) {
+  RendererSettings settings;
+  settings.partial_swap_enabled = true;
+  settings.auto_resize_output_surface = false;
+  SetUpSoftwareDisplay(settings);
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+
+  id_allocator_.GenerateId();
+  display_->SetLocalSurfaceId(
+      id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id(),
+      1.f);
+  display_->Resize(gfx::Size(100, 100));
+
+  // Pass has copy output request but wrong size so it should be drawn, but not
+  // swapped.
+  {
+    std::unique_ptr<RenderPass> pass = RenderPass::Create();
+    pass->output_rect = gfx::Rect(0, 0, 99, 99);
+    pass->damage_rect = gfx::Rect(10, 10, 0, 0);
+    bool copy_called = false;
+    pass->copy_requests.push_back(std::make_unique<CopyOutputRequest>(
+        CopyOutputRequest::ResultFormat::RGBA_BITMAP,
+        base::BindOnce(&CopyCallback, &copy_called)));
+    pass->id = 1u;
+
+    RenderPassList pass_list;
+    pass_list.push_back(std::move(pass));
+
+    SubmitCompositorFrame(
+        &pass_list,
+        id_allocator_.GetCurrentLocalSurfaceIdAllocation().local_surface_id());
+    EXPECT_TRUE(scheduler_->damaged());
+
+    display_->DrawAndSwap(base::TimeTicks::Now());
+
+    // Expect no swap happen
+    EXPECT_EQ(0u, output_surface_->num_sent_frames());
+
+    // Expect draw and copy output request happen
+    EXPECT_TRUE(copy_called);
+
+    // Expect there is no pending
+    EXPECT_EQ(pending_presentation_group_timings_size(), 0u);
   }
 
   TearDownDisplay();

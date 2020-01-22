@@ -27,6 +27,7 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/embedder_support/pref_names.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
@@ -89,8 +90,9 @@ const PrefMappingEntry kPrefMapping[] = {
     {"data_usage_reporting.enabled",
      data_reduction_proxy::prefs::kDataUsageReportingEnabled,
      APIPermission::kDataReductionProxy, APIPermission::kDataReductionProxy},
-    {"alternateErrorPagesEnabled", prefs::kAlternateErrorPagesEnabled,
-     APIPermission::kPrivacy, APIPermission::kPrivacy},
+    {"alternateErrorPagesEnabled",
+     embedder_support::kAlternateErrorPagesEnabled, APIPermission::kPrivacy,
+     APIPermission::kPrivacy},
     {"autofillEnabled", autofill::prefs::kAutofillEnabledDeprecated,
      APIPermission::kPrivacy, APIPermission::kPrivacy},
     {"autofillAddressEnabled", autofill::prefs::kAutofillProfileEnabled,

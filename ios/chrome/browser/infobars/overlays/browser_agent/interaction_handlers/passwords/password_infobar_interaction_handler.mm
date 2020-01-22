@@ -6,21 +6,20 @@
 
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/passwords/password_infobar_banner_interaction_handler.h"
+#import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/passwords/password_infobar_modal_interaction_handler.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_password_infobar_banner_overlay.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-PasswordInfobarInteractionHandler::PasswordInfobarInteractionHandler()
+PasswordInfobarInteractionHandler::PasswordInfobarInteractionHandler(
+    Browser* browser)
     : InfobarInteractionHandler(
           InfobarType::kInfobarTypePasswordSave,
           std::make_unique<PasswordInfobarBannerInteractionHandler>(),
           /*sheet_handler=*/nullptr,
-          /*modal_handler=*/nullptr) {
-  // TODO(crbug.com/1033154): Create interaction handlers for detail sheet and
-  // modal.
-}
+          std::make_unique<PasswordInfobarModalInteractionHandler>(browser)) {}
 
 PasswordInfobarInteractionHandler::~PasswordInfobarInteractionHandler() =
     default;

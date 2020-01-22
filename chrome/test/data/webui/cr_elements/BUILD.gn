@@ -19,6 +19,8 @@ js_modulizer("modulize") {
     "cr_input_test.js",
     "cr_lazy_render_tests.js",
     "cr_link_row_tests.js",
+    "cr_policy_indicator_tests.js",
+    "cr_policy_indicator_behavior_tests.js",
     "cr_radio_button_test.js",
     "cr_radio_group_test.js",
     "cr_search_field_tests.js",

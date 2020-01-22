@@ -414,7 +414,13 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     current_frame()->output_surface_plane->gpu_fence_id =
         output_surface_->UpdateGpuFence();
 
+  if (overlay_processor_)
+    overlay_processor_->TakeOverlayCandidates(&current_frame()->overlay_list);
+
   FinishDrawingFrame();
+
+  if (overlay_processor_)
+    overlay_processor_->ScheduleOverlays(resource_provider_);
 
   render_passes_in_draw_order->clear();
   render_pass_filters_.clear();

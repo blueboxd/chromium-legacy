@@ -18,7 +18,7 @@
         android:layout_centerVertical="true"
         android:layout_alignParentStart="true"
         android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+        android:paddingEnd="8dp"
         android:thumb="@drawable/incognito_switch"
         android:track="@drawable/incognito_switch_track"
         android:visibility="gone"/>
@@ -43,9 +43,16 @@
         android:layout_width="wrap_content"
         android:layout_toStartOf="@+id/menu_anchor"
         android:layout_centerVertical="true"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
         android:contentDescription="@string/accessibility_toolbar_btn_new_tab" />
+
+    <include
+        layout="@layout/experimental_toolbar_button"
+        android:id="@+id/experimental_toolbar_button_start"
+        android:layout_toStartOf="@+id/menu_anchor"
+        style="@style/ToolbarButton"
+        android:visibility="gone" />
 
     <FrameLayout
       android:id="@+id/menu_anchor"

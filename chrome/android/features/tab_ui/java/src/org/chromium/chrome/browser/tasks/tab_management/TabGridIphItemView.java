@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
-import android.app.Activity;
 import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -19,7 +18,6 @@ import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +32,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.widget.ChromeImageView;
 
 /**
@@ -193,9 +192,7 @@ public class TabGridIphItemView extends FrameLayout {
     }
 
     private void updateMargins(int orientation) {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int screenHeight = displayMetrics.heightPixels;
+        int screenHeight = DisplayAndroid.getNonMultiDisplay(getContext()).getDisplayHeight();
 
         int dialogHeight =
                 (int) mContext.getResources().getDimension(R.dimen.tab_grid_iph_dialog_height);

@@ -4,7 +4,7 @@
 
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_slider/cr_slider.m.js';
-// #import {Polymer, flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {flushTasks, eventToPromise} from '../test_util.m.js';
 // #import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 // clang-format on
@@ -14,7 +14,16 @@ suite('cr-slider', function() {
 
   setup(function() {
     PolymerTest.clearBody();
-    document.body.innerHTML = '<cr-slider min="0" max="100"></cr-slider>';
+    document.body.innerHTML = `
+      <style>
+        #wrapper {
+          width: 200px;
+        }
+      </style>
+      <div id="wrapper">
+        <cr-slider min="0" max="100"></cr-slider>
+      </div>
+    `;
 
     crSlider = document.body.querySelector('cr-slider');
     crSlider.value = 0;

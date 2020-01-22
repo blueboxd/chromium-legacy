@@ -59,6 +59,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void HandleAccessibilityFindInPageResult(
       mojom::blink::FindInPageResultAXParamsPtr params) override;
   void HandleAccessibilityFindInPageTermination() override;
+  void DocumentOnLoadCompleted() override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

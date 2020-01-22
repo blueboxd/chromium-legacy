@@ -61,7 +61,8 @@ class CONTENT_EXPORT AncestorThrottle : public NavigationThrottle {
   // or INVALID, |header_value| will be populated with the value which caused
   // the parse error.
   HeaderDisposition ParseHeader(const net::HttpResponseHeaders* headers,
-                                std::string* header_value);
+                                std::string* header_value,
+                                bool is_response_check);
 
   DISALLOW_COPY_AND_ASSIGN(AncestorThrottle);
 };

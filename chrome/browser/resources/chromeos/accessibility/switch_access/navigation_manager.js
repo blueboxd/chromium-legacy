@@ -261,10 +261,9 @@ class NavigationManager {
    * @private
    */
   onTreeChange_(treeChange) {
-    if (treeChange.type === chrome.automation.TreeChangeType.TEXT_CHANGED) {
-      return;
+    if (treeChange.type === chrome.automation.TreeChangeType.NODE_REMOVED) {
+      this.moveToValidNode();
     }
-    this.moveToValidNode();
   }
 
   // -------------------------------------------------------

@@ -13,11 +13,7 @@ source_set("system_power_source") {
     "system_power_source_api.h",
   ]
 
-  deps = [
-    "//extensions/common/api",
-  ]
+  deps = [ "//extensions/common/api" ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

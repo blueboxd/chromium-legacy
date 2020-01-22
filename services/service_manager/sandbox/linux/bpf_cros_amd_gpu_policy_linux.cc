@@ -36,7 +36,6 @@ ResultExpr CrosAmdGpuProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_sysinfo:
     case __NR_uname:
 #if !defined(__aarch64__)
-    case __NR_getdents:
     case __NR_readlink:
     case __NR_stat:
 #endif

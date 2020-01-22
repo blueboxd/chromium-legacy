@@ -38,7 +38,7 @@
         <org.chromium.chrome.browser.settings.ChromeBasePreference
             android:key="manage_sync"
             android:title="@string/manage_sync_title"
-            android:fragment="org.chromium.chrome.browser.settings.sync.ManageSyncPreferences"/>
+            android:fragment="org.chromium.chrome.browser.settings.sync.ManageSyncSettings"/>
     </PreferenceCategory>
 
     <PreferenceCategory

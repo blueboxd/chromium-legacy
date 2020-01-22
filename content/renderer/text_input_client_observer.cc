@@ -17,7 +17,6 @@
 #include "content/renderer/render_widget.h"
 #include "ipc/ipc_message.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/mac/web_substring_util.h"
@@ -93,7 +92,7 @@ PepperPluginInstanceImpl* TextInputClientObserver::GetFocusedPepperPlugin()
 #endif
 
 void TextInputClientObserver::OnStringAtPoint(gfx::Point point) {
-  blink::WebPoint baseline_point;
+  gfx::Point baseline_point;
   NSAttributedString* string = nil;
 
   if (auto* frame_widget = GetWebFrameWidget()) {
@@ -108,10 +107,9 @@ void TextInputClientObserver::OnStringAtPoint(gfx::Point point) {
 }
 
 void TextInputClientObserver::OnCharacterIndexForPoint(gfx::Point point) {
-  blink::WebPoint web_point(point);
   uint32_t index = 0U;
   if (auto* frame = GetFocusedFrame())
-    index = static_cast<uint32_t>(frame->CharacterIndexForPoint(web_point));
+    index = static_cast<uint32_t>(frame->CharacterIndexForPoint(point));
 
   Send(new TextInputClientReplyMsg_GotCharacterIndexForPoint(MSG_ROUTING_NONE,
                                                              index));
@@ -144,7 +142,7 @@ void TextInputClientObserver::OnFirstRectForCharacterRange(gfx::Range range) {
 }
 
 void TextInputClientObserver::OnStringForRange(gfx::Range range) {
-  blink::WebPoint baseline_point;
+  gfx::Point baseline_point;
   NSAttributedString* string = nil;
   blink::WebLocalFrame* frame = GetFocusedFrame();
   // TODO(yabinh): Null check should not be necessary.

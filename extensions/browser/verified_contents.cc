@@ -172,7 +172,7 @@ std::unique_ptr<VerifiedContents> VerifiedContents::Create(
       }
 
       base::FilePath::StringType canonicalized_path =
-          content_verifier_utils::CanonicalizeFilePath(
+          content_verifier_utils::CanonicalizeRelativePath(
               base::FilePath::FromUTF8Unsafe(*file_path_string));
       auto i = verified_contents->root_hashes_.insert(
           std::make_pair(canonicalized_path, std::string()));
@@ -189,13 +189,14 @@ bool VerifiedContents::HasTreeHashRoot(
     const base::FilePath& relative_path) const {
   return base::Contains(
       root_hashes_,
-      content_verifier_utils::CanonicalizeFilePath(relative_path));
+      content_verifier_utils::CanonicalizeRelativePath(relative_path));
 }
 
 bool VerifiedContents::TreeHashRootEquals(const base::FilePath& relative_path,
                                           const std::string& expected) const {
   return TreeHashRootEqualsImpl(
-      content_verifier_utils::CanonicalizeFilePath(relative_path), expected);
+      content_verifier_utils::CanonicalizeRelativePath(relative_path),
+      expected);
 }
 
 // We're loosely following the "JSON Web Signature" draft spec for signing

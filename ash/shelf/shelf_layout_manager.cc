@@ -2148,7 +2148,10 @@ bool ShelfLayoutManager::StartGestureDrag(
   if (Shell::Get()->app_list_controller()->IsVisible())
     return true;
 
-  return StartShelfDrag(gesture_in_screen);
+  return StartShelfDrag(
+      gesture_in_screen,
+      gfx::Vector2dF(gesture_in_screen.details().scroll_x_hint(),
+                     scroll_y_hint));
 }
 
 void ShelfLayoutManager::UpdateGestureDrag(
@@ -2183,7 +2186,10 @@ void ShelfLayoutManager::AttemptToDragByMouse(
 void ShelfLayoutManager::StartMouseDrag(const ui::MouseEvent& mouse_in_screen) {
   float scroll_y_hint = mouse_in_screen.y() - last_mouse_drag_position_.y();
   if (!StartAppListDrag(mouse_in_screen, scroll_y_hint))
-    StartShelfDrag(mouse_in_screen);
+    StartShelfDrag(
+        mouse_in_screen,
+        gfx::Vector2dF(mouse_in_screen.x() - last_mouse_drag_position_.x(),
+                       scroll_y_hint));
 }
 
 void ShelfLayoutManager::UpdateMouseDrag(
@@ -2304,8 +2310,8 @@ bool ShelfLayoutManager::StartAppListDrag(
   return true;
 }
 
-bool ShelfLayoutManager::StartShelfDrag(
-    const ui::LocatedEvent& event_in_screen) {
+bool ShelfLayoutManager::StartShelfDrag(const ui::LocatedEvent& event_in_screen,
+                                        const gfx::Vector2dF& scroll_hint) {
   // Disable the shelf dragging if the fullscreen app list is opened.
   if (Shell::Get()->app_list_controller()->IsVisible() &&
       !IsTabletModeEnabled())
@@ -2343,6 +2349,13 @@ bool ShelfLayoutManager::StartShelfDrag(
     drag_amount_ = 0.f;
   }
 
+  // If the start location is above the shelf (e.g., on the extended hotseat),
+  // do not allow window drag when the hotseat is extended.
+  const gfx::Rect shelf_bounds = GetVisibleShelfBounds();
+  allow_window_drag_on_extended_hotseat_ =
+      event_in_screen.location_f().y() >= shelf_bounds.y();
+
+  MaybeStartDragWindowFromShelf(event_in_screen, scroll_hint);
   return true;
 }
 
@@ -2653,8 +2666,6 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
   if (hotseat_state() == HotseatState::kShown)
     return false;
 
-  gfx::PointF event_start_location = event_in_screen.location_f();
-
   // If hotseat is hidden when drag starts, do not start drag window if hotseat
   // hasn't been fully dragged up.
   if (hotseat_state() == HotseatState::kHidden) {
@@ -2665,16 +2676,9 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
     if (drag_amount_ > full_drag_amount)
       return false;
   } else if (hotseat_state() == HotseatState::kExtended) {
-    // Window drag will not start until it's determined that the gesture is
-    // going up. The effective starting position will thus be the previous event
-    // location.
-    event_start_location -= scroll;
-
-    // If the start location is above the shelf (e.g., on the extended hotseat),
-    // do not allow the drag.
-    const gfx::Rect shelf_bounds = GetVisibleShelfBounds();
-    if (event_start_location.y() < shelf_bounds.y())
+    if (!allow_window_drag_on_extended_hotseat_)
       return false;
+
     // Do not start drag if it's a downward update event.
     if (scroll.y() >= 0)
       return false;
@@ -2693,15 +2697,7 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
     return false;
 
   window_drag_controller_ = std::make_unique<DragWindowFromShelfController>(
-      window, event_start_location, hotseat_state());
-
-  // In extended state, the effective start location is the previous event, so
-  // send additional drag event, so the controller doesn't skip the current
-  // drag location.
-  if (hotseat_state() == HotseatState::kExtended) {
-    window_drag_controller_->Drag(event_in_screen.location_f(), scroll.x(),
-                                  scroll.y());
-  }
+      window, event_in_screen.location_f(), hotseat_state());
   return true;
 }
 

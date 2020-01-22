@@ -466,13 +466,11 @@ void FrameSequenceTracker::ReportBeginImplFrame(
   DCHECK(!is_inside_frame_) << TRACKER_DCHECK_MSG;
   is_inside_frame_ = true;
 
-  DCHECK_EQ(last_started_impl_sequence_, 0u) << TRACKER_DCHECK_MSG;
-  DCHECK_EQ(last_processed_impl_sequence_, 0u) << TRACKER_DCHECK_MSG;
-
   if (args.type == viz::BeginFrameArgs::NORMAL)
     impl_frames_.insert(args.frame_id);
 #endif
 
+  DCHECK_EQ(last_started_impl_sequence_, 0u) << TRACKER_DCHECK_MSG;
   last_started_impl_sequence_ = args.frame_id.sequence_number;
   if (reset_all_state_) {
     begin_impl_frame_data_ = {};
@@ -506,19 +504,24 @@ void FrameSequenceTracker::ReportBeginMainFrame(
   TRACKER_TRACE_STREAM << "B(" << begin_main_frame_data_.previous_sequence
                        << "," << args.frame_id.sequence_number << ")";
 
-  if (ShouldIgnoreSequence(args.frame_id.sequence_number))
+  if (first_received_main_sequence_ &&
+      first_received_main_sequence_ > args.frame_id.sequence_number) {
     return;
+  }
+
+  if (!first_received_main_sequence_ &&
+      ShouldIgnoreSequence(args.frame_id.sequence_number)) {
+    return;
+  }
 
 #if DCHECK_IS_ON()
   if (args.type == viz::BeginFrameArgs::NORMAL) {
-    DCHECK(impl_frames_.contains(args.frame_id));
+    DCHECK(impl_frames_.contains(args.frame_id)) << TRACKER_DCHECK_MSG;
   }
 #endif
 
-  // TODO(sad, xidachen): This DCHECK needs to be turned on, but the synthesized
-  // BeginMainFrame notifications from LayerTreeHostImpl needs to be removed
-  // first.
-  // DCHECK_EQ(awaiting_main_response_sequence_, 0u) << TRACKER_DCHECK_MSG;
+  DCHECK_EQ(awaiting_main_response_sequence_, 0u) << TRACKER_DCHECK_MSG;
+  last_processed_main_sequence_latency_ = 0;
   awaiting_main_response_sequence_ = args.frame_id.sequence_number;
 
   UpdateTrackedFrameData(&begin_main_frame_data_, args.frame_id.source_id,
@@ -542,11 +545,15 @@ void FrameSequenceTracker::ReportMainFrameProcessed(
   TRACKER_TRACE_STREAM << "E(" << args.frame_id.sequence_number << ")";
   if (first_received_main_sequence_ &&
       args.frame_id.sequence_number >= first_received_main_sequence_) {
-    // TODO(sad, xidachen): This DCHECK needs to be turned on, but the
-    // synthesized BeginMainFrame notifications from LayerTreeHostImpl needs to
-    // be removed first.
-    // DCHECK_EQ(awaiting_main_response_sequence_,
-    //           args.frame_id.sequence_number) << TRACKER_DCHECK_MSG;
+    if (awaiting_main_response_sequence_) {
+      DCHECK_EQ(awaiting_main_response_sequence_, args.frame_id.sequence_number)
+          << TRACKER_DCHECK_MSG;
+    }
+    DCHECK_EQ(last_processed_main_sequence_latency_, 0u) << TRACKER_DCHECK_MSG;
+    last_processed_main_sequence_ = args.frame_id.sequence_number;
+    last_processed_main_sequence_latency_ =
+        std::max(last_started_impl_sequence_, last_processed_impl_sequence_) -
+        args.frame_id.sequence_number;
     awaiting_main_response_sequence_ = 0;
   }
 }
@@ -591,6 +598,7 @@ void FrameSequenceTracker::ReportSubmitFrame(
   if (!ShouldIgnoreBeginFrameSource(origin_args.frame_id.source_id) &&
       main_changes_after_sequence_started && main_changes_include_new_changes &&
       !main_change_had_no_damage) {
+    submitted_frame_had_new_main_content_ = true;
     TRACKER_TRACE_STREAM << "S(" << origin_args.frame_id.sequence_number << ")";
 
     last_submitted_main_sequence_ = origin_args.frame_id.sequence_number;
@@ -628,6 +636,13 @@ void FrameSequenceTracker::ReportFrameEnd(const viz::BeginFrameArgs& args) {
     return;
   }
 
+  if (compositor_frame_submitted_ && submitted_frame_had_new_main_content_ &&
+      last_processed_main_sequence_latency_) {
+    // If a compositor frame was submitted with new content from the
+    // main-thread, then make sure the latency gets accounted for.
+    main_throughput().frames_expected += last_processed_main_sequence_latency_;
+  }
+
   // It is possible that the compositor claims there was no damage from the
   // compositor, but before the frame ends, it submits a compositor frame (e.g.
   // with some damage from main). In such cases, the compositor is still
@@ -649,15 +664,17 @@ void FrameSequenceTracker::ReportFrameEnd(const viz::BeginFrameArgs& args) {
   }
   frame_had_no_compositor_damage_ = false;
   compositor_frame_submitted_ = false;
+  submitted_frame_had_new_main_content_ = false;
+  last_processed_main_sequence_latency_ = 0;
 
 #if DCHECK_IS_ON()
   DCHECK(is_inside_frame_) << TRACKER_DCHECK_MSG;
-  DCHECK_EQ(last_started_impl_sequence_, last_processed_impl_sequence_)
-      << TRACKER_DCHECK_MSG;
   is_inside_frame_ = false;
 #endif
 
-  last_started_impl_sequence_ = last_processed_impl_sequence_ = 0;
+  DCHECK_EQ(last_started_impl_sequence_, last_processed_impl_sequence_)
+      << TRACKER_DCHECK_MSG;
+  last_started_impl_sequence_ = 0;
 }
 
 void FrameSequenceTracker::ReportFramePresented(
@@ -791,11 +808,17 @@ void FrameSequenceTracker::ReportMainFrameCausedNoDamage(
   if (last_no_main_damage_sequence_ == args.frame_id.sequence_number)
     return;
 
-  // TODO(sad, xidachen): This DCHECK needs to be turned on, but the synthesized
-  // BeginMainFrame notifications from LayerTreeHostImpl needs to be removed
-  // first.
-  // DCHECK_EQ(awaiting_main_response_sequence_, args.frame_id.sequence_number)
-  //    << TRACKER_DCHECK_MSG;
+  // It is possible for |awaiting_main_response_sequence_| to be zero here if a
+  // commit had already happened before (e.g. B(x)E(x)N(x)). So check that case
+  // here.
+  // XXX: Add a DCHECK() at least to make sure that's what happened?
+  if (awaiting_main_response_sequence_) {
+    DCHECK_EQ(awaiting_main_response_sequence_, args.frame_id.sequence_number)
+        << TRACKER_DCHECK_MSG;
+  } else {
+    DCHECK_EQ(last_processed_main_sequence_, args.frame_id.sequence_number)
+        << TRACKER_DCHECK_MSG;
+  }
   awaiting_main_response_sequence_ = 0;
 
   DCHECK_GT(main_throughput().frames_expected, 0u) << TRACKER_DCHECK_MSG;
@@ -826,7 +849,7 @@ void FrameSequenceTracker::UpdateTrackedFrameData(TrackedFrameData* frame_data,
   if (frame_data->previous_sequence &&
       frame_data->previous_source == source_id) {
     uint32_t current_latency = sequence_number - frame_data->previous_sequence;
-    DCHECK_GT(current_latency, 0u);
+    DCHECK_GT(current_latency, 0u) << TRACKER_DCHECK_MSG;
     frame_data->previous_sequence_delta = current_latency;
   } else {
     frame_data->previous_sequence_delta = 1;

@@ -13,7 +13,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.os.Build;
 
+import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.variations.VariationsUtils;
+import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.compat.ApiHelperForN;
@@ -86,7 +88,8 @@ public class AwVariationsSeedFetcher extends JobService {
         if (scheduler == null) return;
 
         // Check if it's already scheduled.
-        if (getPendingJob(scheduler, JOB_ID) != null) {
+        if (!CommandLine.getInstance().hasSwitch(AwSwitches.FINCH_SEED_IGNORE_PENDING_DOWNLOAD)
+                && getPendingJob(scheduler, JOB_ID) != null) {
             VariationsUtils.debugLog("Seed download job already scheduled");
             return;
         }
@@ -95,7 +98,9 @@ public class AwVariationsSeedFetcher extends JobService {
         long lastRequestTime = VariationsUtils.getStampTime();
         if (lastRequestTime != 0) {
             long now = (new Date()).getTime();
-            if (now < lastRequestTime + MIN_JOB_PERIOD_MILLIS) {
+            long minJobPeriodMillis = VariationsUtils.getDurationSwitchValueInMillis(
+                    AwSwitches.FINCH_SEED_MIN_DOWNLOAD_PERIOD, MIN_JOB_PERIOD_MILLIS);
+            if (now < lastRequestTime + minJobPeriodMillis) {
                 VariationsUtils.debugLog("Throttling seed download job");
                 return;
             }

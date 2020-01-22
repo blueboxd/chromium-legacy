@@ -127,6 +127,7 @@ public class SharedPreferencesManager {
      */
     public void addToStringSet(String key, String value) {
         mKeyChecker.checkIsKeyInUse(key);
+        // Construct a new set so it can be modified safely. See crbug.com/568369.
         Set<String> values = new HashSet<>(
                 ContextUtils.getAppSharedPreferences().getStringSet(key, Collections.emptySet()));
         values.add(value);
@@ -138,6 +139,7 @@ public class SharedPreferencesManager {
      */
     public void removeFromStringSet(String key, String value) {
         mKeyChecker.checkIsKeyInUse(key);
+        // Construct a new set so it can be modified safely. See crbug.com/568369.
         Set<String> values = new HashSet<>(
                 ContextUtils.getAppSharedPreferences().getStringSet(key, Collections.emptySet()));
         if (values.remove(value)) {

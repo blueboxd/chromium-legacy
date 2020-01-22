@@ -7,9 +7,9 @@
 
 #include "base/optional.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace blink {
@@ -27,7 +27,7 @@ struct WebDeviceEmulationParams {
 
   // Position of view on the screen. Missing position means using default value:
   // original one for kDesktop screen position, (0, 0) for kMobile.
-  base::Optional<WebPoint> view_position;
+  base::Optional<gfx::Point> view_position;
 
   // Emulated view size. A width or height of 0 means no override in that
   // dimension, but the other can still be applied. When both are 0, then the

@@ -286,14 +286,14 @@ void ServiceWorkerObjectHost::DispatchExtendableMessageEvent(
   }
   DCHECK_EQ(container_origin_, url::Origin::Create(container_host_->url()));
   switch (container_host_->type()) {
-    case blink::mojom::ServiceWorkerProviderType::kForWindow:
+    case blink::mojom::ServiceWorkerContainerType::kForWindow:
       service_worker_client_utils::GetClient(
           container_host_,
           base::BindOnce(&DispatchExtendableMessageEventFromClient, context_,
                          version_, std::move(message), container_origin_,
                          std::move(callback)));
       return;
-    case blink::mojom::ServiceWorkerProviderType::kForServiceWorker: {
+    case blink::mojom::ServiceWorkerContainerType::kForServiceWorker: {
       // Clamp timeout to the sending worker's remaining timeout, to prevent
       // postMessage from keeping workers alive forever.
       base::TimeDelta timeout = container_host_->service_worker_host()
@@ -308,11 +308,11 @@ void ServiceWorkerObjectHost::DispatchExtendableMessageEvent(
                          container_host_->GetWeakPtr()));
       return;
     }
-    case blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker:
-    case blink::mojom::ServiceWorkerProviderType::kForSharedWorker:
+    case blink::mojom::ServiceWorkerContainerType::kForDedicatedWorker:
+    case blink::mojom::ServiceWorkerContainerType::kForSharedWorker:
     // Web workers don't yet have access to ServiceWorker objects, so they
     // can't postMessage to one (https://crbug.com/371690).
-    case blink::mojom::ServiceWorkerProviderType::kUnknown:
+    case blink::mojom::ServiceWorkerContainerType::kUnknown:
       break;
   }
   NOTREACHED() << container_host_->type();

@@ -27,6 +27,7 @@ import android.support.test.espresso.core.deps.guava.base.Preconditions;
 import android.support.test.espresso.matcher.BoundedMatcher;
 import android.text.Spanned;
 import android.text.style.ClickableSpan;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -61,6 +62,7 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.browser.test.util.TestTouchUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -406,6 +408,23 @@ class AutofillAssistantUiTestUtil {
         TestThreadUtils.runOnUiThreadBlocking(() -> AutofillAssistantFacade.start(activity));
     }
 
+    /** Performs a single tap on the center of the specified element. */
+    public static void tapElement(String elementId, CustomTabActivityTestRule testRule)
+            throws Exception {
+        Rect coords = getAbsoluteBoundingRect(elementId, testRule);
+        float x = coords.left + 0.5f * (coords.right - coords.left);
+        float y = coords.top + 0.5f * (coords.bottom - coords.top);
+
+        // Sanity check, can only click on coordinates on screen.
+        DisplayMetrics displayMetrics = testRule.getActivity().getResources().getDisplayMetrics();
+        if (x < 0 || x > displayMetrics.widthPixels || y < 0 || y > displayMetrics.heightPixels) {
+            throw new IllegalArgumentException(elementId + " not on screen: tried to tap x=" + x
+                    + ", y=" + y + ", which is outside of display with w="
+                    + displayMetrics.widthPixels + ", h=" + displayMetrics.heightPixels);
+        }
+        TestTouchUtils.singleClick(InstrumentationRegistry.getInstrumentation(), x, y);
+    }
+
     /** Computes the bounding rectangle of the specified DOM element in absolute screen space. */
     public static Rect getAbsoluteBoundingRect(String elementId, CustomTabActivityTestRule testRule)
             throws Exception {
@@ -464,6 +483,21 @@ class AutofillAssistantUiTestUtil {
         javascriptHelper.evaluateJavaScriptForTests(webContents,
                 "(function() {"
                         + " return [document.getElementById('" + elementId + "') != null]; "
+                        + "})()");
+        javascriptHelper.waitUntilHasValue();
+        JSONArray result = new JSONArray(javascriptHelper.getJsonResultAndClear());
+        return result.getBoolean(0);
+    }
+
+    /** Checks whether the specified element is displayed in the DOM tree. */
+    public static boolean checkElementIsDisplayed(String elementId, WebContents webContents)
+            throws Exception {
+        TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper javascriptHelper =
+                new TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper();
+        javascriptHelper.evaluateJavaScriptForTests(webContents,
+                "(function() {"
+                        + " return [document.getElementById('" + elementId
+                        + "').style.display != \"none\"]; "
                         + "})()");
         javascriptHelper.waitUntilHasValue();
         JSONArray result = new JSONArray(javascriptHelper.getJsonResultAndClear());

@@ -97,7 +97,7 @@ class CONTENT_EXPORT AuthenticatorCommon {
 
  protected:
   virtual std::unique_ptr<AuthenticatorRequestClientDelegate>
-  CreateRequestDelegate(std::string relying_party_id);
+  CreateRequestDelegate();
 
   std::unique_ptr<AuthenticatorRequestClientDelegate> request_delegate_;
 

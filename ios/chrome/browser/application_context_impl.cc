@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -42,6 +43,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state_manager_impl.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/component_updater/ios_component_updater_configurator.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/application_breadcrumbs_logger.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
@@ -182,6 +186,13 @@ void ApplicationContextImpl::OnAppEnterForeground() {
   ukm::UkmService* ukm_service = GetMetricsServicesManager()->GetUkmService();
   if (ukm_service)
     ukm_service->OnAppEnterForeground();
+
+  if (base::FeatureList::IsEnabled(kLogBreadcrumbs) && !breadcrumb_manager_) {
+    breadcrumb_manager_ = std::make_unique<BreadcrumbManager>();
+    application_breadcrumbs_logger_ =
+        std::make_unique<ApplicationBreadcrumbsLogger>(
+            breadcrumb_manager_.get());
+  }
 }
 
 void ApplicationContextImpl::OnAppEnterBackground() {

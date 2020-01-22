@@ -8,17 +8,11 @@ import("//build/config/android/rules.gni")
 # compiling, and is reference directly via "java -jar proguar.jar"
 java_prebuilt("proguard603_java") {
   jar_path = "lib/proguard603.jar"
-  data = [
-    "$root_build_dir/lib.java/third_party/proguard/proguard603.jar",
-  ]
+  data = [ "$root_build_dir/lib.java/third_party/proguard/proguard603.jar" ]
 }
 
 java_prebuilt("retrace_java") {
   jar_path = "lib/retrace603.jar"
-  deps = [
-    ":proguard603_java",
-  ]
-  data = [
-    "$root_build_dir/lib.java/third_party/proguard/retrace603.jar",
-  ]
+  deps = [ ":proguard603_java" ]
+  data = [ "$root_build_dir/lib.java/third_party/proguard/retrace603.jar" ]
 }

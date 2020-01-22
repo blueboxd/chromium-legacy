@@ -347,7 +347,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void SetViewportIntersectionFromParent(const ViewportIntersectionState&);
 
   // See viewport_intersection_state.h for more info on these methods.
-  IntPoint RemoteViewportOffset() const {
+  gfx::Point RemoteViewportOffset() const {
     return intersection_state_.viewport_offset;
   }
   IntRect RemoteViewportIntersection() const {

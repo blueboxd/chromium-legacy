@@ -17,6 +17,7 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/platform_thread.h"  // For |Sleep()|.
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -156,6 +157,29 @@ IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceBrowsertest, BrotliEnabled) {
   EXPECT_TRUE(base::Contains(encodings, "br"));
 }
 
+void CheckCacheResetStatus(base::HistogramTester* histograms, bool reset) {
+  // TODO(crbug/1041810): The failure case, here, is to time out.  Since Chrome
+  // doesn't synchronize cache loading, there's no guarantee that this is
+  // complete and it's merely available at earliest convenience.  If shutdown
+  // occurs prior to the cache being loaded, then nothing is reported.  This
+  // should probably be fixed to avoid the use of the sleep function, but that
+  // will require synchronizing in some meaningful way to guarantee the cache
+  // has been loaded prior to testing the histograms.
+  while (!histograms->GetBucketCount("HttpCache.HardReset", reset)) {
+    content::FetchHistogramsFromChildProcesses();
+    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(5));
+  }
+
+  if (reset) {
+    // Some tests load the cache multiple times, but should only be reset once.
+    EXPECT_EQ(histograms->GetBucketCount("HttpCache.HardReset", true), 1);
+  } else {
+    // Make sure it's never reset.
+    EXPECT_EQ(histograms->GetBucketCount("HttpCache.HardReset", true), 0);
+  }
+}
+
 class ProfileNetworkContextServiceCacheSameBrowsertest
     : public ProfileNetworkContextServiceBrowsertest {
  public:
@@ -170,40 +194,36 @@ class ProfileNetworkContextServiceCacheSameBrowsertest
     ProfileNetworkContextServiceBrowsertest::SetUp();
   }
 
-  void CheckCacheNotReset() {
-    content::FetchHistogramsFromChildProcesses();
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-    // Some tests load the cache multiple times, so compare to zero.
-    EXPECT_GT(histograms_.GetBucketCount("HttpCache.HardReset", false), 0);
-    // Make sure it's never reset.
-    EXPECT_EQ(histograms_.GetBucketCount("HttpCache.HardReset", true), 0);
-  }
+  base::HistogramTester histograms_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::HistogramTester histograms_;
 };
 
-// Flaky on Linux and Mac: https://crbug.com/1041810
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-#define MAYBE_TestCacheResetParameter DISABLED_TestCacheResetParameter
-#else
-#define MAYBE_TestCacheResetParameter TestCacheResetParameter
-#endif
 IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheSameBrowsertest,
-                       MAYBE_TestCacheResetParameter) {
-  base::RunLoop().RunUntilIdle();
-  base::ThreadPoolInstance::Get()->FlushForTesting();
+                       PRE_TestCacheResetParameter) {
+  CheckCacheResetStatus(&histograms_, false);
 
-  // At this point, we have already called the initialization once on startup.
+  // At this point, we have already called the initialization.
   // Verify that we have the correct values in the local_state.
   PrefService* local_state = g_browser_process->local_state();
   DCHECK_EQ(
       local_state->GetString(
           "profile_network_context_service.http_cache_finch_experiment_groups"),
-      "NoneNoneNone");
+      "None None None");
+}
 
-  CheckCacheNotReset();
+IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheSameBrowsertest,
+                       TestCacheResetParameter) {
+  CheckCacheResetStatus(&histograms_, false);
+
+  // At this point, we have already called the initialization.
+  // Verify that we have the correct values in the local_state.
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK_EQ(
+      local_state->GetString(
+          "profile_network_context_service.http_cache_finch_experiment_groups"),
+      "None None None");
 }
 
 class ProfileNetworkContextServiceCacheChangeBrowsertest
@@ -217,33 +237,45 @@ class ProfileNetworkContextServiceCacheChangeBrowsertest
   }
   ~ProfileNetworkContextServiceCacheChangeBrowsertest() override = default;
 
-  void CheckCacheReset() {
-    content::FetchHistogramsFromChildProcesses();
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-    // Some tests load the cache multiple times, but should only be reset once.
-    EXPECT_EQ(histograms_.GetBucketCount("HttpCache.HardReset", true), 1);
-  }
+  base::HistogramTester histograms_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::HistogramTester histograms_;
 };
 
 // Flaky on Linux and Mac: https://crbug.com/1041810
+// The first time we load, even if we're in an experiment there's no reset
+// from the unknown state.
 IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheChangeBrowsertest,
-                       MAYBE_TestCacheResetParameter) {
-  base::RunLoop().RunUntilIdle();
-  base::ThreadPoolInstance::Get()->FlushForTesting();
+                       PRE_TestCacheResetParameter) {
+  CheckCacheResetStatus(&histograms_, false);
 
-  // At this point, we have already called the initialization once on startup.
+  // At this point, we have already called the initialization.
   // Verify that we have the correct values in the local_state.
   PrefService* local_state = g_browser_process->local_state();
   DCHECK_EQ(
       local_state->GetString(
           "profile_network_context_service.http_cache_finch_experiment_groups"),
-      "Nonescoped_feature_list_trial_groupNone");
+      "None scoped_feature_list_trial_group None");
+  // Set the local state for the next test.
+  local_state->SetString(
+      "profile_network_context_service.http_cache_finch_experiment_groups",
+      "None None None");
+}
 
-  CheckCacheReset();
+// The second time we load we know the state, which was "None None None" for the
+// previous test, so we should see a reset being in an experiment.
+IN_PROC_BROWSER_TEST_F(ProfileNetworkContextServiceCacheChangeBrowsertest,
+                       TestCacheResetParameter) {
+  CheckCacheResetStatus(&histograms_, true);
+
+  // At this point, we have already called the initialization once.
+  // Verify that we have the correct values in the local_state.
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK_EQ(
+      local_state->GetString(
+          "profile_network_context_service.http_cache_finch_experiment_groups"),
+      "None scoped_feature_list_trial_group None");
 }
 
 class AmbientAuthenticationTestWithPolicy

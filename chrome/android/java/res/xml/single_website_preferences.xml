@@ -74,6 +74,10 @@
         android:key="nfc_permission_list" />
     <ListPreference
         android:key="bluetooth_scanning_permission_list" />
+    <ListPreference
+        android:key="vr_permission_list" />
+    <ListPreference
+        android:key="ar_permission_list" />
 
     <org.chromium.chrome.browser.settings.ButtonPreference
         android:key="reset_site_button"

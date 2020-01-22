@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
-#include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
@@ -26,6 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::Return;
 
 namespace games {
 
@@ -53,14 +53,9 @@ class GamesServiceImplTest : public testing::Test {
     prefs::SetInstallDirPath(test_pref_service_.get(), fake_install_dir_);
   }
 
-  void SetHighlightedGamesStoreCacheWith(const Game& game) {
-    EXPECT_CALL(*mock_highlighted_games_store_, TryGetFromCache())
-        .WillOnce([&game]() { return base::Optional<Game>(game); });
-  }
-
-  void SetHighlightedGamesStoreCacheEmpty() {
-    EXPECT_CALL(*mock_highlighted_games_store_, TryGetFromCache())
-        .WillOnce([]() { return base::nullopt; });
+  void SetTryRespondFromCacheResponse(bool succeeds) {
+    EXPECT_CALL(*mock_highlighted_games_store_, TryRespondFromCache())
+        .WillOnce(Return(succeeds));
   }
 
   // TaskEnvironment is used instead of SingleThreadTaskEnvironment since we
@@ -77,38 +72,39 @@ class GamesServiceImplTest : public testing::Test {
 };
 
 TEST_F(GamesServiceImplTest, GetHighlightedGame_NotInstalled) {
-  base::RunLoop run_loop;
+  bool callback_invoked = false;
   games_service_->GetHighlightedGame(base::BindLambdaForTesting(
-      [&run_loop](ResponseCode code, const Game game) {
+      [&callback_invoked](ResponseCode code, const Game game) {
         EXPECT_EQ(ResponseCode::kFileNotFound, code);
         test::ExpectProtosEqual(Game(), game);
-        run_loop.Quit();
+        callback_invoked = true;
       }));
 
-  run_loop.Run();
+  EXPECT_TRUE(callback_invoked);
 }
 
 TEST_F(GamesServiceImplTest, GetHighlightedGame_RetrievesFromCache) {
   // Mock component to be installed.
   SetInstallDirPref();
 
-  Game fake_game = test::CreateGame();
-  SetHighlightedGamesStoreCacheWith(fake_game);
+  // Expect the UI callback to have been given to the highlighted games store.
+  EXPECT_CALL(*mock_highlighted_games_store_, SetPendingCallback(_)).Times(1);
 
-  base::RunLoop run_loop;
-  games_service_->GetHighlightedGame(base::BindLambdaForTesting(
-      [&fake_game, &run_loop](ResponseCode code, const Game game) {
-        EXPECT_EQ(ResponseCode::kSuccess, code);
-        test::ExpectProtosEqual(fake_game, game);
-        run_loop.Quit();
+  // Don't expect processing to be invoked as we'll have returned from cache.
+  EXPECT_CALL(*mock_catalog_store_, UpdateCatalogAsync(_, _)).Times(0);
+  EXPECT_CALL(*mock_highlighted_games_store_, ProcessAsync(_, _, _)).Times(0);
+
+  SetTryRespondFromCacheResponse(true);
+
+  games_service_->GetHighlightedGame(
+      base::BindLambdaForTesting([](ResponseCode code, const Game game) {
+        // No-op.
       }));
-
-  run_loop.Run();
 }
 
 TEST_F(GamesServiceImplTest, GetHighlightedGame_Success) {
   SetInstallDirPref();
-  SetHighlightedGamesStoreCacheEmpty();
+  SetTryRespondFromCacheResponse(false);
 
   // Expect the UI callback to have been given to the highlighted games store.
   EXPECT_CALL(*mock_highlighted_games_store_, SetPendingCallback(_)).Times(1);
@@ -143,25 +139,19 @@ TEST_F(GamesServiceImplTest, GetHighlightedGame_Success) {
         std::move(done_callback).Run();
       });
 
-  base::RunLoop run_loop;
-  // Upon full success, the cached catalog will get deleted.
-  EXPECT_CALL(*mock_catalog_store_, ClearCache()).WillOnce([&run_loop]() {
-    run_loop.Quit();
-  });
+  EXPECT_CALL(*mock_catalog_store_, ClearCache()).Times(1);
 
   games_service_->GetHighlightedGame(
       base::BindLambdaForTesting([](ResponseCode code, const Game game) {
         // No-op.
       }));
 
-  run_loop.Run();
-
   EXPECT_FALSE(games_service_->is_updating());
 }
 
 TEST_F(GamesServiceImplTest, GetHighlightedGame_CatalogFileNotFound) {
   SetInstallDirPref();
-  SetHighlightedGamesStoreCacheEmpty();
+  SetTryRespondFromCacheResponse(false);
 
   EXPECT_CALL(*mock_catalog_store_, UpdateCatalogAsync(fake_install_dir_, _))
       .WillOnce([](const base::FilePath& install_dir,
@@ -173,17 +163,14 @@ TEST_F(GamesServiceImplTest, GetHighlightedGame_CatalogFileNotFound) {
               HandleCatalogFailure(ResponseCode::kFileNotFound))
       .Times(1);
 
-  base::RunLoop run_loop;
-  EXPECT_CALL(*mock_catalog_store_, ClearCache()).WillOnce([&run_loop]() {
-    run_loop.Quit();
-  });
+  EXPECT_CALL(*mock_highlighted_games_store_, SetPendingCallback(_)).Times(1);
+
+  EXPECT_CALL(*mock_catalog_store_, ClearCache()).Times(1);
 
   games_service_->GetHighlightedGame(
       base::BindLambdaForTesting([](ResponseCode code, const Game game) {
         // No-op.
       }));
-
-  run_loop.Run();
 }
 
 }  // namespace games

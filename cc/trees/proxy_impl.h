@@ -61,6 +61,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void NotifyReadyToCommitOnImpl(CompletionEvent* completion,
                                  LayerTreeHost* layer_tree_host,
                                  base::TimeTicks main_thread_start_time,
+                                 const viz::BeginFrameArgs& commit_args,
                                  bool hold_commit_for_activation);
   void SetSourceURL(ukm::SourceId source_id, const GURL& url);
   void ClearHistory();

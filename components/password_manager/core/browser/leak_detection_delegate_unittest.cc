@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
+#include "components/password_manager/core/browser/form_parsing/form_parser.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
 #include "components/password_manager/core/browser/leak_detection_delegate.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -218,7 +219,7 @@ TEST_F(LeakDetectionDelegateTest, LeakHistoryAddCredentials) {
       form.password_value);
 
   const CompromisedCredentials compromised_credentials(
-      form.origin, form.username_value, base::Time::Now(),
+      GetSignonRealm(form.origin), form.username_value, base::Time::Now(),
       CompromiseType::kLeaked);
   EXPECT_CALL(*store(), AddCompromisedCredentialsImpl(compromised_credentials));
   WaitForPasswordStore();

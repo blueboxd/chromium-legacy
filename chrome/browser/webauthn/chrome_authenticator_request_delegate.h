@@ -48,8 +48,7 @@ class ChromeAuthenticatorRequestDelegate
 
   // The |render_frame_host| must outlive this instance.
   explicit ChromeAuthenticatorRequestDelegate(
-      content::RenderFrameHost* render_frame_host,
-      const std::string& relying_party_id);
+      content::RenderFrameHost* render_frame_host);
   ~ChromeAuthenticatorRequestDelegate() override;
 
 #if defined(OS_MACOSX)
@@ -62,6 +61,10 @@ class ChromeAuthenticatorRequestDelegate
   AuthenticatorRequestDialogModel* WeakDialogModelForTesting() const;
 
   // content::AuthenticatorRequestClientDelegate:
+  base::Optional<std::string> MaybeGetRelyingPartyIdOverride(
+      const std::string& claimed_relying_party_id,
+      const url::Origin& caller_origin) override;
+  void SetRelyingPartyId(const std::string& rp_id) override;
   bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override;
   void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
@@ -143,7 +146,6 @@ class ChromeAuthenticatorRequestDelegate
       std::unique_ptr<device::CableDiscoveryData> discovery_data);
 
   content::RenderFrameHost* const render_frame_host_;
-  const std::string relying_party_id_;
   // Holds ownership of AuthenticatorRequestDialogModel until
   // OnTransportAvailabilityEnumerated() is invoked, at which point the
   // ownership of the model is transferred to AuthenticatorRequestDialogView and
@@ -151,7 +153,7 @@ class ChromeAuthenticatorRequestDelegate
   // |weak_dialog_model_|.
   std::unique_ptr<AuthenticatorRequestDialogModel>
       transient_dialog_model_holder_;
-  AuthenticatorRequestDialogModel* weak_dialog_model_;
+  AuthenticatorRequestDialogModel* weak_dialog_model_ = nullptr;
   base::OnceClosure cancel_callback_;
   base::RepeatingClosure start_over_callback_;
   device::FidoRequestHandlerBase::RequestCallback request_callback_;

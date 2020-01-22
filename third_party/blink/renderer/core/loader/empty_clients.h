@@ -446,7 +446,7 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   void Navigate(const ResourceRequest&,
                 bool should_replace_current_entry,
                 bool is_opener_navigation,
-                bool prevent_sandboxed_download,
+                bool initiator_frame_has_download_sandbox_flag,
                 bool initiator_frame_is_ad,
                 mojo::PendingRemote<mojom::blink::BlobURLToken>) override {}
   unsigned BackForwardLength() override { return 0; }

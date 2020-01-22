@@ -13,8 +13,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer_bridge.h"
 
-// Combines breadcrumbs from multiple ChromeBrowserState instances and sends the
-// merged breadcrumb events to breakpad for attachment to crash reports.
+// Combines breadcrumbs from multiple BreadcrumbManagers and sends the merged
+// breadcrumb events to breakpad for attachment to crash reports.
 @interface CrashReporterBreadcrumbObserver
     : NSObject <BreadcrumbManagerObserving> {
 }
@@ -22,10 +22,19 @@
 // Creates a singleton instance.
 + (CrashReporterBreadcrumbObserver*)uniqueInstance;
 
-// Starts collecting breadcrumb events associated with |browserState|.
-- (void)observeBrowserState:(ios::ChromeBrowserState*)browserState;
-// Stops collecting breadcrumb events associated with |browserState|.
-- (void)stopObservingBrowserState:(ios::ChromeBrowserState*)browserState;
+// Starts collecting breadcrumb events logged to |breadcrumbManager|.
+- (void)observeBreadcrumbManager:(BreadcrumbManager*)breadcrumbManager;
+
+// Stops collecting breadcrumb events logged to |breadcrumbManager|.
+- (void)stopObservingBreadcrumbManager:(BreadcrumbManager*)breadcrumbManager;
+
+// Starts collecting breadcrumb events logged to |breadcrumbManagerService|.
+- (void)observeBreadcrumbManagerService:
+    (BreadcrumbManagerKeyedService*)breadcrumbManagerService;
+
+// Stops collecting breadcrumb events logged to |breadcrumbManagerService|.
+- (void)stopObservingBreadcrumbManagerService:
+    (BreadcrumbManagerKeyedService*)breadcrumbManagerService;
 
 @end
 

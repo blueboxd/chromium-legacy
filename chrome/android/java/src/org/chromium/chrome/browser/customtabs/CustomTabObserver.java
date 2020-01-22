@@ -22,12 +22,11 @@ import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProv
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 
@@ -180,7 +179,7 @@ public class CustomTabObserver extends EmptyTabObserver {
 
     @Override
     public void onDidAttachInterstitialPage(Tab tab) {
-        if (((TabImpl) tab).getSecurityLevel() != ConnectionSecurityLevel.DANGEROUS) return;
+        if (SecurityStateModel.isContentDangerous(tab.getWebContents())) return;
         resetPageLoadTracking();
     }
 

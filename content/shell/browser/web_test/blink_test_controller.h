@@ -184,6 +184,20 @@ class BlinkTestController : public WebContentsObserver,
     return accumulated_web_test_runtime_flags_changes_;
   }
 
+  void OnInitiateLayoutDump();
+  void OnResetDone();
+  void OnPrintMessageToStderr(const std::string& message);
+  void OnReload();
+  void OnCloseRemainingWindows();
+  void OnGoToOffset(int offset);
+  void OnSetBluetoothManualChooser(bool enable);
+  void OnGetBluetoothManualChooserEvents();
+  void OnSendBluetoothManualChooserEvent(const std::string& event,
+                                         const std::string& argument);
+  void OnSetPopupBlockingEnabled(bool block_popups);
+  void OnLoadURLForFrame(const GURL& url, const std::string& frame_name);
+  void OnNavigateSecondaryWindow(const GURL& url);
+
  private:
   enum TestPhase { BETWEEN_TESTS, DURING_TEST, CLEAN_UP };
 
@@ -211,26 +225,13 @@ class BlinkTestController : public WebContentsObserver,
   void OnAudioDump(const std::vector<unsigned char>& audio_dump);
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
-  void OnInitiateLayoutDump();
   void OnDumpFrameLayoutResponse(int frame_tree_node_id,
                                  const std::string& dump);
-  void OnPrintMessageToStderr(const std::string& message);
   void OnPrintMessage(const std::string& message);
   void OnOverridePreferences(const WebPreferences& prefs);
-  void OnSetPopupBlockingEnabled(bool block_popups);
   void OnTestFinished();
-  void OnNavigateSecondaryWindow(const GURL& url);
-  void OnGoToOffset(int offset);
-  void OnReload();
-  void OnLoadURLForFrame(const GURL& url, const std::string& frame_name);
   void OnCaptureSessionHistory();
-  void OnCloseRemainingWindows();
-  void OnResetDone();
   void OnLeakDetectionDone(const LeakDetector::LeakDetectionReport& report);
-  void OnSetBluetoothManualChooser(bool enable);
-  void OnGetBluetoothManualChooserEvents();
-  void OnSendBluetoothManualChooserEvent(const std::string& event,
-                                         const std::string& argument);
   void OnBlockThirdPartyCookies(bool block);
   mojo::AssociatedRemote<mojom::WebTestControl>& GetWebTestControlRemote(
       RenderFrameHost* frame);

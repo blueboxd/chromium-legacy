@@ -103,7 +103,6 @@
 #include "third_party/blink/public/platform/web_double_size.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_isolated_world_info.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -1089,12 +1088,12 @@ bool WebLocalFrameImpl::FirstRectForCharacterRange(
 }
 
 size_t WebLocalFrameImpl::CharacterIndexForPoint(
-    const WebPoint& point_in_viewport) const {
+    const gfx::Point& point_in_viewport) const {
   if (!GetFrame())
     return kNotFound;
 
   HitTestLocation location(
-      GetFrame()->View()->ViewportToFrame(point_in_viewport));
+      GetFrame()->View()->ViewportToFrame(IntPoint(point_in_viewport)));
   HitTestResult result = GetFrame()->GetEventHandler().HitTestResultAtLocation(
       location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   return GetFrame()->Selection().CharacterIndexForPoint(
@@ -1304,8 +1303,8 @@ bool WebLocalFrameImpl::SelectWordAroundCaret() {
   return GetFrame()->Selection().SelectWordAroundCaret();
 }
 
-void WebLocalFrameImpl::SelectRange(const WebPoint& base_in_viewport,
-                                    const WebPoint& extent_in_viewport) {
+void WebLocalFrameImpl::SelectRange(const gfx::Point& base_in_viewport,
+                                    const gfx::Point& extent_in_viewport) {
   MoveRangeSelection(base_in_viewport, extent_in_viewport);
 }
 
@@ -1360,7 +1359,7 @@ WebString WebLocalFrameImpl::RangeAsText(const WebRange& web_range) {
       TextIteratorBehavior::EmitsObjectReplacementCharacterBehavior());
 }
 
-void WebLocalFrameImpl::MoveRangeSelectionExtent(const WebPoint& point) {
+void WebLocalFrameImpl::MoveRangeSelectionExtent(const gfx::Point& point) {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::moveRangeSelectionExtent");
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
@@ -1368,12 +1367,12 @@ void WebLocalFrameImpl::MoveRangeSelectionExtent(const WebPoint& point) {
   GetFrame()->GetDocument()->UpdateStyleAndLayout();
 
   GetFrame()->Selection().MoveRangeSelectionExtent(
-      GetFrame()->View()->ViewportToFrame(point));
+      GetFrame()->View()->ViewportToFrame(IntPoint(point)));
 }
 
 void WebLocalFrameImpl::MoveRangeSelection(
-    const WebPoint& base_in_viewport,
-    const WebPoint& extent_in_viewport,
+    const gfx::Point& base_in_viewport,
+    const gfx::Point& extent_in_viewport,
     WebFrame::TextGranularity granularity) {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::moveRangeSelection");
 
@@ -1385,19 +1384,20 @@ void WebLocalFrameImpl::MoveRangeSelection(
   if (granularity == WebFrame::kWordGranularity)
     blink_granularity = blink::TextGranularity::kWord;
   GetFrame()->Selection().MoveRangeSelection(
-      GetFrame()->View()->ViewportToFrame(base_in_viewport),
-      GetFrame()->View()->ViewportToFrame(extent_in_viewport),
+      GetFrame()->View()->ViewportToFrame(IntPoint(base_in_viewport)),
+      GetFrame()->View()->ViewportToFrame(IntPoint(extent_in_viewport)),
       blink_granularity);
 }
 
-void WebLocalFrameImpl::MoveCaretSelection(const WebPoint& point_in_viewport) {
+void WebLocalFrameImpl::MoveCaretSelection(
+    const gfx::Point& point_in_viewport) {
   TRACE_EVENT0("blink", "WebLocalFrameImpl::moveCaretSelection");
 
   // TODO(editing-dev): The use of UpdateStyleAndLayout
   // needs to be audited.  see http://crbug.com/590369 for more details.
   GetFrame()->GetDocument()->UpdateStyleAndLayout();
   const IntPoint point_in_contents =
-      GetFrame()->View()->ViewportToFrame(point_in_viewport);
+      GetFrame()->View()->ViewportToFrame(IntPoint(point_in_viewport));
   GetFrame()->Selection().MoveCaretSelection(point_in_contents);
 }
 
@@ -2351,8 +2351,9 @@ WebFrameWidget* WebLocalFrameImpl::FrameWidget() const {
   return frame_widget_;
 }
 
-void WebLocalFrameImpl::CopyImageAtForTesting(const WebPoint& pos_in_viewport) {
-  GetFrame()->CopyImageAtViewportPoint(pos_in_viewport);
+void WebLocalFrameImpl::CopyImageAtForTesting(
+    const gfx::Point& pos_in_viewport) {
+  GetFrame()->CopyImageAtViewportPoint(IntPoint(pos_in_viewport));
 }
 
 WebSandboxFlags WebLocalFrameImpl::EffectiveSandboxFlagsForTesting() const {
@@ -2392,10 +2393,9 @@ bool WebLocalFrameImpl::IsAllowedToDownload() const {
     }
     return !GetFrame()->Owner() ||
            GetFrame()->Owner()->GetFramePolicy().allowed_to_download;
-  } else {
-    return (GetFrame()->Loader().EffectiveSandboxFlags() &
-            WebSandboxFlags::kDownloads) == WebSandboxFlags::kNone;
   }
+  return (GetFrame()->Loader().PendingEffectiveSandboxFlags() &
+          WebSandboxFlags::kDownloads) == WebSandboxFlags::kNone;
 }
 
 void WebLocalFrameImpl::UsageCountChromeLoadTimes(const WebString& metric) {
@@ -2456,8 +2456,8 @@ void WebLocalFrameImpl::ExtractSmartClipData(WebRect rect_in_viewport,
   clip_text = clip_data.ClipData();
   clip_rect = clip_data.RectInViewport();
 
-  WebPoint start_point(rect_in_viewport.x, rect_in_viewport.y);
-  WebPoint end_point(rect_in_viewport.x + rect_in_viewport.width,
+  IntPoint start_point(rect_in_viewport.x, rect_in_viewport.y);
+  IntPoint end_point(rect_in_viewport.x + rect_in_viewport.width,
                      rect_in_viewport.y + rect_in_viewport.height);
   clip_html = CreateMarkupInRect(
       GetFrame(), GetFrame()->View()->ViewportToFrame(start_point),
@@ -2520,9 +2520,9 @@ bool WebLocalFrameImpl::ShouldSuppressKeyboardForFocusedElement() {
 }
 
 void WebLocalFrameImpl::PerformMediaPlayerAction(
-    const WebPoint& location,
+    const gfx::Point& location,
     const MediaPlayerAction& action) {
-  HitTestResult result = HitTestResultForVisualViewportPos(location);
+  HitTestResult result = HitTestResultForVisualViewportPos(IntPoint(location));
   Node* node = result.InnerNode();
   if (!IsA<HTMLVideoElement>(*node) && !IsA<HTMLAudioElement>(*node))
     return;

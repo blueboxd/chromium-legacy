@@ -97,6 +97,11 @@ public class TabContextMenuItemDelegate implements ContextMenuItemDelegate {
     }
 
     @Override
+    public void onSaveImageToClipboard(Uri uri) {
+        Clipboard.getInstance().setImage(uri);
+    }
+
+    @Override
     public boolean supportsCall() {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse("tel:"));

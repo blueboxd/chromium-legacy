@@ -97,6 +97,8 @@ class CompositorView : public content::CompositorClient,
   void EvictCachedBackBuffer(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object);
+  void OnTabChanged(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& object);
 
   // CompositorClient implementation:
   void RecreateSurface() override;

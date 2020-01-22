@@ -24,6 +24,8 @@ class ChromiumDepGraph {
     // It is provided here from manual lookups. Note that licenseUrl must provide textual content
     // rather than be an html page.
     final def FALLBACK_PROPERTIES = [
+        'androidx_multidex_multidex': new PropertyOverride(
+            url: 'https://maven.google.com/androidx/multidex/multidex/2.0.0/multidex-2.0.0.aar'),
         'com_github_kevinstern_software_and_algorithms': new PropertyOverride(
             licenseUrl: "https://raw.githubusercontent.com/KevinStern/software-and-algorithms/master/LICENSE"),
         'com_google_auto_auto_common': new PropertyOverride(

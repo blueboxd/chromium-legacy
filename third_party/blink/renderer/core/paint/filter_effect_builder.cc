@@ -27,7 +27,6 @@
 #include "third_party/blink/renderer/core/paint/filter_effect_builder.h"
 
 #include <algorithm>
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/core/svg/graphics/filters/svg_filter_builder.h"
 #include "third_party/blink/renderer/core/svg/svg_filter_element.h"

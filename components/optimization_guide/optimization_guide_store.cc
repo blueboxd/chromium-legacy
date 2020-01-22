@@ -769,9 +769,8 @@ void OptimizationGuideStore::OnLoadEntryKeys(
   // there's an in-flight component data update, which means the keys are
   // about to be invalidated, then the loaded keys should not be considered
   // valid. Reset the keys so that they are cleared.
-  if (!IsAvailable() || data_update_in_flight_) {
+  if (!IsAvailable() || data_update_in_flight_)
     hint_entry_keys.reset();
-  }
 
   entry_keys_ = std::move(hint_entry_keys);
   std::move(callback).Run();

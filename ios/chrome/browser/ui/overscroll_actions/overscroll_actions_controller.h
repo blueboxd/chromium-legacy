@@ -7,14 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_view.h"
 #import "ios/chrome/browser/ui/util/relaxed_bounds_constraints_hittest.h"
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 
 @protocol CRWWebViewProxy;
-namespace ios {
-class ChromeBrowserState;
-}
 @class OverscrollActionsController;
 
 // Describe the current state of the overscroll action controller.

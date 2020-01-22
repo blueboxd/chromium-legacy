@@ -5,9 +5,7 @@
 assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("feature_status_change") {
-  sources = [
-    "feature_status_change.h",
-  ]
+  sources = [ "feature_status_change.h" ]
 }
 
 static_library("device_sync") {
@@ -229,9 +227,7 @@ static_library("test_support") {
     "mock_sync_scheduler.h",
   ]
 
-  public_deps = [
-    ":device_sync",
-  ]
+  public_deps = [ ":device_sync" ]
 
   deps = [
     ":device_sync",

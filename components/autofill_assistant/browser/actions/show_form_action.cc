@@ -184,6 +184,7 @@ void ShowFormAction::OnButtonClicked() {
 }
 
 void ShowFormAction::EndAction(const ClientStatus& status) {
+  delegate_->CleanUpAfterPrompt();
   delegate_->SetForm(nullptr, base::DoNothing(), base::DoNothing());
   UpdateProcessedAction(status);
   std::move(callback_).Run(std::move(processed_action_proto_));

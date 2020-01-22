@@ -211,14 +211,14 @@ void ServiceWorkerRegistrationObjectHost::Update(
 }
 
 void ServiceWorkerRegistrationObjectHost::DelayUpdate(
-    blink::mojom::ServiceWorkerProviderType provider_type,
+    blink::mojom::ServiceWorkerContainerType container_type,
     ServiceWorkerRegistration* registration,
     ServiceWorkerVersion* version,
     StatusCallback update_function) {
   DCHECK(registration);
 
-  if (provider_type !=
-          blink::mojom::ServiceWorkerProviderType::kForServiceWorker ||
+  if (container_type !=
+          blink::mojom::ServiceWorkerContainerType::kForServiceWorker ||
       (version && version->HasControllee())) {
     // Don't delay update() if called by non-workers or by workers with
     // controllees.

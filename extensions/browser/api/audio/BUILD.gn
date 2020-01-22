@@ -18,9 +18,7 @@ source_set("audio") {
     "pref_names.h",
   ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 
   deps = [
     "//components/prefs",

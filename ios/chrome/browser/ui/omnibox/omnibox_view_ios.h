@@ -10,6 +10,7 @@
 #include <memory>
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_left_image_consumer.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_text_change_delegate.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
@@ -23,10 +24,6 @@ struct AutocompleteMatch;
 @class OmniboxTextFieldIOS;
 @class OmniboxTextFieldPasteDelegate;
 @protocol OmniboxFocuser;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // iOS implementation of OmniBoxView.  Wraps a UITextField and
 // interfaces with the rest of the autocomplete system.

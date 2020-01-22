@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.components.embedder_support.view.ContentView;
+import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
@@ -26,6 +27,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
     private final View mToolbarView;
     private final FrameLayout mContentView;
     private final ThinWebView mThinWebView;
+    private final WebContents mWebContents;
     private final Handler mReflowHandler = new Handler();
     private final int mTabHeight;
     private final int mToolbarHeightPx;
@@ -39,6 +41,7 @@ import org.chromium.ui.base.ActivityWindowAndroid;
      */
     /* package */ PaymentHandlerView(ChromeActivity activity, WebContents webContents,
             ContentView webContentView, View toolbarView) {
+        mWebContents = webContents;
         mTabHeight = activity.getActivityTab().getView().getHeight();
         mToolbarView = toolbarView;
         mToolbarHeightPx =
@@ -107,7 +110,9 @@ import org.chromium.ui.base.ActivityWindowAndroid;
 
     @Override
     public int getVerticalScrollOffset() {
-        return 0;
+        return mWebContents == null
+                ? 0
+                : RenderCoordinates.fromWebContents(mWebContents).getScrollYPixInt();
     }
 
     @Override

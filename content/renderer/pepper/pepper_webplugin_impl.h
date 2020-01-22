@@ -70,7 +70,7 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   bool ExecuteEditCommand(const blink::WebString& name) override;
   bool ExecuteEditCommand(const blink::WebString& name,
                           const blink::WebString& value) override;
-  blink::WebURL LinkAtPosition(const blink::WebPoint& position) const override;
+  blink::WebURL LinkAtPosition(const gfx::Point& position) const override;
   bool GetPrintPresetOptionsFromDocument(
       blink::WebPrintPresetOptions* preset_options) override;
   bool IsPdfPlugin() override;

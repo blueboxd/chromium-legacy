@@ -38,9 +38,7 @@ source_set("lib") {
     "//ui/gfx/geometry",
   ]
 
-  public_deps = [
-    "//services/data_decoder/public/mojom",
-  ]
+  public_deps = [ "//services/data_decoder/public/mojom" ]
 
   if (!is_ios) {
     sources += [
@@ -88,9 +86,7 @@ source_set("tests") {
       "//gin:gin_test",
       "//third_party/blink/public:blink",
     ]
-    data_deps = [
-      "//tools/v8_context_snapshot",
-    ]
+    data_deps = [ "//tools/v8_context_snapshot" ]
     configs += [
       "//tools/v8_context_snapshot:use_v8_context_snapshot",
       "//v8:external_startup_data",
@@ -99,9 +95,7 @@ source_set("tests") {
 }
 
 fuzzer_test("web_bundle_parser_fuzzer") {
-  sources = [
-    "web_bundle_parser_fuzzer.cc",
-  ]
+  sources = [ "web_bundle_parser_fuzzer.cc" ]
   deps = [
     ":lib",
     "//base",
@@ -111,9 +105,7 @@ fuzzer_test("web_bundle_parser_fuzzer") {
 }
 
 fuzzer_test("xml_parser_fuzzer") {
-  sources = [
-    "xml_parser_fuzzer.cc",
-  ]
+  sources = [ "xml_parser_fuzzer.cc" ]
   deps = [
     ":lib",
     "//base",
@@ -126,11 +118,7 @@ fuzzer_test("xml_parser_fuzzer") {
 
 if (is_chromeos) {
   fuzzer_test("ble_scan_parser_fuzzer") {
-    sources = [
-      "ble_scan_parser_impl_fuzzer.cc",
-    ]
-    deps = [
-      ":lib",
-    ]
+    sources = [ "ble_scan_parser_impl_fuzzer.cc" ]
+    deps = [ ":lib" ]
   }
 }

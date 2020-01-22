@@ -16,52 +16,6 @@ NSString* GetOmniboxSuggestionIconTypeAssetName(
     case BOOKMARK:
       return @"omnibox_completion_bookmark";
     case CALCULATOR:
-      return @"omnibox_completion_calculator";
-    case DEFAULT_FAVICON:
-      return @"omnibox_completion_default_favicon";
-    case HISTORY:
-      return @"omnibox_completion_history";
-    case SEARCH:
-      return @"omnibox_completion_search";
-    // These icons should only be used with new omnibox design through
-    // GetOmniboxNewSuggestionIconTypeAssetName()
-    case CONVERSION:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case DICTIONARY:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case STOCK:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case SUNRISE:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case LOCAL_TIME:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case WHEN_IS:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case TRANSLATION:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case FALLBACK_ANSWER:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-    case SEARCH_HISTORY:
-    case OMNIBOX_SUGGESTION_ICON_TYPE_COUNT:
-      NOTREACHED();
-      return @"omnibox_completion_default_favicon";
-  }
-}
-
-NSString* GetOmniboxNewSuggestionIconTypeAssetName(
-    OmniboxSuggestionIconType iconType) {
-  switch (iconType) {
-    case BOOKMARK:
-      return @"omnibox_completion_bookmark";
-    case CALCULATOR:
       return @"answer_calculator";
     case DEFAULT_FAVICON:
       return @"favicon_fallback";
@@ -93,14 +47,8 @@ NSString* GetOmniboxNewSuggestionIconTypeAssetName(
   }
 }
 
-UIImage* GetOmniboxSuggestionIcon(OmniboxSuggestionIconType iconType,
-                                  bool useNewPopupLayout) {
-  NSString* imageName = nil;
-  if (useNewPopupLayout) {
-    imageName = GetOmniboxNewSuggestionIconTypeAssetName(iconType);
-  } else {
-    imageName = GetOmniboxSuggestionIconTypeAssetName(iconType);
-  }
+UIImage* GetOmniboxSuggestionIcon(OmniboxSuggestionIconType iconType) {
+  NSString* imageName = GetOmniboxSuggestionIconTypeAssetName(iconType);
   return [[UIImage imageNamed:imageName]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 }

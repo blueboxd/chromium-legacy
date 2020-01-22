@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 
+#include <algorithm>
+
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/login_screen_model.h"
@@ -553,6 +555,17 @@ void ScreenLocker::ShowErrorMessage(int error_msg_id,
                                     HelpAppLauncher::HelpTopic help_topic_id,
                                     bool sign_out_only) {
   delegate_->ShowErrorMessage(error_msg_id, help_topic_id);
+}
+
+user_manager::UserList ScreenLocker::GetUsersToShow() const {
+  user_manager::UserList users_to_show;
+  // Filter out Managed Guest Session users as they should not appear on the UI.
+  std::copy_if(users_.begin(), users_.end(), std::back_inserter(users_to_show),
+               [](const user_manager::User* user) -> bool {
+                 return user->GetType() !=
+                        user_manager::UserType::USER_TYPE_PUBLIC_ACCOUNT;
+               });
+  return users_to_show;
 }
 
 void ScreenLocker::SetLoginStatusConsumer(

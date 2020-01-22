@@ -764,16 +764,14 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
   }
   users_ = std::move(new_users);
 
-  // If there are no users, show gaia signin if login, otherwise crash.
-  if (users.empty()) {
-    LOG_IF(FATAL, screen_type_ != LockScreen::ScreenType::kLogin)
-        << "Empty user list received";
+  // If there are no users, show gaia signin if login.
+  if (users.empty() && screen_type_ == LockScreen::ScreenType::kLogin) {
     Shell::Get()->login_screen_controller()->ShowGaiaSignin(
         false /*can_close*/, EmptyAccountId() /*prefilled_account*/);
     return;
   }
 
-  // Allocate layout and big user, which are common between all densities.
+  // Allocate layout which is common between all densities.
   auto* main_layout =
       main_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal));
@@ -781,20 +779,23 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
       views::BoxLayout::MainAxisAlignment::kCenter);
   main_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
-  primary_big_view_ = AllocateLoginBigUserView(users[0], true /*is_primary*/);
 
-  // Build layout for additional users.
-  if (users.size() <= 2)
-    CreateLowDensityLayout(users);
-  else if (users.size() >= 3 && users.size() <= 6)
-    CreateMediumDensityLayout(users);
-  else if (users.size() >= 7)
-    CreateHighDensityLayout(users, main_layout);
+  if (!users.empty()) {
+    primary_big_view_ = AllocateLoginBigUserView(users[0], true /*is_primary*/);
 
-  LayoutAuth(primary_big_view_, opt_secondary_big_view_, false /*animate*/);
+    // Build layout for additional users.
+    if (users.size() <= 2)
+      CreateLowDensityLayout(users);
+    else if (users.size() >= 3 && users.size() <= 6)
+      CreateMediumDensityLayout(users);
+    else if (users.size() >= 7)
+      CreateHighDensityLayout(users, main_layout);
 
-  // Big user may be the same if we already built lock screen.
-  OnBigUserChanged();
+    LayoutAuth(primary_big_view_, opt_secondary_big_view_, false /*animate*/);
+
+    // Big user may be the same if we already built lock screen.
+    OnBigUserChanged();
+  }
 
   // Force layout.
   PreferredSizeChanged();
@@ -802,7 +803,7 @@ void LockContentsView::OnUsersChanged(const std::vector<LoginUserInfo>& users) {
 
   // If one of the child views had focus before we deleted them, then this view
   // will get focused. Move focus back to the primary big view.
-  if (HasFocus())
+  if (primary_big_view_ && HasFocus())
     primary_big_view_->RequestFocus();
 }
 
@@ -1885,7 +1886,7 @@ void LockContentsView::UpdateEasyUnlockIconForUser(const AccountId& user) {
 
 LoginBigUserView* LockContentsView::CurrentBigUserView() {
   if (opt_secondary_big_view_ && opt_secondary_big_view_->IsAuthEnabled()) {
-    DCHECK(!primary_big_view_->IsAuthEnabled());
+    DCHECK(!primary_big_view_ || !primary_big_view_->IsAuthEnabled());
     return opt_secondary_big_view_;
   }
 

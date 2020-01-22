@@ -36,17 +36,11 @@ WebAppShortcutManager::WebAppShortcutManager(
 
 WebAppShortcutManager::~WebAppShortcutManager() = default;
 
-void WebAppShortcutManager::OnWebAppWillBeUninstalled(const AppId& app_id) {
+std::unique_ptr<ShortcutInfo> WebAppShortcutManager::BuildShortcutInfo(
+    const AppId& app_id) {
   const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
   DCHECK(app);
-
-  std::unique_ptr<ShortcutInfo> shortcut_info = BuildShortcutInfoForWebApp(app);
-  base::FilePath shortcut_data_dir =
-      internals::GetShortcutDataDir(*shortcut_info);
-
-  internals::PostShortcutIOTask(
-      base::BindOnce(&internals::DeletePlatformShortcuts, shortcut_data_dir),
-      std::move(shortcut_info));
+  return BuildShortcutInfoForWebApp(app);
 }
 
 void WebAppShortcutManager::GetShortcutInfoForApp(

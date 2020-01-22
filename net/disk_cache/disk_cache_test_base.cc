@@ -234,9 +234,15 @@ DiskCacheTestWithCache::CreateIterator() {
 }
 
 void DiskCacheTestWithCache::FlushQueueForTest() {
-  if (memory_only_ || !cache_impl_)
+  if (memory_only_)
     return;
 
+  if (simple_cache_impl_) {
+    simple_cache_impl_->FlushWorkerPoolForTesting();
+    return;
+  }
+
+  DCHECK(cache_impl_);
   net::TestCompletionCallback cb;
   int rv = cache_impl_->FlushQueueForTest(cb.callback());
   EXPECT_THAT(cb.GetResult(rv), IsOk());

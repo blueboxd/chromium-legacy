@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -141,6 +142,9 @@ public final class StatusMediatorUnitTest {
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     public void searchEngineLogo_showGoogleLogo_whenScrolled() {
         setupSearchEngineLogoForTesting(true, false, false);
+        doReturn(false).when(mToolbarCommonPropertiesModel).isLoading();
+        doReturn(UrlConstants.NTP_URL).when(mToolbarCommonPropertiesModel).getCurrentUrl();
+        doReturn(mNewTabPage).when(mToolbarCommonPropertiesModel).getNewTabPageForCurrentTab();
 
         mMediator.setUrlHasFocus(false);
         mMediator.setShowIconsWhenUrlFocused(true);
@@ -359,6 +363,24 @@ public final class StatusMediatorUnitTest {
                 mMediator.getSecurityIconTintForSearchEngineIcon(R.drawable.ic_globe_24dp));
         Assert.assertEquals(R.color.tint_on_dark_bg,
                 mMediator.getSecurityIconTintForSearchEngineIcon(R.drawable.ic_search));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void resolveUrlBarTextWithAutocomplete_urlBarTextEmpty() {
+        Assert.assertEquals("Empty urlBarText should resolve to empty urlBarTextWithAutocomplete",
+                "", mMediator.resolveUrlBarTextWithAutocomplete(""));
+    }
+
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void resolveUrlBarTextWithAutocomplete_urlBarTextMismatchesAutocompleteText() {
+        doReturn("https://foo.com").when(mUrlBarEditingTextStateProvider).getTextWithAutocomplete();
+        String msg = "The urlBarText should only resolve to the autocomplete text if it's a "
+                + "substring of the autocomplete text.";
+        Assert.assertEquals(
+                msg, "https://foo.com", mMediator.resolveUrlBarTextWithAutocomplete("foo.com"));
+        Assert.assertEquals(msg, "bar.com", mMediator.resolveUrlBarTextWithAutocomplete("bar.com"));
     }
 
     private void setupSearchEngineLogoForTesting(

@@ -227,6 +227,32 @@ IN_PROC_BROWSER_TEST_P(CompositorImplBrowserTest,
   CompositorSwapRunLoop(compositor_impl()).RunUntilSwap();
 }
 
+// This test waits for a presentation feedback token to arrive from the GPU. If
+// this test is timing out then it demonstrates a bug.
+IN_PROC_BROWSER_TEST_P(CompositorImplBrowserTest,
+                       CompositorImplReceivesPresentationTimeCallbacks) {
+  // OOP-R is required for this test to succeed with SkDDL, but is disabled on
+  // Android L and lower.
+  if (GetParam() == CompositorImplMode::kSkiaRenderer &&
+      base::android::BuildInfo::GetInstance()->sdk_int() <
+          base::android::SDK_VERSION_MARSHMALLOW) {
+    return;
+  }
+
+  // Presentation feedback occurs after the GPU has presented content to the
+  // display. This is later than the buffers swap.
+  base::RunLoop loop;
+  // The callback will cancel the loop used to wait.
+  static_cast<content::Compositor*>(compositor_impl())
+      ->RequestPresentationTimeForNextFrame(base::BindOnce(
+          [](base::OnceClosure quit,
+             const gfx::PresentationFeedback& feedback) {
+            std::move(quit).Run();
+          },
+          loop.QuitClosure()));
+  loop.Run();
+}
+
 class CompositorImplBrowserTestRefreshRate
     : public CompositorImplBrowserTest,
       public ui::WindowAndroid::TestHooks {

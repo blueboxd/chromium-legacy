@@ -88,7 +88,6 @@
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -3326,7 +3325,7 @@ void RenderWidget::SetNeedsUnbufferedInputForDebugger(bool unbuffered) {
 }
 
 void RenderWidget::AnimateDoubleTapZoomInMainFrame(
-    const blink::WebPoint& point,
+    const gfx::Point& point,
     const blink::WebRect& rect_to_zoom) {
   // Only oopif subframes should be sending this message.
   DCHECK(!delegate());

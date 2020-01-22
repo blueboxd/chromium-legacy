@@ -319,19 +319,21 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
     return;
   }
 
-  // Don't close the bubble if the message center is gaining or losing
-  // activation.
+  // Don't close the bubble if the message center is gaining activation.
   if (features::IsUnifiedMessageCenterRefactorEnabled() &&
       tray_->IsMessageCenterBubbleShown()) {
     views::Widget* message_center_widget =
         tray_->message_center_bubble()->GetBubbleWidget();
     if (message_center_widget ==
-            views::Widget::GetWidgetForNativeView(gained_active) ||
-        (lost_active &&
-         message_center_widget ==
-             views::Widget::GetWidgetForNativeView(lost_active))) {
+        views::Widget::GetWidgetForNativeView(gained_active)) {
       return;
     }
+
+    // If the message center is not visible, ignore activation changes.
+    // Otherwise, this may cause a crash when closing the dialog via
+    // accelerator. See crbug.com/1041174.
+    if (!message_center_widget->IsVisible())
+      return;
   }
 
   tray_->CloseBubble();

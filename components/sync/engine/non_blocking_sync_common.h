@@ -76,6 +76,10 @@ struct FailedCommitResponseData {
   ClientTagHash client_tag_hash;
   sync_pb::CommitResponse::ResponseType response_type =
       sync_pb::CommitResponse::TRANSIENT_ERROR;
+
+  // Datatype specific errors (populated only if committed item is of that
+  // datatype).
+  sync_pb::SharingMessageCommitError sharing_message_error;
 };
 
 struct UpdateResponseData {

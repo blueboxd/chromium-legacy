@@ -561,11 +561,11 @@ TEST_F(ChromePasswordProtectionServiceTest,
 }
 
 TEST_F(ChromePasswordProtectionServiceTest, VerifyCanSendSamplePing) {
-  // If experiment is not enabled, do not send ping.
+  // Experiment is on by default.
   service_->ConfigService(/*is_incognito=*/false,
                           /*is_extended_reporting=*/true);
   service_->set_bypass_probability_for_tests(true);
-  EXPECT_FALSE(service_->CanSendSamplePing());
+  EXPECT_TRUE(service_->CanSendSamplePing());
 
   {
     base::test::ScopedFeatureList feature_list;

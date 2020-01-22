@@ -20,7 +20,5 @@ source_set("power") {
     "//services/device/public/mojom",
   ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

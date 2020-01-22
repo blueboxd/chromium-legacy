@@ -18,7 +18,5 @@ source_set("test") {
     "//extensions/common/api",
   ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

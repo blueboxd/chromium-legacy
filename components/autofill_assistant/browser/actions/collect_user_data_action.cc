@@ -306,6 +306,7 @@ void CollectUserDataAction::InternalProcessAction(
 }
 
 void CollectUserDataAction::EndAction(const ClientStatus& status) {
+  delegate_->CleanUpAfterPrompt();
   action_successful_ = status.ok();
   UpdateProcessedAction(status);
   std::move(callback_).Run(std::move(processed_action_proto_));
@@ -434,6 +435,7 @@ void CollectUserDataAction::OnShowToUser(UserData* user_data,
   if (collect_user_data.has_prompt()) {
     delegate_->SetStatusMessage(collect_user_data.prompt());
   }
+  delegate_->Prompt(nullptr);
   delegate_->CollectUserData(collect_user_data_options_.get());
 }
 

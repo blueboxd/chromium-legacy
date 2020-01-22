@@ -136,6 +136,13 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // background.
   ui::Layer* GetAnimatingBackground();
 
+  // Gets the layer used to animate drag handle transitions between in-app and
+  // home.
+  ui::Layer* GetAnimatingDragHandle();
+
+  // Gets the view used to display the drag handle on the in-app shelf.
+  views::View* GetDragHandle();
+
   // Internal implementation detail. Do not expose outside of tests.
   ShelfView* shelf_view_for_testing() const {
     return hotseat_widget()->GetShelfView();
@@ -143,6 +150,10 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
 
   ShelfBackgroundAnimator* background_animator_for_testing() {
     return &background_animator_;
+  }
+
+  HotseatTransitionAnimator* hotseat_transition_animator_for_testing() {
+    return hotseat_transition_animator_.get();
   }
 
  private:

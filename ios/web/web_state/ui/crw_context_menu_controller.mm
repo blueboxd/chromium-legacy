@@ -17,6 +17,7 @@
 #import "ios/web/public/deprecated/crw_context_menu_delegate.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/ui/context_menu_params.h"
+#include "ios/web/public/web_client.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "ios/web/web_state/context_menu_constants.h"
@@ -216,6 +217,9 @@ void OverrideGestureRecognizers(UIGestureRecognizer* contextMenuRecognizer,
   // Precalculation is necessary because retreiving DOM element relies on async
   // API so element info can not be built on demand.
   ContextMenuInfo _contextMenuInfoForLastTouch;
+  // Whether or not the system cotext menu should be displayed. If not, custom
+  // context menu should be displayed.
+  BOOL _systemContextMenuEnabled;
   // Whether or not the cotext menu should be displayed as soon as the DOM
   // element details are returned. Since fetching the details from the |webView|
   // of the element the user long pressed is asyncrounous, it may not be
@@ -242,6 +246,11 @@ void OverrideGestureRecognizers(UIGestureRecognizer* contextMenuRecognizer,
     _webView = webView;
     _delegate = delegate;
     _pendingElementFetchRequests = [[NSMutableDictionary alloc] init];
+
+    // If system context menu is enabled, the recognizer below will not be
+    // triggered.
+    _systemContextMenuEnabled =
+        !web::GetWebClient()->EnableLongPressAndForceTouchHandling();
 
     // The system context menu triggers after 0.55 second. Add a gesture
     // recognizer with a shorter delay to be able to cancel the system menu if
@@ -479,6 +488,12 @@ void OverrideGestureRecognizers(UIGestureRecognizer* contextMenuRecognizer,
   // Expect only _contextMenuRecognizer.
   DCHECK([gestureRecognizer isEqual:_contextMenuRecognizer]);
 
+  // If the system context menu is enabled, it disables this long press
+  // gesture recognizer to prevent custom context menu from being displayed.
+  if (_systemContextMenuEnabled) {
+    return NO;
+  }
+
   // This is custom long press gesture recognizer. By the time the gesture is
   // recognized the web controller needs to know if there is a link under the
   // touch. If there a link, the web controller will reject system's context
@@ -498,6 +513,12 @@ void OverrideGestureRecognizers(UIGestureRecognizer* contextMenuRecognizer,
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
   // Expect only _contextMenuRecognizer.
   DCHECK([gestureRecognizer isEqual:_contextMenuRecognizer]);
+
+  // If the system context menu is enabled, it disables this long press
+  // gesture recognizer to prevent custom context menu from being displayed.
+  if (_systemContextMenuEnabled) {
+    return NO;
+  }
 
   // Context menu should not be triggered while scrolling, as some users tend to
   // stop scrolling by resting the finger on the screen instead of touching the

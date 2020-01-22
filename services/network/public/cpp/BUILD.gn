@@ -185,12 +185,8 @@ jumbo_component("cpp_base") {
 }
 
 mojom("test_interfaces") {
-  sources = [
-    "network_traits_test_service.mojom",
-  ]
-  public_deps = [
-    "//services/network/public/mojom",
-  ]
+  sources = [ "network_traits_test_service.mojom" ]
+  public_deps = [ "//services/network/public/mojom" ]
 }
 
 source_set("tests") {
@@ -246,16 +242,10 @@ source_set("tests") {
     "//testing/gtest",
   ]
 
-  public_deps = [
-    ":buildflags",
-  ]
+  public_deps = [ ":buildflags" ]
 }
 
 fuzzer_test("cors_fuzzer") {
-  sources = [
-    "cors/cors_fuzzer.cc",
-  ]
-  deps = [
-    ":cpp",
-  ]
+  sources = [ "cors/cors_fuzzer.cc" ]
+  deps = [ ":cpp" ]
 }

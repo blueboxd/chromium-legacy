@@ -44,18 +44,22 @@ class CC_ANIMATION_EXPORT AnimationTimeline
 
   void ClearAnimations();
 
-  void PushPropertiesTo(AnimationTimeline* timeline_impl);
+  virtual void PushPropertiesTo(AnimationTimeline* timeline_impl);
+  virtual void ActivateTimeline() {}
 
   Animation* GetAnimationById(int animation_id) const;
 
   void SetNeedsPushProperties();
   bool needs_push_properties() const { return needs_push_properties_; }
 
- private:
-  friend class base::RefCounted<AnimationTimeline>;
+  virtual bool IsScrollTimeline() const;
 
+ protected:
   explicit AnimationTimeline(int id);
   virtual ~AnimationTimeline();
+
+ private:
+  friend class base::RefCounted<AnimationTimeline>;
 
   void PushAttachedAnimationsToImplThread(AnimationTimeline* timeline) const;
   void RemoveDetachedAnimationsFromImplThread(

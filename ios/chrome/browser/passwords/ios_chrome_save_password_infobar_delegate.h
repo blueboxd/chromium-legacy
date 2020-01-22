@@ -49,7 +49,10 @@ class IOSChromeSavePasswordInfoBarDelegate
   void InfoBarDismissed() override;
 
   // Updates the credentials being saved with |username| and |password|.
-  void UpdateCredentials(NSString* username, NSString* password);
+  // TODO(crbug.com/1040653): This function is only virtual so it can be mocked
+  // for testing purposes.  It should become non-virtual once this test is
+  // refactored for testability.
+  virtual void UpdateCredentials(NSString* username, NSString* password);
 
   // Informs the delegate that the Infobar has been presented. If |automatic|
   // YES the Infobar was presented automatically (e.g. The banner was

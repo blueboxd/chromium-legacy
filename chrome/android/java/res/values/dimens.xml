@@ -320,6 +320,10 @@
          24dp is needed to completely round the corners. -->
     <dimen name="modern_toolbar_background_corner_radius">24dp</dimen>
 
+    <!-- Start surface toolbar dimensions -->
+    <dimen name="start_surface_toolbar_button_padding_to_button">8dp</dimen>
+    <dimen name="start_surface_toolbar_button_padding_to_edge">16dp</dimen>
+
     <!-- Omnibox suggestions -->
     <dimen name="omnibox_suggestion_height">60dp</dimen>
     <dimen name="omnibox_suggestion_answer_height">72dp</dimen>

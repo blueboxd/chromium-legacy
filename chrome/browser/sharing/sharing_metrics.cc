@@ -232,6 +232,7 @@ void LogSharingMessageAckTime(chrome_browser_sharing::MessageType message_type,
       base::UmaHistogramMediumTimes(platform_suffixed_name, time);
       break;
     case chrome_browser_sharing::MessageType::SMS_FETCH_REQUEST:
+    case chrome_browser_sharing::MessageType::DISCOVERY_REQUEST:
       base::UmaHistogramCustomTimes(
           suffixed_name, time, /*min=*/base::TimeDelta::FromMilliseconds(1),
           /*max=*/base::TimeDelta::FromMinutes(10), /*buckets=*/50);

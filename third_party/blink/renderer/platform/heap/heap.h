@@ -99,6 +99,8 @@ using WeakTableWorklist = Worklist<WeakTableItem, 16 /* local entries */>;
 using BackingStoreCallbackWorklist =
     Worklist<BackingStoreCallbackItem, 16 /* local entries */>;
 using V8ReferencesWorklist = Worklist<V8Reference, 16 /* local entries */>;
+using NotSafeToConcurrentlyTraceWorklist =
+    Worklist<MarkingItem, 256 /* local entries */>;
 
 class PLATFORM_EXPORT HeapAllocHooks {
   STATIC_ONLY(HeapAllocHooks);
@@ -260,6 +262,10 @@ class PLATFORM_EXPORT ThreadHeap {
     return v8_references_worklist_.get();
   }
 
+  NotSafeToConcurrentlyTraceWorklist* GetNotSafeToConcurrentlyTraceWorklist()
+      const {
+    return not_safe_to_concurrently_trace_worklist_.get();
+  }
   // Register an ephemeron table for fixed-point iteration.
   void RegisterWeakTable(void* container_object,
                          EphemeronCallback);
@@ -444,6 +450,9 @@ class PLATFORM_EXPORT ThreadHeap {
   // Worklist for storing the V8 references until ThreadHeap can flush them
   // to V8.
   std::unique_ptr<V8ReferencesWorklist> v8_references_worklist_;
+
+  std::unique_ptr<NotSafeToConcurrentlyTraceWorklist>
+      not_safe_to_concurrently_trace_worklist_;
 
   // No duplicates allowed for ephemeron callbacks. Hence, we use a hashmap
   // with the key being the HashTable.

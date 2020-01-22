@@ -29,6 +29,9 @@ public interface ToolbarCommonPropertiesModel {
      */
     boolean isIncognito();
 
+    /** @return Whether the current {@link Tab} is loading. */
+    boolean isLoading();
+
     /**
      * If the current tab state is eligible for displaying the search query terms instead of the
      * URL, this extracts the query terms from the current URL.
@@ -37,7 +40,7 @@ public interface ToolbarCommonPropertiesModel {
      *         instead of the URL.
      */
     @Nullable
-    default public String getDisplaySearchTerms() {
+    default String getDisplaySearchTerms() {
         return null;
     }
 }

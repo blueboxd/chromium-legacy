@@ -17,9 +17,7 @@ source_set("cpp") {
     "//services/video_capture/public/mojom",
   ]
 
-  deps = [
-    "//mojo/public/cpp/bindings:bindings",
-  ]
+  deps = [ "//mojo/public/cpp/bindings:bindings" ]
 }
 
 source_set("mocks") {

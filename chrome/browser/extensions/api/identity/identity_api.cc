@@ -149,6 +149,18 @@ const IdentityAPI::CachedTokens& IdentityAPI::GetAllCachedTokens() {
   return token_cache_;
 }
 
+void IdentityAPI::SetConsentResult(const std::string& result,
+                                   const std::string& window_id) {
+  on_set_consent_result_callback_list_.Notify(result, window_id);
+}
+
+std::unique_ptr<
+    base::CallbackList<IdentityAPI::OnSetConsentResultSignature>::Subscription>
+IdentityAPI::RegisterOnSetConsentResultCallback(
+    const base::RepeatingCallback<OnSetConsentResultSignature>& callback) {
+  return on_set_consent_result_callback_list_.Add(callback);
+}
+
 void IdentityAPI::Shutdown() {
   on_shutdown_callback_list_.Notify();
   IdentityManagerFactory::GetForProfile(profile_)->RemoveObserver(this);
@@ -160,6 +172,11 @@ static base::LazyInstance<BrowserContextKeyedAPIFactory<IdentityAPI>>::
 // static
 BrowserContextKeyedAPIFactory<IdentityAPI>* IdentityAPI::GetFactoryInstance() {
   return g_identity_api_factory.Pointer();
+}
+
+std::unique_ptr<base::CallbackList<void()>::Subscription>
+IdentityAPI::RegisterOnShutdownCallback(const base::Closure& cb) {
+  return on_shutdown_callback_list_.Add(cb);
 }
 
 bool IdentityAPI::AreExtensionsRestrictedToPrimaryAccount() {

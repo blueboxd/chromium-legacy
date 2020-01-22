@@ -61,7 +61,7 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     : provider_id_(NextProviderId()),
       running_hosted_version_(std::move(running_hosted_version)),
       container_host_(std::make_unique<content::ServiceWorkerContainerHost>(
-          blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+          blink::mojom::ServiceWorkerContainerType::kForServiceWorker,
           /*is_parent_frame_secure=*/true,
           FrameTreeNode::kFrameTreeNodeInvalidId,
           std::move(host_receiver),

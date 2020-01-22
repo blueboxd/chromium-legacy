@@ -151,6 +151,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::WebFeature,
 IPC_STRUCT_TRAITS_BEGIN(content::NavigationDownloadPolicy)
   IPC_STRUCT_TRAITS_MEMBER(observed_types)
   IPC_STRUCT_TRAITS_MEMBER(disallowed_types)
+  IPC_STRUCT_TRAITS_MEMBER(blocking_downloads_in_sandbox_enabled)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatSize)

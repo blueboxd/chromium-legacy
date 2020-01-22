@@ -898,6 +898,8 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
         base::TimeDelta::FromMilliseconds(kSafeModeRestartUiDelayMs));
   } else if (failure.reason() == AuthFailure::TPM_ERROR) {
     ShowTPMError();
+  } else if (failure.reason() == AuthFailure::TPM_UPDATE_REQUIRED) {
+    ShowError(IDS_LOGIN_ERROR_TPM_UPDATE_REQUIRED, error);
   } else if (last_login_attempt_account_id_ == user_manager::GuestAccountId()) {
     // Show no errors, just re-enable input.
     GetLoginDisplay()->ClearAndEnablePassword();

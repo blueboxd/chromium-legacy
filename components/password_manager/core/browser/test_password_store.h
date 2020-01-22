@@ -89,7 +89,7 @@ class TestPasswordStore : public PasswordStore {
   void AddCompromisedCredentialsImpl(
       const CompromisedCredentials& compromised_credentials) override;
   void RemoveCompromisedCredentialsImpl(
-      const GURL& url,
+      const std::string& signon_realm,
       const base::string16& username,
       RemoveCompromisedCredentialsReason reason) override;
   std::vector<CompromisedCredentials> GetAllCompromisedCredentialsImpl()

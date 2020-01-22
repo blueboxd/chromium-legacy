@@ -16,7 +16,14 @@
 #include "cc/trees/layer_tree_host_impl.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
+#include "components/viz/test/test_gpu_service_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace base {
+namespace test {
+class ScopedFeatureList;
+}
+}  // namespace base
 
 namespace viz {
 class BeginFrameSource;
@@ -232,6 +239,11 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchDidAddAnimation();
   void DispatchCompositeImmediately();
   void DispatchNextCommitWaitsForActivation();
+
+  // |scoped_feature_list_| must be the first member to ensure that it is
+  // destroyed after any member that might be using it.
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
+  viz::TestGpuServiceHolder::ScopedResetter gpu_service_resetter_;
 
   LayerTreeSettings settings_;
   float initial_device_scale_factor_ = 1.f;

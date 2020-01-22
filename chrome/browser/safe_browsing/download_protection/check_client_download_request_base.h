@@ -102,7 +102,7 @@ class CheckClientDownloadRequestBase {
   virtual bool IsSupportedDownload(
       DownloadCheckResultReason* reason,
       ClientDownloadRequest::DownloadType* type) = 0;
-  virtual content::BrowserContext* GetBrowserContext() = 0;
+  virtual content::BrowserContext* GetBrowserContext() const = 0;
   virtual bool IsCancelled() = 0;
   virtual base::WeakPtr<CheckClientDownloadRequestBase> GetWeakPtr() = 0;
 
@@ -142,6 +142,11 @@ class CheckClientDownloadRequestBase {
   // Called whenever a request has completed.
   virtual void NotifyRequestFinished(DownloadCheckResult result,
                                      DownloadCheckResultReason reason) = 0;
+
+  // Called when finishing the download, to decide whether to prompt the user
+  // for deep scanning or not.
+  virtual bool ShouldPromptForDeepScanning(
+      DownloadCheckResultReason reason) const = 0;
 
   // Source URL being downloaded from. This shuold always be set, but could be
   // for example an artificial blob: URL if there is no source URL.
@@ -200,11 +205,6 @@ class CheckClientDownloadRequestBase {
   bool is_extended_reporting_ = false;
   bool is_incognito_ = false;
   bool is_under_advanced_protection_ = false;
-  // Boolean indicating whether the user requests AP verdicts. Note that this is
-  // distinct from |is_under_advanced_protection_| while:
-  //  - The feature is still partially rolled out
-  //  - The feature has been force enabled from chrome://flags
-  bool requests_ap_verdicts_ = false;
   bool password_protected_allowed_ = true;
 
   bool is_password_protected_ = false;

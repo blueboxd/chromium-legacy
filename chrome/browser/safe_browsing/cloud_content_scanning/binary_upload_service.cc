@@ -75,7 +75,7 @@ void BinaryUploadService::MaybeUploadForDeepScanning(
         std::move(request),
         /*authorized=*/safe_browsing::AdvancedProtectionStatusManagerFactory::
             GetForProfile(profile_)
-                ->is_under_advanced_protection());
+                ->IsUnderAdvancedProtection());
     return;
   }
 

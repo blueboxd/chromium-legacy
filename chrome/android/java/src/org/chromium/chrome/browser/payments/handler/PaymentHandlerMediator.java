@@ -26,6 +26,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 /* package */ class PaymentHandlerMediator
         extends WebContentsObserver implements BottomSheetObserver, PaymentHandlerToolbarObserver {
     private final PropertyModel mModel;
+    // Whenever invoked, invoked outside of the WebContentsObserver callbacks.
     private final Runnable mHider;
     // Postfixed with "Ref" to distinguish from mWebContent in WebContentsObserver. Although
     // referencing the same object, mWebContentsRef is preferable to WebContents here because
@@ -33,6 +34,8 @@ import org.chromium.ui.modelutil.PropertyModel;
     // null.
     private final WebContents mWebContentsRef;
     private final PaymentHandlerUiObserver mPaymentHandlerUiObserver;
+    // Used to postpone execution of a callback to avoid destroy objects (e.g., WebContents) in
+    // their own methods.
     private final Handler mHandler = new Handler();
 
     /**
@@ -52,6 +55,14 @@ import org.chromium.ui.modelutil.PropertyModel;
         mModel = model;
         mHider = hider;
         mPaymentHandlerUiObserver = observer;
+    }
+
+    private void closeUIForInsecureNavigation() {
+        mHandler.post(() -> {
+            ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindowForInsecureNavigation(
+                    mWebContentsRef);
+            mHider.run();
+        });
     }
 
     // BottomSheetObserver:
@@ -91,25 +102,23 @@ import org.chromium.ui.modelutil.PropertyModel;
     @Override
     public void didFinishLoad(long frameId, String validatedUrl, boolean isMainFrame) {
         if (!SslValidityChecker.isValidPageInPaymentHandlerWindow(mWebContentsRef)) {
-            ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindowForInsecureNavigation(
-                    mWebContentsRef);
-            mHandler.post(mHider);
+            closeUIForInsecureNavigation();
         }
     }
 
     @Override
     public void didAttachInterstitialPage() {
-        ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindowForInsecureNavigation(
-                mWebContentsRef);
-        mHandler.post(mHider);
+        closeUIForInsecureNavigation();
     }
 
     @Override
     public void didFailLoad(
             boolean isMainFrame, int errorCode, String description, String failingUrl) {
-        // TODO(crbug.com/1017926): Respond to service worker with the net error.
-        ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
-        mHandler.post(mHider);
+        mHandler.post(() -> {
+            // TODO(crbug.com/1017926): Respond to service worker with the net error.
+            ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);
+            mHider.run();
+        });
     }
 
     // PaymentHandlerToolbarObserver:

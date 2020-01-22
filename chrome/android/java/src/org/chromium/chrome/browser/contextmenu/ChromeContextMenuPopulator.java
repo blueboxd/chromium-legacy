@@ -94,8 +94,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 Action.COPY_PHONE_NUMBER, Action.OPEN_IN_NEW_CHROME_TAB,
                 Action.OPEN_IN_CHROME_INCOGNITO_TAB, Action.OPEN_IN_BROWSER, Action.OPEN_IN_CHROME,
                 Action.SHARE_LINK, Action.OPEN_IN_EPHEMERAL_TAB, Action.OPEN_IMAGE_IN_EPHEMERAL_TAB,
-                Action.DIRECT_SHARE_LINK, Action.DIRECT_SHARE_IMAGE,
-                Action.SEARCH_WITH_GOOGLE_LENS})
+                Action.DIRECT_SHARE_LINK, Action.DIRECT_SHARE_IMAGE, Action.SEARCH_WITH_GOOGLE_LENS,
+                Action.COPY_IMAGE})
         @Retention(RetentionPolicy.SOURCE)
         public @interface Action {
             int OPEN_IN_NEW_TAB = 0;
@@ -131,8 +131,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             int DIRECT_SHARE_IMAGE = 27;
 
             int SEARCH_WITH_GOOGLE_LENS = 28;
+            int COPY_IMAGE = 29;
 
-            int NUM_ENTRIES = 29;
+            int NUM_ENTRIES = 30;
         }
 
         // Note: these values must match the ContextMenuSaveLinkType enum in enums.xml.
@@ -396,6 +397,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                     if (mShowEphemeralTabNewLabel) item.setShowInProductHelp();
                     imageTab.add(item);
                 }
+                if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_COPY_IMAGE)) {
+                    imageTab.add(new ChromeContextMenuItem(Item.COPY_IMAGE));
+                }
                 if (isSrcDownloadableScheme) {
                     imageTab.add(new ChromeContextMenuItem(Item.SAVE_IMAGE));
                     hasSaveImage = true;
@@ -527,6 +531,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 title = URLUtil.guessFileName(params.getSrcUrl(), null, null);
             }
             mDelegate.onOpenInEphemeralTab(params.getSrcUrl(), title);
+        } else if (itemId == R.id.contextmenu_copy_image) {
+            ContextMenuUma.record(params, ContextMenuUma.Action.COPY_IMAGE);
+            helper.copyImageToClipboard(mDelegate);
         } else if (itemId == R.id.contextmenu_copy_link_address) {
             ContextMenuUma.record(params, ContextMenuUma.Action.COPY_LINK_ADDRESS);
             mDelegate.onSaveToClipboard(

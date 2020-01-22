@@ -170,6 +170,8 @@ jumbo_static_library("content_shell_lib") {
     "browser/web_test/test_info_extractor.h",
     "browser/web_test/web_test_background_fetch_delegate.cc",
     "browser/web_test/web_test_background_fetch_delegate.h",
+    "browser/web_test/web_test_blink_test_client.cc",
+    "browser/web_test/web_test_blink_test_client.h",
     "browser/web_test/web_test_bluetooth_adapter_provider.cc",
     "browser/web_test/web_test_bluetooth_adapter_provider.h",
     "browser/web_test/web_test_bluetooth_chooser_factory.cc",

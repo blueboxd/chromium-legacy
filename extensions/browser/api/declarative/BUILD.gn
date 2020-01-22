@@ -26,7 +26,5 @@ source_set("declarative") {
     "//extensions/common/api",
   ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

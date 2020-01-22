@@ -46,13 +46,16 @@ QuickAnswersClient::QuickAnswersClient(URLLoaderFactory* url_loader_factory,
     : url_loader_factory_(url_loader_factory),
       assistant_state_(assistant_state),
       delegate_(delegate) {
-  // We observe Assistant state to detect enabling/disabling of Assistant in
-  // settings as well as enabling/disabling of screen context.
-  assistant_state_->AddObserver(this);
+  if (assistant_state_) {
+    // We observe Assistant state to detect enabling/disabling of Assistant in
+    // settings as well as enabling/disabling of screen context.
+    assistant_state_->AddObserver(this);
+  }
 }
 
 QuickAnswersClient::~QuickAnswersClient() {
-  assistant_state_->RemoveObserver(this);
+  if (assistant_state_)
+    assistant_state_->RemoveObserver(this);
 }
 
 void QuickAnswersClient::OnAssistantFeatureAllowedChanged(
@@ -79,6 +82,10 @@ void QuickAnswersClient::OnLocaleChanged(const std::string& locale) {
   NotifyEligibilityChanged();
 }
 
+void QuickAnswersClient::OnAssistantStateDestroyed() {
+  assistant_state_ = nullptr;
+}
+
 void QuickAnswersClient::SendRequest(
     const QuickAnswersRequest& quick_answers_request) {
   // Preprocess the request.
@@ -96,8 +103,8 @@ void QuickAnswersClient::SendRequest(
 void QuickAnswersClient::NotifyEligibilityChanged() {
   DCHECK(delegate_);
   bool is_eligible =
-      (chromeos::features::IsQuickAnswersEnabled() && assistant_enabled_ &&
-       locale_supported_ && assistant_context_enabled_ &&
+      (chromeos::features::IsQuickAnswersEnabled() && assistant_state_ &&
+       assistant_enabled_ && locale_supported_ && assistant_context_enabled_ &&
        assistant_allowed_state_ == ash::mojom::AssistantAllowedState::ALLOWED);
 
   if (is_eligible_ != is_eligible) {

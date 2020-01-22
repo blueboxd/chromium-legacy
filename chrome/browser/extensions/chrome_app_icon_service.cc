@@ -21,7 +21,8 @@ ChromeAppIconService* ChromeAppIconService::Get(
 ChromeAppIconService::ChromeAppIconService(content::BrowserContext* context)
     : context_(context) {
 #if defined(OS_CHROMEOS)
-  app_updater_ = std::make_unique<LauncherExtensionAppUpdater>(this, context);
+  app_updater_ = std::make_unique<LauncherExtensionAppUpdater>(
+      this, context, false /* extensions_only */);
 #endif
 
   observer_.Add(ExtensionRegistry::Get(context_));

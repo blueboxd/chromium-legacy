@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 #import "base/ios/block_types.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinator_delegate.h"
@@ -27,10 +28,6 @@ class Browser;
 @protocol SnackbarCommands;
 @class TabModel;
 @protocol ToolbarCommands;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // The top-level view controller for the browser UI. Manages other controllers
 // which implement the interface.

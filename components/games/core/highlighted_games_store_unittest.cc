@@ -90,6 +90,28 @@ class HighlightedGamesStoreTest : public testing::Test {
     AssertCacheEmpty();
   }
 
+  Game PopulateCache() {
+    // Get a game to be cached.
+    GamesCatalog fake_catalog = test::CreateCatalogWithTwoGames();
+    Game fake_selected_game = fake_catalog.games().at(1);
+
+    HighlightedGamesResponse fake_response;
+    AddValidHighlightedGame(&fake_response, fake_selected_game.id());
+
+    EXPECT_CALL(*mock_parser_, TryParseHighlightedGames(fake_install_dir_))
+        .WillOnce([&fake_response](const base::FilePath& install_dir) {
+          return base::Optional<HighlightedGamesResponse>(fake_response);
+        });
+
+    base::RunLoop run_loop;
+    highlighted_games_store_->ProcessAsync(
+        fake_install_dir_, fake_catalog,
+        base::BindLambdaForTesting([&run_loop]() { run_loop.Quit(); }));
+
+    run_loop.Run();
+    return fake_selected_game;
+  }
+
   // TaskEnvironment is used instead of SingleThreadTaskEnvironment since we
   // post a task to the thread pool.
   base::test::TaskEnvironment task_environment_{
@@ -148,7 +170,7 @@ TEST_F(HighlightedGamesStoreTest,
   AssertCacheEmpty();
 }
 
-TEST_F(HighlightedGamesStoreTest, ProcessAsync_InvalidData) {
+TEST_F(HighlightedGamesStoreTest, ProcessAsync_EmptyCatalog) {
   GamesCatalog empty_catalog;
   base::RunLoop run_loop;
 
@@ -156,6 +178,12 @@ TEST_F(HighlightedGamesStoreTest, ProcessAsync_InvalidData) {
   // the done callbacks were invoked upon success.
   auto barrier_closure = base::BarrierClosure(
       2, base::BindLambdaForTesting([&run_loop]() { run_loop.Quit(); }));
+
+  EXPECT_CALL(*mock_parser_, TryParseHighlightedGames(fake_install_dir_))
+      .WillOnce([](const base::FilePath& install_dir) {
+        return base::Optional<HighlightedGamesResponse>(
+            HighlightedGamesResponse());
+      });
 
   highlighted_games_store_->SetPendingCallback(base::BindLambdaForTesting(
       [&barrier_closure](ResponseCode code, const Game game) {
@@ -265,6 +293,40 @@ TEST_F(HighlightedGamesStoreTest, HandleCatalogFailure_CallsCallback) {
 TEST_F(HighlightedGamesStoreTest, HandleCatalogFailure_NoCallback) {
   // No exception should be thrown.
   highlighted_games_store_->HandleCatalogFailure(ResponseCode::kMissingCatalog);
+}
+
+TEST_F(HighlightedGamesStoreTest, TryRespondFromCache_NoCallbackNoCache) {
+  EXPECT_FALSE(highlighted_games_store_->TryRespondFromCache());
+}
+
+TEST_F(HighlightedGamesStoreTest, TryRespondFromCache_NoCache) {
+  highlighted_games_store_->SetPendingCallback(
+      base::BindLambdaForTesting([](ResponseCode code, const Game game) {
+        // Callback should not be invoked where there's no cached game.
+        FAIL();
+      }));
+  EXPECT_FALSE(highlighted_games_store_->TryRespondFromCache());
+}
+
+TEST_F(HighlightedGamesStoreTest, TryRespondFromCache_NoCallback) {
+  PopulateCache();
+  EXPECT_FALSE(highlighted_games_store_->TryRespondFromCache());
+}
+
+TEST_F(HighlightedGamesStoreTest,
+       TryRespondFromCache_CallbackAndCache_Success) {
+  Game expected_game = PopulateCache();
+
+  base::RunLoop run_loop;
+  highlighted_games_store_->SetPendingCallback(base::BindLambdaForTesting(
+      [&expected_game, &run_loop](ResponseCode code, const Game game) {
+        test::ExpectProtosEqual(expected_game, game);
+        EXPECT_EQ(ResponseCode::kSuccess, code);
+        run_loop.Quit();
+      }));
+
+  EXPECT_TRUE(highlighted_games_store_->TryRespondFromCache());
+  run_loop.Run();
 }
 
 }  // namespace games

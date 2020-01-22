@@ -1512,6 +1512,16 @@ SandboxFlags FrameLoader::EffectiveSandboxFlags() const {
   return flags;
 }
 
+SandboxFlags FrameLoader::PendingEffectiveSandboxFlags() const {
+  SandboxFlags flags = forced_sandbox_flags_;
+  if (FrameOwner* frame_owner = frame_->Owner())
+    flags |= frame_owner->GetFramePolicy().sandbox_flags;
+  // Frames need to inherit the sandbox flags of their parent frame.
+  if (Frame* parent_frame = frame_->Tree().Parent())
+    flags |= parent_frame->GetSecurityContext()->GetSandboxFlags();
+  return flags;
+}
+
 void FrameLoader::ModifyRequestForCSP(
     ResourceRequest& resource_request,
     const FetchClientSettingsObject* fetch_client_settings_object,

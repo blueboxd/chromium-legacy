@@ -47,7 +47,7 @@
 #include "net/http/http_response_info.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
@@ -156,7 +156,7 @@ bool IsSameOriginWindowClientContainerHost(
       return false;
   }
   return container_host->type() ==
-             blink::mojom::ServiceWorkerProviderType::kForWindow &&
+             blink::mojom::ServiceWorkerContainerType::kForWindow &&
          container_host->url().GetOrigin() == origin &&
          (allow_reserved_client || container_host->is_execution_ready());
 }
@@ -372,7 +372,7 @@ void ServiceWorkerContextCore::HasMainFrameWindowClient(const GURL& origin,
     ServiceWorkerContainerHost* container_host =
         container_host_iterator->GetContainerHost();
     DCHECK_EQ(container_host->type(),
-              blink::mojom::ServiceWorkerProviderType::kForWindow);
+              blink::mojom::ServiceWorkerContainerType::kForWindow);
     render_frames->push_back(std::make_pair(container_host->process_id(),
                                             container_host->frame_id()));
     container_host_iterator->Advance();

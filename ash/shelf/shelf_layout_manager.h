@@ -502,7 +502,8 @@ class ASH_EXPORT ShelfLayoutManager
   bool IsDragAllowed() const;
   bool StartAppListDrag(const ui::LocatedEvent& event_in_screen,
                         float scroll_y_hint);
-  bool StartShelfDrag(const ui::LocatedEvent& event_in_screen);
+  bool StartShelfDrag(const ui::LocatedEvent& event_in_screen,
+                      const gfx::Vector2dF& scroll_hint);
   // Sets the Hotseat up to be dragged, if applicable.
   void MaybeSetupHotseatDrag(const ui::LocatedEvent& event_in_screen);
   void UpdateDrag(const ui::LocatedEvent& event_in_screen,
@@ -691,6 +692,11 @@ class ASH_EXPORT ShelfLayoutManager
   // side which is showing overview). Note that the gesture will be handled only
   // if the overview session is active.
   bool allow_fling_from_overview_to_home_ = false;
+
+  // Indicates whether shelf drag gesture can start window drag from shelf to
+  // overview or home when hotseat is in extended state (the window drag will
+  // only be allowed if drag started within shelf bounds).
+  bool allow_window_drag_on_extended_hotseat_ = false;
 
   // Tracks whether the shelf is currently dimmed for inactivity.
   bool dimmed_for_inactivity_ = false;

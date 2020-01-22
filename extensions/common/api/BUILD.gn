@@ -3,8 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
-import("//extensions/common/api/schema.gni")
 import("//extensions/buildflags/buildflags.gni")
+import("//extensions/common/api/schema.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/json_schema_compiler/json_features.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
@@ -33,9 +33,7 @@ group("extensions_features") {
 }
 
 mojom("mojom") {
-  sources = [
-    "mime_handler.mojom",
-  ]
+  sources = [ "mime_handler.mojom" ]
 }
 
 ################################################################################
@@ -66,35 +64,27 @@ generated_types("generated_api_types") {
 json_features("api_features") {
   feature_type = "APIFeature"
   method_name = "AddCoreAPIFeatures"
-  sources = [
-    "_api_features.json",
-  ]
+  sources = [ "_api_features.json" ]
   visibility = [ ":extensions_features" ]
 }
 
 json_features("permission_features") {
   feature_type = "PermissionFeature"
   method_name = "AddCorePermissionFeatures"
-  sources = [
-    "_permission_features.json",
-  ]
+  sources = [ "_permission_features.json" ]
   visibility = [ ":extensions_features" ]
 }
 
 json_features("manifest_features") {
   feature_type = "ManifestFeature"
   method_name = "AddCoreManifestFeatures"
-  sources = [
-    "_manifest_features.json",
-  ]
+  sources = [ "_manifest_features.json" ]
   visibility = [ ":extensions_features" ]
 }
 
 json_features("behavior_features") {
   feature_type = "BehaviorFeature"
   method_name = "AddCoreBehaviorFeatures"
-  sources = [
-    "_behavior_features.json",
-  ]
+  sources = [ "_behavior_features.json" ]
   visibility = [ ":extensions_features" ]
 }

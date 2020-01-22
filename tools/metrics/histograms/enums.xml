@@ -10732,6 +10732,7 @@ Called by update_net_error_codes.py.-->
   <int value="26" label="Share Link (DirectShare)"/>
   <int value="27" label="Share Image (DirectShare)"/>
   <int value="28" label="Search with Google Lens"/>
+  <int value="29" label="Copy image"/>
 </enum>
 
 <enum name="ContextMenuOptionDesktop">
@@ -26024,6 +26025,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3136" label="CSPROWithReasonableRestrictions"/>
   <int value="3137" label="CSPWithBetterThanReasonableRestrictions"/>
   <int value="3138" label="CSPROWithBetterThanReasonableRestrictions"/>
+  <int value="3139" label="MeasureMemory"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -31598,6 +31600,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Different from baseUrl"/>
 </enum>
 
+<enum name="HomeButtonPreferenceStateType">
+  <int value="0" label="User Disabled"/>
+  <int value="1" label="User Enabled"/>
+  <int value="2" label="Managed Disabled"/>
+  <int value="3" label="Managed Enabled"/>
+</enum>
+
 <enum name="HomedirEncryptionType">
   <int value="1" label="Ecryptfs"/>
   <int value="2" label="Ext4 Dir Encryption"/>
@@ -36939,6 +36948,8 @@ from previous Chrome versions.
   <int value="-1416754663" label="enable-mac-views-native-app-windows"/>
   <int value="-1416184931" label="TranslateRankerEnforcement:enabled"/>
   <int value="-1411733990" label="OmniboxDedupeGoogleDriveURLs:disabled"/>
+  <int value="-1411219910"
+      label="enable-experimental-accessibility-chromevox-annotations"/>
   <int value="-1411003295" label="disable-encrypted-media"/>
   <int value="-1410394131" label="EvDetailsInPageInfo:enabled"/>
   <int value="-1410001116"
@@ -37015,6 +37026,7 @@ from previous Chrome versions.
   <int value="-1333946113" label="ContentIndexingDownloadHome:disabled"/>
   <int value="-1332267458" label="RemoveNavigationHistory:enabled"/>
   <int value="-1331831950" label="site-isolation-for-password-sites:enabled"/>
+  <int value="-1330409814" label="ContextMenuCopyImage:enabled"/>
   <int value="-1327676774" label="disable-accelerated-mjpeg-decode"/>
   <int value="-1326463296" label="SSLCommittedInterstitials:disabled"/>
   <int value="-1325887476" label="NewPrintPreview:enabled"/>
@@ -39441,6 +39453,7 @@ from previous Chrome versions.
   <int value="1705724232" label="use-android-midi-api"/>
   <int value="1707283026" label="SyncPseudoUSSExtensions:disabled"/>
   <int value="1708118086" label="TextFragmentAnchor:disabled"/>
+  <int value="1711286384" label="ContextMenuCopyImage:disabled"/>
   <int value="1713230497" label="ColorCorrectRendering:disabled"/>
   <int value="1714016217" label="EnableHeuristicPalmDetectionFilter:enabled"/>
   <int value="1714922056" label="GlobalMediaControls:disabled"/>
@@ -39829,6 +39842,7 @@ from previous Chrome versions.
   <int value="12" label="Failed to get OAuth2 token"/>
   <int value="13" label="Cryptohome missing from disk"/>
   <int value="14" label="Authentication disabled for user"/>
+  <int value="15" label="TPM firmware update is required"/>
 </enum>
 
 <enum name="LoginIsKnownUser">
@@ -45761,6 +45775,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="10"
       label="Clicked on the Refresh button in the all dismissed state"/>
   <int value="11" label="Opened an explore sites tile"/>
+  <int value="12" label="Opened the manage interests page from the feed"/>
 </enum>
 
 <enum name="NewTabPageActioniOS">
@@ -47642,9 +47657,11 @@ Called by update_net_trust_anchors.py.-->
     The optimization type was not allowed to be applied based on information
     from a hint.
   </int>
-  <int value="6" label="No matching page hint for page load">
+  <int value="6" label="DEPRECATED: No matching page hint for page load">
     There was a hint loaded that matched the page load, but no matching page
-    hint for the page load.
+    hint for the page load. Deprecated as of 01/2020. Page loads that used to
+    match this decision are now recorded as &quot;Page load not allowed by
+    hint&quot;.
   </int>
   <int value="7" label="Hint on device but not loaded yet">
     A hint for the page load was on the device but was not loaded in time to
@@ -56220,6 +56237,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="31" label="SENSITIVE_CONTENT_WARNING"/>
   <int value="32" label="SENSITIVE_CONTENT_BLOCK"/>
   <int value="33" label="DEEP_SCANNED_SAFE"/>
+  <int value="34" label="ADVANCED_PROTECTION_PROMPT"/>
 </enum>
 
 <enum name="SBClientDownloadCheckResult">
@@ -56236,6 +56254,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="SENSITIVE_CONTENT_WARNING"/>
   <int value="11" label="SENSITIVE_CONTENT_BLOCK"/>
   <int value="12" label="DEEP_SCANNED_SAFE"/>
+  <int value="13" label="PROMPT_FOR_SCANNING"/>
 </enum>
 
 <enum name="SBClientDownloadExtensions">
@@ -59278,6 +59297,20 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="No Scale"/>
   <int value="2" label="Downscale"/>
   <int value="3" label="Large Downscale"/>
+</enum>
+
+<enum name="SmartChargingMessages">
+  <int value="0" label="SerializeProtoError"/>
+  <int value="1" label="WriteFileError"/>
+  <int value="2" label="WriteFileSuccess"/>
+  <int value="3" label="ReadFileError"/>
+  <int value="4" label="ParseProtoError"/>
+  <int value="5" label="ReadFileSuccess"/>
+  <int value="6" label="GetPrimaryProfileError"/>
+  <int value="7" label="CreateFolderError"/>
+  <int value="8" label="CreatePathSuccess"/>
+  <int value="9" label="PathDoesntExists"/>
+  <int value="10" label="GetPathSuccess"/>
 </enum>
 
 <enum name="SmartChargingReason">
@@ -63845,9 +63878,7 @@ Full version information for the fingerprint enum values:
   <int value="7" label="Can not create extracted file on disk"/>
   <int value="8" label="Can not write the extracted file on disk"/>
   <int value="9" label="Can not set the extract time to file"/>
-  <int value="10" label="Can not close extracted file (Deprecated)"/>
-  <int value="11" label="Can not create file memory mapping"/>
-  <int value="12" label="File CRC mismatch"/>
+  <int value="10" label="Can not close extracted file"/>
 </enum>
 
 <enum name="UnsupportedContainers">

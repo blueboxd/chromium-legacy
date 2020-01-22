@@ -61,7 +61,7 @@ class HardwareDisplayPlaneManagerTest
   uint64_t GetPlanePropertyValue(uint32_t plane,
                                  const std::string& property_name);
 
-  void PerformPageFlip(size_t crtc_idx, ui::HardwareDisplayPlaneList* state);
+  void PerformPageFlip(size_t crtc_idx);
 
   void SetUp() override;
 
@@ -169,16 +169,17 @@ void HardwareDisplayPlaneManagerTest::InitializeDrmState(
   property_names_.insert({kBackgroundColorPropId, "BACKGROUND_COLOR"});
 }
 
-void HardwareDisplayPlaneManagerTest::PerformPageFlip(
-    size_t crtc_idx,
-    ui::HardwareDisplayPlaneList* state) {
+void HardwareDisplayPlaneManagerTest::PerformPageFlip(size_t crtc_idx) {
+  ui::HardwareDisplayPlaneList state;
+  state.old_plane_list = fake_drm_->plane_manager()->GetOwnedPlanesForCrtcs(
+      {crtc_properties_[crtc_idx].id});
   ui::DrmOverlayPlaneList assigns;
   scoped_refptr<ui::DrmFramebuffer> xrgb_buffer =
       CreateBuffer(kDefaultBufferSize);
   assigns.push_back(ui::DrmOverlayPlane(xrgb_buffer, nullptr));
   fake_drm_->plane_manager()->BeginFrame(state);
   ASSERT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
-      state, assigns, crtc_properties_[crtc_idx].id));
+      &state, assigns, crtc_properties_[crtc_idx].id));
   scoped_refptr<ui::PageFlipRequest> page_flip_request =
       base::MakeRefCounted<ui::PageFlipRequest>(base::TimeDelta());
   ASSERT_TRUE(
@@ -296,7 +297,6 @@ TEST_P(HardwareDisplayPlaneManagerLegacyTest, MultiplePlanesAndCrtcs) {
       &state_, assigns, crtc_properties_[0].id));
   EXPECT_FALSE(fake_drm_->plane_manager()->AssignOverlayPlanes(
       &state_, assigns, crtc_properties_[1].id));
-  EXPECT_EQ(0u, state_.plane_list.size());
 }
 
 TEST_P(HardwareDisplayPlaneManagerLegacyTest, CheckFramebufferFormatMatch) {
@@ -309,7 +309,7 @@ TEST_P(HardwareDisplayPlaneManagerLegacyTest, CheckFramebufferFormatMatch) {
   fake_drm_->InitializeState(crtc_properties_, plane_properties_,
                              property_names_, use_atomic_);
 
-  fake_drm_->plane_manager()->BeginFrame(&state_);
+  fake_drm_->plane_manager()->BeginFrame(state_);
   // This should return false as plane manager creates planes which support
   // DRM_FORMAT_XRGB8888 while buffer returns kDummyFormat as its pixelFormat.
   EXPECT_FALSE(fake_drm_->plane_manager()->AssignOverlayPlanes(
@@ -318,10 +318,10 @@ TEST_P(HardwareDisplayPlaneManagerLegacyTest, CheckFramebufferFormatMatch) {
   scoped_refptr<ui::DrmFramebuffer> xrgb_buffer =
       CreateBuffer(kDefaultBufferSize);
   assigns.push_back(ui::DrmOverlayPlane(xrgb_buffer, nullptr));
-  fake_drm_->plane_manager()->BeginFrame(&state_);
+  fake_drm_->plane_manager()->BeginFrame(state_);
   EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
       &state_, assigns, crtc_properties_[0].id));
-  fake_drm_->plane_manager()->BeginFrame(&state_);
+  fake_drm_->plane_manager()->BeginFrame(state_);
   EXPECT_FALSE(fake_drm_->plane_manager()->AssignOverlayPlanes(
       &state_, assigns, crtc_properties_[0].id));
 }
@@ -399,21 +399,24 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest, UnusedPlanesAreReleased) {
 
   scoped_refptr<ui::PageFlipRequest> page_flip_request =
       base::MakeRefCounted<ui::PageFlipRequest>(base::TimeDelta());
-  fake_drm_->plane_manager()->BeginFrame(&hdpl);
+  fake_drm_->plane_manager()->BeginFrame(hdpl);
   EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
       &hdpl, assigns, crtc_properties_[0].id));
   EXPECT_TRUE(
-      fake_drm_->plane_manager()->Commit(&hdpl, page_flip_request, nullptr));
+      fake_drm_->plane_manager()->Commit(hdpl, page_flip_request, nullptr));
   assigns.clear();
   assigns.push_back(ui::DrmOverlayPlane(primary_buffer, nullptr));
-  fake_drm_->plane_manager()->BeginFrame(&hdpl);
+
+  ui::HardwareDisplayPlaneList hdpl2;
+  hdpl2.old_plane_list = hdpl.plane_list;
+  fake_drm_->plane_manager()->BeginFrame(hdpl2);
   EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
-      &hdpl, assigns, crtc_properties_[0].id));
+      &hdpl2, assigns, crtc_properties_[0].id));
   EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset, "FB_ID"));
   EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset + 1, "FB_ID"));
 
   EXPECT_TRUE(
-      fake_drm_->plane_manager()->Commit(&hdpl, page_flip_request, nullptr));
+      fake_drm_->plane_manager()->Commit(hdpl2, page_flip_request, nullptr));
   EXPECT_NE(0u, GetPlanePropertyValue(kPlaneOffset, "FB_ID"));
   EXPECT_EQ(0u, GetPlanePropertyValue(kPlaneOffset + 1, "FB_ID"));
 }
@@ -431,7 +434,7 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest, MultipleFrames) {
   EXPECT_EQ(1u, state_.plane_list.size());
   // Pretend we committed the frame.
   state_.plane_list.swap(state_.old_plane_list);
-  fake_drm_->plane_manager()->BeginFrame(&state_);
+  fake_drm_->plane_manager()->BeginFrame(state_);
   ui::HardwareDisplayPlane* old_plane = state_.old_plane_list[0];
   // The same plane should be used.
   EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
@@ -510,8 +513,7 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetColorMatrix_Success) {
   EXPECT_TRUE(fake_drm_->plane_manager()->SetColorMatrix(
       crtc_properties_[0].id, std::vector<float>(9)));
   if (use_atomic_) {
-    ui::HardwareDisplayPlaneList state;
-    PerformPageFlip(/*crtc_idx=*/0, &state);
+    PerformPageFlip(/*crtc_idx=*/0);
 #if defined(COMMIT_PROPERTIES_ON_PAGE_FLIP)
     EXPECT_EQ(1, fake_drm_->get_commit_count());
 #else
@@ -533,8 +535,7 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetColorMatrix_ErrorEmptyCtm) {
   EXPECT_FALSE(
       fake_drm_->plane_manager()->SetColorMatrix(crtc_properties_[0].id, {}));
   if (use_atomic_) {
-    ui::HardwareDisplayPlaneList state;
-    PerformPageFlip(/*crtc_idx=*/0, &state);
+    PerformPageFlip(/*crtc_idx=*/0);
     EXPECT_EQ(1, fake_drm_->get_commit_count());
     EXPECT_EQ(0u, GetCrtcPropertyValue(crtc_properties_[0].id, "CTM"));
   } else {
@@ -552,8 +553,7 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_MissingDegamma) {
   EXPECT_FALSE(fake_drm_->plane_manager()->SetGammaCorrection(
       crtc_properties_[0].id, {{0, 0, 0}}, {}));
   if (use_atomic_) {
-    ui::HardwareDisplayPlaneList state;
-    PerformPageFlip(/*crtc_idx=*/0, &state);
+    PerformPageFlip(/*crtc_idx=*/0);
     // Page flip should succeed even if the properties failed to be updated.
     EXPECT_EQ(1, fake_drm_->get_commit_count());
   } else {
@@ -568,8 +568,7 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_MissingDegamma) {
   EXPECT_FALSE(fake_drm_->plane_manager()->SetGammaCorrection(
       crtc_properties_[0].id, {{0, 0, 0}}, {}));
   if (use_atomic_) {
-    ui::HardwareDisplayPlaneList state;
-    PerformPageFlip(/*crtc_idx=*/0, &state);
+    PerformPageFlip(/*crtc_idx=*/0);
     // Page flip should succeed even if the properties failed to be updated.
     EXPECT_EQ(2, fake_drm_->get_commit_count());
   } else {
@@ -587,8 +586,7 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_MissingGamma) {
   EXPECT_FALSE(fake_drm_->plane_manager()->SetGammaCorrection(
       crtc_properties_[0].id, {}, {{0, 0, 0}}));
   if (use_atomic_) {
-    ui::HardwareDisplayPlaneList state;
-    PerformPageFlip(/*crtc_idx=*/0, &state);
+    PerformPageFlip(/*crtc_idx=*/0);
     // Page flip should succeed even if the properties failed to be updated.
     EXPECT_EQ(1, fake_drm_->get_commit_count());
   } else {
@@ -603,8 +601,7 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_MissingGamma) {
   EXPECT_FALSE(fake_drm_->plane_manager()->SetGammaCorrection(
       crtc_properties_[0].id, {}, {{0, 0, 0}}));
   if (use_atomic_) {
-    ui::HardwareDisplayPlaneList state;
-    PerformPageFlip(/*crtc_idx=*/0, &state);
+    PerformPageFlip(/*crtc_idx=*/0);
     // Page flip should succeed even if the properties failed to be updated.
     EXPECT_EQ(2, fake_drm_->get_commit_count());
   } else {
@@ -654,12 +651,11 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_Success) {
   fake_drm_->InitializeState(crtc_properties_, plane_properties_,
                              property_names_, use_atomic_);
 
-  ui::HardwareDisplayPlaneList state;
   // Check that we reset the properties correctly.
   EXPECT_TRUE(fake_drm_->plane_manager()->SetGammaCorrection(
       crtc_properties_[0].id, {}, {}));
   if (use_atomic_) {
-    PerformPageFlip(/*crtc_idx=*/0, &state);
+    PerformPageFlip(/*crtc_idx=*/0);
 #if defined(COMMIT_PROPERTIES_ON_PAGE_FLIP)
     EXPECT_EQ(1, fake_drm_->get_commit_count());
 #else
@@ -674,7 +670,7 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetGammaCorrection_Success) {
   EXPECT_TRUE(fake_drm_->plane_manager()->SetGammaCorrection(
       crtc_properties_[0].id, {{0, 0, 0}}, {{0, 0, 0}}));
   if (use_atomic_) {
-    PerformPageFlip(/*crtc_idx=*/0, &state);
+    PerformPageFlip(/*crtc_idx=*/0);
 #if defined(COMMIT_PROPERTIES_ON_PAGE_FLIP)
     EXPECT_EQ(2, fake_drm_->get_commit_count());
 #else
@@ -695,8 +691,7 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetBackgroundColor_Success) {
                              property_names_, use_atomic_);
   fake_drm_->plane_manager()->SetBackgroundColor(crtc_properties_[0].id, 0);
   if (use_atomic_) {
-    ui::HardwareDisplayPlaneList state;
-    PerformPageFlip(/*crtc_idx=*/0, &state);
+    PerformPageFlip(/*crtc_idx=*/0);
     EXPECT_EQ(1, fake_drm_->get_commit_count());
     EXPECT_EQ(0u, GetCrtcPropertyValue(crtc_properties_[0].id,
                                        "BACKGROUND_COLOR"));
@@ -710,8 +705,7 @@ TEST_P(HardwareDisplayPlaneManagerTest, SetBackgroundColor_Success) {
                              property_names_, use_atomic_);
   fake_drm_->plane_manager()->SetBackgroundColor(crtc_properties_[0].id, 1);
   if (use_atomic_) {
-    ui::HardwareDisplayPlaneList state;
-    PerformPageFlip(/*crtc_idx=*/0, &state);
+    PerformPageFlip(/*crtc_idx=*/0);
     EXPECT_EQ(2, fake_drm_->get_commit_count());
     EXPECT_EQ(1u, GetCrtcPropertyValue(crtc_properties_[0].id,
                                        "BACKGROUND_COLOR"));
@@ -734,7 +728,7 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest,
   ui::DrmOverlayPlaneList assigns2;
   assigns2.push_back(ui::DrmOverlayPlane(fake_buffer2, nullptr));
 
-  fake_drm_->plane_manager()->BeginFrame(&state_);
+  fake_drm_->plane_manager()->BeginFrame(state_);
   EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
       &state_, assigns1, crtc_properties_[0].id));
   EXPECT_TRUE(fake_drm_->plane_manager()->AssignOverlayPlanes(
@@ -744,7 +738,7 @@ TEST_P(HardwareDisplayPlaneManagerAtomicTest,
       base::MakeRefCounted<ui::PageFlipRequest>(base::TimeDelta());
 
   std::unique_ptr<gfx::GpuFence> out_fence;
-  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(&state_, page_flip_request,
+  EXPECT_TRUE(fake_drm_->plane_manager()->Commit(state_, page_flip_request,
                                                  &out_fence));
   EXPECT_EQ(nullptr, out_fence);
 }

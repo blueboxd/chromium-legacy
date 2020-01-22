@@ -27,6 +27,8 @@ public final class ActionTypesConverter {
                 return ActionType.DOWNLOAD;
             case LEARN_MORE:
                 return ActionType.LEARN_MORE;
+            case MANAGE_INTERESTS:
+                return ActionType.MANAGE_INTERESTS;
             default:
                 return ActionType.UNKNOWN;
         }

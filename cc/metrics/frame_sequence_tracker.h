@@ -399,6 +399,7 @@ class CC_EXPORT FrameSequenceTracker {
 
   // Keeps track of whether a CompositorFrame is submitted during the frame.
   bool compositor_frame_submitted_ = false;
+  bool submitted_frame_had_new_main_content_ = false;
 
   // Keeps track of whether the frame-states should be reset.
   bool reset_all_state_ = false;
@@ -413,6 +414,9 @@ class CC_EXPORT FrameSequenceTracker {
 
   uint64_t last_started_impl_sequence_ = 0;
   uint64_t last_processed_impl_sequence_ = 0;
+
+  uint64_t last_processed_main_sequence_ = 0;
+  uint64_t last_processed_main_sequence_latency_ = 0;
 
 #if DCHECK_IS_ON()
   bool is_inside_frame_ = false;

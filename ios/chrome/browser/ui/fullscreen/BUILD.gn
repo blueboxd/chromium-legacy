@@ -23,6 +23,7 @@ source_set("fullscreen") {
     "//base",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
+    "//ios/chrome/browser/browser_state:forward",
     "//ios/chrome/browser/web_state_list",
     "//ios/chrome/common",
   ]

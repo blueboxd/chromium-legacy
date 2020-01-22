@@ -79,7 +79,7 @@ public class SharedClipboardShareActivity
             chromeSettingsButton.setVisibility(View.VISIBLE);
             chromeSettingsButton.setOnClickListener(view -> {
                 SettingsLauncher.getInstance().launchSettingsPage(
-                        ContextUtils.getApplicationContext(), null);
+                        ContextUtils.getApplicationContext());
             });
         }
 

@@ -206,11 +206,8 @@ ExtensionsMenuView::CreateExtensionButtonsContainer() {
             views::style::STYLE_SECONDARY);
         description->SetMultiLine(true);
         description->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-        description->SetBorder(views::CreateEmptyBorder(
-            0, horizontal_spacing,
-            ChromeLayoutProvider::Get()->GetDistanceMetric(
-                DISTANCE_RELATED_CONTROL_VERTICAL_SMALL),
-            horizontal_spacing));
+        description->SetBorder(views::CreateEmptyBorder(0, horizontal_spacing,
+                                                        0, horizontal_spacing));
         container->AddChildView(std::move(description));
 
         // Add a (currently empty) section for the menu items of the section.

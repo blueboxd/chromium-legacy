@@ -19,9 +19,9 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
-import org.chromium.chrome.browser.settings.sync.SyncPreferenceUtils;
-import org.chromium.chrome.browser.settings.sync.SyncPreferenceUtils.SyncError;
+import org.chromium.chrome.browser.settings.sync.SyncAndServicesSettings;
+import org.chromium.chrome.browser.settings.sync.SyncSettingsUtils;
+import org.chromium.chrome.browser.settings.sync.SyncSettingsUtils.SyncError;
 import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;
@@ -71,10 +71,10 @@ public class SyncErrorInfoBar extends ConfirmInfoBar {
     private static InfoBar show() {
         Context context = getApplicationContext();
         @SyncError
-        int error = SyncPreferenceUtils.getSyncError();
+        int error = SyncSettingsUtils.getSyncError();
         String error_message = (error == SyncError.SYNC_SETUP_INCOMPLETE)
                 ? context.getString(R.string.sync_settings_not_confirmed_title)
-                : SyncPreferenceUtils.getSyncErrorHint(context, error);
+                : SyncSettingsUtils.getSyncErrorHint(context, error);
         return new SyncErrorInfoBar(getSyncErrorInfoBarType(),
                 context.getString(R.string.sync_error_card_title), error_message,
                 context.getString(R.string.open_settings_button));
@@ -85,8 +85,7 @@ public class SyncErrorInfoBar extends ConfirmInfoBar {
         recordHistogram(mType, SyncErrorInfoBarAction.OPEN_SETTINGS_CLICKED);
 
         SettingsLauncher.getInstance().launchSettingsPage(getApplicationContext(),
-                SyncAndServicesPreferences.class,
-                SyncAndServicesPreferences.createArguments(false));
+                SyncAndServicesSettings.class, SyncAndServicesSettings.createArguments(false));
     }
 
     @CalledByNative
@@ -142,7 +141,7 @@ public class SyncErrorInfoBar extends ConfirmInfoBar {
     @SyncErrorInfoBarType
     private static int getSyncErrorInfoBarType() {
         @SyncError
-        int error = SyncPreferenceUtils.getSyncError();
+        int error = SyncSettingsUtils.getSyncError();
         switch (error) {
             case SyncError.AUTH_ERROR:
                 return SyncErrorInfoBarType.AUTH_ERROR;

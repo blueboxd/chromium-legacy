@@ -19,7 +19,5 @@ mojom("mojom") {
     "service_connector.mojom",
   ]
 
-  public_deps = [
-    "//mojo/public/mojom/base",
-  ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 }

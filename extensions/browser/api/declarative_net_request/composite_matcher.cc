@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/request_params.h"
@@ -43,6 +45,22 @@ bool AreSortedPrioritiesUnique(const CompositeMatcher::MatcherList& matchers) {
 
   return true;
 }
+
+// Helper to log the time taken in CompositeMatcher::GetBeforeRequestAction.
+class ScopedGetBeforeRequestActionTimer {
+ public:
+  ScopedGetBeforeRequestActionTimer() = default;
+  ~ScopedGetBeforeRequestActionTimer() {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Extensions.DeclarativeNetRequest.EvaluateBeforeRequestTime."
+        "SingleExtension2",
+        timer_.Elapsed(), base::TimeDelta::FromMicroseconds(1),
+        base::TimeDelta::FromMilliseconds(50), 50);
+  }
+
+ private:
+  base::ElapsedTimer timer_;
+};
 
 }  // namespace
 
@@ -92,10 +110,7 @@ void CompositeMatcher::AddOrUpdateRuleset(
 ActionInfo CompositeMatcher::GetBeforeRequestAction(
     const RequestParams& params,
     PageAccess page_access) const {
-  // TODO(karandeepb): change this to report time in micro-seconds.
-  SCOPED_UMA_HISTOGRAM_TIMER(
-      "Extensions.DeclarativeNetRequest.EvaluateBeforeRequestTime."
-      "SingleExtension");
+  ScopedGetBeforeRequestActionTimer timer;
 
   bool notify_request_withheld = false;
   for (const auto& matcher : matchers_) {

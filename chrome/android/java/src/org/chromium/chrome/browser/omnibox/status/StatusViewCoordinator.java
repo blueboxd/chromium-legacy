@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.omnibox.status;
 
 import android.content.res.Resources;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
 
 import androidx.annotation.DrawableRes;
@@ -14,6 +12,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.Tab;
@@ -26,7 +25,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * A component for displaying a status icon (e.g. security icon or navigation icon) and optional
  * verbose status text.
  */
-public class StatusViewCoordinator implements View.OnClickListener, TextWatcher {
+public class StatusViewCoordinator implements View.OnClickListener, UrlTextChangeListener {
     private final StatusView mStatusView;
     private final StatusMediator mMediator;
     private final PropertyModel mModel;
@@ -248,13 +247,7 @@ public class StatusViewCoordinator implements View.OnClickListener, TextWatcher 
     }
 
     @Override
-    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-    @Override
-    public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
-        mMediator.onTextChanged(charSequence);
+    public void onTextChanged(String textWithoutAutocomplete, String textWithAutocomplete) {
+        mMediator.onTextChanged(textWithoutAutocomplete);
     }
-
-    @Override
-    public void afterTextChanged(Editable editable) {}
 }

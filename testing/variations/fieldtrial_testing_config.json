@@ -3736,6 +3736,22 @@
             ]
         }
     ],
+    "MayBlockWithoutDelay": [
+        {
+            "platforms": [
+                "windows",
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MayBlockWithoutDelay"
+                    ]
+                }
+            ]
+        }
+    ],
     "MediaCapabilitiesWithParameters": [
         {
             "platforms": [

@@ -207,16 +207,6 @@ class OptimizationGuideHintsManager
   // Service. Used to fetch hints for origins frequently visited by the user.
   void FetchTopHostsHints();
 
-  // Called when the hints have been fetched from the remote Optimization Guide
-  // Service and are ready for parsing or when the fetch was not able to be
-  // completed.
-  void OnHintsFetched(
-      optimization_guide::proto::RequestContext request_context,
-      optimization_guide::HintsFetcherRequestStatus fetch_status,
-      base::Optional<
-          std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
-          get_hints_response);
-
   // Called when the hints for the top hosts have been fetched from the remote
   // Optimization Guide Service and are ready for parsing. This is used when
   // fetching hints in batch mode.

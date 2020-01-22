@@ -52,7 +52,9 @@ public class WebsitePreferenceBridge {
         ArrayList<PermissionInfo> list = new ArrayList<PermissionInfo>();
         // Camera, Location & Microphone can be managed by the custodian
         // of a supervised account or by enterprise policy.
-        if (type == PermissionInfo.Type.CAMERA) {
+        if (type == PermissionInfo.Type.AUGMENTED_REALITY) {
+            WebsitePreferenceBridgeJni.get().getArOrigins(list);
+        } else if (type == PermissionInfo.Type.CAMERA) {
             boolean managedOnly = !isCameraUserModifiable();
             WebsitePreferenceBridgeJni.get().getCameraOrigins(list, managedOnly);
         } else if (type == PermissionInfo.Type.CLIPBOARD) {
@@ -73,6 +75,8 @@ public class WebsitePreferenceBridge {
             WebsitePreferenceBridgeJni.get().getProtectedMediaIdentifierOrigins(list);
         } else if (type == PermissionInfo.Type.SENSORS) {
             WebsitePreferenceBridgeJni.get().getSensorsOrigins(list);
+        } else if (type == PermissionInfo.Type.VIRTUAL_REALITY) {
+            WebsitePreferenceBridgeJni.get().getVrOrigins(list);
         } else {
             assert false;
         }
@@ -89,6 +93,12 @@ public class WebsitePreferenceBridge {
             }
         }
         list.add(new PermissionInfo(type, origin, embedder, false));
+    }
+
+    @CalledByNative
+    private static void insertArInfoIntoList(
+            ArrayList<PermissionInfo> list, String origin, String embedder) {
+        insertInfoIntoList(PermissionInfo.Type.AUGMENTED_REALITY, list, origin, embedder);
     }
 
     @CalledByNative
@@ -149,6 +159,12 @@ public class WebsitePreferenceBridge {
     private static void insertStorageInfoIntoList(
             ArrayList<StorageInfo> list, String host, int type, long size) {
         list.add(new StorageInfo(host, type, size));
+    }
+
+    @CalledByNative
+    private static void insertVrInfoIntoList(
+            ArrayList<PermissionInfo> list, String origin, String embedder) {
+        insertInfoIntoList(PermissionInfo.Type.VIRTUAL_REALITY, list, origin, embedder);
     }
 
     @CalledByNative
@@ -348,6 +364,9 @@ public class WebsitePreferenceBridge {
             case ContentSettingsType.USB_GUARD:
                 setContentSettingEnabled(contentSettingsType, allow);
                 break;
+            case ContentSettingsType.AR:
+                WebsitePreferenceBridgeJni.get().setArEnabled(allow);
+                break;
             case ContentSettingsType.AUTOMATIC_DOWNLOADS:
                 WebsitePreferenceBridgeJni.get().setAutomaticDownloadsEnabled(allow);
                 break;
@@ -381,6 +400,9 @@ public class WebsitePreferenceBridge {
             case ContentSettingsType.SOUND:
                 WebsitePreferenceBridgeJni.get().setSoundEnabled(allow);
                 break;
+            case ContentSettingsType.VR:
+                WebsitePreferenceBridgeJni.get().setVrEnabled(allow);
+                break;
             default:
                 assert false;
         }
@@ -400,6 +422,8 @@ public class WebsitePreferenceBridge {
             case ContentSettingsType.USB_GUARD:
             case ContentSettingsType.BLUETOOTH_SCANNING:
                 return isContentSettingEnabled(contentSettingsType);
+            case ContentSettingsType.AR:
+                return WebsitePreferenceBridgeJni.get().getArEnabled();
             case ContentSettingsType.AUTOMATIC_DOWNLOADS:
                 return WebsitePreferenceBridgeJni.get().getAutomaticDownloadsEnabled();
             case ContentSettingsType.BACKGROUND_SYNC:
@@ -418,6 +442,8 @@ public class WebsitePreferenceBridge {
                 return WebsitePreferenceBridgeJni.get().getSensorsEnabled();
             case ContentSettingsType.SOUND:
                 return WebsitePreferenceBridgeJni.get().getSoundEnabled();
+            case ContentSettingsType.VR:
+                return WebsitePreferenceBridgeJni.get().getVrEnabled();
             default:
                 assert false;
                 return false;
@@ -554,6 +580,7 @@ public class WebsitePreferenceBridge {
     @VisibleForTesting
     @NativeMethods
     public interface Natives {
+        void getArOrigins(Object list);
         void getCameraOrigins(Object list, boolean managedOnly);
         void getClipboardOrigins(Object list);
         void getGeolocationOrigins(Object list, boolean managedOnly);
@@ -564,6 +591,8 @@ public class WebsitePreferenceBridge {
         void getProtectedMediaIdentifierOrigins(Object list);
         boolean getNfcEnabled();
         void getSensorsOrigins(Object list);
+        void getVrOrigins(Object list);
+        int getArSettingForOrigin(String origin, String embedder, boolean isIncognito);
         int getCameraSettingForOrigin(String origin, String embedder, boolean isIncognito);
         int getClipboardSettingForOrigin(String origin, boolean isIncognito);
         int getGeolocationSettingForOrigin(String origin, String embedder, boolean isIncognito);
@@ -575,6 +604,8 @@ public class WebsitePreferenceBridge {
         int getProtectedMediaIdentifierSettingForOrigin(
                 String origin, String embedder, boolean isIncognito);
         int getSensorsSettingForOrigin(String origin, String embedder, boolean isIncognito);
+        int getVrSettingForOrigin(String origin, String embedder, boolean isIncognito);
+        void setArSettingForOrigin(String origin, String embedder, int value, boolean isIncognito);
         void setCameraSettingForOrigin(String origin, int value, boolean isIncognito);
         void setClipboardSettingForOrigin(String origin, int value, boolean isIncognito);
         void setGeolocationSettingForOrigin(
@@ -590,6 +621,7 @@ public class WebsitePreferenceBridge {
                 String origin, String embedder, int value, boolean isIncognito);
         void setSensorsSettingForOrigin(
                 String origin, String embedder, int value, boolean isIncognito);
+        void setVrSettingForOrigin(String origin, String embedder, int value, boolean isIncognito);
         void clearBannerData(String origin);
         void clearMediaLicenses(String origin);
         void clearCookieData(String path);
@@ -618,6 +650,7 @@ public class WebsitePreferenceBridge {
         boolean getAcceptCookiesEnabled();
         boolean getAcceptCookiesUserModifiable();
         boolean getAcceptCookiesManagedByCustodian();
+        boolean getArEnabled();
         boolean getAutomaticDownloadsEnabled();
         boolean getBackgroundSyncEnabled();
         boolean getAllowLocationUserModifiable();
@@ -633,8 +666,10 @@ public class WebsitePreferenceBridge {
         boolean getMicManagedByCustodian();
         boolean getSensorsEnabled();
         boolean getSoundEnabled();
+        boolean getVrEnabled();
         void setAutomaticDownloadsEnabled(boolean enabled);
         void setAllowCookiesEnabled(boolean enabled);
+        void setArEnabled(boolean enabled);
         void setBackgroundSyncEnabled(boolean enabled);
         void setClipboardEnabled(boolean enabled);
         boolean getAllowLocationEnabled();
@@ -644,6 +679,7 @@ public class WebsitePreferenceBridge {
         void setNfcEnabled(boolean enabled);
         void setSensorsEnabled(boolean enabled);
         void setSoundEnabled(boolean enabled);
+        void setVrEnabled(boolean enabled);
         boolean getQuietNotificationsUiEnabled(Profile profile);
         void setQuietNotificationsUiEnabled(Profile profile, boolean enabled);
     }

@@ -6,12 +6,9 @@
 #define IOS_CHROME_BROWSER_TABS_TAB_MODEL_LIST_OBSERVER_H_
 
 #include "base/macros.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 @class TabModel;
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 // Interface for getting notified when TabModels get associated/dissociated
 // to/from browser states.

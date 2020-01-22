@@ -23,8 +23,6 @@ enum LoadModelResult {
   OK = 0,
   MODEL_SPEC_ERROR = 1,
   LOAD_MODEL_ERROR = 2,
-  // Remove kMax and use builtin kMaxValue after Mojo uprev (crbug.com/909719).
-  kMax = LOAD_MODEL_ERROR,
 };
 
 // Top-level interface between Chromium and the ML Service daemon.

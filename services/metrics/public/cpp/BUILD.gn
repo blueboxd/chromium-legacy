@@ -66,9 +66,7 @@ action("gen_ukm_builders") {
     "//tools/metrics/ukm/codegen.py",
     "//tools/metrics/ukm/gen_builders.py",
   ]
-  sources = [
-    "//tools/metrics/ukm/ukm.xml",
-  ]
+  sources = [ "//tools/metrics/ukm/ukm.xml" ]
 
   outdir = "$target_gen_dir"
 

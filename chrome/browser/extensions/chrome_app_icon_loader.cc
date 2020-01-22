@@ -44,7 +44,12 @@ ChromeAppIconLoader::~ChromeAppIconLoader() {}
 bool ChromeAppIconLoader::CanLoadImageForApp(const std::string& id) {
   if (map_.find(id) != map_.end())
     return true;
-  return GetExtensionByID(profile(), id) != nullptr;
+
+  const Extension* extension = GetExtensionByID(profile(), id);
+  if (!extension || (extensions_only_ && !extension->is_extension()))
+    return false;
+
+  return true;
 }
 
 void ChromeAppIconLoader::FetchImage(const std::string& id) {
@@ -75,6 +80,10 @@ void ChromeAppIconLoader::UpdateImage(const std::string& id) {
     return;
 
   it->second->UpdateIcon();
+}
+
+void ChromeAppIconLoader::SetExtensionsOnly() {
+  extensions_only_ = true;
 }
 
 void ChromeAppIconLoader::OnIconUpdated(ChromeAppIcon* icon) {

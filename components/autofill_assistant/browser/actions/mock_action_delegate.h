@@ -69,7 +69,7 @@ class MockActionDelegate : public ActionDelegate {
 
   MOCK_METHOD1(Prompt,
                void(std::unique_ptr<std::vector<UserAction>> user_actions));
-  MOCK_METHOD0(CancelPrompt, void());
+  MOCK_METHOD0(CleanUpAfterPrompt, void());
 
   void FillAddressForm(
       const autofill::AutofillProfile* profile,

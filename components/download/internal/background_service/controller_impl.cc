@@ -368,7 +368,6 @@ void ControllerImpl::RemoveCleanupEligibleDownloads() {
     DCHECK(client);
     bool client_ok =
         client->CanServiceRemoveDownloadedFile(entry->guid, mandatory_cleanup);
-    entry->cleanup_attempt_count++;
 
     if (client_ok || mandatory_cleanup) {
       entries_to_remove.push_back(entry);

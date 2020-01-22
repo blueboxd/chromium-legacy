@@ -91,6 +91,11 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   int GetImageLabelSpacing() const;
   void SetImageLabelSpacing(int spacing);
 
+  // Gets or sets the option to place the image aligned with the center of the
+  // the label. The image is not centered for CheckBox and RadioButton only.
+  bool GetImageCentered() const;
+  void SetImageCentered(bool image_centered);
+
   // Creates the default border for this button. This can be overridden by
   // subclasses.
   virtual std::unique_ptr<LabelButtonBorder> CreateDefaultBorder() const;
@@ -223,6 +228,11 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
 
   // True if current border was set by UpdateThemedBorder.
   bool border_is_themed_border_ = true;
+
+  // A flag indicating that this button's image should be aligned with the
+  // center of the label when multiline is enabled. This shouldn't be the case
+  // for a CheckBox or a RadioButton.
+  bool image_centered_ = true;
 
   // Spacing between the image and the text.
   int image_label_spacing_ = LayoutProvider::Get()->GetDistanceMetric(

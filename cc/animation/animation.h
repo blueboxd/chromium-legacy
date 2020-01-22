@@ -65,9 +65,18 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   }
   void SetAnimationTimeline(AnimationTimeline* timeline);
 
-  // TODO(smcgruer): If/once ScrollTimeline is supported on normal Animations,
-  // we will need to move the promotion logic from WorkletAnimation to here.
-  virtual void PromoteScrollTimelinePendingToActive() {}
+  // TODO(yigu): There is a reverse dependency between AnimationTimeline and
+  // Animation. ScrollTimeline promotion and update should be handled by
+  // AnimationHost instead of Animation. https://crbug.com/1023508.
+  //
+  // Should be called when the pending tree is promoted to active, as this may
+  // require updating the ElementId for the ScrollTimeline scroll source.
+  virtual void PromoteScrollTimelinePendingToActive();
+  // Should be called when the ScrollTimeline attached to this animation has a
+  // change, such as when the scroll source changes ElementId.
+  void UpdateScrollTimeline(base::Optional<ElementId> scroller_id,
+                            base::Optional<double> start_scroll_offset,
+                            base::Optional<double> end_scroll_offset);
 
   scoped_refptr<ElementAnimations> element_animations() const;
 

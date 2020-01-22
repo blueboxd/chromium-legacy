@@ -41,10 +41,6 @@ NSString* ColumnIdentifier(int id) {
   return [NSString stringWithFormat:@"%d", id];
 }
 
-bool ShouldUseViewsTaskManager() {
-  return base::FeatureList::IsEnabled(features::kViewsTaskManager);
-}
-
 }  // namespace
 
 @interface TaskManagerWindowController (Private)
@@ -743,14 +739,10 @@ namespace chrome {
 
 // Declared in browser_dialogs.h.
 task_manager::TaskManagerTableModel* ShowTaskManager(Browser* browser) {
-  if (ShouldUseViewsTaskManager())
-    return chrome::ShowTaskManagerViews(browser);
   return task_manager::TaskManagerMac::Show();
 }
 
 void HideTaskManager() {
-  if (ShouldUseViewsTaskManager())
-    return chrome::HideTaskManagerViews();
   task_manager::TaskManagerMac::Hide();
 }
 

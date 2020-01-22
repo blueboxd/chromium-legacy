@@ -20,7 +20,7 @@ WorkletAnimation::WorkletAnimation(
     WorkletAnimationId worklet_animation_id,
     const std::string& name,
     double playback_rate,
-    std::unique_ptr<ScrollTimeline> scroll_timeline,
+    scoped_refptr<ScrollTimeline> scroll_timeline,
     std::unique_ptr<AnimationOptions> options,
     std::unique_ptr<AnimationEffectTimings> effect_timings,
     bool is_controlling_instance)
@@ -39,7 +39,7 @@ WorkletAnimation::WorkletAnimation(
     WorkletAnimationId worklet_animation_id,
     const std::string& name,
     double playback_rate,
-    std::unique_ptr<ScrollTimeline> scroll_timeline,
+    scoped_refptr<ScrollTimeline> scroll_timeline,
     std::unique_ptr<AnimationOptions> options,
     std::unique_ptr<AnimationEffectTimings> effect_timings,
     bool is_controlling_instance,
@@ -65,7 +65,7 @@ scoped_refptr<WorkletAnimation> WorkletAnimation::Create(
     WorkletAnimationId worklet_animation_id,
     const std::string& name,
     double playback_rate,
-    std::unique_ptr<ScrollTimeline> scroll_timeline,
+    scoped_refptr<ScrollTimeline> scroll_timeline,
     std::unique_ptr<AnimationOptions> options,
     std::unique_ptr<AnimationEffectTimings> effect_timings) {
   return WrapRefCounted(new WorkletAnimation(
@@ -75,7 +75,7 @@ scoped_refptr<WorkletAnimation> WorkletAnimation::Create(
 }
 
 scoped_refptr<Animation> WorkletAnimation::CreateImplInstance() const {
-  std::unique_ptr<ScrollTimeline> impl_timeline;
+  scoped_refptr<ScrollTimeline> impl_timeline;
   if (scroll_timeline_)
     impl_timeline = scroll_timeline_->CreateImplInstance();
 
@@ -271,21 +271,8 @@ bool WorkletAnimation::IsTimelineActive(const ScrollTree& scroll_tree,
          scroll_timeline_->IsActive(scroll_tree, is_active_tree);
 }
 
-void WorkletAnimation::UpdateScrollTimeline(
-    base::Optional<ElementId> scroller_id,
-    base::Optional<double> start_scroll_offset,
-    base::Optional<double> end_scroll_offset) {
-  // Calling this method implies that we are a ScrollTimeline based animation,
-  // so the below call is done unchecked.
-  scroll_timeline_->SetScrollerId(scroller_id);
-  scroll_timeline_->UpdateStartAndEndScrollOffsets(start_scroll_offset,
-                                                   end_scroll_offset);
-  SetNeedsPushProperties();
-}
-
 void WorkletAnimation::PromoteScrollTimelinePendingToActive() {
-  if (scroll_timeline_)
-    scroll_timeline_->PromoteScrollTimelinePendingToActive();
+  Animation::PromoteScrollTimelinePendingToActive();
   ReleasePendingTreeLock();
 }
 

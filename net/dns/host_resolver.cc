@@ -242,8 +242,12 @@ HostResolverFlags HostResolver::ParametersToHostResolverFlags(
 
 // static
 int HostResolver::SquashErrorCode(int error) {
-  if (error == OK || error == ERR_IO_PENDING ||
-      error == ERR_NAME_NOT_RESOLVED) {
+  // TODO(crbug.com/1040686): Once InProcessBrowserTests do not use
+  // ERR_NOT_IMPLEMENTED to simulate DNS failures, it should be ok to squash
+  // ERR_NOT_IMPLEMENTED.
+  // TODO(crbug.com/1043281): Consider squashing ERR_INTERNET_DISCONNECTED.
+  if (error == OK || error == ERR_IO_PENDING || error == ERR_NOT_IMPLEMENTED ||
+      error == ERR_INTERNET_DISCONNECTED || error == ERR_NAME_NOT_RESOLVED) {
     return error;
   } else {
     return ERR_NAME_NOT_RESOLVED;

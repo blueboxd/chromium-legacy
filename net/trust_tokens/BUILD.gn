@@ -6,13 +6,12 @@ import("//third_party/protobuf/proto_library.gni")
 
 source_set("trust_tokens") {
   visibility = [
-    "//net",
-    "//services/network",
     ":tests",
+    "//net/*",
+    "//services/network/",
   ]
 
-  # TODO(davidvc): Public API to be added in a subsequent CL.
-  public = []
+  public = [ "trust_token_store.h" ]
 
   friend = [ ":tests" ]
 
@@ -20,26 +19,35 @@ source_set("trust_tokens") {
     "in_memory_trust_token_persister.cc",
     "in_memory_trust_token_persister.h",
     "trust_token_persister.h",
+    "trust_token_store.cc",
+    "types.cc",
+    "types.h",
   ]
 
   deps = [
-    ":public_proto",
     ":storage_proto",
     "//base",
     "//url",
   ]
+
+  public_deps = [ ":public_proto" ]
 }
 
 source_set("tests") {
   testonly = true
 
-  sources = [ "trust_token_persister_unittest.cc" ]
+  sources = [
+    "trust_token_persister_unittest.cc",
+    "trust_token_store_unittest.cc",
+    "types_unittest.cc",
+  ]
 
   deps = [
     ":public_proto",
     ":storage_proto",
     ":trust_tokens",
     "//base",
+    "//base/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//url",

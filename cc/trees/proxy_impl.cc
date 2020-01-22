@@ -252,6 +252,7 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
     CompletionEvent* completion,
     LayerTreeHost* layer_tree_host,
     base::TimeTicks main_thread_start_time,
+    const viz::BeginFrameArgs& commit_args,
     bool hold_commit_for_activation) {
   TRACE_EVENT0("cc", "ProxyImpl::NotifyReadyToCommitOnImpl");
   DCHECK(!commit_completion_event_);
@@ -270,8 +271,7 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
   // But, we can avoid a PostTask in here.
   scheduler_->NotifyBeginMainFrameStarted(main_thread_start_time);
 
-  host_impl_->ReadyToCommit(
-      scheduler_->last_dispatched_begin_main_frame_args());
+  host_impl_->ReadyToCommit(commit_args);
 
   commit_completion_event_ =
       std::make_unique<ScopedCompletionEvent>(completion);

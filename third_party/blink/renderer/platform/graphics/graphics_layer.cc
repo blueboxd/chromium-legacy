@@ -38,7 +38,6 @@
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"

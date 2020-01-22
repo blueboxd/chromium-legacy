@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/main/browser_user_data.h"
 
 @class SessionWindowIOS;
@@ -18,10 +19,6 @@
 class SessionRestorationObserver;
 class WebStateList;
 @class SessionServiceIOS;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // This class is responsible for handling requests of session restoration. It
 // can be observed via SeassonRestorationObserver which it uses to notify

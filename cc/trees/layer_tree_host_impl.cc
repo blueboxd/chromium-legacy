@@ -363,8 +363,7 @@ void LayerTreeHostImpl::WillSendBeginMainFrame() {
 }
 
 void LayerTreeHostImpl::DidSendBeginMainFrame(const viz::BeginFrameArgs& args) {
-  if (impl_thread_phase_ == ImplThreadPhase::INSIDE_IMPL_FRAME &&
-      !begin_main_frame_sent_during_impl_) {
+  if (!begin_main_frame_sent_during_impl_) {
     begin_main_frame_sent_during_impl_ = true;
     frame_trackers_.NotifyBeginMainFrame(args);
   }
@@ -2308,14 +2307,6 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   // outside of begin-impl frame pipeline. Avoid notifying the trackers in such
   // cases.
   if (impl_thread_phase_ == ImplThreadPhase::INSIDE_IMPL_FRAME) {
-    if (!begin_main_frame_sent_during_impl_) {
-      frame_trackers_.NotifyBeginMainFrame(
-          current_begin_frame_tracker_.Current());
-      if (!begin_main_frame_expected_during_impl_) {
-        frame_trackers_.NotifyMainFrameCausedNoDamage(
-            current_begin_frame_tracker_.Current());
-      }
-    }
     frame_trackers_.NotifySubmitFrame(
         compositor_frame.metadata.frame_token, frame->has_missing_content,
         frame->begin_frame_ack, frame->origin_begin_main_frame_args);
@@ -2681,12 +2672,7 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   frame_trackers_.NotifyBeginImplFrame(args);
 
   begin_main_frame_expected_during_impl_ = client_->IsBeginMainFrameExpected();
-  if (begin_main_frame_expected_during_impl_) {
-    begin_main_frame_sent_during_impl_ = true;
-    frame_trackers_.NotifyBeginMainFrame(args);
-  } else {
-    begin_main_frame_sent_during_impl_ = false;
-  }
+  begin_main_frame_sent_during_impl_ = false;
 
   if (is_likely_to_require_a_draw_) {
     // Optimistically schedule a draw. This will let us expect the tile manager

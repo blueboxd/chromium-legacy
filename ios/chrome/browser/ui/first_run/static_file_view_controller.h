@@ -7,9 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-namespace ios {
-class ChromeBrowserState;
-}
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 // Status for tapped links.  This enum is used in UMA and entries should not be
 // re-ordered or deleted.

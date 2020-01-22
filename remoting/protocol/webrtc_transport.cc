@@ -288,8 +288,10 @@ class WebrtcTransport::PeerConnectionWrapper
 
     rtc_config.sdp_semantics = webrtc::SdpSemantics::kUnifiedPlan;
 
+    webrtc::PeerConnectionDependencies dependencies(this);
+    dependencies.allocator = std::move(port_allocator);
     peer_connection_ = peer_connection_factory_->CreatePeerConnection(
-        rtc_config, std::move(port_allocator), nullptr, this);
+        rtc_config, std::move(dependencies));
   }
 
   ~PeerConnectionWrapper() override {

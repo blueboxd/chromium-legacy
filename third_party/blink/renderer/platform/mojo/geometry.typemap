@@ -7,7 +7,6 @@ public_headers = [
   "//ui/gfx/geometry/quaternion.h",
   "//ui/gfx/geometry/vector3d_f.h",
   "//third_party/blink/public/platform/web_float_rect.h",
-  "//third_party/blink/public/platform/web_point.h",
   "//third_party/blink/public/platform/web_rect.h",
   "//third_party/blink/public/platform/web_size.h",
   "//third_party/blink/renderer/platform/geometry/float_point_3d.h",

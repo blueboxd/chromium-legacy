@@ -6,6 +6,7 @@
 #define IOS_WEB_PUBLIC_WEB_STATE_DELEGATE_BRIDGE_H_
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #import "ios/web/public/web_state_delegate.h"
 
@@ -78,6 +79,32 @@
 - (void)webState:(web::WebState*)webState
     commitPreviewingViewController:(UIViewController*)previewingViewController;
 
+// Called when iOS13+ context menu is triggered and now it is required to
+// provide a UIContextMenuConfiguration to |completion_handler| to generate the
+// context menu.
+- (void)webState:(web::WebState*)webState
+    contextMenuConfigurationForLinkWithURL:(const GURL&)linkURL
+                         completionHandler:
+                             (void (^)(UIContextMenuConfiguration*))
+                                 completionHandler API_AVAILABLE(ios(13.0));
+
+// Called when iOS13+ context menu is ready to be showed.
+- (void)webState:(web::WebState*)webState
+    contextMenuWillPresentForLinkWithURL:(const GURL&)linkURL
+    API_AVAILABLE(ios(13.0));
+
+// Called when iOS13+ context menu will commit with animator.
+- (void)webState:(web::WebState*)webState
+    contextMenuForLinkWithURL:(const GURL&)linkURL
+       willCommitWithAnimator:
+           (id<UIContextMenuInteractionCommitAnimating>)animator
+    API_AVAILABLE(ios(13.0));
+
+// Called when iOS13+ context menu will present.
+- (void)webState:(web::WebState*)webState
+    contextMenuDidEndForLinkWithURL:(const GURL&)linkURL
+    API_AVAILABLE(ios(13.0));
+
 @end
 
 namespace web {
@@ -113,6 +140,20 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
   void CommitPreviewingViewController(
       WebState* source,
       UIViewController* previewing_view_controller) override;
+  void ContextMenuConfiguration(
+      WebState* source,
+      const GURL& link_url,
+      void (^completion_handler)(UIContextMenuConfiguration*))
+      API_AVAILABLE(ios(13.0)) override;
+  void ContextMenuDidEnd(WebState* source, const GURL& link_url)
+      API_AVAILABLE(ios(13.0)) override;
+  void ContextMenuWillCommitWithAnimator(
+      WebState* source,
+      const GURL& link_url,
+      id<UIContextMenuInteractionCommitAnimating> animator)
+      API_AVAILABLE(ios(13.0)) override;
+  void ContextMenuWillPresent(WebState* source, const GURL& link_url)
+      API_AVAILABLE(ios(13.0)) override;
 
  private:
   // CRWWebStateDelegate which receives forwarded calls.

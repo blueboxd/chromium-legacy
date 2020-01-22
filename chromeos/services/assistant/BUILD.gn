@@ -127,9 +127,7 @@ component("lib") {
 
     libs = [ "$root_out_dir/libassistant.so" ]
 
-    data = [
-      "$root_out_dir/libassistant.so",
-    ]
+    data = [ "$root_out_dir/libassistant.so" ]
   }
 }
 

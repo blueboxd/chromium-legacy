@@ -173,8 +173,9 @@ class AppBackgroundPageNaClTest : public AppBackgroundPageApiTest {
 
 }  // namespace
 
-// Disable on Mac only.  http://crbug.com/95139
-#if defined(OS_MACOSX)
+// Flaky test disabled on Mac (http://crbug.com/95139) and Windows
+// (http://crbug.com/1044265).
+#if defined(OS_MACOSX) || defined(OS_WIN)
 #define MAYBE_Basic DISABLED_Basic
 #else
 #define MAYBE_Basic Basic

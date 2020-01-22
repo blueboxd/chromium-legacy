@@ -32,3 +32,19 @@ cr-checkbox {
   --cr-checkbox-label-padding-start: 12px;
 }
 
+/* Styles used with SplitSettingsSync. */
+
+#osSyncConsentFooter {
+  border-bottom: solid 1px var(--google-grey-300);
+  border-top: solid 1px var(--google-grey-300);
+  padding: 16px 0;
+}
+
+#osSyncConsentToggleName {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+#osSyncConsentToggleDescription {
+  color: var(--google-grey-700);
+}

@@ -84,11 +84,11 @@ void ResourcePrefetchPredictorTables::SortOrigins(
 
 ResourcePrefetchPredictorTables::ResourcePrefetchPredictorTables(
     scoped_refptr<base::SequencedTaskRunner> db_task_runner)
-    : PredictorTableBase(db_task_runner) {
+    : sqlite_proto::TableManager(db_task_runner) {
   host_redirect_table_ =
-      std::make_unique<LoadingPredictorKeyValueTable<RedirectData>>(
+      std::make_unique<sqlite_proto::KeyValueTable<RedirectData>>(
           kHostRedirectTableName);
-  origin_table_ = std::make_unique<LoadingPredictorKeyValueTable<OriginData>>(
+  origin_table_ = std::make_unique<sqlite_proto::KeyValueTable<OriginData>>(
       kOriginTableName);
 }
 
@@ -120,11 +120,11 @@ float ResourcePrefetchPredictorTables::ComputeOriginScore(
   return score;
 }
 
-LoadingPredictorKeyValueTable<RedirectData>*
+sqlite_proto::KeyValueTable<RedirectData>*
 ResourcePrefetchPredictorTables::host_redirect_table() {
   return host_redirect_table_.get();
 }
-LoadingPredictorKeyValueTable<OriginData>*
+sqlite_proto::KeyValueTable<OriginData>*
 ResourcePrefetchPredictorTables::origin_table() {
   return origin_table_.get();
 }
@@ -198,7 +198,7 @@ bool ResourcePrefetchPredictorTables::SetDatabaseVersion(sql::Database* db,
   return statement.Run();
 }
 
-void ResourcePrefetchPredictorTables::CreateTableIfNonExistent() {
+void ResourcePrefetchPredictorTables::CreateTablesIfNonExistent() {
   DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
   if (CantAccessDatabase())
     return;

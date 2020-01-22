@@ -10,12 +10,9 @@
 #include "base/compiler_specific.h"
 #include "components/omnibox/browser/omnibox_client.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 class WebOmniboxEditController;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 class ChromeOmniboxClientIOS : public OmniboxClient {
  public:

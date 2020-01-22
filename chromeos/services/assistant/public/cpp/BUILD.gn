@@ -8,7 +8,5 @@ source_set("prefs") {
     "assistant_prefs.h",
   ]
 
-  deps = [
-    "//components/prefs",
-  ]
+  deps = [ "//components/prefs" ]
 }

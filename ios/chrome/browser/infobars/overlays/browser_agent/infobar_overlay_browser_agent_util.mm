@@ -20,7 +20,7 @@ void AttachInfobarOverlayBrowserAgent(Browser* browser) {
   InfobarOverlayBrowserAgent* browser_agent =
       InfobarOverlayBrowserAgent::FromBrowser(browser);
   browser_agent->AddInfobarInteractionHandler(
-      std::make_unique<PasswordInfobarInteractionHandler>());
+      std::make_unique<PasswordInfobarInteractionHandler>(browser));
   // TODO(crbug.com/1030357): Add InfobarInteractionHandlers for each
   // InfobarType when implemented.
 }

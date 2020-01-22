@@ -44,6 +44,11 @@ namespace extensions {
 
 namespace {
 
+bool ShouldAllowlistAlsoApplyToOorCors() {
+  return base::FeatureList::IsEnabled(
+      extensions_features::kCorbAllowlistAlsoAppliesToOorCors);
+}
+
 enum class FactoryUser {
   kContentScript,
   kExtensionProcess,
@@ -52,14 +57,14 @@ enum class FactoryUser {
 // The allowlist contains HashedExtensionId of extensions discovered via
 // Extensions.CrossOriginFetchFromContentScript2 Rappor data.  When the data was
 // gathered, these extensions relied on making cross-origin requests from
-// content scripts (which requires relaxing CORB).  Going forward, these
-// extensions should migrate to making those requests from elsewhere (e.g. from
-// a background page, or in the future from extension service workers) at which
-// point they can be removed from the allowlist.
+// content scripts (which requires relaxing CORB and CORS).  Going forward,
+// these extensions should migrate to making those requests from elsewhere (e.g.
+// from a background page, or in the future from extension service workers) at
+// which point they can be removed from the allowlist.
 //
 // Migration plan for extension developers is described at
 // https://chromium.org/Home/chromium-security/extension-content-script-fetches
-const char* kHardcodedPartOfCorbAllowlist[] = {
+const char* kHardcodedPartOfAllowlist[] = {
     "039F93DD1DF836F1D4E2084C1BEFDB46A854A9D1",
     "03E5D80A49C309F7B55ED6BD2B0EDEB38021ED4E",
     "072D729E856B1F2C9894AEEC3A5DF65E519D6BEE",
@@ -251,8 +256,8 @@ std::vector<std::string> CreateExtensionAllowlist() {
   }
 
   // Append extensions from the hardcoded allowlist.
-  allowlist.reserve(base::size(kHardcodedPartOfCorbAllowlist));
-  for (const char* hash : kHardcodedPartOfCorbAllowlist) {
+  allowlist.reserve(base::size(kHardcodedPartOfAllowlist));
+  for (const char* hash : kHardcodedPartOfAllowlist) {
     DCHECK(IsValidHashedExtensionId(hash));  // It also validates the length.
     allowlist.push_back(std::string(hash, kHashedExtensionIdLength));
   }
@@ -261,7 +266,7 @@ std::vector<std::string> CreateExtensionAllowlist() {
 }
 
 // Returns a set of HashedExtensionId of extensions that depend on relaxed CORB
-// behavior in their content scripts.
+// or CORS behavior in their content scripts.
 base::flat_set<std::string>& GetExtensionsAllowlist() {
   static base::NoDestructor<base::flat_set<std::string>> s_allowlist([] {
     base::flat_set<std::string> result(CreateExtensionAllowlist());
@@ -271,14 +276,14 @@ base::flat_set<std::string>& GetExtensionsAllowlist() {
   return *s_allowlist;
 }
 
-bool DoContentScriptsDependOnRelaxedCorb(const Extension& extension) {
+bool DoContentScriptsDependOnRelaxedCorbOrCors(const Extension& extension) {
   // Content scripts injected by Chrome Apps (e.g. into <webview> tag) need to
   // run with relaxed CORB.
   if (extension.is_platform_app())
     return true;
 
-  // Content scripts in the current version of extensions might depend on
-  // relaxed CORB.
+  // Content scripts in manifest v2 might be allowlisted to depend on relaxed
+  // CORB and/or CORS.
   if (extension.manifest_version() <= 2) {
     const std::string& hash = extension.hashed_id().value();
     DCHECK(IsValidHashedExtensionId(hash));
@@ -289,44 +294,86 @@ bool DoContentScriptsDependOnRelaxedCorb(const Extension& extension) {
   return false;
 }
 
-bool DoExtensionPermissionsCoverCorsOrCorbRelatedOrigins(
-    const Extension& extension) {
-  // TODO(lukasza): https://crbug.com/1016904: Return false if the |extension|
-  // doesn't need a special URLLoaderFactory based on |extension| permissions.
-  // For now we conservatively assume that all extensions need relaxed CORS/CORB
+bool DoExtensionPermissionsCoverHttpOrHttpsOrigins(const Extension& extension) {
+  // TODO(lukasza): https://crbug.com/1016904: Return false if the |extension|'s
+  // permissions do not actually cover http or https origins.  For now we
+  // conservatively return true so that *all* extensions get relaxed CORS/CORB
   // treatment.
   return true;
 }
 
-bool IsSpecialURLLoaderFactoryRequired(const Extension& extension,
-                                       FactoryUser factory_user) {
+// Returns whether the default URLLoaderFactoryParams::is_corb_enabled should be
+// overridden and changed to false.
+bool ShouldDisableCorb(const Extension& extension, FactoryUser factory_user) {
+  if (!DoExtensionPermissionsCoverHttpOrHttpsOrigins(extension))
+    return false;
+
   switch (factory_user) {
     case FactoryUser::kContentScript:
-      return DoContentScriptsDependOnRelaxedCorb(extension) &&
-             DoExtensionPermissionsCoverCorsOrCorbRelatedOrigins(extension);
+      return DoContentScriptsDependOnRelaxedCorbOrCors(extension);
     case FactoryUser::kExtensionProcess:
-      return DoExtensionPermissionsCoverCorsOrCorbRelatedOrigins(extension);
+      return true;
   }
+}
+
+// Returns whether URLLoaderFactoryParams::ignore_isolated_world_origin should
+// be overridden and changed to false.
+bool ShouldInspectIsolatedWorldOrigin(const Extension& extension,
+                                      FactoryUser factory_user) {
+  if (!DoExtensionPermissionsCoverHttpOrHttpsOrigins(extension))
+    return false;
+
+  switch (factory_user) {
+    case FactoryUser::kContentScript:
+      // If |extensions_features::kCorbAllowlistAlsoAppliesToOorCors| is
+      // disabled, then go back to the legacy CORS behavior for all extensions.
+      if (!ShouldAllowlistAlsoApplyToOorCors())
+        return true;
+
+      // Otherwise, make an |extension|-specific decision.
+      return DoContentScriptsDependOnRelaxedCorbOrCors(extension);
+    case FactoryUser::kExtensionProcess:
+      return false;
+  }
+}
+
+bool ShouldCreateSeparateFactoryForContentScripts(const Extension& extension) {
+  return ShouldDisableCorb(extension, FactoryUser::kContentScript) ||
+         ShouldInspectIsolatedWorldOrigin(extension,
+                                          FactoryUser::kContentScript);
 }
 
 void OverrideFactoryParams(const Extension& extension,
                            FactoryUser factory_user,
                            network::mojom::URLLoaderFactoryParams* params) {
-  // Setup factory bound allow list that overwrites per-profile common list
-  // to allow tab specific permissions only for this newly created factory.
-  params->factory_bound_access_patterns =
-      network::mojom::CorsOriginAccessPatterns::New();
-  params->factory_bound_access_patterns->source_origin =
-      url::Origin::Create(extension.url());
-  params->factory_bound_access_patterns->allow_patterns =
-      CreateCorsOriginAccessAllowList(
-          extension,
-          PermissionsData::EffectiveHostPermissionsMode::kIncludeTabSpecific);
+  if (ShouldDisableCorb(extension, factory_user)) {
+    // TODO(lukasza): https://crbug.com/1016904: Use more granular CORB
+    // enforcement based on the specific |extension|'s permissions reflected
+    // in the |factory_bound_access_patterns| above.
+    params->is_corb_enabled = false;
 
-  // TODO(lukasza): https://crbug.com/1016904: Use more granular CORB
-  // enforcement based on the specific |extension|'s permissions.
-  params->is_corb_enabled = false;
+    // Setup factory bound allow list that overwrites per-profile common list to
+    // allow tab specific permissions only for this newly created factory.
+    //
+    // TODO(lukasza): Setting |factory_bound_access_patterns| together with
+    // |is_corb_enabled| seems accidental.
+    params->factory_bound_access_patterns =
+        network::mojom::CorsOriginAccessPatterns::New();
+    params->factory_bound_access_patterns->source_origin =
+        url::Origin::Create(extension.url());
+    params->factory_bound_access_patterns->allow_patterns =
+        CreateCorsOriginAccessAllowList(
+            extension,
+            PermissionsData::EffectiveHostPermissionsMode::kIncludeTabSpecific);
+    params->factory_bound_access_patterns->block_patterns =
+        CreateCorsOriginAccessBlockList(extension);
+  }
 
+  if (ShouldInspectIsolatedWorldOrigin(extension, factory_user))
+    params->ignore_isolated_world_origin = false;
+
+  // TODO(lukasza): Do not override |unsafe_non_webby_initiator| unless
+  // DoExtensionPermissionsCoverHttpOrHttpsOrigins(extension).
   if (factory_user == FactoryUser::kExtensionProcess)
     params->unsafe_non_webby_initiator = true;
 }
@@ -456,8 +503,7 @@ void URLLoaderFactoryManager::ReadyToCommitNavigation(
     if (!DoContentScriptsMatchNavigatingFrame(extension, frame, url))
       continue;
 
-    if (!IsSpecialURLLoaderFactoryRequired(extension,
-                                           FactoryUser::kContentScript))
+    if (!ShouldCreateSeparateFactoryForContentScripts(extension))
       continue;
 
     initiators_requiring_separate_factory.push_back(
@@ -489,8 +535,7 @@ void URLLoaderFactoryManager::WillExecuteCode(content::RenderFrameHost* frame,
       registry->enabled_extensions().GetByID(host_id.id());
   DCHECK(extension);  // Guaranteed by the caller - see the doc comment.
 
-  if (!IsSpecialURLLoaderFactoryRequired(*extension,
-                                         FactoryUser::kContentScript))
+  if (!ShouldCreateSeparateFactoryForContentScripts(*extension))
     return;
 
   // When WillExecuteCode runs, the frame already received the initial
@@ -535,13 +580,10 @@ void URLLoaderFactoryManager::OverrideURLLoaderFactoryParams(
     return;
   }
 
-  // Don't change |factory_params| unless required.
+  // Identify and set |factory_params| that need to be overridden.
   FactoryUser factory_user = is_for_isolated_world
                                  ? FactoryUser::kContentScript
                                  : FactoryUser::kExtensionProcess;
-  if (!IsSpecialURLLoaderFactoryRequired(*extension, factory_user))
-    return;
-
   OverrideFactoryParams(*extension, factory_user, factory_params);
 }
 

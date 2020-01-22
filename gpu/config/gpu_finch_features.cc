@@ -105,9 +105,14 @@ const base::Feature kVaapiJpegImageDecodeAcceleration{
 const base::Feature kVaapiWebPImageDecodeAcceleration{
     "VaapiWebPImageDecodeAcceleration", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable Vulkan graphics backend if --use-vulkan flag is not used. Otherwise
+// Enable Vulkan graphics backend for compositing and rasterization. Defaults to
+// native implementation if --use-vulkan flag is not used. Otherwise
 // --use-vulkan will be followed.
 const base::Feature kVulkan{"Vulkan", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable SkiaRenderer Dawn graphics backend. On Windows this will use D3D12,
+// and on Linux this will use Vulkan.
+const base::Feature kSkiaDawn{"SkiaDawn", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Used to enable shared image mailbox and disable legacy texture mailbox on
 // webview.

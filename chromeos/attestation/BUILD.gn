@@ -25,9 +25,7 @@ component("attestation") {
 
 source_set("test_support") {
   testonly = true
-  public_deps = [
-    ":attestation",
-  ]
+  public_deps = [ ":attestation" ]
   deps = [
     "//base/test:test_support",
     "//components/account_id",
@@ -50,7 +48,5 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-  sources = [
-    "attestation_flow_unittest.cc",
-  ]
+  sources = [ "attestation_flow_unittest.cc" ]
 }

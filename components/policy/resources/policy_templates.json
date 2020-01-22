@@ -1086,7 +1086,7 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:8-', 'chrome_os:11-'],
+      'supported_on': ['chrome.*:8-', 'chrome_os:11-', 'android:81-'],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -1098,7 +1098,7 @@
       'tags': [],
       'desc': '''Configures the default home page URL in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and prevents users from changing it.
 
-          The home page is the page opened by the Home button. The pages that open on startup are controlled by the RestoreOnStartup policies.
+          The home page is the page opened by the Home button. On desktop, the pages that open on startup are controlled by the RestoreOnStartup policies.
 
           The home page type can either be set to a URL you specify here or set to the New Tab Page. If you select the New Tab Page, then this policy does not take effect.
 

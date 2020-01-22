@@ -74,7 +74,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   bool requests_ap_verdicts =
       safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
           profile)
-          ->RequestsAdvancedProtectionVerdicts();
+          ->IsUnderAdvancedProtection();
   source->AddBoolean("requestsApVerdicts", requests_ap_verdicts);
 
   static constexpr webui::LocalizedString kStrings[] = {

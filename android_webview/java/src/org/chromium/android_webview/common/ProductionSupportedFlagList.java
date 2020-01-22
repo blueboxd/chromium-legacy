@@ -26,6 +26,15 @@ public final class ProductionSupportedFlagList {
             Flag.commandLine("show-composited-layer-borders",
                     "Renders a border around compositor layers to help debug and study layer "
                             + "compositing."),
+            Flag.commandLine(AwSwitches.FINCH_SEED_EXPIRATION_AGE + "=0",
+                    "Forces all variations seeds to be considered stale."),
+            Flag.commandLine(AwSwitches.FINCH_SEED_IGNORE_PENDING_DOWNLOAD,
+                    "Forces the WebView service to reschedule a variations seed download job even "
+                            + "if one is already pending."),
+            Flag.commandLine(AwSwitches.FINCH_SEED_MIN_DOWNLOAD_PERIOD + "=0",
+                    "Disables throttling of variations seed download jobs."),
+            Flag.commandLine(AwSwitches.FINCH_SEED_MIN_UPDATE_PERIOD + "=0",
+                    "Disables throttling of new variations seed requests to the WebView service."),
             Flag.commandLine("webview-log-js-console-messages",
                     "Mirrors JavaScript console messages to system logs."),
             Flag.commandLine(AwSwitches.CRASH_UPLOADS_ENABLED_FOR_TESTING_SWITCH,

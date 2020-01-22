@@ -212,6 +212,9 @@ class RootNodeWrapper extends SARootNode {
     this.baseNode_ = baseNode;
 
     /** @private {function(chrome.automation.AutomationEvent)} */
+    this.childrenChangedHandler_ = this.refresh_.bind(this);
+
+    /** @private {function(chrome.automation.AutomationEvent)} */
     this.locationChangedHandler_ = SwitchAccess.refreshFocusRings;
   }
 
@@ -260,6 +263,9 @@ class RootNodeWrapper extends SARootNode {
   onFocus() {
     super.onFocus();
     this.baseNode_.addEventListener(
+        chrome.automation.EventType.CHILDREN_CHANGED,
+        this.childrenChangedHandler_, false /* is_capture */);
+    this.baseNode_.addEventListener(
         chrome.automation.EventType.LOCATION_CHANGED,
         this.locationChangedHandler_, false /* is_capture */);
   }
@@ -268,8 +274,49 @@ class RootNodeWrapper extends SARootNode {
   onUnfocus() {
     super.onUnfocus();
     this.baseNode_.removeEventListener(
+        chrome.automation.EventType.CHILDREN_CHANGED,
+        this.childrenChangedHandler_, false /* is_capture */);
+    this.baseNode_.removeEventListener(
         chrome.automation.EventType.LOCATION_CHANGED,
         this.locationChangedHandler_, false /* is_capture */);
+  }
+
+  // ================= Private methods =================
+
+  /**
+   * Refreshes the children of this root node.
+   * @private
+   */
+  refresh_() {
+    // Find the currently focused child.
+    let focusedChild = null;
+    for (const child of this.children) {
+      if (child.isFocused()) {
+        focusedChild = child;
+        break;
+      }
+    }
+
+    // Update this RootNodeWrapper's children.
+    const childConstructor = (node) => new NodeWrapper(node, this);
+    try {
+      RootNodeWrapper.findAndSetChildren(this, childConstructor);
+    } catch (e) {
+      SwitchAccess.moveToValidNode();
+      return;
+    }
+
+    // Set the new instance of that child to be the focused node.
+    for (const child of this.children) {
+      if (child.isEquivalentTo(focusedChild)) {
+        SwitchAccess.forceFocusedNode(child);
+        return;
+      }
+    }
+
+    // If the previously focused node no longer exists, focus the first node in
+    // the group.
+    SwitchAccess.forceFocusedNode(this.children[0]);
   }
 
   // ================= Static methods =================

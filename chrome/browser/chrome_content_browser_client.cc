@@ -4750,10 +4750,9 @@ content::HidDelegate* ChromeContentBrowserClient::GetHidDelegate() {
 
 std::unique_ptr<content::AuthenticatorRequestClientDelegate>
 ChromeContentBrowserClient::GetWebAuthenticationRequestDelegate(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& relying_party_id) {
-  return AuthenticatorRequestScheduler::CreateRequestDelegate(render_frame_host,
-                                                              relying_party_id);
+    content::RenderFrameHost* render_frame_host) {
+  return AuthenticatorRequestScheduler::CreateRequestDelegate(
+      render_frame_host);
 }
 #endif
 

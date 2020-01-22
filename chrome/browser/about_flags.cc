@@ -1806,10 +1806,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUpdatedCellularActivationUiName,
      flag_descriptions::kUpdatedCellularActivationUiDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kUpdatedCellularActivationUi)},
-    {"use_messages_google_com_domain",
-     flag_descriptions::kUseMessagesGoogleComDomainName,
-     flag_descriptions::kUseMessagesGoogleComDomainDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kUseMessagesGoogleComDomain)},
     {"use_messages_staging_url", flag_descriptions::kUseMessagesStagingUrlName,
      flag_descriptions::kUseMessagesStagingUrlDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kUseMessagesStagingUrl)},
@@ -2294,9 +2290,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"mac-v2-gpu-sandbox", flag_descriptions::kMacV2GPUSandboxName,
      flag_descriptions::kMacV2GPUSandboxDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kMacV2GPUSandbox)},
-    {"mac-views-task-manager", flag_descriptions::kMacViewsTaskManagerName,
-     flag_descriptions::kMacViewsTaskManagerDescription, kOsMac,
-     FEATURE_VALUE_TYPE(features::kViewsTaskManager)},
 #endif  // OS_MACOSX
 #if BUILDFLAG(ENABLE_VR)
     {"webxr", flag_descriptions::kWebXrName,
@@ -2584,6 +2577,13 @@ const FeatureEntry kFeatureEntries[] = {
      kOsCrOS,
      SINGLE_VALUE_TYPE(
          ::switches::kEnableExperimentalAccessibilitySwitchAccessText)},
+    {"enable-experimental-accessibility-chromevox-annotations",
+     flag_descriptions::kExperimentalAccessibilityChromeVoxAnnotationsName,
+     flag_descriptions::
+         kExperimentalAccessibilityChromeVoxAnnotationsDescription,
+     kOsCrOS,
+     SINGLE_VALUE_TYPE(
+         ::switches::kEnableExperimentalAccessibilityChromeVoxAnnotations)},
     {"enable-experimental-accessibility-chromevox-language-switching",
      flag_descriptions::
          kExperimentalAccessibilityChromeVoxLanguageSwitchingName,
@@ -2922,13 +2922,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSpeculativeServiceWorkerStartOnQueryInputDescription,
      kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kSpeculativeServiceWorkerStartOnQueryInput)},
-
-    // NOTE: This feature is generic and marked kOsAll but is used only in
-    // CrOS for AndroidMessagesIntegration feature.
-    {"enable-service-worker-long-running-message",
-     flag_descriptions::kServiceWorkerLongRunningMessageName,
-     flag_descriptions::kServiceWorkerLongRunningMessageDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kServiceWorkerLongRunningMessage)},
 
     {"enable-service-worker-on-ui", flag_descriptions::kServiceWorkerOnUIName,
      flag_descriptions::kServiceWorkerOnUIDescription, kOsAll,
@@ -4684,6 +4677,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxRemoveSuggestionsFromClipboardDescription,
      kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxRemoveSuggestionsFromClipboard)},
+    {"context-menu-copy-image", flag_descriptions::kContextMenuCopyImageName,
+     flag_descriptions::kContextMenuCopyImageDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kContextMenuCopyImage)},
 #endif  // defined(OS_ANDROID)
 
     {"impulse-scroll-animations",

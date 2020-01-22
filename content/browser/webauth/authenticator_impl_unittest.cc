@@ -1645,6 +1645,92 @@ TEST_F(AuthenticatorImplTest, GetAssertionResponseWithAttestedCredentialData) {
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
 }
 
+class OverrideRPIDAuthenticatorRequestDelegate
+    : public AuthenticatorRequestClientDelegate {
+ public:
+  OverrideRPIDAuthenticatorRequestDelegate() = default;
+  ~OverrideRPIDAuthenticatorRequestDelegate() override = default;
+
+  base::Optional<std::string> MaybeGetRelyingPartyIdOverride(
+      const std::string& claimed_rp_id,
+      const url::Origin& caller_origin) override {
+    CHECK_EQ(caller_origin.scheme(), "chrome-extension");
+    return caller_origin.Serialize();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OverrideRPIDAuthenticatorRequestDelegate);
+};
+
+class OverrideRPIDAuthenticatorContentBrowserClient
+    : public ContentBrowserClient {
+ public:
+  std::unique_ptr<AuthenticatorRequestClientDelegate>
+  GetWebAuthenticationRequestDelegate(
+      RenderFrameHost* render_frame_host) override {
+    return std::make_unique<OverrideRPIDAuthenticatorRequestDelegate>();
+  }
+};
+
+class OverrideRPIDAuthenticatorTest : public AuthenticatorImplTest {
+ public:
+  void SetUp() override {
+    AuthenticatorImplTest::SetUp();
+    old_client_ = SetBrowserClientForTesting(&test_client_);
+  }
+
+  void TearDown() override {
+    SetBrowserClientForTesting(old_client_);
+    AuthenticatorImplTest::TearDown();
+  }
+
+ private:
+  OverrideRPIDAuthenticatorContentBrowserClient test_client_;
+  ContentBrowserClient* old_client_ = nullptr;
+};
+
+TEST_F(OverrideRPIDAuthenticatorTest, ChromeExtensions) {
+  // Test that credentials can be created and used from an extension origin when
+  // permitted by the delegate.
+  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
+  constexpr char kExtensionId[] = "abcdefg";
+  const std::string extension_origin =
+      std::string("chrome-extension://") + kExtensionId;
+  const std::string extension_page = extension_origin + "/test.html";
+  SimulateNavigation(GURL(extension_page));
+
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+
+  std::vector<uint8_t> credential_id;
+  {
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->relying_party.id = kExtensionId;
+
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    ASSERT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+    credential_id = callback_receiver.value()->info->raw_id;
+  }
+
+  {
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    options->relying_party_id = kExtensionId;
+    options->allow_credentials[0] = device::PublicKeyCredentialDescriptor(
+        device::CredentialType::kPublicKey, std::move(credential_id));
+
+    TestGetAssertionCallback callback_receiver;
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    ASSERT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  }
+}
+
 enum class IndividualAttestation {
   REQUESTED,
   NOT_REQUESTED,
@@ -1756,8 +1842,7 @@ class TestAuthenticatorContentBrowserClient : public ContentBrowserClient {
  public:
   std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
-      RenderFrameHost* render_frame_host,
-      const std::string& relying_party_id) override {
+      RenderFrameHost* render_frame_host) override {
     if (return_null_delegate)
       return nullptr;
     return std::make_unique<TestAuthenticatorRequestDelegate>(
@@ -2538,8 +2623,8 @@ class FakeAuthenticatorCommon : public AuthenticatorCommon {
         mock_delegate_(std::move(mock_delegate)) {}
   ~FakeAuthenticatorCommon() override = default;
 
-  std::unique_ptr<AuthenticatorRequestClientDelegate> CreateRequestDelegate(
-      std::string relying_party_id) override {
+  std::unique_ptr<AuthenticatorRequestClientDelegate> CreateRequestDelegate()
+      override {
     DCHECK(mock_delegate_);
     return std::move(mock_delegate_);
   }
@@ -3181,8 +3266,7 @@ class PINTestAuthenticatorContentBrowserClient : public ContentBrowserClient {
  public:
   std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
-      RenderFrameHost* render_frame_host,
-      const std::string& relying_party_id) override {
+      RenderFrameHost* render_frame_host) override {
     return std::make_unique<PINTestAuthenticatorRequestDelegate>(
         supports_pin, expected, &failure_reason);
   }
@@ -3712,8 +3796,7 @@ class UVTokenTestAuthenticatorContentBrowserClient
  public:
   std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
-      RenderFrameHost* render_frame_host,
-      const std::string& relying_party_id) override {
+      RenderFrameHost* render_frame_host) override {
     return std::make_unique<UVTokenTestAuthenticatorClientDelegate>();
   }
 };
@@ -3900,8 +3983,7 @@ class ResidentKeyTestAuthenticatorContentBrowserClient
  public:
   std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
-      RenderFrameHost* render_frame_host,
-      const std::string& relying_party_id) override {
+      RenderFrameHost* render_frame_host) override {
     return std::make_unique<ResidentKeyTestAuthenticatorRequestDelegate>(
         expected_accounts, selected_user_id, &might_create_resident_credential,
         &failure_reason);

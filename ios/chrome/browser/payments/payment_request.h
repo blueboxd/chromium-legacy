@@ -22,6 +22,7 @@
 #include "components/payments/core/payment_request_base_delegate.h"
 #include "components/payments/core/payments_profile_comparator.h"
 #include "components/payments/core/web_payment_request.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/payments/ios_payment_instrument_finder.h"
 #import "ios/chrome/browser/payments/payment_response_helper.h"
 #include "url/gurl.h"
@@ -41,10 +42,6 @@ class PaymentDetailsModifier;
 class PaymentItem;
 class PaymentShippingOption;
 }  // namespace payments
-
-namespace ios {
-class ChromeBrowserState;
-}  // namepsace ios
 
 namespace web {
 class WebState;

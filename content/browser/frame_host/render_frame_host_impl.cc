@@ -2603,12 +2603,6 @@ void RenderFrameHostImpl::CancelInitialHistoryLoad() {
   NOTIMPLEMENTED();
 }
 
-void RenderFrameHostImpl::DocumentOnLoadCompleted() {
-  // This message is only sent for top-level frames. TODO(avi): when frame tree
-  // mirroring works correctly, add a check here to enforce it.
-  delegate_->DocumentOnLoadCompleted(this);
-}
-
 void RenderFrameHostImpl::DidChangeActiveSchedulerTrackedFeatures(
     uint64_t features_mask) {
   renderer_reported_scheduler_tracked_features_ = features_mask;
@@ -3645,6 +3639,14 @@ void RenderFrameHostImpl::HandleAccessibilityFindInPageTermination() {
     if (manager)
       manager->OnFindInPageTermination();
   }
+}
+
+void RenderFrameHostImpl::DocumentOnLoadCompleted() {
+  // This message is only sent for top-level frames.
+  //
+  // TODO(avi): when frame tree mirroring works correctly, add a check here
+  // to enforce it.
+  delegate_->DocumentOnLoadCompleted(this);
 }
 
 void RenderFrameHostImpl::OnForwardResourceTimingToParent(

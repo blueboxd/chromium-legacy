@@ -7,6 +7,16 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
+          "object": "Scrolling background of LayoutView #document",
+          "rect": [0, 0, 800, 600],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "Scrolling background of LayoutView #document",
+          "rect": [0, 0, 800, 600],
+          "reason": "chunk disappeared"
+        },
+        {
           "object": "LayoutNGBlockFlow (relative positioned) (floating) DIV",
           "rect": [128, 28, 80, 80],
           "reason": "chunk appeared"

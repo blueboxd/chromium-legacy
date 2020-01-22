@@ -9,6 +9,26 @@ group("web_app_group") {
 group("web_app_test_group") {
 }
 
+# Implementations that are common to both BMO/Extensions backends.
+# TODO(alancutter): Migrate sources from :web_applications into here where
+# possible.
+# TODO(https://crbug.com/877898): Merge this into :web_applications once all
+# Extension codepaths have been removed.
+source_set("common") {
+  sources = [
+    "web_app_tab_helper.cc",
+    "web_app_tab_helper.h",
+  ]
+
+  deps = [
+    ":web_app_group",
+    "//chrome/browser/web_applications/components",
+    "//chrome/common",
+    "//content/public/browser",
+    "//skia",
+  ]
+}
+
 source_set("web_applications") {
   sources = [
     "external_web_app_manager.cc",
@@ -51,6 +71,7 @@ source_set("web_applications") {
   ]
 
   deps = [
+    ":common",
     ":web_app_group",
     "//chrome/browser/web_applications/components",
     "//chrome/common",

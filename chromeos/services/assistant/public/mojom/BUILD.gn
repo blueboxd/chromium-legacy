@@ -34,9 +34,7 @@ mojom("mojom") {
 # target and Ash's public mojoms, which also depend on the definition of
 # AssistantNotification.
 mojom("notification") {
-  sources = [
-    "assistant_notification.mojom",
-  ]
+  sources = [ "assistant_notification.mojom" ]
 
   public_deps = [
     "//mojo/public/mojom/base",

@@ -21,6 +21,7 @@
 #include "content/public/common/content_switches.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
+#include "net/dns/public/resolve_error_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -44,7 +45,8 @@ class LoadFailObserver : public content::WebContentsObserver {
   explicit LoadFailObserver(content::WebContents* contents)
       : content::WebContentsObserver(contents),
         failed_load_(false),
-        error_code_(net::OK) { }
+        error_code_(net::OK),
+        resolve_error_info_(net::ResolveErrorInfo(net::OK)) {}
 
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
@@ -53,16 +55,21 @@ class LoadFailObserver : public content::WebContentsObserver {
 
     failed_load_ = true;
     error_code_ = navigation_handle->GetNetErrorCode();
+    resolve_error_info_ = navigation_handle->GetResolveErrorInfo();
     validated_url_ = navigation_handle->GetURL();
   }
 
   bool failed_load() const { return failed_load_; }
   net::Error error_code() const { return error_code_; }
+  net::ResolveErrorInfo resolve_error_info() const {
+    return resolve_error_info_;
+  }
   const GURL& validated_url() const { return validated_url_; }
 
  private:
   bool failed_load_;
   net::Error error_code_;
+  net::ResolveErrorInfo resolve_error_info_;
   GURL validated_url_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadFailObserver);
@@ -85,6 +92,7 @@ IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, ExternalConnectionFail) {
     ui_test_utils::NavigateToURL(browser(), url);
     EXPECT_TRUE(observer.failed_load());
     EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, observer.error_code());
+    EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, observer.resolve_error_info().error);
     EXPECT_EQ(url, observer.validated_url());
   }
 }

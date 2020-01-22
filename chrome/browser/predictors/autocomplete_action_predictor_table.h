@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/sqlite_proto/predictor_table_base.h"
+#include "components/sqlite_proto/table_manager.h"
 #include "url/gurl.h"
 
 namespace predictors {
@@ -33,7 +33,7 @@ namespace predictors {
 //
 // All the functions apart from constructor and destructor have to be called in
 // the DB sequence provided to the constructor of this class.
-class AutocompleteActionPredictorTable : public PredictorTableBase {
+class AutocompleteActionPredictorTable : public sqlite_proto::TableManager {
  public:
   struct Row {
     // TODO(dominich): Make this 64-bit integer as an optimization. This
@@ -78,8 +78,8 @@ class AutocompleteActionPredictorTable : public PredictorTableBase {
       scoped_refptr<base::SequencedTaskRunner> db_task_runner);
   ~AutocompleteActionPredictorTable() override;
 
-  // PredictorTableBase methods (DB sequence).
-  void CreateTableIfNonExistent() override;
+  // TableManager methods (DB sequence).
+  void CreateTablesIfNonExistent() override;
   void LogDatabaseStats() override;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteActionPredictorTable);

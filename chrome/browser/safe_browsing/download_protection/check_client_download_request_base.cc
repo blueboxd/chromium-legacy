@@ -161,11 +161,7 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
     is_under_advanced_protection_ =
         profile &&
         AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
-            ->is_under_advanced_protection();
-    requests_ap_verdicts_ =
-        profile &&
-        AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
-            ->RequestsAdvancedProtectionVerdicts();
+            ->IsUnderAdvancedProtection();
 
     int password_protected_allowed_policy =
         g_browser_process->local_state()->GetInteger(
@@ -233,10 +229,11 @@ void CheckClientDownloadRequestBase::FinishRequest(
       UploadBinary();
       did_upload_binary = true;
     }
+  } else if (ShouldPromptForDeepScanning(reason)) {
+    result = DownloadCheckResult::PROMPT_FOR_SCANNING;
+    reason = DownloadCheckResultReason::REASON_ADVANCED_PROTECTION_PROMPT;
   }
 
-  DVLOG(2) << "SafeBrowsing download verdict for: " << source_url_
-           << " verdict:" << reason << " result:" << static_cast<int>(result);
   UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
                             REASON_MAX);
 
@@ -559,7 +556,7 @@ void CheckClientDownloadRequestBase::SendRequest() {
     request->mutable_archived_binary()->Swap(&archived_binaries_);
   request->set_archive_file_count(file_count_);
   request->set_archive_directory_count(directory_count_);
-  request->set_request_ap_verdicts(requests_ap_verdicts_);
+  request->set_request_ap_verdicts(is_under_advanced_protection_);
 
   if (!request->SerializeToString(&client_download_request_data_)) {
     FinishRequest(DownloadCheckResult::UNKNOWN, REASON_INVALID_REQUEST_PROTO);

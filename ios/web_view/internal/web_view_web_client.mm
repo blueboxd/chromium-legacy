@@ -154,4 +154,8 @@ void WebViewWebClient::AllowCertificateError(
   }
 }
 
+bool WebViewWebClient::EnableLongPressAndForceTouchHandling() const {
+  return CWVWebView.chromeLongPressAndForceTouchHandlingEnabled;
+}
+
 }  // namespace ios_web_view

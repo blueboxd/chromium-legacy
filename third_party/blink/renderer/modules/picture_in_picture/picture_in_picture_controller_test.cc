@@ -338,7 +338,7 @@ TEST_F(PictureInPictureControllerTest, PerformMediaPlayerAction) {
   IntPoint bounds = video->BoundsInViewport().Center();
 
   frame->PerformMediaPlayerAction(
-      WebPoint(bounds.X(), bounds.Y()),
+      bounds,
       MediaPlayerAction(MediaPlayerAction::Type::kPictureInPicture, true));
 }
 

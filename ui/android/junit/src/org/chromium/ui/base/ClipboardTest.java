@@ -10,6 +10,7 @@ import static org.junit.Assert.assertNull;
 
 import android.content.ClipData;
 import android.content.Intent;
+import android.net.Uri;
 import android.text.SpannableString;
 import android.text.style.RelativeSizeSpan;
 
@@ -27,6 +28,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 public class ClipboardTest {
     private static final String PLAIN_TEXT = "plain";
     private static final String HTML_TEXT = "<span style=\"color: red;\">HTML</span>";
+    private static final Uri IMAGE_URI = Uri.parse("content://test.image");
 
     @Test
     public void testClipDataToHtmlText() {
@@ -52,5 +54,19 @@ public class ClipboardTest {
         intent.setType("*/*");
         ClipData intentClip = ClipData.newIntent("intent", intent);
         assertNull(clipboard.clipDataToHtmlText(intentClip));
+    }
+
+    @Test
+    public void testSetImage() {
+        Clipboard clipboard = Clipboard.getInstance();
+
+        // simple set a null, check if there is no crash.
+        clipboard.setImage(null);
+
+        // Set actually data.
+        clipboard.setImage(IMAGE_URI);
+
+        // TODO(gangwu): http://crbug.com/1043490
+        // Add verification here to check if system clipboard get the image.
     }
 }

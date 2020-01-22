@@ -38,6 +38,15 @@ public class SettingsLauncher {
     }
 
     /**
+     * Launches the top-level settings page.
+     *
+     * @param context The current Activity, or an application context if no Activity is available.
+     */
+    public void launchSettingsPage(Context context) {
+        launchSettingsPage(context, null);
+    }
+
+    /**
      * Launches settings, either on the top-level page or on a subpage.
      *
      * @param context The current Activity, or an application context if no Activity is available.

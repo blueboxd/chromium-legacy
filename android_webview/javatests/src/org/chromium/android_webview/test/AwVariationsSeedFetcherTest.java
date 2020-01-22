@@ -21,11 +21,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.variations.VariationsUtils;
 import org.chromium.android_webview.services.AwVariationsSeedFetcher;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher;
 
@@ -195,6 +197,50 @@ public class AwVariationsSeedFetcherTest {
             // Check that our job object hasn't been replaced (meaning that scheduleIfNeeded didn't
             // schedule a job).
             Assert.assertSame(job, mScheduler.getPendingJob(JOB_ID));
+        } finally {
+            mScheduler.clear();
+        }
+    }
+
+    // Tests that the --finch-seed-min-download-period flag can override the job throttling.
+    @Test
+    @SmallTest
+    @CommandLineFlags.Add(AwSwitches.FINCH_SEED_MIN_DOWNLOAD_PERIOD + "=0")
+    public void testFinchSeedMinDownloadPeriodFlag() throws IOException {
+        File stamp = VariationsUtils.getStampFile();
+        try {
+            // Create a recent stamp file that would usually prevent job scheduling.
+            Assert.assertFalse("Stamp file already exists", stamp.exists());
+            Assert.assertTrue("Failed to create stamp file", stamp.createNewFile());
+
+            AwVariationsSeedFetcher.scheduleIfNeeded();
+
+            mScheduler.assertScheduled();
+        } finally {
+            mScheduler.clear();
+            VariationsTestUtils.deleteSeeds(); // Remove the stamp file.
+        }
+    }
+
+    // Tests that the --finch-seed-ignore-pending-download flag results in jobs being rescheduled.
+    @Test
+    @SmallTest
+    @CommandLineFlags.Add(AwSwitches.FINCH_SEED_IGNORE_PENDING_DOWNLOAD)
+    public void testFinchSeedIgnorePendingDownloadFlag() {
+        File stamp = VariationsUtils.getStampFile();
+        try {
+            AwVariationsSeedFetcher.scheduleIfNeeded();
+            JobInfo originalJob = mScheduler.getPendingJob(JOB_ID);
+            Assert.assertNotNull("Job should have been scheduled", originalJob);
+
+            AwVariationsSeedFetcher.scheduleIfNeeded();
+
+            // Check that the job got rescheduled.
+            JobInfo rescheduledJob = mScheduler.getPendingJob(JOB_ID);
+            Assert.assertNotNull("Job should have been rescheduled", rescheduledJob);
+            Assert.assertNotSame(
+                    "Rescheduled job should not be equal to the originally scheduled job",
+                    originalJob, rescheduledJob);
         } finally {
             mScheduler.clear();
         }

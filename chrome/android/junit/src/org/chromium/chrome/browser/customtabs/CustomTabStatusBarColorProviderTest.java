@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -16,6 +18,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
@@ -44,12 +47,12 @@ public class CustomTabStatusBarColorProviderTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mColorProvider = new CustomTabStatusBarColorProvider(
-                mCustomTabIntentDataProvider, mStatusBarColorController);
+        mColorProvider = Mockito.spy(new CustomTabStatusBarColorProvider(
+                mCustomTabIntentDataProvider, mStatusBarColorController));
 
         when(mCustomTabIntentDataProvider.getToolbarColor()).thenReturn(USER_PROVIDED_COLOR);
         when(mCustomTabIntentDataProvider.hasCustomToolbarColor()).thenReturn(true);
-        when(mTab.isPreview()).thenReturn(false);
+        doReturn(false).when(mColorProvider).isPreview(any());
     }
 
     @Test
@@ -77,7 +80,7 @@ public class CustomTabStatusBarColorProviderTest {
 
     @Test
     public void useTabThemeColor_preview() {
-        when(mTab.isPreview()).thenReturn(true);
+        doReturn(true).when(mColorProvider).isPreview(any());
         mColorProvider.setUseTabThemeColor(true);
 
         Assert.assertEquals(DEFAULT_STATUS_BAR_COLOR, getStatusBarColor(mTab));

@@ -165,6 +165,13 @@ It's generally ok to land all of them in a single CL.
 
 LUCI services used by chromium are configured in [//infra/config][6].
 
+The configuration is written in Starlark and used to generate Protobuf files
+which are also checked in to the repo.
+
+Generating all of the LUCI services configuration files for the production
+builders is done by executing [main.star][22] or running
+`lucicfg generate main.star`.
+
 #### Buildbucket
 
 Buildbucket is responsible for taking a build scheduled by a user or
@@ -175,49 +182,35 @@ includes things like:
   * Swarming dimensions
   * Recipe name and properties
 
+Chromium's buildbucket Starlark configuration is [here][23].
+Chromium's generated buildbucket configuration is [here][8].
 Buildbucket's configuration schema is [here][7].
-Chromium's buildbucket configuration is [here][8].
 
-A typical chromium builder won't need to configure much. Adding a
-`builders` entry to the appropriate bucket
-(`luci.chromium.ci` for CI / waterfall, `luci.chromium.try` for try)
-with the new builder's name, the mixin containing the appropriate
-master name, and perhaps one or two dimensions should be sufficient,
-e.g.:
+Each bucket has a corresponding `.star` file where the builders for the bucket
+are defined.
 
-``` sh
-buckets {
-  name: "luci.chromium.ci"
-  ...
+Most builders are defined using the builder function from [builders.star][24]
+(or some function that wraps it), which simplifies setting the most common
+dimensions and properties and provides a unified interface for setting
+module-level defaults.
 
-  swarming {
-    ...
+A typical chromium builder won't need to configure much; module-level defaults
+apply values that are widely used for the bucket (e.g. bucket and executable).
 
-    builders {
-      name: "your-new-builder"
+Each master has a function (sometimes multiple) defined that can be used to
+define a builder that runs with that mastername and sets master-specific
+defaults. Find the block of builders defined using the appropriate function and
+add a new definition, which may be as simple as:
 
-      # To determine what you should include here, look for an
-      # existing mixin containing
-      #
-      #   recipe {
-      #     properties: "mastername:$MASTER_NAME"
-      #   }
-      #
-      mixins: "$MASTER_NAME_MIXIN"
-
-      # If you're running a bunch of bots on GCE, you probably don't
-      # want those bots to be keyed by buildername. Rather, they should
-      # share the large pool with all the other bots using similar hardware.
-      # To enable this, use the builderless mixin:
-      mixins: builderless
-
-      # Add other mixins and dimensions as necessary. You will
-      # usually at least want an os dimension configured, so if
-      # none of your included mixins have one, consider adding one.
-    }
-  }
-}
+```starlark
+linux_builder(
+    name = '$BUILDER_NAME',
+)
 ```
+
+You can generate the configuration files and then view the added entry in
+[cr-buildbucket.cfg][8] to make sure all properties and dimensions are set as
+expected and adjust your definition as necessary.
 
 #### Milo
 
@@ -225,31 +218,65 @@ Milo is responsible for displaying builders and build histories on a
 set of consoles. Its configuration includes the definitions of those
 consoles.
 
+Chromium's milo Starlark configuration is [here][25].
+Chromium's generated milo configuration is [here][10].
 Milo's configuration schema is [here][9].
-Chromium's milo configuration is [here][10].
+
+Each console has a corresponding `.star` file that defines the console.
 
 A typical chromium builder should be added to one or two consoles
 at most: one corresponding to its master, and possibly the main
-console, e.g.
+console.
 
-``` sh
-consoles {
-  ...
-  name: "$MASTER_NAME"
-  ...
-  builders {
-    name: "buildbucket/$BUCKET_NAME/$BUILDER_NAME"
+##### CI builders
 
-    # A builder's category is a pipe-delimited list of strings
-    # that determines how a builder is grouped on a console page.
-    category: "$LARGE_GROUP|$MEDIUM_GROUP|$SMALL_GROUP"
+The sequence of CI builds for a builder corresponds to a linear history of
+revisions in the repository, and the console takes advantage of that, allowing
+you to compare what revisions are in what builds for different builders in the
+console.
 
-    # A builder's short name is a string up to three characters
-    # long that lets someone uniquely identify it among builders
-    # in the same category.
-    short_name: "$ID"
-  }
-}
+```starlark
+luci.console_view(
+    name = '$MASTER_NAME',
+    ...
+    entries = [
+        ...
+        luci.console_view(
+            builder = '$BUCKET_NAME/$BUILDER_NAME',
+
+            # A builder's category is a pipe-delimited list of strings
+            # that determines how a builder is grouped on a console page.
+            # N>=0
+            category = '$GROUP1|$GROUP2|...|$GROUPN',
+
+           # A builder's short name is a string up to three characters
+           # long that lets someone uniquely identify it among builders
+           # in the same category.
+           short_name = '$SHORT_NAME',
+       ),
+   ...
+   ],
+),
+```
+
+Both category and short_name can be omitted, but is strongly recommended that
+all entries include short name.
+
+##### Try builders
+
+The sequence of try builders for a builder does not correspond to a linear
+history of revisions. Consequently, the interface for the consoles is different,
+as is the method of defining the console.
+
+```starlark
+luci.list_view(
+    name = '$MASTER_NAME',
+    entries = [
+        ...
+        '$BUCKET_NAME/$BUILDER_NAME',
+        ...
+    ],
+),
 ```
 
 #### Scheduler (CI / waterfall builders only)
@@ -258,6 +285,10 @@ The scheduler is responsible for triggering CI / waterfall builders.
 
 Scheduler's configuration schema is [here][11].
 Chromium's scheduler configuration is [here][12].
+The scheduler configuration is not written in Starlark at this time, but is
+still part of the generation process: the handwritten proto file gets copied to
+the `generated` directory where the other configuration files are generated to
+and a presubmit check ensures that the files remain in sync.
 
 A typical chromium builder will need a job configuration. A chromium
 builder that's triggering on new commits or on a regular schedule
@@ -336,3 +367,7 @@ reach out to infra-dev@chromium.org or [file a bug][19]!
 [19]: https://g.co/bugatrooper
 [20]: https://chromium.googlesource.com/infra/luci/luci-py/+/master/appengine/swarming/proto/bots.proto
 [21]: https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/chromium_tests/trybots.py
+[22]: /infra/config/main.star
+[23]: /infra/config/buckets
+[24]: /infra/config/lib/builders.star
+[25]: /infra/config/consoles

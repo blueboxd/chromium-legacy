@@ -11,9 +11,7 @@ cast_source_set("queryable_data") {
     "queryable_data.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 cast_source_set("resource_delegate") {

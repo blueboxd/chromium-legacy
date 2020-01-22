@@ -345,7 +345,7 @@ void Label::SetMaximumWidth(int max_width) {
   if (max_width_ == max_width)
     return;
   max_width_ = max_width;
-  OnPropertyChanged(&max_width_, kPropertyEffectsPreferredSizeChanged);
+  OnPropertyChanged(&max_width_, kPropertyEffectsLayout);
 }
 
 bool Label::GetCollapseWhenHidden() const {

@@ -17,11 +17,7 @@ source_set("alarms") {
     "alarms_api_constants.h",
   ]
 
-  deps = [
-    "//extensions/common/api",
-  ]
+  deps = [ "//extensions/common/api" ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

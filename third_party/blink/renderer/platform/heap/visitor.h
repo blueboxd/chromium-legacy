@@ -282,6 +282,13 @@ class PLATFORM_EXPORT Visitor {
   //   are aware of custom weakness and won't resize their backings.
   virtual void RegisterWeakCallback(WeakCallback callback, void* parameter) = 0;
 
+  // TODO(crbug/986235): ConcurrentTracingBailOut is part of a temporary
+  // bailout mechanism to avoid tracing collections on concurrent threads.
+  // This method and any usage of it will be removed as soon as making all
+  // collections cuncurrent-safe is finished.
+  // The same also applies to NotSafeToConcurrentlyTraceWorklist in heap.h.
+  virtual bool ConcurrentTracingBailOut(TraceDescriptor desc) { return false; }
+
  protected:
   template <typename T>
   static inline TraceDescriptor TraceDescriptorFor(const T* traceable) {

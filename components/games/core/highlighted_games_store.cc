@@ -29,7 +29,7 @@ HighlightedGamesStore::HighlightedGamesStore(
     : data_files_parser_(std::move(data_files_parser)),
       task_runner_(
           base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::USER_VISIBLE})),
+                                           base::TaskPriority::USER_BLOCKING})),
       clock_(clock) {}
 
 HighlightedGamesStore::~HighlightedGamesStore() = default;
@@ -37,6 +37,14 @@ HighlightedGamesStore::~HighlightedGamesStore() = default;
 void HighlightedGamesStore::ProcessAsync(const base::FilePath& install_dir,
                                          const GamesCatalog& catalog,
                                          base::OnceClosure done_callback) {
+  // If cache is valid, we don't need to do extra processing.
+  auto cached_game = TryGetFromCache();
+  if (cached_game) {
+    RespondAndInvoke(ResponseCode::kSuccess, cached_game.value(),
+                     std::move(done_callback));
+    return;
+  }
+
   base::PostTaskAndReplyWithResult(
       task_runner_.get(), FROM_HERE,
       base::BindOnce(&HighlightedGamesStore::GetHighlightedGamesResponse,
@@ -44,6 +52,20 @@ void HighlightedGamesStore::ProcessAsync(const base::FilePath& install_dir,
       base::BindOnce(&HighlightedGamesStore::OnHighlightedGamesResponseParsed,
                      weak_ptr_factory_.GetWeakPtr(), std::move(done_callback),
                      catalog));
+}
+
+bool HighlightedGamesStore::TryRespondFromCache() {
+  if (!pending_callback_) {
+    return false;
+  }
+
+  auto cached_game = TryGetFromCache();
+  if (!cached_game) {
+    return false;
+  }
+
+  Respond(ResponseCode::kSuccess, cached_game.value());
+  return true;
 }
 
 base::Optional<Game> HighlightedGamesStore::TryGetFromCache() {

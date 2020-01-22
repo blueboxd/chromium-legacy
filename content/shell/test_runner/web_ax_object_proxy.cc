@@ -10,7 +10,6 @@
 #include "base/strings/stringprintf.h"
 #include "gin/handle.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/blink.h"
@@ -432,8 +431,8 @@ blink::WebFloatRect BoundsForObject(const blink::WebAXObject& object) {
   gfx::RectF computedBounds(0, 0, bounds.width, bounds.height);
   while (!container.IsDetached()) {
     computedBounds.Offset(bounds.x, bounds.y);
-    computedBounds.Offset(-container.GetScrollOffset().x,
-                          -container.GetScrollOffset().y);
+    computedBounds.Offset(-container.GetScrollOffset().x(),
+                          -container.GetScrollOffset().y());
     if (!matrix.isIdentity()) {
       gfx::Transform transform(matrix);
       transform.TransformRect(&computedBounds);
@@ -1643,7 +1642,7 @@ v8::Local<v8::Object> WebAXObjectProxy::ChildAtIndex(int index) {
 
 v8::Local<v8::Object> WebAXObjectProxy::ElementAtPoint(int x, int y) {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  blink::WebPoint point(x, y);
+  gfx::Point point(x, y);
   blink::WebAXObject obj = accessibility_object_.HitTest(point);
   if (obj.IsNull())
     return v8::Local<v8::Object>();
@@ -1824,17 +1823,17 @@ void WebAXObjectProxy::ScrollToMakeVisibleWithSubFocus(int x,
 
 void WebAXObjectProxy::ScrollToGlobalPoint(int x, int y) {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  accessibility_object_.ScrollToGlobalPoint(blink::WebPoint(x, y));
+  accessibility_object_.ScrollToGlobalPoint(gfx::Point(x, y));
 }
 
 int WebAXObjectProxy::ScrollX() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.GetScrollOffset().x;
+  return accessibility_object_.GetScrollOffset().x();
 }
 
 int WebAXObjectProxy::ScrollY() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.GetScrollOffset().y;
+  return accessibility_object_.GetScrollOffset().y();
 }
 
 std::string WebAXObjectProxy::ToString() {

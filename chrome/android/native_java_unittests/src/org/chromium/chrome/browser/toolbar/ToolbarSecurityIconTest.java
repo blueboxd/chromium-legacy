@@ -4,6 +4,9 @@
 package org.chromium.chrome.browser.toolbar;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import org.mockito.Mock;
@@ -35,6 +38,7 @@ public final class ToolbarSecurityIconTest {
     @Mock
     SecurityStateModel.Natives mSecurityStateMocks;
 
+    @Mock
     private LocationBarModel mLocationBarModel;
 
     @CalledByNative
@@ -44,7 +48,7 @@ public final class ToolbarSecurityIconTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         SecurityStateModelJni.TEST_HOOKS.setInstanceForTesting(mSecurityStateMocks);
-        mLocationBarModel = new LocationBarModel(ContextUtils.getApplicationContext());
+        mLocationBarModel = spy(new LocationBarModel(ContextUtils.getApplicationContext()));
         mLocationBarModel.initializeWithNative();
     }
 
@@ -56,30 +60,34 @@ public final class ToolbarSecurityIconTest {
     @CalledByNativeJavaTest
     public void testGetSecurityLevel() {
         assertEquals(ConnectionSecurityLevel.NONE,
-                LocationBarModel.getSecurityLevel(null, !IS_OFFLINE_PAGE, null));
+                mLocationBarModel.getSecurityLevel(null, !IS_OFFLINE_PAGE, null));
         assertEquals(ConnectionSecurityLevel.NONE,
-                LocationBarModel.getSecurityLevel(null, IS_OFFLINE_PAGE, null));
+                mLocationBarModel.getSecurityLevel(null, IS_OFFLINE_PAGE, null));
         assertEquals(ConnectionSecurityLevel.NONE,
-                LocationBarModel.getSecurityLevel(mTab, IS_OFFLINE_PAGE, null));
+                mLocationBarModel.getSecurityLevel(mTab, IS_OFFLINE_PAGE, null));
 
         for (int securityLevel : SECURITY_LEVELS) {
-            when((mTab).getSecurityLevel()).thenReturn(securityLevel);
+            doReturn(securityLevel).when(mLocationBarModel).getSecurityLevelFromStateModel(any());
             assertEquals("Wrong security level returned for " + securityLevel, securityLevel,
-                    LocationBarModel.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, null));
+                    mLocationBarModel.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, null));
         }
 
-        when((mTab).getSecurityLevel()).thenReturn(ConnectionSecurityLevel.SECURE);
+        doReturn(ConnectionSecurityLevel.SECURE)
+                .when(mLocationBarModel)
+                .getSecurityLevelFromStateModel(any());
         assertEquals("Wrong security level returned for HTTPS publisher URL",
                 ConnectionSecurityLevel.SECURE,
-                LocationBarModel.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, "https://example.com"));
+                mLocationBarModel.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, "https://example.com"));
         assertEquals("Wrong security level returned for HTTP publisher URL",
                 ConnectionSecurityLevel.WARNING,
-                LocationBarModel.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, "http://example.com"));
+                mLocationBarModel.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, "http://example.com"));
 
-        when((mTab).getSecurityLevel()).thenReturn(ConnectionSecurityLevel.DANGEROUS);
+        doReturn(ConnectionSecurityLevel.DANGEROUS)
+                .when(mLocationBarModel)
+                .getSecurityLevelFromStateModel(any());
         assertEquals("Wrong security level returned for publisher URL on insecure page",
                 ConnectionSecurityLevel.DANGEROUS,
-                LocationBarModel.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, null));
+                mLocationBarModel.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, null));
     }
 
     @CalledByNativeJavaTest

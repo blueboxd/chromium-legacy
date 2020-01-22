@@ -530,7 +530,7 @@ void AppListControllerImpl::OnSessionStateChanged(
 
   // Hide app list UI initially to prevent app list from flashing in background
   // while the initial app window is being shown.
-  if (!last_target_visible_)
+  if (!last_target_visible_ && !ShouldHomeLauncherBeVisible())
     presenter_.SetViewVisibility(false);
   else
     OnVisibilityChanged(true, last_visible_display_id_);

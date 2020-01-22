@@ -54,8 +54,8 @@ import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.page_info.PageInfoController;
+import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -366,10 +366,7 @@ public class CustomTabActivity extends BaseCustomTabActivity<CustomTabActivityCo
             return false;
         }
 
-        Tab tab = mTabProvider.getTab();
-        if (tab != null && ((TabImpl) tab).isPreview()) {
-            return false;
-        }
+        if (Previews.isPreview(mTabProvider.getTab())) return false;
 
         String publisherUrlPackage = mConnection.getTrustedCdnPublisherUrlPackage();
         return publisherUrlPackage != null

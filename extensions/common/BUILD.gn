@@ -488,9 +488,7 @@ if (enable_extensions) {
   }
 
   fuzzer_test("extension_fuzzer") {
-    sources = [
-      "extension_fuzzer.cc",
-    ]
+    sources = [ "extension_fuzzer.cc" ]
     deps = [
       ":common",
       "//base",

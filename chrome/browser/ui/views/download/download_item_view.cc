@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/safe_browsing/deep_scanning_modal_dialog.h"
+#include "chrome/browser/ui/views/safe_browsing/prompt_for_scanning_modal_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
@@ -664,18 +665,6 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
     return;
   }
 
-  if (IsShowingDeepScanning() && sender == open_button_) {
-    content::WebContents* current_web_contents =
-        shelf_->browser()->tab_strip_model()->GetActiveWebContents();
-    open_now_modal_dialog_ = TabModalConfirmDialog::Create(
-        std::make_unique<safe_browsing::DeepScanningModalDialog>(
-            current_web_contents,
-            base::BindOnce(&DownloadItemView::OpenDownloadDuringAsyncScanning,
-                           weak_ptr_factory_.GetWeakPtr())),
-        current_web_contents);
-    return;
-  }
-
   if (sender == dropdown_button_) {
     // TODO(estade): this is copied from ToolbarActionView but should be shared
     // one way or another.
@@ -706,6 +695,29 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
   }
 
   if (sender == open_button_) {
+    if (IsShowingDeepScanning()) {
+      content::WebContents* current_web_contents =
+          shelf_->browser()->tab_strip_model()->GetActiveWebContents();
+      open_now_modal_dialog_ = TabModalConfirmDialog::Create(
+          std::make_unique<safe_browsing::DeepScanningModalDialog>(
+              current_web_contents,
+              base::BindOnce(&DownloadItemView::OpenDownloadDuringAsyncScanning,
+                             weak_ptr_factory_.GetWeakPtr())),
+          current_web_contents);
+      return;
+    }
+    if (model_->GetDangerType() ==
+        download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
+      content::WebContents* current_web_contents =
+          shelf_->browser()->tab_strip_model()->GetActiveWebContents();
+      safe_browsing::PromptForScanningModalDialog::ShowForWebContents(
+          current_web_contents,
+          base::BindOnce(&DownloadItemView::ConfirmDeepScanning,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&DownloadItemView::BypassDeepScanning,
+                         weak_ptr_factory_.GetWeakPtr()));
+      return;
+    }
     if (IsShowingWarningDialog())
       return;
     if (complete_animation_.get() && complete_animation_->is_animating())
@@ -715,7 +727,7 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
   }
 
   if (sender == scan_button_) {
-    DownloadCommands(model_.get()).ExecuteCommand(DownloadCommands::DEEP_SCAN);
+    ConfirmDeepScanning();
     return;
   }
 
@@ -1062,10 +1074,14 @@ void DownloadItemView::ShowWarningDialog() {
       dangerous_label, /*listener=*/nullptr);
   dangerous_download_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   dangerous_download_label->SetAutoColorReadabilityEnabled(false);
+  dangerous_download_label->set_can_process_events_within_subtree(false);
   dangerous_download_label_ = AddChildView(std::move(dangerous_download_label));
   SizeLabelToMinWidth();
 
-  open_button_->SetEnabled(false);
+  bool open_button_enabled =
+      (model_->GetDangerType() ==
+       download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING);
+  open_button_->SetEnabled(open_button_enabled);
   file_name_label_->SetVisible(false);
   status_label_->SetVisible(false);
   dropdown_button_->SetVisible(mode_ == MALICIOUS_MODE);
@@ -1076,7 +1092,7 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
       if (safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
               model()->profile())
-              ->RequestsAdvancedProtectionVerdicts()) {
+              ->IsUnderAdvancedProtection()) {
         return gfx::CreateVectorIcon(
             vector_icons::kErrorIcon, GetErrorIconSize(),
             GetNativeTheme()->GetSystemColor(
@@ -1505,4 +1521,13 @@ int DownloadItemView::GetErrorIconSize() {
   return base::FeatureList::IsEnabled(safe_browsing::kUseNewDownloadWarnings)
              ? 20
              : 27;
+}
+
+void DownloadItemView::ConfirmDeepScanning() {
+  DownloadCommands(model_.get()).ExecuteCommand(DownloadCommands::DEEP_SCAN);
+}
+
+void DownloadItemView::BypassDeepScanning() {
+  DownloadCommands(model_.get())
+      .ExecuteCommand(DownloadCommands::BYPASS_DEEP_SCANNING);
 }

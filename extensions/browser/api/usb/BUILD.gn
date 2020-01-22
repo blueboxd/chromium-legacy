@@ -30,7 +30,5 @@ source_set("usb") {
     "//services/device/public/mojom:usb",
   ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

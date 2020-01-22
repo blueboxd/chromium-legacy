@@ -10,7 +10,7 @@ option optimize_for = LITE_RUNTIME;
 
 import "public.proto";
 
-// An TrustTokenIssuerConfig message represents persistent state scoped
+// A TrustTokenIssuerConfig message represents persistent state scoped
 // to a single Trust Tokens issuer origin.
 // An issuer’s config contains:
 // - any signed-but-unspent tokens received from the issuer; and
@@ -18,8 +18,8 @@ import "public.proto";
 // per issuance request), if it has configured one via its key
 // commitment endpoint.
 message TrustTokenIssuerConfig {
-  // Keys the issuer has recently committed (we don’t need to store stale keys)
-  repeated TrustTokenCommitmentKey keys = 1;
+  // Keys the issuer has recently committed (no need to store stale keys)
+  repeated TrustTokenKeyCommitment keys = 1;
   optional int32 batch_size = 2;
   repeated TrustToken tokens = 3;
   // The time of the most recent issuance for this pair. Used for

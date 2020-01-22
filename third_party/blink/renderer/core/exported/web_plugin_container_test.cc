@@ -288,7 +288,7 @@ void ExecuteContextMenuCommand(WebViewImpl* web_view,
                                const WebString& command_name) {
   auto event = frame_test_helpers::CreateMouseEvent(
       WebMouseEvent::kMouseDown, WebMouseEvent::Button::kRight,
-      WebPoint(30, 30), 0);
+      IntPoint(30, 30), 0);
   event.click_count = 1;
 
   web_view->MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(event));
@@ -310,26 +310,26 @@ TEST_F(WebPluginContainerTest, WindowToLocalPointTest) {
   WebPluginContainer* plugin_container_one =
       GetWebPluginContainer(web_view, WebString::FromUTF8("translated-plugin"));
   DCHECK(plugin_container_one);
-  WebPoint point1 =
-      plugin_container_one->RootFrameToLocalPoint(WebPoint(10, 10));
-  ASSERT_EQ(0, point1.x);
-  ASSERT_EQ(0, point1.y);
-  WebPoint point2 =
-      plugin_container_one->RootFrameToLocalPoint(WebPoint(100, 100));
-  ASSERT_EQ(90, point2.x);
-  ASSERT_EQ(90, point2.y);
+  gfx::Point point1 =
+      plugin_container_one->RootFrameToLocalPoint(gfx::Point(10, 10));
+  ASSERT_EQ(0, point1.x());
+  ASSERT_EQ(0, point1.y());
+  gfx::Point point2 =
+      plugin_container_one->RootFrameToLocalPoint(gfx::Point(100, 100));
+  ASSERT_EQ(90, point2.x());
+  ASSERT_EQ(90, point2.y());
 
   WebPluginContainer* plugin_container_two =
       GetWebPluginContainer(web_view, WebString::FromUTF8("rotated-plugin"));
   DCHECK(plugin_container_two);
-  WebPoint point3 =
-      plugin_container_two->RootFrameToLocalPoint(WebPoint(0, 10));
-  ASSERT_EQ(10, point3.x);
-  ASSERT_EQ(0, point3.y);
-  WebPoint point4 =
-      plugin_container_two->RootFrameToLocalPoint(WebPoint(-10, 10));
-  ASSERT_EQ(10, point4.x);
-  ASSERT_EQ(10, point4.y);
+  gfx::Point point3 =
+      plugin_container_two->RootFrameToLocalPoint(gfx::Point(0, 10));
+  ASSERT_EQ(10, point3.x());
+  ASSERT_EQ(0, point3.y());
+  gfx::Point point4 =
+      plugin_container_two->RootFrameToLocalPoint(gfx::Point(-10, 10));
+  ASSERT_EQ(10, point4.x());
+  ASSERT_EQ(10, point4.y());
 }
 
 TEST_F(WebPluginContainerTest, LocalToWindowPointTest) {
@@ -344,25 +344,26 @@ TEST_F(WebPluginContainerTest, LocalToWindowPointTest) {
   WebPluginContainer* plugin_container_one =
       GetWebPluginContainer(web_view, WebString::FromUTF8("translated-plugin"));
   DCHECK(plugin_container_one);
-  WebPoint point1 = plugin_container_one->LocalToRootFramePoint(WebPoint(0, 0));
-  ASSERT_EQ(10, point1.x);
-  ASSERT_EQ(10, point1.y);
-  WebPoint point2 =
-      plugin_container_one->LocalToRootFramePoint(WebPoint(90, 90));
-  ASSERT_EQ(100, point2.x);
-  ASSERT_EQ(100, point2.y);
+  gfx::Point point1 =
+      plugin_container_one->LocalToRootFramePoint(gfx::Point(0, 0));
+  ASSERT_EQ(10, point1.x());
+  ASSERT_EQ(10, point1.y());
+  gfx::Point point2 =
+      plugin_container_one->LocalToRootFramePoint(gfx::Point(90, 90));
+  ASSERT_EQ(100, point2.x());
+  ASSERT_EQ(100, point2.y());
 
   WebPluginContainer* plugin_container_two =
       GetWebPluginContainer(web_view, WebString::FromUTF8("rotated-plugin"));
   DCHECK(plugin_container_two);
-  WebPoint point3 =
-      plugin_container_two->LocalToRootFramePoint(WebPoint(10, 0));
-  ASSERT_EQ(0, point3.x);
-  ASSERT_EQ(10, point3.y);
-  WebPoint point4 =
-      plugin_container_two->LocalToRootFramePoint(WebPoint(10, 10));
-  ASSERT_EQ(-10, point4.x);
-  ASSERT_EQ(10, point4.y);
+  gfx::Point point3 =
+      plugin_container_two->LocalToRootFramePoint(gfx::Point(10, 0));
+  ASSERT_EQ(0, point3.x());
+  ASSERT_EQ(10, point3.y());
+  gfx::Point point4 =
+      plugin_container_two->LocalToRootFramePoint(gfx::Point(10, 10));
+  ASSERT_EQ(-10, point4.x());
+  ASSERT_EQ(10, point4.y());
 }
 
 // Verifies executing the command 'Copy' results in copying to the clipboard.
@@ -406,7 +407,7 @@ TEST_F(WebPluginContainerTest, CopyFromContextMenu) {
 
   auto event = frame_test_helpers::CreateMouseEvent(
       WebMouseEvent::kMouseDown, WebMouseEvent::Button::kRight,
-      WebPoint(30, 30), 0);
+      IntPoint(30, 30), 0);
   event.click_count = 1;
 
   // Now, let's try a more complex scenario:
@@ -753,7 +754,7 @@ TEST_F(WebPluginContainerTest, MouseEventButtons) {
 
   WebMouseEvent event = frame_test_helpers::CreateMouseEvent(
       WebMouseEvent::kMouseMove, WebMouseEvent::Button::kNoButton,
-      WebPoint(30, 30),
+      IntPoint(30, 30),
       WebInputEvent::kMiddleButtonDown | WebInputEvent::kShiftKey);
 
   WebRect rect = plugin_container_one_element.BoundsInViewport();

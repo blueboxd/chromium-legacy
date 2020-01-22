@@ -7,9 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-namespace ios {
-class ChromeBrowserState;
-}
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 // Notify the scheduler of the Content Suggestions services of the app lifecycle
 // events.

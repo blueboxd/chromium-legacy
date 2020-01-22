@@ -257,11 +257,6 @@ const base::Feature kSplitSettingsSync{"SplitSettingsSync",
 const base::Feature kUpdatedCellularActivationUi{
     "UpdatedCellularActivationUi", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use the messages.google.com domain as part of the "Messages" feature under
-// "Connected Devices" settings.
-const base::Feature kUseMessagesGoogleComDomain{
-    "UseMessagesGoogleComDomain", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Use the staging URL as part of the "Messages" feature under "Connected
 // Devices" settings.
 const base::Feature kUseMessagesStagingUrl{"UseMessagesStagingUrl",

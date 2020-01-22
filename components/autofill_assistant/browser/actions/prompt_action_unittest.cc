@@ -261,7 +261,7 @@ TEST_F(PromptActionTest, AutoSelectWhenElementExists) {
               OnElementCheck(Eq(Selector({"element"})), _))
       .WillRepeatedly(RunOnceCallback<1>(OkClientStatus()));
 
-  EXPECT_CALL(mock_action_delegate_, CancelPrompt());
+  EXPECT_CALL(mock_action_delegate_, CleanUpAfterPrompt());
   EXPECT_CALL(
       callback_,
       Run(Pointee(AllOf(Property(&ProcessedActionProto::status, ACTION_APPLIED),
@@ -291,7 +291,7 @@ TEST_F(PromptActionTest, AutoSelectWhenElementDisappears) {
   task_env_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   // Second round of element checks: element has gone.
-  EXPECT_CALL(mock_action_delegate_, CancelPrompt());
+  EXPECT_CALL(mock_action_delegate_, CleanUpAfterPrompt());
   EXPECT_CALL(
       callback_,
       Run(Pointee(AllOf(Property(&ProcessedActionProto::status, ACTION_APPLIED),

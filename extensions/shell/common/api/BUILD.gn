@@ -19,9 +19,7 @@ function_registration("generated_api_registration") {
   impl_dir = "//extensions/shell/browser/api"
   bundle_name = "Shell"
 
-  deps = [
-    "//extensions/common",
-  ]
+  deps = [ "//extensions/common" ]
 
   visibility = [ ":api" ]
 }
@@ -41,9 +39,7 @@ generated_types("generated_api_types") {
 json_features("shell_api_features") {
   feature_type = "APIFeature"
   method_name = "AddShellAPIFeatures"
-  sources = [
-    "_api_features.json",
-  ]
+  sources = [ "_api_features.json" ]
 }
 
 # Public Targets

@@ -31,7 +31,6 @@
 #include "third_party/blink/public/web/web_ax_object.h"
 
 #include "third_party/blink/public/platform/web_float_rect.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -705,14 +704,14 @@ int WebAXObject::HierarchicalLevel() const {
 // that (0, 0) is the top left of the visual viewport. In other words, the
 // point has the VisualViewport scale applied, but not the VisualViewport
 // offset. crbug.com/459591.
-WebAXObject WebAXObject::HitTest(const WebPoint& point) const {
+WebAXObject WebAXObject::HitTest(const gfx::Point& point) const {
   if (IsDetached())
     return WebAXObject();
 
   ScopedActionAnnotator annotater(private_.Get());
   IntPoint contents_point =
       private_->DocumentFrameView()->SoonToBeRemovedUnscaledViewportToContents(
-          point);
+          IntPoint(point));
   AXObject* hit = private_->AccessibilityHitTest(contents_point);
 
   if (hit)
@@ -1528,32 +1527,32 @@ bool WebAXObject::IsScrollableContainer() const {
   return private_->IsScrollableContainer();
 }
 
-WebPoint WebAXObject::GetScrollOffset() const {
+gfx::Point WebAXObject::GetScrollOffset() const {
   if (IsDetached())
-    return WebPoint();
+    return gfx::Point();
 
   return private_->GetScrollOffset();
 }
 
-WebPoint WebAXObject::MinimumScrollOffset() const {
+gfx::Point WebAXObject::MinimumScrollOffset() const {
   if (IsDetached())
-    return WebPoint();
+    return gfx::Point();
 
   return private_->MinimumScrollOffset();
 }
 
-WebPoint WebAXObject::MaximumScrollOffset() const {
+gfx::Point WebAXObject::MaximumScrollOffset() const {
   if (IsDetached())
-    return WebPoint();
+    return gfx::Point();
 
   return private_->MaximumScrollOffset();
 }
 
-void WebAXObject::SetScrollOffset(const WebPoint& offset) const {
+void WebAXObject::SetScrollOffset(const gfx::Point& offset) const {
   if (IsDetached())
     return;
 
-  private_->SetScrollOffset(offset);
+  private_->SetScrollOffset(IntPoint(offset));
 }
 
 void WebAXObject::Dropeffects(
@@ -1630,12 +1629,12 @@ bool WebAXObject::ScrollToMakeVisibleWithSubFocus(
       blink_vertical_scroll_alignment);
 }
 
-bool WebAXObject::ScrollToGlobalPoint(const WebPoint& point) const {
+bool WebAXObject::ScrollToGlobalPoint(const gfx::Point& point) const {
   if (IsDetached())
     return false;
 
   ScopedActionAnnotator annotater(private_.Get());
-  return private_->RequestScrollToGlobalPointAction(point);
+  return private_->RequestScrollToGlobalPointAction(IntPoint(point));
 }
 
 void WebAXObject::Swap(WebAXObject& other) {

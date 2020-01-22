@@ -1179,7 +1179,10 @@ public class CompositorViewHolder extends FrameLayout
 
         if (mTabVisible != tab) {
             if (mTabVisible != null) mTabVisible.removeObserver(mTabObserver);
-            if (tab != null) tab.addObserver(mTabObserver);
+            if (tab != null) {
+                tab.addObserver(mTabObserver);
+                mCompositorView.onTabChanged();
+            }
         }
 
         mTabVisible = tab;

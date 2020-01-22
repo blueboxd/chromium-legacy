@@ -256,9 +256,7 @@ source_set("app_shell_lib") {
 executable("app_shell") {
   # testonly because :app_shell_lib is testonly. See :app_shell_lib comment.
   testonly = true
-  sources = [
-    "app/shell_main.cc",
-  ]
+  sources = [ "app/shell_main.cc" ]
 
   deps = [
     ":app_shell_lib",
@@ -430,8 +428,6 @@ if (is_desktop_linux && is_official_build) {
 
     binary = "$root_out_dir/app_shell"
     symbol_file = "$root_out_dir/app_shell.breakpad.$current_cpu"
-    deps = [
-      ":app_shell",
-    ]
+    deps = [ ":app_shell" ]
   }
 }

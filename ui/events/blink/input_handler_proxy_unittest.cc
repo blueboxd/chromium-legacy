@@ -25,7 +25,6 @@
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/common/input/web_touch_event.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/compositor_thread_event_queue.h"
 #include "ui/events/blink/did_overscroll_params.h"

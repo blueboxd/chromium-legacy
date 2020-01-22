@@ -164,7 +164,7 @@ char kResponse3[] = "Test Page 3 content";
 }
 
 // Test that Clear Browsing Data can be successfully done from tab grid.
-- (void)testClearBrowsingData {
+- (void)DISABLED_testClearBrowsingData {
   // Load history
   [self loadTestURLs];
 

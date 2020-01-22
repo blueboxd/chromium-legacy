@@ -111,7 +111,7 @@ class ActionDelegate {
       std::unique_ptr<std::vector<UserAction>> user_actions) = 0;
 
   // Have the UI leave the prompt state and go back to its previous state.
-  virtual void CancelPrompt() = 0;
+  virtual void CleanUpAfterPrompt() = 0;
 
   // Asks the user to provide the requested user data.
   virtual void CollectUserData(

@@ -23,6 +23,7 @@ namespace {
 
 using sync_pb::CommitResponse;
 using sync_pb::EntitySpecifics;
+using sync_pb::SharingMessageCommitError;
 using sync_pb::SyncEntity;
 
 const ClientTagHash kTag = ClientTagHash::FromHashed("tag");
@@ -303,6 +304,10 @@ TEST(NonBlockingTypeCommitContributionTest,
     sync_pb::CommitResponse_EntryResponse* entry =
         commit_response->add_entryresponse();
     entry->set_response_type(CommitResponse::TRANSIENT_ERROR);
+    SharingMessageCommitError* sharing_message_error =
+        entry->mutable_sharing_message_error();
+    sharing_message_error->set_error_code(
+        SharingMessageCommitError::INVALID_ARGUMENT);
   }
 
   StatusController status;
@@ -313,6 +318,8 @@ TEST(NonBlockingTypeCommitContributionTest,
   FailedCommitResponseData failed_item = actual_error_response_list[0];
   EXPECT_EQ(ClientTagHash::FromHashed("hash"), failed_item.client_tag_hash);
   EXPECT_EQ(CommitResponse::TRANSIENT_ERROR, failed_item.response_type);
+  EXPECT_EQ(SharingMessageCommitError::INVALID_ARGUMENT,
+            failed_item.sharing_message_error.error_code());
 }
 
 }  // namespace

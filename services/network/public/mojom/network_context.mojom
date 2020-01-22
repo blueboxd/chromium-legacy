@@ -565,6 +565,11 @@ struct URLLoaderFactoryParams {
   // Cross-origin read blocking (CORB) configuration.
   bool is_corb_enabled = true;
 
+  // Whether |isolated_world_origin| from network::ResourceRequest should be
+  // ignored.  Set |ignore_isolated_world_origin| to |false| to allow isolated
+  // worlds to bypass CORS security checks via OriginAccessList.
+  bool ignore_isolated_world_origin = true;
+
   // Indicate whether a request is not from web page ( probably from chrome
   // extension background page ).
   bool unsafe_non_webby_initiator = false;

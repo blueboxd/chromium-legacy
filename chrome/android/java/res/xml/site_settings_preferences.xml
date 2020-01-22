@@ -89,4 +89,12 @@
     <org.chromium.chrome.browser.settings.website.SiteSettingsPreference
         android:fragment="org.chromium.chrome.browser.settings.website.SingleCategorySettings"
         android:key="bluetooth_scanning" />
+    <!-- VR -->
+    <org.chromium.chrome.browser.settings.website.SiteSettingsPreference
+        android:fragment="org.chromium.chrome.browser.settings.website.SingleCategorySettings"
+        android:key="virtual_reality" />
+    <!-- AR -->
+    <org.chromium.chrome.browser.settings.website.SiteSettingsPreference
+        android:fragment="org.chromium.chrome.browser.settings.website.SingleCategorySettings"
+        android:key="augmented_reality" />
 </PreferenceScreen>

@@ -10,6 +10,8 @@ import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.text.Html;
 import android.text.Spanned;
@@ -154,6 +156,24 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     }
 
     /**
+     * Setting the clipboard's current primary clip to an image.
+     * @param Uri The {@link Uri} will become the content of the clipboard's primary clip.
+     */
+    public void setImage(final Uri uri) {
+        if (uri == null) {
+            showCopyToClipboardFailureMessage();
+            return;
+        }
+
+        ContextUtils.getApplicationContext().grantUriPermission(
+                ClipboardManager.class.getCanonicalName(), uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        ClipData clip = ClipData.newUri(
+                ContextUtils.getApplicationContext().getContentResolver(), "image", uri);
+        setPrimaryClipNoException(clip);
+    }
+
+    /**
      * Writes HTML to the clipboard, together with a plain-text representation
      * of that very data.
      *
@@ -179,9 +199,13 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
             mClipboardManager.setPrimaryClip(clip);
         } catch (Exception ex) {
             // Ignore any exceptions here as certain devices have bugs and will fail.
-            String text = mContext.getString(R.string.copy_to_clipboard_failure_message);
-            Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
+            showCopyToClipboardFailureMessage();
         }
+    }
+
+    private void showCopyToClipboardFailureMessage() {
+        String text = mContext.getString(R.string.copy_to_clipboard_failure_message);
+        Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
     }
 
     @CalledByNative

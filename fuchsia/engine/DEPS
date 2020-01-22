@@ -3,6 +3,7 @@ include_rules = [
   "+components/viz/common",
   "+content/public/app",
   "+gpu/command_buffer/service",
+  "+gpu/config/gpu_finch_features.h",
   "+media/base",
   "+mojo/public",
   "+services/service_manager",

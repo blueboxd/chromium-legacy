@@ -91,7 +91,7 @@ void PredictorsHandler::RequestResourcePrefetchPredictorDb(
       // Origin table cache.
       auto db = std::make_unique<base::ListValue>();
       AddOriginDataMapToListValue(
-          *resource_prefetch_predictor->origin_data_->data_cache_, db.get());
+          resource_prefetch_predictor->origin_data_->GetAllCached(), db.get());
       dict.Set("origin_db", std::move(db));
     }
   }

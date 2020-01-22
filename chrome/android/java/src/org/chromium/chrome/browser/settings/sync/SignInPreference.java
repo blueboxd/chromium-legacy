@@ -119,8 +119,8 @@ public class SignInPreference
     }
 
     /**
-     * Should be called when the {@link PreferenceFragment} which used {@link SignInPreference} gets
-     * destroyed. Used to record "ImpressionsTilDismiss" histogram.
+     * Should be called when the {@link PreferenceFragmentCompat} which used {@link
+     * SignInPreference} gets destroyed. Used to record "ImpressionsTilDismiss" histogram.
      */
     public void onPreferenceFragmentDestroyed() {
         if (mSigninPromoController != null) {

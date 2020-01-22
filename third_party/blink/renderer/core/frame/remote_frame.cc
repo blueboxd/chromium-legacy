@@ -137,15 +137,10 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
     }
   }
 
-  bool current_frame_has_download_sandbox_flag =
-      GetSecurityContext() &&
-      GetSecurityContext()->IsSandboxed(WebSandboxFlags::kDownloads);
-  bool has_download_sandbox_flag = initiator_frame_has_download_sandbox_flag ||
-                                   current_frame_has_download_sandbox_flag;
-
   Client()->Navigate(frame_request.GetResourceRequest(),
                      frame_load_type == WebFrameLoadType::kReplaceCurrentItem,
-                     is_opener_navigation, has_download_sandbox_flag,
+                     is_opener_navigation,
+                     initiator_frame_has_download_sandbox_flag,
                      initiator_frame_is_ad, frame_request.GetBlobURLToken());
 }
 

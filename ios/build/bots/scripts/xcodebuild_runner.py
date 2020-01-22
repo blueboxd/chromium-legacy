@@ -395,7 +395,6 @@ class LaunchCommand(object):
           or (len(running_tests) - len(self.egtests_app.excluded_tests)
               <= MAXIMUM_TESTS_PER_SHARD_FOR_RERUN)):
         shards = 1
-    self.test_results['end_run'] = int(time.time())
     self.summary_log()
 
     return {
@@ -526,9 +525,7 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
       self.host_app_path = os.path.abspath(host_app_path)
     self._init_sharding_data()
     self.logs = collections.OrderedDict()
-    self.test_results = collections.OrderedDict()
-    self.test_results['start_run'] = int(time.time())
-    self.test_results['end_run'] = None
+    self.test_results['path_delimiter'] = '/'
 
   def _init_sharding_data(self):
     """Initialize sharding data.
@@ -582,7 +579,6 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     attempts_results = []
     for result in pool.imap_unordered(LaunchCommand.launch, launch_commands):
       attempts_results.append(result['test_results']['attempts'])
-    self.test_results['end_run'] = int(time.time())
 
     # Gets passed tests
     self.logs['passed tests'] = []
@@ -618,6 +614,16 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     aborted_tests.sort()
     self.logs['aborted tests'] = aborted_tests
 
+    self.test_results['interrupted'] = bool(aborted_tests)
+    self.test_results['num_failures_by_type'] = {
+        'FAIL': len(self.logs['failed tests'] + self.logs['aborted tests']),
+        'PASS': len(self.logs['passed tests']),
+    }
+    self.test_results['tests'] = collections.OrderedDict()
+    for test in self.logs['passed tests']:
+      self.test_results['tests'][test] = {'expected': 'PASS', 'actual': 'PASS'}
+    for test in self.logs['failed tests'] + self.logs['aborted tests']:
+      self.test_results['tests'][test] = {'expected': 'PASS', 'actual': 'FAIL'}
     # Test is failed if there are failures for the last run.
     return not self.logs['failed tests']
 
@@ -686,12 +692,8 @@ class DeviceXcodeTestRunner(SimulatorParallelTestRunner,
     # Destination is required to run tests via xcodebuild on real devices
     # and it looks like id=%ID%
     self.sharding_data[0]['destination'] = 'id=%s' % self.udid
-
-    self.logs = collections.OrderedDict()
-    self.test_results = collections.OrderedDict()
-    self.test_results['start_run'] = int(time.time())
-    self.test_results['end_run'] = None
     self.start_time = time.strftime('%Y-%m-%d-%H%M%S', time.localtime())
+    self.test_results['path_delimiter'] = '/'
 
   def set_up(self):
     """Performs setup actions which must occur prior to every test launch."""

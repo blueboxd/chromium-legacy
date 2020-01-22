@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketTcpExtension) {
   network::DnsLookupResult result2 =
       network::BlockingDnsLookup(network_context, host_port_pair,
                                  std::move(params), net::NetworkIsolationKey());
-  EXPECT_EQ(net::ERR_DNS_CACHE_MISS, result2.error);
+  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, result2.error);
 }
 
 IN_PROC_BROWSER_TEST_F(SocketsTcpApiTest, SocketTcpExtensionTLS) {

@@ -119,6 +119,11 @@ CWV_EXPORT
 // https://developer.apple.com/documentation/webkit/wkwebview/1414977-backforwardlist
 @property(nonatomic, readonly, nonnull) CWVBackForwardList* backForwardList;
 
+// Enables Chrome's custom logic to handle long press and force touch. Defaults
+// to YES. This CLASS PROPERTY setting will only be applied to all CWVWebView
+// instances INITIALIZED AFTERWARD.
+@property(nonatomic, class) BOOL chromeLongPressAndForceTouchHandlingEnabled;
+
 // The User Agent product string used to build the full User Agent.
 + (NSString*)userAgentProduct;
 

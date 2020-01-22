@@ -106,7 +106,6 @@
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_network_state_notifier.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -199,7 +198,6 @@ using blink::WebMouseEvent;
 using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
 using blink::WebNode;
-using blink::WebPoint;
 using blink::WebRect;
 using blink::WebRuntimeFeatures;
 using blink::WebSandboxFlags;
@@ -1979,7 +1977,7 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
 }
 
 void RenderViewImpl::OnAnimateDoubleTapZoomInMainFrame(
-    const blink::WebPoint& point,
+    const gfx::Point& point,
     const blink::WebRect& bound) {
   webview()->AnimateDoubleTapZoom(point, bound);
 }

@@ -10510,10 +10510,10 @@ Please help our engineers fix this problem. Tell us what happened right before y
       Timed out
     </message>
     <message name="IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_MESSAGE" desc="Message shown in tab modal dialog when the deep scanning times out.">
-      Something went wrong. The scanned file has timed out.
+      Something went wrong. Scanning could not be completed. Please try again.
     </message>
     <message name="IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_ACCEPT_BUTTON" desc="The text on the accept button in tab modal dialog when deep scanning times out.">
-      Scan
+      Scan again
     </message>
     <message name="IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_CANCEL_BUTTON" desc="The text on the cancel button in tab modal dialog when deep scanning times out.">
       Cancel

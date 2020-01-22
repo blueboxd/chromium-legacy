@@ -311,44 +311,40 @@ TEST(ProtocolParserTest, Reading) {
   ASSERT_TRUE(root.get());
   EXPECT_EQ(Value::TypeObject, root->type());
 
-  root = ParseJSON("{\"number\":9.87654321, \"null\":null , \"S\" : \"str\" }");
-  ASSERT_TRUE(root.get());
-  EXPECT_EQ(Value::TypeObject, root->type());
-  DictionaryValue* object_val = DictionaryValue::cast(root.get());
-  ASSERT_TRUE(object_val);
-  double_val = 0.0;
-  EXPECT_TRUE(object_val->getDouble("number", &double_val));
-  EXPECT_DOUBLE_EQ(9.87654321, double_val);
-  Value* null_val = object_val->get("null");
-  ASSERT_TRUE(null_val);
-  EXPECT_EQ(Value::TypeNull, null_val->type());
-  EXPECT_TRUE(object_val->getString("S", &str_val));
-  EXPECT_EQ("str", str_val);
-
-  // Test newline equivalence.
-  root2 = ParseJSON(
-      "{\n"
-      "  \"number\":9.87654321,\n"
-      "  \"null\":null,\n"
-      "  \"S\":\"str\"\n"
-      "}\n");
-  ASSERT_TRUE(root2.get());
-  EXPECT_EQ(root->toJSONString(), root2->toJSONString());
-
-  root2 = ParseJSON(
-      "{\r\n"
-      "  \"number\":9.87654321,\r\n"
-      "  \"null\":null,\r\n"
-      "  \"S\":\"str\"\r\n"
-      "}\r\n");
-  ASSERT_TRUE(root2.get());
-  EXPECT_EQ(root->toJSONString(), root2->toJSONString());
+  // The three test cases in the loop differ only by their newlines; therefore
+  // the same assertions are valid.
+  for (const char* test :
+       {"{\"number\":9.87654321, \"null\":null , \"S\" : \"str\" }",
+        "{\n"
+        "  \"number\":9.87654321,\n"
+        "  \"null\":null,\n"
+        "  \"S\":\"str\"\n"
+        "}\n",
+        "{\r\n"
+        "  \"number\":9.87654321,\r\n"
+        "  \"null\":null,\r\n"
+        "  \"S\":\"str\"\r\n"
+        "}\r\n"}) {
+    root = ParseJSON(String(test));
+    ASSERT_TRUE(root.get());
+    EXPECT_EQ(Value::TypeObject, root->type());
+    DictionaryValue* object_val = DictionaryValue::cast(root.get());
+    ASSERT_TRUE(object_val);
+    double_val = 0.0;
+    EXPECT_TRUE(object_val->getDouble("number", &double_val));
+    EXPECT_DOUBLE_EQ(9.87654321, double_val);
+    Value* null_val = object_val->get("null");
+    ASSERT_TRUE(null_val);
+    EXPECT_EQ(Value::TypeNull, null_val->type());
+    EXPECT_TRUE(object_val->getString("S", &str_val));
+    EXPECT_EQ("str", str_val);
+  }
 
   // Test nesting
   root = ParseJSON("{\"inner\":{\"array\":[true]},\"false\":false,\"d\":{}}");
   ASSERT_TRUE(root.get());
   EXPECT_EQ(Value::TypeObject, root->type());
-  object_val = DictionaryValue::cast(root.get());
+  DictionaryValue* object_val = DictionaryValue::cast(root.get());
   ASSERT_TRUE(object_val);
   DictionaryValue* inner_object = object_val->getObject("inner");
   ASSERT_TRUE(inner_object);

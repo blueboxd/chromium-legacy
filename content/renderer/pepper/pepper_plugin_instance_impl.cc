@@ -2732,8 +2732,7 @@ PP_Bool PepperPluginInstanceImpl::SetCursor(PP_Instance instance,
     return PP_FALSE;
 
   auto custom_cursor = std::make_unique<WebCursorInfo>(ui::CursorType::kCustom);
-  custom_cursor->hot_spot.x = hot_spot->x;
-  custom_cursor->hot_spot.y = hot_spot->y;
+  custom_cursor->hot_spot.SetPoint(hot_spot->x, hot_spot->y);
 
   SkBitmap bitmap(image_data->GetMappedBitmap());
   // Make a deep copy, so that the cursor remains valid even after the original

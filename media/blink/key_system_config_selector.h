@@ -33,7 +33,7 @@ class MediaPermission;
 
 class MEDIA_BLINK_EXPORT KeySystemConfigSelector {
  public:
-  KeySystemConfigSelector(const KeySystems* key_systems,
+  KeySystemConfigSelector(KeySystems* key_systems,
                           MediaPermission* media_permission);
 
   ~KeySystemConfigSelector();
@@ -96,7 +96,7 @@ class MEDIA_BLINK_EXPORT KeySystemConfigSelector {
       const blink::WebMediaKeySystemMediaCapability::EncryptionScheme
           encryption_scheme);
 
-  const KeySystems* key_systems_;
+  KeySystems* const key_systems_;
   MediaPermission* media_permission_;
 
   // A callback used to check whether a media type is supported. Only set in

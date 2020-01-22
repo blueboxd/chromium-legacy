@@ -25,7 +25,6 @@
 
 #include "third_party/blink/public/web/web_hit_test_result.h"
 
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_node.h"
@@ -62,11 +61,11 @@ WebNode WebHitTestResult::GetNode() const {
   return WebNode(private_->Result().InnerNode());
 }
 
-WebPoint WebHitTestResult::LocalPoint() const {
+gfx::Point WebHitTestResult::LocalPoint() const {
   return RoundedIntPoint(private_->Result().LocalPoint());
 }
 
-WebPoint WebHitTestResult::LocalPointWithoutContentBoxOffset() const {
+gfx::Point WebHitTestResult::LocalPointWithoutContentBoxOffset() const {
   IntPoint local_point = RoundedIntPoint(private_->Result().LocalPoint());
   LayoutObject* object = private_->Result().GetLayoutObject();
   if (object->IsBox()) {

@@ -704,6 +704,34 @@ void IdentityGetAuthTokenFunction::OnGaiaFlowCompleted(
   CompleteFunctionWithResult(access_token);
 }
 
+void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowFailure(
+    GaiaRemoteConsentFlow::Failure failure) {
+  CompleteMintTokenFlow();
+  std::string error;
+
+  switch (failure) {
+    case GaiaRemoteConsentFlow::WINDOW_CLOSED:
+      error = identity_constants::kUserRejected;
+      break;
+
+    case GaiaRemoteConsentFlow::SET_ACCOUNTS_IN_COOKIE_FAILED:
+      error = identity_constants::kSetAccountsInCookieFailure;
+      break;
+
+    case GaiaRemoteConsentFlow::LOAD_FAILED:
+      error = identity_constants::kPageLoadFailure;
+      break;
+  }
+
+  CompleteFunctionWithError(error);
+}
+
+void IdentityGetAuthTokenFunction::OnGaiaRemoteConsentFlowCompleted(
+    const std::string& consent_result) {
+  // TODO(crbug.com/1026237): implement this.
+  NOTIMPLEMENTED();
+}
+
 void IdentityGetAuthTokenFunction::OnGetAccessTokenComplete(
     const base::Optional<std::string>& access_token,
     base::Time expiration_time,
@@ -863,8 +891,9 @@ void IdentityGetAuthTokenFunction::ShowOAuthApprovalDialog(
 
 void IdentityGetAuthTokenFunction::ShowRemoteConsentDialog(
     const RemoteConsentResolutionData& resolution_data) {
-  // TODO(crbug.com/1026237): implement this.
-  NOTIMPLEMENTED();
+  gaia_remote_consent_flow_ = std::make_unique<GaiaRemoteConsentFlow>(
+      this, GetProfile(), token_key_, resolution_data);
+  gaia_remote_consent_flow_->Start();
 }
 
 std::unique_ptr<OAuth2MintTokenFlow>

@@ -36,6 +36,10 @@
 #include "third_party/blink/public/web/web_text_direction.h"
 #include "v8/include/v8.h"
 
+namespace gfx {
+class Point;
+}  // namespace gfx
+
 namespace blink {
 
 class FrameScheduler;
@@ -66,7 +70,6 @@ struct WebConsoleMessage;
 struct WebContentSecurityPolicyViolation;
 struct WebIsolatedWorldInfo;
 struct MediaPlayerAction;
-struct WebPoint;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 struct WebScriptSource;
@@ -416,7 +419,7 @@ class WebLocalFrame : public WebFrame {
   // Returns the index of a character in the Frame's text stream at the given
   // point. The point is in the viewport coordinate space. Will return
   // WTF::notFound if the point is invalid.
-  virtual size_t CharacterIndexForPoint(const WebPoint&) const = 0;
+  virtual size_t CharacterIndexForPoint(const gfx::Point&) const = 0;
 
   // Supports commands like Undo, Redo, Cut, Copy, Paste, SelectAll,
   // Unselect, etc. See EditorCommand.cpp for the full list of supported
@@ -450,7 +453,8 @@ class WebLocalFrame : public WebFrame {
   virtual bool SelectWordAroundCaret() = 0;
 
   // DEPRECATED: Use moveRangeSelection.
-  virtual void SelectRange(const WebPoint& base, const WebPoint& extent) = 0;
+  virtual void SelectRange(const gfx::Point& base,
+                           const gfx::Point& extent) = 0;
 
   enum HandleVisibilityBehavior {
     // Hide handle(s) in the new selection.
@@ -473,10 +477,10 @@ class WebLocalFrame : public WebFrame {
   // |TextGranularity| represents character wrapping granularity. If
   // WordGranularity is set, WebFrame extends selection to wrap word.
   virtual void MoveRangeSelection(
-      const WebPoint& base,
-      const WebPoint& extent,
+      const gfx::Point& base,
+      const gfx::Point& extent,
       WebFrame::TextGranularity = kCharacterGranularity) = 0;
-  virtual void MoveCaretSelection(const WebPoint&) = 0;
+  virtual void MoveCaretSelection(const gfx::Point&) = 0;
 
   virtual bool SetEditableSelectionOffsets(int start, int end) = 0;
   virtual bool SetCompositionFromExistingText(
@@ -490,7 +494,7 @@ class WebLocalFrame : public WebFrame {
   // Moves the selection extent point. This function does not allow the
   // selection to collapse. If the new extent is set to the same position as
   // the current base, this function will do nothing.
-  virtual void MoveRangeSelectionExtent(const WebPoint&) = 0;
+  virtual void MoveRangeSelectionExtent(const gfx::Point&) = 0;
   // Replaces the selection with the input string.
   virtual void ReplaceSelection(const WebString&) = 0;
   // Deletes text before and after the current cursor position, excluding the
@@ -573,7 +577,7 @@ class WebLocalFrame : public WebFrame {
 
   // Copy to the clipboard the image located at a particular point in visual
   // viewport coordinates.
-  virtual void CopyImageAtForTesting(const WebPoint&) = 0;
+  virtual void CopyImageAtForTesting(const gfx::Point&) = 0;
 
   // Events --------------------------------------------------------------
 
@@ -755,7 +759,7 @@ class WebLocalFrame : public WebFrame {
 
   // Performs the specified media player action on the media element at the
   // given location.
-  virtual void PerformMediaPlayerAction(const WebPoint&,
+  virtual void PerformMediaPlayerAction(const gfx::Point&,
                                         const MediaPlayerAction&) = 0;
 
   virtual void SetLifecycleState(mojom::FrameLifecycleState state) = 0;

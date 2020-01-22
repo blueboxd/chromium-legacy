@@ -135,4 +135,8 @@ void AnimationTimeline::PushPropertiesToImplThread(
   }
 }
 
+bool AnimationTimeline::IsScrollTimeline() const {
+  return false;
+}
+
 }  // namespace cc

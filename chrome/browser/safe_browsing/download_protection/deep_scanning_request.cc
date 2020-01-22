@@ -4,6 +4,9 @@
 
 #include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback_forward.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
@@ -13,6 +16,9 @@
 #include "chrome/browser/safe_browsing/download_protection/download_item_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/views/safe_browsing/deep_scanning_failure_modal_dialog.h"
 #include "components/download/public/common/download_item.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/policy/core/common/cloud/dm_token.h"
@@ -195,7 +201,7 @@ void DeepScanningRequest::OnScanComplete(BinaryUploadService::Result result,
       /*response=*/response);
   Profile* profile = Profile::FromBrowserContext(
       content::DownloadItemUtils::GetBrowserContext(item_));
-  if (profile) {
+  if (profile && trigger_ == DeepScanTrigger::TRIGGER_POLICY) {
     std::string raw_digest_sha256 = item_->GetHash();
     MaybeReportDeepScanningVerdict(
         profile, item_->GetURL(), item_->GetTargetFilePath().AsUTF8Unsafe(),
@@ -208,6 +214,16 @@ void DeepScanningRequest::OnScanComplete(BinaryUploadService::Result result,
   DownloadCheckResult download_result = DownloadCheckResult::UNKNOWN;
   if (result == BinaryUploadService::Result::SUCCESS) {
     DeepScanningClientResponseToDownloadCheckResult(response, &download_result);
+  } else if (trigger_ == DeepScanTrigger::TRIGGER_APP_PROMPT &&
+             MaybeShowDeepScanFailureModalDialog(
+                 base::BindOnce(&DeepScanningRequest::Start,
+                                weak_ptr_factory_.GetWeakPtr()),
+                 base::BindOnce(&DeepScanningRequest::FinishRequest,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                DownloadCheckResult::UNKNOWN),
+                 base::BindOnce(&DeepScanningRequest::OpenDownload,
+                                weak_ptr_factory_.GetWeakPtr()))) {
+    return;
   }
 
   FinishRequest(download_result);
@@ -223,6 +239,32 @@ void DeepScanningRequest::FinishRequest(DownloadCheckResult result) {
   weak_ptr_factory_.InvalidateWeakPtrs();
   item_->RemoveObserver(this);
   download_service_->RequestFinished(this);
+}
+
+bool DeepScanningRequest::MaybeShowDeepScanFailureModalDialog(
+    base::OnceClosure accept_callback,
+    base::OnceClosure cancel_callback,
+    base::OnceClosure open_now_callback) {
+  Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(item_));
+  if (!profile)
+    return false;
+
+  Browser* browser =
+      chrome::FindTabbedBrowser(profile, /*match_original_profiles=*/false);
+  if (!browser)
+    return false;
+
+  DeepScanningFailureModalDialog::ShowForWebContents(
+      browser->tab_strip_model()->GetActiveWebContents(),
+      std::move(accept_callback), std::move(cancel_callback),
+      std::move(open_now_callback));
+  return true;
+}
+
+void DeepScanningRequest::OpenDownload() {
+  item_->OpenDownload();
+  FinishRequest(DownloadCheckResult::UNKNOWN);
 }
 
 }  // namespace safe_browsing

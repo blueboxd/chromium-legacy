@@ -44,8 +44,8 @@ struct BLINK_COMMON_EXPORT FramePolicy {
   // However, in certain cases where the initiator of the navigation is not the
   // document itself (e.g., a parent document), the FrameOwner element should be
   // checked for "downloads" flag. If this boolean is false then navigations
-  // leading to downloads should be blocked unless they have user gesture. Note:
-  // this flag is currently only set if the frame is sandboxed for downloads.
+  // leading to downloads should be blocked. Note: this flag is currently only
+  // set if the frame is sandboxed for downloads.
   bool allowed_to_download;
 };
 

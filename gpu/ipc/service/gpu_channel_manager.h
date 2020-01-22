@@ -290,14 +290,14 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager
 
   // With --enable-vulkan, |vulkan_context_provider_| will be set from
   // viz::GpuServiceImpl. The raster decoders will use it for rasterization if
-  // --gr-context-type is also set to Vulkan.
+  // features::Vulkan is used.
   viz::VulkanContextProvider* vulkan_context_provider_ = nullptr;
 
-  // If features::SkiaOnMetad, |metal_context_provider_| will be set from
+  // If features::Metal, |metal_context_provider_| will be set from
   // viz::GpuServiceImpl. The raster decoders will use it for rasterization.
   viz::MetalContextProvider* metal_context_provider_ = nullptr;
 
-  // With --gr-context-type=dawn, |dawn_context_provider_| will be set from
+  // With features::SkiaDawn, |dawn_context_provider_| will be set from
   // viz::GpuServiceImpl. The raster decoders will use it for rasterization.
   viz::DawnContextProvider* dawn_context_provider_ = nullptr;
 

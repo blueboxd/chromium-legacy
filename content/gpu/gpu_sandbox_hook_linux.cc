@@ -6,6 +6,7 @@
 
 #include <dlfcn.h>
 #include <errno.h>
+#include <sys/stat.h>
 
 #include <memory>
 #include <sstream>
@@ -197,10 +198,26 @@ void AddAmdGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
 }
 
 void AddIntelGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
+  static const char* const kReadOnlyList[] = {
+      "/dev/dri",
+      "/usr/share/vulkan/icd.d",
+      "/usr/share/vulkan/icd.d/intel_icd.x86_64.json"};
+  for (const char* item : kReadOnlyList)
+    permissions->push_back(BrokerFilePermission::ReadOnly(item));
+
   // TODO(hob): Whitelist all valid render node paths.
-  static const char* const kReadWriteList[] = {"/dev/dri/renderD128"};
-  for (const char* item : kReadWriteList)
-    permissions->push_back(BrokerFilePermission::ReadWrite(item));
+  static const char kRenderNodePath[] = "/dev/dri/renderD128";
+  struct stat st;
+  if (stat(kRenderNodePath, &st) == 0) {
+    permissions->push_back(BrokerFilePermission::ReadWrite(kRenderNodePath));
+
+    uint32_t major = (static_cast<uint32_t>(st.st_rdev) >> 8) & 0xff;
+    uint32_t minor = static_cast<uint32_t>(st.st_rdev) & 0xff;
+    std::string char_device_path =
+        base::StringPrintf("/sys/dev/char/%u:%u/", major, minor);
+    permissions->push_back(
+        BrokerFilePermission::ReadOnlyRecursive(char_device_path));
+  }
 }
 
 void AddArmGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
@@ -387,7 +404,8 @@ sandbox::syscall_broker::BrokerCommandSet CommandSetForGPU(
   command_set.set(sandbox::syscall_broker::COMMAND_ACCESS);
   command_set.set(sandbox::syscall_broker::COMMAND_OPEN);
   command_set.set(sandbox::syscall_broker::COMMAND_STAT);
-  if (IsChromeOS() && options.use_amd_specific_policies) {
+  if (IsChromeOS() && (options.use_amd_specific_policies ||
+                       options.use_intel_specific_policies)) {
     command_set.set(sandbox::syscall_broker::COMMAND_READLINK);
   }
   return command_set;

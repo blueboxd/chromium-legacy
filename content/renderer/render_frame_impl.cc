@@ -182,7 +182,6 @@
 #include "third_party/blink/public/platform/web_http_body.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -274,7 +273,6 @@ using blink::WebNavigationType;
 using blink::WebNode;
 using blink::WebPluginDocument;
 using blink::WebPluginParams;
-using blink::WebPoint;
 using blink::WebPopupMenuInfo;
 using blink::WebRange;
 using blink::WebRect;
@@ -1755,6 +1753,9 @@ void RenderFrameImpl::MaybeSetDownloadFramePolicy(
       }
     }
   }
+
+  download_policy->blocking_downloads_in_sandbox_enabled =
+      blocking_downloads_in_sandbox_enabled;
 }
 
 blink::WebURL RenderFrameImpl::OverrideFlashEmbedWithHTML(
@@ -3540,6 +3541,13 @@ void RenderFrameImpl::CommitFailedNavigation(
   FillNavigationParamsRequest(*common_params, *commit_params,
                               navigation_params.get());
   navigation_params->url = GURL(kUnreachableWebDataURL);
+  // FillNavigationParamsRequest() sets the |navigation_params->http_method| to
+  // the original method of the request. In successful page loads,
+  // |navigation_params->redirects| also gets populated and the redirects are
+  // later replayed to update the method. However, in the case of an error page
+  // load, the redirects are neither populated nor replayed. Hence |http_method|
+  // needs to be manually set to the final method.
+  navigation_params->http_method = WebString::FromASCII(common_params->method);
   navigation_params->error_code = error_code;
 
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params->url)) {
@@ -4701,9 +4709,6 @@ void RenderFrameImpl::RunScriptsAtDocumentIdle() {
 }
 
 void RenderFrameImpl::DidHandleOnloadEvents() {
-  if (!frame_->Parent()) {
-    GetFrameHost()->DocumentOnLoadCompleted();
-  }
   for (auto& observer : observers_)
     observer.DidHandleOnloadEvents();
 }
@@ -6210,7 +6215,7 @@ void RenderFrameImpl::OnMediaPlayerActionAt(
   blink::WebFloatRect viewport_position(location.x(), location.y(), 0, 0);
   GetLocalRootRenderWidget()->ConvertWindowToViewport(&viewport_position);
   frame_->PerformMediaPlayerAction(
-      WebPoint(viewport_position.x, viewport_position.y), action);
+      gfx::Point(viewport_position.x, viewport_position.y), action);
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)

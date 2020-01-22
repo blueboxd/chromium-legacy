@@ -8,7 +8,6 @@
 #include "base/memory/weak_ptr.h"
 #include "ios/chrome/browser/overlays/public/overlay_request_callback_installer.h"
 
-class OverlayRequestSupport;
 class InfobarModalInteractionHandler;
 
 // Callback installer, intended to be subclassed, for infobar modal interaction

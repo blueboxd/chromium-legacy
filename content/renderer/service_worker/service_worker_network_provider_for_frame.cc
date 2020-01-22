@@ -69,7 +69,7 @@ ServiceWorkerNetworkProviderForFrame::Create(
   auto provider =
       base::WrapUnique(new ServiceWorkerNetworkProviderForFrame(frame));
   provider->context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
-      blink::mojom::ServiceWorkerProviderType::kForWindow,
+      blink::mojom::ServiceWorkerContainerType::kForWindow,
       std::move(provider_info->client_receiver),
       std::move(provider_info->host_remote), std::move(controller_info),
       std::move(fallback_loader_factory));

@@ -19,12 +19,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.VariationsSeedLoader;
+import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.variations.VariationsUtils;
 import org.chromium.android_webview.test.services.MockVariationsSeedServer;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 
 import java.io.File;
 import java.io.IOException;
@@ -400,5 +402,43 @@ public class VariationsSeedLoaderTest {
                 RecordHistogram.getHistogramValueCountForTesting(
                         VariationsSeedLoader.APP_SEED_FRESHNESS_HISTOGRAM_NAME,
                         (int) TimeUnit.HOURS.toMinutes(seedAgeHours)));
+    }
+
+    // Tests that the finch-seed-expiration-age flag works.
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add(AwSwitches.FINCH_SEED_EXPIRATION_AGE + "=0")
+    public void testFinchSeedExpirationAgeFlag() throws Exception {
+        try {
+            // Create a new seed file with a recent timestamp.
+            File oldFile = VariationsUtils.getSeedFile();
+            VariationsTestUtils.writeMockSeed(oldFile);
+            oldFile.setLastModified(CURRENT_TIME_MILLIS);
+
+            boolean seedRequested = runTestLoaderBlocking();
+
+            Assert.assertTrue("Seed file should be requested", seedRequested);
+        } finally {
+            VariationsTestUtils.deleteSeeds();
+        }
+    }
+
+    // Tests that the finch-seed-min-update-period flag overrides the seed request throttling.
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add(AwSwitches.FINCH_SEED_MIN_UPDATE_PERIOD + "=0")
+    public void testFinchSeedMinUpdatePeriodFlag() throws Exception {
+        try {
+            // Update the last modified time of the stamp file to simulate having just requested a
+            // new seed from the service.
+            VariationsUtils.getStampFile().createNewFile();
+            VariationsUtils.updateStampTime(CURRENT_TIME_MILLIS);
+
+            boolean seedRequested = runTestLoaderBlocking();
+
+            Assert.assertTrue("Seed file should be requested", seedRequested);
+        } finally {
+            VariationsTestUtils.deleteSeeds();
+        }
     }
 }

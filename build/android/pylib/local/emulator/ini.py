@@ -9,6 +9,8 @@ def loads(ini_str, strict=True):
   ret = {}
   for line in ini_str.splitlines():
     key, val = line.split('=', 1)
+    key = key.strip()
+    val = val.strip()
     if strict and key in ret:
       raise ValueError('Multiple entries present for key "%s"' % key)
     ret[key] = val
@@ -22,8 +24,8 @@ def load(fp):
 
 def dumps(obj):
   ret = ''
-  for k, v in obj.iteritems():
-    ret += '%s=%s\n' % (k, str(v))
+  for k, v in sorted(obj.iteritems()):
+    ret += '%s = %s\n' % (k, str(v))
   return ret
 
 

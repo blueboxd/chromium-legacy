@@ -18,9 +18,7 @@ cast_source_set("receiver") {
     "//net",
   ]
 
-  public_deps = [
-    "//chromecast/media/audio/mixer_service:proto",
-  ]
+  public_deps = [ "//chromecast/media/audio/mixer_service:proto" ]
 }
 
 cast_source_set("receiver_cma") {

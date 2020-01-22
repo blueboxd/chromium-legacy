@@ -100,7 +100,7 @@ ViewsScreenLocker::~ViewsScreenLocker() {
 
 void ViewsScreenLocker::Init() {
   lock_time_ = base::TimeTicks::Now();
-  user_selection_screen_->Init(screen_locker_->users());
+  user_selection_screen_->Init(screen_locker_->GetUsersToShow());
   if (!ime_state_.get())
     ime_state_ = input_method::InputMethodManager::Get()->GetActiveIMEState();
 

@@ -65,8 +65,8 @@
   self.viewController =
       [[OmniboxViewController alloc] initWithIncognito:isIncognito];
 
-  self.viewController.defaultLeadingImage = GetOmniboxSuggestionIcon(
-      DEFAULT_FAVICON, base::FeatureList::IsEnabled(kNewOmniboxPopupLayout));
+  self.viewController.defaultLeadingImage =
+      GetOmniboxSuggestionIcon(DEFAULT_FAVICON);
   self.viewController.dispatcher =
       static_cast<id<BrowserCommands, LoadQueryCommands, OmniboxFocuser>>(
           self.dispatcher);

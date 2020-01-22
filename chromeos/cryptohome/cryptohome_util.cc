@@ -354,6 +354,8 @@ MountError CryptohomeErrorToMountError(CryptohomeErrorCode code) {
       return MOUNT_ERROR_PREVIOUS_MIGRATION_INCOMPLETE;
     case CRYPTOHOME_ERROR_REMOVE_FAILED:
       return MOUNT_ERROR_REMOVE_FAILED;
+    case CRYPTOHOME_ERROR_TPM_UPDATE_REQUIRED:
+      return MOUNT_ERROR_TPM_UPDATE_REQUIRED;
     // TODO(crbug.com/797563): Split the error space and/or handle everything.
     case CRYPTOHOME_ERROR_LOCKBOX_SIGNATURE_INVALID:
     case CRYPTOHOME_ERROR_LOCKBOX_CANNOT_SIGN:
@@ -372,7 +374,6 @@ MountError CryptohomeErrorToMountError(CryptohomeErrorCode code) {
     case CRYPTOHOME_ERROR_FAILED_TO_EXTEND_PCR:
     case CRYPTOHOME_ERROR_FAILED_TO_READ_PCR:
     case CRYPTOHOME_ERROR_PCR_ALREADY_EXTENDED:
-    case CRYPTOHOME_ERROR_TPM_UPDATE_REQUIRED:
       NOTREACHED();
       return MOUNT_ERROR_FATAL;
   }

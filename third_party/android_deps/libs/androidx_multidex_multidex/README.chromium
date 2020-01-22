@@ -1,13 +1,14 @@
 Name: Android Multi-Dex Library
 Short Name: multidex
-URL: 
+URL: https://maven.google.com/androidx/multidex/multidex/2.0.0/multidex-2.0.0.aar
 Version: 2.0.0
 License: Apache Version 2.0
 License File: LICENSE
 Security Critical: yes
 
 Description:
-Library for legacy multi-dex support
+Library for legacy multi-dex support.
+https://developer.android.com/jetpack/androidx/releases/multidex
 
 Local Modifications:
 No modifications.

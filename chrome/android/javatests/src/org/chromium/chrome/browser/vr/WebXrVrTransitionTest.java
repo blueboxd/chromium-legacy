@@ -35,7 +35,6 @@ import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
@@ -224,11 +223,8 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
-    @CommandLineFlags
-            .Add({"enable-features=WebXR"})
+            @CommandLineFlags.Add({"enable-features=WebXR"})
             @Restriction(RESTRICTION_TYPE_SVR)
-            @DisableIf.
-            Build(message = "https://crbug.com/1039890", sdk_is_less_than = Build.VERSION_CODES.M)
             public void testControlsVisibleAfterExitingVr_WebXr() throws InterruptedException {
         controlsVisibleAfterExitingVrImpl(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),

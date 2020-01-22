@@ -44,8 +44,6 @@ enum CreateGraphExecutorResult {
   OK = 0,
   MODEL_INTERPRETATION_ERROR = 1,
   MEMORY_ALLOCATION_ERROR = 2,
-  // Remove kMax and use builtin kMaxValue after Mojo uprev (crbug.com/909719).
-  kMax = MEMORY_ALLOCATION_ERROR,
 };
 
 // Model specification for builtin models.

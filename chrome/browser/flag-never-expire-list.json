@@ -81,6 +81,7 @@
   "show-taps",
   "show-touch-hud",
   "tint-gl-composited-content",
+  "top-chrome-touch-ui",
   "translate-android-manual-trigger",
   "ui-disable-partial-swap",
   "ui-slow-animations",

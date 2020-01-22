@@ -15,11 +15,7 @@ source_set("system_storage") {
     "system_storage_api.h",
   ]
 
-  deps = [
-    "//extensions/common/api",
-  ]
+  deps = [ "//extensions/common/api" ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

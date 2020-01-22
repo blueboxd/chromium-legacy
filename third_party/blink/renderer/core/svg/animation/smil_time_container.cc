@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/svg/animation/element_smil_animations.h"
 #include "third_party/blink/renderer/core/svg/animation/svg_smil_element.h"
+#include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
@@ -64,6 +65,7 @@ SMILTimeContainer::SMILTimeContainer(SVGSVGElement& owner)
     : frame_scheduling_state_(kIdle),
       started_(false),
       paused_(false),
+      should_dispatch_events_(!SVGImage::IsInSVGImage(&owner)),
       document_order_indexes_dirty_(false),
       is_updating_intervals_(false),
       wakeup_timer_(
@@ -457,7 +459,7 @@ void SMILTimeContainer::UpdateIntervals(SMILTime document_time) {
     SVGSMILElement* element = priority_queue_.MinElement();
     element->UpdateInterval(document_time);
     auto events_to_dispatch = element->UpdateActiveState(document_time);
-    if (events_to_dispatch)
+    if (should_dispatch_events_ && events_to_dispatch)
       element->DispatchEvents(events_to_dispatch);
     SMILTime next_interval_time =
         element->ComputeNextIntervalTime(document_time);

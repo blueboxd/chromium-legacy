@@ -29,4 +29,6 @@ public class ContentFeatureList {
     public static final String SERVICE_GROUP_IMPORTANCE = "ServiceGroupImportance";
 
     public static final String WEB_NFC = "WebNFC";
+
+    public static final String WEBXR_PERMISSIONS_API = "WebXrPermissionsApi";
 }

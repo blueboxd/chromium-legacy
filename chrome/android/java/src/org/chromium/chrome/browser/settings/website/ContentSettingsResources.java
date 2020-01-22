@@ -102,6 +102,12 @@ public class ContentSettingsResources {
                             R.string.ads_permission_title, ContentSettingValues.ALLOW,
                             ContentSettingValues.BLOCK, 0,
                             R.string.website_settings_category_ads_blocked));
+            // TODO(crbug.com/1041009) Finalize WebXr Permissions Icons.
+            localMap.put(ContentSettingsType.AR,
+                    new ResourceItem(R.drawable.vr_headset, R.string.ar_permission_title,
+                            R.string.ar_permission_title, ContentSettingValues.ASK,
+                            ContentSettingValues.BLOCK, R.string.website_settings_category_ar_ask,
+                            R.string.website_settings_category_ar_blocked));
             localMap.put(ContentSettingsType.AUTOMATIC_DOWNLOADS,
                     new ResourceItem(R.drawable.infobar_downloading,
                             R.string.automatic_downloads_permission_title,
@@ -214,6 +220,12 @@ public class ContentSettingsResources {
                             R.string.website_settings_usb, ContentSettingValues.ASK,
                             ContentSettingValues.BLOCK, R.string.website_settings_category_usb_ask,
                             R.string.website_settings_category_usb_blocked));
+            // TODO(crbug.com/1041009) Finalize WebXr Permissions Icons/Strings.
+            localMap.put(ContentSettingsType.VR,
+                    new ResourceItem(R.drawable.vr_headset, R.string.vr_permission_title,
+                            R.string.vr_permission_title, ContentSettingValues.ASK,
+                            ContentSettingValues.BLOCK, R.string.website_settings_category_vr_ask,
+                            R.string.website_settings_category_vr_blocked));
             sResourceInfo = localMap;
         }
         return sResourceInfo;

@@ -220,11 +220,11 @@ void AutocompleteActionPredictorTable::DeleteAllRows() {
 
 AutocompleteActionPredictorTable::AutocompleteActionPredictorTable(
     scoped_refptr<base::SequencedTaskRunner> db_task_runner)
-    : PredictorTableBase(std::move(db_task_runner)) {}
+    : sqlite_proto::TableManager(std::move(db_task_runner)) {}
 
 AutocompleteActionPredictorTable::~AutocompleteActionPredictorTable() = default;
 
-void AutocompleteActionPredictorTable::CreateTableIfNonExistent() {
+void AutocompleteActionPredictorTable::CreateTablesIfNonExistent() {
   DCHECK(GetTaskRunner()->RunsTasksInCurrentSequence());
   if (CantAccessDatabase())
     return;

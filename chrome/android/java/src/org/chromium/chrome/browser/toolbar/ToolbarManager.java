@@ -73,6 +73,7 @@ import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
+import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -250,6 +251,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private AppMenuHandler mAppMenuHandler;
 
     private int mCurrentOrientation;
+
+    @OverviewModeState
+    private int mOverviewModeState = OverviewModeState.NOT_SHOWN;
 
     /**
      * Runnable for the home and search accelerator button when Start Surface home page is enabled.
@@ -470,7 +474,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 }
 
                 // TODO(crbug.com/896476): Remove this.
-                if (((TabImpl) tab).isPreview()) {
+                if (Previews.isPreview(tab)) {
                     // Some previews (like Client LoFi) are not fully decided until the page
                     // finishes loading. If this is a preview, update the security icon which will
                     // also update the verbose status view to make sure the "Lite" badge is
@@ -604,7 +608,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                     mToolbar.onNavigatedToDifferentPage();
                 }
 
-                if (navigation.hasCommitted() && ((TabImpl) tab).isPreview()) {
+                if (navigation.hasCommitted() && Previews.isPreview(tab)) {
                     // Some previews are not fully decided until the page commits. If this
                     // is a preview, update the security icon which will also update the verbose
                     // status view to make sure the "Lite" badge is displayed.
@@ -735,7 +739,11 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             @Override
             public void onOverviewModeStateChanged(
                     @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar) {
+                assert FeatureUtilities.isStartSurfaceEnabled();
                 mToolbar.updateTabSwitcherToolbarState(showTabSwitcherToolbar);
+                mOverviewModeState = overviewModeState;
+                mIdentityDiscController.updateButtonState(
+                        mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE);
             }
 
             @Override
@@ -757,6 +765,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
             @Override
             public void onOverviewModeFinishedHiding() {
                 mToolbar.onTabSwitcherTransitionFinished();
+                updateButtonStatus();
             }
         };
 
@@ -1880,8 +1889,12 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         if (mToolbar.getMenuButtonWrapper() != null && !isBottomToolbarVisible()) {
             mToolbar.getMenuButtonWrapper().setVisibility(View.VISIBLE);
         }
+
+        // TODO(crbug.com/1041475): Separate enabling the IdentityDiscController from enabling the
+        // ExperimentalButton.
         mIdentityDiscController.updateButtonState(
-                mLocationBarModel.getNewTabPageForCurrentTab() != null);
+                mLocationBarModel.getNewTabPageForCurrentTab() != null
+                || mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE);
     }
 
     private void updateBookmarkButtonStatus() {

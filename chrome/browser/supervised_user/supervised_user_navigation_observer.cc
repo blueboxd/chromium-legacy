@@ -38,6 +38,22 @@ bool IsMainFrame(content::RenderFrameHost* render_frame_host) {
 
 using content::NavigationEntry;
 
+// static
+void SupervisedUserNavigationObserver::MaybeCreateForWebContents(
+    content::WebContents* web_contents) {
+  DCHECK(web_contents);
+  Profile* user_profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  if (!user_profile->IsSupervised())
+    return;
+
+  if (!FromWebContents(web_contents)) {
+    web_contents->SetUserData(
+        UserDataKey(),
+        base::WrapUnique(new SupervisedUserNavigationObserver(web_contents)));
+  }
+}
+
 SupervisedUserNavigationObserver::~SupervisedUserNavigationObserver() {
   supervised_user_service_->RemoveObserver(this);
 }

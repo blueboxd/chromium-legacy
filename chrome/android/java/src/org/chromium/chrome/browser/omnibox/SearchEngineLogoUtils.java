@@ -171,7 +171,7 @@ public class SearchEngineLogoUtils {
     /** @return Whether the status icon should be hidden when the LocationBar is unfocused. */
     public static boolean currentlyOnNTP(
             ToolbarCommonPropertiesModel toolbarCommonPropertiesModel) {
-        return toolbarCommonPropertiesModel.getNewTabPageForCurrentTab() != null
+        return toolbarCommonPropertiesModel != null
                 && NewTabPage.isNTPUrl(toolbarCommonPropertiesModel.getCurrentUrl());
     }
 

@@ -53,6 +53,14 @@ void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
                            const std::string& result,
                            bool success);
 
+// Returns an array of the file types supported for DLP scanning.
+std::array<const base::FilePath::CharType*, 21> SupportedDlpFileTypes();
+
+// Returns true if the given file type is supported for DLP scanning.
+bool FileTypeSupported(bool for_malware_scan,
+                       bool for_dlp_scan,
+                       const base::FilePath& path);
+
 }  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_DEEP_SCANNING_UTILS_H_

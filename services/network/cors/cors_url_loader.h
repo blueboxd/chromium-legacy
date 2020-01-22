@@ -44,6 +44,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoader
       uint32_t options,
       DeleteCallback delete_callback,
       const ResourceRequest& resource_request,
+      bool ignore_isolated_world_origin,
       mojo::PendingRemote<mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* network_loader_factory,

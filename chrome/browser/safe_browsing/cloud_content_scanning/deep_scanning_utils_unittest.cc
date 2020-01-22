@@ -7,6 +7,7 @@
 #include <string>
 #include <tuple>
 
+#include "base/files/file_path.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -227,6 +228,56 @@ TEST_P(DeepScanningUtilsUMATest, InvalidDuration) {
   EXPECT_EQ(
       0u,
       histograms().GetTotalCountsForPrefix("SafeBrowsing.DeepScan.").size());
+}
+
+class DeepScanningUtilsFileTypeSupportedTest : public testing::Test {
+ protected:
+  std::vector<base::FilePath::StringType> UnsupportedDlpFileTypes() {
+    return {FILE_PATH_LITERAL(".these"), FILE_PATH_LITERAL(".types"),
+            FILE_PATH_LITERAL(".are"), FILE_PATH_LITERAL(".not"),
+            FILE_PATH_LITERAL(".supported")};
+  }
+
+  base::FilePath FilePath(const base::FilePath::StringType& type) {
+    return base::FilePath(FILE_PATH_LITERAL("foo") + type);
+  }
+};
+
+TEST_F(DeepScanningUtilsFileTypeSupportedTest, DLP) {
+  // With a DLP-only scan, only the types returned by SupportedDlpFileTypes()
+  // will be supported, and other types will fail.
+  for (const base::FilePath::StringType type : SupportedDlpFileTypes()) {
+    EXPECT_TRUE(FileTypeSupported(/*for_malware_scan=*/false,
+                                  /*for_dlp_scan=*/true, FilePath(type)));
+  }
+  for (const auto& type : UnsupportedDlpFileTypes()) {
+    EXPECT_FALSE(FileTypeSupported(/*for_malware_scan=*/false,
+                                   /*for_dlp_scan=*/true, FilePath(type)));
+  }
+}
+
+TEST_F(DeepScanningUtilsFileTypeSupportedTest, Malware) {
+  // With a Malware-only scan, every type is supported.
+  for (const base::FilePath::StringType type : SupportedDlpFileTypes()) {
+    EXPECT_TRUE(FileTypeSupported(/*for_malware_scan=*/true,
+                                  /*for_dlp_scan=*/false, FilePath(type)));
+  }
+  for (const auto& type : UnsupportedDlpFileTypes()) {
+    EXPECT_TRUE(FileTypeSupported(/*for_malware_scan=*/true,
+                                  /*for_dlp_scan=*/false, FilePath(type)));
+  }
+}
+
+TEST_F(DeepScanningUtilsFileTypeSupportedTest, MalwareAndDLP) {
+  // With a Malware and DLP scan, every type is supported.
+  for (const base::FilePath::StringType type : SupportedDlpFileTypes()) {
+    EXPECT_TRUE(FileTypeSupported(/*for_malware_scan=*/true,
+                                  /*for_dlp_scan=*/true, FilePath(type)));
+  }
+  for (const auto& type : UnsupportedDlpFileTypes()) {
+    EXPECT_TRUE(FileTypeSupported(/*for_malware_scan=*/true,
+                                  /*for_dlp_scan=*/true, FilePath(type)));
+  }
 }
 
 }  // namespace safe_browsing

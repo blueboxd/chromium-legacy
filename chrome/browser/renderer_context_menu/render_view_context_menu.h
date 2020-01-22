@@ -37,6 +37,7 @@ class AccessibilityLabelsMenuObserver;
 class ClickToCallContextMenuObserver;
 class PrintPreviewContextMenuObserver;
 class Profile;
+class QuickAnswersMenuObserver;
 class SharedClipboardContextMenuObserver;
 class SpellingMenuObserver;
 class SpellingOptionsSubMenuObserver;
@@ -159,6 +160,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendOpenWithLinkItems();
   void AppendSmartSelectionActionItems();
   void AppendOpenInBookmarkAppLinkItems();
+  void AppendQuickAnswersItems();
   void AppendImageItems();
   void AppendAudioItems();
   void AppendCanvasItems();
@@ -275,6 +277,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // An observer that handles smart text selection action items.
   std::unique_ptr<RenderViewContextMenuObserver>
       start_smart_selection_action_menu_observer_;
+  std::unique_ptr<QuickAnswersMenuObserver> quick_answers_menu_observer_;
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

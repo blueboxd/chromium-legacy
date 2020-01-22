@@ -243,6 +243,15 @@ class PLATFORM_EXPORT ConcurrentMarkingVisitor
 
   // Concurrent variant of MarkingVisitorCommon::AccountMarkedBytes.
   void AccountMarkedBytesSafe(HeapObjectHeader*);
+
+  bool ConcurrentTracingBailOut(TraceDescriptor desc) override {
+    not_safe_to_concurrently_trace_worklist_.Push(desc);
+    return true;
+  }
+
+ private:
+  NotSafeToConcurrentlyTraceWorklist::View
+      not_safe_to_concurrently_trace_worklist_;
 };
 
 ALWAYS_INLINE void ConcurrentMarkingVisitor::AccountMarkedBytesSafe(

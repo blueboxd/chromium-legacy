@@ -4,10 +4,7 @@
 
 package org.chromium.chrome.browser.explore_sites;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.DisplayMetrics;
-import android.view.WindowManager;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -15,6 +12,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.ui.display.DisplayAndroid;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -154,14 +152,8 @@ public class ExploreSitesBridge {
      */
     @CalledByNative
     static float getScaleFactorFromDevice() {
-        // Get DeviceMetrics from context.
-        DisplayMetrics metrics = new DisplayMetrics();
-        ((WindowManager) ContextUtils.getApplicationContext().getSystemService(
-                 Context.WINDOW_SERVICE))
-                .getDefaultDisplay()
-                .getMetrics(metrics);
-        // Get density and return it.
-        return metrics.density;
+        return DisplayAndroid.getNonMultiDisplay(ContextUtils.getApplicationContext())
+                .getDipScale();
     }
 
     @NativeMethods

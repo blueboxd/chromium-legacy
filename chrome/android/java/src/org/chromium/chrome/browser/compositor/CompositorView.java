@@ -630,6 +630,14 @@ public class CompositorView
         createCompositorSurfaceManager(!mIsSurfaceControlEnabled);
     }
 
+    /**
+     * Notifies the native compositor that a tab change has occurred. This
+     * should be called when changing to a valid tab.
+     */
+    public void onTabChanged() {
+        CompositorViewJni.get().onTabChanged(mNativeCompositorView, CompositorView.this);
+    }
+
     @NativeMethods
     interface Natives {
         long init(CompositorView caller, boolean lowMemDevice, WindowAndroid windowAndroid,
@@ -653,5 +661,6 @@ public class CompositorView
                 long nativeCompositorView, CompositorView caller, WindowAndroid window);
         void cacheBackBufferForCurrentSurface(long nativeCompositorView, CompositorView caller);
         void evictCachedBackBuffer(long nativeCompositorView, CompositorView caller);
+        void onTabChanged(long nativeCompositorView, CompositorView caller);
     }
 }

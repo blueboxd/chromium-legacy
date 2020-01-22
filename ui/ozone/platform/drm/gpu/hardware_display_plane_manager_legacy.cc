@@ -46,23 +46,21 @@ HardwareDisplayPlaneManagerLegacy::~HardwareDisplayPlaneManagerLegacy() {
 }
 
 bool HardwareDisplayPlaneManagerLegacy::Commit(
-    HardwareDisplayPlaneList* plane_list,
+    const HardwareDisplayPlaneList& plane_list,
     scoped_refptr<PageFlipRequest> page_flip_request,
     std::unique_ptr<gfx::GpuFence>* out_fence) {
   bool test_only = !page_flip_request;
   if (test_only) {
-    for (HardwareDisplayPlane* plane : plane_list->plane_list) {
+    for (HardwareDisplayPlane* plane : plane_list.plane_list) {
       plane->set_in_use(false);
     }
-    plane_list->plane_list.clear();
-    plane_list->legacy_page_flips.clear();
     return true;
   }
-  if (plane_list->plane_list.empty())  // No assigned planes, nothing to do.
+  if (plane_list.plane_list.empty())  // No assigned planes, nothing to do.
     return true;
 
   bool ret = true;
-  for (const auto& flip : plane_list->legacy_page_flips) {
+  for (const auto& flip : plane_list.legacy_page_flips) {
     if (!drm_->PageFlip(flip.crtc_id, flip.framebuffer, page_flip_request)) {
       // 1) Permission Denied is a legitimate error.
       // 2) EBUSY or ENODEV are possible if we're page flipping a disconnected
@@ -80,25 +78,19 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(
     }
   }
 
-  if (ret) {
-    plane_list->plane_list.swap(plane_list->old_plane_list);
-    plane_list->plane_list.clear();
-    plane_list->legacy_page_flips.clear();
-  } else {
+  if (!ret)
     ResetCurrentPlaneList(plane_list);
-  }
 
   return ret;
 }
 
 bool HardwareDisplayPlaneManagerLegacy::DisableOverlayPlanes(
-    HardwareDisplayPlaneList* plane_list) {
+    const std::vector<HardwareDisplayPlane*>& plane_list) {
   // We're never going to ship legacy pageflip with overlays enabled.
-  DCHECK(std::find_if(plane_list->old_plane_list.begin(),
-                      plane_list->old_plane_list.end(),
+  DCHECK(std::find_if(plane_list.begin(), plane_list.end(),
                       [](HardwareDisplayPlane* plane) {
                         return plane->type() == HardwareDisplayPlane::kOverlay;
-                      }) == plane_list->old_plane_list.end());
+                      }) == plane_list.end());
   return true;
 }
 

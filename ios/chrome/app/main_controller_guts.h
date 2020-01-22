@@ -10,6 +10,7 @@
 #import "base/ios/block_types.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "ios/chrome/app/startup/chrome_app_startup_parameters.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
@@ -22,10 +23,6 @@
 @protocol BrowserInterfaceProvider;
 @protocol TabSwitcher;
 class AppUrlLoadingService;
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 // Used to update the current BVC mode if a new tab is added while the tab
 // switcher view is being dismissed.  This is different than ApplicationMode in

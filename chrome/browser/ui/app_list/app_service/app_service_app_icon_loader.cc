@@ -35,6 +35,14 @@ bool AppServiceAppIconLoader::CanLoadImageForApp(const std::string& app_id) {
   // Chrome, which should be hidden.
   if (app_id == kArcIntentHelperAppId)
     return false;
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile());
+  if (!proxy || proxy->AppRegistryCache().GetAppType(app_id) ==
+                    apps::mojom::AppType::kUnknown) {
+    return false;
+  }
+
   return true;
 }
 

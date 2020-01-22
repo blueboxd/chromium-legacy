@@ -803,28 +803,9 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(BlinkTestController, message)
     IPC_MESSAGE_HANDLER(BlinkTestHostMsg_PrintMessage, OnPrintMessage)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_PrintMessageToStderr,
-                        OnPrintMessageToStderr)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_InitiateLayoutDump,
-                        OnInitiateLayoutDump)
     IPC_MESSAGE_HANDLER(BlinkTestHostMsg_OverridePreferences,
                         OnOverridePreferences)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_SetPopupBlockingEnabled,
-                        OnSetPopupBlockingEnabled)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_NavigateSecondaryWindow,
-                        OnNavigateSecondaryWindow)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_GoToOffset, OnGoToOffset)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_Reload, OnReload)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_LoadURLForFrame, OnLoadURLForFrame)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_CloseRemainingWindows,
-                        OnCloseRemainingWindows)
     IPC_MESSAGE_HANDLER(BlinkTestHostMsg_ResetDone, OnResetDone)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_SetBluetoothManualChooser,
-                        OnSetBluetoothManualChooser)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_GetBluetoothManualChooserEvents,
-                        OnGetBluetoothManualChooserEvents)
-    IPC_MESSAGE_HANDLER(BlinkTestHostMsg_SendBluetoothManualChooserEvent,
-                        OnSendBluetoothManualChooserEvent)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_BlockThirdPartyCookies,
                         OnBlockThirdPartyCookies)
     IPC_MESSAGE_UNHANDLED(handled = false)

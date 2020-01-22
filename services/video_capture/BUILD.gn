@@ -50,9 +50,7 @@ source_set("lib") {
     "//services/viz/public/cpp/gpu",
   ]
 
-  deps = [
-    "//media/capture:capture_switches",
-  ]
+  deps = [ "//media/capture:capture_switches" ]
 
   if (is_chromeos) {
     public_deps += [ "//media/capture/video/chromeos/mojom:cros_camera" ]

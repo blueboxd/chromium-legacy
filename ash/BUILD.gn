@@ -1824,6 +1824,7 @@ test("ash_unittests") {
     "session/session_controller_impl_unittest.cc",
     "shelf/back_button_unittest.cc",
     "shelf/home_button_unittest.cc",
+    "shelf/hotseat_widget_unittest.cc",
     "shelf/login_shelf_view_unittest.cc",
     "shelf/scrollable_shelf_view_unittest.cc",
     "shelf/shelf_application_menu_model_unittest.cc",

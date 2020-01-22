@@ -57,6 +57,8 @@ class ServiceConnectionImpl : public ServiceConnection {
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback)
       override;
+  void GetDiagnosticsService(
+      mojom::CrosHealthdDiagnosticsServiceRequest service) override;
 
   // Binds the factory interface |cros_healthd_service_factory_| to an
   // implementation in the cros_healthd daemon, if it is not already bound. The
@@ -155,6 +157,13 @@ void ServiceConnectionImpl::ProbeTelemetryInfo(
   BindCrosHealthdProbeServiceIfNeeded();
   cros_healthd_probe_service_->ProbeTelemetryInfo(categories_to_test,
                                                   std::move(callback));
+}
+
+void ServiceConnectionImpl::GetDiagnosticsService(
+    mojom::CrosHealthdDiagnosticsServiceRequest service) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindCrosHealthdServiceFactoryIfNeeded();
+  cros_healthd_service_factory_->GetDiagnosticsService(std::move(service));
 }
 
 void ServiceConnectionImpl::BindCrosHealthdServiceFactoryIfNeeded() {

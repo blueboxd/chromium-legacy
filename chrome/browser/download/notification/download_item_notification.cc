@@ -728,7 +728,7 @@ base::string16 DownloadItemNotification::GetWarningStatusString() const {
       bool requests_ap_verdicts =
           safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
               profile())
-              ->RequestsAdvancedProtectionVerdicts();
+              ->IsUnderAdvancedProtection();
       return l10n_util::GetStringFUTF16(
           requests_ap_verdicts
               ? IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT_IN_ADVANCED_PROTECTION

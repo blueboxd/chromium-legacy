@@ -12229,9 +12229,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       &screen_info);
   // Convert from CSS to physical pixels
   expected.Scale(screen_info.device_scale_factor);
-  blink::WebPoint actual = filter->GetIntersectionState().viewport_offset;
-  EXPECT_NEAR(expected.x(), actual.x, 2.0);
-  EXPECT_NEAR(expected.y(), actual.y, 2.0);
+  gfx::Point actual = filter->GetIntersectionState().viewport_offset;
+  EXPECT_NEAR(expected.x(), actual.x(), 2.0);
+  EXPECT_NEAR(expected.y(), actual.y(), 2.0);
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,

@@ -387,6 +387,8 @@ void LocalFrameClientImpl::DispatchDidLoadResourceFromMemoryCache(
 }
 
 void LocalFrameClientImpl::DispatchDidHandleOnloadEvents() {
+  if (!web_frame_->Parent())
+    web_frame_->GetFrame()->GetLocalFrameHostRemote().DocumentOnLoadCompleted();
   if (web_frame_->Client())
     web_frame_->Client()->DidHandleOnloadEvents();
 }

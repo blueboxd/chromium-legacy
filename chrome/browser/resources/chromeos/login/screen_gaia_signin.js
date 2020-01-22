@@ -1310,7 +1310,7 @@ Polymer({
       // Reload offline version of the sign-in extension, which will show
       // error itself.
       chrome.send('offlineLogin', [this.email_]);
-    } else if (!this.isLoadingUiShown_) {
+    } else if (!this.loadingFrameContents_) {
       $('bubble').showContentForElement(
           this, cr.ui.Bubble.Attachment.BOTTOM, error,
           BUBBLE_HORIZONTAL_PADDING, BUBBLE_VERTICAL_PADDING);

@@ -80,4 +80,23 @@ void WebStateDelegate::Detach(WebState* source) {
   attached_states_.erase(source);
 }
 
+void WebStateDelegate::ContextMenuConfiguration(
+    WebState* source,
+    const GURL& link_url,
+    void (^completion_handler)(UIContextMenuConfiguration*))
+    API_AVAILABLE(ios(13.0)) {}
+
+void WebStateDelegate::ContextMenuDidEnd(WebState* source, const GURL& link_url)
+    API_AVAILABLE(ios(13.0)) {}
+
+void WebStateDelegate::ContextMenuWillCommitWithAnimator(
+    WebState* source,
+    const GURL& link_url,
+    id<UIContextMenuInteractionCommitAnimating> animator)
+    API_AVAILABLE(ios(13.0)) {}
+
+void WebStateDelegate::ContextMenuWillPresent(WebState* source,
+                                              const GURL& link_url)
+    API_AVAILABLE(ios(13.0)) {}
+
 }  // web

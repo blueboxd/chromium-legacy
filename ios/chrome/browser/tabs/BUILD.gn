@@ -18,6 +18,7 @@ source_set("tabs") {
   deps = [
     "//components/sessions",
     "//components/sync_sessions",
+    "//ios/chrome/browser/browser_state:forward",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/sessions:session_service",
     "//ios/chrome/browser/web_state_list",

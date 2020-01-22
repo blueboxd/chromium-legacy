@@ -191,6 +191,59 @@
       previewingViewController);
 }
 
+- (void)webView:(WKWebView*)webView
+    contextMenuConfigurationForElement:(WKContextMenuElementInfo*)elementInfo
+                     completionHandler:
+                         (void (^)(UIContextMenuConfiguration* _Nullable))
+                             completionHandler API_AVAILABLE(ios(13.0)) {
+  web::WebStateDelegate* delegate = self.webStateImpl->GetDelegate();
+  if (!delegate) {
+    return;
+  }
+
+  delegate->ContextMenuConfiguration(self.webStateImpl,
+                                     net::GURLWithNSURL(elementInfo.linkURL),
+                                     completionHandler);
+}
+
+- (void)webView:(WKWebView*)webView
+    contextMenuDidEndForElement:(WKContextMenuElementInfo*)elementInfo
+    API_AVAILABLE(ios(13.0)) {
+  web::WebStateDelegate* delegate = self.webStateImpl->GetDelegate();
+  if (!delegate) {
+    return;
+  }
+
+  delegate->ContextMenuDidEnd(self.webStateImpl,
+                              net::GURLWithNSURL(elementInfo.linkURL));
+}
+
+- (void)webView:(WKWebView*)webView
+     contextMenuForElement:(nonnull WKContextMenuElementInfo*)elementInfo
+    willCommitWithAnimator:
+        (nonnull id<UIContextMenuInteractionCommitAnimating>)animator
+    API_AVAILABLE(ios(13.0)) {
+  web::WebStateDelegate* delegate = self.webStateImpl->GetDelegate();
+  if (!delegate) {
+    return;
+  }
+
+  delegate->ContextMenuWillCommitWithAnimator(
+      self.webStateImpl, net::GURLWithNSURL(elementInfo.linkURL), animator);
+}
+
+- (void)webView:(WKWebView*)webView
+    contextMenuWillPresentForElement:(WKContextMenuElementInfo*)elementInfo
+    API_AVAILABLE(ios(13.0)) {
+  web::WebStateDelegate* delegate = self.webStateImpl->GetDelegate();
+  if (!delegate) {
+    return;
+  }
+
+  delegate->ContextMenuWillPresent(self.webStateImpl,
+                                   net::GURLWithNSURL(elementInfo.linkURL));
+}
+
 #pragma mark - Helper
 
 // Helper to respond to |webView:runJavaScript...| delegate methods.

@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/id_map.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/layer.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/child_process_data.h"
+#include "content/public/browser/peak_gpu_memory_tracker.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -340,6 +342,28 @@ void CompositorView::EvictCachedBackBuffer(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& object) {
   compositor_->EvictCachedBackBuffer();
+}
+
+void CompositorView::OnTabChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& object) {
+  if (!compositor_)
+    return;
+  std::unique_ptr<content::PeakGpuMemoryTracker> tracker =
+      content::PeakGpuMemoryTracker::Create(
+          base::BindOnce([](uint64_t peak_memory) {
+            // Converting Bytes to Kilobytes.
+            UMA_HISTOGRAM_MEMORY_KB("Memory.GPU.PeakMemoryUsage.ChangeTab",
+                                    peak_memory / 1024u);
+          }));
+  compositor_->RequestPresentationTimeForNextFrame(base::BindOnce(
+      [](std::unique_ptr<content::PeakGpuMemoryTracker> tracker,
+         const gfx::PresentationFeedback& feedback) {
+        // This callback will be ran once the content::Compositor presents the
+        // next frame. The destruction of |tracker| will get the peak GPU memory
+        // and record a histogram.
+      },
+      std::move(tracker)));
 }
 
 }  // namespace android

@@ -8,16 +8,13 @@
 #include "base/macros.h"
 #include "components/autofill/core/browser/address_normalization_manager.h"
 #include "components/autofill/core/browser/test_address_normalizer.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 
 namespace autofill {
 class PersonalDataManager;
 class RegionDataLoader;
 }  // namespace autofill
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 namespace payments {
 class PaymentShippingOption;

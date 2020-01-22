@@ -35,7 +35,7 @@
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper.h"
+#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "chrome/common/chrome_features.h"
@@ -268,8 +268,8 @@ WebContents* OpenApplicationTab(Profile* profile,
   }
 
   if (extension->from_bookmark()) {
-    web_app::WebAppTabHelper* tab_helper =
-        web_app::WebAppTabHelper::FromWebContents(contents);
+    web_app::WebAppTabHelperBase* tab_helper =
+        web_app::WebAppTabHelperBase::FromWebContents(contents);
     DCHECK(tab_helper);
     tab_helper->SetAppId(extension->id());
   }
@@ -445,8 +445,8 @@ WebContents* NavigateApplicationWindow(Browser* browser,
   // TODO(https://crbug.com/1032443):
   // Eventually move this to browser_navigator.cc: CreateTargetContents().
   if (extension && extension->from_bookmark()) {
-    web_app::WebAppTabHelper* tab_helper =
-        web_app::WebAppTabHelper::FromWebContents(web_contents);
+    web_app::WebAppTabHelperBase* tab_helper =
+        web_app::WebAppTabHelperBase::FromWebContents(web_contents);
     DCHECK(tab_helper);
     tab_helper->SetAppId(extension->id());
   }

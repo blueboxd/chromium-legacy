@@ -267,8 +267,8 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
     point_in_pixel = gfx::ConvertPointToPixel(
         widget_->GetOriginalScreenInfo().device_scale_factor, point_in_pixel);
   }
-  blink::WebHitTestResult result = widget_->GetWebWidget()->HitTestResultAt(
-      blink::WebPoint(ToRoundedPoint(point_in_pixel)));
+  blink::WebHitTestResult result =
+      widget_->GetWebWidget()->HitTestResultAt(ToRoundedPoint(point_in_pixel));
 
   blink::WebNode result_node = result.GetNode();
   *local_point = gfx::PointF(point);

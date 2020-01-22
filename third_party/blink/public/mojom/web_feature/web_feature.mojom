@@ -2501,6 +2501,7 @@ enum WebFeature {
   kCSPROWithReasonableRestrictions = 3136,
   kCSPWithBetterThanReasonableRestrictions = 3137,
   kCSPROWithBetterThanReasonableRestrictions = 3138,
+  kMeasureMemory = 3139,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

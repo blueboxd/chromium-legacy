@@ -97,7 +97,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   WebInputEventResult DispatchBufferedTouchEvents() override;
 
   // WebPagePopup implementation.
-  WebPoint PositionRelativeToOwner() override;
+  gfx::Point PositionRelativeToOwner() override;
   WebDocument GetDocument() override;
   WebPagePopupClient* GetClientForTesting() const override;
 

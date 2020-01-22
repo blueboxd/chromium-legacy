@@ -34,12 +34,16 @@ class GpuServiceImpl;
 // implementation and should only be used in tests.
 class TestGpuServiceHolder {
  public:
+  class ScopedResetter {
+   public:
+    ~ScopedResetter() { TestGpuServiceHolder::ResetInstance(); }
+  };
   // Exposes a singleton to allow easy sharing of the GpuServiceImpl by
   // different clients (e.g. to share SharedImages via a common
   // SharedImageManager).
   //
   // The instance will parse GpuPreferences from the command line when it is
-  // first created (e.g. to allow entire test suite with --enable-vulkan).
+  // first created (e.g. to allow entire test suite with --use-vulkan).
   //
   // If specific feature flags or GpuPreferences are needed for a specific test,
   // a separate instance of this class can be created.

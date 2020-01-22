@@ -15,9 +15,11 @@
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -48,12 +50,14 @@ constexpr SkColor kScanFailureColor = gfx::kGoogleRed500;
 constexpr SkColor kScanPendingSideImageColor = gfx::kGoogleBlue400;
 constexpr SkColor kScanDoneSideImageColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
 
-constexpr int kSideImageSize = 35;
+constexpr int kSideImageSize = 24;
 constexpr int kTopImageSize = 100;
 
 constexpr gfx::Insets kSideImageInsets = gfx::Insets(8, 8, 8, 8);
-constexpr gfx::Insets KSideIconLayoutInsets = gfx::Insets(0, 10);
-constexpr int kSideIconBetweenChildSpacing = 20;
+constexpr gfx::Insets kMessageAndIconRowInsets = gfx::Insets(0, 32, 0, 48);
+constexpr int kSideIconBetweenChildSpacing = 16;
+
+constexpr int kTextLineHeight = 20;
 
 // A simple background class to show a colored circle behind the side icon once
 // the scanning is done.
@@ -243,7 +247,7 @@ void DeepScanningDialogViews::SetupButtons() {
   if (!scan_success_.has_value() || !scan_success_.value()) {
     DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                      GetCancelButtonText());
-    DialogDelegate::set_default_button(ui::DIALOG_BUTTON_CANCEL);
+    DialogDelegate::set_default_button(ui::DIALOG_BUTTON_NONE);
   }
 
   // TODO(domfc): Add "Learn more" button setup for scan failures.
@@ -302,17 +306,20 @@ void DeepScanningDialogViews::Show() {
                                         kTopImageSize, GetImageColor()));
   image_ = layout->AddView(std::move(image));
 
+  // Add padding to distance the top image from the icon and message.
+  layout->AddPaddingRow(views::GridLayout::kFixedSize, 16);
+
   // Add the side icon and message row.
   layout->StartRow(views::GridLayout::kFixedSize, 0);
   auto icon_and_message_row = std::make_unique<views::View>();
   auto* row_layout =
       icon_and_message_row->SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal, KSideIconLayoutInsets,
+          views::BoxLayout::Orientation::kHorizontal, kMessageAndIconRowInsets,
           kSideIconBetweenChildSpacing));
   row_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kStart);
   row_layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kStart);
+      views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Add the side icon.
   icon_and_message_row->AddChildView(CreateSideIcon());
@@ -320,6 +327,9 @@ void DeepScanningDialogViews::Show() {
   // Add the message.
   auto label = std::make_unique<views::Label>(GetDialogMessage());
   label->SetMultiLine(true);
+  label->SetLineHeight(kTextLineHeight);
+  label->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   message_ = icon_and_message_row->AddChildView(std::move(label));
 
   layout->AddView(std::move(icon_and_message_row));

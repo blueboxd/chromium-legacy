@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/extensions/extension_constants.h"
+
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/constants.h"
 
 namespace extension_urls {
 
@@ -77,6 +79,7 @@ const char* const kBuiltInFirstPartyExtensionIds[] = {
     kAutoclickExtensionId,
     kSelectToSpeakExtensionId,
     kSwitchAccessExtensionId,
+    kFilesManagerAppId,
     kFirstRunDialogId,
     kEspeakSpeechSynthesisExtensionId,
     kGoogleSpeechSynthesisExtensionId,

@@ -20,17 +20,11 @@ source_set("power_save_blocker") {
     "//services/device/wake_lock:*",
   ]
 
-  sources = [
-    "power_save_blocker.h",
-  ]
+  sources = [ "power_save_blocker.h" ]
 
-  public_deps = [
-    "//services/device/public/mojom",
-  ]
+  public_deps = [ "//services/device/public/mojom" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 
   if (use_dbus) {
     deps += [ "//dbus" ]
@@ -90,8 +84,6 @@ if (is_android) {
       "//services/device:*",
     ]
     sources = java_sources_needing_jni
-    deps = [
-      "//base:base_java",
-    ]
+    deps = [ "//base:base_java" ]
   }
 }

@@ -185,8 +185,7 @@ void FileMonitorImpl::CleanupFilesForCompletedEntries(
 
     // TODO(xingliu): Consider logs life time after the file being deleted on
     // the file thread.
-    stats::LogFileLifeTime(base::Time::Now() - entry->completion_time,
-                           entry->cleanup_attempt_count);
+    stats::LogFileLifeTime(base::Time::Now() - entry->completion_time);
   }
 
   file_thread_task_runner_->PostTaskAndReply(

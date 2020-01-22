@@ -104,6 +104,8 @@ class CONTENT_EXPORT CompositorImpl
   ui::ResourceManager& GetResourceManager() override;
   void CacheBackBufferForCurrentSurface() override;
   void EvictCachedBackBuffer() override;
+  void RequestPresentationTimeForNextFrame(
+      PresentationTimeCallback callback) override;
 
   // LayerTreeHostClient implementation.
   void WillBeginMainFrame() override {}

@@ -13,9 +13,14 @@
 
 LauncherExtensionAppUpdater::LauncherExtensionAppUpdater(
     Delegate* delegate,
-    content::BrowserContext* browser_context)
-    : LauncherAppUpdater(delegate, browser_context) {
+    content::BrowserContext* browser_context,
+    bool extensions_only)
+    : LauncherAppUpdater(delegate, browser_context),
+      extensions_only_(extensions_only) {
   StartObservingExtensionRegistry();
+
+  if (extensions_only)
+    return;
 
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(browser_context);
   if (prefs)
@@ -25,6 +30,9 @@ LauncherExtensionAppUpdater::LauncherExtensionAppUpdater(
 LauncherExtensionAppUpdater::~LauncherExtensionAppUpdater() {
   StopObservingExtensionRegistry();
 
+  if (extensions_only_)
+    return;
+
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(browser_context());
   if (prefs)
     prefs->RemoveObserver(this);
@@ -33,13 +41,17 @@ LauncherExtensionAppUpdater::~LauncherExtensionAppUpdater() {
 void LauncherExtensionAppUpdater::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension) {
-  delegate()->OnAppInstalled(browser_context, extension->id());
+  if (ShouldHandleExtension(extension))
+    delegate()->OnAppInstalled(browser_context, extension->id());
 }
 
 void LauncherExtensionAppUpdater::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UnloadedExtensionReason reason) {
+  if (!ShouldHandleExtension(extension))
+    return;
+
   if (reason == extensions::UnloadedExtensionReason::UNINSTALL)
     delegate()->OnAppUninstalledPrepared(browser_context, extension->id());
   else
@@ -50,7 +62,8 @@ void LauncherExtensionAppUpdater::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const extensions::Extension* extension,
     extensions::UninstallReason reason) {
-  delegate()->OnAppUninstalled(browser_context, extension->id());
+  if (ShouldHandleExtension(extension))
+    delegate()->OnAppUninstalled(browser_context, extension->id());
 }
 
 void LauncherExtensionAppUpdater::OnShutdown(
@@ -101,4 +114,9 @@ void LauncherExtensionAppUpdater::UpdateEquivalentApp(
                                                          arc_package_name);
   for (const auto& iter : extension_ids)
     UpdateApp(iter);
+}
+
+bool LauncherExtensionAppUpdater::ShouldHandleExtension(
+    const extensions::Extension* extension) const {
+  return !extensions_only_ || extension->is_extension();
 }

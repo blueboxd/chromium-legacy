@@ -44,20 +44,19 @@ public class NightModeReparentingController
 
     @Override
     public void onStartWithNative() {
-        // Note: for now only the current tab is added to the AsyncTabParamsManager when the theme
-        // is changed. In the future these will be added in tab index order and read at reverse
-        // tab index order.
-        final SparseArray<AsyncTabParams> paramsArray = AsyncTabParamsManager.getAsyncTabParams();
-        for (int i = 0; i < paramsArray.size(); i++) {
-            final int tabId = paramsArray.keyAt(i);
+        // Iterate through the params stored in AsyncTabParams and find the tabs stored by
+        // #onNightModeStateChanged. Reparent the background tabs and store the foreground tab
+        // to be reparented last.
+        TabReparentingParams foregroundTabParams = null;
+        SparseArray<AsyncTabParams> paramsArray = AsyncTabParamsManager.getAsyncTabParams().clone();
+        for (int i = paramsArray.size() - 1; i >= 0; i--) {
+            int tabId = paramsArray.keyAt(i);
             AsyncTabParams params = paramsArray.get(tabId);
             if (!(params instanceof TabReparentingParams)) continue;
-            if (params == null) continue;
 
             final TabReparentingParams reparentingParams = (TabReparentingParams) params;
             if (!reparentingParams.isFromNightModeReparenting()) continue;
             if (!reparentingParams.hasTabToReparent()) continue;
-            if (!reparentingParams.hasTabIndex()) continue;
 
             final ReparentingTask reparentingTask =
                     ReparentingTask.get(reparentingParams.getTabToReparent());
@@ -70,12 +69,29 @@ public class NightModeReparentingController
                 return;
             }
 
-            reparentingTask.finish(mReparentingDelegate, () -> {
-                tabModel.addTab(reparentingParams.getTabToReparent(),
-                        reparentingParams.getTabIndex(), TabLaunchType.FROM_REPARENTING);
-                AsyncTabParamsManager.remove(tabId);
-            });
+            if (reparentingParams.isForegroundTab()) {
+                foregroundTabParams = reparentingParams;
+            } else {
+                reattachTab(reparentingTask, reparentingParams, tabModel);
+            }
         }
+
+        if (foregroundTabParams == null) return;
+        final TabModel tabModel = mDelegate.getTabModelSelector().getModel(
+                foregroundTabParams.getTabToReparent().isIncognito());
+        if (tabModel == null) return;
+
+        ReparentingTask task = ReparentingTask.get(foregroundTabParams.getTabToReparent());
+        reattachTab(task, foregroundTabParams, tabModel);
+    }
+
+    /** Reattach the given task/pair to the activity/tab-model. */
+    private void reattachTab(ReparentingTask task, TabReparentingParams params, TabModel tabModel) {
+        task.finish(mReparentingDelegate, () -> {
+            tabModel.addTab(params.getTabToReparent(), params.getTabIndex(),
+                    TabLaunchType.FROM_REPARENTING);
+            AsyncTabParamsManager.remove(params.getTabToReparent().getId());
+        });
     }
 
     @Override
@@ -83,18 +99,31 @@ public class NightModeReparentingController
 
     @Override
     public void onNightModeStateChanged() {
-        // TODO(crbug.com/1031332): Reparent all tabs in the current tab model.
-        Tab tabToDetach = mDelegate.getActivityTabProvider().get();
-        if (tabToDetach == null) return;
-        TabModel currentTabModel = mDelegate.getTabModelSelector().getCurrentModel();
-        if (currentTabModel == null) return;
+        ActivityTabProvider tabProvider = mDelegate.getActivityTabProvider();
 
-        TabReparentingParams params = new TabReparentingParams(tabToDetach, null, null);
-        params.setTabIndex(currentTabModel.indexOf(tabToDetach));
-        params.setFromNightModeReparenting(true);
+        boolean isForegroundTab = true;
+        while (tabProvider.get() != null) {
+            Tab tabToDetach = tabProvider.get();
+            TabModel tabModel = mDelegate.getTabModelSelector().getModel(tabToDetach.isIncognito());
+            if (tabModel == null) continue;
 
-        AsyncTabParamsManager.add(tabToDetach.getId(), params);
-        currentTabModel.removeTab(tabToDetach);
-        ReparentingTask.from(tabToDetach).detach();
+            TabReparentingParams params = new TabReparentingParams(tabToDetach, null, null);
+            params.setFromNightModeReparenting(true);
+
+            // Only the first tab is considered foreground and that is the only one for which
+            // we need an index. It will be reattached at the end. All remaining tabs will be
+            // reattached in reverse order, therefore we can ignore the index.
+            if (isForegroundTab) {
+                params.setIsForegroundTab(true);
+                params.setTabIndex(tabModel.indexOf(tabToDetach));
+                isForegroundTab = false;
+            } else {
+                params.setIsForegroundTab(false);
+            }
+
+            AsyncTabParamsManager.add(tabToDetach.getId(), params);
+            tabModel.removeTab(tabToDetach);
+            ReparentingTask.from(tabToDetach).detach();
+        }
     }
 }

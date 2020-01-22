@@ -13,11 +13,7 @@ source_set("activity_log") {
     "web_request_constants.h",
   ]
 
-  deps = [
-    "//extensions/common/api",
-  ]
+  deps = [ "//extensions/common/api" ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

@@ -48,6 +48,9 @@ class ChromeAppIconLoader : public AppIconLoader, public ChromeAppIconDelegate {
   void ClearImage(const std::string& id) override;
   void UpdateImage(const std::string& id) override;
 
+  // Sets |extensions_only_| as true to load icons for extensions only.
+  void SetExtensionsOnly();
+
  private:
   using ExtensionIDToChromeAppIconMap =
       std::map<std::string, std::unique_ptr<ChromeAppIcon>>;
@@ -61,6 +64,10 @@ class ChromeAppIconLoader : public AppIconLoader, public ChromeAppIconDelegate {
   // Function to be used to resize the image loaded from a resource. If null,
   // resize will be performed by ImageLoader.
   const ResizeFunction resize_function_;
+
+  // Loads icons for extensions only if true, otherwise loads icon for both
+  // Chrome apps and extensions.
+  bool extensions_only_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAppIconLoader);
 };

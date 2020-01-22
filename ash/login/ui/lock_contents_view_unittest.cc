@@ -54,15 +54,18 @@
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/prefs/pref_service.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
 using ::testing::_;
+using ::testing::IsNull;
 using ::testing::Mock;
 
 namespace ash {
@@ -2865,6 +2868,21 @@ TEST_F(LockContentsViewUnitTest, NoNavigationOrHotseatOnLockScreen) {
       << "The navigation widget should not appear on the lock screen.";
   EXPECT_FALSE(shelf_widget->hotseat_widget()->IsVisible())
       << "The hotseat widget should not appear on the lock screen.";
+}
+
+TEST_F(LockContentsViewUnitTest, NoUsersToShow) {
+  // Build lock screen with 0 users.
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+  LockContentsView::TestApi test_api(contents);
+
+  // Verify that primary big view is null.
+  EXPECT_THAT(test_api.primary_big_view(), IsNull());
+  // Verify that the main view has no children.
+  EXPECT_TRUE(test_api.main_view()->children().empty());
 }
 
 }  // namespace ash

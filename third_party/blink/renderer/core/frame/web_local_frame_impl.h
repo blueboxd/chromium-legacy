@@ -198,7 +198,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool FirstRectForCharacterRange(unsigned location,
                                   unsigned length,
                                   WebRect&) const override;
-  size_t CharacterIndexForPoint(const WebPoint&) const override;
+  size_t CharacterIndexForPoint(const gfx::Point&) const override;
   bool ExecuteCommand(const WebString&) override;
   bool ExecuteCommand(const WebString&, const WebString& value) override;
   bool IsCommandEnabled(const WebString&) const override;
@@ -211,16 +211,16 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebString SelectionAsText() const override;
   WebString SelectionAsMarkup() const override;
   bool SelectWordAroundCaret() override;
-  void SelectRange(const WebPoint& base, const WebPoint& extent) override;
+  void SelectRange(const gfx::Point& base, const gfx::Point& extent) override;
   void SelectRange(const WebRange&,
                    HandleVisibilityBehavior,
                    blink::mojom::SelectionMenuBehavior) override;
   WebString RangeAsText(const WebRange&) override;
   void MoveRangeSelection(
-      const WebPoint& base,
-      const WebPoint& extent,
+      const gfx::Point& base,
+      const gfx::Point& extent,
       WebFrame::TextGranularity = kCharacterGranularity) override;
-  void MoveCaretSelection(const WebPoint&) override;
+  void MoveCaretSelection(const gfx::Point&) override;
   bool SetEditableSelectionOffsets(int start, int end) override;
   bool SetCompositionFromExistingText(
       int composition_start,
@@ -228,7 +228,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebVector<WebImeTextSpan>& ime_text_spans) override;
   void ExtendSelectionAndDelete(int before, int after) override;
   void SetCaretVisible(bool) override;
-  void MoveRangeSelectionExtent(const WebPoint&) override;
+  void MoveRangeSelectionExtent(const gfx::Point&) override;
   void ReplaceSelection(const WebString&) override;
   void DeleteSurroundingText(int before, int after) override;
   void DeleteSurroundingTextInCodePoints(int before, int after) override;
@@ -258,7 +258,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                       bool wrap_within_frame) override;
   void SetTickmarks(const WebVector<WebRect>&) override;
   WebNode ContextMenuNode() const override;
-  void CopyImageAtForTesting(const WebPoint&) override;
+  void CopyImageAtForTesting(const gfx::Point&) override;
   void DispatchMessageEventWithOriginCheck(
       const WebSecurityOrigin& intended_target_origin,
       const WebDOMMessageEvent&) override;
@@ -300,7 +300,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) override;
   void PrintPagesForTesting(cc::PaintCanvas*, const WebSize&) override;
   WebRect GetSelectionBoundsRectForTesting() const override;
-  void PerformMediaPlayerAction(const WebPoint&,
+  void PerformMediaPlayerAction(const gfx::Point&,
                                 const MediaPlayerAction&) override;
   void SetLifecycleState(mojom::FrameLifecycleState state) override;
   void WasHidden() override;

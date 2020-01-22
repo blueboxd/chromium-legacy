@@ -13,11 +13,8 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/optional.h"
-
-namespace base {
-class FilePath;
-}
 
 namespace extensions {
 
@@ -29,8 +26,60 @@ using ShouldComputeHashesCallback =
 // computed over the files inside an extension.
 class ComputedHashes {
  public:
-  using HashInfo = std::pair<int, std::vector<std::string>>;
-  using Data = std::map<base::FilePath, HashInfo>;
+  // Hashes data for relative paths.
+  // System specific path canonicalization is taken care of inside this class.
+  class Data {
+   public:
+    struct HashInfo {
+      int block_size;
+      std::vector<std::string> hashes;
+      // The relative unix style path.
+      // Note that we use canonicalized paths as keys to HashInfo's container
+      // |items_|.
+      //
+      // TODO(http://crbug.com/796395#c28): Consider removing this once
+      // ContentVerifier::ShouldVerifyAnyPaths works with canonicalized relative
+      // paths.
+      base::FilePath relative_unix_path;
+      HashInfo(int block_size,
+               std::vector<std::string> hashes,
+               base::FilePath relative_unix_path);
+      ~HashInfo();
+
+      HashInfo(const HashInfo&) = delete;
+      HashInfo& operator=(const HashInfo&) = delete;
+      HashInfo(HashInfo&&);
+      HashInfo& operator=(HashInfo&&);
+    };
+    using Items = std::map<base::FilePath::StringType, HashInfo>;
+
+    Data();
+    ~Data();
+
+    Data(const Data&) = delete;
+    Data& operator=(const Data&) = delete;
+    Data(Data&&);
+    Data& operator=(Data&&);
+
+    // For |relative_path|, adds hash information with |block_size| and
+    // |hashes|.
+    // Note that |relative_path| will be canonicalized.
+    void Add(const base::FilePath& relative_path,
+             int block_size,
+             std::vector<std::string> hashes);
+
+    // Removes the item that corresponds to |relative_path|.
+    void Remove(const base::FilePath& relative_path);
+
+    // Returns HashInfo* for |relative_path| or nullptr if not found.
+    const HashInfo* GetItem(const base::FilePath& relative_path) const;
+
+    const Items& items() const;
+
+   private:
+    // All items, stored by canonicalized FilePath::StringType key.
+    Items items_;
+  };
 
   explicit ComputedHashes(Data&& data);
   ComputedHashes(const ComputedHashes&) = delete;
@@ -79,7 +128,6 @@ class ComputedHashes {
   // added to computed_hashes.json for this resource.
   static base::Optional<std::vector<std::string>> ComputeAndCheckResourceHash(
       const base::FilePath& full_path,
-      const base::FilePath& relative_unix_path,
       int block_size);
 
   Data data_;

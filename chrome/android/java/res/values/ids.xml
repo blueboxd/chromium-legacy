@@ -97,6 +97,7 @@
     <item type="id" name="contextmenu_open_image" />
     <item type="id" name="contextmenu_open_image_in_new_tab" />
     <item type="id" name="contextmenu_open_image_in_ephemeral_tab" />
+    <item type="id" name="contextmenu_copy_image" />
     <item type="id" name="contextmenu_search_by_image" />
     <item type="id" name="contextmenu_search_with_google_lens" />
     <item type="id" name="contextmenu_share_image" />

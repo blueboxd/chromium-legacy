@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.toolbar.top;
 
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewStub;
+
+import androidx.annotation.StringRes;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
@@ -111,6 +114,43 @@ class StartSurfaceToolbarCoordinator {
      */
     void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
         mToolbarMediator.setOverviewModeBehavior(overviewModeBehavior);
+    }
+
+    /**
+     * Enable the experimental toolbar button.
+     * @param onClickListener The {@link OnClickListener} to be called when the button is clicked.
+     * @param image The drawable to display for the button.
+     * @param contentDescriptionResId The resource id of the content description for the button.
+     */
+    void enableExperimentalButton(View.OnClickListener onClickListener, Drawable image,
+            @StringRes int contentDescriptionResId) {
+        mToolbarMediator.enableIdentityDisc(onClickListener, image, contentDescriptionResId);
+    }
+
+    /**
+     * Updates image displayed on experimental button.
+     * @param image The new image for the button.
+     */
+    void updateExperimentalButtonImage(Drawable image) {
+        mToolbarMediator.updateIdentityDiscImage(image);
+    }
+
+    /**
+     * Disable the experimental toolbar button.
+     */
+    void disableExperimentalButton() {
+        mToolbarMediator.disableIdentityDisc();
+    }
+
+    /**
+     * Displays in-product help for experimental button.
+     * @param stringId The id of the string resource for the text that should be shown.
+     * @param accessibilityStringId The id of the string resource of the accessibility text.
+     * @param dismissedCallback The callback that will be called when in-product help is dismissed.
+     */
+    void showIPHOnExperimentalButton(@StringRes int stringId, @StringRes int accessibilityStringId,
+            Runnable dismissedCallback) {
+        mToolbarMediator.showIPHOnIdentityDisc(stringId, accessibilityStringId, dismissedCallback);
     }
 
     void onNativeLibraryReady() {

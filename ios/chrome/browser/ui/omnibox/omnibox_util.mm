@@ -37,11 +37,7 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     case AutocompleteMatchType::HISTORY_TITLE:
     case AutocompleteMatchType::HISTORY_URL:
     case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
-      return base::FeatureList::IsEnabled(kNewOmniboxPopupLayout) &&
-                     base::FeatureList::IsEnabled(
-                         kOmniboxUseDefaultSearchEngineFavicon)
-                 ? DEFAULT_FAVICON
-                 : HISTORY;
+      return DEFAULT_FAVICON;
     case AutocompleteMatchType::CONTACT_DEPRECATED:
     case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
     case AutocompleteMatchType::SEARCH_SUGGEST:
@@ -55,9 +51,7 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     case AutocompleteMatchType::CLIPBOARD_IMAGE:
       return SEARCH;
     case AutocompleteMatchType::SEARCH_HISTORY:
-      return base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)
-                 ? SEARCH_HISTORY
-                 : HISTORY;
+      return SEARCH_HISTORY;
     case AutocompleteMatchType::CALCULATOR:
       return CALCULATOR;
     case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:
@@ -72,8 +66,7 @@ UIImage* GetOmniboxSuggestionIconForAutocompleteMatchType(
     bool is_starred) {
   OmniboxSuggestionIconType iconType =
       GetOmniboxSuggestionIconTypeForAutocompleteMatchType(type, is_starred);
-  return GetOmniboxSuggestionIcon(
-      iconType, base::FeatureList::IsEnabled(kNewOmniboxPopupLayout));
+  return GetOmniboxSuggestionIcon(iconType);
 }
 
 #pragma mark - Security icons.

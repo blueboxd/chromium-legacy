@@ -15,7 +15,7 @@ import android.support.annotation.IntDef;
  */
 @IntDef({ActionType.UNKNOWN, ActionType.OPEN_URL, ActionType.OPEN_URL_INCOGNITO,
         ActionType.OPEN_URL_NEW_TAB, ActionType.OPEN_URL_NEW_WINDOW, ActionType.DOWNLOAD,
-        ActionType.LEARN_MORE, ActionType.NEXT_VALUE})
+        ActionType.LEARN_MORE, ActionType.MANAGE_INTERESTS, ActionType.NEXT_VALUE})
 // LINT.IfChange
 public @interface ActionType {
     int UNKNOWN = -1;
@@ -25,6 +25,7 @@ public @interface ActionType {
     int OPEN_URL_NEW_WINDOW = 3;
     int DOWNLOAD = 5;
     int LEARN_MORE = 6;
-    int NEXT_VALUE = 7;
+    int MANAGE_INTERESTS = 7;
+    int NEXT_VALUE = 8;
 }
 // LINT.ThenChange

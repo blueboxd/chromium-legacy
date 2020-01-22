@@ -888,4 +888,9 @@ void CompositorImpl::EvictCachedBackBuffer() {
   cached_back_buffer_.reset();
 }
 
+void CompositorImpl::RequestPresentationTimeForNextFrame(
+    PresentationTimeCallback callback) {
+  host_->RequestPresentationTimeForNextFrame(std::move(callback));
+}
+
 }  // namespace content

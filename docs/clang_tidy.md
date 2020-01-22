@@ -37,6 +37,77 @@ provisional approval: we get signal from users clicking "Not Useful" on
 comments. If feedback is overwhelmingly "users don't find this useful," the
 check may be removed.
 
+### Ignoring a check
+
+If a check is invalid on a particular piece of code, clang-tidy supports `//
+NOLINT` and `// NOLINTNEXTLINE` for ignoring all lint checks in the current and
+next lines, respectively. To suppress a specific lint, you can put it in
+parenthesis, e.g., `// NOLINTNEXTLINE(modernize-use-nullptr)`. For more, please
+see [the documentation](
+https://clang.llvm.org/extra/clang-tidy/#suppressing-undesired-diagnostics).
+
+**Please note** that adding comments that exist only to silence clang-tidy is
+actively discouraged. These comments clutter code, can easily get
+out-of-date, and don't provide much value to readers. Moreover, clang-tidy only
+complains on Gerrit when lines are touched, and making Chromium clang-tidy clean
+is an explicit non-goal; making code less readable in order to silence a
+rarely-surfaced complaint isn't a good trade-off.
+
+If clang-tidy emits a diagnostic that's incorrect due to a subtlety in the code,
+adding an explanantion of what the code is doing with a trailing `NOLINT` may be
+fine. Put differently, the comment should be able to stand on its own even if we
+removed the `NOLINT`. The fact that the comment also silences clang-tidy is a
+convenient side-effect.
+
+For example:
+
+Not OK; comment exists just to silence clang-tidy:
+
+```
+// NOLINTNEXTLINE
+for (int i = 0; i < arr.size(); i++) {
+  // ...
+}
+```
+
+Not OK; comment exists just to verbosely silence clang-tidy:
+
+```
+// Clang-tidy doesn't get that we can't range-for-ize this loop. NOLINTNEXTLINE
+for (int i = 0; i < arr.size(); i++) {
+  // ...
+}
+```
+
+Not OK; it's obvious that this loop modifies `arr`, so the comment doesn't
+actually clarify anything:
+
+```
+// It'd be invalid to make this into a range-for loop, since the body might add
+// elements to `arr`. NOLINTNEXTLINE
+for (int i = 0; i < arr.size(); i++) {
+  if (i % 4) {
+    arr.push_back(4);
+    arr.push_back(2);
+  }
+}
+```
+
+OK; comment calls out a non-obvious property of this loop's body. As an
+afterthought, it silences clang-tidy:
+
+```
+// It'd be invalid to make this into a range-for loop, since the call to `foo`
+// here might add elements to `arr`. NOLINTNEXTLINE
+for (int i = 0; i < arr.size(); i++) {
+  foo();
+  bar();
+}
+```
+
+In the end, as always, what is and isn't obvious at some point is highly
+context-dependent. Please use your best judgement.
+
 ## But I want to run it locally
 
 If you want to sync the officially-supported `clang-tidy` to your workstation,

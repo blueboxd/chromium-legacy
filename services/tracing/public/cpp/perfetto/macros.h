@@ -8,6 +8,11 @@
 #include "base/trace_event/trace_event.h"
 #include "services/tracing/public/cpp/perfetto/macros_internal.h"
 
+// Needed not for this file but for every user of the TRACE_EVENT macros for the
+// lambda definition. So included here for convenience.
+#include "services/tracing/public/cpp/perfetto/event_context.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/track_event.pbzero.h"
+
 #if defined(TRACE_EVENT_BEGIN)
 #error "Another copy of perfetto tracing macros have been included"
 #endif

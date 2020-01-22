@@ -5,12 +5,14 @@
 package org.chromium.android_webview.common.variations;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 
 import org.chromium.android_webview.proto.AwVariationsSeedOuterClass.AwVariationsSeed;
 import org.chromium.base.BuildInfo;
+import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
@@ -22,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Utilities for manipulating variations seeds, used by both WebView and WebView's services.
@@ -77,10 +80,15 @@ public class VariationsUtils {
 
     // Creates/updates the timestamp with the current time.
     public static void updateStampTime() {
+        updateStampTime(new Date().getTime());
+    }
+
+    // Creates/updates the timestamp with the specified time.
+    @VisibleForTesting
+    public static void updateStampTime(long now) {
         File file = getStampFile();
         try {
             if (!file.createNewFile()) {
-                long now = (new Date()).getTime();
                 file.setLastModified(now);
             }
         } catch (IOException e) {
@@ -154,6 +162,22 @@ public class VariationsUtils {
             return false;
         } finally {
             closeSafely(out);
+        }
+    }
+
+    // Returns the value of the |switchName| flag converted from seconds to milliseconds. If the
+    // |switchName| flag isn't present, or contains an invalid value, |defaultValueMillis| will be
+    // returned.
+    public static long getDurationSwitchValueInMillis(String switchName, long defaultValueMillis) {
+        CommandLine cli = CommandLine.getInstance();
+        if (!cli.hasSwitch(switchName)) {
+            return defaultValueMillis;
+        }
+        try {
+            return TimeUnit.SECONDS.toMillis(Long.parseLong(cli.getSwitchValue(switchName)));
+        } catch (NumberFormatException e) {
+            Log.e(TAG, "Invalid value for flag " + switchName, e);
+            return defaultValueMillis;
         }
     }
 

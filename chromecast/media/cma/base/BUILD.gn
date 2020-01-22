@@ -35,9 +35,7 @@ cast_source_set("base") {
     "simple_media_task_runner.h",
   ]
 
-  public_deps = [
-    "//chromecast/public/media",
-  ]
+  public_deps = [ "//chromecast/public/media" ]
 
   deps = [
     "//base",

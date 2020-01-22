@@ -19,7 +19,9 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.content_settings.ContentSettingsType;
+import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -268,15 +270,18 @@ public class WebsitePermissionsFetcherTest {
 
     @Test
     @SmallTest
+    @EnableFeatures(ContentFeatureList.WEBXR_PERMISSIONS_API)
     public void testFetchAllPreferencesForSingleOrigin() {
         WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
 
         // Add permission info types.
-        Assert.assertEquals(9, PermissionInfo.Type.NUM_ENTRIES);
+        Assert.assertEquals(11, PermissionInfo.Type.NUM_ENTRIES);
         String googleOrigin = "https://google.com";
 
+        websitePreferenceBridge.addPermissionInfo(new PermissionInfo(
+                PermissionInfo.Type.AUGMENTED_REALITY, googleOrigin, SITE_WILDCARD, false));
         websitePreferenceBridge.addPermissionInfo(new PermissionInfo(
                 PermissionInfo.Type.GEOLOCATION, googleOrigin, SITE_WILDCARD, false));
         websitePreferenceBridge.addPermissionInfo(
@@ -296,6 +301,8 @@ public class WebsitePermissionsFetcherTest {
                 PermissionInfo.Type.CLIPBOARD, googleOrigin, SITE_WILDCARD, false));
         websitePreferenceBridge.addPermissionInfo(new PermissionInfo(
                 PermissionInfo.Type.SENSORS, googleOrigin, SITE_WILDCARD, false));
+        websitePreferenceBridge.addPermissionInfo(new PermissionInfo(
+                PermissionInfo.Type.VIRTUAL_REALITY, googleOrigin, SITE_WILDCARD, false));
 
         // Add content setting exception types.
         String preferenceSource = "preference";
@@ -354,6 +361,8 @@ public class WebsitePermissionsFetcherTest {
             Assert.assertNotNull(site.getPermissionInfo(PermissionInfo.Type.MICROPHONE));
             Assert.assertNotNull(site.getPermissionInfo(PermissionInfo.Type.CLIPBOARD));
             Assert.assertNotNull(site.getPermissionInfo(PermissionInfo.Type.SENSORS));
+            Assert.assertNotNull(site.getPermissionInfo(PermissionInfo.Type.VIRTUAL_REALITY));
+            Assert.assertNotNull(site.getPermissionInfo(PermissionInfo.Type.AUGMENTED_REALITY));
 
             // Check content setting exception types.
             Assert.assertEquals(Integer.valueOf(ContentSettingValues.DEFAULT),
@@ -479,17 +488,19 @@ public class WebsitePermissionsFetcherTest {
 
     @Test
     @SmallTest
+    @EnableFeatures(ContentFeatureList.WEBXR_PERMISSIONS_API)
     public void testFetchPreferencesForCategoryPermissionInfoTypes() {
         WebsitePermissionsFetcher fetcher = new WebsitePermissionsFetcher();
         FakeWebsitePreferenceBridge websitePreferenceBridge = new FakeWebsitePreferenceBridge();
         fetcher.setWebsitePreferenceBridgeForTesting(websitePreferenceBridge);
 
         String googleOrigin = "https://google.com";
-        ArrayList<Integer> permissionInfoTypes = new ArrayList<>(Arrays.asList(
-                PermissionInfo.Type.CAMERA, PermissionInfo.Type.CLIPBOARD,
-                PermissionInfo.Type.GEOLOCATION, PermissionInfo.Type.MICROPHONE,
-                PermissionInfo.Type.NOTIFICATION, PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER,
-                PermissionInfo.Type.SENSORS));
+        ArrayList<Integer> permissionInfoTypes = new ArrayList<>(
+                Arrays.asList(PermissionInfo.Type.AUGMENTED_REALITY, PermissionInfo.Type.CAMERA,
+                        PermissionInfo.Type.CLIPBOARD, PermissionInfo.Type.GEOLOCATION,
+                        PermissionInfo.Type.MICROPHONE, PermissionInfo.Type.NOTIFICATION,
+                        PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER, PermissionInfo.Type.SENSORS,
+                        PermissionInfo.Type.VIRTUAL_REALITY));
 
         for (@PermissionInfo.Type int type : permissionInfoTypes) {
             PermissionInfo fakePermissionInfo =

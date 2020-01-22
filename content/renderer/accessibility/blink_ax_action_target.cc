@@ -10,7 +10,6 @@
 
 using blink::WebAXObject;
 using blink::WebFloatRect;
-using blink::WebPoint;
 using blink::WebRect;
 
 namespace content {
@@ -70,18 +69,15 @@ gfx::Rect BlinkAXActionTarget::GetRelativeBounds() const {
 }
 
 gfx::Point BlinkAXActionTarget::GetScrollOffset() const {
-  WebPoint offset = web_ax_object_.GetScrollOffset();
-  return gfx::Point(offset.x, offset.y);
+  return web_ax_object_.GetScrollOffset();
 }
 
 gfx::Point BlinkAXActionTarget::MinimumScrollOffset() const {
-  WebPoint offset = web_ax_object_.MinimumScrollOffset();
-  return gfx::Point(offset.x, offset.y);
+  return web_ax_object_.MinimumScrollOffset();
 }
 
 gfx::Point BlinkAXActionTarget::MaximumScrollOffset() const {
-  WebPoint offset = web_ax_object_.MaximumScrollOffset();
-  return gfx::Point(offset.x, offset.y);
+  return web_ax_object_.MaximumScrollOffset();
 }
 
 bool BlinkAXActionTarget::SetAccessibilityFocus() const {
@@ -89,7 +85,7 @@ bool BlinkAXActionTarget::SetAccessibilityFocus() const {
 }
 
 void BlinkAXActionTarget::SetScrollOffset(const gfx::Point& point) const {
-  web_ax_object_.SetScrollOffset(WebPoint(point.x(), point.y()));
+  web_ax_object_.SetScrollOffset(point);
 }
 
 bool BlinkAXActionTarget::SetSelected(bool selected) const {
@@ -139,7 +135,7 @@ bool BlinkAXActionTarget::ScrollToMakeVisibleWithSubFocus(
 }
 
 bool BlinkAXActionTarget::ScrollToGlobalPoint(const gfx::Point& point) const {
-  return web_ax_object_.ScrollToGlobalPoint(WebPoint(point.x(), point.y()));
+  return web_ax_object_.ScrollToGlobalPoint(point);
 }
 
 }  // namespace content

@@ -55,7 +55,7 @@
     return [[self fallbackAnswerBrandedIcon]
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   }
-  return GetOmniboxSuggestionIcon(self.suggestionIconType, true);
+  return GetOmniboxSuggestionIcon(self.suggestionIconType);
 }
 
 - (BOOL)hasCustomAnswerIcon {

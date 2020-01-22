@@ -13,6 +13,7 @@
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
+#include "ash/shelf/hotseat_transition_animator.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -26,10 +27,12 @@
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/bind_helpers.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -367,6 +370,68 @@ TEST_F(ShelfWidgetTest, ShelfEdgeOverlappingWindowHitTestMouse) {
     ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
     EXPECT_EQ(shelf_widget->GetNativeWindow(), target);
   }
+}
+
+class TransitionAnimationWaiter
+    : public HotseatTransitionAnimator::TestObserver {
+ public:
+  explicit TransitionAnimationWaiter(
+      HotseatTransitionAnimator* hotseat_transition_animator)
+      : hotseat_transition_animator_(hotseat_transition_animator) {
+    hotseat_transition_animator_->SetTestObserver(this);
+  }
+  ~TransitionAnimationWaiter() override {
+    hotseat_transition_animator_->SetTestObserver(nullptr);
+  }
+
+  void Wait() {
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+  }
+
+ private:
+  void OnTransitionTestAnimationEnded() override {
+    DCHECK(run_loop_.get());
+    run_loop_->Quit();
+  }
+
+  HotseatTransitionAnimator* hotseat_transition_animator_ = nullptr;
+  std::unique_ptr<base::RunLoop> run_loop_;
+};
+
+// Tests the drag handle bounds and visibility when the in-app shelf is shown.
+TEST_F(ShelfWidgetTest, OpaqueBackgroundAndDragHandleTransition) {
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  UpdateDisplay("800x800");
+
+  ASSERT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
+
+  // Create a window to transition to the in-app shelf.
+  auto window = AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 800, 800));
+
+  {
+    TransitionAnimationWaiter waiter(
+        GetShelfWidget()->hotseat_transition_animator_for_testing());
+    waiter.Wait();
+  }
+
+  // Ensure the ShelfWidget and drag handle have the correct bounds and
+  // visibility for in-app shelf.
+  EXPECT_EQ(GetShelfWidget()->GetWindowBoundsInScreen(),
+            gfx::Rect(0, 760, 800, 40));
+  EXPECT_EQ(GetShelfWidget()->GetDragHandle()->bounds(),
+            gfx::Rect(360, 18, 80, 4));
+  ASSERT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_TRUE(GetShelfWidget()->GetOpaqueBackground()->visible());
+
+  window->Hide();
+
+  ASSERT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
 }
 
 class ShelfWidgetAfterLoginTest : public AshTestBase {

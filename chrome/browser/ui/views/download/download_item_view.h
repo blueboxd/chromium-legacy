@@ -306,6 +306,12 @@ class DownloadItemView : public views::View,
   // Returns the height/width of the error icon, in dp.
   static int GetErrorIconSize();
 
+  // Starts deep scanning for this download item.
+  void ConfirmDeepScanning();
+
+  // Bypasses the prompt for deep scanning for this download item.
+  void BypassDeepScanning();
+
   // The download shelf that owns us.
   DownloadShelfView* shelf_;
 

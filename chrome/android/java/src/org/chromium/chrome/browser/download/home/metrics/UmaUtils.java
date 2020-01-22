@@ -240,15 +240,6 @@ public class UmaUtils {
     }
 
     /**
-     * Records the number of chips enabled whenever the chip row is changed.
-     * @param numEnabledChips The number of chips being shown.
-     */
-    public static void recordChipStats(int numEnabledChips) {
-        RecordHistogram.recordCustomCountHistogram(
-                "Android.DownloadManager.Chips.Enabled", numEnabledChips, 1, 10, 10);
-    }
-
-    /**
      * Called to record metrics for the given rename action.
      * @param action The given rename action.
      */

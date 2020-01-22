@@ -30,7 +30,5 @@ static_library("library") {
     "thread_utils.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

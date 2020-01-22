@@ -16,12 +16,6 @@ const base::Feature kSnapshotDrawView{"SnapshotDrawView",
 const base::Feature kSettingsRefresh{"SettingsRefresh",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kNewOmniboxPopupLayout{"NewOmniboxPopupLayout",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kOmniboxUseDefaultSearchEngineFavicon{
-    "OmniboxUseDefaultSearchEngineFavicon", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEmbedderBlockRestoreUrl{"EmbedderBlockRestoreUrl",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -37,5 +31,7 @@ const base::Feature kForceUnstackedTabstrip{"ForceUnstackedTabstrip",
 const base::Feature kContainedBVC{"ContainedBVC",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kTestFeature{"ContainedBVC",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kClearSyncedData{"ClearSyncedData",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

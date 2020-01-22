@@ -166,6 +166,8 @@ void ThreadHeap::SetupWorklists() {
   weak_table_worklist_.reset(new WeakTableWorklist);
   backing_store_callback_worklist_.reset(new BackingStoreCallbackWorklist());
   v8_references_worklist_.reset(new V8ReferencesWorklist());
+  not_safe_to_concurrently_trace_worklist_.reset(
+      new NotSafeToConcurrentlyTraceWorklist());
   DCHECK(ephemeron_callbacks_.IsEmpty());
 }
 
@@ -176,6 +178,7 @@ void ThreadHeap::DestroyMarkingWorklists(BlinkGC::StackState stack_state) {
   weak_callback_worklist_.reset(nullptr);
   weak_table_worklist_.reset();
   v8_references_worklist_.reset();
+  not_safe_to_concurrently_trace_worklist_.reset();
   ephemeron_callbacks_.clear();
 
   // The fixed point iteration may have found not-fully-constructed objects.
@@ -328,6 +331,15 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
           deadline, previously_not_fully_constructed_worklist_.get(),
           [visitor](const NotFullyConstructedItem& item) {
             visitor->DynamicallyMarkAddress(reinterpret_cast<Address>(item));
+          },
+          WorklistTaskId::MutatorThread);
+      if (!finished)
+        break;
+
+      finished = DrainWorklistWithDeadline(
+          deadline, not_safe_to_concurrently_trace_worklist_.get(),
+          [visitor](const MarkingItem& item) {
+            item.callback(visitor, item.base_object_payload);
           },
           WorklistTaskId::MutatorThread);
       if (!finished)

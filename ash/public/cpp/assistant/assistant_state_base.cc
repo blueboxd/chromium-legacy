@@ -30,7 +30,10 @@ void PrintValue(std::stringstream* result,
 
 AssistantStateBase::AssistantStateBase() = default;
 
-AssistantStateBase::~AssistantStateBase() = default;
+AssistantStateBase::~AssistantStateBase() {
+  for (auto& observer : observers_)
+    observer.OnAssistantStateDestroyed();
+}
 
 std::string AssistantStateBase::ToString() const {
   std::stringstream result;

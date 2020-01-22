@@ -828,6 +828,10 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_ADS_PERMISSION_TITLE" desc="Title for the ads permission [CHAR-LIMIT=32]">
          Ads
       </message>
+      <!-- TODO(crbug.com/1041009): Finalize WebXr Permissions strings -->
+      <message name="IDS_AR_PERMISSION_TITLE" desc="Title of the permission to use Augmented Reality [CHAR-LIMIT=32]">
+        Augmented Reality
+      </message>
       <message name="IDS_COOKIES_TITLE" desc="Title for the Cookies settings screen [CHAR-LIMIT=32]">
         Cookies
       </message>
@@ -860,6 +864,10 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_CLIPBOARD_PERMISSION_TITLE" desc="Title of the permission to read from clipboard [CHAR-LIMIT=32]">
         Clipboard
+      </message>
+      <!-- TODO(crbug.com/1041009): Finalize WebXr Permissions strings -->
+      <message name="IDS_VR_PERMISSION_TITLE" desc="Title of the permission to use Virtual Reality [CHAR-LIMIT=32]">
+        Virtual Reality
       </message>
       <message name="IDS_ENABLE_NOTIFICATIONS_VIBRATE_TITLE" desc="Title for the preference to enable vibration for notifications">
         Vibrate
@@ -996,11 +1004,25 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_CONTENT_BLOCKED" desc="Summary text explaining that sites are blocked from playing protected content.">
         Block sites from playing protected content
       </message>
+      <!-- TODO(crbug.com/1041009): Finalize WebXr Permissions strings -->
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_AR_ASK" desc="Summary text explaining that sites need to ask for permission before using AR and that it is the recommended setting.">
+        Ask before allowing sites to receive camera position or map your room (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_AR_BLOCKED" desc="Summary text explaining that sites are blocked from using AR.">
+        Block sites from receiving camera position or mapping your room
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NFC_ASK" desc="Summary text explaining that sites need to ask for permission before using NFC and that it is the recommended setting.">
         Ask before allowing sites to send and receive info when you tap NFC devices (recommended)
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_NFC_BLOCKED" desc="Summary text explaining that sites are blocked from using NFC.">
         Block sites from sending and receiving info when you tap NFC devices
+      </message>
+      <!-- TODO(crbug.com/1041009): Finalize WebXr Permissions strings -->
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_VR_ASK" desc="Summary text explaining that sites need to ask for permission before using VR and that it is the recommended setting.">
+        Ask before allowing sites to access your virtual reality device and data (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_VR_BLOCKED" desc="Summary text explaining that sites are blocked from using VR.">
+        Block sites from accessing your virtual reality device and data
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_SENSORS_ALLOWED" desc="Summary text explaining that sites are allowed to use device's sensors and that it is the recommended setting.">
         Allow sites to access sensors (recommended)
@@ -2047,6 +2069,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_CONTEXTMENU_LOAD_ORIGINAL_IMAGE" desc="Context sensitive menu item for Lite mode low fidelity placeholder images that loads the original version in place. [CHAR-LIMIT=30]">
         Load image
+      </message>
+      <message name="IDS_CONTEXTMENU_COPY_IMAGE" desc="Context sensitive menu item for copying the selected image to the system clipboard. [CHAR-LIMIT=30]">
+        Copy image
       </message>
       <message name="IDS_CONTEXTMENU_SEARCH_WITH_GOOGLE_LENS" desc="Context sensitive menu item for deep linking into google lens. [CHAR-LIMIT=30]">
         Search with Google Lens <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>

@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_highlighting.h"
 
@@ -15,10 +16,6 @@
 @protocol PopupMenuLongPressDelegate;
 @class TabModel;
 @protocol TabStripPresentation;
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace
 
 // A legacy coordinator that presents the public interface for the tablet tab
 // strip feature.

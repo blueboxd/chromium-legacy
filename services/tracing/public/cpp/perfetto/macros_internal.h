@@ -5,13 +5,17 @@
 #ifndef SERVICES_TRACING_PUBLIC_CPP_PERFETTO_MACROS_INTERNAL_H_
 #define SERVICES_TRACING_PUBLIC_CPP_PERFETTO_MACROS_INTERNAL_H_
 
+#include "build/build_config.h"
+
+namespace perfetto {
+class EventContext;
+}
+
+#if !defined(OS_IOS) && !defined(OS_NACL)
+
 #include "base/component_export.h"
 #include "base/trace_event/trace_event.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
-
-namespace perfetto {
-class TrackEventContext;
-}
 
 namespace tracing {
 namespace internal {
@@ -24,7 +28,7 @@ base::Optional<base::trace_event::TraceEvent> COMPONENT_EXPORT(TRACING_CPP)
 // A simple function that will add the TraceEvent requested and will call the
 // |argument_func| after the track_event has been filled in.
 template <
-    typename TrackEventArgumentFunction = void (*)(perfetto::TrackEventContext)>
+    typename TrackEventArgumentFunction = void (*)(perfetto::EventContext)>
 static inline base::trace_event::TraceEventHandle AddTraceEvent(
     char phase,
     const unsigned char* category_group_enabled,
@@ -86,5 +90,34 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
                                      TRACE_EVENT_FLAG_NONE, ##__VA_ARGS__);   \
     return 0;                                                                 \
   }()};
+
+#else  // !defined(OS_IOS) && !defined(OS_NACL)
+
+// Tracing isn't supported on IOS or NACL so we just black hole all the
+// parameters into a function that doesn't do anything. This ensures that no
+// warnings about unused parameters are generated.
+
+namespace tracing {
+namespace internal {
+template <
+    typename TrackEventArgumentFunction = void (*)(perfetto::EventContext)>
+static inline base::trace_event::TraceEventHandle AddTraceEvent(
+    char,
+    const unsigned char*,
+    const char*,
+    unsigned int,
+    TrackEventArgumentFunction) {
+  return {0, 0, 0};
+}
+}  // namespace internal
+}  // namespace tracing
+
+#define TRACING_INTERNAL_ADD_TRACE_EVENT(phase, category, name, flags, ...) \
+  tracing::internal::AddTraceEvent(phase, nullptr, name, flags, ##__VA_ARGS__);
+
+#define TRACING_INTERNAL_SCOPED_ADD_TRACE_EVENT(category, name, ...)           \
+  TRACING_INTERNAL_ADD_TRACE_EVENT('B', category, name, TRACE_EVENT_FLAG_NONE, \
+                                   ##__VA_ARGS__);
+#endif  // else of !defined(OS_IOS) && !defined(OS_NACL)
 
 #endif  // SERVICES_TRACING_PUBLIC_CPP_PERFETTO_MACROS_INTERNAL_H_

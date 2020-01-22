@@ -19,9 +19,7 @@ cast_source_set("audio_io_thread") {
     "audio_io_thread.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 cast_source_set("processing") {
@@ -109,19 +107,13 @@ if (is_android) {
 }
 
 source_set("dummy_external_audio_pipeline") {
-  sources = [
-    "external_audio_pipeline_dummy.cc",
-  ]
+  sources = [ "external_audio_pipeline_dummy.cc" ]
 
-  public_deps = [
-    "//chromecast/public/media",
-  ]
+  public_deps = [ "//chromecast/public/media" ]
 }
 
 cast_shared_library("libcast_external_audio_pipeline_1.0") {
-  public_deps = [
-    ":dummy_external_audio_pipeline",
-  ]
+  public_deps = [ ":dummy_external_audio_pipeline" ]
 }
 
 source_set("fake_external_audio_pipeline") {
@@ -157,17 +149,11 @@ buildflag_header("audio_buildflags") {
 cast_source_set("test_support") {
   testonly = true
 
-  sources = [
-    "mock_audio_input_callback.h",
-  ]
+  sources = [ "mock_audio_input_callback.h" ]
 
-  public_deps = [
-    "//testing/gmock",
-  ]
+  public_deps = [ "//testing/gmock" ]
 
-  deps = [
-    "//media",
-  ]
+  deps = [ "//media" ]
 }
 
 cast_source_set("unittests") {

@@ -63,6 +63,10 @@ public class SiteSettings
         if (!ContentFeatureList.isEnabled(ContentFeatureList.WEB_NFC)) {
             getPreferenceScreen().removePreference(findPreference(Type.NFC));
         }
+        if (!ContentFeatureList.isEnabled(ContentFeatureList.WEBXR_PERMISSIONS_API)) {
+            getPreferenceScreen().removePreference(findPreference(Type.AUGMENTED_REALITY));
+            getPreferenceScreen().removePreference(findPreference(Type.VIRTUAL_REALITY));
+        }
     }
 
     private void updatePreferenceStates() {
@@ -70,6 +74,9 @@ public class SiteSettings
         List<Integer> websitePrefs = new ArrayList<Integer>();
         if (SiteSettingsCategory.adsCategoryEnabled()) {
             websitePrefs.add(Type.ADS);
+        }
+        if (ContentFeatureList.isEnabled(ContentFeatureList.WEBXR_PERMISSIONS_API)) {
+            websitePrefs.add(Type.AUGMENTED_REALITY);
         }
         websitePrefs.add(Type.AUTOMATIC_DOWNLOADS);
         websitePrefs.add(Type.BACKGROUND_SYNC);
@@ -92,6 +99,9 @@ public class SiteSettings
         websitePrefs.add(Type.PROTECTED_MEDIA);
         websitePrefs.add(Type.SOUND);
         websitePrefs.add(Type.USB);
+        if (ContentFeatureList.isEnabled(ContentFeatureList.WEBXR_PERMISSIONS_API)) {
+            websitePrefs.add(Type.VIRTUAL_REALITY);
+        }
 
         // Initialize the summary and icon for all preferences that have an
         // associated content settings entry.

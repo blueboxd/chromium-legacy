@@ -96,3 +96,39 @@ TEST_F('CrComponentsNetworkConfigTest', 'All', function() {
 });
 
 GEN('#endif');
+
+GEN('#if defined(USE_NSS_CERTS)');
+
+/**
+ * Test fixture for chrome://settings/certificates. This tests the
+ * certificate-manager component in the context of the Settings privacy page.
+ * @constructor
+ * @extends {CrComponentsBrowserTest}
+ */
+function CrComponentsCertificateManagerTest() {}
+
+CrComponentsCertificateManagerTest.prototype = {
+  __proto__: CrComponentsBrowserTest.prototype,
+
+  /**
+   * Using the certificate-manager instance within
+   * chrome://settings/privacy_page for these tests, so that all strings are
+   * properly defined.
+   * @override
+   */
+  browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
+
+  /** @override */
+  extraLibraries: CrComponentsBrowserTest.prototype.extraLibraries.concat([
+    '../test_util.js',
+    '../test_browser_proxy.js',
+    '../settings/ensure_lazy_loaded.js',
+    'certificate_manager_test.js',
+  ]),
+};
+
+TEST_F('CrComponentsCertificateManagerTest', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif  // defined(USE_NSS_CERTS)');

@@ -44,11 +44,6 @@ UIColor* DimColorIncognito() {
   return UIColor.whiteColor;
 }
 
-// Temporary convenience accessor for this flag.
-// Cleanup along with feature: crbug.com/945334.
-bool ShouldUseNewFormatting() {
-  return base::FeatureList::IsEnabled(kNewOmniboxPopupLayout);
-}
 }  // namespace
 
 @implementation AutocompleteMatchFormatter {
@@ -87,8 +82,7 @@ bool ShouldUseNewFormatting() {
 - (BOOL)hasImage {
   BOOL hasAnswerImage =
       self.hasAnswer && _match.answer->second_line().image_url().is_valid();
-  BOOL hasRichEntityImage =
-      ShouldUseNewFormatting() && !_match.image_url.empty();
+  BOOL hasRichEntityImage = !_match.image_url.empty();
   return hasAnswerImage || hasRichEntityImage;
 }
 
@@ -98,8 +92,7 @@ bool ShouldUseNewFormatting() {
 
 - (NSAttributedString*)detailText {
   if (self.hasAnswer) {
-    if (ShouldUseNewFormatting() &&
-        !_match.answer->IsExceptedFromLineReversal()) {
+    if (!_match.answer->IsExceptedFromLineReversal()) {
       NSAttributedString* detailBaseText = [self
           attributedStringWithString:base::SysUTF16ToNSString(_match.contents)
                      classifications:&_match.contents_class
@@ -165,8 +158,7 @@ bool ShouldUseNewFormatting() {
 
 - (NSAttributedString*)text {
   if (self.hasAnswer) {
-    if (ShouldUseNewFormatting() &&
-        !_match.answer->IsExceptedFromLineReversal()) {
+    if (!_match.answer->IsExceptedFromLineReversal()) {
       return [self attributedStringWithAnswerLine:_match.answer->second_line()
                            useDeemphasizedStyling:NO];
     } else {
@@ -315,70 +307,11 @@ bool ShouldUseNewFormatting() {
       base::SysUTF16ToNSString(net::UnescapeForHTML(string));
 
   NSDictionary* attributes =
-      ShouldUseNewFormatting()
-          ? [self formattingAttributesForSuggestionStyle:field->style()
-                                  useDeemphasizedStyling:useDeemphasizedStyling]
-          : [self attributesForSuggestionType:field->type()];
+      [self formattingAttributesForSuggestionStyle:field->style()
+                            useDeemphasizedStyling:useDeemphasizedStyling];
 
   return [[NSAttributedString alloc] initWithString:unescapedString
                                          attributes:attributes];
-}
-
-- (NSDictionary<NSAttributedStringKey, id>*)attributesForSuggestionType:
-    (int)type {
-  DCHECK(!ShouldUseNewFormatting());
-  // Answer types, sizes and colors specified at http://goto.google.com/ais_api.
-  UIColor* detailTextColor = SuggestionDetailTextColor(self.incognito);
-  switch (type) {
-    case SuggestionAnswer::TOP_ALIGNED:
-      return @{
-        NSFontAttributeName : [UIFont systemFontOfSize:12],
-        NSBaselineOffsetAttributeName : @10.0f,
-        NSForegroundColorAttributeName : detailTextColor,
-      };
-    case SuggestionAnswer::DESCRIPTION_POSITIVE:
-      return @{
-        NSFontAttributeName : [UIFont systemFontOfSize:16],
-        NSForegroundColorAttributeName : [UIColor colorNamed:kGreenColor],
-      };
-    case SuggestionAnswer::DESCRIPTION_NEGATIVE:
-      return @{
-        NSFontAttributeName : [UIFont systemFontOfSize:16],
-        NSForegroundColorAttributeName : [UIColor colorNamed:kRedColor],
-      };
-    case SuggestionAnswer::PERSONALIZED_SUGGESTION:
-      return @{
-        NSFontAttributeName : [UIFont systemFontOfSize:16],
-      };
-    case SuggestionAnswer::ANSWER_TEXT_MEDIUM:
-      return @{
-        NSFontAttributeName : [UIFont systemFontOfSize:20],
-
-        NSForegroundColorAttributeName : detailTextColor,
-      };
-    case SuggestionAnswer::ANSWER_TEXT_LARGE:
-      return @{
-        NSFontAttributeName : [UIFont systemFontOfSize:24],
-        NSForegroundColorAttributeName : detailTextColor,
-      };
-    case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_SMALL:
-      return @{
-        NSFontAttributeName : [UIFont systemFontOfSize:12],
-        NSForegroundColorAttributeName : detailTextColor,
-      };
-    case SuggestionAnswer::SUGGESTION_SECONDARY_TEXT_MEDIUM:
-      return @{
-        NSFontAttributeName : [UIFont systemFontOfSize:14],
-        NSForegroundColorAttributeName : detailTextColor,
-      };
-    case SuggestionAnswer::SUGGESTION:
-      // Fall through.
-    default:
-      return @{
-        NSFontAttributeName : [UIFont systemFontOfSize:16],
-        NSForegroundColorAttributeName : SuggestionTextColor(self.incognito),
-      };
-  }
 }
 
 // Return correct formatting attributes for the given style.
@@ -388,7 +321,6 @@ bool ShouldUseNewFormatting() {
 - (NSDictionary<NSAttributedStringKey, id>*)
     formattingAttributesForSuggestionStyle:(SuggestionAnswer::TextStyle)style
                     useDeemphasizedStyling:(BOOL)useDeemphasizedStyling {
-  DCHECK(ShouldUseNewFormatting());
   UIFontDescriptor* defaultFontDescriptor =
       useDeemphasizedStyling
           ? [[UIFontDescriptor
@@ -479,15 +411,9 @@ bool ShouldUseNewFormatting() {
     return nil;
 
   UIFont* fontRef;
-  if (ShouldUseNewFormatting()) {
-    fontRef =
-        smallFont
-            ? [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
-            : [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-  } else {
-    fontRef =
-        smallFont ? [UIFont systemFontOfSize:15] : [UIFont systemFontOfSize:17];
-  }
+  fontRef = smallFont
+                ? [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
+                : [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
 
   NSMutableAttributedString* styledText =
       [[NSMutableAttributedString alloc] initWithString:text];
@@ -501,16 +427,10 @@ bool ShouldUseNewFormatting() {
 
   if (classifications != NULL) {
     UIFont* boldFontRef;
-    if (ShouldUseNewFormatting()) {
-      UIFontDescriptor* fontDescriptor = fontRef.fontDescriptor;
-      UIFontDescriptor* boldFontDescriptor = [fontDescriptor
-          fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
-      boldFontRef = [UIFont fontWithDescriptor:boldFontDescriptor size:0];
-    } else {
-      UIFontWeight boldFontWeight = UIFontWeightMedium;
-      boldFontRef = [UIFont systemFontOfSize:fontRef.pointSize
-                                      weight:boldFontWeight];
-    }
+    UIFontDescriptor* fontDescriptor = fontRef.fontDescriptor;
+    UIFontDescriptor* boldFontDescriptor = [fontDescriptor
+        fontDescriptorWithSymbolicTraits:UIFontDescriptorTraitBold];
+    boldFontRef = [UIFont fontWithDescriptor:boldFontDescriptor size:0];
 
     for (ACMatchClassifications::const_iterator i = classifications->begin();
          i != classifications->end(); ++i) {

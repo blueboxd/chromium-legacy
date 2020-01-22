@@ -110,11 +110,6 @@ const char kUpdatedCellularActivationUiName[] =
 const char kUpdatedCellularActivationUiDescription[] =
     "Enables the updated cellular activation UI.";
 
-const char kUseMessagesGoogleComDomainName[] = "Use messages.google.com domain";
-const char kUseMessagesGoogleComDomainDescription[] =
-    "Use the messages.google.com domain as part of the \"Messages\" "
-    "feature under \"Connected Devices\" settings.";
-
 const char kUseMessagesStagingUrlName[] = "Use Messages staging URL";
 const char kUseMessagesStagingUrlDescription[] =
     "Use the staging server as part of the \"Messages\" feature under "
@@ -1856,13 +1851,6 @@ const char kSendTabToSelfWhenSignedInDescription[] =
     "but not necessarily syncing. The tab-share data is thus ephemeral, "
     "rather than persistent sync data.";
 
-const char kServiceWorkerLongRunningMessageName[] =
-    "Service worker long running message dispatch.";
-const char kServiceWorkerLongRunningMessageDescription[] =
-    "Enables long running message dispatch method for service workers. "
-    "Messages sent with this method do not timeout, allowing the service "
-    "worker to run indefinitely.";
-
 const char kServiceWorkerOnUIName[] = "Service worker on UI thread";
 const char kServiceWorkerOnUIDescription[] =
     "Enables browser process logic related to service workers to run on the UI "
@@ -2525,6 +2513,10 @@ const char kContentIndexingNTPName[] = "Content indexing in NTP";
 const char kContentIndexingNTPDescription[] =
     "Shows content indexing entry point UI in NTP";
 
+extern const char kContextMenuCopyImageName[] = "Copy Image";
+extern const char kContextMenuCopyImageDescription[] =
+    "Enable copying image to system clipboard via context menu.";
+
 const char kContextualSearchDefinitionsName[] = "Contextual Search definitions";
 const char kContextualSearchDefinitionsDescription[] =
     "Enables tap-activated contextual definitions of words on a page to be "
@@ -3167,10 +3159,6 @@ const char kMacV2GPUSandboxName[] = "Mac V2 GPU Sandbox";
 const char kMacV2GPUSandboxDescription[] =
     "Controls whether the GPU process on macOS uses the V1 or V2 sandbox.";
 
-const char kMacViewsTaskManagerName[] = "Toolkit-Views Task Manager.";
-const char kMacViewsTaskManagerDescription[] =
-    "Controls whether to use the Toolkit-Views based Task Manager.";
-
 const char kMacSystemMediaPermissionsInfoUiName[] =
     "System media permissions info UI";
 const char kMacSystemMediaPermissionsInfoUiDescription[] =
@@ -3615,6 +3603,11 @@ const char kExoPointerLockName[] = "Pointer lock for Linux applications";
 const char kExoPointerLockDescription[] =
     "Allow Linux applications to request a pointer lock, i.e. exclusive use of "
     "the mouse pointer.";
+
+const char kExperimentalAccessibilityChromeVoxAnnotationsName[] =
+    "Enable experimental ChromeVox annotations feature.";
+const char kExperimentalAccessibilityChromeVoxAnnotationsDescription[] =
+    "Allows users to create custom annotations for elements using ChromeVox.";
 
 const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[] =
     "Enable experimental ChromeVox language switching.";

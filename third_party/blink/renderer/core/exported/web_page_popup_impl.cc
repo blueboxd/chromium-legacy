@@ -610,11 +610,11 @@ LocalDOMWindow* WebPagePopupImpl::Window() {
   return MainFrame().DomWindow();
 }
 
-WebPoint WebPagePopupImpl::PositionRelativeToOwner() {
+gfx::Point WebPagePopupImpl::PositionRelativeToOwner() {
   WebRect root_window_rect = WindowRectInScreen();
   WebRect window_rect = WindowRectInScreen();
-  return WebPoint(window_rect.x - root_window_rect.x,
-                  window_rect.y - root_window_rect.y);
+  return gfx::Point(window_rect.x - root_window_rect.x,
+                    window_rect.y - root_window_rect.y);
 }
 
 WebDocument WebPagePopupImpl::GetDocument() {

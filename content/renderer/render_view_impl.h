@@ -431,7 +431,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnEnablePreferredSizeChangedMode();
   void OnPluginActionAt(const gfx::Point& location,
                         const blink::PluginAction& action);
-  void OnAnimateDoubleTapZoomInMainFrame(const blink::WebPoint& point,
+  void OnAnimateDoubleTapZoomInMainFrame(const gfx::Point& point,
                                          const blink::WebRect& rect_to_zoom);
   void OnZoomToFindInPageRect(const blink::WebRect& rect_to_zoom);
   void OnMoveOrResizeStarted();

@@ -8,23 +8,15 @@ import("//chromecast/chromecast.gni")
 import("//components/vector_icons/vector_icons.gni")
 
 cast_source_set("public") {
-  sources = [
-    "media_overlay.h",
-  ]
+  sources = [ "media_overlay.h" ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 cast_source_set("aura_components") {
-  sources = [
-    "aura_components.h",
-  ]
+  sources = [ "aura_components.h" ]
 
-  deps = [
-    ":public",
-  ]
+  deps = [ ":public" ]
 
   if (use_aura) {
     sources += [ "aura_components.cc" ]

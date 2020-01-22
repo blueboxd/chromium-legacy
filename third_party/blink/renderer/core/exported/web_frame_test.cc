@@ -103,6 +103,7 @@
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_controller.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
@@ -3151,10 +3152,10 @@ TEST_F(WebFrameTest, updateOverlayScrollbarLayers)
 }
 
 void SetScaleAndScrollAndLayout(WebViewImpl* web_view,
-                                WebPoint scroll,
+                                const gfx::Point& scroll,
                                 float scale) {
   web_view->SetPageScaleFactor(scale);
-  web_view->MainFrameImpl()->SetScrollOffset(WebSize(scroll.x, scroll.y));
+  web_view->MainFrameImpl()->SetScrollOffset(WebSize(scroll.x(), scroll.y()));
   web_view->MainFrameWidget()->UpdateAllLifecyclePhases(
       WebWidget::LifecycleUpdateReason::kTest);
 }
@@ -3238,8 +3239,7 @@ TEST_F(WebFrameTest, DivAutoZoomParamsTest) {
   // FIXME: Looks like we are missing EXPECTs here.
 
   scale = web_view_helper.GetWebView()->MinimumPageScaleFactor();
-  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), WebPoint(0, 0),
-                             scale);
+  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), gfx::Point(), scale);
 
   // Test double-tap zooming into tall div.
   WebRect tall_block_bound = ComputeBlockBoundHelper(
@@ -3279,7 +3279,7 @@ TEST_F(WebFrameTest, DivAutoZoomWideDivTest) {
   gfx::Point point(div.x + 50, div.y + 50);
   float scale;
   SetScaleAndScrollAndLayout(
-      web_view_helper.GetWebView(), WebPoint(0, 0),
+      web_view_helper.GetWebView(), gfx::Point(),
       (web_view_helper.GetWebView()->MinimumPageScaleFactor()) *
           (1 + double_tap_zoom_already_legible_ratio) / 2);
 
@@ -3346,7 +3346,7 @@ TEST_F(WebFrameTest, DivAutoZoomMultipleDivsTest) {
   gfx::Point bottom_point(bottom_div.x + 50, bottom_div.y + 50);
   float scale;
   SetScaleAndScrollAndLayout(
-      web_view_helper.GetWebView(), WebPoint(0, 0),
+      web_view_helper.GetWebView(), gfx::Point(),
       (web_view_helper.GetWebView()->MinimumPageScaleFactor()) *
           (1 + double_tap_zoom_already_legible_ratio) / 2);
 
@@ -3417,7 +3417,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest) {
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
   SetScaleAndScrollAndLayout(
-      web_view_helper.GetWebView(), WebPoint(0, 0),
+      web_view_helper.GetWebView(), gfx::Point(),
       (web_view_helper.GetWebView()->MinimumPageScaleFactor()) *
           (1 + double_tap_zoom_already_legible_ratio) / 2);
   SimulateDoubleTap(web_view_helper.GetWebView(), double_tap_point, scale);
@@ -3439,7 +3439,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest) {
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
   SetScaleAndScrollAndLayout(
-      web_view_helper.GetWebView(), WebPoint(0, 0),
+      web_view_helper.GetWebView(), gfx::Point(),
       (web_view_helper.GetWebView()->MinimumPageScaleFactor()) *
           (1 + double_tap_zoom_already_legible_ratio) / 2);
   SimulateDoubleTap(web_view_helper.GetWebView(), double_tap_point, scale);
@@ -3461,7 +3461,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleBoundsTest) {
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
   SetScaleAndScrollAndLayout(
-      web_view_helper.GetWebView(), WebPoint(0, 0),
+      web_view_helper.GetWebView(), gfx::Point(),
       (web_view_helper.GetWebView()->MinimumPageScaleFactor()) *
           (1 + double_tap_zoom_already_legible_ratio) / 2);
   SimulateDoubleTap(web_view_helper.GetWebView(), double_tap_point, scale);
@@ -3504,7 +3504,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
   //     maximumLegibleScaleFactor
   float legible_scale = maximum_legible_scale_factor;
   SetScaleAndScrollAndLayout(
-      web_view_helper.GetWebView(), WebPoint(0, 0),
+      web_view_helper.GetWebView(), gfx::Point(),
       (web_view_helper.GetWebView()->MinimumPageScaleFactor()) *
           (1 + double_tap_zoom_already_legible_ratio) / 2);
   float double_tap_zoom_already_legible_scale =
@@ -3532,7 +3532,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
   SetScaleAndScrollAndLayout(
-      web_view_helper.GetWebView(), WebPoint(0, 0),
+      web_view_helper.GetWebView(), gfx::Point(),
       (web_view_helper.GetWebView()->MinimumPageScaleFactor()) *
           (1 + double_tap_zoom_already_legible_ratio) / 2);
   SimulateDoubleTap(web_view_helper.GetWebView(), double_tap_point, scale);
@@ -3555,7 +3555,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
   SetScaleAndScrollAndLayout(
-      web_view_helper.GetWebView(), WebPoint(0, 0),
+      web_view_helper.GetWebView(), gfx::Point(),
       (web_view_helper.GetWebView()->MinimumPageScaleFactor()) *
           (1 + double_tap_zoom_already_legible_ratio) / 2);
   SimulateDoubleTap(web_view_helper.GetWebView(), double_tap_point, scale);
@@ -3578,7 +3578,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleLegibleScaleTest) {
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
   SetScaleAndScrollAndLayout(
-      web_view_helper.GetWebView(), WebPoint(0, 0),
+      web_view_helper.GetWebView(), gfx::Point(),
       (web_view_helper.GetWebView()->MinimumPageScaleFactor()) *
           (1 + double_tap_zoom_already_legible_ratio) / 2);
   SimulateDoubleTap(web_view_helper.GetWebView(), double_tap_point, scale);
@@ -3624,7 +3624,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
   //     accessibilityFontScaleFactor
   float legible_scale = accessibility_font_scale_factor;
   SetScaleAndScrollAndLayout(
-      web_view_helper.GetWebView(), WebPoint(0, 0),
+      web_view_helper.GetWebView(), gfx::Point(),
       (web_view_helper.GetWebView()->MinimumPageScaleFactor()) *
           (1 + double_tap_zoom_already_legible_ratio) / 2);
   float double_tap_zoom_already_legible_scale =
@@ -3652,7 +3652,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
   SetScaleAndScrollAndLayout(
-      web_view_helper.GetWebView(), WebPoint(0, 0),
+      web_view_helper.GetWebView(), gfx::Point(),
       (web_view_helper.GetWebView()->MinimumPageScaleFactor()) *
           (1 + double_tap_zoom_already_legible_ratio) / 2);
   SimulateDoubleTap(web_view_helper.GetWebView(), double_tap_point, scale);
@@ -3675,7 +3675,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
   SetScaleAndScrollAndLayout(
-      web_view_helper.GetWebView(), WebPoint(0, 0),
+      web_view_helper.GetWebView(), gfx::Point(),
       (web_view_helper.GetWebView()->MinimumPageScaleFactor()) *
           (1 + double_tap_zoom_already_legible_ratio) / 2);
   SimulateDoubleTap(web_view_helper.GetWebView(), double_tap_point, scale);
@@ -3698,7 +3698,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest) {
       web_view_helper.GetWebView()->MinimumPageScaleFactor() *
       double_tap_zoom_already_legible_ratio;
   SetScaleAndScrollAndLayout(
-      web_view_helper.GetWebView(), WebPoint(0, 0),
+      web_view_helper.GetWebView(), gfx::Point(),
       (web_view_helper.GetWebView()->MinimumPageScaleFactor()) *
           (1 + double_tap_zoom_already_legible_ratio) / 2);
   SimulateDoubleTap(web_view_helper.GetWebView(), double_tap_point, scale);
@@ -3784,7 +3784,7 @@ TEST_F(WebFrameTest, DontZoomInOnFocusedInTouchAction) {
       web_view_helper.GetWebView()->FakePageScaleAnimationPageScaleForTesting(),
       0);
 
-  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), WebPoint(0, 0),
+  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), gfx::Point(),
                              initial_scale);
   ASSERT_EQ(initial_scale, web_view_helper.GetWebView()->PageScaleFactor());
 
@@ -3799,7 +3799,7 @@ TEST_F(WebFrameTest, DontZoomInOnFocusedInTouchAction) {
       web_view_helper.GetWebView()->FakePageScaleAnimationPageScaleForTesting(),
       initial_scale);
 
-  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), WebPoint(0, 0),
+  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), gfx::Point(),
                              initial_scale);
   ASSERT_EQ(initial_scale, web_view_helper.GetWebView()->PageScaleFactor());
 
@@ -3850,13 +3850,13 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest) {
       .GetElementById("EditBoxWithText")
       .To<WebInputElement>()
       .SetSelectionRange(1000, 1000);
-  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), WebPoint(0, 0), 1);
+  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), gfx::Point(), 1);
   WebRect rect, caret;
   web_view_helper.GetWebView()->SelectionBounds(caret, rect);
 
   // Set the page scale to be smaller than the minimal readable scale.
   float initial_scale = min_readable_caret_height / caret.height * 0.5f;
-  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), WebPoint(0, 0),
+  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), gfx::Point(),
                              initial_scale);
 
   float scale;
@@ -3881,7 +3881,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest) {
   viewport_width = 200;
   viewport_height = 150;
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
-  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), WebPoint(0, 0),
+  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), gfx::Point(),
                              initial_scale);
   GetElementAndCaretBoundsForFocusedEditableElement(
       web_view_helper, element_bounds, caret_bounds);
@@ -3895,7 +3895,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTest) {
   EXPECT_NEAR(h_scroll, scroll.X(), 2);
   EXPECT_NEAR(min_readable_caret_height / caret.height, scale, 0.1);
 
-  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), WebPoint(0, 0),
+  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), gfx::Point(),
                              initial_scale);
   // Move focus to edit box with text.
   web_view_helper.GetWebView()->AdvanceFocus(false);
@@ -3958,13 +3958,13 @@ TEST_F(WebFrameTest, DivScrollIntoEditablePreservePageScaleTest) {
       .GetElementById("EditBoxWithText")
       .To<WebInputElement>()
       .SetSelectionRange(0, 0);
-  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), WebPoint(0, 0), 1);
+  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), gfx::Point(), 1);
   WebRect rect, caret;
   web_view_helper.GetWebView()->SelectionBounds(caret, rect);
 
   // Set the page scale to be twice as large as the minimal readable scale.
   float new_scale = kMinReadableCaretHeight / caret.height * 2.0;
-  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), WebPoint(0, 0),
+  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), gfx::Point(),
                              new_scale);
 
   float scale;
@@ -3990,7 +3990,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditablePreservePageScaleTest) {
   new_scale = 3.0;
   h_scroll = 200;
   SetScaleAndScrollAndLayout(web_view_helper.GetWebView(),
-                             WebPoint(h_scroll, 0), new_scale);
+                             gfx::Point(h_scroll, 0), new_scale);
   GetElementAndCaretBoundsForFocusedEditableElement(
       web_view_helper, element_bounds, caret_bounds);
   web_view_helper.GetWebView()->ComputeScaleAndScrollForEditableElementRects(
@@ -4041,7 +4041,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTestZoomToLegibleScaleDisabled) {
 
   // Set the page scale to be smaller than the minimal readable scale.
   float initial_scale = 0.25f;
-  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), WebPoint(0, 0),
+  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), gfx::Point(),
                              initial_scale);
 
   float scale;
@@ -4114,7 +4114,7 @@ TEST_F(WebFrameTest, DivScrollIntoEditableTestWithDeviceScaleFactor) {
 
   // Set the page scale to be smaller than the minimal readable scale.
   float initial_scale = 0.5f;
-  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), WebPoint(0, 0),
+  SetScaleAndScrollAndLayout(web_view_helper.GetWebView(), gfx::Point(),
                              initial_scale);
   ASSERT_EQ(web_view_helper.GetWebView()->PageScaleFactor(), initial_scale);
 
@@ -4155,7 +4155,7 @@ TEST_F(WebFrameTest, CharacterIndexAtPointWithPinchZoom) {
 
   // Since we're zoomed in to 2X, each char of Ahem is 20px wide/tall in
   // viewport space. We expect to hit the fifth char on the first line.
-  size_t ix = main_frame->CharacterIndexForPoint(WebPoint(100, 15));
+  size_t ix = main_frame->CharacterIndexForPoint(gfx::Point(100, 15));
 
   EXPECT_EQ(5ul, ix);
 }
@@ -5393,18 +5393,18 @@ TEST_F(WebFrameTest, FindInPageForcedRedoOfFindInPage) {
   EXPECT_EQ(2, find_in_page_client.ActiveIndex());
 }
 
-static WebPoint TopLeft(const WebRect& rect) {
-  return WebPoint(rect.x, rect.y);
+static gfx::Point TopLeft(const WebRect& rect) {
+  return gfx::Point(rect.x, rect.y);
 }
 
-static WebPoint BottomRightMinusOne(const WebRect& rect) {
+static gfx::Point BottomRightMinusOne(const WebRect& rect) {
   // FIXME: If we don't subtract 1 from the x- and y-coordinates of the
   // selection bounds, selectRange() will select the *next* element. That's
   // strictly correct, as hit-testing checks the pixel to the lower-right of
   // the input coordinate, but it's a wart on the API.
   if (rect.width > 0)
-    return WebPoint(rect.x + rect.width - 1, rect.y + rect.height - 1);
-  return WebPoint(rect.x + rect.width, rect.y + rect.height - 1);
+    return gfx::Point(rect.x + rect.width - 1, rect.y + rect.height - 1);
+  return gfx::Point(rect.x + rect.width, rect.y + rect.height - 1);
 }
 
 static WebRect ElementBounds(WebLocalFrame* frame, const WebString& id) {
@@ -5573,7 +5573,7 @@ TEST_F(WebFrameTest, SelectRangeDivContentEditable) {
   web_view_helper.GetWebView()->MainFrameWidget()->SelectionBounds(
       start_web_rect, end_web_rect);
 
-  frame->SelectRange(BottomRightMinusOne(end_web_rect), WebPoint(0, 0));
+  frame->SelectRange(BottomRightMinusOne(end_web_rect), gfx::Point());
   EXPECT_EQ("16-char header. This text is initially selected.",
             SelectionAsString(frame));
 
@@ -5592,7 +5592,7 @@ TEST_F(WebFrameTest, SelectRangeDivContentEditable) {
 
   web_view_helper.GetWebView()->MainFrameWidget()->SelectionBounds(
       start_web_rect, end_web_rect);
-  frame->SelectRange(TopLeft(start_web_rect), WebPoint(640, 480));
+  frame->SelectRange(TopLeft(start_web_rect), gfx::Point(640, 480));
   EXPECT_EQ("This text is initially selected. 16-char footer.",
             SelectionAsString(frame));
 }
@@ -5618,7 +5618,7 @@ TEST_F(WebFrameTest, DISABLED_SelectRangeSpanContentEditable) {
   web_view_helper.GetWebView()->MainFrameWidget()->SelectionBounds(
       start_web_rect, end_web_rect);
 
-  frame->SelectRange(BottomRightMinusOne(end_web_rect), WebPoint(0, 0));
+  frame->SelectRange(BottomRightMinusOne(end_web_rect), gfx::Point());
   EXPECT_EQ("16-char header. This text is initially selected.",
             SelectionAsString(frame));
 
@@ -5638,7 +5638,7 @@ TEST_F(WebFrameTest, DISABLED_SelectRangeSpanContentEditable) {
   EXPECT_EQ("This text is initially selected.", SelectionAsString(frame));
   web_view_helper.GetWebView()->MainFrameWidget()->SelectionBounds(
       start_web_rect, end_web_rect);
-  frame->SelectRange(TopLeft(start_web_rect), WebPoint(640, 480));
+  frame->SelectRange(TopLeft(start_web_rect), gfx::Point(640, 480));
   EXPECT_EQ("This text is initially selected. 16-char footer.",
             SelectionAsString(frame));
 }
@@ -5766,11 +5766,11 @@ TEST_F(WebFrameTest, MoveRangeSelectionExtent) {
   web_view_helper.GetWebView()->MainFrameWidget()->SelectionBounds(
       start_web_rect, end_web_rect);
 
-  frame->MoveRangeSelectionExtent(WebPoint(640, 480));
+  frame->MoveRangeSelectionExtent(gfx::Point(640, 480));
   EXPECT_EQ("This text is initially selected. 16-char footer.",
             SelectionAsString(frame));
 
-  frame->MoveRangeSelectionExtent(WebPoint(0, 0));
+  frame->MoveRangeSelectionExtent(gfx::Point());
   EXPECT_EQ("16-char header. ", SelectionAsString(frame));
 
   // Reset with swapped base and extent.
@@ -5778,10 +5778,10 @@ TEST_F(WebFrameTest, MoveRangeSelectionExtent) {
                      BottomRightMinusOne(start_web_rect));
   EXPECT_EQ("This text is initially selected.", SelectionAsString(frame));
 
-  frame->MoveRangeSelectionExtent(WebPoint(640, 480));
+  frame->MoveRangeSelectionExtent(gfx::Point(640, 480));
   EXPECT_EQ(" 16-char footer.", SelectionAsString(frame));
 
-  frame->MoveRangeSelectionExtent(WebPoint(0, 0));
+  frame->MoveRangeSelectionExtent(gfx::Point());
   EXPECT_EQ("16-char header. This text is initially selected.",
             SelectionAsString(frame));
 
@@ -5838,7 +5838,7 @@ TEST_F(WebFrameTest, MoveRangeSelectionExtentScollsInputField) {
                    .RootEditableElement()
                    ->scrollLeft());
   frame->MoveRangeSelectionExtent(
-      WebPoint(end_web_rect.x + 500, end_web_rect.y));
+      gfx::Point(end_web_rect.x + 500, end_web_rect.y));
   EXPECT_GE(frame->GetFrame()
                 ->Selection()
                 .ComputeVisibleSelectionInDOMTree()
@@ -6012,32 +6012,32 @@ TEST_F(WebFrameTest, SelectRangeStaysHorizontallyAlignedWhenMoved) {
   frame->ExecuteScript(WebScriptSource("selectRange();"));
   web_view_helper.GetWebView()->MainFrameWidget()->SelectionBounds(
       initial_start_rect, initial_end_rect);
-  WebPoint moved_start(TopLeft(initial_start_rect));
+  gfx::Point moved_start(TopLeft(initial_start_rect));
 
-  moved_start.y += 40;
+  moved_start.Offset(0, 40);
   frame->SelectRange(moved_start, BottomRightMinusOne(initial_end_rect));
   web_view_helper.GetWebView()->MainFrameWidget()->SelectionBounds(start_rect,
                                                                    end_rect);
   EXPECT_EQ(start_rect, initial_start_rect);
   EXPECT_EQ(end_rect, initial_end_rect);
 
-  moved_start.y -= 80;
+  moved_start.Offset(0, -80);
   frame->SelectRange(moved_start, BottomRightMinusOne(initial_end_rect));
   web_view_helper.GetWebView()->MainFrameWidget()->SelectionBounds(start_rect,
                                                                    end_rect);
   EXPECT_EQ(start_rect, initial_start_rect);
   EXPECT_EQ(end_rect, initial_end_rect);
 
-  WebPoint moved_end(BottomRightMinusOne(initial_end_rect));
+  gfx::Point moved_end(BottomRightMinusOne(initial_end_rect));
 
-  moved_end.y += 40;
+  moved_end.Offset(0, 40);
   frame->SelectRange(TopLeft(initial_start_rect), moved_end);
   web_view_helper.GetWebView()->MainFrameWidget()->SelectionBounds(start_rect,
                                                                    end_rect);
   EXPECT_EQ(start_rect, initial_start_rect);
   EXPECT_EQ(end_rect, initial_end_rect);
 
-  moved_end.y -= 80;
+  moved_end.Offset(0, -80);
   frame->SelectRange(TopLeft(initial_start_rect), moved_end);
   web_view_helper.GetWebView()->MainFrameWidget()->SelectionBounds(start_rect,
                                                                    end_rect);
@@ -6062,16 +6062,16 @@ TEST_F(WebFrameTest, MoveCaretStaysHorizontallyAlignedWhenMoved) {
   frame->ExecuteScript(WebScriptSource("selectCaret();"));
   web_view_helper.GetWebView()->MainFrameWidget()->SelectionBounds(
       initial_start_rect, initial_end_rect);
-  WebPoint move_to(TopLeft(initial_start_rect));
+  gfx::Point move_to(TopLeft(initial_start_rect));
 
-  move_to.y += 40;
+  move_to.Offset(0, 40);
   frame->MoveCaretSelection(move_to);
   web_view_helper.GetWebView()->MainFrameWidget()->SelectionBounds(start_rect,
                                                                    end_rect);
   EXPECT_EQ(start_rect, initial_start_rect);
   EXPECT_EQ(end_rect, initial_end_rect);
 
-  move_to.y -= 80;
+  move_to.Offset(0, -80);
   frame->MoveCaretSelection(move_to);
   web_view_helper.GetWebView()->MainFrameWidget()->SelectionBounds(start_rect,
                                                                    end_rect);
@@ -6382,7 +6382,7 @@ TEST_F(WebFrameTest, MoveCaretSelectionTowardsWindowPointWithNoSelection) {
   WebFrame* frame = web_view_helper.GetWebView()->MainFrame();
 
   // This test passes if this doesn't crash.
-  frame->ToWebLocalFrame()->MoveCaretSelection(WebPoint(0, 0));
+  frame->ToWebLocalFrame()->MoveCaretSelection(gfx::Point());
 }
 
 class TextCheckClient : public WebTextCheckClient {
@@ -9503,7 +9503,7 @@ class RemoteNavigationClient
   void Navigate(const WebURLRequest& request,
                 bool should_replace_current_entry,
                 bool is_opener_navigation,
-                bool has_download_sandbox_flag,
+                bool initiator_frame_has_download_sandbox_flag,
                 bool blocking_downloads_in_sandbox_enabled,
                 bool initiator_frame_is_ad,
                 mojo::ScopedMessagePipeHandle) override {
@@ -10561,6 +10561,51 @@ TEST_F(WebFrameTest, CopyImageDocument) {
   EXPECT_EQ(2u, types.size());
   EXPECT_EQ("text/html", types[0]);
   EXPECT_EQ("image/png", types[1]);
+
+  // Clear clipboard data
+  system_clipboard->WritePlainText("");
+  system_clipboard->CommitWrite();
+}
+
+TEST_F(WebFrameTest, CopyTextInImageDocument) {
+  // If Javascript inserts other contents into an image document, we should be
+  // able to copy those contents, not just the image itself.
+
+  RegisterMockedHttpURLLoadWithMimeType("white-1x1.png", "image/png");
+  frame_test_helpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "white-1x1.png");
+  WebViewImpl* web_view = web_view_helper.GetWebView();
+  WebLocalFrameImpl* web_frame = web_view->MainFrameImpl();
+  Document* document = web_frame->GetFrame()->GetDocument();
+
+  ASSERT_TRUE(document);
+  EXPECT_TRUE(IsA<ImageDocument>(document));
+
+  Node* text = document->createTextNode("copy me");
+  document->body()->appendChild(text);
+  document->GetFrame()->Selection().SetSelection(
+      SelectionInDOMTree::Builder().SelectAllChildren(*text).Build(),
+      SetSelectionOptions());
+
+  // Setup a mock clipboard host.
+  PageTestBase::MockClipboardHostProvider mock_clipboard_host_provider(
+      web_frame->GetFrame()->GetBrowserInterfaceBroker());
+
+  SystemClipboard* system_clipboard =
+      document->GetFrame()->GetSystemClipboard();
+  ASSERT_TRUE(system_clipboard);
+
+  EXPECT_TRUE(system_clipboard->ReadAvailableTypes().IsEmpty());
+
+  bool result = web_frame->ExecuteCommand("Copy");
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(result);
+
+  Vector<String> types = system_clipboard->ReadAvailableTypes();
+  EXPECT_EQ(2u, types.size());
+  EXPECT_EQ("text/plain", types[0]);
+  EXPECT_EQ("text/html", types[1]);
 
   // Clear clipboard data
   system_clipboard->WritePlainText("");
@@ -13009,7 +13054,7 @@ TEST_F(WebFrameTest, RemoteViewportAndMainframeIntersections) {
   // element.
   WebFrameWidget* widget = local_frame->FrameWidget();
   ASSERT_TRUE(widget);
-  WebPoint viewport_offset(7, -11);
+  gfx::Point viewport_offset(7, -11);
   WebRect viewport_intersection(0, 11, 200, 89);
   WebRect mainframe_intersection(0, 0, 200, 140);
   FrameOcclusionState occlusion_state = FrameOcclusionState::kUnknown;

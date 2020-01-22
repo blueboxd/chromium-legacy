@@ -3295,5 +3295,105 @@ TEST_F(TSFTextStoreTest, UnderlineStyleTest) {
   EXPECT_EQ(S_OK, result);
 }
 
+// regression tests for crbug.com/1013154.
+// We should remove selected text before start composition on existing text.
+class RegressionTest7Callback : public TSFTextStoreTestCallback {
+ public:
+  explicit RegressionTest7Callback(TSFTextStore* text_store)
+      : TSFTextStoreTestCallback(text_store) {}
+
+  HRESULT LockGranted1(DWORD flags) {
+    SetTextTest(0, 0, L"aaaa", S_OK);
+    SetSelectionTest(0, 4, S_OK);
+    return S_OK;
+  }
+
+  HRESULT LockGranted2(DWORD flags) {
+    GetTextTest(0, -1, L"aaaa", 4);
+    SetTextTest(1, 4, L"", S_OK);
+    SetSelectionTest(1, 1, S_OK);
+
+    text_spans()->clear();
+    ImeTextSpan text_span_1;
+    text_span_1.start_offset = 0;
+    text_span_1.end_offset = 1;
+    text_span_1.underline_color = SK_ColorBLACK;
+    text_span_1.thickness = ImeTextSpan::Thickness::kThin;
+    text_span_1.background_color = SK_ColorTRANSPARENT;
+    text_spans()->push_back(text_span_1);
+
+    *edit_flag() = true;
+    *composition_start() = 0;
+    composition_range()->set_start(0);
+    composition_range()->set_end(1);
+    *has_composition_range() = true;
+
+    text_store_->OnKeyTraceDown(65u, 1966081u);
+    return S_OK;
+  }
+
+  bool SetCompositionFromExistingText2(
+      const gfx::Range& range,
+      const std::vector<ui::ImeTextSpan>& text_spans) {
+    EXPECT_EQ(0u, range.start());
+    EXPECT_EQ(1u, range.end());
+    EXPECT_EQ(1u, text_spans.size());
+    SetHasCompositionText(true);
+    return true;
+  }
+
+  HRESULT LockGranted3(DWORD flags) {
+    GetTextTest(0, -1, L"a", 1);
+
+    text_spans()->clear();
+    *edit_flag() = true;
+    *composition_start() = 1;
+    composition_range()->set_start(0);
+    composition_range()->set_end(0);
+
+    *has_composition_range() = false;
+    text_store_->OnKeyTraceUp(65u, 1966081u);
+    return S_OK;
+  }
+
+  void InsertText3(const base::string16& text) {
+    EXPECT_EQ(L"a", text);
+    SetHasCompositionText(false);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RegressionTest7Callback);
+};
+
+TEST_F(TSFTextStoreTest, RegressionTest7) {
+  RegressionTest7Callback callback(text_store_.get());
+  EXPECT_CALL(text_input_client_, SetCompositionFromExistingText(_, _))
+      .WillOnce(
+          Invoke(&callback,
+                 &RegressionTest7Callback::SetCompositionFromExistingText2));
+
+  EXPECT_CALL(text_input_client_, InsertText(_))
+      .WillOnce(Invoke(&callback, &RegressionTest7Callback::InsertText3));
+
+  EXPECT_CALL(*sink_, OnLockGranted(_))
+      .WillOnce(Invoke(&callback, &RegressionTest7Callback::LockGranted1))
+      .WillOnce(Invoke(&callback, &RegressionTest7Callback::LockGranted2))
+      .WillOnce(Invoke(&callback, &RegressionTest7Callback::LockGranted3));
+
+  ON_CALL(text_input_client_, HasCompositionText())
+      .WillByDefault(
+          Invoke(&callback, &TSFTextStoreTestCallback::HasCompositionText));
+
+  HRESULT result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+  result = kInvalidResult;
+  EXPECT_EQ(S_OK, text_store_->RequestLock(TS_LF_READWRITE, &result));
+  EXPECT_EQ(S_OK, result);
+}
+
 }  // namespace
 }  // namespace ui

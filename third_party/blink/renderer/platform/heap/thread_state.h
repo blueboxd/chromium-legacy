@@ -299,6 +299,8 @@ class PLATFORM_EXPORT ThreadState final {
   void EnableIncrementalMarkingBarrier();
   void DisableIncrementalMarkingBarrier();
 
+  void RestartIncrementalMarkingIfPaused();
+
   void CompleteSweep();
 
   // Returns whether it is currently allowed to allocate an object. Mainly used

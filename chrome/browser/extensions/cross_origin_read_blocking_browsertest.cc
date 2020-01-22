@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_action_runner.h"
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
@@ -32,6 +32,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/url_loader_factory_manager.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -51,7 +52,10 @@ namespace {
 enum TestParam {
   kAllowlisted = 1 << 0,
   kOutOfBlinkCors = 1 << 1,
+  kAllowlistForCors = 1 << 2,
 };
+
+const char kCorsErrorWhenFetching[] = "error: TypeError: Failed to fetch";
 
 }  // namespace
 
@@ -359,13 +363,23 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
   using Base = CrossOriginReadBlockingExtensionTest;
 
   CrossOriginReadBlockingExtensionAllowlistingTest() {
-    if (IsOutOfBlinkCorsEnabled()) {
-      scoped_feature_list_.InitAndEnableFeature(
-          network::features::kOutOfBlinkCors);
+    std::vector<base::Feature> disabled_features;
+    std::vector<base::Feature> enabled_features;
+
+    if (IsOutOfBlinkCorsEnabled())
+      enabled_features.push_back(network::features::kOutOfBlinkCors);
+    else
+      disabled_features.push_back(network::features::kOutOfBlinkCors);
+
+    if (ShouldAllowlistAlsoApplyToOorCors()) {
+      enabled_features.push_back(
+          extensions_features::kCorbAllowlistAlsoAppliesToOorCors);
     } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          network::features::kOutOfBlinkCors);
+      disabled_features.push_back(
+          extensions_features::kCorbAllowlistAlsoAppliesToOorCors);
     }
+
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
   bool IsExtensionAllowlisted() {
@@ -374,6 +388,10 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
 
   bool IsOutOfBlinkCorsEnabled() {
     return (GetParam() & TestParam::kOutOfBlinkCors) != 0;
+  }
+
+  bool ShouldAllowlistAlsoApplyToOorCors() {
+    return (GetParam() & TestParam::kAllowlistForCors) != 0;
   }
 
   const Extension* InstallExtension(
@@ -436,18 +454,31 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
 
   // Verifies results of fetching a CORB-eligible resource from a content
   // script.  Expectations differ depending on the following:
-  // 1. Non-NetworkService: Fetches from content scripts should never be blocked
-  // 2. NetworkService + allowlisted extension: Fetches from content scripts
-  //                                            should not be blocked
-  // 3. NetworkService + other extension: Fetches from content scripts should
-  //                                      be blocked
+  // 1. Allowlisted extension: Fetches from content scripts
+  //                           should not be blocked
+  // 2. Other extension: Fetches from content scripts should be blocked by
+  //    either: only CORB or CORS+CORB.
   void VerifyFetchFromContentScript(const base::HistogramTester& histograms,
                                     const std::string& actual_fetch_result,
                                     const std::string& expected_fetch_result) {
     if (AreContentScriptFetchesExpectedToBeBlocked()) {
-      // Verify the fetch was blocked.
-      EXPECT_EQ(std::string(), actual_fetch_result);
-      VerifyFetchFromContentScriptWasBlocked(histograms);
+      if (ShouldAllowlistAlsoApplyToOorCors()) {
+        // Verify the fetch was blocked by CORS.
+        EXPECT_EQ(kCorsErrorWhenFetching, actual_fetch_result);
+
+        // No verification if the request was blocked by CORB, because
+        // 1) once request_initiator is trustworthy, CORB should only
+        //    apply to no-cors requests
+        // 2) some CORS-blocked requests may not reach CORB/response-started
+        //    stage at all (e.g. if CORS blocks a redirect).
+
+        // TODO(lukasza): Verify that the request was made in CORS mode (e.g.
+        // included an Origin header).
+      } else {
+        // Verify the fetch was blocked by CORB, but not blocked by CORS.
+        EXPECT_EQ(std::string(), actual_fetch_result);
+        VerifyFetchFromContentScriptWasBlocked(histograms);
+      }
     } else {
       // Verify the fetch was allowed.
       EXPECT_EQ(expected_fetch_result, actual_fetch_result);
@@ -667,13 +698,29 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
       embedded_test_server()->GetURL("cross-site.com", "/save_page/text.txt"));
   std::string fetch_result =
       FetchViaContentScript(cross_site_resource, active_web_contents());
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
-  // Verify that no blocking occurred.
-  EXPECT_THAT(fetch_result,
-              ::testing::StartsWith(
-                  "text-object.txt: ae52dd09-9746-4b7e-86a6-6ada5e2680c2"));
-  VerifyFetchFromContentScriptWasAllowed(histograms,
-                                         true /* expecting_sniffing */);
+  if (IsCorbExpectedToBeTurnedOffAltogether()) {
+    // Verify that CORB didn't run.
+    EXPECT_EQ(
+        0u,
+        histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser").size());
+  } else {
+    // Verify that CORB sniffing allowed the response.
+    VerifyFetchFromContentScriptWasAllowed(histograms,
+                                           true /* expecting_sniffing */);
+  }
+
+  if (ShouldAllowlistAlsoApplyToOorCors() &&
+      AreContentScriptFetchesExpectedToBeBlocked()) {
+    // Verify that the response body was blocked by CORS.
+    EXPECT_EQ(kCorsErrorWhenFetching, fetch_result);
+  } else {
+    // Verify that the response body was not blocked by either CORB nor CORS.
+    EXPECT_THAT(fetch_result,
+                ::testing::StartsWith(
+                    "text-object.txt: ae52dd09-9746-4b7e-86a6-6ada5e2680c2"));
+  }
 }
 
 // Test that responses are blocked by CORB, but have empty response body are not
@@ -696,14 +743,13 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   base::HistogramTester histograms;
   GURL cross_site_resource(
       embedded_test_server()->GetURL("cross-site.com", "/nosniff.empty"));
-  EXPECT_EQ(std::string(),
-            FetchViaContentScript(cross_site_resource, active_web_contents()));
+  std::string fetch_result =
+      FetchViaContentScript(cross_site_resource, active_web_contents());
 
-  // Verify whether blocking occurred or not.
-  if (AreContentScriptFetchesExpectedToBeBlocked())
-    VerifyFetchFromContentScriptWasBlocked(histograms);
-  else
-    VerifyFetchFromContentScriptWasAllowed(histograms);
+  // Verify whether the fetch worked or not (expectations differ depending on
+  // various factors - see the body of VerifyFetchFromContentScript).
+  VerifyFetchFromContentScript(histograms, fetch_result,
+                               "" /* expected_response_body */);
 }
 
 // Test that LogInitiatorSchemeBypassingDocumentBlocking exits early for
@@ -1130,6 +1176,9 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
 
 IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
                        OriginHeaderInCrossOriginGetRequest) {
+  const char kResourcePath[] = "/simulated-resource";
+  net::test_server::ControllableHttpResponse http_request(
+      embedded_test_server(), kResourcePath);
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(InstallExtension());
 
@@ -1144,45 +1193,45 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   // Inject a content script that performs a cross-origin GET fetch to
   // cross-site.com.
   GURL cross_site_resource(
-      embedded_test_server()->GetURL("cross-site.com", "/echoall"));
+      embedded_test_server()->GetURL("cross-site.com", kResourcePath));
   const char* kScriptTemplate = R"(
       fetch($1, {method: 'GET', mode:'cors'})
           .then(response => response.text())
           .then(text => domAutomationController.send(text))
           .catch(err => domAutomationController.send('ERROR: ' + err));
   )";
-  content::DOMMessageQueue message_queue;
   ExecuteContentScript(
       active_web_contents(),
       content::JsReplace(kScriptTemplate, cross_site_resource));
-  std::string fetch_result = PopString(&message_queue);
 
-  // Verify if the fetch was blocked + what the Origin header was.
-  if (AreContentScriptFetchesExpectedToBeBlocked()) {
-    // TODO(lukasza): https://crbug.com/953315: No CORB blocking should occur
-    // for the CORS-mode request - the test expectations should be the same,
-    // regardless of AreContentScriptFetchesExpectedToBeBlocked.
-    EXPECT_EQ("", fetch_result);
-  } else if (IsExtensionAllowlisted()) {
-    // Legacy behavior - no Origin: header is present in GET CORS requests from
-    // content scripts based on the extension permissions.
-    EXPECT_THAT(fetch_result, ::testing::Not(::testing::HasSubstr("Origin:")));
+  // Extract the Origin header.
+  http_request.WaitForRequest();
+  std::string actual_origin_header = "<none>";
+  const auto& headers_map = http_request.http_request()->headers;
+  auto it = headers_map.find("Origin");
+  if (it != headers_map.end())
+    actual_origin_header = it->second;
+
+  if (AreContentScriptFetchesExpectedToBeBlocked() &&
+      ShouldAllowlistAlsoApplyToOorCors()) {
+    // Verify the Origin header uses the page's origin (not the extension
+    // origin).
+    EXPECT_EQ(url::Origin::Create(page_url).Serialize(), actual_origin_header);
   } else {
-    // TODO(lukasza): https://crbug.com/920638: Non-allowlisted extension
-    // should use the website's origin in the CORS request.
-    // TODO: EXPECT_THAT(fetch_result,
-    //                   ::testing::HasSubstr("Origin:
-    //                   http://fetch-initiator.com"));
-    EXPECT_THAT(fetch_result, ::testing::Not(::testing::HasSubstr("Origin:")));
+    // Verify the Origin header is missing.
+    EXPECT_EQ("<none>", actual_origin_header);
   }
 
   // Regression test against https://crbug.com/944704.
-  EXPECT_THAT(fetch_result,
-              ::testing::Not(::testing::HasSubstr("Origin: chrome-extension")));
+  EXPECT_THAT(actual_origin_header,
+              ::testing::Not(::testing::HasSubstr("chrome-extension")));
 }
 
 IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
                        OriginHeaderInCrossOriginPostRequest) {
+  const char kResourcePath[] = "/simulated-resource";
+  net::test_server::ControllableHttpResponse http_request(
+      embedded_test_server(), kResourcePath);
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(InstallExtension());
 
@@ -1197,33 +1246,32 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   // Inject a content script that performs a cross-origin POST fetch to
   // cross-site.com.
   GURL cross_site_resource(
-      embedded_test_server()->GetURL("cross-site.com", "/echoall"));
+      embedded_test_server()->GetURL("cross-site.com", kResourcePath));
   const char* kScriptTemplate = R"(
       fetch($1, {method: 'POST', mode:'cors'})
           .then(response => response.text())
           .then(text => domAutomationController.send(text))
           .catch(err => domAutomationController.send('ERROR: ' + err));
   )";
-  content::DOMMessageQueue message_queue;
   ExecuteContentScript(
       active_web_contents(),
       content::JsReplace(kScriptTemplate, cross_site_resource));
-  std::string fetch_result = PopString(&message_queue);
 
-  // Verify if the fetch was blocked + what the Origin header was.
-  if (AreContentScriptFetchesExpectedToBeBlocked()) {
-    // TODO(lukasza): https://crbug.com/953315: No CORB blocking should occur
-    // for the CORS-mode request - the test expectations should be the same,
-    // regardless of AreContentScriptFetchesExpectedToBeBlocked.
-    EXPECT_EQ("", fetch_result);
-  } else {
-    EXPECT_THAT(fetch_result,
-                ::testing::HasSubstr("Origin: http://fetch-initiator.com"));
-  }
+  // Extract the Origin header.
+  http_request.WaitForRequest();
+  std::string actual_origin_header = "<none>";
+  const auto& headers_map = http_request.http_request()->headers;
+  auto it = headers_map.find("Origin");
+  if (it != headers_map.end())
+    actual_origin_header = it->second;
+
+  // Verify the Origin header uses the page's origin (not the extension
+  // origin).
+  EXPECT_EQ(url::Origin::Create(page_url).Serialize(), actual_origin_header);
 
   // Regression test against https://crbug.com/944704.
-  EXPECT_THAT(fetch_result,
-              ::testing::Not(::testing::HasSubstr("Origin: chrome-extension")));
+  EXPECT_THAT(actual_origin_header,
+              ::testing::Not(::testing::HasSubstr("chrome-extension")));
 }
 
 IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
@@ -1421,6 +1469,15 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   EXPECT_EQ("cors-allowed-body", fetch_result);
 }
 
+INSTANTIATE_TEST_SUITE_P(Allowlisted_AllowlistForCors,
+                         CrossOriginReadBlockingExtensionAllowlistingTest,
+                         ::testing::Values(TestParam::kAllowlisted |
+                                           TestParam::kOutOfBlinkCors |
+                                           TestParam::kAllowlistForCors));
+INSTANTIATE_TEST_SUITE_P(NotAllowlisted_AllowlistForCors,
+                         CrossOriginReadBlockingExtensionAllowlistingTest,
+                         ::testing::Values(TestParam::kOutOfBlinkCors |
+                                           TestParam::kAllowlistForCors));
 INSTANTIATE_TEST_SUITE_P(Allowlisted_OorCors,
                          CrossOriginReadBlockingExtensionAllowlistingTest,
                          ::testing::Values(TestParam::kAllowlisted |

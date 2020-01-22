@@ -28,8 +28,6 @@ enum ExecuteResult {
   UNKNOWN_OUTPUT_ERROR = 7,
   DUPLICATE_OUTPUT_ERROR = 8,
   EXECUTION_ERROR = 9,
-  // Remove kMax and use builtin kMaxValue after Mojo uprev (crbug.com/909719).
-  kMax = EXECUTION_ERROR,
 };
 
 // API for performing inference on a TensorFlow graph. A given graph can be

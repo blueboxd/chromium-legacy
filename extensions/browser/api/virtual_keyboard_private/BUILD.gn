@@ -14,11 +14,7 @@ source_set("virtual_keyboard_private") {
     "virtual_keyboard_private_api.h",
   ]
 
-  deps = [
-    "//extensions/common/api",
-  ]
+  deps = [ "//extensions/common/api" ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

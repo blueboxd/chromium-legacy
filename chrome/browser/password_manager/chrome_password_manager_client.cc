@@ -1104,7 +1104,7 @@ bool ChromePasswordManagerClient::IsUnderAdvancedProtection() const {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   return safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
              profile_)
-      ->is_under_advanced_protection();
+      ->IsUnderAdvancedProtection();
 #else
   return false;
 #endif

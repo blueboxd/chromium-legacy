@@ -28,7 +28,7 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/sqlite_proto/loading_predictor_key_value_data.h"
+#include "components/sqlite_proto/key_value_data.h"
 #include "content/public/common/resource_type.h"
 #include "net/base/network_isolation_key.h"
 #include "url/gurl.h"
@@ -121,10 +121,9 @@ class ResourcePrefetchPredictor : public history::HistoryServiceObserver {
   };
 
   using RedirectDataMap =
-      LoadingPredictorKeyValueData<RedirectData,
-                                   internal::LastVisitTimeCompare>;
+      sqlite_proto::KeyValueData<RedirectData, internal::LastVisitTimeCompare>;
   using OriginDataMap =
-      LoadingPredictorKeyValueData<OriginData, internal::LastVisitTimeCompare>;
+      sqlite_proto::KeyValueData<OriginData, internal::LastVisitTimeCompare>;
   using NavigationMap =
       std::map<NavigationID, std::unique_ptr<PageRequestSummary>>;
 

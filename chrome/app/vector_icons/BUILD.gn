@@ -224,6 +224,10 @@ aggregate_vector_icons("chrome_vector_icons") {
       "google_chrome/google_pay_logo.icon",
     ]
   }
+
+  if (is_chrome_branded && is_chromeos) {
+    icons += [ "google_chrome/assistant.icon" ]
+  }
 }
 
 source_set("vector_icons") {

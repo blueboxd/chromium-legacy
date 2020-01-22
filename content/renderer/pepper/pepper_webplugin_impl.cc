@@ -26,7 +26,6 @@
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
@@ -44,7 +43,6 @@ using ppapi::V8ObjectVar;
 using blink::WebPlugin;
 using blink::WebPluginContainer;
 using blink::WebPluginParams;
-using blink::WebPoint;
 using blink::WebPrintParams;
 using blink::WebRect;
 using blink::WebSize;
@@ -384,7 +382,7 @@ bool PepperWebPluginImpl::ExecuteEditCommand(const blink::WebString& name,
   return false;
 }
 
-WebURL PepperWebPluginImpl::LinkAtPosition(const WebPoint& position) const {
+WebURL PepperWebPluginImpl::LinkAtPosition(const gfx::Point& position) const {
   // Re-entrancy may cause JS to try to execute script on the plugin before it
   // is fully initialized. See: crbug.com/715747.
   if (!instance_)

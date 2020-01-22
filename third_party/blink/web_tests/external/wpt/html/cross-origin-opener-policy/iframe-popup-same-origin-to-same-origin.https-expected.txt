@@ -1,12 +1,12 @@
 This is a testharness.js-based test.
 PASS same-origin with SAME_ORIGIN iframe opening popup a SAME_ORIGIN with COOP: same-origin
-PASS same-origin with SAME_SITE iframe opening popup a SAME_ORIGIN with COOP: same-origin
-PASS same-origin with CROSS_ORIGIN iframe opening popup a SAME_ORIGIN with COOP: same-origin
+FAIL same-origin with SAME_SITE iframe opening popup a SAME_ORIGIN with COOP: same-origin assert_equals: name expected "" but got "SAME_SITE_iframe_opening_SAME_ORIGIN_popup_with_coop_same-origin"
+FAIL same-origin with CROSS_ORIGIN iframe opening popup a SAME_ORIGIN with COOP: same-origin assert_equals: name expected "" but got "CROSS_ORIGIN_iframe_opening_SAME_ORIGIN_popup_with_coop_same-origin"
 FAIL same-origin with SAME_ORIGIN iframe opening popup a SAME_SITE with COOP: same-origin assert_equals: opener expected false but got true
-PASS same-origin with SAME_SITE iframe opening popup a SAME_SITE with COOP: same-origin
-PASS same-origin with CROSS_ORIGIN iframe opening popup a SAME_SITE with COOP: same-origin
+FAIL same-origin with SAME_SITE iframe opening popup a SAME_SITE with COOP: same-origin assert_equals: name expected "" but got "SAME_SITE_iframe_opening_SAME_SITE_popup_with_coop_same-origin"
+FAIL same-origin with CROSS_ORIGIN iframe opening popup a SAME_SITE with COOP: same-origin assert_equals: name expected "" but got "CROSS_ORIGIN_iframe_opening_SAME_SITE_popup_with_coop_same-origin"
 FAIL same-origin with SAME_ORIGIN iframe opening popup a CROSS_ORIGIN with COOP: same-origin assert_equals: opener expected false but got true
-PASS same-origin with SAME_SITE iframe opening popup a CROSS_ORIGIN with COOP: same-origin
-PASS same-origin with CROSS_ORIGIN iframe opening popup a CROSS_ORIGIN with COOP: same-origin
+FAIL same-origin with SAME_SITE iframe opening popup a CROSS_ORIGIN with COOP: same-origin assert_equals: name expected "" but got "SAME_SITE_iframe_opening_CROSS_ORIGIN_popup_with_coop_same-origin"
+FAIL same-origin with CROSS_ORIGIN iframe opening popup a CROSS_ORIGIN with COOP: same-origin assert_equals: name expected "" but got "CROSS_ORIGIN_iframe_opening_CROSS_ORIGIN_popup_with_coop_same-origin"
 Harness: the test ran to completion.
 

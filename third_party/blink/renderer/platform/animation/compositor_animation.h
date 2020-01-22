@@ -37,7 +37,7 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
       cc::WorkletAnimationId,
       const String& name,
       double playback_rate,
-      std::unique_ptr<CompositorScrollTimeline>,
+      scoped_refptr<CompositorScrollTimeline>,
       std::unique_ptr<cc::AnimationOptions>,
       std::unique_ptr<cc::AnimationEffectTimings> effect_timings);
 

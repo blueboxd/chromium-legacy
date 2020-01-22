@@ -171,40 +171,19 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
   }
   gpu_preferences.disable_vulkan_surface =
       command_line->HasSwitch(switches::kDisableVulkanSurface);
-  if (command_line->HasSwitch(switches::kGrContextType)) {
-    auto value = command_line->GetSwitchValueASCII(switches::kGrContextType);
-    if (value == switches::kGrContextTypeGL) {
-      gpu_preferences.gr_context_type = GrContextType::kGL;
-    } else if (value == switches::kGrContextTypeVulkan) {
-      gpu_preferences.gr_context_type = GrContextType::kVulkan;
-    } else if (value == switches::kGrContextTypeMetal) {
 #if defined(OS_MACOSX)
-      DCHECK(base::FeatureList::IsEnabled(features::kMetal))
-          << "GrContextType is Metal, but Metal is not enabled.";
-      gpu_preferences.gr_context_type = GrContextType::kMetal;
+  gpu_preferences.gr_context_type =
+      base::FeatureList::IsEnabled(features::kMetal) ? GrContextType::kMetal
+                                                     : GrContextType::kGL;
+#else
+  gpu_preferences.gr_context_type =
+      base::FeatureList::IsEnabled(features::kVulkan) ? GrContextType::kVulkan
+                                                      : GrContextType::kGL;
 #endif
 #if BUILDFLAG(SKIA_USE_DAWN)
-    } else if (value == switches::kGrContextTypeDawn) {
-      gpu_preferences.gr_context_type = GrContextType::kDawn;
+  if (base::FeatureList::IsEnabled(features::kSkiaDawn))
+    gpu_preferences.gr_context_type = GrContextType::kDawn;
 #endif
-    } else {
-      NOTREACHED() << "Invalid GrContextType.";
-      gpu_preferences.gr_context_type = GrContextType::kGL;
-    }
-  } else {
-#if defined(OS_MACOSX)
-    gpu_preferences.gr_context_type =
-        base::FeatureList::IsEnabled(features::kMetal) ?
-            GrContextType::kMetal :
-            GrContextType::kGL;
-#else
-    if (base::FeatureList::IsEnabled(features::kVulkan)) {
-      gpu_preferences.gr_context_type = GrContextType::kVulkan;
-    } else {
-      gpu_preferences.gr_context_type = GrContextType::kGL;
-    }
-#endif
-  }
   if (gpu_preferences.gr_context_type == GrContextType::kVulkan &&
       gpu_preferences.use_vulkan == gpu::VulkanImplementationName::kNone) {
     // If gpu_preferences.use_vulkan is not set from --use-vulkan, the native

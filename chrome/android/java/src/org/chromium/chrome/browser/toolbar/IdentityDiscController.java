@@ -17,7 +17,7 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.settings.sync.SyncAndServicesSettings;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.ProfileDataCache;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -70,7 +70,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
     @IdentityDiscState
     private int mState = IdentityDiscState.NONE;
 
-    private boolean mIsNTPVisible;
+    private boolean mShouldShowButton;
 
     /**
      * Creates IdentityDiscController object.
@@ -98,23 +98,23 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
     }
 
     /**
-     * Shows/hides Identity Disc depending on whether NTP is visible.
+     * Shows/hides Identity Disc.
      */
     void updateButtonState() {
-        updateButtonState(mIsNTPVisible);
+        updateButtonState(mShouldShowButton);
     }
 
     /**
-     * Shows/hides Identity Disc depending on whether NTP is visible.
+     * @param shouldShowButton Whether to show the Identity Disc.
      */
-    void updateButtonState(boolean isNTPVisible) {
-        mIsNTPVisible = isNTPVisible;
+    void updateButtonState(boolean shouldShowButton) {
+        mShouldShowButton = shouldShowButton;
         String accountName = ChromeSigninController.get().getSignedInAccountName();
-        boolean shouldShowIdentityDisc = isNTPVisible && accountName != null;
+        boolean canShowIdentityDisc = mShouldShowButton && accountName != null;
         @IdentityDiscState
         int oldState = mState;
 
-        mState = !shouldShowIdentityDisc
+        mState = !canShowIdentityDisc
                 ? IdentityDiscState.NONE
                 : mToolbarManager.isBottomToolbarVisible() ? IdentityDiscState.LARGE
                                                            : IdentityDiscState.SMALL;
@@ -170,7 +170,7 @@ class IdentityDiscController implements NativeInitObserver, ProfileDataCache.Obs
         mToolbarManager.enableExperimentalButton(view -> {
             recordIdentityDiscUsed();
             SettingsLauncher.getInstance().launchSettingsPage(
-                    mContext, SyncAndServicesPreferences.class);
+                    mContext, SyncAndServicesSettings.class);
         }, getProfileImage(accountName), R.string.accessibility_toolbar_btn_identity_disc);
     }
 

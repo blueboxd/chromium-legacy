@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutSlider INPUT",
-          "rect": [9, 9, 131, 18],
+          "rect": [8, 8, 133, 20],
           "reason": "subtree"
         },
         {

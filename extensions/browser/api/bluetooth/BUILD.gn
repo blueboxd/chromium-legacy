@@ -29,7 +29,5 @@ source_set("bluetooth") {
     "//extensions/common/api",
   ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

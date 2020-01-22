@@ -51,3 +51,19 @@ message SharingMessageSpecifics {
   // SerializeToString.
   optional bytes payload = 3;
 }
+
+// Used for the server to return fine grained commit errors back to the client.
+message SharingMessageCommitError {
+  enum ErrorCode {
+    NONE = 0;
+    INVALID_ARGUMENT = 1;
+    NOT_FOUND = 2;
+    INTERNAL = 3;
+    UNAVAILABLE = 4;
+    RESOURCE_EXHAUSTED = 5;
+    UNAUTHENTICATED = 6;
+    PERMISSION_DENIED = 7;
+  }
+
+  optional ErrorCode error_code = 1;
+}

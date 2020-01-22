@@ -345,6 +345,31 @@ TEST_F(LabelButtonTest, Image) {
   EXPECT_EQ(button_->GetPreferredSize(), gfx::Size(large_size, large_size));
 }
 
+TEST_F(LabelButtonTest, ImageAlignmentWithMultilineLabel) {
+  const base::string16 text(
+      ASCIIToUTF16("Some long text that would result in multiline label"));
+  button_->SetText(text);
+
+  const int max_label_width = 40;
+  button_->label()->SetMultiLine(true);
+  button_->label()->SetMaximumWidth(max_label_width);
+
+  const int image_size = 16;
+  const gfx::ImageSkia image = CreateTestImage(image_size, image_size);
+  button_->SetImage(Button::STATE_NORMAL, image);
+
+  button_->SetBoundsRect(gfx::Rect(button_->GetPreferredSize()));
+  button_->Layout();
+  int y_origin_centered = button_->image()->origin().y();
+
+  button_->SetBoundsRect(gfx::Rect(button_->GetPreferredSize()));
+  button_->SetImageCentered(false);
+  button_->Layout();
+  int y_origin_not_centered = button_->image()->origin().y();
+
+  EXPECT_LT(y_origin_not_centered, y_origin_centered);
+}
+
 TEST_F(LabelButtonTest, LabelAndImage) {
   const gfx::FontList font_list = button_->label()->font_list();
   const base::string16 text(ASCIIToUTF16("abcdefghijklm"));
@@ -422,6 +447,7 @@ TEST_F(LabelButtonTest, LabelWrapAndImageAlignment) {
   ASSERT_EQ(font_list.GetHeight(), image.width());
 
   button_->SetImage(Button::STATE_NORMAL, image);
+  button_->SetImageCentered(false);
   button_->SetMaxSize(
       gfx::Size(image.width() + image_spacing + text_wrap_width, 0));
 
@@ -436,7 +462,7 @@ TEST_F(LabelButtonTest, LabelWrapAndImageAlignment) {
   EXPECT_EQ(preferred_size.height(),
             font_list.GetHeight() * 2 + button_insets.height());
 
-  // The image should be centered on the first line of the multi-line label.
+  // The image should be centered on the first line of the multi-line label
   EXPECT_EQ(button_->image()->y(),
             (font_list.GetHeight() - button_->image()->height()) / 2 +
                 button_insets.top());

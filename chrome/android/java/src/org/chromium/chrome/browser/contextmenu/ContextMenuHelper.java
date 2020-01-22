@@ -240,6 +240,15 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     }
 
     /**
+     * Copy the image, that triggered the current context menu, to system clipboard.
+     * @param delegate The {@link ContextMenuItemDelegate} from context menu for copying image to
+     *         the clipboard.
+     */
+    void copyImageToClipboard(ContextMenuItemDelegate delegate) {
+        retrieveImage((Uri imageUri) -> { delegate.onSaveImageToClipboard(imageUri); });
+    }
+
+    /**
      * Share the image that triggered the current context menu with the last app used to share.
      */
     private void shareImageWithLastShareComponent() {

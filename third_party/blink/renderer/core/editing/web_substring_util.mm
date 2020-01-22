@@ -138,9 +138,9 @@ NSAttributedString* AttributedSubstringFromRange(const EphemeralRange& range,
   return [string autorelease];
 }
 
-WebPoint GetBaselinePoint(LocalFrameView* frame_view,
-                          const EphemeralRange& range,
-                          NSAttributedString* string) {
+gfx::Point GetBaselinePoint(LocalFrameView* frame_view,
+                            const EphemeralRange& range,
+                            NSAttributedString* string) {
   IntRect string_rect = frame_view->FrameToViewport(FirstRectForRange(range));
   IntPoint string_point = string_rect.MinXMaxYCorner();
 
@@ -157,8 +157,8 @@ WebPoint GetBaselinePoint(LocalFrameView* frame_view,
 
 NSAttributedString* WebSubstringUtil::AttributedWordAtPoint(
     WebFrameWidget* frame_widget,
-    WebPoint point,
-    WebPoint& baseline_point) {
+    gfx::Point point,
+    gfx::Point& baseline_point) {
   HitTestResult result = static_cast<WebFrameWidgetBase*>(frame_widget)
                              ->CoreHitTestResultAt(IntPoint(point));
 
@@ -195,7 +195,7 @@ NSAttributedString* WebSubstringUtil::AttributedSubstringInRange(
     WebLocalFrame* web_frame,
     size_t location,
     size_t length,
-    WebPoint* baseline_point) {
+    gfx::Point* baseline_point) {
   LocalFrame* frame = To<WebLocalFrameImpl>(web_frame)->GetFrame();
   if (frame->View()->NeedsLayout())
     frame->View()->UpdateLayout();

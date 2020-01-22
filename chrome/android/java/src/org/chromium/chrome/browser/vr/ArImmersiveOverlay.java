@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.Fullscreen
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
+import org.chromium.ui.display.DisplayAndroidManager;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -234,8 +235,9 @@ public class ArImmersiveOverlay
         // transport even if the currently-visible part in the surface view is smaller than this. We
         // shouldn't get resize events since we're using FLAG_LAYOUT_STABLE and are locking screen
         // orientation.
+        Display display = DisplayAndroidManager.getDefaultDisplayForContext(mActivity);
         if (mSurfaceReportedReady) {
-            int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
+            int rotation = display.getRotation();
             if (DEBUG_LOGS) {
                 Log.i(TAG,
                         "surfaceChanged ignoring change to width=" + width + " height=" + height
@@ -268,7 +270,6 @@ public class ArImmersiveOverlay
         // after the session starts, but the session doesn't start until we report the drawing
         // surface being ready (including a configured size), so we use this reported size assuming
         // that's what the fullscreen mode will use.
-        Display display = mActivity.getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getRealSize(size);
 
@@ -282,7 +283,7 @@ public class ArImmersiveOverlay
             height = size.y;
         }
 
-        int rotation = mActivity.getWindowManager().getDefaultDisplay().getRotation();
+        int rotation = display.getRotation();
         if (DEBUG_LOGS) {
             Log.i(TAG, "surfaceChanged size=" + width + "x" + height + " rotation=" + rotation);
         }

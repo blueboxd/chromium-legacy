@@ -46,6 +46,7 @@
 #include "fuchsia/engine/common/web_engine_content_client.h"
 #include "fuchsia/engine/switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "media/base/key_system_names.h"
 #include "media/base/media_switches.h"
 #include "net/http/http_util.h"
@@ -126,6 +127,23 @@ base::Value LoadConfig() {
   return std::move(*config);
 }
 
+void AppendFeature(base::StringPiece features_flag,
+                   base::StringPiece feature_string,
+                   base::CommandLine* command_line) {
+  if (!command_line->HasSwitch(features_flag)) {
+    command_line->AppendSwitchNative(features_flag.as_string(),
+                                     feature_string.as_string());
+    return;
+  }
+
+  std::string new_feature_string =
+      command_line->GetSwitchValueASCII(features_flag);
+  new_feature_string.append(",").append(feature_string.as_string());
+  command_line->RemoveSwitch(features_flag);
+  command_line->AppendSwitchNative(features_flag.as_string(),
+                                   new_feature_string);
+}
+
 // Returns false if the config is present but has invalid contents.
 bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
                                        base::CommandLine* command_line) {
@@ -134,6 +152,7 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
     return true;
 
   static const base::StringPiece kAllowedArgs[] = {
+      switches::kDisableFeatures,
       switches::kDisableGpuWatchdog,
       switches::kEnableFeatures,
       switches::kEnableFuchsiaAudioConsumer,
@@ -155,6 +174,8 @@ bool MaybeAddCommandLineArgsFromConfig(const base::Value& config,
       LOG(ERROR) << "Config command-line arg must be a string: " << arg.first;
       return false;
     }
+
+    DCHECK(!command_line->HasSwitch(arg.first));
     command_line->AppendSwitchNative(arg.first, arg.second.GetString());
 
     // TODO(https://crbug.com/1023012): enable-low-end-device-mode currently
@@ -259,6 +280,13 @@ void ContextProviderImpl::Create(
   base::CommandLine launch_command = *base::CommandLine::ForCurrentProcess();
   std::vector<zx::channel> devtools_listener_channels;
 
+  base::Value web_engine_config =
+      config_for_test_.is_none() ? LoadConfig() : std::move(config_for_test_);
+  if (!MaybeAddCommandLineArgsFromConfig(web_engine_config, &launch_command)) {
+    context_request.Close(ZX_ERR_INTERNAL);
+    return;
+  }
+
   if (params.has_remote_debugging_port()) {
     launch_command.AppendSwitchNative(
         switches::kRemoteDebuggingPort,
@@ -329,10 +357,10 @@ void ContextProviderImpl::Create(
     DLOG(ERROR) << "Enabling Vulkan GPU acceleration.";
     // Vulkan requires use of SkiaRenderer, configured to a use Vulkan context.
     launch_command.AppendSwitch(switches::kUseVulkan);
-    launch_command.AppendSwitchASCII(switches::kEnableFeatures,
-                                     features::kUseSkiaRenderer.name);
-    launch_command.AppendSwitchASCII(switches::kGrContextType,
-                                     switches::kGrContextTypeVulkan);
+    const std::vector<base::StringPiece> enabled_features = {
+        features::kUseSkiaRenderer.name, features::kVulkan.name};
+    AppendFeature(switches::kEnableFeatures,
+                  base::JoinString(enabled_features, ","), &launch_command);
 
     // SkiaRenderer requires out-of-process rasterization be enabled.
     launch_command.AppendSwitch(switches::kEnableOopRasterization);
@@ -348,9 +376,6 @@ void ContextProviderImpl::Create(
     launch_command.AppendSwitch(switches::kDisableGpu);
     launch_command.AppendSwitch(switches::kDisableSoftwareRasterizer);
   }
-
-  base::Value web_engine_config =
-      config_for_test_.is_none() ? LoadConfig() : std::move(config_for_test_);
 
   bool allow_protected_graphics =
       web_engine_config.FindBoolPath("allow-protected-graphics")
@@ -410,11 +435,6 @@ void ContextProviderImpl::Create(
     launch_command.AppendSwitch(switches::kDisableSoftwareVideoDecoders);
   }
 
-  if (!MaybeAddCommandLineArgsFromConfig(web_engine_config, &launch_command)) {
-    context_request.Close(ZX_ERR_INTERNAL);
-    return;
-  }
-
   // Validate embedder-supplied product, and optional version, and pass it to
   // the Context to include in the UserAgent.
   if (params.has_user_agent_product()) {
@@ -462,8 +482,8 @@ void ContextProviderImpl::Create(
 
   // TODO(crbug.com/1039788): Re-enable OutOfBlinkCors when custom HTTP header
   // preflight validation errors are fixed.
-  launch_command.AppendSwitchASCII("disable-features",
-                                   network::features::kOutOfBlinkCors.name);
+  AppendFeature(switches::kDisableFeatures,
+                network::features::kOutOfBlinkCors.name, &launch_command);
 
   if (launch_for_test_)
     launch_for_test_.Run(launch_command, launch_options);

@@ -92,4 +92,6 @@ void FakeLocalFrameHost::HandleAccessibilityFindInPageResult(
 
 void FakeLocalFrameHost::HandleAccessibilityFindInPageTermination() {}
 
+void FakeLocalFrameHost::DocumentOnLoadCompleted() {}
+
 }  // namespace blink

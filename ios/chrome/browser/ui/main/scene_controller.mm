@@ -24,7 +24,12 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ntp/features.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher.h"
@@ -479,6 +484,11 @@ enum class EnterTabSwitcherSnapshotResult {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showSavedPasswordsSettingsFromViewController:
     (UIViewController*)baseViewController {
+  if (!baseViewController) {
+    // TODO(crbug.com/779791): Don't pass base view controller through
+    // dispatched command.
+    baseViewController = [self.mainController currentBVC];
+  }
   DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
@@ -1287,19 +1297,35 @@ enum class EnterTabSwitcherSnapshotResult {
   BOOL otrBVCIsCurrent = (self.interfaceProvider.mainInterface.bvc ==
                           self.interfaceProvider.incognitoInterface.bvc);
 
-  // Clear the OTR tab model and notify the _tabSwitcher that its otrBVC will
-  // be destroyed.
+  // Clear the Incognito Browser and notify the _tabSwitcher that its otrBrowser
+  // will be destroyed.
   [self.mainController.tabSwitcher setOtrBrowser:nil];
 
+  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+    BreadcrumbManagerBrowserAgent::FromBrowser(self.incognitoInterface.browser)
+        ->SetLoggingEnabled(false);
+
+    breakpad::StopMonitoringBreadcrumbManagerService(
+        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
+            self.incognitoInterface.browserState));
+  }
+
   [self.mainController.browserViewWrangler destroyAndRebuildIncognitoBrowser];
+
+  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+    breakpad::MonitorBreadcrumbManagerService(
+        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
+            self.incognitoInterface.browserState));
+  }
 
   if (otrBVCIsCurrent) {
     [self activateBVCAndMakeCurrentBVCPrimary];
   }
 
-  // Always set the new otr tab model for the tablet or grid switcher.
-  // Notify the _tabSwitcher with the new otrBVC.
-  [self.mainController.tabSwitcher setOtrBrowser:self.mainInterface.browser];
+  // Always set the new otr Browser for the tablet or grid switcher.
+  // Notify the _tabSwitcher with the new Incognito Browser.
+  [self.mainController.tabSwitcher
+      setOtrBrowser:self.incognitoInterface.browser];
 
   // This seems the best place to deem the destroying and rebuilding the
   // incognito browser state to be completed.

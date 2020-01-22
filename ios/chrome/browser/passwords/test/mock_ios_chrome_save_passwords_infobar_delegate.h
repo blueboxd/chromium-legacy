@@ -31,7 +31,9 @@ class MockIOSChromeSavePasswordInfoBarDelegate
       const GURL& url = GURL::EmptyGURL());
 
   MOCK_METHOD0(InfoBarDismissed, void());
+  MOCK_METHOD2(UpdateCredentials, void(NSString* username, NSString* password));
   MOCK_METHOD0(Accept, bool());
+  MOCK_METHOD0(Cancel, bool());
   MOCK_METHOD1(InfobarPresenting, void(bool automatic));
   MOCK_METHOD0(InfobarDismissed, void());
 

@@ -49,9 +49,8 @@ void CompromisedCredentialsObserver::OnLoginsChanged(
       changes.size() != 1 || changes[0].type() == PasswordStoreChange::UPDATE
           ? RemoveCompromisedCredentialsReason::kUpdate
           : RemoveCompromisedCredentialsReason::kRemove;
-  store_->RemoveCompromisedCredentials(GURL(changes[0].form().signon_realm),
-                                       changes[0].form().username_value,
-                                       reason);
+  store_->RemoveCompromisedCredentials(
+      changes[0].form().signon_realm, changes[0].form().username_value, reason);
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.RemoveCompromisedCredentials",
                             changes[0].type());
 }

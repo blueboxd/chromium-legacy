@@ -10,6 +10,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.UserData;
+import org.chromium.chrome.browser.previews.Previews;
+import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -152,14 +154,15 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
      */
     private boolean checkThemingAllowed() {
         // Do not apply the theme color if there are any security issues on the page.
-        final int securityLevel = mTab.getSecurityLevel();
+        final int securityLevel =
+                SecurityStateModel.getSecurityLevelForWebContents(mTab.getWebContents());
         return securityLevel != ConnectionSecurityLevel.DANGEROUS
                 && securityLevel != ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT
                 && (mTab.getActivity() == null || !mTab.getActivity().isTablet())
                 && (mTab.getActivity() == null
                         || !mTab.getActivity().getNightModeStateProvider().isInNightMode())
                 && !mTab.isNativePage() && !mTab.isShowingInterstitialPage() && !mTab.isIncognito()
-                && !mTab.isPreview();
+                && !Previews.isPreview(mTab);
     }
 
     /**

@@ -18,7 +18,7 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper.h"
+#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -129,15 +129,13 @@ ThrottleCheckResult WebTimeLimitNavigationThrottle::WillStartOrRedirectRequest(
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
 
   Browser::Type type = browser->type();
-  web_app::WebAppTabHelper* web_app_helper =
-      web_app::WebAppTabHelper::FromWebContents(web_contents);
+  web_app::WebAppTabHelperBase* web_app_helper =
+      web_app::WebAppTabHelperBase::FromWebContents(web_contents);
 
   bool is_windowed = (type == Browser::Type::TYPE_APP_POPUP) ||
                      (type == Browser::Type::TYPE_APP) ||
                      (type == Browser::Type::TYPE_POPUP);
-  bool is_app = false;
-  if (web_app_helper && !web_app_helper->app_id().empty())
-    is_app = true;
+  bool is_app = web_app_helper && !web_app_helper->GetAppId().empty();
 
   // Don't throttle windowed applications. We show a notification and close
   // them.
@@ -152,7 +150,7 @@ ThrottleCheckResult WebTimeLimitNavigationThrottle::WillStartOrRedirectRequest(
         web_app::WebAppProvider::Get(profile);
     const web_app::AppRegistrar& registrar = web_app_provider->registrar();
     const std::string& app_name =
-        registrar.GetAppShortName(web_app_helper->app_id());
+        registrar.GetAppShortName(web_app_helper->GetAppId());
     interstitial_html =
         GetWebTimeLimitAppErrorPage(time_limit, app_locale, app_name);
   } else {

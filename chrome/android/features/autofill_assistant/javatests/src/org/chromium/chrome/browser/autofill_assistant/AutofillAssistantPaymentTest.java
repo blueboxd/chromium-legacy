@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.not;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getElementValue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.tapElement;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilKeyboardMatchesCondition;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
@@ -42,8 +43,12 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto.TermsAndConditionsState;
+import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto.Rectangle;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementReferenceProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.FocusElementProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto.Choice;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SupportedScriptProto.PresentationProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.TextInputProto;
@@ -51,6 +56,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.TextInputProto.Input
 import org.chromium.chrome.browser.autofill_assistant.proto.TextInputSectionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UseCreditCardProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.UserFormSectionProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.VisibilityRequirement;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -145,6 +151,78 @@ public class AutofillAssistantPaymentTest {
         assertThat(getElementValue("cv2_number", getWebContents()), is("123"));
         assertThat(getElementValue("exp_month", getWebContents()), is("12"));
         assertThat(getElementValue("exp_year", getWebContents()), is("2050"));
+    }
+
+    /**
+     * Showcasts an element of the webpage and checks that it can be interacted with.
+     */
+    @Test
+    @MediumTest
+    public void testTermsAndConditionsWithFocusElement() throws Exception {
+        String profileId = mHelper.addDummyProfile("John Doe", "johndoe@gmail.com");
+        mHelper.addDummyCreditCard(profileId);
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setFocusElement(
+                                FocusElementProto.newBuilder()
+                                        .setElement(ElementReferenceProto.newBuilder().addSelectors(
+                                                "div.terms"))
+                                        .setTouchableElementArea(
+                                                ElementAreaProto.newBuilder().addTouchable(
+                                                        Rectangle.newBuilder().addElements(
+                                                                ElementReferenceProto.newBuilder()
+                                                                        .addSelectors(
+                                                                                "div.terms")))))
+                        .build());
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                    .setRequestPaymentMethod(true)
+                                                    .addSupportedBasicCardNetworks("visa")
+                                                    .setPrivacyNoticeText("3rd party privacy text")
+                                                    .setShowTermsAsCheckbox(true)
+                                                    .setRequestTermsAndConditions(true)
+                                                    .setAcceptTermsAndConditionsText("accept terms")
+                                                    .setTermsAndConditionsState(
+                                                            TermsAndConditionsState.ACCEPTED))
+                        .build());
+        Choice toggle_chip = Choice.newBuilder()
+                                     .setChip(ChipProto.newBuilder().setText("Toggle"))
+                                     .addShowOnlyIfElementExists(
+                                             ElementReferenceProto.newBuilder()
+                                                     .addSelectors("div#toggle_on")
+                                                     .setVisibilityRequirement(
+                                                             VisibilityRequirement.MUST_BE_VISIBLE))
+                                     .build();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder()
+                                            .setMessage("Finish")
+                                            .addChoices(Choice.newBuilder())
+                                            .addChoices(toggle_chip))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Continue")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Continue"), isDisplayed());
+        tapElement("button", mTestRule);
+        onView(withText("Continue")).perform(click());
+        waitUntilViewMatchesCondition(withText("Toggle"), isDisplayed());
+
+        // Verify that in the next step the touchable window is not present anymore.
+        tapElement("button", mTestRule);
+        onView(withText("Toggle")).check(matches(isDisplayed()));
     }
 
     /**

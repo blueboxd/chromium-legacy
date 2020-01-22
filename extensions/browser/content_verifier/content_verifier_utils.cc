@@ -22,9 +22,10 @@ bool TrimDotSpaceSuffix(const base::FilePath::StringType& path,
   return true;
 }
 
-base::FilePath::StringType CanonicalizeFilePath(const base::FilePath& path) {
+base::FilePath::StringType CanonicalizeRelativePath(
+    const base::FilePath& relative_path) {
   base::FilePath::StringType canonicalized_path =
-      path.NormalizePathSeparatorsTo('/').value();
+      relative_path.NormalizePathSeparatorsTo('/').value();
   if (!IsFileAccessCaseSensitive())
     canonicalized_path = base::ToLowerASCII(canonicalized_path);
   if (IsDotSpaceFilenameSuffixIgnored())

@@ -21,6 +21,7 @@ class WebAuthFlowTest;
 namespace content {
 class NotificationDetails;
 class NotificationSource;
+class StoragePartition;
 }
 
 namespace extensions {
@@ -64,9 +65,9 @@ class WebAuthFlow : public content::NotificationObserver,
     virtual void OnAuthFlowFailure(Failure failure) = 0;
     // Called on redirects and other navigations to see if the URL should stop
     // the flow.
-    virtual void OnAuthFlowURLChange(const GURL& redirect_url) = 0;
+    virtual void OnAuthFlowURLChange(const GURL& redirect_url) {}
     // Called when the title of the current page changes.
-    virtual void OnAuthFlowTitleChange(const std::string& title) = 0;
+    virtual void OnAuthFlowTitleChange(const std::string& title) {}
 
    protected:
     virtual ~Delegate() {}
@@ -86,6 +87,13 @@ class WebAuthFlow : public content::NotificationObserver,
 
   // Prevents further calls to the delegate and deletes the flow.
   void DetachDelegateAndDelete();
+
+  // Returns a StoragePartition of the guest webview. Used to inject cookies
+  // into Gaia page.
+  content::StoragePartition* GetGuestPartition() const;
+
+  // Returns an ID string attached to the window. Can override for testing.
+  virtual const std::string& GetAppWindowKey() const;
 
  private:
   friend class ::WebAuthFlowTest;

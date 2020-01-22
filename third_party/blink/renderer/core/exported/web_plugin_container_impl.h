@@ -133,8 +133,8 @@ class CORE_EXPORT WebPluginContainerImpl final
   bool IsRectTopmost(const WebRect&) override;
   void RequestTouchEventType(TouchEventRequestType) override;
   void SetWantsWheelEvents(bool) override;
-  WebPoint RootFrameToLocalPoint(const WebPoint&) override;
-  WebPoint LocalToRootFramePoint(const WebPoint&) override;
+  gfx::Point RootFrameToLocalPoint(const gfx::Point&) override;
+  gfx::Point LocalToRootFramePoint(const gfx::Point&) override;
 
   // Non-Oilpan, this cannot be null. With Oilpan, it will be
   // null when in a disposed state, pending finalization during the next GC.

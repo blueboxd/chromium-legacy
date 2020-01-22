@@ -6,19 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_GEOMETRY_MOJOM_TRAITS_H_
 
 #include "third_party/blink/public/platform/web_float_rect.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "ui/gfx/geometry/mojom/geometry.mojom-shared.h"
 
 namespace mojo {
-
-template <>
-struct StructTraits<gfx::mojom::PointDataView, ::blink::WebPoint> {
-  static int x(const ::blink::WebPoint& point) { return point.x; }
-  static int y(const ::blink::WebPoint& point) { return point.y; }
-  static bool Read(gfx::mojom::PointDataView, ::blink::WebPoint* out);
-};
 
 template <>
 struct StructTraits<gfx::mojom::RectFDataView, ::blink::WebFloatRect> {

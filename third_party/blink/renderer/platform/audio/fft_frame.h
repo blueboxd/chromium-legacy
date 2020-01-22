@@ -38,13 +38,13 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
-#if defined(OS_MACOSX)
-#include <Accelerate/Accelerate.h>
-#elif defined(WTF_USE_WEBAUDIO_FFMPEG)
+#if defined(WTF_USE_WEBAUDIO_FFMPEG)
 struct RDFTContext;
 #elif defined(WTF_USE_WEBAUDIO_PFFFT)
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/pffft/src/pffft.h"
+#elif defined(OS_MACOSX)
+#include <Accelerate/Accelerate.h>
 #endif
 
 namespace blink {
@@ -144,7 +144,7 @@ class PLATFORM_EXPORT FFTFrame {
   AudioFloatArray real_data_;
   AudioFloatArray imag_data_;
 
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(WTF_USE_WEBAUDIO_PFFFT)
   // Thin wrapper around FFTSetup so we can call the appropriate routines to
   // construct or release the FFTSetup objects.
   class FFTSetupDatum {

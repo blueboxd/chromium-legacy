@@ -336,6 +336,7 @@ public class FeedLoggingBridge implements BasicLoggingApi {
             case ActionType.DOWNLOAD:
                 return WindowOpenDisposition.SAVE_TO_DISK;
             case ActionType.LEARN_MORE:
+            case ActionType.MANAGE_INTERESTS:
             case ActionType.UNKNOWN:
             default:
                 return WindowOpenDisposition.UNKNOWN;
@@ -352,6 +353,9 @@ public class FeedLoggingBridge implements BasicLoggingApi {
                 break;
             case ActionType.LEARN_MORE:
                 NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_LEARN_MORE);
+                break;
+            case ActionType.MANAGE_INTERESTS:
+                NewTabPageUma.recordAction(NewTabPageUma.ACTION_CLICKED_MANAGE_INTERESTS);
                 break;
             case ActionType.DOWNLOAD:
             case ActionType.UNKNOWN:

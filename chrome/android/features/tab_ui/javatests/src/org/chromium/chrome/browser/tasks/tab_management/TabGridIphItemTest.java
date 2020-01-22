@@ -24,7 +24,6 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.support.test.espresso.NoMatchingRootException;
 import android.support.test.filters.MediumTest;
-import android.util.DisplayMetrics;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -50,6 +49,8 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.test.util.UiRestriction;
 
 /** End-to-end tests for TabGridIphItem component. */
@@ -210,9 +211,8 @@ public class TabGridIphItemTest {
 
     private void verifyDialogMargins(ChromeTabbedActivity cta, int orientation) {
         verifyIphDialogShowing(cta);
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        cta.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int screenHeight = displayMetrics.heightPixels;
+        int screenHeight = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> DisplayAndroid.getNonMultiDisplay(cta).getDisplayHeight());
 
         int dialogHeight =
                 (int) cta.getResources().getDimension(R.dimen.tab_grid_iph_dialog_height);

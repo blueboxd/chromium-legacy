@@ -19,7 +19,7 @@ cr.define('cr_slider', function() {
    *   ariaValue: (number|undefined),
    * }}
    */
-  let SliderTick;
+  /* #export */ let SliderTick;
 
   /**
    * @param {number} min
@@ -32,9 +32,7 @@ cr.define('cr_slider', function() {
   }
 
   /**
-   * Object is actually a SliderTick, but the closure compiler won't
-   * recognise it with the way this code is structured.
-   * @param {!(Object|number)} tick
+   * @param {!(cr_slider.SliderTick|number)} tick
    * @return {number}
    */
   function getAriaValue(tick) {
@@ -124,9 +122,7 @@ cr.define('cr_slider', function() {
       /**
        * The data associated with each tick on the slider. Each element in the
        * array contains a value and the label corresponding to that value.
-       * Object is actually a SliderTick, but the closure compiler won't
-       * recognise it with the way this code is structured.
-       * @type {!Array<Object>|!Array<number>}
+       * @type {!Array<cr_slider.SliderTick>|!Array<number>}
        */
       ticks: {
         type: Array,

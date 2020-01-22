@@ -51,7 +51,7 @@ TEST_F(ScrollTimelineUtilTest, ToCompositorScrollTimeline) {
   ScrollTimeline* timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
-  std::unique_ptr<CompositorScrollTimeline> compositor_timeline =
+  scoped_refptr<CompositorScrollTimeline> compositor_timeline =
       ToCompositorScrollTimeline(timeline);
   EXPECT_EQ(compositor_timeline->GetActiveIdForTest(), base::nullopt);
   EXPECT_EQ(compositor_timeline->GetPendingIdForTest(), element_id);
@@ -85,7 +85,7 @@ TEST_F(ScrollTimelineUtilTest, ToCompositorScrollTimelineNullScrollSource) {
       &GetDocument(), scroll_source, ScrollTimeline::Block, start_scroll_offset,
       end_scroll_offset, 100, Timing::FillMode::NONE);
 
-  std::unique_ptr<CompositorScrollTimeline> compositor_timeline =
+  scoped_refptr<CompositorScrollTimeline> compositor_timeline =
       ToCompositorScrollTimeline(timeline);
   ASSERT_TRUE(compositor_timeline.get());
   EXPECT_EQ(compositor_timeline->GetPendingIdForTest(), base::nullopt);
@@ -103,7 +103,7 @@ TEST_F(ScrollTimelineUtilTest, ToCompositorScrollTimelineNullLayoutBox) {
   ScrollTimeline* timeline =
       ScrollTimeline::Create(GetDocument(), options, ASSERT_NO_EXCEPTION);
 
-  std::unique_ptr<CompositorScrollTimeline> compositor_timeline =
+  scoped_refptr<CompositorScrollTimeline> compositor_timeline =
       ToCompositorScrollTimeline(timeline);
   EXPECT_TRUE(compositor_timeline.get());
   // Here we just want to test the start/end scroll offset.

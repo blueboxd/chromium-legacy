@@ -1,10 +1,4 @@
-dtrainor@chromium.org
-hnakashima@chromium.org
-twellington@chromium.org
-
-# This is For simple changes of adding/removing features.  For more structural
-# changes, use the normal OWNERS rules.
-per-file ChromeFeatureList.java=*
+file://chrome/browser/flags/OWNERS
 
 # TEAM: clank-modularization@chromium.org
 # COMPONENT: UI>Browser>Mobile

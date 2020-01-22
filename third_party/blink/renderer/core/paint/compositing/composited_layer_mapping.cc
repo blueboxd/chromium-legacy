@@ -188,14 +188,10 @@ static bool NeedsDecorationOutlineLayer(const PaintLayer& paint_layer,
 CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)
     : owning_layer_(layer),
       pending_update_scope_(kGraphicsLayerUpdateNone),
-      is_main_frame_layout_view_layer_(false),
       scrolling_contents_are_empty_(false),
       background_paints_onto_scrolling_contents_layer_(false),
       background_paints_onto_graphics_layer_(false),
       draws_background_onto_content_layer_(false) {
-  if (layer.IsRootLayer() && GetLayoutObject().GetFrame()->IsMainFrame())
-    is_main_frame_layout_view_layer_ = true;
-
   CreatePrimaryGraphicsLayer();
 }
 

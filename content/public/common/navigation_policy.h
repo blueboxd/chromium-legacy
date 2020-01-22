@@ -88,6 +88,8 @@ struct CONTENT_EXPORT NavigationDownloadPolicy {
   // a download, the download should be dropped.
   std::bitset<static_cast<size_t>(NavigationDownloadType::kMaxValue) + 1>
       disallowed_types;
+
+  bool blocking_downloads_in_sandbox_enabled = false;
 };
 
 }  // namespace content

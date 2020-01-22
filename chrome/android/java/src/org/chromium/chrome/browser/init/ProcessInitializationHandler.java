@@ -353,10 +353,8 @@ public class ProcessInitializationHandler {
         deferredStartupHandler.addDeferredTask(new Runnable() {
             @Override
             public void run() {
-                RecordHistogram.recordBooleanHistogram("Settings.ShowHomeButtonPreferenceState",
-                        HomepageManager.isHomepageEnabled());
-                RecordHistogram.recordBooleanHistogram("Settings.HomePageIsCustomized",
-                        !HomepageManager.getInstance().getPrefHomepageUseDefaultUri());
+                HomepageManager.recordHomeButtonPreferenceState();
+                HomepageManager.recordHomepageIsCustomized(HomepageManager.isHomepageCustomized());
             }
         });
 

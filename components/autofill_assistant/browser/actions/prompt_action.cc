@@ -26,13 +26,12 @@ PromptAction::PromptAction(ActionDelegate* delegate, const ActionProto& proto)
 PromptAction::~PromptAction() {}
 
 void PromptAction::InternalProcessAction(ProcessActionCallback callback) {
+  callback_ = std::move(callback);
   if (proto_.prompt().choices_size() == 0) {
-    UpdateProcessedAction(INVALID_ACTION);
-    std::move(callback).Run(std::move(processed_action_proto_));
+    EndAction(INVALID_ACTION);
     return;
   }
 
-  callback_ = std::move(callback);
   if (proto_.prompt().has_message()) {
     // TODO(b/144468818): Deprecate and remove message from this action and use
     // tell instead.
@@ -199,7 +198,6 @@ void PromptAction::OnElementChecksDone(
 void PromptAction::OnDoneWaitForDom(const ClientStatus& status) {
   // Status doesn't matter; it's just forwarded from AutoSelectDone.
   if (auto_select_choice_index_ >= 0) {
-    delegate_->CancelPrompt();
     OnSuggestionChosen(auto_select_choice_index_);
   }
 }
@@ -212,9 +210,14 @@ void PromptAction::OnSuggestionChosen(int choice_index) {
   DCHECK(choice_index >= 0 && choice_index <= proto_.prompt().choices_size());
 
   PromptProto::Choice choice;
-  UpdateProcessedAction(ACTION_APPLIED);
   *processed_action_proto_->mutable_prompt_choice() =
       proto_.prompt().choices(choice_index);
+  EndAction(ACTION_APPLIED);
+}
+
+void PromptAction::EndAction(const ProcessedActionStatusProto& status) {
+  delegate_->CleanUpAfterPrompt();
+  UpdateProcessedAction(status);
   std::move(callback_).Run(std::move(processed_action_proto_));
 }
 }  // namespace autofill_assistant

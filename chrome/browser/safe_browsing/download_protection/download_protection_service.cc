@@ -326,7 +326,7 @@ void DownloadProtectionService::ShowDetailsForDownload(
       content::DownloadItemUtils::GetBrowserContext(item));
   if (profile &&
       AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
-          ->RequestsAdvancedProtectionVerdicts() &&
+          ->IsUnderAdvancedProtection() &&
       item->GetDangerType() ==
           download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT) {
     learn_more_url = GURL(chrome::kAdvancedProtectionDownloadLearnMoreURL);

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CloseButtonVisibilityManager;
@@ -13,8 +14,8 @@ import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -123,8 +124,7 @@ public class TrustedWebActivityBrowserControlsVisibilityManager {
     private @BrowserControlsState int computeBrowserControlsState(@Nullable Tab tab) {
         // Force browser controls to show when the security level is dangerous for consistency with
         // TabStateBrowserControlsVisibilityDelegate.
-        if (tab != null
-                && ((TabImpl) tab).getSecurityLevel() == ConnectionSecurityLevel.DANGEROUS) {
+        if (tab != null && getSecurityLevel(tab) == ConnectionSecurityLevel.DANGEROUS) {
             return BrowserControlsState.SHOWN;
         }
 
@@ -138,5 +138,11 @@ public class TrustedWebActivityBrowserControlsVisibilityManager {
 
     private boolean isChildTab(@Nullable Tab tab) {
         return tab != null && tab.getParentId() != Tab.INVALID_TAB_ID;
+    }
+
+    @ConnectionSecurityLevel
+    @VisibleForTesting
+    int getSecurityLevel(Tab tab) {
+        return SecurityStateModel.getSecurityLevelForWebContents(tab.getWebContents());
     }
 }

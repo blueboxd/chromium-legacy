@@ -67,6 +67,14 @@ std::vector<GURL> GetValidURLsForFetching(const std::vector<GURL>& urls) {
   return valid_urls;
 }
 
+void RecordRequestStatusHistogram(proto::RequestContext request_context,
+                                  HintsFetcherRequestStatus status) {
+  base::UmaHistogramEnumeration(
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.RequestStatus." +
+          GetStringNameForRequestContext(request_context),
+      status);
+}
+
 }  // namespace
 
 HintsFetcher::HintsFetcher(
@@ -131,16 +139,16 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   DCHECK_GT(optimization_types.size(), 0u);
 
   if (content::GetNetworkConnectionTracker()->IsOffline()) {
-    std::move(hints_fetched_callback)
-        .Run(request_context, HintsFetcherRequestStatus::kNetworkOffline,
-             base::nullopt);
+    RecordRequestStatusHistogram(request_context,
+                                 HintsFetcherRequestStatus::kNetworkOffline);
+    std::move(hints_fetched_callback).Run(base::nullopt);
     return false;
   }
 
   if (active_url_loader_) {
-    std::move(hints_fetched_callback)
-        .Run(request_context, HintsFetcherRequestStatus::kFetcherBusy,
-             base::nullopt);
+    RecordRequestStatusHistogram(request_context,
+                                 HintsFetcherRequestStatus::kFetcherBusy);
+    std::move(hints_fetched_callback).Run(base::nullopt);
     return false;
   }
 
@@ -148,9 +156,9 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
       GetSizeLimitedHostsDueForHintsRefresh(hosts);
   std::vector<GURL> valid_urls = GetValidURLsForFetching(urls);
   if (filtered_hosts.empty() && valid_urls.empty()) {
-    std::move(hints_fetched_callback)
-        .Run(request_context, HintsFetcherRequestStatus::kNoHostsOrURLsToFetch,
-             base::nullopt);
+    RecordRequestStatusHistogram(
+        request_context, HintsFetcherRequestStatus::kNoHostsOrURLsToFetch);
+    std::move(hints_fetched_callback).Run(base::nullopt);
     return false;
   }
 
@@ -158,33 +166,33 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
             filtered_hosts.size());
 
   if (optimization_types.empty()) {
-    std::move(hints_fetched_callback)
-        .Run(request_context,
-             HintsFetcherRequestStatus::kNoSupportedOptimizationTypes,
-             base::nullopt);
+    RecordRequestStatusHistogram(
+        request_context,
+        HintsFetcherRequestStatus::kNoSupportedOptimizationTypes);
+    std::move(hints_fetched_callback).Run(base::nullopt);
     return false;
   }
 
   hints_fetch_start_time_ = base::TimeTicks::Now();
   request_context_ = request_context;
 
-  get_hints_request_ = std::make_unique<proto::GetHintsRequest>();
+  proto::GetHintsRequest get_hints_request;
 
   for (const auto& optimization_type : optimization_types)
-    get_hints_request_->add_supported_optimizations(optimization_type);
+    get_hints_request.add_supported_optimizations(optimization_type);
 
-  get_hints_request_->set_context(request_context_);
+  get_hints_request.set_context(request_context_);
 
   for (const auto& url : valid_urls)
-    get_hints_request_->add_urls()->set_url(url.spec());
+    get_hints_request.add_urls()->set_url(url.spec());
 
   for (const auto& host : filtered_hosts) {
-    proto::HostInfo* host_info = get_hints_request_->add_hosts();
+    proto::HostInfo* host_info = get_hints_request.add_hosts();
     host_info->set_host(host);
   }
 
   std::string serialized_request;
-  get_hints_request_->SerializeToString(&serialized_request);
+  get_hints_request.SerializeToString(&serialized_request);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("hintsfetcher_gethintsrequest", R"(
@@ -274,13 +282,13 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
             GetStringNameForRequestContext(request_context_),
         fetch_latency);
     UpdateHostsSuccessfullyFetched();
-    std::move(hints_fetched_callback_)
-        .Run(request_context_, HintsFetcherRequestStatus::kSuccess,
-             std::move(get_hints_response));
+    RecordRequestStatusHistogram(request_context_,
+                                 HintsFetcherRequestStatus::kSuccess);
+    std::move(hints_fetched_callback_).Run(std::move(get_hints_response));
   } else {
-    std::move(hints_fetched_callback_)
-        .Run(request_context_, HintsFetcherRequestStatus::kResponseError,
-             base::nullopt);
+    RecordRequestStatusHistogram(request_context_,
+                                 HintsFetcherRequestStatus::kResponseError);
+    std::move(hints_fetched_callback_).Run(base::nullopt);
   }
 }
 

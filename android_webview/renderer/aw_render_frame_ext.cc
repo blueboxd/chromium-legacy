@@ -281,7 +281,7 @@ void AwRenderFrameExt::OnDoHitTest(const gfx::PointF& touch_center,
     return;
 
   const blink::WebHitTestResult result = webview->HitTestResultForTap(
-      blink::WebPoint(touch_center.x(), touch_center.y()),
+      gfx::Point(touch_center.x(), touch_center.y()),
       blink::WebSize(touch_area.width(), touch_area.height()));
   AwHitTestData data;
 

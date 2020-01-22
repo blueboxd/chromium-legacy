@@ -139,8 +139,8 @@
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "extensions/browser/view_type_utils.h"
 #endif
 
@@ -372,7 +372,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  SupervisedUserNavigationObserver::CreateForWebContents(web_contents);
+  SupervisedUserNavigationObserver::MaybeCreateForWebContents(web_contents);
 #endif
 
   if (predictors::LoadingPredictorFactory::GetForProfile(profile))

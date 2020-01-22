@@ -80,8 +80,8 @@ void AddBlacklistBloomFilterToConfig(
 }
 
 std::unique_ptr<optimization_guide::proto::GetHintsResponse> BuildHintsResponse(
-    std::vector<std::string> hosts,
-    std::vector<std::string> urls) {
+    const std::vector<std::string>& hosts,
+    const std::vector<std::string>& urls) {
   std::unique_ptr<optimization_guide::proto::GetHintsResponse>
       get_hints_response =
           std::make_unique<optimization_guide::proto::GetHintsResponse>();
@@ -97,10 +97,15 @@ std::unique_ptr<optimization_guide::proto::GetHintsResponse> BuildHintsResponse(
     optimization_guide::proto::Hint* hint = get_hints_response->add_hints();
     hint->set_key_representation(optimization_guide::proto::FULL_URL);
     hint->set_key(url);
+    hint->mutable_max_cache_duration()->set_seconds(60 * 60);
     optimization_guide::proto::PageHint* page_hint = hint->add_page_hints();
-    page_hint->set_page_pattern("page pattern");
+    page_hint->set_page_pattern(url);
+    optimization_guide::proto::Optimization* opt =
+        page_hint->add_whitelisted_optimizations();
+    opt->set_optimization_type(
+        optimization_guide::proto::COMPRESS_PUBLIC_IMAGES);
+    opt->mutable_public_image_metadata()->add_url("someurl");
   }
-
   return get_hints_response;
 }
 
@@ -136,7 +141,7 @@ class TestOptimizationGuideService
 // A mock class implementation of TopHostProvider.
 class FakeTopHostProvider : public optimization_guide::TopHostProvider {
  public:
-  explicit FakeTopHostProvider(std::vector<std::string> top_hosts)
+  explicit FakeTopHostProvider(const std::vector<std::string>& top_hosts)
       : top_hosts_(top_hosts) {}
 
   std::vector<std::string> GetTopHosts() override {
@@ -184,32 +189,22 @@ class TestHintsFetcher : public optimization_guide::HintsFetcher {
       override {
     switch (fetch_state_) {
       case HintsFetcherEndState::kFetchFailed:
-        std::move(hints_fetched_callback)
-            .Run(request_context,
-                 optimization_guide::HintsFetcherRequestStatus::kResponseError,
-                 base::nullopt);
+        std::move(hints_fetched_callback).Run(base::nullopt);
         return false;
       case HintsFetcherEndState::kFetchSuccessWithHostHints:
         hints_fetched_ = true;
         std::move(hints_fetched_callback)
-            .Run(request_context,
-                 optimization_guide::HintsFetcherRequestStatus::kSuccess,
-                 BuildHintsResponse({"host.com"}, {}));
+            .Run(BuildHintsResponse({"host.com"}, {}));
         return true;
       case HintsFetcherEndState::kFetchSuccessWithURLHints:
         hints_fetched_ = true;
         std::move(hints_fetched_callback)
-            .Run(request_context,
-                 optimization_guide::HintsFetcherRequestStatus::kSuccess,
-                 BuildHintsResponse({},
+            .Run(BuildHintsResponse({},
                                     {"https://somedomain.org/news/whatever"}));
         return true;
       case HintsFetcherEndState::kFetchSuccessWithNoHints:
         hints_fetched_ = true;
-        std::move(hints_fetched_callback)
-            .Run(request_context,
-                 optimization_guide::HintsFetcherRequestStatus::kSuccess,
-                 BuildHintsResponse({}, {}));
+        std::move(hints_fetched_callback).Run(BuildHintsResponse({}, {}));
         return true;
     }
     return true;
@@ -390,6 +385,10 @@ class OptimizationGuideHintsManagerTest
   }
 
   GURL url_with_hints() const {
+    return GURL("https://somedomain.org/news/whatever");
+  }
+
+  GURL url_with_url_keyed_hint() const {
     return GURL("https://somedomain.org/news/whatever");
   }
 
@@ -1451,7 +1450,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
           /*optimization_metadata=*/nullptr);
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNoMatchingPageHint,
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNotAllowedByHint,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   EXPECT_TRUE(navigation_data->has_hint_before_commit().value());
@@ -1593,7 +1592,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
                                             /*optimization_metadata=*/nullptr);
 
   // Make sure decisions are logged correctly.
-  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNoMatchingPageHint,
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNotAllowedByHint,
             optimization_type_decision);
   // Make sure navigation data is populated correctly.
   OptimizationGuideNavigationData* navigation_data =
@@ -2393,4 +2392,169 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
 
   EXPECT_EQ(optimization_type_decision,
             optimization_guide::OptimizationTypeDecision::kNoHintAvailable);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       CanApplyOptimizationWithURLKeyedHintApplicableForOptimizationType) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
+  InitializeWithDefaultConfig("1.0.0");
+
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithURLHints));
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_with_url_keyed_hint());
+  // Make sure URL-keyed hint is fetched and processed.
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               base::DoNothing());
+  RunUntilIdle();
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(),
+          optimization_guide::proto::COMPRESS_PUBLIC_IMAGES,
+          &optimization_metadata);
+
+  // Make sure decisions are logged correctly and metadata is populated off of
+  // a URL-keyed hint.
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
+            optimization_type_decision);
+  EXPECT_EQ("someurl", optimization_metadata.public_image_metadata.url(0));
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       CanApplyOptimizationNotAllowedByURLButAllowedByHostKeyedHint) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::NOSCRIPT});
+
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+
+  // Make sure both URL-Keyed and host-keyed hints are processed and cached.
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithURLHints));
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_with_url_keyed_hint());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               base::DoNothing());
+  RunUntilIdle();
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(navigation_handle.get(),
+                                            optimization_guide::proto::NOSCRIPT,
+                                            &optimization_metadata);
+
+  // Make sure decisions are logged correctly.
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kAllowedByHint,
+            optimization_type_decision);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       CanApplyOptimizationNotAllowedByURLOrHostKeyedHint) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::RESOURCE_LOADING});
+
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+
+  // Make sure both URL-Keyed and host-keyed hints are processed and cached.
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithURLHints));
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_with_url_keyed_hint());
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               base::DoNothing());
+  RunUntilIdle();
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(), optimization_guide::proto::RESOURCE_LOADING,
+          &optimization_metadata);
+
+  // Make sure decisions are logged correctly.
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNotAllowedByHint,
+            optimization_type_decision);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       CanApplyOptimizationNoURLKeyedHintOrHostKeyedHint) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
+
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithNoHints));
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+
+  // Attempt to fetch a hint but ensure nothing comes back.
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               base::DoNothing());
+  RunUntilIdle();
+
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(),
+          optimization_guide::proto::COMPRESS_PUBLIC_IMAGES,
+          &optimization_metadata);
+
+  // Make sure decisions are logged correctly.
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::kNoHintAvailable,
+            optimization_type_decision);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       CanApplyOptimizationCalledMidFetchForURLKeyedOptimization) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::COMPRESS_PUBLIC_IMAGES});
+
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  // Set ECT estimate so fetch is activated.
+  hints_manager()->OnEffectiveConnectionTypeChanged(
+      net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
+
+  // Attempt to fetch a hint but call CanApplyOptimization right away to
+  // simulate being mid-fetch.
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          url_without_hints());
+  hints_manager()->SetHintsFetcherForTesting(
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithNoHints));
+  hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
+                                               base::DoNothing());
+  optimization_guide::OptimizationMetadata optimization_metadata;
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          navigation_handle.get(),
+          optimization_guide::proto::COMPRESS_PUBLIC_IMAGES,
+          &optimization_metadata);
+
+  // Make sure decisions are logged correctly.
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::
+                kHintFetchStartedButNotAvailableInTime,
+            optimization_type_decision);
 }

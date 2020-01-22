@@ -76,6 +76,8 @@ class FrameSequenceTrackerTest : public testing::Test {
     if (damage_type & kImplDamage) {
       if (!(damage_type & kMainDamage)) {
         collection_.NotifyMainFrameCausedNoDamage(args);
+      } else {
+        collection_.NotifyMainFrameProcessed(args);
       }
       uint32_t frame_token = NextFrameToken();
       collection_.NotifySubmitFrame(frame_token, has_missing_content,
@@ -196,6 +198,7 @@ class FrameSequenceTrackerTest : public testing::Test {
         case 'n':
         case 's':
         case 'e':
+        case 'E':
           ASSERT_EQ(*str, '(') << command;
           str = ParseNumber(++str, &sequence);
           ASSERT_EQ(*str, ')');
@@ -261,6 +264,11 @@ class FrameSequenceTrackerTest : public testing::Test {
 
         case 'e':
           collection_.NotifyFrameEnd(CreateBeginFrameArgs(source_id, sequence));
+          break;
+
+        case 'E':
+          collection_.NotifyMainFrameProcessed(
+              CreateBeginFrameArgs(source_id, sequence));
           break;
 
         case 'B':
@@ -563,14 +571,14 @@ TEST_F(FrameSequenceTrackerTest, MainFrameNoDamageTracking) {
 
   // Start and submit the next frame, with no damage from main.
   auto args = CreateBeginFrameArgs(source, ++sequence);
-  StartImplAndMainFrames(args);
+  collection_.NotifyBeginImplFrame(args);
   frame_token = NextFrameToken();
-  collection_.NotifyMainFrameCausedNoDamage(args);
   collection_.NotifySubmitFrame(frame_token, /*has_missing_content=*/false,
                                 viz::BeginFrameAck(args, true), first_args);
   collection_.NotifyFrameEnd(args);
 
   // Now, submit a frame with damage from main from |second_args|.
+  collection_.NotifyMainFrameProcessed(second_args);
   args = CreateBeginFrameArgs(source, ++sequence);
   StartImplAndMainFrames(args);
   frame_token = NextFrameToken();
@@ -604,6 +612,7 @@ TEST_F(FrameSequenceTrackerTest, BeginMainFrameSubmit) {
   // frame).
   auto second_args = CreateBeginFrameArgs(source, ++sequence);
   collection_.NotifyBeginImplFrame(second_args);
+  collection_.NotifyMainFrameProcessed(first_args);
   collection_.NotifyBeginMainFrame(second_args);
   uint32_t frame_token = NextFrameToken();
   collection_.NotifySubmitFrame(frame_token, /*has_missing_content=*/false,
@@ -728,6 +737,25 @@ TEST_F(FrameSequenceTrackerTest, BeginImplFrameBeforeTerminate) {
   collection_.StopSequence(FrameSequenceTrackerType::kTouchScroll);
   EXPECT_EQ(ImplThroughput().frames_expected, 1u);
   EXPECT_EQ(ImplThroughput().frames_produced, 1u);
+}
+
+// b(2417)B(0,2417)E(2417)n(2417)N(2417,2417)
+
+TEST_F(FrameSequenceTrackerTest, SequenceNumberReset) {
+  const char sequence[] =
+      "b(6)B(0,6)n(6)e(6)Rb(1)B(0,1)N(1,1)n(1)e(1)b(2)B(1,2)n(2)e(2)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 0u);
+  EXPECT_EQ(MainThroughput().frames_expected, 1u);
+}
+
+TEST_F(FrameSequenceTrackerTest, MainThroughputWithHighLatency) {
+  const char sequence[] = "b(1)B(0,1)n(1)e(1)b(2)E(1)s(1)S(1)e(2)P(1)";
+  GenerateSequence(sequence);
+  EXPECT_EQ(ImplThroughput().frames_expected, 1u);
+  EXPECT_EQ(ImplThroughput().frames_produced, 1u);
+  EXPECT_EQ(MainThroughput().frames_expected, 2u);
+  EXPECT_EQ(MainThroughput().frames_produced, 1u);
 }
 
 }  // namespace cc

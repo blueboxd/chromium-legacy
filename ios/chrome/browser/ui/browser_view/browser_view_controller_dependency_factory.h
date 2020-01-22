@@ -7,14 +7,12 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
 @class AlertCoordinator;
 @class BrowserViewControllerHelper;
 @class KeyCommandsProvider;
 class WebStateList;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // Creates helper objects needed by BrowserViewController.
 @interface BrowserViewControllerDependencyFactory : NSObject

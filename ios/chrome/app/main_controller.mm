@@ -72,8 +72,12 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/browser/crash_report/crash_loop_detection_util.h"
+#include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #include "ios/chrome/browser/download/download_directory_util.h"
 #import "ios/chrome/browser/external_files/external_file_remover_factory.h"
 #import "ios/chrome/browser/external_files/external_file_remover_impl.h"
@@ -586,6 +590,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // Initialize and set the main browser state.
   [self initializeBrowserState:chromeBrowserState];
   self.mainBrowserState = chromeBrowserState;
+
+  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+    breakpad::MonitorBreadcrumbManagerService(
+        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
+            self.mainBrowserState));
+  }
+
   [self.browserViewWrangler shutdown];
   self.browserViewWrangler = [[BrowserViewWrangler alloc]
              initWithBrowserState:self.mainBrowserState
@@ -785,6 +796,17 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   [_spotlightManager shutdown];
   _spotlightManager = nil;
+
+  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+    if (self.mainBrowserState->HasOffTheRecordChromeBrowserState()) {
+      breakpad::StopMonitoringBreadcrumbManagerService(
+          BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
+              self.mainBrowserState->GetOffTheRecordChromeBrowserState()));
+    }
+    breakpad::StopMonitoringBreadcrumbManagerService(
+        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
+            self.mainBrowserState));
+  }
 
   // Invariant: The UI is stopped before the model is shutdown.
   DCHECK(!_mainCoordinator);

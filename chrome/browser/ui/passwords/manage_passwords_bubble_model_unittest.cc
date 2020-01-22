@@ -41,9 +41,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
 using ::testing::Return;
 using ::testing::ReturnRef;
-using ::testing::_;
 
 namespace {
 
@@ -117,9 +117,7 @@ class ManagePasswordsBubbleModelTest : public ::testing::Test {
             .get());
   }
 
-  PasswordsModelDelegateMock* controller() {
-    return mock_delegate_.get();
-  }
+  PasswordsModelDelegateMock* controller() { return mock_delegate_.get(); }
 
   ManagePasswordsBubbleModel* model() { return model_.get(); }
 
@@ -160,13 +158,13 @@ void ManagePasswordsBubbleModelTest::SetUpWithState(
   EXPECT_CALL(*controller(), GetOrigin()).WillOnce(ReturnRef(origin));
   EXPECT_CALL(*controller(), GetState()).WillOnce(Return(state));
   EXPECT_CALL(*controller(), OnBubbleShown());
-  EXPECT_CALL(*controller(), GetWebContents()).WillRepeatedly(
-      Return(test_web_contents_.get()));
+  EXPECT_CALL(*controller(), GetWebContents())
+      .WillRepeatedly(Return(test_web_contents_.get()));
   model_.reset(
       new ManagePasswordsBubbleModel(mock_delegate_->AsWeakPtr(), reason));
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(controller()));
-  EXPECT_CALL(*controller(), GetWebContents()).WillRepeatedly(
-      Return(test_web_contents_.get()));
+  EXPECT_CALL(*controller(), GetWebContents())
+      .WillRepeatedly(Return(test_web_contents_.get()));
 }
 
 void ManagePasswordsBubbleModelTest::PretendPasswordWaiting(
@@ -379,7 +377,8 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickUpdateInSaveState) {
 
 TEST_F(ManagePasswordsBubbleModelTest, GetInitialUsername_MatchedUsername) {
   PretendUpdatePasswordWaiting();
-  EXPECT_EQ(base::UTF8ToUTF16(kUsername), model()->GetCurrentUsername());
+  EXPECT_EQ(base::UTF8ToUTF16(kUsername),
+            model()->pending_password().username_value);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, EditCredential) {
@@ -453,13 +452,10 @@ TEST_F(ManagePasswordsBubbleModelTest, SignInPromoCancel) {
   model()->OnSaveClicked();
 
   EXPECT_TRUE(model()->ReplaceToShowPromotionIfNeeded());
-  model()->OnSkipSignInClicked();
   DestroyModelAndVerifyControllerExpectations();
   histogram_tester.ExpectUniqueSample(
       kUIDismissalReasonSaveMetric,
       password_manager::metrics_util::CLICKED_SAVE, 1);
-  EXPECT_TRUE(prefs()->GetBoolean(
-      password_manager::prefs::kWasSignInPasswordPromoClicked));
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, SignInPromoDismiss) {

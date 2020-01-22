@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Found 50 tests; 43 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS createDataChannel with no argument should throw TypeError
 PASS createDataChannel with closed connection should throw InvalidStateError
 FAIL createDataChannel attribute default values assert_equals: expected (string) "low" but got (undefined) undefined
@@ -17,9 +18,15 @@ PASS createDataChannel with protocol "foo" should succeed
 PASS createDataChannel with protocol null should succeed
 PASS createDataChannel with protocol undefined should succeed
 PASS createDataChannel with protocol lone surrogate should succeed
-PASS createDataChannel with id 0 should succeed
-PASS createDataChannel with id 1 should succeed
-FAIL createDataChannel with id 65534 should succeed Failed to execute 'createDataChannel' on 'RTCPeerConnection': RTCDataChannel creation failed
+PASS createDataChannel with id 0 and negotiated not set should succeed, but not set the channel's id
+PASS createDataChannel with id 1 and negotiated not set should succeed, but not set the channel's id
+PASS createDataChannel with id 65534 and negotiated not set should succeed, but not set the channel's id
+FAIL createDataChannel with id 65535 and negotiated not set should succeed, but not set the channel's id Failed to execute 'createDataChannel' on 'RTCPeerConnection': RTCDataChannel cannot have id > 65534
+PASS createDataChannel with id 0 and negotiated true should succeed, and set the channel's id
+PASS createDataChannel with id 1 and negotiated true should succeed, and set the channel's id
+FAIL createDataChannel with id 65534 and negotiated true should succeed, and set the channel's id Failed to execute 'createDataChannel' on 'RTCPeerConnection': RTCDataChannel creation failed
+PASS createDataChannel with id -1 and negotiated not set should throw TypeError
+PASS createDataChannel with id 65536 and negotiated not set should throw TypeError
 PASS createDataChannel with id -1 should throw TypeError
 PASS createDataChannel with id 65535 should throw TypeError
 PASS createDataChannel with id 65536 should throw TypeError

@@ -255,3 +255,28 @@ var CrElementsViewManagerV3Test = class extends CrElementsV3BrowserTest {
 TEST_F('CrElementsViewManagerV3Test', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var CrElementsPolicyIndicatorV3Test = class extends CrElementsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_policy_indicator_tests.m.js';
+  }
+};
+
+TEST_F('CrElementsPolicyIndicatorV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
+var CrElementsPolicyIndicatorBehaviorV3Test =
+    class extends CrElementsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_policy_indicator_behavior_tests.m.js';
+  }
+};
+
+TEST_F('CrElementsPolicyIndicatorBehaviorV3Test', 'All', function() {
+  mocha.run();
+});

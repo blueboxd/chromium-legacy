@@ -7,13 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_url_loader.h"
 #import "ios/chrome/browser/ui/omnibox/location_bar_delegate.h"
 #import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 
-namespace ios {
-class ChromeBrowserState;
-}
 class WebStateList;
 @class CommandDispatcher;
 @protocol ApplicationCommands;

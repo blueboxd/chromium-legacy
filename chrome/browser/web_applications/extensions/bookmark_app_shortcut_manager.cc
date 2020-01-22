@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_shortcut.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 #include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #include "extensions/browser/extension_registry.h"
 
@@ -16,6 +17,17 @@ BookmarkAppShortcutManager::BookmarkAppShortcutManager(Profile* profile)
     : web_app::AppShortcutManager(profile) {}
 
 BookmarkAppShortcutManager::~BookmarkAppShortcutManager() = default;
+
+std::unique_ptr<web_app::ShortcutInfo>
+BookmarkAppShortcutManager::BuildShortcutInfo(const web_app::AppId& app_id) {
+  BookmarkAppRegistrar* registry = registrar()->AsBookmarkAppRegistrar();
+  DCHECK(registry);
+
+  const Extension* app = registry->FindExtension(app_id);
+  DCHECK(app);
+
+  return web_app::ShortcutInfoForExtensionAndProfile(app, profile());
+}
 
 void BookmarkAppShortcutManager::GetShortcutInfoForApp(
     const web_app::AppId& app_id,

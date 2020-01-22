@@ -130,6 +130,10 @@ class ScreenLocker
   // Returns the users to authenticate.
   const user_manager::UserList& users() const { return users_; }
 
+  // Returns the users to show on the lock screen UI. Will be a subset of
+  // |users()|.
+  user_manager::UserList GetUsersToShow() const;
+
   // Allow a AuthStatusConsumer to listen for
   // the same login events that ScreenLocker does.
   void SetLoginStatusConsumer(chromeos::AuthStatusConsumer* consumer);

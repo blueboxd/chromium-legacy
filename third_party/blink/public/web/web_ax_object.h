@@ -33,7 +33,6 @@
 
 #include <memory>
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -41,6 +40,10 @@
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 
 class SkMatrix44;
+
+namespace gfx {
+class Point;
+}
 
 namespace blink {
 
@@ -51,7 +54,6 @@ class WebDocument;
 class WebString;
 class WebURL;
 struct WebFloatRect;
-struct WebPoint;
 struct WebRect;
 struct WebSize;
 
@@ -181,7 +183,7 @@ class WebAXObject {
   BLINK_EXPORT double EstimatedLoadingProgress() const;
   BLINK_EXPORT int HeadingLevel() const;
   BLINK_EXPORT int HierarchicalLevel() const;
-  BLINK_EXPORT WebAXObject HitTest(const WebPoint&) const;
+  BLINK_EXPORT WebAXObject HitTest(const gfx::Point&) const;
   // Get the WebAXObject's bounds in frame-relative coordinates as a WebRect.
   BLINK_EXPORT WebRect GetBoundsInFrameCoordinates() const;
   BLINK_EXPORT WebString KeyboardShortcut() const;
@@ -309,7 +311,7 @@ class WebAXObject {
           ax::mojom::ScrollBehavior::kDoNotScrollIfVisible) const;
   // Scroll this object to a given point in global coordinates of the top-level
   // window.
-  BLINK_EXPORT bool ScrollToGlobalPoint(const WebPoint&) const;
+  BLINK_EXPORT bool ScrollToGlobalPoint(const gfx::Point&) const;
 
   // For a table
   BLINK_EXPORT int AriaColumnCount() const;
@@ -354,10 +356,10 @@ class WebAXObject {
 
   // Scrollable containers.
   BLINK_EXPORT bool IsScrollableContainer() const;
-  BLINK_EXPORT WebPoint GetScrollOffset() const;
-  BLINK_EXPORT WebPoint MinimumScrollOffset() const;
-  BLINK_EXPORT WebPoint MaximumScrollOffset() const;
-  BLINK_EXPORT void SetScrollOffset(const WebPoint&) const;
+  BLINK_EXPORT gfx::Point GetScrollOffset() const;
+  BLINK_EXPORT gfx::Point MinimumScrollOffset() const;
+  BLINK_EXPORT gfx::Point MaximumScrollOffset() const;
+  BLINK_EXPORT void SetScrollOffset(const gfx::Point&) const;
 
   // aria-dropeffect is deprecated in WAI-ARIA 1.1
   BLINK_EXPORT void Dropeffects(

@@ -7,11 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
 @class ChromeCoordinator;
 class Browser;
-namespace ios {
-class ChromeBrowserState;
-}
+
 typedef NSMutableArray<ChromeCoordinator*> MutableCoordinatorArray;
 
 // A coordinator object that manages view controllers and other coordinators.

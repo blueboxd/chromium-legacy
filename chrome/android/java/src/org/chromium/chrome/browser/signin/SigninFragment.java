@@ -16,7 +16,7 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.settings.sync.SyncAndServicesSettings;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -143,8 +143,8 @@ public class SigninFragment extends SigninFragmentBase {
                                 true);
                         if (settingsClicked) {
                             SettingsLauncher.getInstance().launchSettingsPage(getActivity(),
-                                    SyncAndServicesPreferences.class,
-                                    SyncAndServicesPreferences.createArguments(true));
+                                    SyncAndServicesSettings.class,
+                                    SyncAndServicesSettings.createArguments(true));
                         } else {
                             ProfileSyncService.get().setFirstSetupComplete(
                                     SyncFirstSetupCompleteSource.BASIC_FLOW);

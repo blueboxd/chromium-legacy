@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,6 +31,10 @@ const base::TimeDelta kRefreshAdvancedProtectionDelay =
     base::TimeDelta::FromDays(1);
 const base::TimeDelta kRetryDelay = base::TimeDelta::FromMinutes(5);
 const base::TimeDelta kMinimumRefreshDelay = base::TimeDelta::FromMinutes(1);
+
+const char kForceTreatUserAsAdvancedProtection[] =
+    "safe-browsing-treat-user-as-advanced-protection";
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -219,8 +224,10 @@ void AdvancedProtectionStatusManager::UpdateLastRefreshTime() {
       last_refreshed_.ToDeltaSinceWindowsEpoch().InMicroseconds());
 }
 
-bool AdvancedProtectionStatusManager::RequestsAdvancedProtectionVerdicts() {
-  return is_under_advanced_protection();
+bool AdvancedProtectionStatusManager::IsUnderAdvancedProtection() const {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             kForceTreatUserAsAdvancedProtection) ||
+         is_under_advanced_protection_;
 }
 
 bool AdvancedProtectionStatusManager::IsUnconsentedPrimaryAccount(

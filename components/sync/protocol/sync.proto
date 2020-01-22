@@ -867,6 +867,11 @@ message CommitResponse {
     // Last modification time (in java time milliseconds).  Allows the server
     // to override the client-supplied mtime during a commit operation.
     optional int64 mtime = 10;
+
+    // Datatype specific error (if any).
+    oneof datatype_error {
+      SharingMessageCommitError sharing_message_error = 11;
+    }
   }
 };
 

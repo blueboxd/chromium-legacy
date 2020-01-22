@@ -9,15 +9,12 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/tabs/tab_model_list_observer.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 
 @class TabModel;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // SnapshotCacheTabModelListObserver tracks when TabModels are created and
 // destroyed for a given ChromeBrowserState.  Whenever the TabModelList changes,

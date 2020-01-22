@@ -12,6 +12,7 @@ source_set("chrome_coordinators") {
 
   deps = [
     "//base",
+    "//ios/chrome/browser/browser_state:forward",
     "//ios/chrome/browser/main:public",
   ]
 }

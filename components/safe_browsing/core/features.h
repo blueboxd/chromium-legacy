@@ -18,7 +18,8 @@ class ListValue;
 }  // namespace base
 
 namespace safe_browsing {
-// Features list
+// Features list, in alphabetical order.
+
 // Controls whether we send RIND reports when a popup originating from a Google
 // Ad is blocked.
 extern const base::Feature kAdPopupTriggerFeature;
@@ -51,11 +52,6 @@ extern const base::Feature kContentComplianceEnabled;
 // sent for scanning.
 extern const base::Feature kMalwareScanEnabled;
 
-// Controls whether the user has forcibly enabled AP download protection. This
-// flag will enable AP downloads protections even for users not enrolled in
-// APP.
-extern const base::Feature kForceUseAPDownloadProtection;
-
 // Enable password protection for non-Google accounts.
 extern const base::Feature kPasswordProtectionForSavedPasswords;
 
@@ -66,6 +62,9 @@ extern const base::Feature kPasswordProtectionShowDomainsForSavedPasswords;
 
 // Enable GAIA password protection for signed-in users.
 extern const base::Feature kPasswordProtectionForSignedInUsers;
+
+// Controls whether Chrome prompts Advanced Protection users for deep scanning.
+extern const base::Feature kPromptAppForDeepScanning;
 
 // Controls whether Chrome sends on focus ping.
 extern const base::Feature kSendOnFocusPing;

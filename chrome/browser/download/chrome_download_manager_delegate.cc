@@ -1108,6 +1108,10 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
 
   DVLOG(2) << __func__ << "() download = " << item->DebugString(false)
            << " verdict = " << static_cast<int>(result);
+
+  // Indicates whether we expect future verdicts on this download. For example,
+  // if Safe Browsing is performing deep scanning, we will receive a more
+  // specific verdict later.
   bool is_pending_scanning = false;
 
   // We only mark the content as being dangerous if the download's safety state
@@ -1170,6 +1174,10 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
         break;
       case safe_browsing::DownloadCheckResult::DEEP_SCANNED_SAFE:
         danger_type = download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE;
+        break;
+      case safe_browsing::DownloadCheckResult::PROMPT_FOR_SCANNING:
+        danger_type = download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING;
+        is_pending_scanning = true;
         break;
     }
     DCHECK_NE(danger_type,

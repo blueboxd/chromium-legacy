@@ -21,6 +21,7 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/guest_view/browser/guest_view_base.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -34,6 +35,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "net/http/http_response_headers.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -116,6 +118,19 @@ void WebAuthFlow::Start() {
 void WebAuthFlow::DetachDelegateAndDelete() {
   delegate_ = NULL;
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+}
+
+content::StoragePartition* WebAuthFlow::GetGuestPartition() const {
+  GURL guest_partition_url =
+      extensions::WebViewGuest::GetSiteForGuestPartitionConfig(
+          extension_misc::kIdentityApiUiAppId, /*partition_name=*/std::string(),
+          /*in_memory=*/true);
+  return content::BrowserContext::GetStoragePartitionForSite(
+      profile_, guest_partition_url);
+}
+
+const std::string& WebAuthFlow::GetAppWindowKey() const {
+  return app_window_key_;
 }
 
 void WebAuthFlow::OnAppWindowAdded(AppWindow* app_window) {

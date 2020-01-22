@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "cc/resources/ui_resource_bitmap.h"
+#include "cc/trees/layer_tree_host_client.h"
 #include "content/common/content_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/android/resources/ui_resource_provider.h"
@@ -99,6 +100,14 @@ class CONTENT_EXPORT Compositor {
 
   // Evicts the cache entry created from the cached call above.
   virtual void EvictCachedBackBuffer() = 0;
+
+  // Registers a callback that is run when the next frame successfully makes it
+  // to the screen (it's entirely possible some frames may be dropped between
+  // the time this is called and the callback is run).
+  using PresentationTimeCallback =
+      base::OnceCallback<void(const gfx::PresentationFeedback&)>;
+  virtual void RequestPresentationTimeForNextFrame(
+      PresentationTimeCallback callback) = 0;
 
  protected:
   Compositor() {}

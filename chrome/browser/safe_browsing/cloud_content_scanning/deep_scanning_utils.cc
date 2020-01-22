@@ -185,4 +185,51 @@ void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
       50);
 }
 
+std::array<const base::FilePath::CharType*, 21> SupportedDlpFileTypes() {
+  // Keep sorted for efficient access.
+  static constexpr const std::array<const base::FilePath::CharType*, 21>
+      kSupportedDLPFileTypes = {
+          FILE_PATH_LITERAL(".7z"),   FILE_PATH_LITERAL(".bzip"),
+          FILE_PATH_LITERAL(".cab"),  FILE_PATH_LITERAL(".doc"),
+          FILE_PATH_LITERAL(".docx"), FILE_PATH_LITERAL(".eps"),
+          FILE_PATH_LITERAL(".gzip"), FILE_PATH_LITERAL(".odt"),
+          FILE_PATH_LITERAL(".pdf"),  FILE_PATH_LITERAL(".ppt"),
+          FILE_PATH_LITERAL(".pptx"), FILE_PATH_LITERAL(".ps"),
+          FILE_PATH_LITERAL(".rar"),  FILE_PATH_LITERAL(".rtf"),
+          FILE_PATH_LITERAL(".tar"),  FILE_PATH_LITERAL(".txt"),
+          FILE_PATH_LITERAL(".wpd"),  FILE_PATH_LITERAL(".xls"),
+          FILE_PATH_LITERAL(".xlsx"), FILE_PATH_LITERAL(".xps"),
+          FILE_PATH_LITERAL(".zip")};
+  // TODO: Replace this DCHECK with a static assert once std::is_sorted is
+  // constexpr in C++20.
+  DCHECK(std::is_sorted(
+      kSupportedDLPFileTypes.begin(), kSupportedDLPFileTypes.end(),
+      [](const base::FilePath::StringType& a,
+         const base::FilePath::StringType& b) { return a.compare(b) < 0; }));
+
+  return kSupportedDLPFileTypes;
+}
+
+bool FileTypeSupported(bool for_malware_scan,
+                       bool for_dlp_scan,
+                       const base::FilePath& path) {
+  // At least one of the booleans needs to be true.
+  DCHECK(for_malware_scan || for_dlp_scan);
+
+  // Accept any file type for malware scans.
+  if (for_malware_scan)
+    return true;
+
+  // Accept any file type in the supported list for DLP scans.
+  if (for_dlp_scan) {
+    base::FilePath::StringType extension(path.FinalExtension());
+    std::transform(extension.begin(), extension.end(), extension.begin(),
+                   tolower);
+
+    auto dlp_types = SupportedDlpFileTypes();
+    return std::binary_search(dlp_types.begin(), dlp_types.end(), extension);
+  }
+
+  return false;
+}
 }  // namespace safe_browsing

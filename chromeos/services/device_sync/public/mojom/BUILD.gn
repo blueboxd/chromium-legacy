@@ -5,9 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [
-    "device_sync.mojom",
-  ]
+  sources = [ "device_sync.mojom" ]
 
   public_deps = [
     "//chromeos/components/multidevice/mojom",
@@ -18,9 +16,7 @@ mojom("mojom") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "device_sync_mojom_traits_unittest.cc",
-  ]
+  sources = [ "device_sync_mojom_traits_unittest.cc" ]
 
   deps = [
     ":mojom",

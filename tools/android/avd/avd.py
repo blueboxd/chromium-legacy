@@ -81,11 +81,17 @@ def main(raw_args):
   start_parser = subparsers.add_parser(
       'start',
       help='Start an AVD instance with the given config.')
+  start_parser.add_argument(
+      '--no-read-only',
+      action='store_false',
+      dest='read_only',
+      default=True,
+      help='Run a modifiable emulator. Will save snapshots on exit.')
   add_common_arguments(start_parser)
 
   def start_cmd(args):
     inst = avd.AvdConfig(args.avd_config).CreateInstance()
-    inst.Start(read_only=False, snapshot_save=True)
+    inst.Start(read_only=args.read_only, snapshot_save=not args.read_only)
     print('%s started (pid: %d)' % (str(inst), inst._emulator_proc.pid))
     return 0
 

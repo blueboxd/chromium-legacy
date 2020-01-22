@@ -92,6 +92,17 @@ class Pointer : public SurfaceTreeHost,
   void RegisterRelativePointerDelegate(RelativePointerDelegate* delegate);
   void UnregisterRelativePointerDelegate(RelativePointerDelegate* delegate);
 
+  // Capture the pointer for the top-most surface. Returns true iff the capture
+  // succeeded.
+  //
+  // TODO(b/124059008): Historically, exo needed to guess what the correct
+  // capture window was, as it did not implement wayland's pointer capture
+  // protocol.
+  bool EnablePointerCapture();
+
+  // Remove the currently active pointer capture (if there is one).
+  void DisablePointerCapture();
+
   // Enable the pointer constraint on the given surface. Returns true if the
   // lock was granted, false otherwise.
   //
@@ -109,9 +120,6 @@ class Pointer : public SurfaceTreeHost,
   // Capture the pointer for the given surface. Returns true iff the capture
   // succeeded.
   bool EnablePointerCapture(Surface* capture_surface);
-
-  // Remove the currently active pointer capture (if there is one).
-  void DisablePointerCapture();
 
   // Returns the effective target for |event|.
   Surface* GetEffectiveTargetForEvent(ui::LocatedEvent* event) const;

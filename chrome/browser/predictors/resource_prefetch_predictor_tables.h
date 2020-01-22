@@ -15,8 +15,8 @@
 #include "base/macros.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.pb.h"
-#include "components/sqlite_proto/loading_predictor_key_value_table.h"
-#include "components/sqlite_proto/predictor_table_base.h"
+#include "components/sqlite_proto/key_value_table.h"
+#include "components/sqlite_proto/table_manager.h"
 
 namespace predictors {
 
@@ -27,10 +27,10 @@ namespace predictors {
 // Currently manages:
 //  - HostRedirectTable - key: host, value: RedirectData
 //  - OriginTable - key: host, value: OriginData
-class ResourcePrefetchPredictorTables : public PredictorTableBase {
+class ResourcePrefetchPredictorTables : public sqlite_proto::TableManager {
  public:
-  virtual LoadingPredictorKeyValueTable<RedirectData>* host_redirect_table();
-  virtual LoadingPredictorKeyValueTable<OriginData>* origin_table();
+  virtual sqlite_proto::KeyValueTable<RedirectData>* host_redirect_table();
+  virtual sqlite_proto::KeyValueTable<OriginData>* origin_table();
 
   // Removes the redirects with more than |max_consecutive_misses| consecutive
   // misses from |data|.
@@ -69,17 +69,17 @@ class ResourcePrefetchPredictorTables : public PredictorTableBase {
   // schema (including the .proto).
   static constexpr int kDatabaseVersion = 11;
 
-  // PredictorTableBase:
-  void CreateTableIfNonExistent() override;
+  // sqlite_proto::TableManager:
+  void CreateTablesIfNonExistent() override;
   void LogDatabaseStats() override;
 
   static bool DropTablesIfOutdated(sql::Database* db);
   static int GetDatabaseVersion(sql::Database* db);
   static bool SetDatabaseVersion(sql::Database* db, int version);
 
-  std::unique_ptr<LoadingPredictorKeyValueTable<RedirectData>>
+  std::unique_ptr<sqlite_proto::KeyValueTable<RedirectData>>
       host_redirect_table_;
-  std::unique_ptr<LoadingPredictorKeyValueTable<OriginData>> origin_table_;
+  std::unique_ptr<sqlite_proto::KeyValueTable<OriginData>> origin_table_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictorTables);
 };

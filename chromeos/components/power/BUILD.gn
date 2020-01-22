@@ -23,9 +23,7 @@ component("power") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [
-    "dark_resume_controller_unittest.cc",
-  ]
+  sources = [ "dark_resume_controller_unittest.cc" ]
 
   deps = [
     ":power",

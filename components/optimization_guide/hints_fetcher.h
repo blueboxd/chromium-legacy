@@ -58,8 +58,6 @@ enum class HintsFetcherRequestStatus {
 // to pass back the fetched hints response from the remote Optimization Guide
 // Service.
 using HintsFetchedCallback = base::OnceCallback<void(
-    optimization_guide::proto::RequestContext request_context,
-    HintsFetcherRequestStatus fetch_status,
     base::Optional<std::unique_ptr<proto::GetHintsResponse>>)>;
 
 // A class to handle requests for optimization hints from a remote Optimization
@@ -134,10 +132,6 @@ class HintsFetcher {
   // features::MaxHostsForOptimizationGuideServiceHintsFetch().
   std::vector<std::string> GetSizeLimitedHostsDueForHintsRefresh(
       const std::vector<std::string>& hosts) const;
-
-  // Used to hold the GetHintsRequest being constructed and sent as a remote
-  // request.
-  std::unique_ptr<proto::GetHintsRequest> get_hints_request_;
 
   // Used to hold the callback while the SimpleURLLoader performs the request
   // asynchronously.

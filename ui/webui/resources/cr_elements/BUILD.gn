@@ -181,7 +181,7 @@ group("polymer3_elements") {
     "cr_toolbar:cr_toolbar_search_field_module",
     "cr_toolbar:cr_toolbar_selection_overlay_module",
     "cr_view_manager:cr_view_manager_module",
-    "policy:cr_tooltip_icon_module",
+    "policy:polymer3_elements",
   ]
 
   if (is_chromeos) {

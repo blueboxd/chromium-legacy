@@ -28,6 +28,15 @@ const char kPerformanceMessage[] = "0";
 const char kPrivacyMessage[] = "1";
 const char kNeutralMessage[] = "2";
 
+// Controls whether the CORB allowlist [1] is also applied to OOR-CORS (e.g.
+// whether non-allowlisted content scripts can bypass CORS in OOR-CORS mode).
+// See also: https://crbug.com/920638
+//
+// [1]
+// https://www.chromium.org/Home/chromium-security/extension-content-script-fetches
+const base::Feature kCorbAllowlistAlsoAppliesToOorCors{
+    "CorbAllowlistAlsoAppliesToOorCors", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Forces requests to go through WebRequestProxyingURLLoaderFactory.
 const base::Feature kForceWebRequestProxyForTest{
     "ForceWebRequestProxyForTest", base::FEATURE_DISABLED_BY_DEFAULT};

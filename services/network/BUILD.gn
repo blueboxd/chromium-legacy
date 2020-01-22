@@ -245,9 +245,7 @@ jumbo_component("network_service") {
     "//url",
   ]
 
-  public_deps = [
-    "//services/network/public/cpp:buildflags",
-  ]
+  public_deps = [ "//services/network/public/cpp:buildflags" ]
 
   if (is_ct_supported) {
     sources += [
@@ -473,9 +471,7 @@ jumbo_source_set("test_support") {
 }
 
 fuzzer_test("network_content_security_policy_fuzzer") {
-  sources = [
-    "content_security_policy_fuzzer.cc",
-  ]
+  sources = [ "content_security_policy_fuzzer.cc" ]
   deps = [
     "//base",
     "//net",

@@ -8,13 +8,9 @@ import("//mojo/public/tools/bindings/mojom.gni")
 # converted to a component target. A component target is necessary for
 # ServiceProvider because it exposes global storage.
 component("service_provider") {
-  public = [
-    "service_provider.h",
-  ]
+  public = [ "service_provider.h" ]
 
-  sources = [
-    "service_provider.cc",
-  ]
+  sources = [ "service_provider.cc" ]
 
   public_deps = [
     "//base",
@@ -51,9 +47,8 @@ source_set("cpp") {
   if (is_android) {
     sources += [ "json_sanitizer_android.cc" ]
 
-    deps = [
-      "//services/data_decoder/public/cpp/android:safe_json_jni_headers",
-    ]
+    deps =
+        [ "//services/data_decoder/public/cpp/android:safe_json_jni_headers" ]
   } else {
     sources += [ "json_sanitizer_non_android.cc" ]
   }
@@ -62,9 +57,7 @@ source_set("cpp") {
     # NOTE: We depend on this target here for iOS only, to support in-process
     # use of the service. Non-test targets in this directory should otherwise
     # NEVER depend on this target.
-    deps = [
-      "//services/data_decoder:lib",
-    ]
+    deps = [ "//services/data_decoder:lib" ]
   } else {
     public += [
       "decode_image.h",
@@ -88,9 +81,7 @@ source_set("test_support") {
     "test_support/web_bundle_builder.h",
   ]
 
-  deps = [
-    "//components/cbor",
-  ]
+  deps = [ "//components/cbor" ]
 
   public_deps = [
     ":cpp",

@@ -251,8 +251,9 @@ class PasswordStore : protected PasswordStoreSync,
   void AddCompromisedCredentials(
       const CompromisedCredentials& compromised_credentials);
 
-  // Removes information about credentials compromised on |url| for |username|.
-  void RemoveCompromisedCredentials(const GURL& url,
+  // Removes information about credentials compromised on |signon_realm| for
+  // |username|.
+  void RemoveCompromisedCredentials(const std::string& signon_realm,
                                     const base::string16& username,
                                     RemoveCompromisedCredentialsReason reason);
 
@@ -488,9 +489,8 @@ class PasswordStore : protected PasswordStoreSync,
   // compromised credentials.
   virtual void AddCompromisedCredentialsImpl(
       const CompromisedCredentials& compromised_credentials) = 0;
-  // TODO(bdea): Add CompromiseType as a filter.
   virtual void RemoveCompromisedCredentialsImpl(
-      const GURL& url,
+      const std::string& signon_realm,
       const base::string16& username,
       RemoveCompromisedCredentialsReason reason) = 0;
   virtual std::vector<CompromisedCredentials>

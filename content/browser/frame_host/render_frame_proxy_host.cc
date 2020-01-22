@@ -389,6 +389,15 @@ void RenderFrameProxyHost::OnOpenURL(
       frame_tree_node_->navigator()->GetController()->GetWebContents(),
       current_rfh, params.user_gesture, &download_policy);
 
+  if ((frame_tree_node_->pending_frame_policy().sandbox_flags &
+       blink::WebSandboxFlags::kDownloads) != blink::WebSandboxFlags::kNone) {
+    if (download_policy.blocking_downloads_in_sandbox_enabled) {
+      download_policy.SetDisallowed(content::NavigationDownloadType::kSandbox);
+    } else {
+      download_policy.SetAllowed(content::NavigationDownloadType::kSandbox);
+    }
+  }
+
   // TODO(lfg, lukasza): Remove |extra_headers| parameter from
   // RequestTransferURL method once both RenderFrameProxyHost and
   // RenderFrameHostImpl call RequestOpenURL from their OnOpenURL handlers.

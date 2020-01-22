@@ -35,12 +35,12 @@
 #include "third_party/blink/public/common/context_menu_data/input_field_type.h"
 #include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_menu_item_info.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace blink {
 
@@ -51,7 +51,7 @@ struct WebContextMenuData {
   ContextMenuDataMediaType media_type;
 
   // The x and y position of the mouse pointer (relative to the webview).
-  WebPoint mouse_position;
+  gfx::Point mouse_position;
 
   // The absolute URL of the link that is in context.
   WebURL link_url;

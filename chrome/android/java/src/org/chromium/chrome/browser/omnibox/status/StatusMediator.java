@@ -38,6 +38,8 @@ class StatusMediator {
     class StatusMediatorDelegate {
         /** @see {@link AutocompleteCoordinatorFactory#qualifyPartialURLQuery} */
         boolean isUrlValid(String partialUrl) {
+            if (TextUtils.isEmpty(partialUrl)) return false;
+
             return BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                            .isFullBrowserStarted()
                     && AutocompleteCoordinatorFactory.qualifyPartialURLQuery(partialUrl) != null;
@@ -256,6 +258,10 @@ class StatusMediator {
         mUrlHasFocus = urlHasFocus;
         updateStatusVisibility();
         updateLocationBarIcon();
+
+        // Set the autocomplete text to be empty on an unfocus event to avoid the globe sticking
+        // around for subsequent focus events.
+        if (!mUrlHasFocus) updateLocationBarIconForUrlBarAutocompleteText("");
     }
 
     void setUrlAnimationFinished(boolean urlHasFocus) {
@@ -480,10 +486,11 @@ class StatusMediator {
     /** @return True if the security icon has been set for the search engine icon. */
     @VisibleForTesting
     boolean maybeUpdateStatusIconForSearchEngineIcon() {
-        // When the search engine logo should be shown, but the engine isn't Google. In this case,
-        // we download the icon on the fly.
-        boolean showFocused =
-                (mUrlHasFocus || mUrlFocusPercent > 0) && mShowStatusIconWhenUrlFocused;
+        boolean showIconWhenFocused = mUrlHasFocus && mShowStatusIconWhenUrlFocused;
+        boolean showIconWhenScrollingOnNTP =
+                SearchEngineLogoUtils.currentlyOnNTP(mToolbarCommonPropertiesModel)
+                && mUrlFocusPercent > 0 && !mUrlHasFocus
+                && !mToolbarCommonPropertiesModel.isLoading() && mShowStatusIconWhenUrlFocused;
         // Show the logo unfocused if "Query in the omnibox" is active or we're on the NTP. Current
         // "Query in the omnibox" behavior makes it active for non-dse searches if you've just
         // changed your default search engine.The included workaround below
@@ -498,7 +505,8 @@ class StatusMediator {
         boolean isIncognito = mToolbarCommonPropertiesModel != null
                 && mToolbarCommonPropertiesModel.isIncognito();
         if (mDelegate.shouldShowSearchEngineLogo(isIncognito) && mIsSearchEngineStateSetup
-                && (showFocused || showUnfocusedSearchResultsPage)) {
+                && (showIconWhenFocused || showIconWhenScrollingOnNTP
+                        || showUnfocusedSearchResultsPage)) {
             getStatusIconResourceForSearchEngineIcon(isIncognito, (statusIconRes) -> {
                 mModel.set(StatusProperties.STATUS_ICON_RESOURCE, statusIconRes);
             });
@@ -590,8 +598,29 @@ class StatusMediator {
         return 0;
     }
 
-    /** @see android.text.TextWatcher#onTextChanged */
+    /** @see org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener */
     void onTextChanged(CharSequence urlBarText) {
+        updateLocationBarIconForUrlBarAutocompleteText(
+                resolveUrlBarTextWithAutocomplete(urlBarText));
+    }
+
+    /**
+     * Updates variables and possibly the status icon based on the given urlBarTextWithAutocomplete.
+     */
+    private void updateLocationBarIconForUrlBarAutocompleteText(String urlBarTextWithAutocomplete) {
+        // Ignore text we've already seen to avoid unnecessary updates to the drawable resource.
+        if (TextUtils.equals(mUrlBarTextWithAutocomplete, urlBarTextWithAutocomplete)) return;
+
+        mUrlBarTextWithAutocomplete = urlBarTextWithAutocomplete;
+        boolean isValid = mDelegate.isUrlValid(mUrlBarTextWithAutocomplete);
+        if (isValid != mUrlBarTextIsValidUrl) {
+            mUrlBarTextIsValidUrl = isValid;
+            updateLocationBarIcon();
+        }
+    }
+
+    @VisibleForTesting
+    protected String resolveUrlBarTextWithAutocomplete(CharSequence urlBarText) {
         String currentAutocompleteText = mUrlBarEditingTextStateProvider.getTextWithAutocomplete();
         String urlTextWithAutocomplete;
         if (TextUtils.isEmpty(urlBarText)) {
@@ -607,14 +636,7 @@ class StatusMediator {
             urlTextWithAutocomplete = urlBarText.toString();
         }
 
-        if (TextUtils.equals(mUrlBarTextWithAutocomplete, urlTextWithAutocomplete)) return;
-
-        mUrlBarTextWithAutocomplete = urlTextWithAutocomplete;
-        boolean isValid = mDelegate.isUrlValid(mUrlBarTextWithAutocomplete);
-        if (isValid != mUrlBarTextIsValidUrl) {
-            mUrlBarTextIsValidUrl = isValid;
-            updateLocationBarIcon();
-        }
+        return urlTextWithAutocomplete;
     }
 
     void setDelegateForTesting(StatusMediatorDelegate delegate) {

@@ -776,10 +776,6 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
   return [ChromeEarlGreyAppInterface isBlockNewTabPagePendingLoadEnabled];
 }
 
-- (BOOL)isNewOmniboxPopupLayoutEnabled {
-  return [ChromeEarlGreyAppInterface isNewOmniboxPopupLayoutEnabled];
-}
-
 - (BOOL)isVariationEnabled:(int)variationID {
   return [ChromeEarlGreyAppInterface isVariationEnabled:variationID];
 }
@@ -794,6 +790,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeEarlGreyAppInterface)
 
 - (BOOL)isUKMEnabled {
   return [ChromeEarlGreyAppInterface isUKMEnabled];
+}
+
+- (BOOL)isTestFeatureEnabled {
+  return [ChromeEarlGreyAppInterface isTestFeatureEnabled];
 }
 
 - (BOOL)isCreditCardScannerEnabled {

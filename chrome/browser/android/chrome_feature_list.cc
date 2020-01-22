@@ -138,6 +138,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContentIndexingDownloadHome,
     &kContentIndexingNTP,
     &kContentSuggestionsScrollToLoad,
+    &kContextMenuCopyImage,
     &kContextMenuSearchWithGoogleLens,
     &kContextualSearchDefinitions,
     &kContextualSearchLongpressResolve,
@@ -182,7 +183,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSearchEnginePromoNewDevice,
     &kServiceManagerForBackgroundPrefetch,
     &kServiceManagerForDownload,
-    &kSettingsModernStatusBar,
     &kSharedClipboardUI,
     &kSharingQrCodeAndroid,
     &kShoppingAssist,
@@ -400,6 +400,9 @@ const base::Feature kContentIndexingNTP{"ContentIndexingNTP",
 const base::Feature kContentSuggestionsScrollToLoad{
     "ContentSuggestionsScrollToLoad", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kContextMenuCopyImage{"ContextMenuCopyImage",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kContextMenuSearchWithGoogleLens{
     "ContextMenuSearchWithGoogleLens", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -460,7 +463,7 @@ const base::Feature kHandleMediaIntents{"HandleMediaIntents",
 // Enable the HomePage Location feature that allows enterprise policy set and
 // force the home page url for managed devices.
 const base::Feature kHomepageLocation{"HomepageLocationPolicy",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kHomepageSettingsUIConversion{
     "HomepageSettingsUIConversion", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -540,9 +543,6 @@ const base::Feature kServiceManagerForBackgroundPrefetch{
 
 const base::Feature kServiceManagerForDownload{
     "ServiceManagerForDownload", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kSettingsModernStatusBar{"SettingsModernStatusBar",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kShoppingAssist{"ShoppingAssist",
                                     base::FEATURE_DISABLED_BY_DEFAULT};

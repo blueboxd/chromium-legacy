@@ -251,6 +251,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
   ]];
 
   [CWVWebView setUserAgentProduct:@"Dummy/1.0"];
+  CWVWebView.chromeLongPressAndForceTouchHandlingEnabled = NO;
 
   _authService = [[ShellAuthService alloc] init];
   CWVSyncController.dataSource = _authService;
@@ -593,6 +594,30 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
                                   createWebViewWithConfiguration:configuration];
                             }]];
 
+  // Developers can choose to use system or Chrome context menu in the shell
+  // app. This will also recreate the web view.
+  BOOL chromeContextMenuEnabled =
+      CWVWebView.chromeLongPressAndForceTouchHandlingEnabled;
+  NSString* contextMenuSwitchActionTitle = [NSString
+      stringWithFormat:@"Use %@ context menu",
+                       chromeContextMenuEnabled ? @"system" : @"Chrome"];
+  [alertController
+      addAction:[UIAlertAction
+                    actionWithTitle:contextMenuSwitchActionTitle
+                              style:UIAlertActionStyleDefault
+                            handler:^(UIAlertAction* action) {
+                              CWVWebView
+                                  .chromeLongPressAndForceTouchHandlingEnabled =
+                                  !chromeContextMenuEnabled;
+                              NSLog(@"Chrome context menu is %@ now.",
+                                    !chromeContextMenuEnabled ? @"OFF" : @"ON");
+                              CWVWebViewConfiguration* configuration =
+                                  weakSelf.webView.configuration;
+                              [weakSelf removeWebView];
+                              [weakSelf
+                                  createWebViewWithConfiguration:configuration];
+                            }]];
+
   // Resets all translation settings to default values.
   [alertController
       addAction:[UIAlertAction actionWithTitle:@"Reset translate settings"
@@ -789,6 +814,71 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibilityIdentifier =
                                           handler:nil]];
 
   [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)webView:(CWVWebView*)webView
+    contextMenuConfigurationForLinkWithURL:(NSURL*)linkURL
+                         completionHandler:
+                             (void (^)(UIContextMenuConfiguration*))
+                                 completionHandler API_AVAILABLE(ios(13.0)) {
+  void (^copyHandler)(UIAction*) = ^(UIAction* action) {
+    NSDictionary* item = @{
+      (NSString*)(kUTTypeURL) : linkURL.absoluteString,
+      (NSString*)(kUTTypeUTF8PlainText) :
+          [linkURL.absoluteString dataUsingEncoding:NSUTF8StringEncoding],
+    };
+    [[UIPasteboard generalPasteboard] setItems:@[ item ]];
+  };
+
+  UIContextMenuConfiguration* configuration = [UIContextMenuConfiguration
+      configurationWithIdentifier:nil
+      previewProvider:^{
+        UIViewController* controller = [[UIViewController alloc] init];
+        CGRect frame = CGRectMake(10, 200, 200, 21);
+        UILabel* label = [[UILabel alloc] initWithFrame:frame];
+        label.text = @"iOS13 Preview Page";
+        [controller.view addSubview:label];
+        return controller;
+      }
+      actionProvider:^(id _) {
+        NSArray* actions = @[
+          [UIAction actionWithTitle:@"Copy Link"
+                              image:nil
+                         identifier:nil
+                            handler:copyHandler],
+          [UIAction actionWithTitle:@"Cancel"
+                              image:nil
+                         identifier:nil
+                            handler:^(id _){
+                            }]
+        ];
+        NSString* menuTitle = [NSString
+            stringWithFormat:@"iOS13 Context Menu: %@", linkURL.absoluteString];
+        return [UIMenu menuWithTitle:menuTitle children:actions];
+      }];
+
+  completionHandler(configuration);
+}
+
+- (void)webView:(CWVWebView*)webView
+    contextMenuWillPresentForLinkWithURL:(NSURL*)linkURL
+    API_AVAILABLE(ios(13.0)) {
+  NSLog(@"webView:contextMenuWillPresentForLinkWithURL: %@",
+        linkURL.absoluteString);
+}
+
+- (void)webView:(CWVWebView*)webView
+    contextMenuForLinkWithURL:(NSURL*)linkURL
+       willCommitWithAnimator:
+           (id<UIContextMenuInteractionCommitAnimating>)animator
+    API_AVAILABLE(ios(13.0)) {
+  NSLog(@"webView:contextMenuForLinkWithURL:willCommitWithAnimator: %@",
+        linkURL.absoluteString);
+}
+
+- (void)webView:(CWVWebView*)webView
+    contextMenuDidEndForLinkWithURL:(NSURL*)linkURL API_AVAILABLE(ios(13.0)) {
+  NSLog(@"webView:contextMenuDidEndForLinkWithURL: %@", linkURL.absoluteString);
 }
 
 - (void)webView:(CWVWebView*)webView

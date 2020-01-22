@@ -63,6 +63,9 @@ class MockScrollTimeline : public ScrollTimeline {
   MOCK_CONST_METHOD2(CurrentTime,
                      base::Optional<base::TimeTicks>(const ScrollTree&, bool));
   MOCK_CONST_METHOD2(IsActive, bool(const ScrollTree&, bool));
+
+ protected:
+  ~MockScrollTimeline() override = default;
 };
 
 TEST_F(WorkletAnimationTest, NonImplInstanceDoesNotTickKeyframe) {
@@ -165,7 +168,7 @@ TEST_F(WorkletAnimationTest, AnimationEventLocalTimeUpdate) {
 }
 
 TEST_F(WorkletAnimationTest, CurrentTimeCorrectlyUsesScrollTimeline) {
-  auto scroll_timeline = std::make_unique<MockScrollTimeline>();
+  auto scroll_timeline = base::WrapRefCounted(new MockScrollTimeline());
   EXPECT_CALL(*scroll_timeline, IsActive(_, _)).WillRepeatedly(Return(true));
   EXPECT_CALL(*scroll_timeline, CurrentTime(_, _))
       .WillRepeatedly(Return(
@@ -273,7 +276,7 @@ TEST_F(WorkletAnimationTest, DocumentTimelineSetPlaybackRate) {
 TEST_F(WorkletAnimationTest, ScrollTimelineSetPlaybackRate) {
   const double playback_rate_double = 2;
   const double playback_rate_half = 0.5;
-  auto scroll_timeline = std::make_unique<MockScrollTimeline>();
+  auto scroll_timeline = base::WrapRefCounted(new MockScrollTimeline());
 
   scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
       worklet_animation_id_, "test_name", playback_rate_double,
@@ -323,7 +326,7 @@ TEST_F(WorkletAnimationTest, ScrollTimelineSetPlaybackRate) {
 // Verifies correcteness of worklet animation current time when inactive
 // timeline becomes active and then inactive again.
 TEST_F(WorkletAnimationTest, InactiveScrollTimeline) {
-  auto scroll_timeline = std::make_unique<MockScrollTimeline>();
+  auto scroll_timeline = base::WrapRefCounted(new MockScrollTimeline());
 
   scoped_refptr<WorkletAnimation> worklet_animation = WorkletAnimation::Create(
       worklet_animation_id_, "test_name", /*playback_rate*/ 1,
@@ -490,7 +493,7 @@ base::Optional<base::TimeTicks> FakeIncreasingScrollTimelineTime(Unused,
 // This test verifies that worklet animation gets skipped properly if a pending
 // mutation cycle is holding a lock on the worklet.
 TEST_F(WorkletAnimationTest, SkipLockedAnimations) {
-  auto scroll_timeline = std::make_unique<MockScrollTimeline>();
+  auto scroll_timeline = base::WrapRefCounted(new MockScrollTimeline());
   EXPECT_CALL(*scroll_timeline, IsActive(_, _)).WillRepeatedly(Return(true));
   EXPECT_CALL(*scroll_timeline, CurrentTime(_, _))
       .WillRepeatedly(Invoke(FakeIncreasingScrollTimelineTime));

@@ -21,9 +21,7 @@ cast_source_set("av_sync_video") {
 }
 
 cast_source_set("cast_media_shlib_common") {
-  sources = [
-    "cast_media_shlib_common.cc",
-  ]
+  sources = [ "cast_media_shlib_common.cc" ]
   deps = [
     "//base",
     "//chromecast/public/media",
@@ -31,9 +29,7 @@ cast_source_set("cast_media_shlib_common") {
 }
 
 cast_source_set("cast_media_shlib_default") {
-  sources = [
-    "cast_media_shlib_default.cc",
-  ]
+  sources = [ "cast_media_shlib_default.cc" ]
   deps = [
     ":cast_media_shlib_common",
     "//base",

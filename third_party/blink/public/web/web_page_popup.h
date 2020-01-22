@@ -53,7 +53,7 @@ class WebPagePopup : public WebWidget {
   // Returns a WebPagePopup which is self-referencing. It's self-reference will
   // be released when the popup is closed via Close().
   BLINK_EXPORT static WebPagePopup* Create(WebPagePopupClient*);
-  virtual WebPoint PositionRelativeToOwner() = 0;
+  virtual gfx::Point PositionRelativeToOwner() = 0;
 
   // The popup's accessibility tree is connected to the main document's
   // accessibility tree. Access to the popup document is needed to ensure the

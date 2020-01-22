@@ -49,10 +49,7 @@ PwaDomain GetPreferredPwaDomain() {
   if (base::FeatureList::IsEnabled(features::kUseMessagesStagingUrl))
     return PwaDomain::kStaging;
 
-  if (base::FeatureList::IsEnabled(features::kUseMessagesGoogleComDomain))
-    return PwaDomain::kProdGoogle;
-
-  return PwaDomain::kProdAndroid;
+  return PwaDomain::kProdGoogle;
 }
 
 GURL GetAndroidMessagesURL(bool use_install_url, PwaDomain pwa_domain) {

@@ -43,10 +43,8 @@ testing::AssertionResult WriteThenReadComputedHashes(
   base::FilePath computed_hashes_path =
       scoped_dir.GetPath().AppendASCII("computed_hashes.json");
   extensions::ComputedHashes::Data computed_hashes_data;
-  for (const auto& info : hash_infos) {
-    computed_hashes_data[info.path] =
-        extensions::ComputedHashes::HashInfo(info.block_size, info.hashes);
-  }
+  for (const auto& info : hash_infos)
+    computed_hashes_data.Add(info.path, info.block_size, info.hashes);
 
   if (!extensions::ComputedHashes(std::move(computed_hashes_data))
            .WriteToFile(computed_hashes_path)) {

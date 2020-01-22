@@ -123,8 +123,8 @@ void MaybeCreateLoaderOnCoreThread(
              params.resource_type == ResourceType::kSharedWorker);
       auto container_type =
           params.resource_type == ResourceType::kWorker
-              ? blink::mojom::ServiceWorkerProviderType::kForDedicatedWorker
-              : blink::mojom::ServiceWorkerProviderType::kForSharedWorker;
+              ? blink::mojom::ServiceWorkerContainerType::kForDedicatedWorker
+              : blink::mojom::ServiceWorkerContainerType::kForSharedWorker;
       container_host = ServiceWorkerContainerHost::CreateForWebWorker(
           context_core->AsWeakPtr(), params.process_id, container_type,
           std::move(host_receiver), std::move(client_remote));

@@ -35,7 +35,5 @@ mojom("mojom") {
 }
 
 mojom("constants") {
-  sources = [
-    "constants.mojom",
-  ]
+  sources = [ "constants.mojom" ]
 }

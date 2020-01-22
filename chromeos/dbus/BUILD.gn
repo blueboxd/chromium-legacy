@@ -161,9 +161,7 @@ component("common") {
   defines = [ "IS_CHROMEOS_DBUS_IMPL" ]
 
   all_dependent_configs = [ ":use_real_dbus_clients_config" ]
-  public_deps = [
-    "//chromeos/dbus/constants",
-  ]
+  public_deps = [ "//chromeos/dbus/constants" ]
 
   deps = [
     "//base",
@@ -247,9 +245,7 @@ source_set("unit_tests") {
 }
 
 proto_library("anomaly_detector_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/anomaly_detector/anomaly_detector.proto",
-  ]
+  sources = [ "//third_party/cros_system_api/dbus/anomaly_detector/anomaly_detector.proto" ]
 
   proto_out_dir = "chromeos/dbus/anomaly_detector"
 }
@@ -271,33 +267,28 @@ proto_library("concierge_proto") {
 }
 
 proto_library("metrics_event_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/metrics_event/metrics_event.proto",
-  ]
+  sources =
+      [ "//third_party/cros_system_api/dbus/metrics_event/metrics_event.proto" ]
 
   proto_out_dir = "chromeos/dbus/metrics_event"
 }
 
 proto_library("oobe_config_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/oobe_config/oobe_config.proto",
-  ]
+  sources =
+      [ "//third_party/cros_system_api/dbus/oobe_config/oobe_config.proto" ]
 
   proto_out_dir = "chromeos/dbus/oobe_config"
 }
 
 proto_library("plugin_vm_service_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/plugin_vm_service/plugin_vm_service.proto",
-  ]
+  sources = [ "//third_party/cros_system_api/dbus/plugin_vm_service/plugin_vm_service.proto" ]
 
   proto_out_dir = "chromeos/dbus/plugin_vm_service"
 }
 
 proto_library("runtime_probe_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/runtime_probe/runtime_probe.proto",
-  ]
+  sources =
+      [ "//third_party/cros_system_api/dbus/runtime_probe/runtime_probe.proto" ]
 
   # chromeos side uses full runtime, so we don't specify lite runtime in proto
   # file, instead we specify lite runtime here.
@@ -307,41 +298,34 @@ proto_library("runtime_probe_proto") {
 }
 
 proto_library("seneschal_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/seneschal/seneschal_service.proto",
-  ]
+  sources =
+      [ "//third_party/cros_system_api/dbus/seneschal/seneschal_service.proto" ]
 
   proto_out_dir = "chromeos/dbus/seneschal"
 }
 
 proto_library("smbprovider_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/smbprovider/directory_entry.proto",
-  ]
+  sources =
+      [ "//third_party/cros_system_api/dbus/smbprovider/directory_entry.proto" ]
 
   proto_out_dir = "chromeos/dbus/smbprovider"
 }
 
 proto_library("update_engine_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/update_engine/update_engine.proto",
-  ]
+  sources =
+      [ "//third_party/cros_system_api/dbus/update_engine/update_engine.proto" ]
 
   proto_out_dir = "chromeos/dbus/update_engine"
 }
 
 proto_library("vm_applications_apps_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/vm_applications/apps.proto",
-  ]
+  sources = [ "//third_party/cros_system_api/dbus/vm_applications/apps.proto" ]
 
   proto_out_dir = "chromeos/dbus/vm_applications"
 }
 
 proto_library("vm_plugin_dispatcher_proto") {
-  sources = [
-    "//third_party/cros_system_api/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher.proto",
-  ]
+  sources = [ "//third_party/cros_system_api/dbus/vm_plugin_dispatcher/vm_plugin_dispatcher.proto" ]
 
   proto_out_dir = "chromeos/dbus/vm_plugin_dispatcher"
 }

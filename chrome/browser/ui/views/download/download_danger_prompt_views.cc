@@ -220,7 +220,7 @@ base::string16 DownloadDangerPromptViews::GetMessageBody() const {
       case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
         if (safe_browsing::AdvancedProtectionStatusManagerFactory::
                 GetForProfile(profile_)
-                    ->RequestsAdvancedProtectionVerdicts()) {
+                    ->IsUnderAdvancedProtection()) {
           return l10n_util::GetStringFUTF16(
               IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT_IN_ADVANCED_PROTECTION,
               download_->GetFileNameToReportUser().LossyDisplayName());

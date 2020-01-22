@@ -90,26 +90,18 @@ js_type_check("closure_compile_tests") {
 
 js_library("test_driver_api_js") {
   testonly = true
-  sources = [
-    "test/driver_api.js",
-  ]
+  sources = [ "test/driver_api.js" ]
 }
 
 js_library("test_guest_query_receiver_js") {
   testonly = true
-  sources = [
-    "test/guest_query_receiver.js",
-  ]
-  deps = [
-    ":test_driver_api_js",
-  ]
+  sources = [ "test/guest_query_receiver.js" ]
+  deps = [ ":test_driver_api_js" ]
 }
 
 js_library("test_driver_js") {
   testonly = true
-  sources = [
-    "test/driver.js",
-  ]
+  sources = [ "test/driver.js" ]
   deps = [
     ":test_driver_api_js",
     "//ui/webui/resources/js:assert",

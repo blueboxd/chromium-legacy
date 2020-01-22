@@ -45,6 +45,10 @@
 #include "third_party/blink/renderer/core/inspector/v8_inspector_string.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
+
+using crdtp::SpanFrom;
+using crdtp::json::ConvertCBORToJSON;
 
 namespace {
 
@@ -539,11 +543,12 @@ void InspectorDOMDebuggerAgent::BreakProgramOnDOMEvent(Node* target,
   DCHECK(breakpoint_owner_node_id);
   description->setInteger("nodeId", breakpoint_owner_node_id);
   description->setString("type", DomTypeName(breakpoint_type));
-  String json = description->toJSONString();
+  std::vector<uint8_t> json;
+  ConvertCBORToJSON(SpanFrom(std::move(*description).TakeSerialized()), &json);
   v8_session_->breakProgram(
       ToV8InspectorStringView(
           v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::DOM),
-      ToV8InspectorStringView(json));
+      v8_inspector::StringView(json.data(), json.size()));
 }
 
 bool InspectorDOMDebuggerAgent::HasBreakpoint(Node* node, int type) {
@@ -579,17 +584,15 @@ void InspectorDOMDebuggerAgent::PauseOnNativeEventIfNeeded(
     bool synchronous) {
   if (!event_data)
     return;
-  String json = event_data->toJSONString();
+  std::vector<uint8_t> json;
+  ConvertCBORToJSON(SpanFrom(std::move(*event_data).TakeSerialized()), &json);
+  v8_inspector::StringView json_view(json.data(), json.size());
+  auto listener = ToV8InspectorStringView(
+      v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::EventListener);
   if (synchronous)
-    v8_session_->breakProgram(
-        ToV8InspectorStringView(v8_inspector::protocol::Debugger::API::Paused::
-                                    ReasonEnum::EventListener),
-        ToV8InspectorStringView(json));
+    v8_session_->breakProgram(listener, json_view);
   else
-    v8_session_->schedulePauseOnNextStatement(
-        ToV8InspectorStringView(v8_inspector::protocol::Debugger::API::Paused::
-                                    ReasonEnum::EventListener),
-        ToV8InspectorStringView(json));
+    v8_session_->schedulePauseOnNextStatement(listener, json_view);
 }
 
 std::unique_ptr<protocol::DictionaryValue>
@@ -722,11 +725,12 @@ void InspectorDOMDebuggerAgent::WillSendXMLHttpOrFetchNetworkRequest(
       protocol::DictionaryValue::create();
   event_data->setString("breakpointURL", breakpoint_url);
   event_data->setString("url", url);
-  String json = event_data->toJSONString();
+  std::vector<uint8_t> json;
+  ConvertCBORToJSON(SpanFrom(std::move(*event_data).TakeSerialized()), &json);
   v8_session_->breakProgram(
       ToV8InspectorStringView(
           v8_inspector::protocol::Debugger::API::Paused::ReasonEnum::XHR),
-      ToV8InspectorStringView(json));
+      v8_inspector::StringView(json.data(), json.size()));
 }
 
 void InspectorDOMDebuggerAgent::DidCreateCanvasContext() {

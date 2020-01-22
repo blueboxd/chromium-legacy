@@ -28,6 +28,17 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chromeos/tpm/stub_install_attributes.h"
+#include "components/account_id/account_id.h"
+#include "components/user_manager/scoped_user_manager.h"
+#include "components/user_manager/user.h"
+#endif
+
 using ::testing::_;
 using ::testing::Mock;
 using ::testing::SaveArg;
@@ -817,12 +828,30 @@ class SafeBrowsingIsRealtimeReportingEnabledTest
 
     TestingBrowserProcess::GetGlobal()->local_state()->SetBoolean(
         prefs::kUnsafeEventsReportingEnabled, is_policy_enabled_);
+
+#if defined(OS_CHROMEOS)
+    auto user_manager = std::make_unique<chromeos::FakeChromeUserManager>();
+    const AccountId account_id(
+        AccountId::FromUserEmail(profile_->GetProfileUserName()));
+    const user_manager::User* user = user_manager->AddUserWithAffiliation(
+        account_id, /*is_affiliated=*/true);
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
+                                                                      profile_);
+    user_manager->UserLoggedIn(account_id, user->username_hash(),
+                               /*browser_restart=*/false,
+                               /*is_child=*/false);
+    scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::move(user_manager));
+    profile_->ScopedCrosSettingsTestHelper()
+        ->InstallAttributes()
+        ->SetCloudManaged("domain.com", "device_id");
+    profile_->GetProfilePolicyConnector()->OverrideIsManagedForTesting(
+        is_manageable_);
+#endif
   }
 
   bool should_init() {
-#if defined(OS_CHROMEOS)
-    return false;
-#elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)
     return is_feature_flag_enabled_;
 #else
     return is_feature_flag_enabled_ && is_manageable_;
@@ -835,6 +864,11 @@ class SafeBrowsingIsRealtimeReportingEnabledTest
   const bool is_manageable_;
   const bool is_policy_enabled_;
   const bool is_authorized_;
+
+#if defined(OS_CHROMEOS)
+ private:
+  std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
+#endif
 };
 
 TEST_P(SafeBrowsingIsRealtimeReportingEnabledTest,
@@ -853,9 +887,7 @@ TEST_P(SafeBrowsingIsRealtimeReportingEnabledTest, CheckRealtimeReport) {
       api::safe_browsing_private::OnPolicySpecifiedPasswordChanged::kEventName);
   event_router_->AddEventObserver(&event_observer);
 
-#if defined(OS_CHROMEOS)
-  bool should_report = false;
-#elif BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && !defined(OS_CHROMEOS)
   bool should_report =
       is_feature_flag_enabled_ && is_policy_enabled_ && is_authorized_;
 #else

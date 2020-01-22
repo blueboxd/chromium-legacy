@@ -151,37 +151,46 @@ blink::mojom::AuthenticatorStatus ValidateEffectiveDomain(
   return blink::mojom::AuthenticatorStatus::SUCCESS;
 }
 
-// Ensure the relying party ID is a registrable domain suffix of or equal
-// to the origin's effective domain. Reference:
+// Return the relying party ID to use for a request given the requested RP ID
+// and the origin of the caller. It's valid for the requested RP ID to be a
+// registrable domain suffix of, or be equal to, the origin's effective domain.
+// Reference:
 // https://html.spec.whatwg.org/multipage/origin.html#is-a-registrable-domain-suffix-of-or-is-equal-to.
-bool IsRelyingPartyIdValid(const std::string& relying_party_id,
-                           url::Origin caller_origin) {
+base::Optional<std::string> GetRelyingPartyId(
+    std::string claimed_relying_party_id,
+    const url::Origin& caller_origin) {
   if (OriginIsCryptoTokenExtension(caller_origin)) {
-    return true;
+    // This code trusts cryptotoken to handle the validation itself.
+    return claimed_relying_party_id;
   }
 
-  if (relying_party_id.empty())
-    return false;
+  if (claimed_relying_party_id.empty()) {
+    return base::nullopt;
+  }
 
-  if (caller_origin.host() == relying_party_id)
-    return true;
+  if (caller_origin.host() == claimed_relying_party_id) {
+    return claimed_relying_party_id;
+  }
 
-  if (!caller_origin.DomainIs(relying_party_id))
-    return false;
+  if (!caller_origin.DomainIs(claimed_relying_party_id)) {
+    return base::nullopt;
+  }
+
   if (!net::registry_controlled_domains::HostHasRegistryControlledDomain(
           caller_origin.host(),
           net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES))
-    return false;
-  if (!net::registry_controlled_domains::HostHasRegistryControlledDomain(
-          relying_party_id,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES) ||
+      !net::registry_controlled_domains::HostHasRegistryControlledDomain(
+          claimed_relying_party_id,
           net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES))
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
     // TODO(crbug.com/803414): Accept corner-case situations like the following
     // origin: "https://login.awesomecompany",
     // relying_party_id: "awesomecompany".
-    return false;
-  return true;
+    return base::nullopt;
+  }
+
+  return claimed_relying_party_id;
 }
 
 // Checks if the icon URL is an a-priori authenticated URL.
@@ -560,8 +569,7 @@ AuthenticatorCommon::~AuthenticatorCommon() {
 }
 
 std::unique_ptr<AuthenticatorRequestClientDelegate>
-AuthenticatorCommon::CreateRequestDelegate(std::string relying_party_id) {
-  DCHECK(!relying_party_id.empty());
+AuthenticatorCommon::CreateRequestDelegate() {
   auto* frame_tree_node =
       static_cast<RenderFrameHostImpl*>(render_frame_host_)->frame_tree_node();
   if (AuthenticatorEnvironmentImpl::GetInstance()->GetVirtualFactoryFor(
@@ -570,7 +578,7 @@ AuthenticatorCommon::CreateRequestDelegate(std::string relying_party_id) {
         frame_tree_node);
   }
   return GetContentClient()->browser()->GetWebAuthenticationRequestDelegate(
-      render_frame_host_, relying_party_id_);
+      render_frame_host_);
 }
 
 void AuthenticatorCommon::StartMakeCredentialRequest(
@@ -765,25 +773,48 @@ void AuthenticatorCommon::MakeCredential(
     return;
   }
 
-  blink::mojom::AuthenticatorStatus domain_validation =
-      ValidateEffectiveDomain(caller_origin);
-  if (domain_validation != blink::mojom::AuthenticatorStatus::SUCCESS) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
-    InvokeCallbackAndCleanup(std::move(callback), domain_validation, nullptr,
-                             Focus::kDontCheck);
+  request_delegate_ = CreateRequestDelegate();
+  if (!request_delegate_) {
+    InvokeCallbackAndCleanup(std::move(callback),
+                             blink::mojom::AuthenticatorStatus::PENDING_REQUEST,
+                             nullptr, Focus::kDontCheck);
     return;
   }
 
-  if (!IsRelyingPartyIdValid(options->relying_party.id, caller_origin)) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        blink::mojom::AuthenticatorStatus::BAD_RELYING_PARTY_ID, nullptr,
-        Focus::kDontCheck);
-    return;
+  base::Optional<std::string> rp_id =
+      request_delegate_->MaybeGetRelyingPartyIdOverride(
+          options->relying_party.id, caller_origin);
+
+  if (!rp_id) {
+    // If the delegate didn't override RP ID selection then apply standard
+    // rules.
+    blink::mojom::AuthenticatorStatus domain_validation =
+        ValidateEffectiveDomain(caller_origin);
+    if (domain_validation != blink::mojom::AuthenticatorStatus::SUCCESS) {
+      ReportSecurityCheckFailure(
+          RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
+      InvokeCallbackAndCleanup(std::move(callback), domain_validation, nullptr,
+                               Focus::kDontCheck);
+      return;
+    }
+
+    rp_id =
+        GetRelyingPartyId(std::move(options->relying_party.id), caller_origin);
+    if (!rp_id) {
+      ReportSecurityCheckFailure(
+          RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
+      InvokeCallbackAndCleanup(
+          std::move(callback),
+          blink::mojom::AuthenticatorStatus::BAD_RELYING_PARTY_ID, nullptr,
+          Focus::kDontCheck);
+      return;
+    }
   }
+
+  caller_origin_ = caller_origin;
+  relying_party_id_ = *rp_id;
+  options->relying_party.id = std::move(*rp_id);
+  request_delegate_->SetRelyingPartyId(relying_party_id_);
 
   base::Optional<std::string> appid_exclude;
   if (options->appid_exclude) {
@@ -808,17 +839,6 @@ void AuthenticatorCommon::MakeCredential(
         std::move(callback),
         blink::mojom::AuthenticatorStatus::INVALID_ICON_URL, nullptr,
         Focus::kDontCheck);
-    return;
-  }
-
-  caller_origin_ = caller_origin;
-  relying_party_id_ = options->relying_party.id;
-
-  request_delegate_ = CreateRequestDelegate(relying_party_id_);
-  if (!request_delegate_) {
-    InvokeCallbackAndCleanup(std::move(callback),
-                             blink::mojom::AuthenticatorStatus::PENDING_REQUEST,
-                             nullptr, Focus::kDontCheck);
     return;
   }
 
@@ -982,28 +1002,7 @@ void AuthenticatorCommon::GetAssertion(
     return;
   }
 
-  blink::mojom::AuthenticatorStatus domain_validation =
-      ValidateEffectiveDomain(caller_origin);
-  if (domain_validation != blink::mojom::AuthenticatorStatus::SUCCESS) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
-    InvokeCallbackAndCleanup(std::move(callback), domain_validation, nullptr);
-    return;
-  }
-
-  if (!IsRelyingPartyIdValid(options->relying_party_id, caller_origin)) {
-    ReportSecurityCheckFailure(
-        RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
-    InvokeCallbackAndCleanup(
-        std::move(callback),
-        blink::mojom::AuthenticatorStatus::BAD_RELYING_PARTY_ID, nullptr);
-    return;
-  }
-
-  caller_origin_ = caller_origin;
-  relying_party_id_ = options->relying_party_id;
-
-  request_delegate_ = CreateRequestDelegate(relying_party_id_);
+  request_delegate_ = CreateRequestDelegate();
   if (!request_delegate_) {
     InvokeCallbackAndCleanup(std::move(callback),
                              blink::mojom::AuthenticatorStatus::PENDING_REQUEST,
@@ -1011,9 +1010,40 @@ void AuthenticatorCommon::GetAssertion(
     return;
   }
 
+  base::Optional<std::string> rp_id =
+      request_delegate_->MaybeGetRelyingPartyIdOverride(
+          options->relying_party_id, caller_origin);
+
+  if (!rp_id) {
+    // If the delegate didn't override RP ID selection then apply standard
+    // rules.
+    blink::mojom::AuthenticatorStatus domain_validation =
+        ValidateEffectiveDomain(caller_origin);
+    if (domain_validation != blink::mojom::AuthenticatorStatus::SUCCESS) {
+      ReportSecurityCheckFailure(
+          RelyingPartySecurityCheckFailure::kOpaqueOrNonSecureOrigin);
+      InvokeCallbackAndCleanup(std::move(callback), domain_validation, nullptr);
+      return;
+    }
+
+    rp_id =
+        GetRelyingPartyId(std::move(options->relying_party_id), caller_origin);
+    if (!rp_id) {
+      ReportSecurityCheckFailure(
+          RelyingPartySecurityCheckFailure::kRelyingPartyIdInvalid);
+      InvokeCallbackAndCleanup(
+          std::move(callback),
+          blink::mojom::AuthenticatorStatus::BAD_RELYING_PARTY_ID, nullptr);
+      return;
+    }
+  }
+
+  caller_origin_ = caller_origin;
+  relying_party_id_ = *rp_id;
+  options->relying_party_id = std::move(*rp_id);
+  request_delegate_->SetRelyingPartyId(relying_party_id_);
+
   // Save client data to return with the authenticator response.
-  // TODO(kpaulhamus): Fetch and add the Channel ID/Token Binding ID public key
-  // used to communicate with the origin.
   if (OriginIsCryptoTokenExtension(caller_origin)) {
     request_delegate_->DisableUI();
 
@@ -1071,15 +1101,13 @@ void AuthenticatorCommon::GetAssertion(
 void AuthenticatorCommon::IsUserVerifyingPlatformAuthenticatorAvailable(
     blink::mojom::Authenticator::
         IsUserVerifyingPlatformAuthenticatorAvailableCallback callback) {
-  const std::string relying_party_id =
-      render_frame_host_->GetLastCommittedOrigin().host();
   // Use |request_delegate_| if a request is currently in progress; or create a
   // temporary request delegate otherwise.
   //
   // Note that |CreateRequestDelegate| may return nullptr if there is an active
   // |request_delegate_| already.
   std::unique_ptr<AuthenticatorRequestClientDelegate> maybe_request_delegate =
-      request_delegate_ ? nullptr : CreateRequestDelegate(relying_party_id);
+      request_delegate_ ? nullptr : CreateRequestDelegate();
   AuthenticatorRequestClientDelegate* request_delegate_ptr =
       request_delegate_ ? request_delegate_.get()
                         : maybe_request_delegate.get();

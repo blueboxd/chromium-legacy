@@ -41,6 +41,10 @@ const char kEnableExperimentalAccessibilitySwitchAccess[] =
 const char kEnableExperimentalAccessibilitySwitchAccessText[] =
     "enable-experimental-accessibility-switch-access-text";
 
+// Enables annotations feature that hasn't launched yet.
+const char kEnableExperimentalAccessibilityChromeVoxAnnotations[] =
+    "enable-experimental-accessibility-chromevox-annotations";
+
 // Enables language switching feature that hasn't launched yet.
 const char kEnableExperimentalAccessibilityChromeVoxLanguageSwitching[] =
     "enable-experimental-accessibility-chromevox-language-switching";

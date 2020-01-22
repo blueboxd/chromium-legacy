@@ -394,7 +394,7 @@ public class VrBrowserTransitionTest {
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApiWithDoff);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SettingsLauncher.getInstance().launchSettingsPage(context, null);
+            SettingsLauncher.getInstance().launchSettingsPage(context);
             VrShellDelegateUtils.getDelegateInstance().acceptDoffPromptForTesting();
         });
         CriteriaHelper.pollUiThread(() -> {

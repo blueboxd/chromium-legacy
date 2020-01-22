@@ -125,13 +125,8 @@ void ChromeAuthenticatorRequestDelegate::RegisterProfilePrefs(
 }
 
 ChromeAuthenticatorRequestDelegate::ChromeAuthenticatorRequestDelegate(
-    content::RenderFrameHost* render_frame_host,
-    const std::string& relying_party_id)
-    : render_frame_host_(render_frame_host),
-      relying_party_id_(relying_party_id),
-      transient_dialog_model_holder_(
-          std::make_unique<AuthenticatorRequestDialogModel>(relying_party_id)),
-      weak_dialog_model_(transient_dialog_model_holder_.get()) {}
+    content::RenderFrameHost* render_frame_host)
+    : render_frame_host_(render_frame_host) {}
 
 ChromeAuthenticatorRequestDelegate::~ChromeAuthenticatorRequestDelegate() {
   // Currently, completion of the request is indicated by //content destroying
@@ -161,6 +156,39 @@ content::BrowserContext* ChromeAuthenticatorRequestDelegate::browser_context()
     const {
   return content::WebContents::FromRenderFrameHost(render_frame_host())
       ->GetBrowserContext();
+}
+
+base::Optional<std::string>
+ChromeAuthenticatorRequestDelegate::MaybeGetRelyingPartyIdOverride(
+    const std::string& claimed_relying_party_id,
+    const url::Origin& caller_origin) {
+  // Don't override cryptotoken processing.
+  constexpr char kCryptotokenOrigin[] =
+      "chrome-extension://kmendfapggjehodndflmmgagdbamhnfd";
+  if (caller_origin == url::Origin::Create(GURL(kCryptotokenOrigin))) {
+    return base::nullopt;
+  }
+
+  // Otherwise, allow extensions to use WebAuthn and map their origins directly
+  // to RP IDs.
+  if (caller_origin.scheme() == "chrome-extension") {
+    // The requested RP ID for an extension must simply be the extension
+    // identifier because no flexibility is permitted. If a caller doesn't
+    // specify an RP ID then Blink defaults the value to the origin's host.
+    if (claimed_relying_party_id != caller_origin.host()) {
+      return base::nullopt;
+    }
+    return caller_origin.Serialize();
+  }
+
+  return base::nullopt;
+}
+
+void ChromeAuthenticatorRequestDelegate::SetRelyingPartyId(
+    const std::string& rp_id) {
+  transient_dialog_model_holder_ =
+      std::make_unique<AuthenticatorRequestDialogModel>(rp_id);
+  weak_dialog_model_ = transient_dialog_model_holder_.get();
 }
 
 bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(

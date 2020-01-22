@@ -4,10 +4,23 @@
 
 /** @fileoverview Runs tests for the OS settings menu. */
 
+function setupRouter() {
+  const routes = {
+    BASIC: new settings.Route('/'),
+    ADVANCED: new settings.Route('/advanced'),
+  };
+  routes.BLUETOOTH = routes.BASIC.createSection('/bluetooth', 'bluetooth');
+  routes.RESET = routes.ADVANCED.createSection('/reset', 'reset');
+
+  settings.Router.resetInstanceForTesting(new settings.Router(routes));
+  settings.routes = routes;
+}
+
 suite('OSSettingsMenu', function() {
   let settingsMenu = null;
 
   setup(function() {
+    setupRouter();
     PolymerTest.clearBody();
     settingsMenu = document.createElement('os-settings-menu');
     settingsMenu.pageVisibility = settings.pageVisibility;
@@ -63,6 +76,7 @@ suite('OSSettingsMenu', function() {
 
 suite('OSSettingsMenuReset', function() {
   setup(function() {
+    setupRouter();
     PolymerTest.clearBody();
     settings.Router.getInstance().navigateTo(settings.routes.RESET, '');
     settingsMenu = document.createElement('os-settings-menu');

@@ -9,11 +9,13 @@
 
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/infobar_interaction_handler.h"
 
+class Browser;
+
 // An InfobarInteractionHandler that updates the model layer for interaction
 // events with the UI for password infobars.
 class PasswordInfobarInteractionHandler : public InfobarInteractionHandler {
  public:
-  PasswordInfobarInteractionHandler();
+  PasswordInfobarInteractionHandler(Browser* browser);
   ~PasswordInfobarInteractionHandler() override;
 };
 

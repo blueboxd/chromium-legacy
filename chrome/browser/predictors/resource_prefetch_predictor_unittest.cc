@@ -44,9 +44,9 @@ using OriginDataMap = std::map<std::string, OriginData>;
 
 template <typename T>
 class FakeLoadingPredictorKeyValueTable
-    : public LoadingPredictorKeyValueTable<T> {
+    : public sqlite_proto::KeyValueTable<T> {
  public:
-  FakeLoadingPredictorKeyValueTable() : LoadingPredictorKeyValueTable<T>("") {}
+  FakeLoadingPredictorKeyValueTable() : sqlite_proto::KeyValueTable<T>("") {}
   void GetAllData(std::map<std::string, T>* data_map,
                   sql::Database* db) const override {
     *data_map = data_;
@@ -69,7 +69,9 @@ class FakeLoadingPredictorKeyValueTable
 class MockResourcePrefetchPredictorTables
     : public ResourcePrefetchPredictorTables {
  public:
-  MockResourcePrefetchPredictorTables(
+  using DBTask = base::OnceCallback<void(sql::Database*)>;
+
+  explicit MockResourcePrefetchPredictorTables(
       scoped_refptr<base::SequencedTaskRunner> db_task_runner)
       : ResourcePrefetchPredictorTables(std::move(db_task_runner)) {}
 
@@ -81,11 +83,11 @@ class MockResourcePrefetchPredictorTables
     std::move(task).Run(nullptr);
   }
 
-  LoadingPredictorKeyValueTable<RedirectData>* host_redirect_table() override {
+  sqlite_proto::KeyValueTable<RedirectData>* host_redirect_table() override {
     return &host_redirect_table_;
   }
 
-  LoadingPredictorKeyValueTable<OriginData>* origin_table() override {
+  sqlite_proto::KeyValueTable<OriginData>* origin_table() override {
     return &origin_table_;
   }
 
@@ -182,9 +184,9 @@ void ResourcePrefetchPredictorTest::SetUp() {
 }
 
 void ResourcePrefetchPredictorTest::TearDown() {
-  EXPECT_EQ(*predictor_->host_redirect_data_->DataCacheForTesting(),
+  EXPECT_EQ(predictor_->host_redirect_data_->GetAllCached(),
             mock_tables_->host_redirect_table_.data_);
-  EXPECT_EQ(*predictor_->origin_data_->DataCacheForTesting(),
+  EXPECT_EQ(predictor_->origin_data_->GetAllCached(),
             mock_tables_->origin_table_.data_);
   loading_predictor_->Shutdown();
 }

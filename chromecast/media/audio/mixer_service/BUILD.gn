@@ -14,9 +14,7 @@ buildflag_header("buildflags") {
 
 proto_library("proto") {
   proto_out_dir = "chromecast/media/audio/mixer_service"
-  sources = [
-    "mixer_service.proto",
-  ]
+  sources = [ "mixer_service.proto" ]
 }
 
 cast_source_set("common") {
@@ -112,9 +110,7 @@ cast_source_set("loopback_connection") {
     "loopback_connection.h",
   ]
 
-  public_deps = [
-    ":common",
-  ]
+  public_deps = [ ":common" ]
 
   deps = [
     ":connection",

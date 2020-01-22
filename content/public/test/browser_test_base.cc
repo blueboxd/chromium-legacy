@@ -257,18 +257,6 @@ void BrowserTestBase::SetUp() {
   if (use_software_compositing_) {
     command_line->AppendSwitch(switches::kDisableGpu);
     command_line->RemoveSwitch(switches::kDisableSoftwareCompositingFallback);
-#if defined(USE_X11)
-    // If Vulkan is enabled, make sure it uses SwiftShader instead of native,
-    // though only on platforms where it is supported.
-    // TODO(samans): Support Swiftshader on more platforms.
-    // https://crbug.com/963988
-    if (command_line->HasSwitch(switches::kUseVulkan)) {
-      command_line->AppendSwitchASCII(
-          switches::kUseVulkan, switches::kVulkanImplementationNameSwiftshader);
-      command_line->AppendSwitchASCII(
-          switches::kGrContextType, switches::kGrContextTypeVulkan);
-    }
-#endif
   }
 
   // The layout of windows on screen is unpredictable during tests, so disable

@@ -42,6 +42,10 @@ class HighlightedGamesStore {
                             const GamesCatalog& catalog,
                             base::OnceClosure done_callback);
 
+  // Allows a caller to make the store reply to the pending callback if it's
+  // already caching a valid highlighted game.
+  virtual bool TryRespondFromCache();
+
   // Allows a callee to verify if the store already has the currently
   // highlighted game cache.
   virtual base::Optional<Game> TryGetFromCache();

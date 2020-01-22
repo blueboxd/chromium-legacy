@@ -50,7 +50,6 @@ using blink::WebElement;
 using blink::WebFloatRect;
 using blink::WebLocalFrame;
 using blink::WebNode;
-using blink::WebPoint;
 using blink::WebRect;
 using blink::WebSettings;
 using blink::WebView;
@@ -800,8 +799,7 @@ void RenderAccessibilityImpl::OnPerformAction(
       target->SetAccessibilityFocus();
       break;
     case ax::mojom::Action::kSetScrollOffset:
-      target->SetScrollOffset(
-          WebPoint(data.target_point.x(), data.target_point.y()));
+      target->SetScrollOffset(data.target_point);
       break;
     case ax::mojom::Action::kSetSelection:
       anchor->SetSelection(anchor.get(), data.anchor_offset, focus.get(),

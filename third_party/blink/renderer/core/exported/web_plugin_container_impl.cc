@@ -653,16 +653,16 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
   }
 }
 
-WebPoint WebPluginContainerImpl::RootFrameToLocalPoint(
-    const WebPoint& point_in_root_frame) {
-  WebPoint point_in_content =
-      ParentFrameView()->ConvertFromRootFrame(point_in_root_frame);
+gfx::Point WebPluginContainerImpl::RootFrameToLocalPoint(
+    const gfx::Point& point_in_root_frame) {
+  gfx::Point point_in_content =
+      ParentFrameView()->ConvertFromRootFrame(IntPoint(point_in_root_frame));
   return RoundedIntPoint(element_->GetLayoutObject()->AbsoluteToLocalPoint(
       PhysicalOffset(point_in_content)));
 }
 
-WebPoint WebPluginContainerImpl::LocalToRootFramePoint(
-    const WebPoint& point_in_local) {
+gfx::Point WebPluginContainerImpl::LocalToRootFramePoint(
+    const gfx::Point& point_in_local) {
   IntPoint absolute_point =
       RoundedIntPoint(element_->GetLayoutObject()->LocalToAbsolutePoint(
           PhysicalOffset(point_in_local)));

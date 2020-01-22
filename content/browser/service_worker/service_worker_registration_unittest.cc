@@ -827,13 +827,13 @@ class ServiceWorkerRegistrationObjectHostTest
   }
 
   blink::ServiceWorkerStatusCode CallDelayUpdate(
-      blink::mojom::ServiceWorkerProviderType provider_type,
+      blink::mojom::ServiceWorkerContainerType provider_type,
       ServiceWorkerRegistration* registration,
       ServiceWorkerVersion* version) {
     base::Optional<blink::ServiceWorkerStatusCode> status;
     base::RunLoop run_loop;
     ServiceWorkerRegistrationObjectHost::DelayUpdate(
-        blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+        blink::mojom::ServiceWorkerContainerType::kForServiceWorker,
         registration, version,
         base::BindOnce(
             [](base::Optional<blink::ServiceWorkerStatusCode>* out_status,
@@ -1120,7 +1120,7 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
 
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             CallDelayUpdate(
-                blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+                blink::mojom::ServiceWorkerContainerType::kForServiceWorker,
                 registration.get(), version.get()));
   EXPECT_LT(base::TimeDelta(), registration->self_update_delay());
 
@@ -1131,7 +1131,7 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
   registration->set_self_update_delay(base::TimeDelta::FromMinutes(5));
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kErrorTimeout,
             CallDelayUpdate(
-                blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+                blink::mojom::ServiceWorkerContainerType::kForServiceWorker,
                 registration.get(), version.get()));
   EXPECT_LE(base::TimeDelta::FromMinutes(5), registration->self_update_delay());
 }
@@ -1160,7 +1160,7 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
   registration->set_self_update_delay(base::TimeDelta());
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             CallDelayUpdate(
-                blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+                blink::mojom::ServiceWorkerContainerType::kForServiceWorker,
                 registration.get(), version.get()));
   EXPECT_EQ(base::TimeDelta(), registration->self_update_delay());
 
@@ -1169,7 +1169,7 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
   registration->set_self_update_delay(base::TimeDelta::FromMinutes(5));
   EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
             CallDelayUpdate(
-                blink::mojom::ServiceWorkerProviderType::kForServiceWorker,
+                blink::mojom::ServiceWorkerContainerType::kForServiceWorker,
                 registration.get(), version.get()));
   EXPECT_EQ(base::TimeDelta::FromMinutes(5), registration->self_update_delay());
 }

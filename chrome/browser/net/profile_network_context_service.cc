@@ -349,9 +349,9 @@ void ProfileNetworkContextService::RegisterLocalStatePrefs(
       prefs::kAmbientAuthenticationInPrivateModesEnabled,
       static_cast<int>(net::AmbientAuthAllowedProfileTypes::REGULAR_ONLY));
 
-  // For information about whether to reset the HTTP Cache or not, store the
-  // groups for all the relevant experiments.  Initially unknown status for all.
-  registry->RegisterStringPref(kHttpCacheFinchExperimentGroups, "NoneNoneNone");
+  // For information about whether to reset the HTTP Cache or not, defaults
+  // to the empty string, which does not prompt a reset.
+  registry->RegisterStringPref(kHttpCacheFinchExperimentGroups, "");
 }
 
 void ProfileNetworkContextService::DisableQuicIfNotAllowed() {
@@ -606,11 +606,11 @@ bool GetHttpCacheBackendResetParam(PrefService* local_state) {
   base::FieldTrial* field_trial = base::FeatureList::GetFieldTrial(
       net::features::kSplitCacheByNetworkIsolationKey);
   std::string current_field_trial_status =
-      (field_trial ? field_trial->group_name() : "None");
+      (field_trial ? field_trial->group_name() : "None") + " ";
   field_trial = base::FeatureList::GetFieldTrial(
       net::features::kAppendFrameOriginToNetworkIsolationKey);
   current_field_trial_status +=
-      (field_trial ? field_trial->group_name() : "None");
+      (field_trial ? field_trial->group_name() : "None") + " ";
   field_trial = base::FeatureList::GetFieldTrial(
       net::features::kUseRegistrableDomainInNetworkIsolationKey);
   current_field_trial_status +=
@@ -621,7 +621,8 @@ bool GetHttpCacheBackendResetParam(PrefService* local_state) {
   local_state->SetString(kHttpCacheFinchExperimentGroups,
                          current_field_trial_status);
 
-  return current_field_trial_status != previous_field_trial_status;
+  return !previous_field_trial_status.empty() &&
+         current_field_trial_status != previous_field_trial_status;
 }
 
 network::mojom::NetworkContextParamsPtr

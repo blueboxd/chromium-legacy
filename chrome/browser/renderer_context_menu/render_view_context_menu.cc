@@ -198,6 +198,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/intent_helper/open_with_menu.h"
 #include "chrome/browser/chromeos/arc/intent_helper/start_smart_selection_action_menu.h"
+#include "chrome/browser/renderer_context_menu/quick_answers_menu_observer.h"
 #endif
 
 using base::UserMetricsAction;
@@ -804,6 +805,8 @@ void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
 void RenderViewContextMenu::InitMenu() {
   RenderViewContextMenuBase::InitMenu();
 
+  AppendQuickAnswersItems();
+
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_PASSWORD)) {
     AppendPasswordItems();
@@ -1328,6 +1331,18 @@ void RenderViewContextMenu::AppendOpenWithLinkItems() {
       std::make_unique<arc::OpenWithMenu>(browser_context_, this);
   observers_.AddObserver(open_with_menu_observer_.get());
   open_with_menu_observer_->InitMenu(params_);
+#endif
+}
+
+void RenderViewContextMenu::AppendQuickAnswersItems() {
+#if defined(OS_CHROMEOS)
+  if (!quick_answers_menu_observer_) {
+    quick_answers_menu_observer_ =
+        std::make_unique<QuickAnswersMenuObserver>(this);
+  }
+
+  observers_.AddObserver(quick_answers_menu_observer_.get());
+  quick_answers_menu_observer_->InitMenu(params_);
 #endif
 }
 

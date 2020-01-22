@@ -114,6 +114,15 @@ cr.define('settings_people_page_kerberos_accounts', function() {
     };
 
     setup(function() {
+      const routes = {
+        BASIC: new settings.Route('/'),
+      };
+      routes.PEOPLE = routes.BASIC.createSection('/people', 'people');
+      routes.KERBEROS_ACCOUNTS = routes.PEOPLE.createChild('/kerberosAccounts');
+
+      settings.Router.resetInstanceForTesting(new settings.Router(routes));
+      settings.routes = routes;
+
       browserProxy = new TestKerberosAccountsBrowserProxy();
       settings.KerberosAccountsBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();

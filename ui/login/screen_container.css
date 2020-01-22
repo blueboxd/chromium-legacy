@@ -108,46 +108,6 @@
   transform: translateY(50px) rotateX(-2.5deg);
 }
 
-#account-picker-dot,
-#app-launch-splash-dot,
-#arc-kiosk-splash-dot,
-#auto-enrollment-check-dot,
-#autolaunch-dot,
-#confirm-password-dot,
-#debugging-dot,
-#device-disabled-dot,
-#enrollment-dot,
-#error-message-dot,
-#fatal-error-dot,
-#hid-detection-dot,
-#kiosk-enable-dot,
-#oauth-enrollment-dot,
-#password-changed-dot,
-#reset-dot,
-#supervised-user-creation-dialog-dot,
-#supervised-user-creation-dot,
-#terms-of-service-dot,
-#arc-tos-dot,
-#tpm-error-message-dot,
-#update-required-dot,
-#wrong-hwid-dot,
-#unrecoverable-cryptohome-error-dot {
-  display: none;
-}
-
-#oobe.connect #connect-dot,
-#oobe.enrollment #gaia-signin-dot,
-#oobe.enrollment #signin-dot,
-#oobe.eula #eula-dot,
-#oobe.gaia-signin #gaia-signin-dot,
-#oobe.oauth-enrollment #gaia-signin-dot,
-#oobe.oauth-enrollment #signin-dot,
-#oobe.signin #signin-dot,
-#oobe.update #update-dot,
-#oobe.user-image #user-image-dot {
-  opacity: 1;
-}
-
 body:not(.oobe-display) #inner-container {
   height: 262px;
   padding: 0;

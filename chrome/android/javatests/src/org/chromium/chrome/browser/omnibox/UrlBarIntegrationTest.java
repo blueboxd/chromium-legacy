@@ -157,7 +157,7 @@ public class UrlBarIntegrationTest {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    // TODO(crbug.com/1048469): Investigate and enable this test for the search engine logo feature.
+    // TODO(crbug.com/1028469): Investigate and enable this test for the search engine logo feature.
     @DisableFeatures("OmniboxSearchEngineLogo")
     @RetryOnFailure
     public void testLongPress() {

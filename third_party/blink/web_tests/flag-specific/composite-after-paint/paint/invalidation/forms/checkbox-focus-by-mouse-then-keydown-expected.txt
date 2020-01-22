@@ -7,8 +7,8 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow INPUT",
-          "rect": [10, 9, 17, 17],
+          "object": "LayoutNGBlockFlow INPUT",
+          "rect": [8, 7, 21, 21],
           "reason": "subtree"
         }
       ]

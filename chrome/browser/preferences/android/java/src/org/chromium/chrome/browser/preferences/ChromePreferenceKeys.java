@@ -437,6 +437,16 @@ public final class ChromePreferenceKeys {
 
     public static final String NTP_SNIPPETS_IS_SCHEDULED = "ntp_snippets.is_scheduled";
 
+    // Name of an application preference variable used to track whether or not the in-progress
+    // notification is being shown. This is an alternative to
+    // NotificationManager.getActiveNotifications, which isn't available prior to API level 23.
+    public static final String OFFLINE_AUTO_FETCH_SHOWING_IN_PROGRESS =
+            "offline_auto_fetch_showing_in_progress";
+    // The application preference variable which is set to the NotificationAction that triggered the
+    // cancellation, when a cancellation is requested by the user.
+    public static final String OFFLINE_AUTO_FETCH_USER_CANCEL_ACTION_IN_PROGRESS =
+            "offline_auto_fetch_user_cancel_action_in_progress";
+
     /**
      * Key to cache whether offline indicator v2 (persistent offline indicator) is enabled.
      */
@@ -563,6 +573,8 @@ public final class ChromePreferenceKeys {
 
     public static final String TAB_ID_MANAGER_NEXT_ID =
             "org.chromium.chrome.browser.tab.TabIdManager.NEXT_ID";
+
+    public static final String TOS_ACKED_ACCOUNTS = "ToS acknowledged accounts";
 
     /**
      * Keys for deferred recording of the outcomes of showing the clear data dialog after
@@ -802,6 +814,8 @@ public final class ChromePreferenceKeys {
                 NOTIFICATIONS_LAST_SHOWN_NOTIFICATION_TYPE,
                 NOTIFICATIONS_NEXT_TRIGGER,
                 NTP_SNIPPETS_IS_SCHEDULED,
+                OFFLINE_AUTO_FETCH_SHOWING_IN_PROGRESS,
+                OFFLINE_AUTO_FETCH_USER_CANCEL_ACTION_IN_PROGRESS,
                 OFFLINE_INDICATOR_V2_ENABLED,
                 PAYMENTS_PAYMENT_COMPLETE_ONCE,
                 PREFETCH_HAS_NEW_PAGES,
@@ -842,6 +856,7 @@ public final class ChromePreferenceKeys {
                 SYNC_SESSIONS_UUID,
                 TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF,
                 TAB_ID_MANAGER_NEXT_ID,
+                TOS_ACKED_ACCOUNTS,
                 TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_CLEAR_DATA,
                 TWA_DIALOG_NUMBER_OF_DISMISSALS_ON_UNINSTALL,
                 TWA_DISCLOSURE_ACCEPTED_PACKAGES,

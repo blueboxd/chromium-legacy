@@ -101,23 +101,19 @@ const CGFloat kOmniboxIconSize = 16;
       matchType, /* is_starred */ false);
   [self.consumer updateAutocompleteIcon:image];
 
-  if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
-    __weak OmniboxMediator* weakSelf = self;
+  __weak OmniboxMediator* weakSelf = self;
 
-    if (AutocompleteMatch::IsSearchType(matchType)) {
-      if (base::FeatureList::IsEnabled(kOmniboxUseDefaultSearchEngineFavicon)) {
-        // Show Default Search Engine favicon.
-        [self loadDefaultSearchEngineFaviconWithCompletion:^(UIImage* image) {
-          [weakSelf.consumer updateAutocompleteIcon:image];
-        }];
-      }
-    } else {
-      // Show favicon.
-      [self loadFaviconByPageURL:faviconURL
-                      completion:^(UIImage* image) {
-                        [weakSelf.consumer updateAutocompleteIcon:image];
-                      }];
-    }
+  if (AutocompleteMatch::IsSearchType(matchType)) {
+    // Show Default Search Engine favicon.
+    [self loadDefaultSearchEngineFaviconWithCompletion:^(UIImage* image) {
+      [weakSelf.consumer updateAutocompleteIcon:image];
+    }];
+  } else {
+    // Show favicon.
+    [self loadFaviconByPageURL:faviconURL
+                    completion:^(UIImage* image) {
+                      [weakSelf.consumer updateAutocompleteIcon:image];
+                    }];
   }
 }
 
@@ -127,12 +123,10 @@ const CGFloat kOmniboxIconSize = 16;
   [self.consumer updateAutocompleteIcon:image];
 
   __weak OmniboxMediator* weakSelf = self;
-  if (base::FeatureList::IsEnabled(kOmniboxUseDefaultSearchEngineFavicon)) {
-    // Show Default Search Engine favicon.
-    [self loadDefaultSearchEngineFaviconWithCompletion:^(UIImage* image) {
-      [weakSelf.consumer updateAutocompleteIcon:image];
-    }];
-  }
+  // Show Default Search Engine favicon.
+  [self loadDefaultSearchEngineFaviconWithCompletion:^(UIImage* image) {
+    [weakSelf.consumer updateAutocompleteIcon:image];
+  }];
 }
 
 // Loads a favicon for a given page URL.
@@ -201,7 +195,6 @@ const CGFloat kOmniboxIconSize = 16;
 
   // Can't load favicons without a favicon loader.
   DCHECK(self.faviconLoader);
-  DCHECK(base::FeatureList::IsEnabled(kOmniboxUseDefaultSearchEngineFavicon));
 
   const TemplateURL* defaultProvider =
       self.templateURLService->GetDefaultSearchProvider();
@@ -247,17 +240,14 @@ const CGFloat kOmniboxIconSize = 16;
   [_consumer
       updateSearchByImageSupported:self.searchEngineSupportsSearchByImage];
 
-  if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout) &&
-      base::FeatureList::IsEnabled(kOmniboxUseDefaultSearchEngineFavicon)) {
-    // Show Default Search Engine favicon.
-    // Remember what is the Default Search Engine provider that the icon is
-    // for, in case the user changes Default Search Engine while this is being
-    // loaded.
-    __weak __typeof(self) weakSelf = self;
-    [self loadDefaultSearchEngineFaviconWithCompletion:^(UIImage* image) {
-      [weakSelf.consumer setEmptyTextLeadingImage:image];
-    }];
-  }
+  // Show Default Search Engine favicon.
+  // Remember what is the Default Search Engine provider that the icon is
+  // for, in case the user changes Default Search Engine while this is being
+  // loaded.
+  __weak __typeof(self) weakSelf = self;
+  [self loadDefaultSearchEngineFaviconWithCompletion:^(UIImage* image) {
+    [weakSelf.consumer setEmptyTextLeadingImage:image];
+  }];
 }
 
 @end

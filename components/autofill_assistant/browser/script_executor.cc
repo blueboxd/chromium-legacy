@@ -273,15 +273,6 @@ void ScriptExecutor::OnGetFullCard(GetFullCardCallback callback,
 
 void ScriptExecutor::Prompt(
     std::unique_ptr<std::vector<UserAction>> user_actions) {
-  // We change the chips callback with a callback that cleans up the state
-  // before calling the initial callback.
-  for (auto& user_action : *user_actions) {
-    if (!user_action.HasCallback())
-      continue;
-
-    user_action.AddInterceptor(base::BindOnce(&ScriptExecutor::OnChosen,
-                                              weak_ptr_factory_.GetWeakPtr()));
-  }
 
   if (delegate_->EnterState(AutofillAssistantState::PROMPT) &&
       touchable_element_area_) {
@@ -291,18 +282,24 @@ void ScriptExecutor::Prompt(
     // set.
     delegate_->SetTouchableElementArea(*touchable_element_area_);
 
-    // The touchable element and overlays are cleared in
+    // The touchable element and overlays are cleared by calling
     // ScriptExecutor::CleanUpAfterPrompt
   }
-  delegate_->SetUserActions(std::move(user_actions));
-}
 
-void ScriptExecutor::CancelPrompt() {
-  delegate_->SetUserActions(nullptr);
-  CleanUpAfterPrompt();
+  if (user_actions != nullptr) {
+    for (auto& user_action : *user_actions) {
+      if (!user_action.HasCallback())
+        continue;
+
+      user_action.AddInterceptor(base::BindOnce(
+          &ScriptExecutor::OnChosen, weak_ptr_factory_.GetWeakPtr()));
+    }
+    delegate_->SetUserActions(std::move(user_actions));
+  }
 }
 
 void ScriptExecutor::CleanUpAfterPrompt() {
+  delegate_->SetUserActions(nullptr);
   // Mark touchable_elements_ as consumed, so that it won't affect the next
   // prompt or the end of the script.
   touchable_element_area_.reset();
@@ -313,7 +310,6 @@ void ScriptExecutor::CleanUpAfterPrompt() {
 
 void ScriptExecutor::OnChosen(UserAction::Callback callback,
                               std::unique_ptr<TriggerContext> context) {
-  CleanUpAfterPrompt();
   if (context->is_direct_action()) {
     current_action_data_.direct_action = true;
   }

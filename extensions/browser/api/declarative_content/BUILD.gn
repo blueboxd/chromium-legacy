@@ -8,15 +8,9 @@ assert(enable_extensions,
        "Cannot depend on extensions because enable_extensions=false.")
 
 source_set("declarative_content") {
-  sources = [
-    "content_rules_registry.h",
-  ]
+  sources = [ "content_rules_registry.h" ]
 
-  deps = [
-    "//extensions/common/api",
-  ]
+  deps = [ "//extensions/common/api" ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

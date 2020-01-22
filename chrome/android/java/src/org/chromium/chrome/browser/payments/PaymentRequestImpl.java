@@ -42,7 +42,6 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.SectionInformation;
 import org.chromium.chrome.browser.payments.ui.ShoppingCart;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.MainPreferences;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
@@ -2282,7 +2281,7 @@ public class PaymentRequestImpl
             return;
         }
 
-        SettingsLauncher.getInstance().launchSettingsPage(context, MainPreferences.class);
+        SettingsLauncher.getInstance().launchSettingsPage(context);
     }
 
     @Override

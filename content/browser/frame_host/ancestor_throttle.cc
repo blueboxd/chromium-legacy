@@ -239,8 +239,8 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
   }
 
   std::string header_value;
-  HeaderDisposition disposition =
-      ParseHeader(request->GetResponseHeaders(), &header_value);
+  HeaderDisposition disposition = ParseHeader(request->GetResponseHeaders(),
+                                              &header_value, is_response_check);
 
   switch (disposition) {
     case HeaderDisposition::CONFLICT:
@@ -363,7 +363,8 @@ void AncestorThrottle::ConsoleError(HeaderDisposition disposition) {
 
 AncestorThrottle::HeaderDisposition AncestorThrottle::ParseHeader(
     const net::HttpResponseHeaders* headers,
-    std::string* header_value) {
+    std::string* header_value,
+    bool is_response_check) {
   DCHECK(header_value);
   if (!headers)
     return HeaderDisposition::NONE;
@@ -406,8 +407,9 @@ AncestorThrottle::HeaderDisposition AncestorThrottle::ParseHeader(
   if (result != HeaderDisposition::NONE &&
       result != HeaderDisposition::ALLOWALL &&
       HeadersContainFrameAncestorsCSP(headers)) {
-    DCHECK(!base::FeatureList::IsEnabled(
-        network::features::kOutOfBlinkFrameAncestors));
+    DCHECK(!is_response_check ||
+           !base::FeatureList::IsEnabled(
+               network::features::kOutOfBlinkFrameAncestors));
     // TODO(mkwst): 'frame-ancestors' is currently handled in Blink. We should
     // handle it here instead. Until then, don't block the request, and let
     // Blink handle it. https://crbug.com/555418

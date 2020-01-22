@@ -37,7 +37,7 @@
           event, PerformanceTestRunner.timelineModel().targetByEvent(event), null, contentHelper);
       var causes = contentHelper.element.deepTextContent();
       TestRunner.check(causes, 'Should generate causes');
-      checkStringContains(causes, 'Timer Installed\nPromise @ setTimeoutFunction.js:');
+      checkStringContains(causes, 'Timer Installed\n(anonymous) @ setTimeoutFunction.js:');
       next();
     },
 
@@ -60,7 +60,7 @@
           event, PerformanceTestRunner.timelineModel().targetByEvent(event), null, contentHelper);
       var causes = contentHelper.element.deepTextContent();
       TestRunner.check(causes, 'Should generate causes');
-      checkStringContains(causes, 'Animation Frame Requested\nPromise @ requestAnimationFrameFunction.js:');
+      checkStringContains(causes, 'Animation Frame Requested\n(anonymous) @ requestAnimationFrameFunction.js:');
       next();
     },
 

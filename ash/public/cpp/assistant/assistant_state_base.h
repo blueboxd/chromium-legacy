@@ -35,6 +35,7 @@ class ASH_PUBLIC_EXPORT AssistantStateObserver
   virtual void OnAssistantHotwordEnabled(bool enabled) {}
   virtual void OnAssistantLaunchWithMicOpen(bool launch_with_mic_open) {}
   virtual void OnAssistantNotificationEnabled(bool notification_enabled) {}
+  virtual void OnAssistantStateDestroyed() {}
 
   // mojom::AssistantStateObserver:
   void OnAssistantStatusChanged(mojom::AssistantState state) override {}

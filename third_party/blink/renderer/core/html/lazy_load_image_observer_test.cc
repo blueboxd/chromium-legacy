@@ -544,6 +544,7 @@ TEST_P(LazyLoadImagesParamsTest, NearViewport) {
       kViewportHeight + GetLoadingDistanceThreshold() - 100));
 
   css_resource.Complete("img { width: 50px; height: 50px; }");
+  test::RunPendingTasks();
 
   Vector<char> full_image = ReadTestImage();
   ASSERT_LT(2048U, full_image.size());
@@ -677,6 +678,7 @@ TEST_P(LazyLoadImagesParamsTest, FarFromViewport) {
       kViewportHeight + GetLoadingDistanceThreshold() + 100));
 
   css_resource.Complete("img { width: 50px; height: 50px; }");
+  test::RunPendingTasks();
 
   Compositor().BeginFrame();
   test::RunPendingTasks();

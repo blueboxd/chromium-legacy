@@ -64,7 +64,6 @@ gfx::Size PowerTrayView::CalculatePreferredSize() const {
 
 void PowerTrayView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(accessible_name_);
-  node_data->role = ax::mojom::Role::kButton;
 }
 
 views::View* PowerTrayView::GetTooltipHandlerForPoint(const gfx::Point& point) {

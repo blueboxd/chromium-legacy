@@ -16,9 +16,7 @@ source_set("management") {
     "management_api_delegate.h",
   ]
 
-  deps = [
-    "//extensions/common/api",
-  ]
+  deps = [ "//extensions/common/api" ]
 
   public_deps = [
     "//extensions/browser:browser_sources",

@@ -85,6 +85,10 @@
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
+#include "third_party/inspector_protocol/crdtp/json.h"
+
+using crdtp::SpanFrom;
+using crdtp::json::ConvertCBORToJSON;
 
 namespace blink {
 
@@ -1692,14 +1696,21 @@ String InspectorNetworkAgent::NavigationInitiatorInfo(LocalFrame* frame) {
     return String();
   auto it =
       frame_navigation_initiator_map_.find(IdentifiersFactory::FrameId(frame));
-  if (it != frame_navigation_initiator_map_.end())
-    return it->value->toJSON();
-  // For navigations, we limit async stack trace to depth 1 to avoid the
-  // base::Value depth limits with Mojo serialization / parsing.
-  // See http://crbug.com/809996.
-  return BuildInitiatorObject(frame->GetDocument(), FetchInitiatorInfo(),
-                              /*max_async_depth=*/1)
-      ->toJSON();
+  std::vector<uint8_t> cbor;
+  if (it != frame_navigation_initiator_map_.end()) {
+    it->value->AppendSerialized(&cbor);
+  } else {
+    // For navigations, we limit async stack trace to depth 1 to avoid the
+    // base::Value depth limits with Mojo serialization / parsing.
+    // See http://crbug.com/809996.
+    cbor = std::move(*BuildInitiatorObject(frame->GetDocument(),
+                                           FetchInitiatorInfo(),
+                                           /*max_async_depth=*/1))
+               .TakeSerialized();
+  }
+  std::vector<uint8_t> json;
+  ConvertCBORToJSON(SpanFrom(cbor), &json);
+  return String(reinterpret_cast<const char*>(json.data()), json.size());
 }
 
 InspectorNetworkAgent::InspectorNetworkAgent(

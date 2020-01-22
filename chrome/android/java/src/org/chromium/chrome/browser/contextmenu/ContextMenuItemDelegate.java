@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.contextmenu;
 
+import android.net.Uri;
+
 import androidx.annotation.IntDef;
 
 import org.chromium.chrome.browser.tab.Tab;
@@ -109,6 +111,12 @@ public interface ContextMenuItemDelegate {
      * @param clipboardType The type of data in {@code text}.
      */
     void onSaveToClipboard(String text, @ClipboardType int clipboardType);
+
+    /**
+     * Called when the image should be saved to the clipboard.
+     * @param Uri The (@link Uri) of the image to save to the clipboard.
+     */
+    void onSaveImageToClipboard(Uri uri);
 
     /**
      * @return whether an activity is available to handle an intent to call a phone number.

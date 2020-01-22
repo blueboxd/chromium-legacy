@@ -237,10 +237,6 @@ extern const char kMarkHttpAsDescription[];
 extern const char kMobileGoogleSRPName[];
 extern const char kMobileGoogleSRPDescription[];
 
-// Title and description for the flag to display new omnibox popup.
-extern const char kNewOmniboxPopupLayoutName[];
-extern const char kNewOmniboxPopupLayoutDescription[];
-
 // Title and description for the flag to enable non-modal JavaScript dialogs.
 extern const char kNonModalDialogsName[];
 extern const char kNonModalDialogsDescription[];
@@ -254,11 +250,6 @@ extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[];
 // matches in the omnibox popup.
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
-
-// Title and description for the flag to show default search engine favicon in
-// the omnibox
-extern const char kOmniboxUseDefaultSearchEngineFaviconName[];
-extern const char kOmniboxUseDefaultSearchEngineFaviconDescription[];
 
 // Title and description for the flag to enable Omnibox On Device Head
 // suggestions.
@@ -311,6 +302,10 @@ extern const char kShowAutofillTypePredictionsDescription[];
 // snapshots.
 extern const char kSnapshotDrawViewName[];
 extern const char kSnapshotDrawViewDescription[];
+
+// Title and description for the flag to enable SSL committed interstitials.
+extern const char kSSLCommittedInterstitialsName[];
+extern const char kSSLCommittedInterstitialsDescription[];
 
 // Title and description for the flag to trigger the startup sign-in promo.
 extern const char kForceStartupSigninPromoName[];

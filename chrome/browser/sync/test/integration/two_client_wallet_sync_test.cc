@@ -465,7 +465,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // Flaky. http://crbug.com/917498
 IN_PROC_BROWSER_TEST_F(TwoClientWalletSyncTest,
-                       DISABLED_ServerAddressConvertsToSameLocalAddress) {
+                       ServerAddressConvertsToSameLocalAddress) {
   GetFakeServer()->SetWalletData(
       {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
        CreateDefaultSyncPaymentsCustomerData()});

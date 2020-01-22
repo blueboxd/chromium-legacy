@@ -239,9 +239,16 @@ bool ClipboardCommands::ExecuteCopy(LocalFrame& frame,
 
   if (HTMLImageElement* image_element =
           ImageElementFromImageDocument(document)) {
-    WriteImageNodeToClipboard(*frame.GetSystemClipboard(), *image_element,
-                              document->title());
-    return true;
+    // In an image document, normally there isn't anything to select, and we
+    // only want to copy the image itself.
+    if (frame.Selection().ComputeVisibleSelectionInDOMTree().IsNone()) {
+      WriteImageNodeToClipboard(*frame.GetSystemClipboard(), *image_element,
+                                document->title());
+      return true;
+    }
+
+    // Scripts may insert other contents into an image document. Falls through
+    // when they are selected.
   }
 
   // Since copy is a read-only operation it succeeds anytime a selection

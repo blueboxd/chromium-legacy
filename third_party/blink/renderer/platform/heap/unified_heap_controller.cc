@@ -134,6 +134,14 @@ bool UnifiedHeapController::AdvanceTracing(double deadline_in_ms) {
     base::TimeTicks deadline =
         base::TimeTicks() + base::TimeDelta::FromMillisecondsD(deadline_in_ms);
     is_tracing_done_ = thread_state_->MarkPhaseAdvanceMarking(deadline);
+    if (!is_tracing_done_) {
+      thread_state_->RestartIncrementalMarkingIfPaused();
+    }
+    if (base::FeatureList::IsEnabled(
+            blink::features::kBlinkHeapConcurrentMarking)) {
+      is_tracing_done_ =
+          thread_state_->ConcurrentMarkingStep() && is_tracing_done_;
+    }
     return is_tracing_done_;
   }
   thread_state_->AtomicPauseMarkTransitiveClosure();

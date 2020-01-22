@@ -19,7 +19,7 @@ constexpr char kCompromisedCredentialsTableName[] = "compromised_credentials";
 // Represents columns of the compromised credentials table. Used with SQL
 // queries that use all the columns.
 enum class CompromisedCredentialsTableColumn {
-  kUrl,
+  kSignonRealm,
   kUsername,
   kCreateTime,
   kCompromiseType,
@@ -48,8 +48,8 @@ std::vector<CompromisedCredentials> StatementToCompromisedCredentials(
     sql::Statement* s) {
   std::vector<CompromisedCredentials> results;
   while (s->Step()) {
-    GURL url(s->ColumnString(
-        GetColumnNumber(CompromisedCredentialsTableColumn::kUrl)));
+    std::string signon_realm(s->ColumnString(
+        GetColumnNumber(CompromisedCredentialsTableColumn::kSignonRealm)));
     base::string16 username = s->ColumnString16(
         GetColumnNumber(CompromisedCredentialsTableColumn::kUsername));
     base::Time create_time = base::Time::FromDeltaSinceWindowsEpoch(
@@ -57,8 +57,9 @@ std::vector<CompromisedCredentials> StatementToCompromisedCredentials(
             GetColumnNumber(CompromisedCredentialsTableColumn::kCreateTime)))));
     CompromiseType compromise_type = static_cast<CompromiseType>(s->ColumnInt64(
         GetColumnNumber(CompromisedCredentialsTableColumn::kCompromiseType)));
-    results.push_back(CompromisedCredentials(
-        std::move(url), std::move(username), create_time, compromise_type));
+    results.push_back(CompromisedCredentials(std::move(signon_realm),
+                                             std::move(username), create_time,
+                                             compromise_type));
   }
   return results;
 }
@@ -67,7 +68,7 @@ std::vector<CompromisedCredentials> StatementToCompromisedCredentials(
 
 bool operator==(const CompromisedCredentials& lhs,
                 const CompromisedCredentials& rhs) {
-  return lhs.url == rhs.url && lhs.username == rhs.username &&
+  return lhs.signon_realm == rhs.signon_realm && lhs.username == rhs.username &&
          lhs.create_time == rhs.create_time &&
          lhs.compromise_type == rhs.compromise_type;
 }
@@ -95,7 +96,7 @@ bool CompromisedCredentialsTable::CreateTableIfNecessary() {
 
 bool CompromisedCredentialsTable::AddRow(
     const CompromisedCredentials& compromised_credentials) {
-  if (!db_ || !compromised_credentials.url.is_valid())
+  if (!db_ || compromised_credentials.signon_realm.empty())
     return false;
 
   DCHECK(db_->DoesTableExist(kCompromisedCredentialsTableName));
@@ -108,8 +109,8 @@ bool CompromisedCredentialsTable::AddRow(
                               "INSERT OR IGNORE INTO compromised_credentials "
                               "(url, username, create_time, compromise_type) "
                               "VALUES (?, ?, ?, ?)"));
-  s.BindString(GetColumnNumber(CompromisedCredentialsTableColumn::kUrl),
-               compromised_credentials.url.spec());
+  s.BindString(GetColumnNumber(CompromisedCredentialsTableColumn::kSignonRealm),
+               compromised_credentials.signon_realm);
   s.BindString16(GetColumnNumber(CompromisedCredentialsTableColumn::kUsername),
                  compromised_credentials.username);
   s.BindInt64(GetColumnNumber(CompromisedCredentialsTableColumn::kCreateTime),
@@ -122,9 +123,9 @@ bool CompromisedCredentialsTable::AddRow(
 }
 
 std::vector<CompromisedCredentials> CompromisedCredentialsTable::GetRows(
-    const GURL& url,
+    const std::string& signon_realm,
     const base::string16& username) const {
-  if (!db_ || !url.is_valid())
+  if (!db_ || signon_realm.empty())
     return std::vector<CompromisedCredentials>{};
 
   DCHECK(db_->DoesTableExist(kCompromisedCredentialsTableName));
@@ -133,24 +134,24 @@ std::vector<CompromisedCredentials> CompromisedCredentialsTable::GetRows(
       SQL_FROM_HERE,
       "SELECT url, username, create_time, compromise_type FROM "
       "compromised_credentials WHERE url = ? AND username = ? "));
-  s.BindString(0, url.spec());
+  s.BindString(0, signon_realm);
   s.BindString16(1, username);
   return StatementToCompromisedCredentials(&s);
 }
 
 bool CompromisedCredentialsTable::UpdateRow(
-    const GURL& new_url,
+    const std::string& new_signon_realm,
     const base::string16& new_username,
-    const GURL& old_url,
+    const std::string& old_signon_realm,
     const base::string16& old_username) const {
-  if (!db_ || !new_url.is_valid() || !old_url.is_valid())
+  if (!db_ || new_signon_realm.empty() || old_signon_realm.empty())
     return false;
 
   DCHECK(db_->DoesTableExist(kCompromisedCredentialsTableName));
 
   // Retrieve the rows that are to be updated to log.
   const std::vector<CompromisedCredentials> compromised_credentials =
-      GetRows(old_url, old_username);
+      GetRows(old_signon_realm, old_username);
   if (compromised_credentials.empty())
     return false;
   for (const auto& compromised_credential : compromised_credentials) {
@@ -162,25 +163,25 @@ bool CompromisedCredentialsTable::UpdateRow(
                                            "UPDATE compromised_credentials "
                                            "SET url = ?, username = ? "
                                            "WHERE url = ? and username = ?"));
-  s.BindString(0, new_url.spec());
+  s.BindString(0, new_signon_realm);
   s.BindString16(1, new_username);
-  s.BindString(2, old_url.spec());
+  s.BindString(2, old_signon_realm);
   s.BindString16(3, old_username);
   return s.Run();
 }
 
 bool CompromisedCredentialsTable::RemoveRow(
-    const GURL& url,
+    const std::string& signon_realm,
     const base::string16& username,
     RemoveCompromisedCredentialsReason reason) {
-  if (!db_ || !url.is_valid())
+  if (!db_ || signon_realm.empty())
     return false;
 
   DCHECK(db_->DoesTableExist(kCompromisedCredentialsTableName));
 
   // Retrieve the rows that are to be removed to log.
   const std::vector<CompromisedCredentials> compromised_credentials =
-      GetRows(url, username);
+      GetRows(signon_realm, username);
   if (compromised_credentials.empty())
     return false;
   for (const auto& compromised_credential : compromised_credentials) {
@@ -190,10 +191,11 @@ bool CompromisedCredentialsTable::RemoveRow(
         "PasswordManager.RemoveCompromisedCredentials.RemoveReason", reason);
   }
 
-  sql::Statement s(db_->GetCachedStatement(
-      SQL_FROM_HERE,
-      "DELETE FROM compromised_credentials WHERE url = ? AND username = ? "));
-  s.BindString(0, url.spec());
+  sql::Statement s(
+      db_->GetCachedStatement(SQL_FROM_HERE,
+                              "DELETE FROM compromised_credentials WHERE "
+                              "url = ? AND username = ? "));
+  s.BindString(0, signon_realm);
   s.BindString16(1, username);
   return s.Run();
 }
@@ -223,7 +225,7 @@ bool CompromisedCredentialsTable::RemoveRowsByUrlAndTime(
     return s.Run();
   }
 
-  // Otherwise, filter urls.
+  // Otherwise, filter signon_realms.
   sql::Statement s(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "SELECT DISTINCT url FROM compromised_credentials WHERE "
@@ -231,21 +233,21 @@ bool CompromisedCredentialsTable::RemoveRowsByUrlAndTime(
   s.BindInt64(0, remove_begin_us);
   s.BindInt64(1, remove_end_us);
 
-  std::vector<std::string> urls;
+  std::vector<std::string> signon_realms;
   while (s.Step()) {
-    std::string url = s.ColumnString(0);
-    if (url_filter.Run(GURL(url))) {
-      urls.push_back(std::move(url));
+    std::string signon_realm = s.ColumnString(0);
+    if (url_filter.Run(GURL(signon_realm))) {
+      signon_realms.push_back(std::move(signon_realm));
     }
   }
 
   bool success = true;
-  for (const std::string& url : urls) {
+  for (const std::string& signon_realm : signon_realms) {
     sql::Statement s(db_->GetCachedStatement(
         SQL_FROM_HERE,
         "DELETE FROM compromised_credentials WHERE url = ? "
         "AND create_time >= ? AND create_time < ?"));
-    s.BindString(0, url);
+    s.BindString(0, signon_realm);
     s.BindInt64(1, remove_begin_us);
     s.BindInt64(2, remove_end_us);
     success = success && s.Run();

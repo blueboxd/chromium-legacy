@@ -22,7 +22,7 @@ namespace scroll_timeline_util {
 
 // Converts the input timeline to the compositor representation of a
 // ScrollTimeline. Returns nullptr if the input is not a ScrollTimeline.
-std::unique_ptr<CompositorScrollTimeline> CORE_EXPORT
+scoped_refptr<CompositorScrollTimeline> CORE_EXPORT
 ToCompositorScrollTimeline(AnimationTimeline*);
 
 // Retrieves the 'scroll' compositor element id for the input node, or

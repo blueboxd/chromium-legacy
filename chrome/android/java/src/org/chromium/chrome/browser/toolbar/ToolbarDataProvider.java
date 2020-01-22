@@ -31,6 +31,12 @@ public interface ToolbarDataProvider extends ToolbarCommonPropertiesModel {
     @Nullable
     Tab getTab();
 
+    @Override
+    default boolean isLoading() {
+        Tab tab = getTab();
+        return tab != null && tab.isLoading();
+    }
+
     /**
      * @return Whether ToolbarDataProvider currently has a tab related to it.
      */

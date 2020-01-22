@@ -75,11 +75,7 @@
       templateURLService->GetDefaultSearchProvider()->GetEngineType(
           templateURLService->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
 
-  if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
-    self.popupViewController = [[OmniboxPopupViewController alloc] init];
-  } else {
-    self.popupViewController = [[OmniboxPopupLegacyViewController alloc] init];
-  }
+  self.popupViewController = [[OmniboxPopupViewController alloc] init];
   self.popupViewController.incognito = self.browserState->IsOffTheRecord();
 
   BOOL isIncognito = self.browserState->IsOffTheRecord();

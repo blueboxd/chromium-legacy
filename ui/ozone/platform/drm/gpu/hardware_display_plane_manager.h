@@ -65,7 +65,7 @@ class HardwareDisplayPlaneManager {
 
   // Clears old frame state out. Must be called before any AssignOverlayPlanes
   // calls.
-  void BeginFrame(HardwareDisplayPlaneList* plane_list);
+  void BeginFrame(const HardwareDisplayPlaneList& plane_list);
 
   // Sets the color transform matrix (a 3x3 matrix represented in vector form)
   // on the CRTC with ID |crtc_id|.
@@ -95,13 +95,13 @@ class HardwareDisplayPlaneManager {
   // out buffers are replaced, and not when the buffers are scheduled with
   // |page_flip_request|. Note that the returned fence may be a nullptr
   // if the system doesn't support out fences.
-  virtual bool Commit(HardwareDisplayPlaneList* plane_list,
+  virtual bool Commit(const HardwareDisplayPlaneList& plane_list,
                       scoped_refptr<PageFlipRequest> page_flip_request,
                       std::unique_ptr<gfx::GpuFence>* out_fence) = 0;
 
-  // Disable all the overlay planes previously submitted and now stored in
-  // plane_list->old_plane_list.
-  virtual bool DisableOverlayPlanes(HardwareDisplayPlaneList* plane_list) = 0;
+  // Disable all the overlay planes in |plane_list|.
+  virtual bool DisableOverlayPlanes(
+      const std::vector<HardwareDisplayPlane*>& plane_list) = 0;
 
   // Set the drm_color_ctm contained in |ctm_blob_data| to all planes' KMS
   // states
@@ -131,6 +131,9 @@ class HardwareDisplayPlaneManager {
 
   std::vector<uint64_t> GetFormatModifiers(uint32_t crtc_id,
                                            uint32_t format) const;
+
+  std::vector<HardwareDisplayPlane*> GetOwnedPlanesForCrtcs(
+      const std::vector<uint32_t>& crtcs);
 
  protected:
   struct CrtcProperties {
@@ -191,7 +194,7 @@ class HardwareDisplayPlaneManager {
                             const DrmOverlayPlane& overlay,
                             uint32_t crtc_index) const;
 
-  void ResetCurrentPlaneList(HardwareDisplayPlaneList* plane_list) const;
+  void ResetCurrentPlaneList(const HardwareDisplayPlaneList& plane_list) const;
 
   // Populates scanout formats supported by all planes.
   void PopulateSupportedFormats();

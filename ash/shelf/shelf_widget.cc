@@ -143,6 +143,8 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
   ui::Layer* opaque_background() { return &opaque_background_; }
   ui::Layer* animating_background() { return &animating_background_; }
+  ui::Layer* animating_drag_handle() { return &animating_drag_handle_; }
+  views::View* drag_handle() { return drag_handle_; }
 
  private:
   // Whether |opaque_background_| is explicitly hidden during an animation.
@@ -157,6 +159,9 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
   // A background layer used to animate hotseat transitions.
   ui::Layer animating_background_;
+
+  // A layer to animate the drag handle during hotseat transitions.
+  ui::Layer animating_drag_handle_;
 
   // A drag handle shown in tablet mode when we are not on the home screen.
   // Owned by the view hierarchy.
@@ -176,9 +181,11 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
     : shelf_widget_(shelf_widget),
       focus_cycler_(nullptr),
       opaque_background_(ui::LAYER_SOLID_COLOR),
-      animating_background_(ui::LAYER_SOLID_COLOR) {
+      animating_background_(ui::LAYER_SOLID_COLOR),
+      animating_drag_handle_(ui::LAYER_SOLID_COLOR) {
   opaque_background_.SetName("shelf/Background");
   animating_background_.SetName("shelf/Animation");
+  animating_background_.Add(&animating_drag_handle_);
 
   DCHECK(shelf_widget_);
   set_owned_by_client();  // Deleted by DeleteDelegate().
@@ -205,6 +212,11 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
   drag_handle_->layer()->SetRoundedCornerRadius(
       {radius, radius, radius, radius});
   drag_handle_->SetSize(kDragHandleSize);
+
+  animating_drag_handle_.SetColor(ripple_attributes.base_color);
+  animating_drag_handle_.SetOpacity(ripple_attributes.inkdrop_opacity + 0.075);
+  animating_drag_handle_.SetRoundedCornerRadius(
+      {radius, radius, radius, radius});
 }
 
 ShelfWidget::DelegateView::~DelegateView() = default;
@@ -236,11 +248,13 @@ void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
 void ShelfWidget::DelegateView::HideOpaqueBackground() {
   hide_background_for_transitions_ = true;
   opaque_background_.SetVisible(false);
+  drag_handle_->SetVisible(false);
 }
 
 void ShelfWidget::DelegateView::ShowOpaqueBackground() {
   hide_background_for_transitions_ = false;
   UpdateOpaqueBackground();
+  UpdateDragHandle();
   UpdateBackgroundBlur();
 }
 
@@ -338,7 +352,8 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
 
 void ShelfWidget::DelegateView::UpdateDragHandle() {
   if (!IsInTabletMode() || !ShelfConfig::Get()->is_in_app() ||
-      !chromeos::switches::ShouldShowShelfHotseat()) {
+      !chromeos::switches::ShouldShowShelfHotseat() ||
+      hide_background_for_transitions_) {
     drag_handle_->SetVisible(false);
     return;
   }
@@ -347,9 +362,8 @@ void ShelfWidget::DelegateView::UpdateDragHandle() {
   const int x = (shelf_widget_->GetClientAreaBoundsInScreen().width() -
                  kDragHandleSize.width()) /
                 2;
-  const int y = (shelf_widget_->GetClientAreaBoundsInScreen().height() -
-                 kDragHandleSize.height()) /
-                2;
+  const int y =
+      (ShelfConfig::Get()->in_app_shelf_size() - kDragHandleSize.height()) / 2;
   drag_handle_->SetBounds(x, y, kDragHandleSize.width(),
                           kDragHandleSize.height());
 }
@@ -442,6 +456,14 @@ ui::Layer* ShelfWidget::GetOpaqueBackground() {
 
 ui::Layer* ShelfWidget::GetAnimatingBackground() {
   return delegate_view_->animating_background();
+}
+
+ui::Layer* ShelfWidget::GetAnimatingDragHandle() {
+  return delegate_view_->animating_drag_handle();
+}
+
+views::View* ShelfWidget::GetDragHandle() {
+  return delegate_view_->drag_handle();
 }
 
 void ShelfWidget::ForceToHideHotseat() {

@@ -221,7 +221,7 @@ public class LocationBarLayout extends FrameLayout
         StatusView statusView = findViewById(R.id.location_bar_status);
         statusView.setCompositeTouchDelegate(mCompositeTouchDelegate);
         mStatusViewCoordinator = new StatusViewCoordinator(mIsTablet, statusView, mUrlCoordinator);
-        mUrlCoordinator.addTextChangedListener(mStatusViewCoordinator);
+        mUrlCoordinator.addUrlTextChangeListener(mStatusViewCoordinator);
 
         updateShouldAnimateIconChanges();
         mUrlBar.setOnKeyListener(new UrlBarKeyListener());

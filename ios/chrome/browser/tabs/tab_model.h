@@ -8,6 +8,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/sessions/session_window_restoring.h"
 
 @class SessionServiceIOS;
@@ -15,10 +16,6 @@ class TabModelSyncedWindowDelegate;
 class TabUsageRecorder;
 class WebStateList;
 class Browser;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // A model of a tab "strip". Although the UI representation may not be a
 // traditional strip at all, tabs are still accessed via an integral index.

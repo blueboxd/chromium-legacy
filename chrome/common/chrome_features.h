@@ -48,7 +48,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppShimRemoteCocoa;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kShow10_9ObsoleteInfobar;
-COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kViewsTaskManager;
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)

@@ -151,6 +151,31 @@ class PixelTestPages(object):
         test_rect=[20, 20, 370, 370]),
 
       PixelTestPage(
+        'pixel_reflected_div.html',
+        base_name + '_ReflectedDiv',
+        test_rect=[0, 0, 100, 300],
+        expected_colors=[
+          {
+            'comment': 'inside original div, orange',
+            'location': [0, 0],
+            'size': [100, 99],
+            'color': [255, 128, 0],
+          },
+          {
+            'comment': 'outside both div and reflection, in between, white',
+            'location': [0, 101],
+            'size': [100, 98],
+            'color': [255, 255, 255],
+          },
+          {
+            'comment': 'inside reflection, orange',
+            'location': [0, 201],
+            'size': [100, 99],
+            'color': [255, 128, 0],
+          }
+        ]),
+
+      PixelTestPage(
         'pixel_canvas2d.html',
         base_name + '_Canvas2DRedBox',
         test_rect=[0, 0, 300, 300]),

@@ -33,6 +33,38 @@ void ViewPainter::Paint(const PaintInfo& paint_info) {
   BlockPainter(layout_view_).Paint(paint_info);
 }
 
+// Behind the root element of the main frame of the page, there is an infinite
+// canvas. This is by default white, but it can be overridden by
+// BaseBackgroundColor on the LocalFrameView.
+// https://drafts.fxtf.org/compositing/#rootgroup
+void ViewPainter::PaintRootGroup(const PaintInfo& paint_info,
+                                 const IntRect& pixel_snapped_background_rect,
+                                 const Document& document,
+                                 const DisplayItemClient& client,
+                                 const PropertyTreeState& state) {
+  if (!document.IsInMainFrame())
+    return;
+  bool should_clear_canvas =
+      document.GetSettings() &&
+      document.GetSettings()->GetShouldClearDocumentBackground();
+
+  Color base_background_color =
+      layout_view_.GetFrameView()->BaseBackgroundColor();
+
+  ScopedPaintChunkProperties frame_view_background_state(
+      paint_info.context.GetPaintController(), state, client,
+      DisplayItem::kDocumentRootBackdrop);
+  GraphicsContext& context = paint_info.context;
+  if (!DrawingRecorder::UseCachedDrawingIfPossible(
+          context, client, DisplayItem::kDocumentRootBackdrop)) {
+    DrawingRecorder recorder(context, client,
+                             DisplayItem::kDocumentRootBackdrop);
+    context.FillRect(
+        pixel_snapped_background_rect, base_background_color,
+        should_clear_canvas ? SkBlendMode::kSrc : SkBlendMode::kSrcOver);
+  }
+}
+
 void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   if (layout_view_.StyleRef().Visibility() != EVisibility::kVisible)
     return;
@@ -57,7 +89,6 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
 
   const DisplayItemClient* background_client = &layout_view_;
 
-  base::Optional<ScopedPaintChunkProperties> scoped_scroll_property;
   bool painting_scrolling_background =
       BoxDecorationData::IsPaintingScrollingBackground(paint_info,
                                                        layout_view_);
@@ -71,20 +102,78 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
     background_rect.Unite(document_rect);
     background_client = &layout_view_.GetScrollableArea()
                              ->GetScrollingBackgroundDisplayItemClient();
-    scoped_scroll_property.emplace(
-        paint_info.context.GetPaintController(),
-        layout_view_.FirstFragment().ContentsProperties(), *background_client,
-        DisplayItem::kDocumentBackground);
   }
 
-  if (layout_view_.HasBoxDecorationBackground()) {
-    PaintBoxDecorationBackgroundInternal(
-        paint_info, PixelSnappedIntRect(background_rect), *background_client);
+  IntRect pixel_snapped_background_rect(PixelSnappedIntRect(background_rect));
+
+  const Document& document = layout_view_.GetDocument();
+
+  PropertyTreeState root_element_background_painting_state =
+      layout_view_.FirstFragment().ContentsProperties();
+
+  base::Optional<ScopedPaintChunkProperties> scoped_properties;
+
+  bool painted_separate_backdrop = false;
+
+  bool should_apply_root_background_behavior =
+      layout_view_.GetDocument().IsHTMLDocument() ||
+      layout_view_.GetDocument().IsXHTMLDocument();
+
+  bool should_paint_background = !paint_info.SkipRootBackground() &&
+                                 layout_view_.HasBoxDecorationBackground();
+
+  LayoutObject* root_object = nullptr;
+  if (layout_view_.GetDocument().documentElement()) {
+    root_object =
+        layout_view_.GetDocument().documentElement()->GetLayoutObject();
+  }
+
+  // For HTML and XHTML documents, the root element may paint in a different
+  // clip, effect or transform state than the LayoutView. For
+  // example, the HTML element may have a clip-path, filter, blend-mode,
+  // opacity or transform.
+  //
+  // In these cases, we should paint the background of the root element in
+  // its LocalBorderBoxProperties() state, as part of the Root Element Group
+  // [1]. In addition, for the main frame of the page, we also need to paint the
+  // default backdrop color in the Root Group [2]. The Root Group paints in
+  // the scrolling space of the LayoutView (i.e. its ContentsProperties()).
+  //
+  // [1] https://drafts.fxtf.org/compositing/#pagebackdrop
+  // [2] https://drafts.fxtf.org/compositing/#rootgroup
+  if (should_paint_background && painting_scrolling_background &&
+      should_apply_root_background_behavior && root_object) {
+    const PropertyTreeState& document_element_state =
+        root_object->FirstFragment().LocalBorderBoxProperties();
+
+    // As an optimization, only paint a separate PaintChunk for the
+    // root group if its property tree state differs from root element
+    // group's. Otherwise we can usually avoid both a separate
+    // PaintChunk and a BeginLayer/EndLayer.
+    if (document_element_state != root_element_background_painting_state) {
+      root_element_background_painting_state = document_element_state;
+      PaintRootGroup(paint_info, pixel_snapped_background_rect, document,
+                     *background_client,
+                     layout_view_.FirstFragment().ContentsProperties());
+      painted_separate_backdrop = true;
+    }
+  }
+
+  if (painting_scrolling_background) {
+    scoped_properties.emplace(paint_info.context.GetPaintController(),
+                              root_element_background_painting_state,
+                              *background_client,
+                              DisplayItem::kDocumentBackground);
+  }
+
+  if (should_paint_background) {
+    PaintRootElementGroup(paint_info, pixel_snapped_background_rect,
+                          *background_client, painted_separate_backdrop);
   }
   if (has_touch_action_rect) {
     BoxPainter(layout_view_)
         .RecordHitTestData(paint_info,
-                           PhysicalRect(PixelSnappedIntRect(background_rect)),
+                           PhysicalRect(pixel_snapped_background_rect),
                            *background_client);
   }
 
@@ -119,22 +208,22 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
 // View background painting is special in the following ways:
 // 1. The view paints background for the root element, the background
 //    positioning respects the positioning and transformation of the root
-//    element.
+//    element. However, this method assumes that there is already an
+//    PaintChunk being recorded with the LocalBorderBoxProperties of the
+//    root element. Therefore the transform of the root element
+//    are applied via PaintChunksToCcLayer, and not via the display list of the
+//    PaintChunk itself.
 // 2. CSS background-clip is ignored, the background layers always expand to
-//    cover the whole canvas. None of the stacking context effects (except
-//    transformation) on the root element affects the background.
+//    cover the whole canvas.
 // 3. The main frame is also responsible for painting the user-agent-defined
 //    base background color. Conceptually it should be painted by the embedder
 //    but painting it here allows culling and pre-blending optimization when
 //    possible.
-void ViewPainter::PaintBoxDecorationBackgroundInternal(
+void ViewPainter::PaintRootElementGroup(
     const PaintInfo& paint_info,
-    const IntRect& background_rect,
-    const DisplayItemClient& background_client) {
-  // TODO(pdr): Can this check be removed? It is not hit in any test.
-  if (paint_info.SkipRootBackground())
-    return;
-
+    const IntRect& pixel_snapped_background_rect,
+    const DisplayItemClient& background_client,
+    bool painted_separate_backdrop) {
   GraphicsContext& context = paint_info.context;
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           context, background_client, DisplayItem::kDocumentBackground)) {
@@ -149,8 +238,9 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
                                 (frame_view.BaseBackgroundColor().Alpha() > 0);
   Color base_background_color =
       paints_base_background ? frame_view.BaseBackgroundColor() : Color();
-  Color root_background_color = layout_view_.StyleRef().VisitedDependentColor(
-      GetCSSPropertyBackgroundColor());
+  Color root_element_background_color =
+      layout_view_.StyleRef().VisitedDependentColor(
+          GetCSSPropertyBackgroundColor());
   const LayoutObject* root_object =
       document.documentElement() ? document.documentElement()->GetLayoutObject()
                                  : nullptr;
@@ -162,9 +252,11 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
   if (force_background_to_white) {
     // If for any reason the view background is not transparent, paint white
     // instead, otherwise keep transparent as is.
-    if (paints_base_background || root_background_color.Alpha() ||
-        layout_view_.StyleRef().BackgroundLayers().AnyLayerHasImage())
-      context.FillRect(background_rect, Color::kWhite, SkBlendMode::kSrc);
+    if (paints_base_background || root_element_background_color.Alpha() ||
+        layout_view_.StyleRef().BackgroundLayers().AnyLayerHasImage()) {
+      context.FillRect(pixel_snapped_background_rect, Color::kWhite,
+                       SkBlendMode::kSrc);
+    }
     return;
   }
 
@@ -177,49 +269,37 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
   // transform on the document rect to get to the root element space.
   // Local / scroll positioned background images will be painted into scrolling
   // contents layer with root layer scrolling. Therefore we need to switch both
-  // the background_rect and context to documentElement visual space.
+  // the pixel_snapped_background_rect and context to documentElement visual
+  // space.
   bool background_renderable = true;
-  TransformationMatrix transform;
-  IntRect paint_rect = background_rect;
+  IntRect paint_rect = pixel_snapped_background_rect;
   if (!root_object || !root_object->IsBox()) {
     background_renderable = false;
-  } else if (root_object->HasLayer()) {
-    if (BoxDecorationData::IsPaintingScrollingBackground(paint_info,
-                                                         layout_view_)) {
-      transform.Translate(
-          layout_view_.PixelSnappedScrolledContentOffset().Width(),
-          layout_view_.PixelSnappedScrolledContentOffset().Height());
-    }
-    const PaintLayer& root_layer =
-        *ToLayoutBoxModelObject(root_object)->Layer();
-    PhysicalOffset offset;
-    root_layer.ConvertToLayerCoords(nullptr, offset);
-    transform.Translate(offset.left, offset.top);
-    transform.Multiply(
-        root_layer.RenderableTransform(paint_info.GetGlobalPaintFlags()));
-
-    if (!transform.IsInvertible()) {
+  } else {
+    TransformationMatrix transform;
+    root_object->GetTransformFromContainer(root_object->View(),
+                                           PhysicalOffset(), transform);
+    if (!transform.IsInvertible())
       background_renderable = false;
-    } else {
-      bool is_clamped;
-      paint_rect = transform.Inverse()
-                       .ProjectQuad(FloatQuad(background_rect), &is_clamped)
-                       .EnclosingBoundingBox();
-      background_renderable = !is_clamped;
-    }
+    else
+      paint_rect = transform.Inverse().MapRect(pixel_snapped_background_rect);
   }
 
   bool should_clear_canvas =
       paints_base_background &&
       (document.GetSettings() &&
        document.GetSettings()->GetShouldClearDocumentBackground());
+
   if (!background_renderable) {
-    if (base_background_color.Alpha()) {
-      context.FillRect(
-          background_rect, base_background_color,
-          should_clear_canvas ? SkBlendMode::kSrc : SkBlendMode::kSrcOver);
-    } else if (should_clear_canvas) {
-      context.FillRect(background_rect, Color(), SkBlendMode::kClear);
+    if (!painted_separate_backdrop) {
+      if (base_background_color.Alpha()) {
+        context.FillRect(
+            pixel_snapped_background_rect, base_background_color,
+            should_clear_canvas ? SkBlendMode::kSrc : SkBlendMode::kSrcOver);
+      } else if (should_clear_canvas) {
+        context.FillRect(pixel_snapped_background_rect, Color(),
+                         SkBlendMode::kClear);
+      }
     }
     return;
   }
@@ -231,21 +311,30 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
               reversed_paint_list, layout_view_.StyleRef().BackgroundLayers());
   DCHECK(reversed_paint_list.size());
 
-  // If the root background color is opaque, isolation group can be skipped
-  // because the canvas
-  // will be cleared by root background color.
-  if (!root_background_color.HasAlpha())
-    should_draw_background_in_separate_buffer = false;
+  if (painted_separate_backdrop) {
+    should_draw_background_in_separate_buffer = true;
+  } else {
+    // If the root background color is opaque, isolation group can be skipped
+    // because the canvas
+    // will be cleared by root background color.
+    if (!root_element_background_color.HasAlpha())
+      should_draw_background_in_separate_buffer = false;
 
-  // We are going to clear the canvas with transparent pixels, isolation group
-  // can be skipped.
-  if (!base_background_color.Alpha() && should_clear_canvas)
-    should_draw_background_in_separate_buffer = false;
+    // We are going to clear the canvas with transparent pixels, isolation group
+    // can be skipped.
+    if (!base_background_color.Alpha() && should_clear_canvas)
+      should_draw_background_in_separate_buffer = false;
+  }
 
-  if (should_draw_background_in_separate_buffer) {
+  // Only use BeginLayer if not only we should draw in a separate buffer, but
+  // we also didn't paint a separate backdrop. Separate backdrops are always
+  // painted when there is any effect on the root element, such as a blend
+  // mode. An extra BeginLayer will result in incorrect blend isolation if
+  // it is added on top of any effect on the root element.
+  if (should_draw_background_in_separate_buffer && !painted_separate_backdrop) {
     if (base_background_color.Alpha()) {
       context.FillRect(
-          background_rect, base_background_color,
+          paint_rect, base_background_color,
           should_clear_canvas ? SkBlendMode::kSrc : SkBlendMode::kSrcOver);
     }
     context.BeginLayer();
@@ -253,8 +342,8 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
 
   Color combined_background_color =
       should_draw_background_in_separate_buffer
-          ? root_background_color
-          : base_background_color.Blend(root_background_color);
+          ? root_element_background_color
+          : base_background_color.Blend(root_element_background_color);
 
   if (combined_background_color != frame_view.BaseBackgroundColor())
     context.GetPaintController().SetFirstPainted();
@@ -264,13 +353,13 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
         RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
       recorder.SetKnownToBeOpaque();
     context.FillRect(
-        background_rect, combined_background_color,
+        paint_rect, combined_background_color,
         (should_draw_background_in_separate_buffer || should_clear_canvas)
             ? SkBlendMode::kSrc
             : SkBlendMode::kSrcOver);
   } else if (should_clear_canvas &&
              !should_draw_background_in_separate_buffer) {
-    context.FillRect(background_rect, Color(), SkBlendMode::kClear);
+    context.FillRect(paint_rect, Color(), SkBlendMode::kClear);
   }
 
   BackgroundImageGeometry geometry(layout_view_);
@@ -279,22 +368,20 @@ void ViewPainter::PaintBoxDecorationBackgroundInternal(
     DCHECK(fill_layer->Clip() == EFillBox::kBorder);
 
     if (BackgroundImageGeometry::ShouldUseFixedAttachment(*fill_layer)) {
-      box_model_painter.PaintFillLayer(paint_info, Color(), *fill_layer,
-                                       PhysicalRect(background_rect),
-                                       kBackgroundBleedNone, geometry);
+      box_model_painter.PaintFillLayer(
+          paint_info, Color(), *fill_layer,
+          PhysicalRect(pixel_snapped_background_rect), kBackgroundBleedNone,
+          geometry);
     } else {
-      context.Save();
-      // TODO(trchen): We should be able to handle 3D-transformed root
-      // background with slimming paint by using transform display items.
-      context.ConcatCTM(transform.ToAffineTransform());
+      PhysicalRect painting_rect(paint_rect);
+      painting_rect.Move(root_object->FirstFragment().PaintOffset());
       box_model_painter.PaintFillLayer(paint_info, Color(), *fill_layer,
-                                       PhysicalRect(paint_rect),
-                                       kBackgroundBleedNone, geometry);
-      context.Restore();
+                                       painting_rect, kBackgroundBleedNone,
+                                       geometry);
     }
   }
 
-  if (should_draw_background_in_separate_buffer)
+  if (should_draw_background_in_separate_buffer && !painted_separate_backdrop)
     context.EndLayer();
 }
 

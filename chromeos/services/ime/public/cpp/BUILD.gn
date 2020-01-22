@@ -104,22 +104,16 @@ source_set("rulebased_unit_tests") {
     "//testing/gmock",
     "//testing/gtest:gtest",
   ]
-  sources = [
-    "rulebased/rulebased_unittest.cc",
-  ]
+  sources = [ "rulebased/rulebased_unittest.cc" ]
 }
 
 if (use_libfuzzer) {
   fuzzable_proto_library("rulebased_fuzzer_proto") {
-    sources = [
-      "rulebased/rulebased_fuzzer.proto",
-    ]
+    sources = [ "rulebased/rulebased_fuzzer.proto" ]
   }
 
   fuzzer_test("rulebased_fuzzer") {
-    sources = [
-      "rulebased/rulebased_fuzzer.cc",
-    ]
+    sources = [ "rulebased/rulebased_fuzzer.cc" ]
     seed_corpus = "rulebased/test_data"
     deps = [
       ":rulebased",

@@ -18,6 +18,7 @@
 #include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/sqlite_proto/key_value_table.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/request_priority.h"
@@ -25,6 +26,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace predictors {
+
+using ::sqlite_proto::KeyValueTable;
 
 class ResourcePrefetchPredictorTablesTest : public testing::Test {
  public:
@@ -130,12 +133,12 @@ void ResourcePrefetchPredictorTablesTest::TestDeleteData() {
                                              "http://google.com"};
   std::vector<std::string> hosts_to_delete = {"microsoft.com"};
   tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
-      &LoadingPredictorKeyValueTable<RedirectData>::DeleteData,
+      &KeyValueTable<RedirectData>::DeleteData,
       base::Unretained(tables_->host_redirect_table()), hosts_to_delete));
 
   hosts_to_delete = {"twitter.com"};
   tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
-      &LoadingPredictorKeyValueTable<OriginData>::DeleteData,
+      &KeyValueTable<OriginData>::DeleteData,
       base::Unretained(tables_->origin_table()), hosts_to_delete));
 
   RedirectDataMap actual_host_redirect_data;
@@ -161,7 +164,7 @@ void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
                          GURL("https://microsoft.org"), 7, 2, 0);
 
   tables_->ExecuteDBTaskOnDBSequence(
-      base::BindOnce(&LoadingPredictorKeyValueTable<RedirectData>::UpdateData,
+      base::BindOnce(&KeyValueTable<RedirectData>::UpdateData,
                      base::Unretained(tables_->host_redirect_table()),
                      microsoft.primary_key(), microsoft));
 
@@ -169,7 +172,7 @@ void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
   InitializeOriginStat(twitter.add_origins(), "https://dogs.twitter.com", 10, 1,
                        0, 12., false, true);
   tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
-      &LoadingPredictorKeyValueTable<OriginData>::UpdateData,
+      &KeyValueTable<OriginData>::UpdateData,
       base::Unretained(tables_->origin_table()), twitter.host(), twitter));
 
   RedirectDataMap actual_host_redirect_data;
@@ -310,11 +313,11 @@ std::string ResourcePrefetchPredictorTablesTest::GetKeyForRedirectStat(
 }
 
 void ResourcePrefetchPredictorTablesTest::DeleteAllData() {
-  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
-      &LoadingPredictorKeyValueTable<RedirectData>::DeleteAllData,
-      base::Unretained(tables_->host_redirect_table())));
   tables_->ExecuteDBTaskOnDBSequence(
-      base::BindOnce(&LoadingPredictorKeyValueTable<OriginData>::DeleteAllData,
+      base::BindOnce(&KeyValueTable<RedirectData>::DeleteAllData,
+                     base::Unretained(tables_->host_redirect_table())));
+  tables_->ExecuteDBTaskOnDBSequence(
+      base::BindOnce(&KeyValueTable<OriginData>::DeleteAllData,
                      base::Unretained(tables_->origin_table())));
 }
 
@@ -322,10 +325,10 @@ void ResourcePrefetchPredictorTablesTest::GetAllData(
     RedirectDataMap* host_redirect_data,
     OriginDataMap* origin_data) const {
   tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
-      &LoadingPredictorKeyValueTable<RedirectData>::GetAllData,
+      &KeyValueTable<RedirectData>::GetAllData,
       base::Unretained(tables_->host_redirect_table()), host_redirect_data));
   tables_->ExecuteDBTaskOnDBSequence(
-      base::BindOnce(&LoadingPredictorKeyValueTable<OriginData>::GetAllData,
+      base::BindOnce(&KeyValueTable<OriginData>::GetAllData,
                      base::Unretained(tables_->origin_table()), origin_data));
 }
 
@@ -355,11 +358,11 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
         std::make_pair(microsoft.primary_key(), microsoft));
 
     tables_->ExecuteDBTaskOnDBSequence(
-        base::BindOnce(&LoadingPredictorKeyValueTable<RedirectData>::UpdateData,
+        base::BindOnce(&KeyValueTable<RedirectData>::UpdateData,
                        base::Unretained(tables_->host_redirect_table()),
                        bbc.primary_key(), bbc));
     tables_->ExecuteDBTaskOnDBSequence(
-        base::BindOnce(&LoadingPredictorKeyValueTable<RedirectData>::UpdateData,
+        base::BindOnce(&KeyValueTable<RedirectData>::UpdateData,
                        base::Unretained(tables_->host_redirect_table()),
                        microsoft.primary_key(), microsoft));
   }
@@ -384,10 +387,10 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_origin_data_.insert({"abc.xyz", alphabet});
 
     tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
-        &LoadingPredictorKeyValueTable<OriginData>::UpdateData,
+        &KeyValueTable<OriginData>::UpdateData,
         base::Unretained(tables_->origin_table()), twitter.host(), twitter));
     tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
-        &LoadingPredictorKeyValueTable<OriginData>::UpdateData,
+        &KeyValueTable<OriginData>::UpdateData,
         base::Unretained(tables_->origin_table()), alphabet.host(), alphabet));
   }
 }

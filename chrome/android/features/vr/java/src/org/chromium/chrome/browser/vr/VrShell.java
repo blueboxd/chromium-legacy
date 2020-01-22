@@ -67,6 +67,7 @@ import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
+import org.chromium.ui.display.DisplayAndroidManager;
 import org.chromium.ui.display.VirtualDisplayAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -395,7 +396,7 @@ public class VrShell extends GvrLayout
         // Get physical and pixel size of the display, which is needed by native
         // to dynamically calculate the content's resolution and window size.
         DisplayMetrics dm = new DisplayMetrics();
-        mActivity.getWindowManager().getDefaultDisplay().getRealMetrics(dm);
+        DisplayAndroidManager.getDefaultDisplayForContext(mActivity).getRealMetrics(dm);
         // We're supposed to be in landscape at this point, but it's possible for us to get here
         // before the change has fully propagated. In this case, the width and height are swapped,
         // which causes an incorrect display size to be used, and the page to appear zoomed in.

@@ -9,14 +9,12 @@
 
 #include <memory>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
 @class CommandDispatcher;
 @protocol OmniboxPopupPresenterDelegate;
 @protocol OmniboxFocuser;
 class OmniboxPopupViewIOS;
-
-namespace ios {
-class ChromeBrowserState;
-}
 class WebStateList;
 
 // Coordinator for the Omnibox Popup.

@@ -16,7 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper.h"
+#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/common/web_application_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,9 +65,10 @@ Browser* LaunchBrowserForWebAppInTab(Profile* profile, const AppId& app_id) {
           apps::mojom::AppLaunchSource::kSourceTest));
   DCHECK(web_contents);
 
-  WebAppTabHelper* tab_helper = WebAppTabHelper::FromWebContents(web_contents);
+  WebAppTabHelperBase* tab_helper =
+      WebAppTabHelperBase::FromWebContents(web_contents);
   DCHECK(tab_helper);
-  EXPECT_EQ(app_id, tab_helper->app_id());
+  EXPECT_EQ(app_id, tab_helper->GetAppId());
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   EXPECT_EQ(browser, chrome::FindLastActive());

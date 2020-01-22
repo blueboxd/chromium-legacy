@@ -658,7 +658,6 @@ void FrameSinkManagerImpl::EvictBackBuffer(uint32_t cache_id,
   auto it = cached_back_buffers_.find(cache_id);
   DCHECK(it != cached_back_buffers_.end());
 
-  it->second.RunAndReset();
   cached_back_buffers_.erase(it);
   std::move(callback).Run();
 }

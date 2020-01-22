@@ -18,8 +18,8 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
     const blink::WebContextMenuData& data) {
   ContextMenuParams params;
   params.media_type = data.media_type;
-  params.x = data.mouse_position.x;
-  params.y = data.mouse_position.y;
+  params.x = data.mouse_position.x();
+  params.y = data.mouse_position.y();
   params.link_url = data.link_url;
   params.unfiltered_link_url = data.link_url;
   params.src_url = data.src_url;

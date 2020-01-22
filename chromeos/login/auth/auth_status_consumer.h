@@ -40,6 +40,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthFailure {
     FAILED_TO_INITIALIZE_TOKEN = 12,  // Could not get OAuth2 Token,
     MISSING_CRYPTOHOME = 13,          // cryptohome missing from disk.
     AUTH_DISABLED = 14,               // Authentication disabled for user.
+    TPM_UPDATE_REQUIRED = 15,         // TPM firmware update is required.
     NUM_FAILURE_REASONS,              // This has to be the last item.
   };
 
@@ -96,6 +97,8 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) AuthFailure {
         return "Auth disabled for user.";
       case TPM_ERROR:
         return "Critical TPM error encountered.";
+      case TPM_UPDATE_REQUIRED:
+        return "TPM firmware update required.";
       default:
         NOTREACHED();
         return std::string();

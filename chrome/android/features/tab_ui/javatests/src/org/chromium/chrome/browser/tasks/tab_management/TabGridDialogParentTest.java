@@ -53,25 +53,28 @@ public class TabGridDialogParentTest extends DummyUiActivityTestCase {
         super.setUpTest();
         TabFeatureUtilities.setIsTabToGtsAnimationEnabledForTesting(true);
 
-        mDummyParent = new FrameLayout(getActivity());
-        mTabGridDialogParent = new TabGridDialogParent(getActivity(), mDummyParent);
-        mPopoupWindow = mTabGridDialogParent.getPopupWindowForTesting();
-        FrameLayout tabGridDialogParentView =
-                mTabGridDialogParent.getTabGridDialogParentViewForTesting();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mDummyParent = new FrameLayout(getActivity());
+            mTabGridDialogParent = new TabGridDialogParent(getActivity(), mDummyParent);
+            mPopoupWindow = mTabGridDialogParent.getPopupWindowForTesting();
+            FrameLayout tabGridDialogParentView =
+                    mTabGridDialogParent.getTabGridDialogParentViewForTesting();
 
-        mTabGridDialogContainer = tabGridDialogParentView.findViewById(R.id.dialog_container_view);
-        mUngroupBar = mTabGridDialogContainer.findViewById(R.id.dialog_ungroup_bar);
-        mUngroupBarTextView = mUngroupBar.findViewById(R.id.dialog_ungroup_bar_text);
-        mContainerParams = (FrameLayout.LayoutParams) mTabGridDialogContainer.getLayoutParams();
-        mAnimationCardView = mTabGridDialogParent.getAnimationCardViewForTesting();
-        mBackgroundFrameView = tabGridDialogParentView.findViewById(R.id.dialog_frame);
+            mTabGridDialogContainer =
+                    tabGridDialogParentView.findViewById(R.id.dialog_container_view);
+            mUngroupBar = mTabGridDialogContainer.findViewById(R.id.dialog_ungroup_bar);
+            mUngroupBarTextView = mUngroupBar.findViewById(R.id.dialog_ungroup_bar_text);
+            mContainerParams = (FrameLayout.LayoutParams) mTabGridDialogContainer.getLayoutParams();
+            mAnimationCardView = mTabGridDialogParent.getAnimationCardViewForTesting();
+            mBackgroundFrameView = tabGridDialogParentView.findViewById(R.id.dialog_frame);
 
-        mToolbarHeight =
-                (int) getActivity().getResources().getDimension(R.dimen.tab_group_toolbar_height);
-        mTopMargin =
-                (int) getActivity().getResources().getDimension(R.dimen.tab_grid_dialog_top_margin);
-        mSideMargin = (int) getActivity().getResources().getDimension(
-                R.dimen.tab_grid_dialog_side_margin);
+            mToolbarHeight = (int) getActivity().getResources().getDimension(
+                    R.dimen.tab_group_toolbar_height);
+            mTopMargin = (int) getActivity().getResources().getDimension(
+                    R.dimen.tab_grid_dialog_top_margin);
+            mSideMargin = (int) getActivity().getResources().getDimension(
+                    R.dimen.tab_grid_dialog_side_margin);
+        });
     }
 
     @Test

@@ -422,7 +422,7 @@ class CONTENT_EXPORT RenderWidget
   void SetHaveScrollEventHandlers(bool have_handlers) override;
   void SetNeedsLowLatencyInput(bool) override;
   void SetNeedsUnbufferedInputForDebugger(bool) override;
-  void AnimateDoubleTapZoomInMainFrame(const blink::WebPoint& point,
+  void AnimateDoubleTapZoomInMainFrame(const gfx::Point& point,
                                        const blink::WebRect& bounds) override;
   void ZoomToFindInPageRectInMainFrame(
       const blink::WebRect& rect_to_zoom) override;

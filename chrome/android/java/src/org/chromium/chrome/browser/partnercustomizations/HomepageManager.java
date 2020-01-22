@@ -6,13 +6,19 @@ package org.chromium.chrome.browser.partnercustomizations;
 
 import android.text.TextUtils;
 
+import androidx.annotation.IntDef;
+
 import org.chromium.base.ObserverList;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.util.UrlConstants;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Provides information regarding homepage enabled states and URI.
@@ -20,6 +26,25 @@ import org.chromium.chrome.browser.util.UrlConstants;
  * This class serves as a single homepage logic gateway.
  */
 public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStateListener {
+    /**
+     * Possible states for HomeButton. Used for Histogram
+     * Settings.ShowHomeButtonPreferenceStateManaged. Currently {@link
+     * HomeButtonPreferenceState.MANAGED_DISABLED } is not used.
+     *
+     * These values are persisted to logs, and should therefore never be renumbered nor reused.
+     */
+    @IntDef({HomeButtonPreferenceState.USER_DISABLED, HomeButtonPreferenceState.USER_ENABLED,
+            HomeButtonPreferenceState.MANAGED_DISABLED, HomeButtonPreferenceState.MANAGED_ENABLED})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface HomeButtonPreferenceState {
+        int USER_DISABLED = 0;
+        int USER_ENABLED = 1;
+        int MANAGED_DISABLED = 2;
+        int MANAGED_ENABLED = 3;
+
+        int NUM_ENTRIES = 4;
+    }
+
     /**
      * An interface to use for getting homepage related updates.
      */
@@ -84,6 +109,14 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
     }
 
     /**
+     * @return Whether or not current homepage is customized.
+     */
+    public static boolean isHomepageCustomized() {
+        return !HomepagePolicyManager.isHomepageManagedByPolicy()
+                && !getInstance().getPrefHomepageUseDefaultUri();
+    }
+
+    /**
      * @return Whether to close the app when the user has zero tabs.
      */
     public static boolean shouldCloseAppWithZeroTabs() {
@@ -98,9 +131,14 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
         if (!isHomepageEnabled()) return null;
 
         HomepageManager manager = getInstance();
-        String homepageUri = manager.getPrefHomepageUseDefaultUri()
-                ? getDefaultHomepageUri()
-                : manager.getPrefHomepageCustomUri();
+        String homepageUri;
+        if (HomepagePolicyManager.isHomepageManagedByPolicy()) {
+            homepageUri = HomepagePolicyManager.getHomepageUrl();
+        } else if (manager.getPrefHomepageUseDefaultUri()) {
+            homepageUri = getDefaultHomepageUri();
+        } else {
+            homepageUri = manager.getPrefHomepageCustomUri();
+        }
         return TextUtils.isEmpty(homepageUri) ? null : homepageUri;
     }
 
@@ -108,10 +146,7 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
      * @return The default homepage URI if the homepage is partner provided or the new tab page
      *         if the homepage button is force enabled via flag.
      */
-    public static String getDefaultHomepageUri() {
-        if (HomepagePolicyManager.isHomepageManagedByPolicy()) {
-            return HomepagePolicyManager.getHomepageUrl();
-        }
+    private static String getDefaultHomepageUri() {
         if (PartnerBrowserCustomizations.isHomepageProviderAvailableAndEnabled()) {
             return PartnerBrowserCustomizations.getHomePageUrl();
         }
@@ -135,7 +170,7 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
         mSharedPreferencesManager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_ENABLED, enabled);
         RecordHistogram.recordBooleanHistogram(
                 "Settings.ShowHomeButtonPreferenceStateChanged", enabled);
-        RecordHistogram.recordBooleanHistogram("Settings.ShowHomeButtonPreferenceState", enabled);
+        recordHomeButtonPreferenceState();
         notifyHomepageUpdated();
     }
 
@@ -158,21 +193,52 @@ public class HomepageManager implements HomepagePolicyManager.HomepagePolicyStat
      */
     public boolean getPrefHomepageUseDefaultUri() {
         return mSharedPreferencesManager.readBoolean(
-                       ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, true)
-                || HomepagePolicyManager.isHomepageManagedByPolicy();
+                ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, true);
     }
 
     /**
      * Sets whether the homepage URL is the default value.
      */
     public void setPrefHomepageUseDefaultUri(boolean useDefaultUri) {
-        RecordHistogram.recordBooleanHistogram("Settings.HomePageIsCustomized", !useDefaultUri);
+        assert !HomepagePolicyManager.isHomepageManagedByPolicy();
+
+        recordHomepageIsCustomized(!useDefaultUri);
         mSharedPreferencesManager.writeBoolean(
                 ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, useDefaultUri);
+    }
+
+    /**
+     * Get the homepage button preference state.
+     */
+    public static void recordHomeButtonPreferenceState() {
+        if (!FeatureUtilities.isHomepageLocationPolicyEnabled()) {
+            RecordHistogram.recordBooleanHistogram(
+                    "Settings.ShowHomeButtonPreferenceState", HomepageManager.isHomepageEnabled());
+            return;
+        }
+
+        int state = HomeButtonPreferenceState.USER_DISABLED;
+        if (HomepagePolicyManager.isHomepageManagedByPolicy()) {
+            state = HomeButtonPreferenceState.MANAGED_ENABLED;
+        } else if (isHomepageEnabled()) {
+            state = HomeButtonPreferenceState.USER_ENABLED;
+        }
+
+        RecordHistogram.recordEnumeratedHistogram("Settings.ShowHomeButtonPreferenceStateManaged",
+                state, HomeButtonPreferenceState.NUM_ENTRIES);
+    }
+
+    public static void recordHomepageIsCustomized(boolean isCustomized) {
+        RecordHistogram.recordBooleanHistogram("Settings.HomePageIsCustomized", isCustomized);
     }
 
     @Override
     public void onHomepagePolicyUpdate() {
         notifyHomepageUpdated();
+
+        boolean isPolicyEnabled = HomepagePolicyManager.isHomepageManagedByPolicy();
+        if (isPolicyEnabled) {
+            recordHomepageIsCustomized(false);
+        }
     }
 }

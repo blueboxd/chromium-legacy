@@ -530,7 +530,7 @@ public class SiteSettingsTest {
         NfcSystemLevelSetting.setNfcSettingForTesting(true);
 
         // If you add a category in the SiteSettings UI, please add a test for it below.
-        Assert.assertEquals(19, SiteSettingsCategory.Type.NUM_ENTRIES);
+        Assert.assertEquals(21, SiteSettingsCategory.Type.NUM_ENTRIES);
 
         String[] nullArray = new String[0];
         String[] binaryToggle = new String[] {"binary_toggle"};
@@ -559,6 +559,8 @@ public class SiteSettingsTest {
                 new HashMap<Integer, Pair<String[], String[]>>();
         testCases.put(SiteSettingsCategory.Type.ADS, new Pair<>(binaryToggle, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.ALL_SITES, new Pair<>(nullArray, nullArray));
+        testCases.put(SiteSettingsCategory.Type.AUGMENTED_REALITY,
+                new Pair<>(binaryToggle, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.AUTOMATIC_DOWNLOADS,
                 new Pair<>(binaryToggleWithException, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.BACKGROUND_SYNC,
@@ -580,6 +582,8 @@ public class SiteSettingsTest {
                 new Pair<>(binaryToggleWithException, binaryToggleWithException));
         testCases.put(SiteSettingsCategory.Type.USB, new Pair<>(binaryToggle, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.USE_STORAGE, new Pair<>(nullArray, nullArray));
+        testCases.put(
+                SiteSettingsCategory.Type.VIRTUAL_REALITY, new Pair<>(binaryToggle, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.BLUETOOTH_SCANNING,
                 new Pair<>(binaryToggle, binaryToggle));
 
@@ -877,6 +881,60 @@ public class SiteSettingsTest {
     @Feature({"Preferences"})
     public void testBlockNfc() {
         doTestNfcPermission(false);
+    }
+
+    /**
+     * Helper function to test allowing and blocking AUGMENTED_REALITY feature.
+     * @param enabled true to test enabling AUGMENTED_REALITY feature, false to test disabling the
+     *         feature.
+     */
+    private void doTestArPermission(final boolean enabled) {
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.AUGMENTED_REALITY, enabled);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals("AR should be " + (enabled ? "enabled" : "disabled"),
+                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.AR), enabled);
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testAllowAr() {
+        doTestArPermission(true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testBlockAr() {
+        doTestArPermission(false);
+    }
+
+    /**
+     * Helper function to test allowing and blocking VIRTUAL_REALITY feature.
+     * @param enabled true to test enabling VIRTUAL_REALITY feature, false to test disabling the
+     *         feature.
+     */
+    private void doTestVrPermission(final boolean enabled) {
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.VIRTUAL_REALITY, enabled);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals("VR should be " + (enabled ? "enabled" : "disabled"),
+                    WebsitePreferenceBridge.isCategoryEnabled(ContentSettingsType.VR), enabled);
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testAllowVr() {
+        doTestVrPermission(true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testBlockVr() {
+        doTestVrPermission(false);
     }
 
     private int getTabCount() {

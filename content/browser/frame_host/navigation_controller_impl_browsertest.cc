@@ -10264,4 +10264,163 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(abort_observer.has_committed());
 }
 
+namespace {
+
+// A request handler that returns a 301 or 307 response to /redirect-301 or
+// /redirect-307 respectively, redirecting to the URL provided in the query
+// string. The error codes 301 and 307 are used as examples of codes that switch
+// the method to GET across the redirect (301) versus those that preserve the
+// method (307).
+std::unique_ptr<net::test_server::HttpResponse> HandleRedirect(
+    const net::test_server::HttpRequest& request) {
+  GURL url = request.base_url.Resolve(request.relative_url);
+  std::unique_ptr<net::test_server::BasicHttpResponse> response =
+      std::make_unique<net::test_server::BasicHttpResponse>();
+  if (url.path() == "/redirect-301") {
+    response->set_code(net::HTTP_MOVED_PERMANENTLY);
+  } else if (url.path() == "/redirect-307") {
+    response->set_code(net::HTTP_TEMPORARY_REDIRECT);
+  } else {
+    return nullptr;
+  }
+  response->AddCustomHeader("Location", url.query());
+  return std::move(response);
+}
+
+// A request handler that returns a simple page for requests using |method| to
+// /handle-method-only, and closes the socket for any other method.
+std::unique_ptr<net::test_server::HttpResponse> HandleMethodOnly(
+    net::test_server::HttpMethod method,
+    const net::test_server::HttpRequest& request) {
+  if (request.relative_url != "/handle-method-only")
+    return nullptr;
+
+  if (request.method != method) {
+    return std::make_unique<net::test_server::RawHttpResponse>("", "");
+  }
+  std::unique_ptr<net::test_server::BasicHttpResponse> response =
+      std::make_unique<net::test_server::BasicHttpResponse>();
+  response->set_content_type("text/html");
+  response->set_content("Success!");
+  return response;
+}
+
+}  // namespace
+
+// Tests that the navigation entry's method is updated to GET when following a
+// 301 redirect that encounters an error page. See https://crbug.com/1041597.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
+                       UpdateMethodOn301RedirectError) {
+  // Install a request handler to serve 301 or 307 redirects. In this test,
+  // which uses a 301 redirect, the default handler for "/server-redirect?..."
+  // would work. But this test still installs a custom request handler anyway
+  // just for symmetry with the PreserveMethodOn307RedirectError test below,
+  // which requires a custom handler to serve 307 responses.
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(&HandleRedirect));
+  // HandleMethodOnly serves the final endpoint that the test ends up at. It
+  // lets the test distinguish a GET from a POST by serving a response only for
+  // POST requests.
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(&HandleMethodOnly, net::test_server::METHOD_POST));
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL start_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  GURL post_only_url = embedded_test_server()->GetURL("/handle-method-only");
+  GURL form_action_url(
+      embedded_test_server()->GetURL("/redirect-301?" + post_only_url.spec()));
+
+  // Inject a form into the page and submit it, to create a POST request to
+  // |form_action_url|. This POST request will redirect to |post_only_url|. The
+  // request's method should change to GET while following the redirect,
+  // resulting in an error page since |post_only_url| closes the connection on
+  // GETs.
+  TestNavigationObserver form_nav_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecJs(shell()->web_contents(),
+                     JsReplace("var form = document.createElement('form');"
+                               "form.method = 'POST';"
+                               "form.action = $1;"
+                               "document.body.appendChild(form);"
+                               "form.submit();",
+                               form_action_url.spec())));
+  form_nav_observer.Wait();
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(post_only_url, entry->GetURL());
+  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+  EXPECT_FALSE(entry->GetHasPostData());
+
+  // When the error page is reloaded, the method should still be GET, resulting
+  // in an error page. If https://crbug.com/1041597 regresses, the
+  // NavigationEntry's method would be POST and this test would fail, seeing a
+  // successful response instead of an error page from |post_only_url|.
+  TestNavigationObserver reload_observer(shell()->web_contents(), 1);
+  // Set |check_for_repost| to false to avoid hanging the test if the method is
+  // improperly set to POST.
+  controller.Reload(ReloadType::NORMAL, false);
+  reload_observer.Wait();
+  entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(post_only_url, entry->GetURL());
+  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+}
+
+// Tests that the navigation entry's method is preserved as POST when following
+// a 307 redirect that encounters an error page. This test is similar to the
+// above UpdateMethodOn301RedirectError, but reversed: in this test, the method
+// should be preserved as POST.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
+                       UpdateMethodOn307RedirectError) {
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(&HandleRedirect));
+  // HandleMethodOnly serves the final endpoint that the test ends up at. It
+  // lets the test distinguish a GET from a POST by serving a response only for
+  // GET requests.
+  embedded_test_server()->RegisterRequestHandler(
+      base::BindRepeating(&HandleMethodOnly, net::test_server::METHOD_GET));
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL start_url(embedded_test_server()->GetURL(
+      "/navigation_controller/simple_page_1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  GURL get_only_url = embedded_test_server()->GetURL("/handle-method-only");
+  GURL form_action_url(
+      embedded_test_server()->GetURL("/redirect-307?" + get_only_url.spec()));
+
+  // Inject a form into the page and submit it, to create a POST request to
+  // |form_action_url|. This POST request will redirect to |get_only_url|. The
+  // request's method should stay as POST while following the redirect,
+  // resulting in an error page since |get_only_url| closes the connection on
+  // POSTs.
+  TestNavigationObserver form_nav_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecJs(shell()->web_contents(),
+                     JsReplace("var form = document.createElement('form');"
+                               "form.method = 'POST';"
+                               "form.action = $1;"
+                               "document.body.appendChild(form);"
+                               "form.submit();",
+                               form_action_url.spec())));
+  form_nav_observer.Wait();
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(get_only_url, entry->GetURL());
+  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+  EXPECT_TRUE(entry->GetHasPostData());
+
+  // When the error page is reloaded, the method should still be POST, resulting
+  // in an error page.
+  TestNavigationObserver reload_observer(shell()->web_contents(), 1);
+  // Set |check_for_repost| to false to avoid hanging the test with the prompt.
+  controller.Reload(ReloadType::NORMAL, false);
+  reload_observer.Wait();
+  entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(get_only_url, entry->GetURL());
+  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+}
+
 }  // namespace content

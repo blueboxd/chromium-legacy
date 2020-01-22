@@ -34,6 +34,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/google/core/common/google_util.h"
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
+#include "components/password_manager/core/browser/form_parsing/form_parser.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -1641,7 +1642,8 @@ void ChromePasswordProtectionService::PersistPhishedSavedPasswordCredential(
   for (const std::string& domain : matching_domains) {
     password_store->AddCompromisedCredentials(
         password_manager::CompromisedCredentials(
-            GURL(domain), base::ASCIIToUTF16(username), base::Time::Now(),
+            password_manager::GetSignonRealm(GURL(domain)),
+            base::ASCIIToUTF16(username), base::Time::Now(),
             password_manager::CompromiseType::kPhished));
   }
 }
@@ -1706,7 +1708,7 @@ int ChromePasswordProtectionService::GetStoredVerdictCount(
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 bool ChromePasswordProtectionService::IsUnderAdvancedProtection() {
   return AdvancedProtectionStatusManagerFactory::GetForProfile(profile_)
-      ->is_under_advanced_protection();
+      ->IsUnderAdvancedProtection();
 }
 
 gfx::Size ChromePasswordProtectionService::GetCurrentContentAreaSize() const {

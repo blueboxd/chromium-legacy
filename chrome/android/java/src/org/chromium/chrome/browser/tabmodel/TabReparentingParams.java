@@ -25,6 +25,7 @@ public class TabReparentingParams implements AsyncTabParams {
 
     private int mTabIndex = TAB_INDEX_NOT_SET;
     private boolean mIsFromNightModeReparenting;
+    private boolean mIsForegroundTab;
 
     /**
      * Basic constructor for {@link TabReparentingParams}.
@@ -107,5 +108,15 @@ public class TabReparentingParams implements AsyncTabParams {
     /** @return Whether these params are from night mode reparenting. */
     public boolean isFromNightModeReparenting() {
         return mIsFromNightModeReparenting;
+    }
+
+    /** Set whether this is the foreground tab. */
+    public void setIsForegroundTab(boolean isForegroundTab) {
+        mIsForegroundTab = isForegroundTab;
+    }
+
+    /** @return Whether this is a foreground tab. */
+    public boolean isForegroundTab() {
+        return mIsForegroundTab;
     }
 }

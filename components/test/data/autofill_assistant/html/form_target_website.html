@@ -5,8 +5,30 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Form tests.</title>
   </head>
+  <style>
+      .terms {
+        background-color: yellow;
+        height: 5em;
+      }
+  </style>
+  <script>
+    function onClick() {
+      var on = document.getElementById("toggle_on");
+      if (on.style.display === "none") {
+        on.style.display = "block";
+      } else {
+        on.style.display = "none";
+      }
+    }
+  </script>
   <body>
     <h3>Form filling</h3>
+
+    <h4>Terms and conditions</h4>
+    <div id="terms" class="terms">
+      <button id="button" onclick="onClick()"> Button </button>
+      <div id="toggle_on" style="display: none"> Toggle on </div>
+  </div>
 
     <h4>Credit card</h4>
     <div>

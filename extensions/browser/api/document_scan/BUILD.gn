@@ -21,11 +21,7 @@ source_set("document_scan") {
     sources += [ "document_scan_interface_nonchromeos.cc" ]
   }
 
-  deps = [
-    "//extensions/common/api",
-  ]
+  deps = [ "//extensions/common/api" ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

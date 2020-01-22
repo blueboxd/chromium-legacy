@@ -55,7 +55,6 @@ struct WebImeTextSpan;
 struct WebCursorInfo;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
-struct WebPoint;
 struct WebRect;
 struct WebURLError;
 template <typename T>
@@ -216,7 +215,7 @@ class WebPlugin {
   virtual void DeleteSurroundingTextInCodePoints(int before, int after) {}
   // If the given position is over a link, returns the absolute url.
   // Otherwise an empty url is returned.
-  virtual WebURL LinkAtPosition(const WebPoint& position) const {
+  virtual WebURL LinkAtPosition(const gfx::Point& position) const {
     return WebURL();
   }
 

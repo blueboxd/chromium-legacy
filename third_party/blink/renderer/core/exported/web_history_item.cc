@@ -31,7 +31,6 @@
 #include "third_party/blink/public/web/web_history_item.h"
 
 #include "third_party/blink/public/platform/web_http_body.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
@@ -40,6 +39,7 @@
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
+#include "ui/gfx/geometry/point.h"
 
 namespace blink {
 
@@ -101,16 +101,16 @@ void WebHistoryItem::SetVisualViewportScrollOffset(
   private_->SetVisualViewportScrollOffset(ToScrollOffset(scroll_offset));
 }
 
-WebPoint WebHistoryItem::GetScrollOffset() const {
+gfx::Point WebHistoryItem::GetScrollOffset() const {
   const auto& scroll_and_view_state = private_->GetViewState();
   ScrollOffset offset = scroll_and_view_state
                             ? scroll_and_view_state->scroll_offset_
                             : ScrollOffset();
-  return WebPoint(offset.Width(), offset.Height());
+  return gfx::Point(offset.Width(), offset.Height());
 }
 
-void WebHistoryItem::SetScrollOffset(const WebPoint& scroll_offset) {
-  private_->SetScrollOffset(ScrollOffset(scroll_offset.x, scroll_offset.y));
+void WebHistoryItem::SetScrollOffset(const gfx::Point& scroll_offset) {
+  private_->SetScrollOffset(ScrollOffset(scroll_offset.x(), scroll_offset.y()));
 }
 
 float WebHistoryItem::PageScaleFactor() const {

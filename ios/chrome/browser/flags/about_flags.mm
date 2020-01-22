@@ -460,14 +460,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess)},
-    {"new-omnibox-popup-layout", flag_descriptions::kNewOmniboxPopupLayoutName,
-     flag_descriptions::kNewOmniboxPopupLayoutDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kNewOmniboxPopupLayout)},
-    {"omnibox-use-default-search-engine-favicon",
-     flag_descriptions::kOmniboxUseDefaultSearchEngineFaviconName,
-     flag_descriptions::kOmniboxUseDefaultSearchEngineFaviconDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kOmniboxUseDefaultSearchEngineFavicon)},
     {"omnibox-preserve-default-match-against-async-update",
      flag_descriptions::kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName,
      flag_descriptions::
@@ -601,6 +593,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"clear-synced-data", flag_descriptions::kClearSyncedDataName,
      flag_descriptions::kClearSyncedDataDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kClearSyncedData)},
+    {"ssl-committed-interstitials",
+     flag_descriptions::kSSLCommittedInterstitialsName,
+     flag_descriptions::kSSLCommittedInterstitialsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(web::features::kSSLCommittedInterstitials)},
 };
 
 // Add all switches from experimental flags to |command_line|.

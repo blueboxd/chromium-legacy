@@ -105,7 +105,6 @@ CONTENT_EXPORT extern const base::Feature
 CONTENT_EXPORT extern const base::Feature kSavePageAsWebBundle;
 CONTENT_EXPORT extern const base::Feature
     kSendBeaconThrowForBlobWithNonSimpleType;
-CONTENT_EXPORT extern const base::Feature kServiceWorkerLongRunningMessage;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerOnUI;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerPaymentApps;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerPrefersUnusedProcess;

@@ -57,9 +57,7 @@ cast_source_set("backend") {
 # libcast_media_1.0.so. This target is only used to build executables
 # with correct linkage information.
 cast_shared_library("libcast_media_1.0") {
-  sources = [
-    "cast_media_dummy.cc",
-  ]
+  sources = [ "cast_media_dummy.cc" ]
 
   deps = [
     ":audio_buildflags",
@@ -95,9 +93,7 @@ cast_source_set("null_video") {
 }
 
 cast_source_set("public") {
-  sources = [
-    "system_volume_control.h",
-  ]
+  sources = [ "system_volume_control.h" ]
 
   deps = [
     "//base",
@@ -106,9 +102,7 @@ cast_source_set("public") {
 }
 
 cast_source_set("av_sync_dummy") {
-  sources = [
-    "av_sync_dummy.cc",
-  ]
+  sources = [ "av_sync_dummy.cc" ]
 
   deps = [
     "//base",
@@ -117,9 +111,7 @@ cast_source_set("av_sync_dummy") {
 }
 
 cast_source_set("audio_codec_support") {
-  sources = [
-    "media_codec_support_cast_audio.cc",
-  ]
+  sources = [ "media_codec_support_cast_audio.cc" ]
   deps = [
     "//base",
     "//chromecast/public",
@@ -133,9 +125,7 @@ cast_source_set("cast_audio_json") {
     "cast_audio_json.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 cast_source_set("volume_map") {
@@ -188,9 +178,7 @@ cast_source_set("for_mixer_audio") {
 
 test("cast_audio_backend_unittests") {
   testonly = true
-  sources = [
-    "volume_map_unittest.cc",
-  ]
+  sources = [ "volume_map_unittest.cc" ]
 
   deps = [
     ":cast_audio_json",

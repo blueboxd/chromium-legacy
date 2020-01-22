@@ -18,9 +18,7 @@ mojom("mojom_ip_address") {
     "ip_endpoint.mojom",
   ]
 
-  public_deps = [
-    "//url/mojom:url_mojom_gurl",
-  ]
+  public_deps = [ "//url/mojom:url_mojom_gurl" ]
 }
 
 # As with mojom_ip_address, this is a separate target to avoid a circular
@@ -30,13 +28,9 @@ mojom("mojom_ip_address") {
 # depending on that and don't need this.
 mojom("mojom_network_isolation_key") {
   generate_java = true
-  sources = [
-    "network_isolation_key.mojom",
-  ]
+  sources = [ "network_isolation_key.mojom" ]
 
-  public_deps = [
-    "//url/mojom:url_mojom_origin",
-  ]
+  public_deps = [ "//url/mojom:url_mojom_origin" ]
 
   if (!is_ios) {
     export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"

@@ -1814,7 +1814,8 @@ TEST_F(WebViewTest, IsSelectionAnchorFirst) {
   WebRect anchor;
   WebRect focus;
   web_view->MainFrameWidget()->SelectionBounds(anchor, focus);
-  frame->SelectRange(WebPoint(focus.x, focus.y), WebPoint(anchor.x, anchor.y));
+  frame->SelectRange(gfx::Point(focus.x, focus.y),
+                     gfx::Point(anchor.x, anchor.y));
   EXPECT_FALSE(frame->IsSelectionAnchorFirst());
 }
 
@@ -4603,12 +4604,12 @@ TEST_F(WebViewTest, WebSubstringUtil) {
   web_view->MainFrameWidget()->Resize(WebSize(400, 400));
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
 
-  WebPoint baseline_point;
+  gfx::Point baseline_point;
   NSAttributedString* result = WebSubstringUtil::AttributedSubstringInRange(
       frame, 10, 3, &baseline_point);
   ASSERT_TRUE(!!result);
 
-  WebPoint point(baseline_point.x, baseline_point.y);
+  gfx::Point point(baseline_point);
   result = WebSubstringUtil::AttributedWordAtPoint(frame->FrameWidget(), point,
                                                    baseline_point);
   ASSERT_TRUE(!!result);
@@ -4619,7 +4620,7 @@ TEST_F(WebViewTest, WebSubstringUtil) {
                                                         &baseline_point);
   ASSERT_TRUE(!!result);
 
-  point = WebPoint(baseline_point.x, baseline_point.y);
+  point = baseline_point;
   result = WebSubstringUtil::AttributedWordAtPoint(frame->FrameWidget(), point,
                                                    baseline_point);
   ASSERT_TRUE(!!result);
@@ -4633,14 +4634,14 @@ TEST_F(WebViewTest, WebSubstringUtilBaselinePoint) {
   web_view->MainFrameWidget()->Resize(WebSize(400, 400));
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
 
-  WebPoint old_point;
+  gfx::Point old_point;
   WebSubstringUtil::AttributedSubstringInRange(frame, 3, 1, &old_point);
 
-  WebPoint new_point;
+  gfx::Point new_point;
   WebSubstringUtil::AttributedSubstringInRange(frame, 3, 20, &new_point);
 
-  EXPECT_EQ(old_point.x, new_point.x);
-  EXPECT_EQ(old_point.y, new_point.y);
+  EXPECT_EQ(old_point.x(), new_point.x());
+  EXPECT_EQ(old_point.y(), new_point.y());
 }
 
 TEST_F(WebViewTest, WebSubstringUtilPinchZoom) {
@@ -4652,22 +4653,22 @@ TEST_F(WebViewTest, WebSubstringUtilPinchZoom) {
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   NSAttributedString* result = nil;
 
-  WebPoint baseline_point;
+  gfx::Point baseline_point;
   result = WebSubstringUtil::AttributedSubstringInRange(frame, 10, 3,
                                                         &baseline_point);
   ASSERT_TRUE(!!result);
 
   web_view->SetPageScaleFactor(3);
 
-  WebPoint point_after_zoom;
+  gfx::Point point_after_zoom;
   result = WebSubstringUtil::AttributedSubstringInRange(frame, 10, 3,
                                                         &point_after_zoom);
   ASSERT_TRUE(!!result);
 
   // We won't have moved by a full factor of 3 because of the translations, but
   // we should move by a factor of >2.
-  EXPECT_LT(2 * baseline_point.x, point_after_zoom.x);
-  EXPECT_LT(2 * baseline_point.y, point_after_zoom.y);
+  EXPECT_LT(2 * baseline_point.x(), point_after_zoom.x());
+  EXPECT_LT(2 * baseline_point.y(), point_after_zoom.y());
 }
 
 TEST_F(WebViewTest, WebSubstringUtilIframe) {
@@ -4682,28 +4683,28 @@ TEST_F(WebViewTest, WebSubstringUtilIframe) {
   WebLocalFrameImpl* child_frame = WebLocalFrameImpl::FromFrame(
       To<LocalFrame>(main_frame->GetFrame()->Tree().FirstChild()));
 
-  WebPoint baseline_point;
+  gfx::Point baseline_point;
   NSAttributedString* result = WebSubstringUtil::AttributedSubstringInRange(
       child_frame, 11, 7, &baseline_point);
   ASSERT_NE(result, nullptr);
 
-  WebPoint point(baseline_point.x, baseline_point.y);
+  gfx::Point point(baseline_point);
   result = WebSubstringUtil::AttributedWordAtPoint(main_frame->FrameWidget(),
                                                    point, baseline_point);
   ASSERT_NE(result, nullptr);
 
-  int y_before_change = baseline_point.y;
+  int y_before_change = baseline_point.y();
 
   // Now move the <iframe> down by 100px.
   main_frame->ExecuteScript(WebScriptSource(
       "document.querySelector('iframe').style.marginTop = '100px';"));
 
-  point = WebPoint(point.x, point.y + 100);
+  point = gfx::Point(point.x(), point.y() + 100);
   result = WebSubstringUtil::AttributedWordAtPoint(main_frame->FrameWidget(),
                                                    point, baseline_point);
   ASSERT_NE(result, nullptr);
 
-  EXPECT_EQ(y_before_change, baseline_point.y - 100);
+  EXPECT_EQ(y_before_change, baseline_point.y() - 100);
 }
 
 #endif

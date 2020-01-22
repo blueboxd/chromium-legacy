@@ -39,17 +39,14 @@ import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
-import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
-import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.TabState.WebContentsState;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.embedder_support.view.ContentView;
-import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
@@ -721,23 +718,6 @@ public class TabImpl implements Tab {
      */
     public int getRootId() {
         return mRootId;
-    }
-
-    /**
-     * @return If the page being displayed is a Preview
-     */
-    public boolean isPreview() {
-        return getWebContents() != null && !isNativePage() && !isShowingInterstitialPage()
-                && getSecurityLevel() != ConnectionSecurityLevel.DANGEROUS
-                && PreviewsAndroidBridge.getInstance().shouldShowPreviewUI(getWebContents());
-    }
-
-    /**
-     * @return The current {@link ConnectionSecurityLevel} for the tab.
-     */
-    // TODO(tedchoc): Remove this and transition all clients to use LocationBarModel directly.
-    public int getSecurityLevel() {
-        return SecurityStateModel.getSecurityLevelForWebContents(getWebContents());
     }
 
     /**

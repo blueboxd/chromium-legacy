@@ -41,14 +41,13 @@ void GamesServiceImpl::GetHighlightedGame(HighlightedGameCallback callback) {
     return;
   }
 
-  auto cached_game = highlighted_games_store_->TryGetFromCache();
-  if (cached_game) {
-    std::move(callback).Run(ResponseCode::kSuccess,
-                            std::move(cached_game.value()));
+  highlighted_games_store_->SetPendingCallback(std::move(callback));
+
+  if (highlighted_games_store_->TryRespondFromCache()) {
+    // TODO(crbug.com/1018201): Remove return when we have other stores that
+    // don't have caching support; this is a temporary optimization.
     return;
   }
-
-  highlighted_games_store_->SetPendingCallback(std::move(callback));
 
   UpdateStores();
 }

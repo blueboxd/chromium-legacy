@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner_util.h"
@@ -48,12 +49,33 @@ constexpr int kNumUserInputEventsBuckets =
 constexpr char kSavedFileName[] = "past_charging_events.pb";
 constexpr char kSavedDir[] = "smartcharging";
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SmartChargingMessage {
+  kSerializeProtoError = 0,
+  kWriteFileError = 1,
+  kWriteFileSuccess = 2,
+  kReadFileError = 3,
+  kParseProtoError = 4,
+  kReadFileSuccess = 5,
+  kGetPrimaryProfileError = 6,
+  kCreateFolderError = 7,
+  kCreatePathSuccess = 8,
+  kPathDoesntExists = 9,
+  kGetPathSuccess = 10,
+  kMaxValue = kGetPathSuccess
+};
+
+void LogSmartChargingMessage(SmartChargingMessage message) {
+  UMA_HISTOGRAM_ENUMERATION("Power.SmartCharging.Messages", message);
+}
+
 // Given a proto and file path, writes to disk and logs the error(if any).
 void WriteProtoToDisk(const PastChargingEvents& proto,
                       const base::FilePath& file_path) {
   std::string proto_string;
   if (!proto.SerializeToString(&proto_string)) {
-    // TODO(crbug.com/1028853): adds a UMA log here.
+    LogSmartChargingMessage(SmartChargingMessage::kSerializeProtoError);
     return;
   }
   bool write_result;
@@ -65,10 +87,10 @@ void WriteProtoToDisk(const PastChargingEvents& proto,
   }
 
   if (!write_result) {
-    // TODO(crbug.com/1028853): adds a UMA log here.
+    LogSmartChargingMessage(SmartChargingMessage::kWriteFileError);
     return;
   }
-  // TODO(crbug.com/1028853): adds a UMA log here.
+  LogSmartChargingMessage(SmartChargingMessage::kWriteFileSuccess);
 }
 
 // Reads a proto from a file path.
@@ -77,16 +99,16 @@ std::unique_ptr<PastChargingEvents> ReadProto(const base::FilePath& file_path) {
                                                 base::BlockingType::MAY_BLOCK);
   std::string proto_str;
   if (!base::ReadFileToString(file_path, &proto_str)) {
-    // TODO(crbug.com/1028853): adds a UMA log here.
+    LogSmartChargingMessage(SmartChargingMessage::kReadFileError);
     return nullptr;
   }
 
   auto proto = std::make_unique<PastChargingEvents>();
   if (!proto->ParseFromString(proto_str)) {
-    // TODO(crbug.com/1028853): adds a UMA log here.
+    LogSmartChargingMessage(SmartChargingMessage::kParseProtoError);
     return nullptr;
   }
-  // TODO(crbug.com/1028853): adds a UMA log here.
+  LogSmartChargingMessage(SmartChargingMessage::kReadFileSuccess);
   return proto;
 }
 
@@ -100,15 +122,15 @@ bool GetPathSuccess(const base::FilePath profile_path,
   const base::FilePath path = profile_path.AppendASCII(kSavedDir);
   if (create_new_path) {
     if (!base::DirectoryExists(path) && !base::CreateDirectory(path)) {
-      // TODO(crbug.com/1028853): adds a UMA log here.
+      LogSmartChargingMessage(SmartChargingMessage::kCreateFolderError);
       return false;
     }
   } else if (!base::PathExists(path.AppendASCII(kSavedFileName))) {
-    // TODO(crbug.com/1028853): adds a UMA log here.
+    LogSmartChargingMessage(SmartChargingMessage::kPathDoesntExists);
     return false;
   }
-  // TODO(crbug.com/1028853): adds a UMA log here.
   *file_path = path.AppendASCII(kSavedFileName);
+  LogSmartChargingMessage(SmartChargingMessage::kGetPathSuccess);
   return true;
 }
 
@@ -331,7 +353,7 @@ void SmartChargingManager::OnUserSessionStarted(bool /* is_primary_user */) {
   if (loaded_from_disk_)
     return;
   if (!ProfileManager::GetPrimaryUserProfile()) {
-    // TODO(crbug.com/1028853): adds a UMA log here.
+    LogSmartChargingMessage(SmartChargingMessage::kGetPrimaryProfileError);
     return;
   }
   profile_path_ = ProfileManager::GetPrimaryUserProfile()->GetPath();
@@ -438,7 +460,7 @@ void SmartChargingManager::LogEvent(const EventReason& reason) {
   if (profile_path_.has_value()) {
     MaybeSaveToDisk(profile_path_.value());
   } else {
-    // TODO(crbug.com/1028853): adds a UMA log here.
+    LogSmartChargingMessage(SmartChargingMessage::kGetPrimaryProfileError);
   }
 }
 

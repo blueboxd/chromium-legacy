@@ -16,11 +16,11 @@
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "content/public/browser/render_view_host.h"
 #include "extensions/common/constants.h"
@@ -65,7 +65,8 @@ content::WebContents* NavigateWebApplicationWindow(
 
   // TODO(https://crbug.com/1032443):
   // Eventually move this to browser_navigator.cc: CreateTargetContents().
-  WebAppTabHelper* tab_helper = WebAppTabHelper::FromWebContents(web_contents);
+  WebAppTabHelperBase* tab_helper =
+      WebAppTabHelperBase::FromWebContents(web_contents);
   DCHECK(tab_helper);
   tab_helper->SetAppId(app_id);
 

@@ -93,6 +93,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CorsURLLoaderFactory final
   const bool disable_web_security_;
   const int32_t process_id_ = mojom::kInvalidProcessId;
   const base::Optional<url::Origin> request_initiator_site_lock_;
+  const bool ignore_isolated_world_origin_;
 
   // Relative order of |network_loader_factory_| and |loaders_| matters -
   // URLLoaderFactory needs to live longer than URLLoaders created using the

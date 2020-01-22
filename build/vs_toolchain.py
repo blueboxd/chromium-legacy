@@ -140,7 +140,7 @@ def _RegistryGetValue(key, value):
 def GetVisualStudioVersion():
   """Return best available version of Visual Studio.
   """
-  supported_versions = MSVS_VERSIONS.keys()
+  supported_versions = list(MSVS_VERSIONS.keys())
 
   # VS installed in depot_tools for Googlers
   if bool(int(os.environ.get('DEPOT_TOOLS_WIN_TOOLCHAIN', '1'))):

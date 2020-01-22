@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_notification_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
@@ -371,6 +372,12 @@ void WilcoDtcSupportdBridge::HandleEvent(WilcoDtcSupportdEvent event) {
       return;
   }
   LOG(ERROR) << "Unrecognized event " << event << " event";
+}
+
+void WilcoDtcSupportdBridge::GetCrosHealthdDiagnosticsService(
+    cros_healthd::mojom::CrosHealthdDiagnosticsServiceRequest service) {
+  cros_healthd::ServiceConnection::GetInstance()->GetDiagnosticsService(
+      std::move(service));
 }
 
 }  // namespace chromeos

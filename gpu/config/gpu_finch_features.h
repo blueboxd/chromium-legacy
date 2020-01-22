@@ -51,6 +51,8 @@ GPU_EXPORT extern const base::Feature kVaapiWebPImageDecodeAcceleration;
 
 GPU_EXPORT extern const base::Feature kVulkan;
 
+GPU_EXPORT extern const base::Feature kSkiaDawn;
+
 GPU_EXPORT extern const base::Feature kEnableSharedImageForWebview;
 
 #if defined(OS_ANDROID)

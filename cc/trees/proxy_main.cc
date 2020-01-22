@@ -340,6 +340,7 @@ void ProxyMain::BeginMainFrame(
         base::BindOnce(&ProxyImpl::NotifyReadyToCommitOnImpl,
                        base::Unretained(proxy_impl_.get()), &completion,
                        layer_tree_host_, begin_main_frame_start_time,
+                       begin_main_frame_state->begin_frame_args,
                        hold_commit_for_activation));
     completion.Wait();
   }

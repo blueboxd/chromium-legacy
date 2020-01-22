@@ -1313,7 +1313,7 @@ void CheckTestHostNameUsedWithCorrectNetworkIsolationKey(Browser* browser) {
   network::DnsLookupResult result2 =
       network::BlockingDnsLookup(network_context, kHostPortPair,
                                  std::move(params), net::NetworkIsolationKey());
-  EXPECT_EQ(net::ERR_DNS_CACHE_MISS, result2.error);
+  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, result2.error);
 }
 
 // HostResolver and HostResolverPrivate tests. The PPAPI code used by these

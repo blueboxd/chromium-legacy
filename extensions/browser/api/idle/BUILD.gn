@@ -24,7 +24,5 @@ source_set("idle") {
     "//ui/base/idle",
   ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

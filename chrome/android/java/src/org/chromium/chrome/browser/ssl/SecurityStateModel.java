@@ -27,6 +27,10 @@ public class SecurityStateModel {
         return SecurityStateModelJni.get().getSecurityLevelForWebContents(webContents);
     }
 
+    public static boolean isContentDangerous(WebContents webContents) {
+        return getSecurityLevelForWebContents(webContents) == ConnectionSecurityLevel.DANGEROUS;
+    }
+
     /**
      * Returns whether to use a danger icon instead of an info icon in the URL bar for the WARNING
      * security level.

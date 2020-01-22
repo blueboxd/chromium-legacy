@@ -37,7 +37,6 @@ using blink::WebInputEvent;
 using blink::WebInputEventResult;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
-using blink::WebPoint;
 using blink::WebRect;
 using blink::WebSize;
 using blink::WebString;

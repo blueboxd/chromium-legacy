@@ -1977,6 +1977,14 @@ template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 template <typename VisitorDispatcher, typename A>
 std::enable_if_t<A::kIsGarbageCollected>
 Vector<T, inlineCapacity, Allocator>::Trace(VisitorDispatcher visitor) {
+  // Bail out for concurrent marking.
+  if (visitor->ConcurrentTracingBailOut(
+          {this, [](blink::Visitor* visitor, void* object) {
+             reinterpret_cast<Vector<T, inlineCapacity, Allocator>*>(object)
+                 ->Trace(visitor);
+           }}))
+    return;
+
   static_assert(Allocator::kIsGarbageCollected,
                 "Garbage collector must be enabled.");
 

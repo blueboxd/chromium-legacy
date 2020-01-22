@@ -275,7 +275,7 @@ TEST_P(RulesetManagerTest, IncognitoRequests) {
 }
 
 // Tests that
-// Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions2
+// Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions3
 // is only emitted when there are active rulesets.
 TEST_P(RulesetManagerTest, TotalEvaluationTimeHistogram) {
   WebRequestInfo example_com_request(
@@ -284,7 +284,7 @@ TEST_P(RulesetManagerTest, TotalEvaluationTimeHistogram) {
       GetRequestParamsForURL("http://google.com"));
   bool is_incognito_context = false;
   const char* kHistogramName =
-      "Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions2";
+      "Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions3";
   {
     base::HistogramTester tester;
 

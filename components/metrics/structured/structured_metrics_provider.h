@@ -28,6 +28,13 @@ namespace structured {
 // thread safe and should only be called on the browser UI sequence, because
 // calls from the metrics service come on the UI sequence.
 //
+// Each structured metrics event is sent with other UMA data, and so is
+// associated with the UMA client ID when received by the UMA server. The client
+// ID is stripped from the events after they reach the server, and so data at
+// rest is not attached to the client ID. However, please note that structured
+// events are *not* separated from the client ID at the point of upload from
+// the device.
+//
 // Currently, the structured metrics system is cros-only and relies on the cros
 // cryptohome to store keys and unsent logs, collectively called 'state'. This
 // means structured metrics collection cannot begin until a profile eligible

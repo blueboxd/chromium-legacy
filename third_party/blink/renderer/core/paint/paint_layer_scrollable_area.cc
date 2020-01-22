@@ -3070,6 +3070,7 @@ IntRect
 PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::VisualRect()
     const {
   const auto* box = scrollable_area_->GetLayoutBox();
+
   const auto& paint_offset = box->FirstFragment().PaintOffset();
   auto overflow_clip_rect =
       PixelSnappedIntRect(box->OverflowClipRect(paint_offset));
@@ -3083,6 +3084,30 @@ PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::VisualRect()
               scrollable_area_->layer_->GraphicsLayerBacking()->VisualRect());
   }
 #endif
+
+  // The HTML element of a document is special, in that it can have a transform,
+  // but the bounds of the painted area of the element still extends beyond
+  // its actual size to encompass the entire viewport canvas. This is
+  // accomplished in ViewPainter by starting with a rect in viewport canvas
+  // space that is equal to the size of the viewport canvas, then mapping it
+  // into the local border box space of the HTML element, and painting a rect
+  // equal to the bounding box of the result. We need to add in that mapped rect
+  // in such cases.
+  const Document& document = box->GetDocument();
+  if (box->IsLayoutView() &&
+      (document.IsXMLDocument() || document.IsHTMLDocument())) {
+    if (const auto* document_element = document.documentElement()) {
+      if (const auto* document_element_object =
+              document_element->GetLayoutObject()) {
+        TransformationMatrix matrix;
+        document_element_object->GetTransformFromContainer(
+            box, PhysicalOffset(), matrix);
+        if (matrix.IsInvertible())
+          result.Unite(matrix.Inverse().MapRect(result));
+      }
+    }
+  }
+
   return result;
 }
 

@@ -57,6 +57,7 @@ class CONTENT_EXPORT BackgroundSyncScheduler
 
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class base::DeleteHelper<BackgroundSyncScheduler>;
+  friend class BackgroundSyncSchedulerTest;
 
   std::map<StoragePartitionImpl*, std::unique_ptr<base::OneShotTimer>>&
   GetDelayedProcessingInfoMap(blink::mojom::BackgroundSyncType sync_type);
@@ -73,6 +74,12 @@ class CONTENT_EXPORT BackgroundSyncScheduler
       delayed_processing_info_one_shot_;
   std::map<StoragePartitionImpl*, std::unique_ptr<base::OneShotTimer>>
       delayed_processing_info_periodic_;
+
+  std::map<blink::mojom::BackgroundSyncType, base::TimeTicks>
+      scheduled_wakeup_time_{
+          {blink::mojom::BackgroundSyncType::ONE_SHOT, base::TimeTicks::Max()},
+          {blink::mojom::BackgroundSyncType::PERIODIC, base::TimeTicks::Max()},
+      };
 
   base::WeakPtrFactory<BackgroundSyncScheduler> weak_ptr_factory_{this};
 

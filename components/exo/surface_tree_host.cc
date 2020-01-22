@@ -9,6 +9,8 @@
 #include "base/macros.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
+#include "components/exo/shell_surface_base.h"
+#include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -17,6 +19,7 @@
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -211,6 +214,21 @@ void SurfaceTreeHost::OnLostSharedContext() {
 
 void SurfaceTreeHost::SubmitCompositorFrame() {
   viz::CompositorFrame frame = PrepareToSubmitCompositorFrame();
+
+  // TODO(1041932,1034876): Remove or early return once these issues
+  // are fixed or identified.
+  if (frame.size_in_pixels().IsEmpty()) {
+    aura::Window* toplevel = root_surface_->window()->GetToplevelWindow();
+    auto app_type = toplevel->GetProperty(aura::client::kAppType);
+    const std::string* app_id = GetShellApplicationId(toplevel);
+    const std::string* startup_id = GetShellStartupId(toplevel);
+    auto* shell_surface = GetShellSurfaceBaseForWindow(toplevel);
+    DCHECK(!frame.size_in_pixels().IsEmpty())
+        << " Title=" << shell_surface->GetWindowTitle()
+        << ", AppType=" << static_cast<int>(app_type)
+        << ", AppId=" << (app_id ? *app_id : "''")
+        << ", StartupId=" << (startup_id ? *startup_id : "''");
+  }
 
   root_surface_->AppendSurfaceHierarchyCallbacks(&frame_callbacks_,
                                                  &presentation_callbacks_);

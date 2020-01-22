@@ -37,9 +37,10 @@ constexpr bool IsDotSpaceFilenameSuffixIgnored() {
 #endif
 }
 
-// Returns platform specific canonicalized version of |path| for content
-// verification system.
-base::FilePath::StringType CanonicalizeFilePath(const base::FilePath& path);
+// Returns platform specific canonicalized version of |relative_path| for
+// content verification system.
+base::FilePath::StringType CanonicalizeRelativePath(
+    const base::FilePath& relative_path);
 
 }  // namespace content_verifier_utils
 }  // namespace extensions

@@ -27,6 +27,7 @@ test.realbox.IDS = {
  * @const
  */
 test.realbox.CLASSES = {
+  CLOCK_ICON: 'clock-icon',
   HAS_IMAGE: 'has-image',
   IMAGE_CONTAINER: 'image-container',
   MATCH_IMAGE: 'match-image',
@@ -1261,13 +1262,14 @@ test.realbox2.testRealboxIconPrefixSearch = function() {
     matches: [
       test.realbox.getUrlMatch({allowedToBeDefaultMatch: true}),
       test.realbox.getSearchMatch(),
+      test.realbox.getSearchMatch({type: 'search-history'}),
     ],
   });
   assertTrue(test.realbox.areMatchesShowing());
 
   // First URL match should be showing and the favicon should be in the realbox.
   const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
-  assertEquals(2, matchEls.length);
+  assertEquals(3, matchEls.length);
   assertTrue(matchEls[0].classList.contains(test.realbox.CLASSES.SELECTED));
   assertTrue(!!realboxIcon.style.backgroundImage);
 
@@ -1282,6 +1284,12 @@ test.realbox2.testRealboxIconPrefixSearch = function() {
   // Second search match should clear the favicon.
   assertTrue(matchEls[1].classList.contains(test.realbox.CLASSES.SELECTED));
   assertFalse(!!realboxIcon.style.backgroundImage);
+
+  test.realbox.realboxEl.dispatchEvent(arrowDown);
+
+  // Third search match should change to clock icon.
+  assertTrue(matchEls[2].classList.contains(test.realbox.CLASSES.SELECTED));
+  assertEquals(realboxIcon.className, test.realbox.CLASSES.CLOCK_ICON);
 
   const escapeToDefaultMatch = new KeyboardEvent('keydown', {
     bubbles: true,

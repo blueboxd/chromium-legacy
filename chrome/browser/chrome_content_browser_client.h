@@ -514,8 +514,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   content::HidDelegate* GetHidDelegate() override;
   std::unique_ptr<content::AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(
-      content::RenderFrameHost* render_frame_host,
-      const std::string& relying_party_id) override;
+      content::RenderFrameHost* render_frame_host) override;
 #endif
   bool ShowPaymentHandlerWindow(
       content::BrowserContext* browser_context,

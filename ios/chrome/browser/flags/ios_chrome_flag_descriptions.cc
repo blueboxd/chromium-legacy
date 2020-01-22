@@ -272,11 +272,6 @@ const char kMobileGoogleSRPDescription[] =
     "Request the Mobile version of Google SRP by default when the desktop mode "
     "is requested by default.";
 
-const char kNewOmniboxPopupLayoutName[] = "New omnibox popup";
-const char kNewOmniboxPopupLayoutDescription[] =
-    "Switches the omnibox suggestions and omnibox itself to display the new "
-    "design with favicons, new suggestion layout, rich entity support.";
-
 const char kNonModalDialogsName[] = "Use non-modal JavaScript dialogs";
 const char kNonModalDialogsDescription[] =
     "Presents JavaScript dialogs non-modally so that the user can change tabs "
@@ -296,11 +291,6 @@ const char kOmniboxUIMaxAutocompleteMatchesName[] =
 const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
     "Changes the maximum number of autocomplete matches displayed in the "
     "Omnibox UI.";
-
-const char kOmniboxUseDefaultSearchEngineFaviconName[] =
-    "Default search engine favicon in the omnibox";
-const char kOmniboxUseDefaultSearchEngineFaviconDescription[] =
-    "Shows default search engine favicon in the omnibox";
 
 const char kOmniboxOnDeviceHeadSuggestionsName[] =
     "Omnibox on device head suggestions";
@@ -353,6 +343,12 @@ const char kShowAutofillTypePredictionsDescription[] =
 const char kSnapshotDrawViewName[] = "Use DrawViewHierarchy for Snapshots";
 const char kSnapshotDrawViewDescription[] =
     "When enabled, snapshots will be taken using |-drawViewHierarchy:|.";
+
+const char kSSLCommittedInterstitialsName[] =
+    "Enable SSL committed interstitials";
+const char kSSLCommittedInterstitialsDescription[] =
+    "When enabled, SSL interstitial pages will be committed rather than using "
+    "an overlay on the page.";
 
 const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =

@@ -897,6 +897,34 @@ static jboolean JNI_WebsitePreferenceBridge_GetAdBlockingActivated(
       url, GURL(), ContentSettingsType::ADS_DATA, std::string(), nullptr);
 }
 
+static void JNI_WebsitePreferenceBridge_GetArOrigins(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& list) {
+  JNI_WebsitePreferenceBridge_GetOrigins(
+      env, ContentSettingsType::AR,
+      &Java_WebsitePreferenceBridge_insertArInfoIntoList, list, false);
+}
+
+static jint JNI_WebsitePreferenceBridge_GetArSettingForOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& origin,
+    const JavaParamRef<jstring>& embedder,
+    jboolean is_incognito) {
+  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
+      env, ContentSettingsType::AR, origin, embedder, is_incognito);
+}
+
+static void JNI_WebsitePreferenceBridge_SetArSettingForOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& origin,
+    const JavaParamRef<jstring>& embedder,
+    jint value,
+    jboolean is_incognito) {
+  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
+      env, ContentSettingsType::AR, origin, embedder,
+      static_cast<ContentSetting>(value), is_incognito);
+}
+
 static void JNI_WebsitePreferenceBridge_GetNfcOrigins(
     JNIEnv* env,
     const JavaParamRef<jobject>& list) {
@@ -950,6 +978,34 @@ static void JNI_WebsitePreferenceBridge_SetSensorsSettingForOrigin(
     jboolean is_incognito) {
   JNI_WebsitePreferenceBridge_SetSettingForOrigin(
       env, ContentSettingsType::SENSORS, origin, embedder,
+      static_cast<ContentSetting>(value), is_incognito);
+}
+
+static void JNI_WebsitePreferenceBridge_GetVrOrigins(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& list) {
+  JNI_WebsitePreferenceBridge_GetOrigins(
+      env, ContentSettingsType::VR,
+      &Java_WebsitePreferenceBridge_insertVrInfoIntoList, list, false);
+}
+
+static jint JNI_WebsitePreferenceBridge_GetVrSettingForOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& origin,
+    const JavaParamRef<jstring>& embedder,
+    jboolean is_incognito) {
+  return JNI_WebsitePreferenceBridge_GetSettingForOrigin(
+      env, ContentSettingsType::VR, origin, embedder, is_incognito);
+}
+
+static void JNI_WebsitePreferenceBridge_SetVrSettingForOrigin(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& origin,
+    const JavaParamRef<jstring>& embedder,
+    jint value,
+    jboolean is_incognito) {
+  JNI_WebsitePreferenceBridge_SetSettingForOrigin(
+      env, ContentSettingsType::VR, origin, embedder,
       static_cast<ContentSetting>(value), is_incognito);
 }
 
@@ -1074,6 +1130,14 @@ static void JNI_WebsitePreferenceBridge_SetContentSetting(
       static_cast<ContentSetting>(setting));
 }
 
+static jboolean JNI_WebsitePreferenceBridge_GetArEnabled(JNIEnv* env) {
+  return GetBooleanForContentSetting(ContentSettingsType::AR);
+}
+
+static jboolean JNI_WebsitePreferenceBridge_GetVrEnabled(JNIEnv* env) {
+  return GetBooleanForContentSetting(ContentSettingsType::VR);
+}
+
 static jboolean JNI_WebsitePreferenceBridge_GetAcceptCookiesEnabled(
     JNIEnv* env) {
   return GetBooleanForContentSetting(ContentSettingsType::COOKIES);
@@ -1142,6 +1206,15 @@ static jboolean JNI_WebsitePreferenceBridge_GetAllowLocationManagedByCustodian(
   return IsContentSettingManagedByCustodian(ContentSettingsType::GEOLOCATION);
 }
 
+static void JNI_WebsitePreferenceBridge_SetArEnabled(JNIEnv* env,
+                                                     jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::AR,
+      allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
 static void JNI_WebsitePreferenceBridge_SetClipboardEnabled(JNIEnv* env,
                                                             jboolean allow) {
   HostContentSettingsMap* host_content_settings_map =
@@ -1157,6 +1230,15 @@ static void JNI_WebsitePreferenceBridge_SetNfcEnabled(JNIEnv* env,
       HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
   host_content_settings_map->SetDefaultContentSetting(
       ContentSettingsType::NFC,
+      allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
+}
+
+static void JNI_WebsitePreferenceBridge_SetVrEnabled(JNIEnv* env,
+                                                     jboolean allow) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      ContentSettingsType::VR,
       allow ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 

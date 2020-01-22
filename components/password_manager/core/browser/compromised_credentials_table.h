@@ -33,17 +33,17 @@ enum class RemoveCompromisedCredentialsReason {
 
 // Represents information about the particular compromised credentials.
 struct CompromisedCredentials {
-  CompromisedCredentials(GURL url,
+  CompromisedCredentials(std::string signon_realm,
                          base::string16 username,
                          base::Time create_time,
                          CompromiseType compromise_type)
-      : url(std::move(url)),
+      : signon_realm(std::move(signon_realm)),
         username(std::move(username)),
         create_time(create_time),
         compromise_type(compromise_type) {}
 
-  // The url of the website where the credentials were compromised.
-  GURL url;
+  // The signon_realm of the website where the credentials were compromised.
+  std::string signon_realm;
   // The value of the compromised username.
   base::string16 username;
   // The date when the record was created.
@@ -71,31 +71,32 @@ class CompromisedCredentialsTable {
   // completed successfully.
   bool AddRow(const CompromisedCredentials& compromised_credentials);
 
-  // Updates the row that has |old_url| and |old_username| with |new_url| and
-  // |new_username|. If the row does not exist, the method will not do anything.
-  // Returns true if the SQL completed successfully.
-  bool UpdateRow(const GURL& new_url,
+  // Updates the row that has |old_signon_realm| and |old_username| with
+  // |new_signon_realm| and |new_username|. If the row does not exist, the
+  // method will not do anything. Returns true if the SQL completed
+  // successfully.
+  bool UpdateRow(const std::string& new_signon_realm,
                  const base::string16& new_username,
-                 const GURL& old_url,
+                 const std::string& old_signon_realm,
                  const base::string16& old_username) const;
 
   // Removes information about the credentials compromised for |username| on
-  // |url|. |reason| is the reason why the credentials is removed from
+  // |signon_realm|. |reason| is the reason why the credentials is removed from
   // the table. Returns true if the SQL completed successfully.
   // Also logs the compromise type in UMA.
-  bool RemoveRow(const GURL& url,
+  bool RemoveRow(const std::string& signon_realm,
                  const base::string16& username,
                  RemoveCompromisedCredentialsReason reason);
 
-  // Gets all the rows in the database for the |username| and |url|.
+  // Gets all the rows in the database for the |username| and |signon_realm|.
   std::vector<CompromisedCredentials> GetRows(
-      const GURL& url,
+      const std::string& signon_realm,
       const base::string16& username) const;
 
   // Removes all compromised credentials created between |remove_begin|
   // inclusive and |remove_end| exclusive. If |url_filter| is not null, only
-  // compromised credentials for matching urls are removed. Returns true if the
-  // SQL completed successfully.
+  // compromised credentials for matching signon_realms are removed. Returns
+  // true if the SQL completed successfully.
   bool RemoveRowsByUrlAndTime(
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,

@@ -194,16 +194,16 @@ bool XShmImagePoolBase::Resize(const gfx::Size& pixel_size) {
       if (state.shminfo_.shmid < 0)
         return false;
       state.shminfo_.shmaddr =
-          reinterpret_cast<char*>(shmat(state.shminfo_.shmid, 0, 0));
+          reinterpret_cast<char*>(shmat(state.shminfo_.shmid, nullptr, 0));
       if (state.shminfo_.shmaddr == reinterpret_cast<char*>(-1)) {
-        shmctl(state.shminfo_.shmid, IPC_RMID, 0);
+        shmctl(state.shminfo_.shmid, IPC_RMID, nullptr);
         return false;
       }
 #if defined(OS_LINUX)
       // On Linux, a shmid can still be attached after IPC_RMID if otherwise
       // kept alive.  Detach before XShmAttach to prevent a memory leak in case
       // the process dies.
-      shmctl(state.shminfo_.shmid, IPC_RMID, 0);
+      shmctl(state.shminfo_.shmid, IPC_RMID, nullptr);
 #endif
       DCHECK(!state.shmem_attached_to_server_);
       if (!XShmAttach(display_, &state.shminfo_))
@@ -214,7 +214,7 @@ bool XShmImagePoolBase::Resize(const gfx::Size& pixel_size) {
       // forced to do IPC_RMID after the server has attached to the segment.
       // XShmAttach is asynchronous, so we must also sync.
       XSync(display_, x11::False);
-      shmctl(shminfo_.shmid, IPC_RMID, 0);
+      shmctl(shminfo_.shmid, IPC_RMID, nullptr);
 #endif
       // If this class ever needs to use XShmGetImage(), this needs to be
       // changed to read-write.
@@ -222,8 +222,7 @@ bool XShmImagePoolBase::Resize(const gfx::Size& pixel_size) {
     }
   }
 
-  for (std::size_t i = 0; i < frame_states_.size(); ++i) {
-    FrameState& state = frame_states_[i];
+  for (FrameState& state : frame_states_) {
     state.image->data = state.shminfo_.shmaddr;
     SkImageInfo image_info =
         SkImageInfo::Make(state.image->width, state.image->height,

@@ -7,9 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-namespace ios {
-class ChromeBrowserState;
-}
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 @protocol BubblePresenterDelegate;
 @class BubbleViewControllerPresenter;

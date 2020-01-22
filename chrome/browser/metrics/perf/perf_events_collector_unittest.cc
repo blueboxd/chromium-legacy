@@ -34,8 +34,6 @@ const char kPerfLBRCallgraphCmd[] =
     "perf record -a -e cycles -c 4000037 --call-graph lbr";
 const char kPerfLBRCmd[] = "perf record -a -e r20c4 -b -c 200011";
 const char kPerfLBRCmdAtom[] = "perf record -a -e rc4 -b -c 300001";
-const char kPerfDataTLBMissesCmdGLM[] = "perf record -a -e r13d0 -c 2003";
-const char kPerfDataTLBMissesCmd[] = "perf record -a -e dTLB-misses -c 2003";
 const char kPerfITLBMissCyclesCmdIvyBridge[] =
     "perf record -a -e itlb_misses.walk_duration -c 2003";
 const char kPerfITLBMissCyclesCmdSkylake[] =
@@ -500,16 +498,6 @@ TEST_F(PerfCollectorTest, DefaultCommandsBasedOnUarch_Goldmont) {
   found = std::find_if(cmds.begin(), cmds.end(),
                        [](const RandomSelector::WeightAndValue& cmd) -> bool {
                          return cmd.value == kPerfCacheMissesCmd;
-                       });
-  EXPECT_NE(cmds.end(), found);
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfDataTLBMissesCmd;
-                       });
-  EXPECT_EQ(cmds.end(), found) << "Goldmont requires specialized dTLB command";
-  found = std::find_if(cmds.begin(), cmds.end(),
-                       [](const RandomSelector::WeightAndValue& cmd) -> bool {
-                         return cmd.value == kPerfDataTLBMissesCmdGLM;
                        });
   EXPECT_NE(cmds.end(), found);
   found = std::find_if(cmds.begin(), cmds.end(),

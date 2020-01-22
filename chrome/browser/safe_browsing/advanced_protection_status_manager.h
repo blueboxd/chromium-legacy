@@ -34,13 +34,9 @@ class AdvancedProtectionStatusManager
                                   signin::IdentityManager* identity_manager);
   ~AdvancedProtectionStatusManager() override;
 
-  // If the primary account of associated profile is requesting advanced
-  // protection verdicts.
-  bool RequestsAdvancedProtectionVerdicts();
-
-  bool is_under_advanced_protection() const {
-    return is_under_advanced_protection_;
-  }
+  // Returns whether the unconsented primary account of the associated profile
+  // is under Advanced Protection.
+  bool IsUnderAdvancedProtection() const;
 
   // KeyedService:
   void Shutdown() override;

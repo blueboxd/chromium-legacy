@@ -181,6 +181,8 @@ jumbo_static_library("extensions") {
     "api/i18n/i18n_api.h",
     "api/identity/extension_token_key.cc",
     "api/identity/extension_token_key.h",
+    "api/identity/gaia_remote_consent_flow.cc",
+    "api/identity/gaia_remote_consent_flow.h",
     "api/identity/gaia_web_auth_flow.cc",
     "api/identity/gaia_web_auth_flow.h",
     "api/identity/identity_api.cc",

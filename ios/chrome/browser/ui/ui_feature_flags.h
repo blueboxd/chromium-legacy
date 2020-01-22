@@ -16,14 +16,6 @@ extern const base::Feature kSnapshotDrawView;
 // Feature to apply UI Refresh theme to the settings.
 extern const base::Feature kSettingsRefresh;
 
-// Feature to display the new omnibox popup design with favicons, search engine
-// favicon in the omnibox, rich entities support, new layout.
-extern const base::Feature kNewOmniboxPopupLayout;
-
-// Feature to display the omnibox with default search engine favicon
-// in the omnibox.
-extern const base::Feature kOmniboxUseDefaultSearchEngineFavicon;
-
 // Feature flag for embedders to block restore urls.
 extern const base::Feature kEmbedderBlockRestoreUrl;
 
@@ -39,6 +31,11 @@ extern const base::Feature kForceUnstackedTabstrip;
 // Feature flag to have the Browser contained by the TabGrid instead of being
 // presented.
 extern const base::Feature kContainedBVC;
+
+// Test-only: Feature flag used to verify that EG2 can trigger flags. Must be
+// always disabled by default, because it is used to verify that enabling
+// features in tests works.
+extern const base::Feature kTestFeature;
 
 // Feature flag to display a new option that wipes synced data on a local
 // device when signing out from a non-managed account.

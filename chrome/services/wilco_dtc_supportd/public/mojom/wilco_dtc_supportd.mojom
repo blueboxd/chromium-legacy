@@ -10,6 +10,8 @@
 
 module chromeos.wilco_dtc_supportd.mojom;
 
+import "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom";
+
 [Extensible]
 enum WilcoDtcSupportdWebRequestHttpMethod {
   kGet,
@@ -151,4 +153,9 @@ interface WilcoDtcSupportdClient {
   // Handles actionable EC events related to power (i.e., battery,
   // charger) and connected docking solutions.
   HandleEvent@3(WilcoDtcSupportdEvent event);
+
+  // Binds |service| to an implementation of CrosHealthdDiagnsticsService. In
+  // production, this implementation is provided by cros_healthd.
+  GetCrosHealthdDiagnosticsService@4(
+      chromeos.cros_healthd.mojom.CrosHealthdDiagnosticsService& service);
 };

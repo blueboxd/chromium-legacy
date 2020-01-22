@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
 #include "base/rand_util.h"
 #include "base/sequenced_task_runner.h"
@@ -139,6 +138,55 @@ const optimization_guide::proto::PageHint* GetPageHintForNavigation(
             : nullptr);
   }
   return matched_page_hint;
+}
+
+// Returns whether |optimization_type| is whitelisted by the |page_hint|. If
+// it is whitelisted, this will return true and |optimization_metadata| will be
+// populated with the metadata provided by the hint, if applicable. If
+// |page_hint| is not provided or |optimization_type| is not whitelisted, this
+// will return false.
+bool IsOptimizationTypeSupportedByPageHint(
+    const optimization_guide::proto::PageHint* page_hint,
+    optimization_guide::proto::OptimizationType optimization_type,
+    optimization_guide::OptimizationMetadata* optimization_metadata) {
+  if (!page_hint)
+    return false;
+
+  for (const auto& optimization : page_hint->whitelisted_optimizations()) {
+    if (optimization_type != optimization.optimization_type())
+      continue;
+
+    if (optimization_guide::IsDisabledPerOptimizationHintExperiment(
+            optimization)) {
+      continue;
+    }
+
+    // We found an optimization that can be applied. Populate optimization
+    // metadata if applicable and return.
+    if (optimization_metadata) {
+      switch (optimization.metadata_case()) {
+        case optimization_guide::proto::Optimization::kPreviewsMetadata:
+          optimization_metadata->previews_metadata =
+              optimization.previews_metadata();
+          break;
+        case optimization_guide::proto::Optimization::kPerformanceHintsMetadata:
+          optimization_metadata->performance_hints_metadata =
+              optimization.performance_hints_metadata();
+          break;
+        case optimization_guide::proto::Optimization::kPublicImageMetadata:
+          optimization_metadata->public_image_metadata =
+              optimization.public_image_metadata();
+          break;
+        case optimization_guide::proto::Optimization::METADATA_NOT_SET:
+          // Some optimization types do not have metadata, make sure we do not
+          // DCHECK.
+          break;
+      }
+    }
+    return true;
+  }
+
+  return false;
 }
 
 // Util class for recording whether a hints fetch race against the current
@@ -507,32 +555,8 @@ void OptimizationGuideHintsManager::FetchTopHostsHints() {
   hints_fetcher_->FetchOptimizationGuideServiceHints(
       top_hosts, std::vector<GURL>{}, registered_optimization_types_,
       optimization_guide::proto::CONTEXT_BATCH_UPDATE,
-      base::BindOnce(&OptimizationGuideHintsManager::OnHintsFetched,
+      base::BindOnce(&OptimizationGuideHintsManager::OnTopHostsHintsFetched,
                      ui_weak_ptr_factory_.GetWeakPtr()));
-}
-
-void OptimizationGuideHintsManager::OnHintsFetched(
-    optimization_guide::proto::RequestContext request_context,
-    optimization_guide::HintsFetcherRequestStatus fetch_status,
-    base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
-        get_hints_response) {
-  switch (request_context) {
-    case optimization_guide::proto::CONTEXT_BATCH_UPDATE:
-      OnTopHostsHintsFetched(std::move(get_hints_response));
-      UMA_HISTOGRAM_ENUMERATION(
-          "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdate",
-          fetch_status);
-      return;
-    case optimization_guide::proto::CONTEXT_PAGE_NAVIGATION:
-      OnPageNavigationHintsFetched(std::move(get_hints_response));
-      UMA_HISTOGRAM_ENUMERATION(
-          "OptimizationGuide.HintsFetcher.RequestStatus.PageNavigation",
-          fetch_status);
-      return;
-    case optimization_guide::proto::CONTEXT_UNSPECIFIED:
-      NOTREACHED();
-  }
-  NOTREACHED();
 }
 
 void OptimizationGuideHintsManager::OnTopHostsHintsFetched(
@@ -702,8 +726,9 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
       target_hosts_serialized, std::vector<GURL>{},
       registered_optimization_types_,
       optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
-      base::BindOnce(&OptimizationGuideHintsManager::OnHintsFetched,
-                     ui_weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &OptimizationGuideHintsManager::OnPageNavigationHintsFetched,
+          ui_weak_ptr_factory_.GetWeakPtr()));
 
   for (const auto& host : target_hosts)
     LoadHintForHost(host, base::DoNothing());
@@ -867,7 +892,24 @@ OptimizationGuideHintsManager::CanApplyOptimization(
     }
   }
 
+  // First, check if the optimization type is whitelisted by a URL-keyed hint.
+  const optimization_guide::proto::Hint* url_keyed_hint =
+      hint_cache_->GetURLKeyedHint(url);
+  if (url_keyed_hint) {
+    DCHECK(url_keyed_hint->page_hints_size() == 1);
+    if (url_keyed_hint->page_hints_size() > 0 &&
+        IsOptimizationTypeSupportedByPageHint(&url_keyed_hint->page_hints(0),
+                                              optimization_type,
+                                              optimization_metadata)) {
+      return optimization_guide::OptimizationTypeDecision::kAllowedByHint;
+    }
+  }
+
   if (!loaded_hint) {
+    if (IsHintBeingFetched(url.host())) {
+      return optimization_guide::OptimizationTypeDecision::
+          kHintFetchStartedButNotAvailableInTime;
+    }
     // If we do not have a hint already loaded and we do not have one in the
     // cache, we do not know what to do with the URL so just return.
     // Otherwise, we do have information, but we just do not know it yet.
@@ -875,54 +917,13 @@ OptimizationGuideHintsManager::CanApplyOptimization(
       return optimization_guide::OptimizationTypeDecision::
           kHadHintButNotLoadedInTime;
     }
-    if (IsHintBeingFetched(url.host())) {
-      return optimization_guide::OptimizationTypeDecision::
-          kHintFetchStartedButNotAvailableInTime;
-    }
     return optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
   }
 
-  if (!matched_page_hint) {
-    return optimization_guide::OptimizationTypeDecision::kNoMatchingPageHint;
-  }
-
-  // Now check if we have any optimizations for it.
-  for (const auto& optimization :
-       matched_page_hint->whitelisted_optimizations()) {
-    if (optimization_type != optimization.optimization_type())
-      continue;
-
-    if (optimization_guide::IsDisabledPerOptimizationHintExperiment(
-            optimization)) {
-      continue;
-    }
-
-    // We found an optimization that can be applied. Populate optimization
-    // metadata if applicable and return.
-    if (optimization_metadata) {
-      switch (optimization.metadata_case()) {
-        case optimization_guide::proto::Optimization::kPreviewsMetadata:
-          optimization_metadata->previews_metadata =
-              optimization.previews_metadata();
-          break;
-        case optimization_guide::proto::Optimization::kPerformanceHintsMetadata:
-          optimization_metadata->performance_hints_metadata =
-              optimization.performance_hints_metadata();
-          break;
-        case optimization_guide::proto::Optimization::kPublicImageMetadata:
-          optimization_metadata->public_image_metadata =
-              optimization.public_image_metadata();
-          break;
-        default:
-          NOTREACHED();
-          break;
-      }
-    }
-    return optimization_guide::OptimizationTypeDecision::kAllowedByHint;
-  }
-
-  // We didn't find anything, so it's not allowed by the hint.
-  return optimization_guide::OptimizationTypeDecision::kNotAllowedByHint;
+  return IsOptimizationTypeSupportedByPageHint(
+             matched_page_hint, optimization_type, optimization_metadata)
+             ? optimization_guide::OptimizationTypeDecision::kAllowedByHint
+             : optimization_guide::OptimizationTypeDecision::kNotAllowedByHint;
 }
 
 void OptimizationGuideHintsManager::OnEffectiveConnectionTypeChanged(
@@ -987,9 +988,6 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
   std::vector<GURL> urls;
   if (!hint_cache_->HasHint(navigation_handle->GetURL().host())) {
     hosts.push_back(navigation_handle->GetURL().host());
-    page_navigation_hosts_being_fetched_.clear();
-    page_navigation_hosts_being_fetched_.push_back(
-        navigation_handle->GetURL().host());
 
     OptimizationGuideNavigationData* navigation_data =
         OptimizationGuideNavigationData::GetFromNavigationHandle(
@@ -1014,6 +1012,10 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
     return;
   }
 
+  page_navigation_hosts_being_fetched_.clear();
+  page_navigation_hosts_being_fetched_.push_back(
+      navigation_handle->GetURL().host());
+
   if (!hints_fetcher_) {
     hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
         url_loader_factory_,
@@ -1024,8 +1026,9 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
   hints_fetcher_->FetchOptimizationGuideServiceHints(
       hosts, urls, registered_optimization_types_,
       optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
-      base::BindOnce(&OptimizationGuideHintsManager::OnHintsFetched,
-                     ui_weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &OptimizationGuideHintsManager::OnPageNavigationHintsFetched,
+          ui_weak_ptr_factory_.GetWeakPtr()));
 
   if (!hosts.empty() && !urls.empty()) {
     race_navigation_recorder.set_race_attempt_status(

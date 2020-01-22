@@ -25,7 +25,5 @@ source_set("serial") {
     "//services/service_manager/public/cpp",
   ]
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

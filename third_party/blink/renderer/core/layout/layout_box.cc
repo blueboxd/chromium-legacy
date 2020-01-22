@@ -2787,6 +2787,11 @@ bool LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
       StyleRef().HasVisualOverflowingEffect())
     return false;
 
+  // The HTML element and the LayoutView have a complicated background
+  // painting relationship (see ViewPainter).
+  if (IsDocumentElement())
+    return false;
+
   // Hit tests rects are painted and depend on the size.
   if (HasEffectiveAllowedTouchAction())
     return false;

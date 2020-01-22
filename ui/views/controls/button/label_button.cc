@@ -176,6 +176,17 @@ void LabelButton::SetImageLabelSpacing(int spacing) {
   OnPropertyChanged(&image_label_spacing_, kPropertyEffectsLayout);
 }
 
+bool LabelButton::GetImageCentered() const {
+  return image_centered_;
+}
+
+void LabelButton::SetImageCentered(bool image_centered) {
+  if (GetImageCentered() == image_centered)
+    return;
+  image_centered_ = image_centered;
+  OnPropertyChanged(&image_centered_, kPropertyEffectsLayout);
+}
+
 std::unique_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
   auto border = std::make_unique<LabelButtonBorder>();
   border->set_insets(views::LabelButtonAssetBorder::GetDefaultInsets());
@@ -292,9 +303,7 @@ void LabelButton::Layout() {
       label_area.height());
 
   gfx::Point image_origin = child_area.origin();
-  if (label_->GetMultiLine()) {
-    // Right now this code currently only works for CheckBox and RadioButton
-    // descendants that have multi-line enabled for their label.
+  if (label_->GetMultiLine() && !image_centered_) {
     image_origin.Offset(
         0, std::max(
                0, (label_->font_list().GetHeight() - image_size.height()) / 2));
@@ -559,6 +568,7 @@ ADD_PROPERTY_METADATA(LabelButton, gfx::Size, MinSize)
 ADD_PROPERTY_METADATA(LabelButton, gfx::Size, MaxSize)
 ADD_PROPERTY_METADATA(LabelButton, bool, IsDefault)
 ADD_PROPERTY_METADATA(LabelButton, int, ImageLabelSpacing)
+ADD_PROPERTY_METADATA(LabelButton, bool, ImageCentered)
 END_METADATA()
 
 }  // namespace views

@@ -65,6 +65,11 @@ public class HistoryNavigationCoordinator
                 initNavigationHandler(
                         tab, createDelegate(tab), tab.getWebContents(), tab.isNativePage());
             }
+
+            @Override
+            public void onDestroyed(Tab tab) {
+                mTab = null;
+            }
         };
 
         // We wouldn't hear about the first tab until the content changed or we switched tabs

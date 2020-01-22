@@ -18,15 +18,11 @@ source_set("system_cpu") {
     "system_cpu_api.h",
   ]
 
-  deps = [
-    "//extensions/common/api",
-  ]
+  deps = [ "//extensions/common/api" ]
 
   if (is_chromeos) {
     deps += [ "//chromeos/system" ]
   }
 
-  public_deps = [
-    "//extensions/browser:browser_sources",
-  ]
+  public_deps = [ "//extensions/browser:browser_sources" ]
 }

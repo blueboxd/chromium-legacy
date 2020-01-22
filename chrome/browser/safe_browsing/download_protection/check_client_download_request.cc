@@ -143,7 +143,7 @@ bool CheckClientDownloadRequest::IsSupportedDownload(
   return IsSupportedDownload(*item_, item_->GetTargetFilePath(), reason, type);
 }
 
-content::BrowserContext* CheckClientDownloadRequest::GetBrowserContext() {
+content::BrowserContext* CheckClientDownloadRequest::GetBrowserContext() const {
   return content::DownloadItemUtils::GetBrowserContext(item_);
 }
 
@@ -244,6 +244,17 @@ void CheckClientDownloadRequest::NotifyRequestFinished(
   item_->RemoveObserver(this);
 }
 
+bool CheckClientDownloadRequest::ShouldPromptForDeepScanning(
+    DownloadCheckResultReason reason) const {
+  if (reason != REASON_DOWNLOAD_UNCOMMON)
+    return false;
+
+  Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
+  return base::FeatureList::IsEnabled(kPromptAppForDeepScanning) &&
+         AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
+             ->IsUnderAdvancedProtection();
+}
+
 bool CheckClientDownloadRequest::ShouldUploadForDlpScan() {
   if (!base::FeatureList::IsEnabled(kContentComplianceEnabled))
     return false;
@@ -255,6 +266,9 @@ bool CheckClientDownloadRequest::ShouldUploadForDlpScan() {
       check_content_compliance !=
           CheckContentComplianceValues::CHECK_UPLOADS_AND_DOWNLOADS)
     return false;
+
+  // TODO(crbug/1013584): Call FileTypeSupported from DeepScanningUtils around
+  // here and handle both supported and unsupported types appropriately.
 
   Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
   // If there's no valid DM token, the upload will fail, so we can skip

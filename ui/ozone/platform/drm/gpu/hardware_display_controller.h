@@ -179,8 +179,7 @@ class HardwareDisplayController {
   void UpdateCursorLocation();
   void ResetCursor();
   void DisableCursor();
-
-  HardwareDisplayPlaneList owned_hardware_planes_;
+  std::vector<HardwareDisplayPlane*> GetAllOwnedPlanes();
 
   // Stores the CRTC configuration. This is used to identify monitors and
   // configure them.

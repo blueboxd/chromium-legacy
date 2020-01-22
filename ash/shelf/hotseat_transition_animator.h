@@ -5,6 +5,7 @@
 #ifndef ASH_SHELF_HOTSEAT_TRANSITION_ANIMATOR_H_
 #define ASH_SHELF_HOTSEAT_TRANSITION_ANIMATOR_H_
 
+#include "ash/ash_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/callback.h"
@@ -17,9 +18,16 @@ class ShelfWidget;
 
 // Makes it appear that the background of the shelf and hotseat animate to/from
 // one another.
-class HotseatTransitionAnimator : public TabletModeObserver,
-                                  public ui::ImplicitAnimationObserver {
+class ASH_EXPORT HotseatTransitionAnimator
+    : public TabletModeObserver,
+      public ui::ImplicitAnimationObserver {
  public:
+  class TestObserver {
+   public:
+    virtual ~TestObserver() = default;
+    virtual void OnTransitionTestAnimationEnded() = 0;
+  };
+
   class Observer : public base::CheckedObserver {
    public:
     // Called when hotseat transition animations begin.
@@ -48,6 +56,9 @@ class HotseatTransitionAnimator : public TabletModeObserver,
   void OnTabletModeEnding() override;
   void OnTabletModeEnded() override;
 
+  // Set the test observer to watch for animations completed.
+  void SetTestObserver(TestObserver* test_observer);
+
  private:
   class TransitionAnimationMetricsReporter;
   // Starts the animation between |old_state| and |target_state|.
@@ -71,6 +82,9 @@ class HotseatTransitionAnimator : public TabletModeObserver,
   base::OnceClosure animation_complete_callback_;
 
   base::ObserverList<Observer> observers_;
+
+  // A test observer used to wait for the hotseat transition animation.
+  TestObserver* test_observer_ = nullptr;
 
   // Metric reporter for hotseat transitions.
   std::unique_ptr<TransitionAnimationMetricsReporter>

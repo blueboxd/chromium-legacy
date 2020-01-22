@@ -77,6 +77,13 @@ class ServiceConnection {
       const std::vector<mojom::ProbeCategoryEnum>& categories_to_test,
       mojom::CrosHealthdProbeService::ProbeTelemetryInfoCallback callback) = 0;
 
+  // Binds |service| to an implementation of CrosHealthdDiagnosticsService. In
+  // production, this implementation is provided by cros_healthd. See
+  // src/chromeos/service/cros_healthd/public/mojom/cros_healthd.mojom for
+  // details.
+  virtual void GetDiagnosticsService(
+      mojom::CrosHealthdDiagnosticsServiceRequest service) = 0;
+
  protected:
   ServiceConnection() = default;
   virtual ~ServiceConnection() = default;

@@ -72,6 +72,7 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
 
   // Advance the animation timeline a single frame.
   void AdvanceFrameForTesting();
+  bool EventsDisabled() const { return !should_dispatch_events_; }
 
   void Trace(blink::Visitor*);
 
@@ -133,6 +134,7 @@ class SMILTimeContainer final : public GarbageCollected<SMILTimeContainer> {
   bool started_ : 1;  // The timeline has been started.
   bool paused_ : 1;   // The timeline is paused.
 
+  const bool should_dispatch_events_ : 1;
   bool document_order_indexes_dirty_ : 1;
   bool is_updating_intervals_;
 

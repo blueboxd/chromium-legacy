@@ -14,13 +14,13 @@ ServiceWorkerClientInfo::ServiceWorkerClientInfo()
           ChildProcessHost::kInvalidUniqueID,
           MSG_ROUTING_NONE,
           base::RepeatingCallback<WebContents*(void)>(),
-          blink::mojom::ServiceWorkerProviderType::kUnknown) {}
+          blink::mojom::ServiceWorkerContainerType::kUnknown) {}
 
 ServiceWorkerClientInfo::ServiceWorkerClientInfo(
     int process_id,
     int route_id,
     const base::RepeatingCallback<WebContents*(void)>& web_contents_getter,
-    blink::mojom::ServiceWorkerProviderType type)
+    blink::mojom::ServiceWorkerContainerType type)
     : process_id(process_id),
       route_id(route_id),
       web_contents_getter(web_contents_getter),

@@ -522,6 +522,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "context-menu-copy-image",
+    "owners": [ "gangwu" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "context-menu-search-with-google-lens",
     "owners": [ "benwgold", "lens-chrome" ],
     "expiry_milestone": 88
@@ -1015,7 +1020,7 @@
   {
     "name": "enable-autofill-account-wallet-storage",
     "owners": [ "treib", "jsaul@google.com", "butter-team@google.com" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 83
   },
   {
     "name": "enable-autofill-credit-card-ablation-experiment",
@@ -1298,6 +1303,11 @@
     "name": "enable-experimental-accessibility-autoclick",
     "owners": [ "katie", "dmazzoni", "dtseng" ],
     "expiry_milestone": 78
+  },
+  {
+    "name": "enable-experimental-accessibility-chromevox-annotations",
+    "owners": ["akihiroota"],
+    "expiry_milestone": 86
   },
   {
     "name": "enable-experimental-accessibility-chromevox-language-switching",
@@ -1793,11 +1803,6 @@
     "owners": [ "worker-dev@chromium.org" ],
     // It's still in development. Tentatively set to M76 as the expiry_milestone.
     "expiry_milestone": 76
-  },
-  {
-    "name": "enable-service-worker-long-running-message",
-    "owners": [ "azeemarshad", "jlklein", "falken" ],
-    "expiry_milestone": 77
   },
   {
     "name": "enable-service-worker-on-ui",
@@ -2545,11 +2550,6 @@
     "expiry_milestone": 88
   },
   {
-    "name": "mac-views-task-manager",
-    "owners": [ "ellyjones" ],
-    "expiry_milestone": 77
-  },
-  {
     "name": "media-app",
     "owners": [ "//chromeos/components/media_app_ui/OWNERS" ],
     "expiry_milestone": 90
@@ -2663,7 +2663,7 @@
   {
     "name": "notification-scheduler-debug-options",
     "owners": [ "//chrome/browser/notifications/scheduler/OWNERS" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 83
   },
   {
     "name": "ntp-confirm-suggestion-removals",
@@ -3471,8 +3471,12 @@
   },
   {
     "name": "top-chrome-touch-ui",
-    "owners": [ "chrome-desktop-ui-sea@google.com" ],
-    "expiry_milestone": 81
+    "owners": [ "pbos", "chrome-desktop-ui-sea@google.com" ],
+    // This flag is used to easily swap into touch-mode for UI development where
+    // the UI differs significantly between touch/non-touch modes. This is
+    // exposed in chrome://flags to allow QA and UXers to verify touch-related
+    // behavior without access to touch devices.
+    "expiry_milestone": -1
   },
   {
     "name": "touch-events",
@@ -3524,12 +3528,12 @@
   {
     "name": "trim-on-all-frames-frozen",
     "owners": [ "bgeffon", "sonnyrao" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 85
   },
   {
     "name": "trim-on-memory-pressure",
     "owners": [ "bgeffon", "sonnyrao" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 85
   },
   {
     "name": "try-supported-channel-layouts",
@@ -3605,11 +3609,6 @@
     "name": "use-fake-device-for-media-stream",
     "owners": [ "mcasas", "chromeos-gfx@google.com" ],
     "expiry_milestone": 81
-  },
-  {
-    "name": "use_messages_google_com_domain",
-    "owners": [ "azeemarshad", "khorimoto" ],
-    "expiry_milestone": 76
   },
   {
     "name": "use_messages_staging_url",

@@ -9,5 +9,8 @@ assert(is_chromeos)
 mojom("mojom") {
   sources = [ "wilco_dtc_supportd.mojom" ]
 
-  public_deps = [ "//mojo/public/mojom/base" ]
+  public_deps = [
+    "//chromeos/services/cros_healthd/public/mojom",
+    "//mojo/public/mojom/base",
+  ]
 }

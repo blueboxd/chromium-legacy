@@ -231,7 +231,7 @@ void TestPasswordStore::AddCompromisedCredentialsImpl(
 }
 
 void TestPasswordStore::RemoveCompromisedCredentialsImpl(
-    const GURL& url,
+    const std::string& signon_realm,
     const base::string16& username,
     RemoveCompromisedCredentialsReason reason) {
   NOTIMPLEMENTED();

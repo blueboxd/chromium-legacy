@@ -18,8 +18,9 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -53,8 +54,8 @@ public class ToSAckedReceiverTest {
 
         mReceiver.onReceive(RuntimeEnvironment.application, intent);
         Assert.assertFalse(ToSAckedReceiver.checkAnyUserHasSeenToS());
-        Set<String> toSAckedAccounts = ContextUtils.getAppSharedPreferences().getStringSet(
-                ToSAckedReceiver.TOS_ACKED_ACCOUNTS, new HashSet<>());
+        Set<String> toSAckedAccounts = SharedPreferencesManager.getInstance().readStringSet(
+                ChromePreferenceKeys.TOS_ACKED_ACCOUNTS, new HashSet<>());
         Assert.assertThat(toSAckedAccounts, Matchers.contains(GOOGLE_ACCOUNT));
 
         AccountManagerDelegate accountManagerDelegate = Mockito.mock(AccountManagerDelegate.class);

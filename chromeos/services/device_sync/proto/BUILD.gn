@@ -28,9 +28,7 @@ static_library("util") {
     "enum_util.h",
   ]
 
-  public_deps = [
-    ":proto",
-  ]
+  public_deps = [ ":proto" ]
 
   deps = [
     "//base",
@@ -46,9 +44,7 @@ static_library("test_support") {
     "cryptauth_v2_test_util.h",
   ]
 
-  public_deps = [
-    ":proto",
-  ]
+  public_deps = [ ":proto" ]
 
   deps = [
     "//base",

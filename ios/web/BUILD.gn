@@ -398,6 +398,7 @@ source_set("ios_web_web_state_unittests") {
     "web_state/context_menu_params_utils_unittest.mm",
     "web_state/page_display_state_unittest.mm",
     "web_state/page_viewport_state_unittest.mm",
+    "web_state/web_state_context_menu_bridge_unittest.mm",
     "web_state/web_state_delegate_bridge_unittest.mm",
     "web_state/web_state_impl_unittest.mm",
     "web_state/web_state_observer_bridge_unittest.mm",

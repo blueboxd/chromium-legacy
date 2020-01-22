@@ -55,6 +55,7 @@ class MockHighlightedGamesStore : public HighlightedGamesStore {
                     const GamesCatalog&,
                     base::OnceClosure));
   MOCK_METHOD0(TryGetFromCache, base::Optional<Game>());
+  MOCK_METHOD0(TryRespondFromCache, bool());
   MOCK_METHOD1(SetPendingCallback, void(HighlightedGameCallback));
   MOCK_METHOD1(HandleCatalogFailure, void(ResponseCode));
 };

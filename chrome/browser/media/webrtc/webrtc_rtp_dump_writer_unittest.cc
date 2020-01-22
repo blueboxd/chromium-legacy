@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -284,7 +285,13 @@ TEST_F(WebRtcRtpDumpWriterTest, WriteAndFlushSmallSizeDump) {
   VerifyDumps(1, 1);
 }
 
-TEST_F(WebRtcRtpDumpWriterTest, WriteOverMaxLimit) {
+// Flaky test disabled on Windows (https://crbug.com/1044271).
+#if defined(OS_WIN)
+#define MAYBE_WriteOverMaxLimit DISABLED_WriteOverMaxLimit
+#else
+#define MAYBE_WriteOverMaxLimit WriteOverMaxLimit
+#endif
+TEST_F(WebRtcRtpDumpWriterTest, MAYBE_WriteOverMaxLimit) {
   // Reset the writer with a small max size limit.
   writer_.reset(new WebRtcRtpDumpWriter(
       incoming_dump_path_,

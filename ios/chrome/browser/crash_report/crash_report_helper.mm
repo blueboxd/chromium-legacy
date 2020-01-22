@@ -439,15 +439,26 @@ void ClearStateForWebStateList(WebStateList* web_state_list) {
   }
 }
 
-void MonitorBreadcrumbsForBrowserState(ios::ChromeBrowserState* browser_state) {
+void MonitorBreadcrumbManager(BreadcrumbManager* breadcrumb_manager) {
   [[CrashReporterBreadcrumbObserver uniqueInstance]
-      observeBrowserState:browser_state];
+      observeBreadcrumbManager:breadcrumb_manager];
 }
 
-void StopMonitoringBreadcrumbsForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+void StopMonitoringBreadcrumbManager(BreadcrumbManager* breadcrumb_manager) {
   [[CrashReporterBreadcrumbObserver uniqueInstance]
-      stopObservingBrowserState:browser_state];
+      stopObservingBreadcrumbManager:breadcrumb_manager];
+}
+
+void MonitorBreadcrumbManagerService(
+    BreadcrumbManagerKeyedService* breadcrumb_manager_service) {
+  [[CrashReporterBreadcrumbObserver uniqueInstance]
+      observeBreadcrumbManagerService:breadcrumb_manager_service];
+}
+
+void StopMonitoringBreadcrumbManagerService(
+    BreadcrumbManagerKeyedService* breadcrumb_manager_service) {
+  [[CrashReporterBreadcrumbObserver uniqueInstance]
+      stopObservingBreadcrumbManagerService:breadcrumb_manager_service];
 }
 
 }  // namespace breakpad

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
 
@@ -21,10 +22,6 @@ class ChromeAutofillClientIOS;
 
 namespace password_manager {
 class PasswordManager;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 // Class binding an instance of AutofillAgent to a WebState.

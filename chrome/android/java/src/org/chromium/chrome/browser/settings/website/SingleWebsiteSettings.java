@@ -77,6 +77,7 @@ public class SingleWebsiteSettings extends PreferenceFragmentCompat
     private static final String[] PERMISSION_PREFERENCE_KEYS = {
             // Permission keys mapped for next {@link ContentSettingException.Type} values.
             "ads_permission_list", // ContentSettingException.Type.ADS
+            "ar_permission_list", // PermissionInfo.Type.AUGMENTED_REALITY
             "automatic_downloads_permission_list",
             // ContentSettingException.Type.AUTOMATIC_DOWNLOADS
             "background_sync_permission_list", // ContentSettingException.Type.BACKGROUND_SYNC
@@ -96,6 +97,7 @@ public class SingleWebsiteSettings extends PreferenceFragmentCompat
             "protected_media_identifier_permission_list",
             // PermissionInfo.Type.PROTECTED_MEDIA_IDENTIFIER
             "sensors_permission_list", // PermissionInfo.Type.SENSORS
+            "vr_permission_list", // PermissionInfo.Type.VIRTUAL_REALITY
     };
 
     private static final int REQUEST_CODE_NOTIFICATION_CHANNEL_SETTINGS = 1;

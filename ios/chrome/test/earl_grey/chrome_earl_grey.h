@@ -441,9 +441,6 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // Returns YES if BlockNewTabPagePendingLoad feature is enabled.
 - (BOOL)isBlockNewTabPagePendingLoadEnabled WARN_UNUSED_RESULT;
 
-// Returns YES if NewOmniboxPopupLayout feature is enabled.
-- (BOOL)isNewOmniboxPopupLayoutEnabled WARN_UNUSED_RESULT;
-
 // Returns YES if |variationID| is enabled.
 - (BOOL)isVariationEnabled:(int)variationID;
 
@@ -455,6 +452,9 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 
 // Returns YES if UKM feature is enabled.
 - (BOOL)isUKMEnabled WARN_UNUSED_RESULT;
+
+// Returns YES if kTestFeature is enabled.
+- (BOOL)isTestFeatureEnabled;
 
 // Returns YES if CreditCardScanner feature is enabled.
 - (BOOL)isCreditCardScannerEnabled WARN_UNUSED_RESULT;

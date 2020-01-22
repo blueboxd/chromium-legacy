@@ -78,6 +78,7 @@ static WTF::String SpecialDrawingTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(ClippingMask);
     DEBUG_STRING_CASE(ColumnRules);
     DEBUG_STRING_CASE(DebugDrawing);
+    DEBUG_STRING_CASE(DocumentRootBackdrop);
     DEBUG_STRING_CASE(DocumentBackground);
     DEBUG_STRING_CASE(DragImage);
     DEBUG_STRING_CASE(DragCaret);
@@ -123,6 +124,7 @@ static String ForeignLayerTypeAsDebugString(DisplayItem::Type type) {
     DEBUG_STRING_CASE(ForeignLayerDevToolsOverlay);
     DEBUG_STRING_CASE(ForeignLayerPlugin);
     DEBUG_STRING_CASE(ForeignLayerVideo);
+    DEBUG_STRING_CASE(ForeignLayerRemoteFrame);
     DEBUG_STRING_CASE(ForeignLayerWrapper);
     DEBUG_STRING_CASE(ForeignLayerContentsWrapper);
     DEBUG_STRING_CASE(ForeignLayerLinkHighlight);

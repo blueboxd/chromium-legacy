@@ -60,6 +60,15 @@ class DeepScanningRequest : public download::DownloadItem::Observer {
   // Callback when |item_| is destroyed.
   void OnDownloadDestroyed(download::DownloadItem* download) override;
 
+  // Called to attempt to show the modal dialog for scan failure. Returns
+  // whether the dialog was successfully shown.
+  bool MaybeShowDeepScanFailureModalDialog(base::OnceClosure accept_callback,
+                                           base::OnceClosure cancel_callback,
+                                           base::OnceClosure open_now_callback);
+
+  // Called to open the download. This is triggered by the timeout modal dialog.
+  void OpenDownload();
+
   // The download item to scan. This is unowned, and could become nullptr if the
   // download is destroyed.
   download::DownloadItem* item_;

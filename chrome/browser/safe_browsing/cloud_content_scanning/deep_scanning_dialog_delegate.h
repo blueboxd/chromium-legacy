@@ -172,11 +172,6 @@ class DeepScanningDialogDelegate {
   // DeepScanningDialogDelegates.
   static void SetFactoryForTesting(Factory factory);
 
-  // Returns true if the given file type is supported for scanning.
-  static bool FileTypeSupported(const bool for_malware_scan,
-                                const bool for_dlp_scan,
-                                const base::FilePath& path);
-
   // Determines if a request result should be used to allow a data use or to
   // block it.
   static bool ResultShouldAllowDataUse(BinaryUploadService::Result result);

@@ -2451,6 +2451,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   FailedCommitResponseData response_data;
   response_data.client_tag_hash = GetHash("dummy tag");
   response_data.response_type = sync_pb::CommitResponse::TRANSIENT_ERROR;
+  response_data.sharing_message_error.set_error_code(
+      sync_pb::SharingMessageCommitError::INVALID_ARGUMENT);
 
   FailedCommitResponseDataList failed_list;
   failed_list.push_back(response_data);
@@ -2478,6 +2480,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
             actual_error_response_list[0].client_tag_hash);
   EXPECT_EQ(response_data.response_type,
             actual_error_response_list[0].response_type);
+  EXPECT_EQ(response_data.sharing_message_error.error_code(),
+            actual_error_response_list[0].sharing_message_error.error_code());
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,

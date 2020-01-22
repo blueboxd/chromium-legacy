@@ -3317,9 +3317,8 @@ PaintPropertyChangeType PaintPropertyTreeBuilder::UpdateForSelf() {
   DCHECK(!fragment_data);
 
   // We need to update property tree states of paint chunks.
-  if (property_changed >= PaintPropertyChangeType::kNodeAddedOrRemoved) {
+  if (property_changed >= PaintPropertyChangeType::kNodeAddedOrRemoved)
     context_.painting_layer->SetNeedsRepaint();
-  }
 
   return property_changed;
 }

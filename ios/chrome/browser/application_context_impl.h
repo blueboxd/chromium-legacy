@@ -18,6 +18,9 @@ class CommandLine;
 class SequencedTaskRunner;
 }
 
+class BreadcrumbManager;
+class ApplicationBreadcrumbsLogger;
+
 namespace network {
 class NetworkChangeManager;
 }
@@ -80,6 +83,14 @@ class ApplicationContextImpl : public ApplicationContext {
   void CreateGCMDriver();
 
   base::ThreadChecker thread_checker_;
+
+  // Breadcrumb manager used to store application wide breadcrumb events. Will
+  // be null if breadcrumbs feature is not enabled.
+  std::unique_ptr<BreadcrumbManager> breadcrumb_manager_;
+  // Logger which observers and logs application wide events to
+  // |breadcrumb_manager_|. Will be null if breadcrumbs feature is not enabled.
+  std::unique_ptr<ApplicationBreadcrumbsLogger> application_breadcrumbs_logger_;
+
   std::unique_ptr<PrefService> local_state_;
   std::unique_ptr<net_log::NetExportFileWriter> net_export_file_writer_;
   std::unique_ptr<network_time::NetworkTimeTracker> network_time_tracker_;

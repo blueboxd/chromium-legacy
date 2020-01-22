@@ -322,13 +322,13 @@ void ChromePluginPlaceholder::ShowContextMenu(
   hide_item.label = l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLUGIN_HIDE);
   params.custom_items.push_back(hide_item);
 
-  blink::WebPoint point(event.PositionInWidget().x(),
-                        event.PositionInWidget().y());
+  gfx::Point point =
+      gfx::Point(event.PositionInWidget().x(), event.PositionInWidget().y());
   if (plugin() && plugin()->Container())
     point = plugin()->Container()->LocalToRootFramePoint(point);
 
-  params.x = point.x;
-  params.y = point.y;
+  params.x = point.x();
+  params.y = point.y();
 
   context_menu_request_id_ = render_frame()->ShowContextMenu(this, params);
   g_last_active_menu = this;

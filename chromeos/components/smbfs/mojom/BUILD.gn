@@ -5,13 +5,9 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom_component("mojom") {
-  sources = [
-    "smbfs.mojom",
-  ]
+  sources = [ "smbfs.mojom" ]
 
-  public_deps = [
-    "//mojo/public/mojom/base",
-  ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 
   output_prefix = "smbfs_mojom"
   macro_prefix = "SMBFS_MOJOM"

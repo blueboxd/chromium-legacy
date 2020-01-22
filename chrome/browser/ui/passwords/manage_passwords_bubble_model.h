@@ -86,10 +86,6 @@ class ManagePasswordsBubbleModel {
   void OnSignInToChromeClicked(const AccountInfo& account,
                                bool is_default_promo_account);
 
-  // Called by the view when the "No thanks" button in the promo bubble is
-  // clicked.
-  void OnSkipSignInClicked();
-
 #if defined(PASSWORD_STORE_SELECT_ENABLED)
   // Called by the view when the account store checkbox is toggled.
   void OnToggleAccountStore(bool is_checked);
@@ -139,9 +135,6 @@ class ManagePasswordsBubbleModel {
   // Returns true iff the bubble is supposed to show the footer about syncing
   // to Google account.
   bool ShouldShowFooter() const;
-
-  // Returns the value for the username field when the bubble is opened.
-  const base::string16& GetCurrentUsername() const;
 
   // Returns the ID of the picture to show above the title.
   int GetTopIllustration(bool dark_mode) const;

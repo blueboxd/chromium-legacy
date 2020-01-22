@@ -152,8 +152,6 @@ if (is_android) {
       "//third_party/junit",
       "//ui/gfx/geometry/mojom:mojom_java",
     ]
-    data = [
-      "test/data/",
-    ]
+    data = [ "test/data/" ]
   }
 }

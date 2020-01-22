@@ -62,26 +62,29 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
-        FrameLayout parentView = new FrameLayout(getActivity());
-        mContentView = (TabListRecyclerView) LayoutInflater.from(getActivity())
-                               .inflate(R.layout.tab_list_recycler_view_layout, parentView, false);
-        mContentView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
-        mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(getActivity())
-                               .inflate(R.layout.bottom_tab_grid_toolbar, mContentView, false);
-        mTabGridDialogParent =
-                new TabGridDialogParent(getActivity(), new FrameLayout(getActivity()));
-        mTabGridDialogParentView = mTabGridDialogParent.getTabGridDialogParentViewForTesting();
-        mLeftButton = mToolbarView.findViewById(R.id.toolbar_left_button);
-        mRightButton = mToolbarView.findViewById(R.id.toolbar_right_button);
-        mTitleTextView = mToolbarView.findViewById(R.id.title);
-        mMainContent = mToolbarView.findViewById(R.id.main_content);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            FrameLayout parentView = new FrameLayout(getActivity());
+            mContentView =
+                    (TabListRecyclerView) LayoutInflater.from(getActivity())
+                            .inflate(R.layout.tab_list_recycler_view_layout, parentView, false);
+            mContentView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
+            mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(getActivity())
+                                   .inflate(R.layout.bottom_tab_grid_toolbar, mContentView, false);
+            mTabGridDialogParent =
+                    new TabGridDialogParent(getActivity(), new FrameLayout(getActivity()));
+            mTabGridDialogParentView = mTabGridDialogParent.getTabGridDialogParentViewForTesting();
+            mLeftButton = mToolbarView.findViewById(R.id.toolbar_left_button);
+            mRightButton = mToolbarView.findViewById(R.id.toolbar_right_button);
+            mTitleTextView = mToolbarView.findViewById(R.id.title);
+            mMainContent = mToolbarView.findViewById(R.id.main_content);
 
-        mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
+            mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
 
-        mMCP = PropertyModelChangeProcessor.create(mModel,
-                new TabGridPanelViewBinder.ViewHolder(
-                        mToolbarView, mContentView, mTabGridDialogParent),
-                TabGridPanelViewBinder::bind);
+            mMCP = PropertyModelChangeProcessor.create(mModel,
+                    new TabGridPanelViewBinder.ViewHolder(
+                            mToolbarView, mContentView, mTabGridDialogParent),
+                    TabGridPanelViewBinder::bind);
+        });
     }
 
     @Test

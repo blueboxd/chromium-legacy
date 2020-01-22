@@ -59,6 +59,25 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   AuthenticatorRequestClientDelegate();
   ~AuthenticatorRequestClientDelegate() override;
 
+  // Permits the embedder to override normal relying party ID processing. Is
+  // given the untrusted, claimed relying party ID from the WebAuthn call, as
+  // well as the origin of the caller, and may return a relying party ID to
+  // override normal validation.
+  //
+  // This is an access-control decision: RP IDs are used to control access to
+  // credentials so thought is required before allowing an origin to assert an
+  // RP ID. RP ID strings may be stored on authenticators and may later appear
+  // in management UI.
+  virtual base::Optional<std::string> MaybeGetRelyingPartyIdOverride(
+      const std::string& claimed_relying_party_id,
+      const url::Origin& caller_origin);
+
+  // SetRelyingPartyId sets the RP ID for this request. This is called after
+  // |MaybeGetRelyingPartyIdOverride| is given the opportunity to affect this
+  // value. For typical origins, the RP ID is just a domain name, but
+  // |MaybeGetRelyingPartyIdOverride| may return other forms of strings.
+  virtual void SetRelyingPartyId(const std::string& rp_id);
+
   // Called when the request fails for the given |reason|.
   //
   // Embedders may return true if they want AuthenticatorImpl to hold off from

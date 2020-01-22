@@ -60,6 +60,10 @@ struct {
 // Frame rates for sources with no support for capability enumeration.
 const uint16_t kFallbackVideoFrameRates[] = {30, 60};
 
+void SendLogMessage(const std::string& message) {
+  MediaStreamManager::SendMessageToNativeLog("MDM::" + message);
+}
+
 const char* DeviceTypeToString(blink::MediaDeviceType device_type) {
   switch (device_type) {
     case blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT:
@@ -74,18 +78,19 @@ const char* DeviceTypeToString(blink::MediaDeviceType device_type) {
   return "UNKNOWN";
 }
 
-// Private helper method to generate a string for the log message that lists the
-// human readable names of |devices|.
-std::string GetLogMessageString(
+std::string GetDevicesEnumeratedLogString(
     blink::MediaDeviceType device_type,
     const blink::WebMediaDeviceInfoArray& device_infos) {
-  std::string output_string = base::StringPrintf(
-      "Getting devices of type %s:\n", DeviceTypeToString(device_type));
-  if (device_infos.empty())
-    return output_string + "No devices found.";
+  std::string str = base::StringPrintf("DevicesEnumerated({type=%s}, ",
+                                       DeviceTypeToString(device_type));
+  base::StringAppendF(&str, "{labels=[");
   for (const auto& device_info : device_infos)
-    output_string += "  " + device_info.label + "\n";
-  return output_string;
+    base::StringAppendF(&str, "%s, ", device_info.label.c_str());
+  if (!str.empty()) {
+    str.erase(str.end() - 2, str.end());
+  }
+  str += "])";
+  return str;
 }
 
 blink::WebMediaDeviceInfoArray GetFakeAudioDevices(bool is_input) {
@@ -386,6 +391,7 @@ MediaDevicesManager::MediaDevicesManager(
   DCHECK(video_capture_manager_.get());
   DCHECK(!stop_removed_input_device_cb_.is_null());
   DCHECK(!ui_input_device_change_cb_.is_null());
+  SendLogMessage("MediaDevicesManager()");
   cache_policies_.fill(CachePolicy::NO_CACHE);
   has_seen_result_.fill(false);
 }
@@ -427,6 +433,12 @@ void MediaDevicesManager::EnumerateDevices(
   DCHECK(request_audio_input_capabilities &&
              requested_types[blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT] ||
          !request_audio_input_capabilities);
+  SendLogMessage(base::StringPrintf(
+      "EnumerateDevices({render_process_id=%d}, {render_frame_id=%d}, "
+      "{request_audio=%s}, {request_video=%s})",
+      render_process_id, render_frame_id,
+      request_audio_input_capabilities ? "true" : "false",
+      request_video_input_capabilities ? "true" : "false"));
 
   base::PostTaskAndReplyWithResult(
       base::CreateSingleThreadTaskRunner({BrowserThread::UI}).get(), FROM_HERE,
@@ -502,6 +514,7 @@ void MediaDevicesManager::StartMonitoring() {
         std::make_unique<AudioServiceDeviceListener>();
   }
 #endif
+  SendLogMessage("StartMonitoring()");
   monitoring_started_ = true;
   base::SystemMonitor::Get()->AddDevicesChangedObserver(this);
 
@@ -534,6 +547,7 @@ void MediaDevicesManager::StopMonitoring() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!monitoring_started_)
     return;
+  SendLogMessage(base::StringPrintf("StopMonitoring([this=%p])", this));
   base::SystemMonitor::Get()->RemoveDevicesChangedObserver(this);
   audio_service_device_listener_.reset();
   monitoring_started_ = false;
@@ -838,6 +852,8 @@ void MediaDevicesManager::DoEnumerateDevices(blink::MediaDeviceType type) {
   CacheInfo& cache_info = cache_infos_[type];
   if (cache_info.is_update_ongoing())
     return;
+  SendLogMessage(base::StringPrintf("DoEnumerateDevices({type=%s})",
+                                    DeviceTypeToString(type)));
 
   cache_info.UpdateStarted();
   switch (type) {
@@ -907,10 +923,7 @@ void MediaDevicesManager::DevicesEnumerated(
   UpdateSnapshot(type, snapshot);
   cache_infos_[type].UpdateCompleted();
   has_seen_result_[type] = true;
-
-  std::string log_message =
-      "New device enumeration result:\n" + GetLogMessageString(type, snapshot);
-  MediaStreamManager::SendMessageToNativeLog(log_message);
+  SendLogMessage(GetDevicesEnumeratedLogString(type, snapshot));
 
   if (cache_policies_[type] == CachePolicy::NO_CACHE) {
     for (auto& request : requests_)
@@ -1028,6 +1041,10 @@ bool MediaDevicesManager::IsEnumerationRequestReady(
 void MediaDevicesManager::HandleDevicesChanged(blink::MediaDeviceType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(IsValidMediaDeviceType(type));
+  if (!cache_infos_[type].is_update_ongoing()) {
+    SendLogMessage(base::StringPrintf("HandleDevicesChanged({type=%s}",
+                                      DeviceTypeToString(type)));
+  }
   cache_infos_[type].InvalidateCache();
   DoEnumerateDevices(type);
 }
@@ -1129,6 +1146,9 @@ void MediaDevicesManager::NotifyDeviceChange(
   auto it = subscriptions_.find(subscription_id);
   if (it == subscriptions_.end())
     return;
+  SendLogMessage(
+      base::StringPrintf("NotifyDeviceChange({subscription_id=%u}, {type=%s}",
+                         subscription_id, DeviceTypeToString(type)));
 
   const SubscriptionRequest& request = it->second;
   request.listener_->OnDevicesChanged(

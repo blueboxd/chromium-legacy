@@ -625,6 +625,10 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void enableExperimentalButton(View.OnClickListener onClickListener, Drawable image,
             @StringRes int contentDescriptionResId) {
+        if (FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
+            mStartSurfaceToolbarCoordinator.enableExperimentalButton(
+                    onClickListener, image, contentDescriptionResId);
+        }
         mToolbarLayout.enableExperimentalButton(onClickListener, image, contentDescriptionResId);
     }
 
@@ -644,6 +648,9 @@ public class TopToolbarCoordinator implements Toolbar {
      * @return The experimental toolbar button if it exists.
      */
     public void updateExperimentalButtonImage(Drawable image) {
+        if (FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
+            mStartSurfaceToolbarCoordinator.updateExperimentalButtonImage(image);
+        }
         mToolbarLayout.updateExperimentalButtonImage(image);
     }
 
@@ -651,6 +658,9 @@ public class TopToolbarCoordinator implements Toolbar {
      * Disable the experimental toolbar button.
      */
     public void disableExperimentalButton() {
+        if (FeatureUtilities.isStartSurfaceSinglePaneEnabled()) {
+            mStartSurfaceToolbarCoordinator.disableExperimentalButton();
+        }
         mToolbarLayout.disableExperimentalButton();
     }
 
@@ -662,6 +672,12 @@ public class TopToolbarCoordinator implements Toolbar {
      */
     public void showIPHOnExperimentalButton(@StringRes int stringId,
             @StringRes int accessibilityStringId, Runnable dismissedCallback) {
+        if (mStartSurfaceToolbarCoordinator != null
+                && mToolbarLayout.getToolbarDataProvider().isInOverviewAndShowingOmnibox()) {
+            mStartSurfaceToolbarCoordinator.showIPHOnExperimentalButton(
+                    stringId, accessibilityStringId, dismissedCallback);
+            return;
+        }
         mToolbarLayout.showIPHOnExperimentalButton(
                 stringId, accessibilityStringId, dismissedCallback);
     }

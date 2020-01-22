@@ -32,10 +32,8 @@ class WebAppShortcutManager : public AppShortcutManager {
                         FileHandlerManager* file_handler_manager);
   ~WebAppShortcutManager() override;
 
-  // AppRegistrarObserver:
-  void OnWebAppWillBeUninstalled(const AppId& app_id) override;
-
   // AppShortcutManager:
+  std::unique_ptr<ShortcutInfo> BuildShortcutInfo(const AppId& app_id) override;
   void GetShortcutInfoForApp(const AppId& app_id,
                              GetShortcutInfoCallback callback) override;
 

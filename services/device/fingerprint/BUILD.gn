@@ -33,7 +33,5 @@ component("fingerprint") {
     sources += [ "fingerprint_default.cc" ]
   }
 
-  public_deps = [
-    "//services/device/public/mojom",
-  ]
+  public_deps = [ "//services/device/public/mojom" ]
 }

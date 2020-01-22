@@ -38,7 +38,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/util/type_safety/pass_key.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"

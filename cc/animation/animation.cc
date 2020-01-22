@@ -15,6 +15,7 @@
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/keyframe_effect.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/animation/scroll_timeline.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/trees/property_animation_state.h"
 
@@ -258,6 +259,21 @@ void Animation::NotifyKeyframeModelFinishedForTesting(
                        {timeline_id, id(), keyframe_model_id}, group_id,
                        target_property, base::TimeTicks());
   DispatchAndDelegateAnimationEvent(event);
+}
+
+void Animation::PromoteScrollTimelinePendingToActive() {
+  if (!animation_timeline_)
+    return;
+
+  animation_timeline_->ActivateTimeline();
+}
+
+void Animation::UpdateScrollTimeline(base::Optional<ElementId> scroller_id,
+                                     base::Optional<double> start_scroll_offset,
+                                     base::Optional<double> end_scroll_offset) {
+  ToScrollTimeline(animation_timeline_)
+      ->UpdateScrollerIdAndScrollOffsets(scroller_id, start_scroll_offset,
+                                         end_scroll_offset);
 }
 
 }  // namespace cc

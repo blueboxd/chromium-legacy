@@ -24,7 +24,6 @@
 #include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_history_scroll_restoration_type.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -81,11 +80,6 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(
     content::AutoplayPolicy,
     content::AutoplayPolicy::kNoUserGestureRequired,
     content::AutoplayPolicy::kDocumentUserActivationRequired)
-
-IPC_STRUCT_TRAITS_BEGIN(blink::WebPoint)
-  IPC_STRUCT_TRAITS_MEMBER(x)
-  IPC_STRUCT_TRAITS_MEMBER(y)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebRect)
   IPC_STRUCT_TRAITS_MEMBER(x)

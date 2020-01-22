@@ -55,10 +55,6 @@ const base::Feature kAppShimRemoteCocoa{"AppShimRemoteCocoa",
 // TODO(ellyjones): Remove this after the last 10.9 release.
 const base::Feature kShow10_9ObsoleteInfobar{"Show109ObsoleteInfobar",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Use the Toolkit-Views Task Manager window.
-const base::Feature kViewsTaskManager{"ViewsTaskManager",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)

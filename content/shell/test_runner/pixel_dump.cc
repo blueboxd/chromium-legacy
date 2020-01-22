@@ -30,7 +30,6 @@
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -103,8 +102,7 @@ void CopyImageAtAndCapturePixels(
   uint64_t sequence_number_before = 0;
   clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste,
                                &sequence_number_before);
-
-  web_frame->CopyImageAtForTesting(blink::WebPoint(x, y));
+  web_frame->CopyImageAtForTesting(gfx::Point(x, y));
   uint64_t sequence_number_after = 0;
   while (sequence_number_before == sequence_number_after) {
     clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste,

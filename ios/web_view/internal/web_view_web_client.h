@@ -38,6 +38,7 @@ class WebViewWebClient : public web::WebClient {
       bool overridable,
       int64_t navigation_id,
       const base::RepeatingCallback<void(bool)>& callback) override;
+  bool EnableLongPressAndForceTouchHandling() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebViewWebClient);

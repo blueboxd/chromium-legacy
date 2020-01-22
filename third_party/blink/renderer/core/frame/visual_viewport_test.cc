@@ -72,8 +72,8 @@ using blink::url_test_helpers::ToKURL;
 namespace blink {
 
 ::std::ostream& operator<<(::std::ostream& os, const WebContextMenuData& data) {
-  return os << "Context menu location: [" << data.mouse_position.x << ", "
-            << data.mouse_position.y << "]";
+  return os << "Context menu location: [" << data.mouse_position.x() << ", "
+            << data.mouse_position.y() << "]";
 }
 
 namespace {
@@ -990,7 +990,7 @@ TEST_P(VisualViewportTest, TestRestoredFromLegacyHistoryItem) {
   // (-1, -1) will be used if the HistoryItem is an older version prior to
   // having visual viewport scroll offset.
   item.SetVisualViewportScrollOffset(gfx::PointF(-1, -1));
-  item.SetScrollOffset(WebPoint(120, 180));
+  item.SetScrollOffset(gfx::Point(120, 180));
   item.SetPageScaleFactor(2);
 
   frame_test_helpers::LoadHistoryItem(WebView()->MainFrameImpl(), item,
@@ -1072,8 +1072,8 @@ TEST_P(VisualViewportTest,
   EXPECT_EQ("ir", mainFrame->SelectionAsText().Utf8());
 
   WebView()->MainFrameWidget()->SelectionBounds(base_rect, extent_rect);
-  WebPoint initialPoint(base_rect.x, base_rect.y);
-  WebPoint endPoint(extent_rect.x, extent_rect.y);
+  gfx::Point initialPoint(base_rect.x, base_rect.y);
+  gfx::Point endPoint(extent_rect.x, extent_rect.y);
 
   // Move the visual viewport over and make the selection in the same
   // screen-space location. The selection should change to two characters to the
@@ -1115,7 +1115,7 @@ MATCHER_P2(ContextMenuAtLocation,
            y,
            std::string(negation ? "is" : "isn't") + " at expected location [" +
                PrintToString(x) + ", " + PrintToString(y) + "]") {
-  return arg.mouse_position.x == x && arg.mouse_position.y == y;
+  return arg.mouse_position.x() == x && arg.mouse_position.y() == y;
 }
 
 // Test that the context menu's location is correct in the presence of visual
@@ -1929,7 +1929,7 @@ TEST_P(VisualViewportTest, AccessibilityHitTestWhileZoomedIn) {
   // Because of where the visual viewport is located, this should hit the bottom
   // right target (target 4).
   WebAXObject hitNode =
-      WebAXObject::FromWebDocument(web_doc).HitTest(WebPoint(154, 165));
+      WebAXObject::FromWebDocument(web_doc).HitTest(gfx::Point(154, 165));
   ax::mojom::NameFrom name_from;
   WebVector<WebAXObject> name_objects;
   EXPECT_EQ(std::string("Target4"),

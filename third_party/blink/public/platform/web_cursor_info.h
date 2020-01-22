@@ -31,9 +31,10 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CURSOR_INFO_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_CURSOR_INFO_H_
 
-#include "third_party/blink/public/platform/web_point.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/types/cursor_types.h"
+#include "ui/gfx/geometry/point.h"
 
 #ifdef WIN32
 typedef struct HICON__* HICON;
@@ -46,7 +47,7 @@ class Cursor;
 
 struct WebCursorInfo {
   ui::CursorType type;
-  WebPoint hot_spot;
+  gfx::Point hot_spot;
   float image_scale_factor;
   SkBitmap custom_image;
 

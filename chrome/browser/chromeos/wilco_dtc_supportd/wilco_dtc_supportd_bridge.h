@@ -116,6 +116,9 @@ class WilcoDtcSupportdBridge final
   void GetConfigurationData(GetConfigurationDataCallback callback) override;
   void HandleEvent(
       wilco_dtc_supportd::mojom::WilcoDtcSupportdEvent event) override;
+  void GetCrosHealthdDiagnosticsService(
+      cros_healthd::mojom::CrosHealthdDiagnosticsServiceRequest service)
+      override;
 
   std::unique_ptr<Delegate> delegate_;
 

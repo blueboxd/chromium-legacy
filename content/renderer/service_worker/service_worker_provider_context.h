@@ -26,9 +26,9 @@
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom-forward.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom-forward.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-forward.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-forward.h"
@@ -91,7 +91,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // This is non-null only if the provider is created for controllees, and if
   // the loading context, e.g. a frame, provides it.
   ServiceWorkerProviderContext(
-      blink::mojom::ServiceWorkerProviderType provider_type,
+      blink::mojom::ServiceWorkerContainerType container_type,
       mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainer>
           receiver,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainerHost>
@@ -99,8 +99,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory);
 
-  blink::mojom::ServiceWorkerProviderType provider_type() const {
-    return provider_type_;
+  blink::mojom::ServiceWorkerContainerType container_type() const {
+    return container_type_;
   }
 
   // Returns version id of the controller service worker object
@@ -234,7 +234,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // ServiceWorker, or nullptr if no controller is attached.
   network::mojom::URLLoaderFactory* GetSubresourceLoaderFactoryInternal();
 
-  const blink::mojom::ServiceWorkerProviderType provider_type_;
+  const blink::mojom::ServiceWorkerContainerType container_type_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   // This keeps the connection to the content::ServiceWorkerProviderHost in the

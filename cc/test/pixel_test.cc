@@ -45,6 +45,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_feature_type.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
@@ -53,13 +54,23 @@
 
 namespace cc {
 
-PixelTest::PixelTest()
+PixelTest::PixelTest(bool enable_vulkan)
     : device_viewport_size_(gfx::Size(200, 200)),
       disable_picture_quad_image_filtering_(false),
       output_surface_client_(std::make_unique<FakeOutputSurfaceClient>()) {
   // Keep texture sizes exactly matching the bounds of the RenderPass to avoid
   // floating point badness in texcoords.
   renderer_settings_.dont_round_texture_sizes_for_pixel_tests = true;
+  if (enable_vulkan) {
+    auto* command_line = base::CommandLine::ForCurrentProcess();
+    bool use_gpu = command_line->HasSwitch(::switches::kUseGpuInTests);
+    command_line->AppendSwitchASCII(
+        ::switches::kUseVulkan,
+        use_gpu ? ::switches::kVulkanImplementationNameNative
+                : ::switches::kVulkanImplementationNameSwiftshader);
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+    scoped_feature_list_->InitAndEnableFeature(features::kVulkan);
+  }
 }
 
 PixelTest::~PixelTest() = default;
@@ -247,19 +258,8 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
   renderer_->SetVisible(true);
 }
 
-void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface,
-                                  bool enable_vulkan) {
+void PixelTest::SetUpSkiaRenderer(bool flipped_output_surface) {
   enable_pixel_output_ = std::make_unique<gl::DisableNullDrawGLBindings>();
-  if (enable_vulkan) {
-    auto* command_line = base::CommandLine::ForCurrentProcess();
-    bool use_gpu = command_line->HasSwitch(::switches::kUseGpuInTests);
-    command_line->AppendSwitchASCII(
-        ::switches::kUseVulkan,
-        use_gpu ? ::switches::kVulkanImplementationNameNative
-                : ::switches::kVulkanImplementationNameSwiftshader);
-    command_line->AppendSwitchASCII(
-        ::switches::kGrContextType, ::switches::kGrContextTypeVulkan);
-  }
   // Set up the GPU service.
   gpu_service_holder_ = viz::TestGpuServiceHolder::GetInstance();
 
@@ -301,7 +301,6 @@ void PixelTest::TearDown() {
   renderer_.reset();
   resource_provider_.reset();
   output_surface_.reset();
-  scoped_feature_list_.reset();
 }
 
 void PixelTest::EnableExternalStencilTest() {

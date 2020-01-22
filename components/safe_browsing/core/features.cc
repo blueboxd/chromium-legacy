@@ -50,11 +50,14 @@ const base::Feature kPasswordProtectionForSavedPasswords{
 
 const base::Feature kPasswordProtectionShowDomainsForSavedPasswords{
     "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPasswordProtectionForSignedInUsers{
     "SafeBrowsingPasswordProtectionForSignedInUsers",
     base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPromptAppForDeepScanning{
+    "SafeBrowsingPromptAppForDeepScanning", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kRealTimeUrlLookupEnabled{
     "SafeBrowsingRealTimeUrlLookupEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -85,7 +88,7 @@ const base::Feature kSendPasswordReusePing {
 
 const base::Feature kSendSampledPingsForAllowlistDomains{
     "SafeBrowsingSendSampledPingsForAllowlistDomain",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
     &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
@@ -109,7 +112,7 @@ const base::Feature kUseNewDownloadWarnings{"UseNewDownloadWarnings",
 namespace {
 // List of Safe Browsing features. Boolean value for each list member should be
 // set to true if the experiment state should be listed on
-// chrome://safe-browsing.
+// chrome://safe-browsing. Features should be listed in alphabetical order.
 constexpr struct {
   const base::Feature* feature;
   // True if the feature's state should be listed on chrome://safe-browsing.
@@ -126,6 +129,7 @@ constexpr struct {
     {&kPasswordProtectionForSavedPasswords, true},
     {&kPasswordProtectionShowDomainsForSavedPasswords, true},
     {&kPasswordProtectionForSignedInUsers, true},
+    {&kPromptAppForDeepScanning, true},
     {&kRealTimeUrlLookupEnabled, true},
     {&kSendOnFocusPing, true},
     {&kSendPasswordReusePing, true},

@@ -93,6 +93,8 @@ jumbo_static_library("ui") {
     "chrome_select_file_policy.h",
     "color_chooser.h",
     "confirm_bubble.h",
+    "cookie_controls/cookie_controls_controller.cc",
+    "cookie_controls/cookie_controls_controller.h",
     "crypto_module_password_dialog.h",
     "cryptuiapi_shim.h",
     "enterprise_startup_dialog.h",
@@ -1451,6 +1453,7 @@ jumbo_static_library("ui") {
         "//chrome/browser/web_applications",
 
         # TODO(loyso): Erase these. crbug.com/877898.
+        "//chrome/browser/web_applications:common",
         "//chrome/browser/web_applications:web_applications_on_extensions",
         "//chrome/browser/web_applications/components",
         "//chrome/browser/web_applications/extensions",
@@ -2650,8 +2653,6 @@ jumbo_static_library("ui") {
       "autofill/payments/save_upi_bubble_controller_impl.cc",
       "autofill/payments/save_upi_bubble_controller_impl.h",
       "bubble_anchor_util.h",
-      "cookie_controls/cookie_controls_controller.cc",
-      "cookie_controls/cookie_controls_controller.h",
       "cookie_controls/cookie_controls_view.h",
       "manifest_web_app_browser_controller.cc",
       "manifest_web_app_browser_controller.h",
@@ -3178,10 +3179,14 @@ jumbo_static_library("ui") {
       "views/relaunch_notification/wall_clock_timer.h",
       "views/sad_tab_view.cc",
       "views/sad_tab_view.h",
+      "views/safe_browsing/deep_scanning_failure_modal_dialog.cc",
+      "views/safe_browsing/deep_scanning_failure_modal_dialog.h",
       "views/safe_browsing/deep_scanning_modal_dialog.cc",
       "views/safe_browsing/deep_scanning_modal_dialog.h",
       "views/safe_browsing/password_reuse_modal_warning_dialog.cc",
       "views/safe_browsing/password_reuse_modal_warning_dialog.h",
+      "views/safe_browsing/prompt_for_scanning_modal_dialog.cc",
+      "views/safe_browsing/prompt_for_scanning_modal_dialog.h",
       "views/send_tab_to_self/send_tab_to_self_bubble_device_button.cc",
       "views/send_tab_to_self/send_tab_to_self_bubble_device_button.h",
       "views/send_tab_to_self/send_tab_to_self_bubble_view_impl.cc",
@@ -3410,6 +3415,13 @@ jumbo_static_library("ui") {
         "views/policy/enterprise_startup_dialog_mac_util.mm",
         "views/ssl_client_certificate_selector_mac.h",
         "views/ssl_client_certificate_selector_mac.mm",
+      ]
+
+      # The Views task manager is not used on Mac - a native Cocoa
+      # implementation is used instead.
+      sources -= [
+        "views/task_manager_view.cc",
+        "views/task_manager_view.h",
       ]
     } else {
       sources += [
@@ -4301,6 +4313,10 @@ if (is_chromeos) {
 }
 
 if (is_android) {
+  java_cpp_enum("cookie_controls_controller_status_javagen") {
+    sources = [ "cookie_controls/cookie_controls_controller.h" ]
+  }
+
   java_cpp_enum("tab_model_enums_java") {
     sources = [ "android/tab_model/tab_model.h" ]
   }

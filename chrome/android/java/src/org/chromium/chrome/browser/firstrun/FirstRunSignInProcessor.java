@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
-import org.chromium.chrome.browser.settings.sync.SyncAndServicesPreferences;
+import org.chromium.chrome.browser.settings.sync.SyncAndServicesSettings;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInCallback;
@@ -103,8 +103,8 @@ public final class FirstRunSignInProcessor {
      * Opens sign in settings as requested in the FRE sign-in dialog.
      */
     private static void openSignInSettings(Activity activity) {
-        final Class<? extends Fragment> fragment = SyncAndServicesPreferences.class;
-        final Bundle arguments = SyncAndServicesPreferences.createArguments(true);
+        final Class<? extends Fragment> fragment = SyncAndServicesSettings.class;
+        final Bundle arguments = SyncAndServicesSettings.createArguments(true);
         SettingsLauncher.getInstance().launchSettingsPage(activity, fragment, arguments);
     }
 

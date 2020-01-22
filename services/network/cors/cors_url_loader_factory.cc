@@ -125,6 +125,7 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
       disable_web_security_(params->disable_web_security),
       process_id_(params->process_id),
       request_initiator_site_lock_(params->request_initiator_site_lock),
+      ignore_isolated_world_origin_(params->ignore_isolated_world_origin),
       origin_access_list_(origin_access_list) {
   DCHECK(context_);
   DCHECK(origin_access_list_);
@@ -200,8 +201,8 @@ void CorsURLLoaderFactory::CreateLoaderAndStart(
         std::move(receiver), routing_id, request_id, options,
         base::BindOnce(&CorsURLLoaderFactory::DestroyURLLoader,
                        base::Unretained(this)),
-        resource_request, std::move(client), traffic_annotation,
-        inner_url_loader_factory, origin_access_list_,
+        resource_request, ignore_isolated_world_origin_, std::move(client),
+        traffic_annotation, inner_url_loader_factory, origin_access_list_,
         factory_bound_origin_access_list_.get(),
         context_->cors_preflight_controller());
     auto* raw_loader = loader.get();

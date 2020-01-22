@@ -73,7 +73,7 @@ message GetHintsResponse {
 
   // The maximum duration in which the hints provided in this response should
   // be retained in the client cache.
-  optional Duration max_cache_duration = 2;
+  optional Duration max_cache_duration = 2 [deprecated = true];
 
   // A set of hint keys to remove from the client cache.
   //

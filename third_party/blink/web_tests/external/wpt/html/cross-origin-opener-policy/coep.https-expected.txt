@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 PASS Same-origin popup with coop/coep
 FAIL historical: "same-site" popup with coop/coep assert_equals: name expected "" but got "same-site-popup-with-coop/coep"
-PASS Same-origin popup with coop unsafe-none/coep
+FAIL Same-origin popup with coop unsafe-none/coep assert_equals: name expected "" but got "popup-with-coop-unsafe-none/coep"
 FAIL historical: "same-site" popup with coop unsafe-none/coep assert_equals: name expected "" but got "same-site-popup-with-coop-unsafe-none/coep"
 FAIL Same-origin popup with coop unsafe-none without coep assert_equals: name expected "" but got "popup-with-coop-unsafe-none-without-coep"
 FAIL historical: "same-site" popup with coop unsafe-none without coep assert_equals: name expected "" but got "same-site-popup-with-coop-unsafe-none-without-coep"

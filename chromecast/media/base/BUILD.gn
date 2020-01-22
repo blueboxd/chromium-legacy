@@ -89,9 +89,7 @@ cast_source_set("media_codec_support") {
     "media_codec_support.h",
   ]
 
-  public_deps = [
-    "//chromecast/public/media",
-  ]
+  public_deps = [ "//chromecast/public/media" ]
 
   deps = [
     "//base",
@@ -105,9 +103,7 @@ cast_source_set("video_plane_controller") {
     "video_plane_controller.h",
   ]
 
-  public_deps = [
-    "//chromecast/public",
-  ]
+  public_deps = [ "//chromecast/public" ]
 
   deps = [
     "//base",

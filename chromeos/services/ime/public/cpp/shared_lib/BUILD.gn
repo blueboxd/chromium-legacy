@@ -3,7 +3,5 @@
 # found in the LICENSE file.
 
 source_set("interfaces") {
-  sources = [
-    "interfaces.h",
-  ]
+  sources = [ "interfaces.h" ]
 }

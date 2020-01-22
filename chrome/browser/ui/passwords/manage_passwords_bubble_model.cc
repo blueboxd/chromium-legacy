@@ -388,11 +388,6 @@ void ManagePasswordsBubbleModel::OnSignInToChromeClicked(
     delegate_->EnableSync(account, is_default_promo_account);
 }
 
-void ManagePasswordsBubbleModel::OnSkipSignInClicked() {
-  GetProfile()->GetPrefs()->SetBoolean(
-      password_manager::prefs::kWasSignInPasswordPromoClicked, true);
-}
-
 #if defined(PASSWORD_STORE_SELECT_ENABLED)
 void ManagePasswordsBubbleModel::OnToggleAccountStore(bool is_checked) {
   delegate_->GetPasswordFeatureManager()->SetDefaultPasswordStore(
@@ -425,10 +420,6 @@ bool ManagePasswordsBubbleModel::ShouldShowFooter() const {
   return (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
           state_ == password_manager::ui::PENDING_PASSWORD_STATE) &&
          IsSyncUser(GetProfile());
-}
-
-const base::string16& ManagePasswordsBubbleModel::GetCurrentUsername() const {
-  return pending_password_.username_value;
 }
 
 int ManagePasswordsBubbleModel::GetTopIllustration(bool dark_mode) const {

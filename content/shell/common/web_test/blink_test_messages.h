@@ -15,37 +15,11 @@
 
 #define IPC_MESSAGE_START BlinkTestMsgStart
 
-// Asks the browser process to perform a layout dump spanning all the
-// (potentially cross-process) frames.  This goes through multiple
-// WebTestControl.DumpFrameLayout calls and ends with sending of
-// LayoutDumpCompleted.
-// TODO(crbug.com/1039247): LayoutDumpCompleted call should be removed and the
-// callback should happen part of LayoutDump call on the host interface.
-IPC_MESSAGE_ROUTED0(BlinkTestHostMsg_InitiateLayoutDump)
-
 IPC_MESSAGE_ROUTED0(BlinkTestHostMsg_ResetDone)
 
 // WebTestDelegate related.
 IPC_MESSAGE_ROUTED1(BlinkTestHostMsg_OverridePreferences,
                     content::WebPreferences /* preferences */)
 IPC_MESSAGE_ROUTED1(BlinkTestHostMsg_PrintMessage, std::string /* message */)
-IPC_MESSAGE_ROUTED1(BlinkTestHostMsg_PrintMessageToStderr,
-                    std::string /* message */)
-IPC_MESSAGE_ROUTED1(BlinkTestHostMsg_NavigateSecondaryWindow, GURL /* url */)
-IPC_MESSAGE_ROUTED1(BlinkTestHostMsg_GoToOffset, int /* offset */)
-IPC_MESSAGE_ROUTED0(BlinkTestHostMsg_Reload)
-IPC_MESSAGE_ROUTED2(BlinkTestHostMsg_LoadURLForFrame,
-                    GURL /* url */,
-                    std::string /* frame_name */)
-IPC_MESSAGE_ROUTED0(BlinkTestHostMsg_CloseRemainingWindows)
-
-IPC_MESSAGE_ROUTED1(BlinkTestHostMsg_SetBluetoothManualChooser,
-                    bool /* enable */)
-IPC_MESSAGE_ROUTED0(BlinkTestHostMsg_GetBluetoothManualChooserEvents)
-IPC_MESSAGE_ROUTED2(BlinkTestHostMsg_SendBluetoothManualChooserEvent,
-                    std::string /* event */,
-                    std::string /* argument */)
-IPC_MESSAGE_ROUTED1(BlinkTestHostMsg_SetPopupBlockingEnabled,
-                    bool /* block_popups */)
 
 #endif  // CONTENT_SHELL_COMMON_WEB_TEST_BLINK_TEST_MESSAGES_H_

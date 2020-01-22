@@ -13,12 +13,9 @@
 #include "components/sessions/core/live_tab_context.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 class WebStateList;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // Implementation of sessions::LiveTabContext which uses an instance
 // of TabModel in order to fulfil its duties.

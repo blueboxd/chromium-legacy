@@ -22,7 +22,7 @@ CWV_EXPORT
 // Configuration with persistent data store which stores all data on disk.
 + (instancetype)defaultConfiguration;
 
-// Configuration with ephemeral data store that neven stores data on disk.
+// Configuration with ephemeral data store that never stores data on disk.
 + (instancetype)incognitoConfiguration;
 
 - (instancetype)init NS_UNAVAILABLE;

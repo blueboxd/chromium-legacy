@@ -75,8 +75,11 @@ public final class NewTabPageUma {
     /** User opened an explore sites tile. */
     public static final int ACTION_OPENED_EXPLORE_SITES_TILE = 11;
 
+    /** User clicked on the "Manage Interests" item in the snippet card menu. */
+    public static final int ACTION_CLICKED_MANAGE_INTERESTS = 12;
+
     /** The number of possible actions. */
-    private static final int NUM_ACTIONS = 12;
+    private static final int NUM_ACTIONS = 13;
 
     /** User navigated to a page using the omnibox. */
     private static final int RAPPOR_ACTION_NAVIGATED_USING_OMNIBOX = 0;

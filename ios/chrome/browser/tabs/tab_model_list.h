@@ -8,14 +8,11 @@
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 @class TabModel;
 
 class TabModelListObserver;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // A class containing static functions to help maintain a 1:N relationship
 // between an ios::ChromeBrowserState and multiple TabModels.

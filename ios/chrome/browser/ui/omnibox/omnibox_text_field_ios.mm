@@ -100,9 +100,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 #pragma mark - Public methods
 // Overload to allow for code-based initialization.
 - (instancetype)initWithFrame:(CGRect)frame {
-  return [self initWithFrame:frame
-                   textColor:TextColor()
-                   tintColor:nil];
+  return [self initWithFrame:frame textColor:TextColor() tintColor:nil];
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -211,8 +209,8 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   DCHECK([self isFirstResponder]);
   UITextPosition* beginning = [self beginningOfDocument];
   UITextRange* selectedRange = [self selectedTextRange];
-  NSInteger start =
-      [self offsetFromPosition:beginning toPosition:[selectedRange start]];
+  NSInteger start = [self offsetFromPosition:beginning
+                                  toPosition:[selectedRange start]];
   NSInteger length = [self offsetFromPosition:[selectedRange start]
                                    toPosition:[selectedRange end]];
   return NSMakeRange(start, length);
@@ -263,23 +261,20 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 // but there are numerous edge case issues with it, so it's simpler to just
 // manually update the text alignment and writing direction of the UITextField.
 - (void)updateTextDirection {
-  // If the flag is enabled, we want to use the default text alignment.
-  if (base::FeatureList::IsEnabled(kNewOmniboxPopupLayout)) {
-    // If the keyboard language direction does not match the device
-    // language direction, the alignment of the placeholder text will be off.
-    if (self.text.length == 0) {
-      NSLocaleLanguageDirection direction = [NSLocale
-          characterDirectionForLanguage:self.textInputMode.primaryLanguage];
-      if (direction == NSLocaleLanguageDirectionRightToLeft) {
-        [self setTextAlignment:NSTextAlignmentRight];
-      } else {
-        [self setTextAlignment:NSTextAlignmentLeft];
-      }
+  // If the keyboard language direction does not match the device
+  // language direction, the alignment of the placeholder text will be off.
+  if (self.text.length == 0) {
+    NSLocaleLanguageDirection direction = [NSLocale
+        characterDirectionForLanguage:self.textInputMode.primaryLanguage];
+    if (direction == NSLocaleLanguageDirectionRightToLeft) {
+      [self setTextAlignment:NSTextAlignmentRight];
     } else {
-      [self setTextAlignment:NSTextAlignmentNatural];
+      [self setTextAlignment:NSTextAlignmentLeft];
     }
-    return;
+  } else {
+    [self setTextAlignment:NSTextAlignmentNatural];
   }
+  return;
   // Setting the empty field to Natural seems to let iOS update the cursor
   // position when the keyboard language is changed.
   if (![self text].length) {
@@ -779,10 +774,10 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   }
 
   UITextPosition* beginning = self.beginningOfDocument;
-  UITextPosition* cursorPosition =
-      [self positionFromPosition:beginning offset:offset];
-  UITextRange* textRange =
-      [self textRangeFromPosition:cursorPosition toPosition:cursorPosition];
+  UITextPosition* cursorPosition = [self positionFromPosition:beginning
+                                                       offset:offset];
+  UITextRange* textRange = [self textRangeFromPosition:cursorPosition
+                                            toPosition:cursorPosition];
   self.selectedTextRange = textRange;
 }
 
@@ -928,7 +923,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (UIColor*)selectedTextBackgroundColor {
-    return [_displayedTintColor colorWithAlphaComponent:0.2];
+  return [_displayedTintColor colorWithAlphaComponent:0.2];
 }
 
 - (BOOL)isColorHidden:(UIColor*)color {

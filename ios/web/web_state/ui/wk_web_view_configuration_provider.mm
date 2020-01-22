@@ -101,6 +101,9 @@ void WKWebViewConfigurationProvider::ResetWithWebViewConfiguration(
   } else {
     configuration = [configuration copy];
   }
+  if (configuration_) {
+    Purge();
+  }
   configuration_ = configuration;
 
   if (browser_state_->IsOffTheRecord()) {
@@ -117,9 +120,13 @@ void WKWebViewConfigurationProvider::ResetWithWebViewConfiguration(
     @try {
       // Disable system context menu on iOS 13 and later. Disabling
       // "longPressActions" prevents the WKWebView ContextMenu from being
-      // displayed.
+      // displayed and also prevents the iOS 13 ContextMenu delegate methods
+      // from being called.
       // https://github.com/WebKit/webkit/blob/1233effdb7826a5f03b3cdc0f67d713741e70976/Source/WebKit/UIProcess/API/Cocoa/WKWebViewConfiguration.mm#L307
-      [configuration_ setValue:@NO forKey:@"longPressActionsEnabled"];
+      BOOL enable_long_press_action =
+          !web::GetWebClient()->EnableLongPressAndForceTouchHandling();
+      [configuration_ setValue:@(enable_long_press_action)
+                        forKey:@"longPressActionsEnabled"];
     } @catch (NSException* exception) {
       NOTREACHED() << "Error setting value for longPressActionsEnabled";
     }

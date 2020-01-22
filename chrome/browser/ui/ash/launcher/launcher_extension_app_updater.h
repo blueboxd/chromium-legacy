@@ -18,7 +18,8 @@ class LauncherExtensionAppUpdater
       public ArcAppListPrefs::Observer {
  public:
   LauncherExtensionAppUpdater(Delegate* delegate,
-                              content::BrowserContext* browser_context);
+                              content::BrowserContext* browser_context,
+                              bool extensions_only);
   ~LauncherExtensionAppUpdater() override;
 
   // ExtensionRegistryObserver:
@@ -46,7 +47,13 @@ class LauncherExtensionAppUpdater
   void UpdateApp(const std::string& app_id);
   void UpdateEquivalentApp(const std::string& arc_package_name);
 
+  bool ShouldHandleExtension(const extensions::Extension* extension) const;
+
   extensions::ExtensionRegistry* extension_registry_ = nullptr;
+
+  // Handles life-cycle events for extensions only if true, otherwise handles
+  // life-cycle events for both Chrome apps and extensions.
+  const bool extensions_only_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherExtensionAppUpdater);
 };

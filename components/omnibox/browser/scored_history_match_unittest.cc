@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <numeric>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -13,7 +14,9 @@
 #include "base/i18n/break_iterator.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/search_terms_data.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,11 +66,12 @@ class ScoredHistoryMatchTest : public testing::Test {
 
   // Convenience function for GetTopicalityScore() that builds the term match
   // and word break information automatically that are needed to call
-  // GetTopicalityScore().  It only works for scoring a single term, not
-  // multiple terms.
-  float GetTopicalityScoreOfTermAgainstURLAndTitle(const base::string16& term,
-                                                   const GURL& url,
-                                                   const base::string16& title);
+  // GetTopicalityScore().
+  float GetTopicalityScoreOfTermAgainstURLAndTitle(
+      const std::vector<const std::string>&,
+      const WordStarts term_word_starts,
+      const GURL& url,
+      const base::string16& title);
 };
 
 history::URLRow ScoredHistoryMatchTest::MakeURLRow(const char* url,
@@ -106,29 +110,29 @@ String16Vector ScoredHistoryMatchTest::Make2Terms(const char* term_1,
 }
 
 float ScoredHistoryMatchTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
-    const base::string16& term,
+    const std::vector<const std::string>& terms,
+    const WordStarts term_word_starts,
     const GURL& url,
     const base::string16& title) {
-  String16Vector term_vector = {term};
-  WordStarts term_word_starts = {0};
-  base::i18n::BreakIterator iter(term, base::i18n::BreakIterator::BREAK_WORD);
-  if (iter.Init()) {
-    // Find the first word start.
-    while (iter.Advance() && !iter.IsWord()) {
-    }
-    term_word_starts[0] = iter.prev();
-  }
+  String16Vector term_vector;
+  std::transform(terms.begin(), terms.end(), std::back_inserter(term_vector),
+                 [](auto term) { return base::UTF8ToUTF16(term); });
+  std::string terms_joint =
+      std::accumulate(std::next(terms.begin()), terms.end(), terms[0],
+                      [](std::string accumulator, std::string term) {
+                        return accumulator + " " + term;
+                      });
   RowWordStarts row_word_starts;
   base::string16 url_string = base::UTF8ToUTF16(url.spec());
   String16SetFromString16(url_string, &row_word_starts.url_word_starts_);
   String16SetFromString16(title, &row_word_starts.title_word_starts_);
-  ScoredHistoryMatch scored_match(history::URLRow(GURL(url)), VisitInfoVector(),
-                                  term, term_vector, term_word_starts,
-                                  row_word_starts, false, 1, base::Time::Max());
-  scored_match.url_matches = MatchTermInString(term, url_string, 0);
-  scored_match.title_matches = MatchTermInString(term, title, 0);
+  auto row = history::URLRow(GURL(url));
+  row.set_title(title);
+  ScoredHistoryMatch scored_match(
+      row, VisitInfoVector(), base::UTF8ToUTF16(terms_joint), term_vector,
+      term_word_starts, row_word_starts, false, 1, base::Time::Max());
   scored_match.topicality_threshold_ = -1;
-  return scored_match.GetTopicalityScore(1, url,
+  return scored_match.GetTopicalityScore(term_vector.size(), url,
                                          base::OffsetAdjuster::Adjustments(),
                                          term_word_starts, row_word_starts);
 }
@@ -410,10 +414,10 @@ TEST_F(ScoredHistoryMatchTest, MatchURLComponents) {
 
 TEST_F(ScoredHistoryMatchTest, GetTopicalityScoreTrailingSlash) {
   const float hostname = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("def"), GURL("http://abc.def.com/"),
+      {"def"}, {0}, GURL("http://abc.def.com/"),
       ASCIIToUTF16("Non-Matching Title"));
   const float hostname_no_slash = GetTopicalityScoreOfTermAgainstURLAndTitle(
-      ASCIIToUTF16("def"), GURL("http://abc.def.com"),
+      {"def"}, {0}, GURL("http://abc.def.com"),
       ASCIIToUTF16("Non-Matching Title"));
   EXPECT_EQ(hostname_no_slash, hostname);
 }
@@ -524,14 +528,36 @@ TEST_F(ScoredHistoryMatchTest, FilterMatches) {
   // is a valid match at a word break.  To recognize this,
   // |terms_to_word_starts_offsets| must record that the "word" in this term
   // starts at the second character.
-  terms_to_word_starts_offsets[0] = 1;
   term_matches.clear();
   term_matches.push_back(TermMatch(0, 27, 1));
   filtered_term_matches = ScoredHistoryMatch::FilterTermMatchesByWordStarts(
-      term_matches, terms_to_word_starts_offsets, word_starts, 15,
+      term_matches, /*terms_to_word_starts_offsets*/ {1}, word_starts, 15,
       std::string::npos);
   ASSERT_EQ(1u, filtered_term_matches.size());
   EXPECT_EQ(27u, filtered_term_matches[0].offset);
+
+  // Check "de" + "fa" + "lt" matches "defa" when |allow_midword_continuations|
+  // is true.
+  term_matches.clear();
+  term_matches.push_back(TermMatch(0, 16, 2));
+  term_matches.push_back(TermMatch(1, 18, 2));
+  term_matches.push_back(TermMatch(2, 21, 2));
+  filtered_term_matches = ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+      term_matches, {0, 0, 0}, word_starts, 15, std::string::npos, true);
+  ASSERT_EQ(2u, filtered_term_matches.size());
+  EXPECT_EQ(16u, filtered_term_matches[0].offset);
+  EXPECT_EQ(18u, filtered_term_matches[1].offset);
+
+  // Check "de" + "fa" + "lt" matches "de" when |allow_midword_continuations| is
+  // false.
+  term_matches.clear();
+  term_matches.push_back(TermMatch(0, 16, 2));
+  term_matches.push_back(TermMatch(1, 18, 2));
+  term_matches.push_back(TermMatch(2, 21, 2));
+  filtered_term_matches = ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+      term_matches, {0, 0, 0}, word_starts, 15, std::string::npos, false);
+  ASSERT_EQ(1u, filtered_term_matches.size());
+  EXPECT_EQ(16u, filtered_term_matches[0].offset);
 }
 
 TEST_F(ScoredHistoryMatchTest, GetFrequency) {
@@ -629,30 +655,31 @@ TEST_F(ScoredHistoryMatchTest, GetDocumentSpecificityScore) {
 TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
   GURL url("http://abc.def.com/path1/path2?arg1=val1&arg2=val2#hash_fragment");
   base::string16 title = ASCIIToUTF16("here is a - title");
-  auto Score = [&](const char* term) {
-    return GetTopicalityScoreOfTermAgainstURLAndTitle(ASCIIToUTF16(term), url,
-                                                      title);
+  auto Score = [&](const std::vector<const std::string>& term_vector,
+                   const WordStarts term_word_starts) {
+    return GetTopicalityScoreOfTermAgainstURLAndTitle(
+        term_vector, term_word_starts, url, title);
   };
-  const float hostname_score = Score("abc");
-  const float hostname_mid_word_score = Score("bc");
-  const float hostname_score_preceeding_punctuation = Score("://abc");
-  const float domain_name_score = Score("def");
-  const float domain_name_mid_word_score = Score("ef");
-  const float domain_name_score_preceeding_dot = Score(".def");
-  const float tld_score = Score("com");
-  const float tld_mid_word_score = Score("om");
-  const float tld_score_preceeding_dot = Score(".com");
-  const float path_score = Score("path1");
-  const float path_mid_word_score = Score("ath1");
-  const float path_score_preceeding_slash = Score("/path1");
-  const float arg_score = Score("arg1");
-  const float arg_mid_word_score = Score("rg1");
-  const float arg_score_preceeding_question_mark = Score("?arg1");
-  const float protocol_score = Score("htt");
-  const float protocol_mid_word_score = Score("tt");
-  const float title_score = Score("her");
-  const float title_mid_word_score = Score("er");
-  const float wordless_match_at_title_mid_word_score = Score("-");
+  const float hostname_score = Score({"abc"}, {0});
+  const float hostname_mid_word_score = Score({"bc"}, {0});
+  const float hostname_score_preceeding_punctuation = Score({"://abc"}, {3});
+  const float domain_name_score = Score({"def"}, {0});
+  const float domain_name_mid_word_score = Score({"ef"}, {0});
+  const float domain_name_score_preceeding_dot = Score({".def"}, {1});
+  const float tld_score = Score({"com"}, {0});
+  const float tld_mid_word_score = Score({"om"}, {0});
+  const float tld_score_preceeding_dot = Score({".com"}, {1});
+  const float path_score = Score({"path1"}, {0});
+  const float path_mid_word_score = Score({"ath1"}, {0});
+  const float path_score_preceeding_slash = Score({"/path1"}, {1});
+  const float arg_score = Score({"arg1"}, {0});
+  const float arg_mid_word_score = Score({"rg1"}, {0});
+  const float arg_score_preceeding_question_mark = Score({"?arg1"}, {1});
+  const float protocol_score = Score({"htt"}, {0});
+  const float protocol_mid_word_score = Score({"tt"}, {0});
+  const float title_score = Score({"her"}, {0});
+  const float title_mid_word_score = Score({"er"}, {0});
+  const float wordless_match_at_title_mid_word_score = Score({"-"}, {1});
   // Verify hostname and domain name > path > arg.
   EXPECT_GT(hostname_score, path_score);
   EXPECT_GT(domain_name_score, path_score);
@@ -684,7 +711,6 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
   EXPECT_EQ(protocol_mid_word_score, 0);
   EXPECT_EQ(title_mid_word_score, 0);
   EXPECT_GT(wordless_match_at_title_mid_word_score, 0);
-  // Verify matches not at word starts score non 0 when they contain no words.
   // Check that title matches fit somewhere reasonable compared to the
   // various types of URL matches.
   EXPECT_GT(title_score, arg_score);
@@ -696,6 +722,46 @@ TEST_F(ScoredHistoryMatchTest, GetTopicalityScore) {
   EXPECT_GT(hostname_mid_word_score, protocol_mid_word_score);
   EXPECT_GT(hostname_mid_word_score, tld_score);
   EXPECT_GT(hostname_mid_word_score, tld_mid_word_score);
+
+  // Check that midword matches are not allowed when
+  // kHistoryQuickProviderAllowButDoNotScoreMidwordTerms is disabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndDisableFeature(
+        omnibox::kHistoryQuickProviderAllowButDoNotScoreMidwordTerms);
+
+    const float wordstart = Score({"frag"}, {0u});
+    const float midword = Score({"ment"}, {0u});
+    const float wordstart_midword_continuation =
+        Score({"frag", "ment"}, {0u, 0u});
+    const float wordstart_midword_disjoint = Score({"frag", "ent"}, {0u, 0u});
+
+    EXPECT_GT(wordstart, 0);
+    EXPECT_EQ(midword, 0);
+    EXPECT_EQ(wordstart_midword_continuation, 0);
+    EXPECT_EQ(wordstart_midword_disjoint, 0);
+  }
+
+  // Check that midword matches are allowed but not scored when
+  // kHistoryQuickProviderAllowButDoNotScoreMidwordTerms is enabled.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        omnibox::kHistoryQuickProviderAllowButDoNotScoreMidwordTerms);
+
+    const float wordstart = Score({"frag"}, {0u});
+    const float midword = Score({"ment"}, {0u});
+    const float wordstart_midword_continuation =
+        Score({"frag", "ment"}, {0u, 0u});
+    const float wordstart_midword_disjoint = Score({"frag", "ent"}, {0u, 0u});
+
+    EXPECT_GT(wordstart, 0);
+    EXPECT_EQ(midword, 0);
+    EXPECT_GT(wordstart_midword_continuation, 0);
+    EXPECT_GT(wordstart_midword_disjoint, 0);
+    EXPECT_GT(wordstart, wordstart_midword_continuation);
+    EXPECT_EQ(wordstart_midword_continuation, wordstart_midword_disjoint);
+  }
 }
 
 // Test the function GetFinalRelevancyScore().

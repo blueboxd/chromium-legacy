@@ -18,9 +18,9 @@ import org.chromium.chrome.browser.datareduction.DataReductionSavingsMilestonePr
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
+import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
@@ -66,13 +66,13 @@ public class ToolbarButtonInProductHelpController {
                         - mDataSavedOnStartPageLoad;
                 Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
                 if (dataSaved > 0L) tracker.notifyEvent(EventConstants.DATA_SAVED_ON_PAGE_LOAD);
-                if (((TabImpl) tab).isPreview()) {
+                if (Previews.isPreview(tab)) {
                     tracker.notifyEvent(EventConstants.PREVIEWS_PAGE_LOADED);
                 }
                 if (tab.isUserInteractable()) {
                     maybeShowDataSaverDetail();
                     if (dataSaved > 0L) maybeShowDataSaverMilestonePromo();
-                    if (((TabImpl) tab).isPreview()) maybeShowPreviewVerboseStatus();
+                    if (Previews.isPreview(tab)) maybeShowPreviewVerboseStatus();
                 }
             }
         };

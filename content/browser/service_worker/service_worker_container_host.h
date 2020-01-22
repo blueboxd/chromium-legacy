@@ -22,7 +22,7 @@
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_container_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -105,16 +105,14 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   static base::WeakPtr<ServiceWorkerContainerHost> CreateForWebWorker(
       base::WeakPtr<ServiceWorkerContextCore> context,
       int process_id,
-      blink::mojom::ServiceWorkerProviderType provider_type,
+      blink::mojom::ServiceWorkerContainerType container_type,
       mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
           host_receiver,
       mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainer>
           container_remote);
 
-  // TODO(https://crbug.com/931087): Rename ServiceWorkerProviderType to
-  // ServiceWorkerContainerType.
   ServiceWorkerContainerHost(
-      blink::mojom::ServiceWorkerProviderType type,
+      blink::mojom::ServiceWorkerContainerType type,
       bool is_parent_frame_secure,
       int frame_tree_node_id,
       mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
@@ -251,7 +249,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   bool IsContainerForServiceWorker() const;
   bool IsContainerForClient() const;
 
-  blink::mojom::ServiceWorkerProviderType type() const { return type_; }
+  blink::mojom::ServiceWorkerContainerType type() const { return type_; }
 
   // Can only be called when IsContainerForClient() is true.
   blink::mojom::ServiceWorkerClientType client_type() const;
@@ -540,7 +538,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
                                     const char* error_prefix,
                                     Args... args);
 
-  const blink::mojom::ServiceWorkerProviderType type_;
+  const blink::mojom::ServiceWorkerContainerType type_;
 
   // See comments for the getter functions.
   GURL url_;

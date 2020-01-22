@@ -288,7 +288,10 @@ void MarkingVisitor::FlushMarkingWorklists() {
 ConcurrentMarkingVisitor::ConcurrentMarkingVisitor(ThreadState* state,
                                                    MarkingMode marking_mode,
                                                    int task_id)
-    : MarkingVisitorBase(state, marking_mode, task_id) {
+    : MarkingVisitorBase(state, marking_mode, task_id),
+      not_safe_to_concurrently_trace_worklist_(
+          Heap().GetNotSafeToConcurrentlyTraceWorklist(),
+          task_id) {
   DCHECK(!state->CheckThread());
   DCHECK_NE(WorklistTaskId::MutatorThread, task_id);
 }
@@ -299,6 +302,7 @@ void ConcurrentMarkingVisitor::FlushWorklists() {
   not_fully_constructed_worklist_.FlushToGlobal();
   weak_callback_worklist_.FlushToGlobal();
   weak_table_worklist_.FlushToGlobal();
+  not_safe_to_concurrently_trace_worklist_.FlushToGlobal();
   // Flush compaction worklists.
   movable_reference_worklist_.FlushToGlobal();
   backing_store_callback_worklist_.FlushToGlobal();

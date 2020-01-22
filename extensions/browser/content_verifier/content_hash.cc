@@ -329,14 +329,15 @@ std::set<base::FilePath> ContentHash::GetMismatchedComputedHashes(
 
   std::set<base::FilePath> mismatched_hashes;
 
-  for (const auto& resource_info : *computed_hashes_data) {
-    const base::FilePath& relative_unix_path = resource_info.first;
-    const std::vector<std::string>& hashes = resource_info.second.second;
+  for (const auto& resource_info : computed_hashes_data->items()) {
+    const ComputedHashes::Data::HashInfo& hash_info = resource_info.second;
 
-    std::string root =
-        ComputeTreeHashRoot(hashes, block_size_ / crypto::kSHA256Length);
-    if (!verified_contents_->TreeHashRootEquals(relative_unix_path, root))
-      mismatched_hashes.insert(relative_unix_path);
+    std::string root = ComputeTreeHashRoot(hash_info.hashes,
+                                           block_size_ / crypto::kSHA256Length);
+    if (!verified_contents_->TreeHashRootEquals(hash_info.relative_unix_path,
+                                                root)) {
+      mismatched_hashes.insert(hash_info.relative_unix_path);
+    }
   }
 
   return mismatched_hashes;
@@ -365,7 +366,7 @@ bool ContentHash::CreateHashes(const base::FilePath& hashes_file,
       VLOG(1) << "content mismatch for " << relative_unix_path.AsUTF8Unsafe();
       // Remove hash entry to keep computed_hashes.json file clear of mismatched
       // hashes.
-      computed_hashes_data->erase(relative_unix_path);
+      computed_hashes_data->Remove(relative_unix_path);
     }
     hash_mismatch_unix_paths_ = std::move(hashes_mismatch);
   }

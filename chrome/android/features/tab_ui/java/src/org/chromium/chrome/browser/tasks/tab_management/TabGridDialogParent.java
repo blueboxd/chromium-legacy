@@ -19,12 +19,10 @@ import android.graphics.drawable.GradientDrawable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.widget.ImageViewCompat;
-import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
@@ -41,6 +39,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
+import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 import java.lang.annotation.Retention;
@@ -140,13 +139,10 @@ public class TabGridDialogParent
                 (int) context.getResources().getDimension(R.dimen.bottom_sheet_peek_height);
         mContainerParams = new FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE))
-                .getDefaultDisplay()
-                .getMetrics(displayMetrics);
+        DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(context);
         // Screen height and width when in portrait mode.
-        mScreenHeight = Math.max(displayMetrics.heightPixels, displayMetrics.widthPixels);
-        mScreenWidth = Math.min(displayMetrics.heightPixels, displayMetrics.widthPixels);
+        mScreenHeight = Math.max(display.getDisplayHeight(), display.getDisplayWidth());
+        mScreenWidth = Math.min(display.getDisplayHeight(), display.getDisplayWidth());
 
         mComponentCallbacks = new ComponentCallbacks() {
             @Override

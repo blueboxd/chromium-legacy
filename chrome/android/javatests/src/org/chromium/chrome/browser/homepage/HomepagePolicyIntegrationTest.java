@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
+import org.chromium.chrome.browser.partnercustomizations.HomepageManager.HomeButtonPreferenceState;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.ChromeSwitchPreference;
@@ -64,6 +65,10 @@ public class HomepagePolicyIntegrationTest {
     public static final String TEST_URL = "http://127.0.0.1:8000/foo.html";
     public static final String GOOGLE_HTML = "/chrome/test/data/android/google.html";
 
+    private static final String METRICS_HOME_BUTTON_STATE_ENUM =
+            "Settings.ShowHomeButtonPreferenceStateManaged";
+    private static final String METRICS_HOMEPAGE_IS_CUSTOMIZED = "Settings.HomePageIsCustomized";
+
     private EmbeddedTestServer mTestServer;
 
     @Rule
@@ -72,7 +77,6 @@ public class HomepagePolicyIntegrationTest {
     @Before
     public void setUp() {
         // Disable Histogram for tests.
-        RecordHistogram.setDisabledForTests(true);
         FeatureUtilities.setHomepageLocationPolicyEnabledForTesting(true);
 
         // Give some user pref setting, simulate user that have their customized preference.
@@ -91,7 +95,6 @@ public class HomepagePolicyIntegrationTest {
     @After
     public void tearDown() {
         mTestServer.stopAndDestroyServer();
-        RecordHistogram.setDisabledForTests(false);
         FeatureUtilities.setHomepageLocationPolicyEnabledForTesting(null);
     }
 
@@ -111,6 +114,18 @@ public class HomepagePolicyIntegrationTest {
                 TEST_URL,
                 SharedPreferencesManager.getInstance().readString(
                         ChromePreferenceKeys.HOMEPAGE_LOCATION_POLICY, ""));
+
+        // METRICS_HOMEPAGE_IS_CUSTOMIZED Should be collected twice it is called in:
+        // 1. ProcessInitializationHandler#handleDeferredStartupTasksInitialization;
+        // 2. HomepageManager#onHomepagePolicyUpdate, which will be called when native initialized.
+        Assert.assertEquals(
+                "Settings.HomepageIsCustomized should be recorded twice when policy enabled", 2,
+                RecordHistogram.getHistogramTotalCountForTesting(METRICS_HOMEPAGE_IS_CUSTOMIZED));
+
+        // METRICS_HOME_BUTTON_STATE_ENUM should be collected once in deferred start up tasks.
+        Assert.assertEquals(1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        METRICS_HOME_BUTTON_STATE_ENUM, HomeButtonPreferenceState.MANAGED_ENABLED));
 
         // Start the page again. This time, the homepage should be set to what policy is.
         destroyAndRestartActivity();

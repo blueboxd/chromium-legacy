@@ -39,11 +39,14 @@
 class NSAttributedString;
 #endif
 
+namespace gfx {
+class Point;
+}  // namespace gfx
+
 namespace blink {
 
 class WebFrameWidget;
 class WebLocalFrame;
-struct WebPoint;
 
 class WebSubstringUtil {
  public:
@@ -51,8 +54,10 @@ class WebSubstringUtil {
   // the given point inside the given WebFrameWidget or nil on error.
   // Upon return, |baselinePoint| is set to the left baseline point in
   // AppKit coordinates.
-  BLINK_EXPORT static NSAttributedString*
-  AttributedWordAtPoint(WebFrameWidget*, WebPoint, WebPoint& baseline_point);
+  BLINK_EXPORT static NSAttributedString* AttributedWordAtPoint(
+      WebFrameWidget*,
+      gfx::Point,
+      gfx::Point& baseline_point);
 
   // Returns an autoreleased NSAttributedString that is a substring of the
   // Frame at the given range, or nil on error.
@@ -67,7 +72,7 @@ class WebSubstringUtil {
       WebLocalFrame*,
       size_t location,
       size_t length,
-      WebPoint* baseline_point);
+      gfx::Point* baseline_point);
 };
 
 }  // namespace blink

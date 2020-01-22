@@ -48,7 +48,6 @@ class HistoryItem;
 class WebHTTPBody;
 class WebString;
 class WebSerializedScriptValue;
-struct WebPoint;
 template <typename T>
 class WebVector;
 
@@ -88,8 +87,8 @@ class WebHistoryItem {
   BLINK_EXPORT gfx::PointF VisualViewportScrollOffset() const;
   BLINK_EXPORT void SetVisualViewportScrollOffset(const gfx::PointF&);
 
-  BLINK_EXPORT WebPoint GetScrollOffset() const;
-  BLINK_EXPORT void SetScrollOffset(const WebPoint&);
+  BLINK_EXPORT gfx::Point GetScrollOffset() const;
+  BLINK_EXPORT void SetScrollOffset(const gfx::Point&);
 
   BLINK_EXPORT float PageScaleFactor() const;
   BLINK_EXPORT void SetPageScaleFactor(float);

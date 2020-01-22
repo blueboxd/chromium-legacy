@@ -115,21 +115,7 @@ const char kPerfLBRCmd[] = "perf record -a -e r20c4 -b -c 200011";
 // we sample on the branches retired event.
 const char kPerfLBRCmdAtom[] = "perf record -a -e rc4 -b -c 300001";
 
-// The following events count misses in the level 1 caches and TLBs.
-
-// Perf doesn't support the generic dTLB-misses event for Goldmont. We define it
-// in terms of raw event number and umask value. Event codes taken from
-// "Intel 64 and IA-32 Architectures Software Developer's Manual, Vol 3".
-const char kPerfInstructionTLBMissesCmdGLM[] =
-    "perf record -a -e r0481 -c 2003";
-
-const char kPerfDataTLBMissesCmdGLM[] = "perf record -a -e r13d0 -c 2003";
-
-// Use the generic event names for the other microarchitectures.
-const char kPerfInstructionTLBMissesCmd[] =
-    "perf record -a -e iTLB-misses -c 2003";
-
-const char kPerfDataTLBMissesCmd[] = "perf record -a -e dTLB-misses -c 2003";
+// The following events count misses in the level 1 caches and level 2 TLBs.
 
 // TLB miss cycles for IvyBridge, Haswell, Broadwell and SandyBridge.
 const char kPerfITLBMissCyclesCmdIvyBridge[] =
@@ -163,8 +149,6 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
 
   // We use different perf events for iTLB, dTLB and LBR profiling on different
   // microarchitectures. Customize each command based on the microarchitecture.
-  const char* itlb_misses_cmd = kPerfInstructionTLBMissesCmd;
-  const char* dtlb_misses_cmd = kPerfDataTLBMissesCmd;
   const char* itlb_miss_cycles_cmd = kPerfITLBMissCyclesCmdIvyBridge;
   const char* dtlb_miss_cycles_cmd = kPerfDTLBMissCyclesCmdIvyBridge;
   const char* lbr_cmd = kPerfLBRCmd;
@@ -179,17 +163,13 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
     dtlb_miss_cycles_cmd = kPerfDTLBMissCyclesCmdAtom;
     lbr_cmd = kPerfLBRCmdAtom;
   }
-  if (cpu_uarch == "Goldmont" || cpu_uarch == "GoldmontPlus") {
-    itlb_misses_cmd = kPerfInstructionTLBMissesCmdGLM;
-    dtlb_misses_cmd = kPerfDataTLBMissesCmdGLM;
-  }
 
   if (cpu_uarch == "IvyBridge" || cpu_uarch == "Haswell" ||
       cpu_uarch == "Broadwell" || cpu_uarch == "SandyBridge" ||
       cpu_uarch == "Skylake" || cpu_uarch == "Kabylake" ||
       cpu_uarch == "Silvermont" || cpu_uarch == "Airmont" ||
       cpu_uarch == "Goldmont" || cpu_uarch == "GoldmontPlus") {
-    cmds.push_back(WeightAndValue(40.0, kPerfCyclesCmd));
+    cmds.push_back(WeightAndValue(50.0, kPerfCyclesCmd));
     // Haswell and newer big Intel cores support LBR callstack profiling. This
     // requires kernel support, which was added in kernel 4.4, and it was
     // backported to kernel 3.18. Collect LBR callstack profiling where
@@ -205,18 +185,14 @@ const std::vector<RandomSelector::WeightAndValue> GetDefaultCommands_x86_64(
       cmds.push_back(WeightAndValue(20.0, kPerfFPCallgraphCmd));
     }
     cmds.push_back(WeightAndValue(15.0, lbr_cmd));
-    cmds.push_back(WeightAndValue(5.0, itlb_misses_cmd));
-    cmds.push_back(WeightAndValue(5.0, dtlb_misses_cmd));
     cmds.push_back(WeightAndValue(5.0, itlb_miss_cycles_cmd));
     cmds.push_back(WeightAndValue(5.0, dtlb_miss_cycles_cmd));
     cmds.push_back(WeightAndValue(5.0, kPerfCacheMissesCmd));
     return cmds;
   }
   // Other 64-bit x86
-  cmds.push_back(WeightAndValue(65.0, kPerfCyclesCmd));
+  cmds.push_back(WeightAndValue(75.0, kPerfCyclesCmd));
   cmds.push_back(WeightAndValue(20.0, kPerfFPCallgraphCmd));
-  cmds.push_back(WeightAndValue(5.0, kPerfInstructionTLBMissesCmd));
-  cmds.push_back(WeightAndValue(5.0, kPerfDataTLBMissesCmd));
   cmds.push_back(WeightAndValue(5.0, kPerfCacheMissesCmd));
   return cmds;
 }

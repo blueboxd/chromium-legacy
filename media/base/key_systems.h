@@ -28,6 +28,9 @@ class MEDIA_EXPORT KeySystems {
  public:
   static KeySystems* GetInstance();
 
+  // Refreshes the list of available key systems if it may be out of date.
+  virtual void UpdateIfNeeded() = 0;
+
   // Returns whether |key_system| is a supported key system.
   virtual bool IsSupportedKeySystem(const std::string& key_system) const = 0;
 

@@ -32,7 +32,7 @@ class RemoteFrameClient : public FrameClient {
   virtual void Navigate(const ResourceRequest&,
                         bool should_replace_current_entry,
                         bool is_opener_navigation,
-                        bool has_download_sandbox_flag,
+                        bool initiator_frame_has_download_sandbox_flag,
                         bool initiator_frame_is_ad,
                         mojo::PendingRemote<mojom::blink::BlobURLToken>) = 0;
   unsigned BackForwardLength() override = 0;

@@ -861,7 +861,8 @@ void SkiaOutputSurfaceImpl::SetNeedsSwapSizeNotifications(
 }
 
 base::ScopedClosureRunner SkiaOutputSurfaceImpl::GetCacheBackBufferCb() {
-  DCHECK(impl_on_gpu_->gl_surface());
+  if (!impl_on_gpu_->gl_surface())
+    return base::ScopedClosureRunner();
   return dependency_->CacheGLSurface(impl_on_gpu_->gl_surface());
 }
 

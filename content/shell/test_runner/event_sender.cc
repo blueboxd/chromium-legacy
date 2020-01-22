@@ -52,6 +52,7 @@
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "v8/include/v8.h"
 
 using blink::WebContextMenuData;
@@ -66,7 +67,6 @@ using blink::WebMenuItemInfo;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebPagePopup;
-using blink::WebPoint;
 using blink::WebPointerEvent;
 using blink::WebPointerProperties;
 using blink::WebString;
@@ -240,7 +240,7 @@ int modifiersWithButtons(int modifiers, int buttons) {
 
 void InitMouseEventGeneric(WebMouseEvent::Button b,
                            int current_buttons,
-                           const WebPoint& pos,
+                           const gfx::Point& pos,
                            int click_count,
                            WebPointerProperties::PointerType pointerType,
                            int pointerId,
@@ -249,8 +249,8 @@ void InitMouseEventGeneric(WebMouseEvent::Button b,
                            int tiltY,
                            WebMouseEvent* e) {
   e->button = b;
-  e->SetPositionInWidget(pos.x, pos.y);
-  e->SetPositionInScreen(pos.x, pos.y);
+  e->SetPositionInWidget(gfx::PointF(pos));
+  e->SetPositionInScreen(gfx::PointF(pos));
   e->pointer_type = pointerType;
   e->id = pointerId;
   e->force = pressure;
@@ -261,7 +261,7 @@ void InitMouseEventGeneric(WebMouseEvent::Button b,
 
 void InitMouseEvent(WebMouseEvent::Button b,
                     int current_buttons,
-                    const WebPoint& pos,
+                    const gfx::Point& pos,
                     int click_count,
                     WebMouseEvent* e) {
   InitMouseEventGeneric(b, current_buttons, pos, click_count,
@@ -404,8 +404,9 @@ const char kSeparatorIdentifier[] = "---------";
 const char kDisabledIdentifier[] = "#";
 const char kCheckedIdentifier[] = "*";
 
-bool OutsideMultiClickRadius(const WebPoint& a, const WebPoint& b) {
-  return ((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)) >
+bool OutsideMultiClickRadius(const gfx::Point& a, const gfx::Point& b) {
+  return ((a.x() - b.x()) * (a.x() - b.x()) +
+          (a.y() - b.y()) * (a.y() - b.y())) >
          kMultipleClickRadiusPixels * kMultipleClickRadiusPixels;
 }
 
@@ -1330,7 +1331,7 @@ void EventSender::Reset() {
 #endif
 
   last_click_time_ = base::TimeTicks();
-  last_click_pos_ = WebPoint(0, 0);
+  last_click_pos_ = gfx::Point();
   last_button_type_ = WebMouseEvent::Button::kNoButton;
   touch_points_.clear();
   last_context_menu_data_.reset();
@@ -2010,7 +2011,7 @@ void EventSender::BeginDragWithItems(
   }
   current_drag_effects_allowed_ = blink::kWebDragOperationCopy;
 
-  const WebPoint& last_pos =
+  const gfx::Point& last_pos =
       current_pointer_state_[kRawMousePointerId].last_pos_;
 
   // Compute the scale from window (dsf-independent) to blink (dsf-dependent
@@ -2019,8 +2020,8 @@ void EventSender::BeginDragWithItems(
   web_widget_test_proxy_->ConvertWindowToViewport(&rect);
   float scale_to_blink_coords = rect.width;
 
-  gfx::PointF last_pos_for_blink(last_pos.x * scale_to_blink_coords,
-                                 last_pos.y * scale_to_blink_coords);
+  gfx::PointF last_pos_for_blink(last_pos.x() * scale_to_blink_coords,
+                                 last_pos.y() * scale_to_blink_coords);
 
   // Provide a drag source.
   mainFrameWidget()->DragTargetDragEnter(current_drag_data_, last_pos_for_blink,
@@ -2156,7 +2157,7 @@ void EventSender::MouseMoveTo(gin::Arguments* args) {
     args->ThrowError();
     return;
   }
-  WebPoint mouse_pos(static_cast<int>(x), static_cast<int>(y));
+  gfx::Point mouse_pos(x, y);
 
   int modifiers = 0;
   if (!args->PeekNext().IsEmpty()) {
@@ -2504,7 +2505,7 @@ void EventSender::GestureEvent(WebInputEvent::Type type, gin::Arguments* args) {
 
     InitMouseEvent(current_pointer_state_[kRawMousePointerId].pressed_button_,
                    current_pointer_state_[kRawMousePointerId].current_buttons_,
-                   WebPoint(x, y), click_count_, &mouse_event);
+                   gfx::Point(x, y), click_count_, &mouse_event);
 
     FinishDragAndDrop(mouse_event, blink::kWebDragOperationNone);
   }
@@ -2729,8 +2730,8 @@ void EventSender::ReplaySavedEvents() {
             current_pointer_state_[kRawMousePointerId].pressed_button_,
             current_pointer_state_[kRawMousePointerId].current_buttons_, e.pos,
             click_count_, &event);
-        current_pointer_state_[kRawMousePointerId].last_pos_ = blink::WebPoint(
-            event.PositionInWidget().x(), event.PositionInWidget().y());
+        current_pointer_state_[kRawMousePointerId].last_pos_ =
+            gfx::ToFlooredPoint(event.PositionInWidget());
         HandleInputEventOnViewOrPopup(event);
         DoDragAfterMouseMove(event);
         break;

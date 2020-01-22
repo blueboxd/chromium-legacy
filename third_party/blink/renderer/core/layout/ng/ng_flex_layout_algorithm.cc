@@ -356,15 +356,9 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     NGBoxStrut border_padding_in_child_writing_mode =
         ComputeBorders(flex_basis_space, child) +
         ComputePadding(flex_basis_space, child_style);
-    NGBoxStrut border_scrollbar_padding_in_child_writing_mode =
-        border_padding_in_child_writing_mode +
-        ComputeScrollbars(flex_basis_space, child);
 
     NGPhysicalBoxStrut physical_border_padding(
         border_padding_in_child_writing_mode.ConvertToPhysical(
-            child_style.GetWritingMode(), child_style.Direction()));
-    NGPhysicalBoxStrut physical_border_scrollbar_padding(
-        border_scrollbar_padding_in_child_writing_mode.ConvertToPhysical(
             child_style.GetWritingMode(), child_style.Direction()));
 
     LayoutUnit main_axis_border_padding =
@@ -373,9 +367,6 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     LayoutUnit cross_axis_border_padding =
         is_horizontal_flow_ ? physical_border_padding.VerticalSum()
                             : physical_border_padding.HorizontalSum();
-    LayoutUnit main_axis_border_scrollbar_padding =
-        is_horizontal_flow_ ? physical_border_scrollbar_padding.HorizontalSum()
-                            : physical_border_scrollbar_padding.VerticalSum();
 
     // TODO(dgrogan): Don't layout every time, just when you need to.
     // Use ChildHasIntrinsicMainAxisSize as a guide.
@@ -558,9 +549,10 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           min, layout_result->IntrinsicBlockSize(),
           LengthResolvePhase::kLayout);
     }
-    // TODO(dgrogan): Should this include scrollbar?
-    min_max_sizes_in_main_axis_direction -= main_axis_border_scrollbar_padding;
+    min_max_sizes_in_main_axis_direction -= main_axis_border_padding;
 
+    // TODO(dgrogan): Should min_max_sizes_in_cross_axis_direction include
+    // cross_axis_border_padding?
     NGPhysicalBoxStrut physical_child_margins =
         ComputePhysicalMargins(flex_basis_space, child_style);
     algorithm_

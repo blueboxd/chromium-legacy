@@ -112,6 +112,10 @@ UIView* WebClient::GetWindowedContainer() {
   return nullptr;
 }
 
+bool WebClient::EnableLongPressAndForceTouchHandling() const {
+  return true;
+}
+
 bool WebClient::ForceMobileVersionByDefault(const GURL&) {
   return false;
 }

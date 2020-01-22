@@ -33,6 +33,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_CONTAINER_H_
 
 #include "third_party/blink/public/platform/web_common.h"
+#include "ui/gfx/geometry/point.h"
 #include "v8/include/v8.h"
 
 namespace cc {
@@ -48,7 +49,6 @@ class WebString;
 class WebURL;
 class WebURLRequest;
 class WebDOMMessageEvent;
-struct WebPoint;
 struct WebRect;
 
 class WebPluginContainer {
@@ -121,10 +121,10 @@ class WebPluginContainer {
   virtual void SetWantsWheelEvents(bool) = 0;
 
   // Converts root frame's coordinates to plugin's local coordinates.
-  virtual WebPoint RootFrameToLocalPoint(const WebPoint&) = 0;
+  virtual gfx::Point RootFrameToLocalPoint(const gfx::Point&) = 0;
 
   // Converts plugin's local coordinate to root frame's coordinates.
-  virtual WebPoint LocalToRootFramePoint(const WebPoint&) = 0;
+  virtual gfx::Point LocalToRootFramePoint(const gfx::Point&) = 0;
 
   // Returns the plugin this container owns. This plugin will be
   // automatically destroyed when the container is destroyed.

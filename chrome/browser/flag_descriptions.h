@@ -96,9 +96,6 @@ extern const char kAudioWorkletRealtimeThreadDescription[];
 extern const char kUpdatedCellularActivationUiName[];
 extern const char kUpdatedCellularActivationUiDescription[];
 
-extern const char kUseMessagesGoogleComDomainName[];
-extern const char kUseMessagesGoogleComDomainDescription[];
-
 extern const char kUseMessagesStagingUrlName[];
 extern const char kUseMessagesStagingUrlDescription[];
 
@@ -1103,9 +1100,6 @@ extern const char kSendTabToSelfBroadcastDescription[];
 extern const char kSendTabToSelfWhenSignedInName[];
 extern const char kSendTabToSelfWhenSignedInDescription[];
 
-extern const char kServiceWorkerLongRunningMessageName[];
-extern const char kServiceWorkerLongRunningMessageDescription[];
-
 extern const char kServiceWorkerOnUIName[];
 extern const char kServiceWorkerOnUIDescription[];
 
@@ -1504,6 +1498,9 @@ extern const char kContentIndexingDownloadHomeDescription[];
 extern const char kContentIndexingNTPName[];
 extern const char kContentIndexingNTPDescription[];
 
+extern const char kContextMenuCopyImageName[];
+extern const char kContextMenuCopyImageDescription[];
+
 extern const char kContextualSearchDefinitionsName[];
 extern const char kContextualSearchDefinitionsDescription[];
 
@@ -1868,9 +1865,6 @@ extern const char kMacSyscallSandboxDescription[];
 extern const char kMacV2GPUSandboxName[];
 extern const char kMacV2GPUSandboxDescription[];
 
-extern const char kMacViewsTaskManagerName[];
-extern const char kMacViewsTaskManagerDescription[];
-
 extern const char kMacSystemMediaPermissionsInfoUiName[];
 extern const char kMacSystemMediaPermissionsInfoUiDescription[];
 
@@ -2156,6 +2150,9 @@ extern const char kEnterpriseReportingInChromeOSDescription[];
 
 extern const char kExoPointerLockName[];
 extern const char kExoPointerLockDescription[];
+
+extern const char kExperimentalAccessibilityChromeVoxAnnotationsName[];
+extern const char kExperimentalAccessibilityChromeVoxAnnotationsDescription[];
 
 extern const char kExperimentalAccessibilityChromeVoxLanguageSwitchingName[];
 extern const char

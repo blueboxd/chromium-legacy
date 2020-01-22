@@ -79,9 +79,7 @@ cast_source_set("unittests") {
     defines = [ "ENABLE_VIDEO_WITH_MIXED_AUDIO" ]
   }
 
-  data = [
-    "//media/test/data/",
-  ]
+  data = [ "//media/test/data/" ]
 
   # MultizoneBackendTest verifies rendering delay reported by the backend.
   if (supports_multizone) {

@@ -7,10 +7,7 @@
 
 #include "base/macros.h"
 #include "components/sessions/core/tab_restore_service_client.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 // IOSChromeTabRestoreServiceClient provides an implementation of
 // TabRestoreServiceClient that depends on ios/chrome/.

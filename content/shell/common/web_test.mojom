@@ -49,6 +49,7 @@ struct WebTestDump {
   gfx.mojom.Rect selection_rect;
 };
 
+// Blink test messages sent from the browser process to the renderer.
 interface WebTestControl {
   CaptureDump() => (WebTestDump result);
 
@@ -84,4 +85,50 @@ interface WebTestControl {
 
   // Reply Bluetooth manual events to BlinkTestRunner.
   ReplyBluetoothManualChooserEvents(array<string> events);
+};
+
+// Blink test messages sent from the renderer process to the browser.
+interface WebTestClient {
+  // Asks the browser process to perform a layout dump spanning all the
+  // (potentially cross-process) frames.  This goes through multiple
+  // WebTestControl.DumpFrameLayout calls and ends with sending of
+  // BlinkTestMsg_LayoutDumpCompleted.
+  InitiateLayoutDump();
+
+  // Add a message to stderr (not saved to expected output files, for debugging
+  // only).
+  PrintMessageToStderr(string message);
+
+  // Trigger a reload navigation on the main WebView.
+  Reload();
+
+  // Invoked when the embedder should close all but the main WebView.
+  CloseRemainingWindows();
+
+  // Trigger a GoToOffset navigation on the main WebView.
+  GoToOffset(int32 offset);
+
+  // Calls the BluetoothChooser::EventHandler with the arguments here. Valid
+  // event strings are:
+  //  * "cancel" - simulates the user canceling the chooser.
+  //  * "select" - simulates the user selecting a device whose device ID is in
+  //               |argument|.
+  SendBluetoothManualChooserEvent(string event, string argument);
+
+  // If |enable| is true makes the Bluetooth chooser record its input and wait
+  // for instructions from the test program on how to proceed. Otherwise
+  // fall backs to the browser's default chooser.
+  SetBluetoothManualChooser(bool enable);
+
+  // Returns the events recorded since the last call to this function.
+  GetBluetoothManualChooserEvents();
+
+  // Manages the popup blocking setting to used for web tests.
+  SetPopupBlockingEnabled(bool block_popups);
+
+  // Trigger a loadURL navigation on the main WebView.
+  LoadURLForFrame(url.mojom.Url url, string frame_name);
+
+  // Naivgate a URL on the secondary window.
+  NavigateSecondaryWindow(url.mojom.Url url);
 };

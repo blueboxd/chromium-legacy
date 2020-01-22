@@ -100,6 +100,7 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) CryptohomeAuthenticator
                                                 // partially encrypted in old
                                                 // format.
     OFFLINE_NO_MOUNT = 26,  // Offline login failed due to missing cryptohome.
+    TPM_UPDATE_REQUIRED = 27,  // TPM firmware update is required.
   };
 
   CryptohomeAuthenticator(scoped_refptr<base::SequencedTaskRunner> task_runner,

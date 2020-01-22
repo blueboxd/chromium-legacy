@@ -302,7 +302,7 @@ class KeySystemConfigSelector::ConfigState {
 };
 
 KeySystemConfigSelector::KeySystemConfigSelector(
-    const KeySystems* key_systems,
+    KeySystems* key_systems,
     MediaPermission* media_permission)
     : key_systems_(key_systems),
       media_permission_(media_permission),
@@ -908,6 +908,8 @@ void KeySystemConfigSelector::SelectConfig(
     not_supported_cb.Run();
     return;
   }
+
+  key_systems_->UpdateIfNeeded();
 
   std::string key_system_ascii = key_system.Ascii();
   if (!key_systems_->IsSupportedKeySystem(key_system_ascii)) {

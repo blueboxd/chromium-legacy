@@ -84,6 +84,9 @@ void HotseatTransitionAnimator::RemoveObserver(Observer* observer) {
 
 void HotseatTransitionAnimator::OnImplicitAnimationsCompleted() {
   std::move(animation_complete_callback_).Run();
+
+  if (test_observer_)
+    test_observer_->OnTransitionTestAnimationEnded();
 }
 
 void HotseatTransitionAnimator::OnTabletModeStarting() {
@@ -100,6 +103,10 @@ void HotseatTransitionAnimator::OnTabletModeEnding() {
 
 void HotseatTransitionAnimator::OnTabletModeEnded() {
   tablet_mode_transitioning_ = false;
+}
+
+void HotseatTransitionAnimator::SetTestObserver(TestObserver* test_observer) {
+  test_observer_ = test_observer;
 }
 
 void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
@@ -119,17 +126,19 @@ void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
   target_bounds.set_y(
       animating_to_shown_hotseat ? ShelfConfig::Get()->system_shelf_size() : 0);
   shelf_widget_->GetAnimatingBackground()->SetBounds(target_bounds);
+  shelf_widget_->GetAnimatingDragHandle()->SetBounds(
+      shelf_widget_->GetDragHandle()->bounds());
 
   int starting_y;
+  // This animation is triggered after bounds have been set in the shelf, or
+  // while the shelf is beginning to animate to new bounds. To prevent the
+  // background from jumping in either case, adjust the y position to account
+  // for the current size of the |shelf_widget_|.
   if (animating_to_shown_hotseat) {
-    // This animation is triggered after bounds have been set in the shelf, or
-    // while the shelf is beginning to animate to new bounds. To prevent the
-    // background from jumping in either case, adjust the y position to account
-    // for the current size of the |shelf_widget_|.
     starting_y = shelf_widget_->GetWindowBoundsInScreen().height() -
                  ShelfConfig::Get()->in_app_shelf_size();
   } else {
-    starting_y = ShelfConfig::Get()->shelf_size();
+    starting_y = shelf_widget_->GetWindowBoundsInScreen().height();
   }
   gfx::Transform transform;
   const int y_offset = starting_y - target_bounds.y();

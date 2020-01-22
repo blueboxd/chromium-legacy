@@ -158,7 +158,10 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
 
 @end
 
-static NSString* gUserAgentProduct = nil;
+namespace {
+NSString* gUserAgentProduct = nil;
+BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
+}  // namespace
 
 @implementation CWVWebView
 
@@ -186,6 +189,14 @@ static NSString* gUserAgentProduct = nil;
   }
 
   ios_web_view::InitializeGlobalState();
+}
+
++ (BOOL)chromeLongPressAndForceTouchHandlingEnabled {
+  return gChromeLongPressAndForceTouchHandlingEnabled;
+}
+
++ (void)setChromeLongPressAndForceTouchHandlingEnabled:(BOOL)newValue {
+  gChromeLongPressAndForceTouchHandlingEnabled = newValue;
 }
 
 + (NSString*)userAgentProduct {
@@ -419,8 +430,8 @@ static NSString* gUserAgentProduct = nil;
 
 - (void)webState:(web::WebState*)webState
     handleContextMenu:(const web::ContextMenuParams&)params {
-  SEL selector = @selector(webView:runContextMenuWithTitle:forHTMLElement:inView
-                                  :userGestureLocation:);
+  SEL selector = @selector(webView:
+           runContextMenuWithTitle:forHTMLElement:inView:userGestureLocation:);
   if (![_UIDelegate respondsToSelector:selector]) {
     return;
   }
@@ -436,6 +447,8 @@ static NSString* gUserAgentProduct = nil;
                        inView:params.view
           userGestureLocation:params.location];
 }
+
+#pragma mark - CRWWebStateDelegate
 
 - (web::WebState*)webState:(web::WebState*)webState
     createNewWebStateForURL:(const GURL&)URL
@@ -504,6 +517,54 @@ static NSString* gUserAgentProduct = nil;
   if ([_UIDelegate respondsToSelector:selector]) {
     [_UIDelegate webView:self
         commitPreviewingViewController:previewingViewController];
+  }
+}
+
+- (void)webState:(web::WebState*)webState
+    contextMenuConfigurationForLinkWithURL:(const GURL&)linkURL
+                         completionHandler:
+                             (void (^)(UIContextMenuConfiguration*))
+                                 completionHandler API_AVAILABLE(ios(13.0)) {
+  SEL selector = @selector(webView:
+      contextMenuConfigurationForLinkWithURL:completionHandler:);
+  if ([_UIDelegate respondsToSelector:selector]) {
+    [_UIDelegate webView:self
+        contextMenuConfigurationForLinkWithURL:net::NSURLWithGURL(linkURL)
+                             completionHandler:completionHandler];
+  }
+}
+
+- (void)webState:(web::WebState*)webState
+    contextMenuWillPresentForLinkWithURL:(const GURL&)linkURL
+    API_AVAILABLE(ios(13.0)) {
+  SEL selector = @selector(webView:contextMenuWillPresentForLinkWithURL:);
+  if ([_UIDelegate respondsToSelector:selector]) {
+    [_UIDelegate webView:self
+        contextMenuWillPresentForLinkWithURL:net::NSURLWithGURL(linkURL)];
+  }
+}
+
+- (void)webState:(web::WebState*)webState
+    contextMenuForLinkWithURL:(const GURL&)linkURL
+       willCommitWithAnimator:
+           (id<UIContextMenuInteractionCommitAnimating>)animator
+    API_AVAILABLE(ios(13.0)) {
+  SEL selector = @selector(webView:
+         contextMenuForLinkWithURL:willCommitWithAnimator:);
+  if ([_UIDelegate respondsToSelector:selector]) {
+    [_UIDelegate webView:self
+        contextMenuForLinkWithURL:net::NSURLWithGURL(linkURL)
+           willCommitWithAnimator:animator];
+  }
+}
+
+- (void)webState:(web::WebState*)webState
+    contextMenuDidEndForLinkWithURL:(const GURL&)linkURL
+    API_AVAILABLE(ios(13.0)) {
+  SEL selector = @selector(webView:contextMenuDidEndForLinkWithURL:);
+  if ([_UIDelegate respondsToSelector:selector]) {
+    [_UIDelegate webView:self
+        contextMenuDidEndForLinkWithURL:net::NSURLWithGURL(linkURL)];
   }
 }
 
@@ -678,12 +739,14 @@ static NSString* gUserAgentProduct = nil;
   // |web::EnsureWebViewCreatedWithConfiguration()|, as this is the requirement
   // of |web::EnsureWebViewCreatedWithConfiguration()|
 
-  WKWebView* webView = nil;
-  if (wkConfiguration) {
-    webView = web::EnsureWebViewCreatedWithConfiguration(_webState.get(),
-                                                         wkConfiguration);
-  }
+  // Creates a WKWebView immediately to assure the class property
+  // |chromeLongPressAndForceTouchHandlingEnabled| is consumed when a
+  // CWVWebView is initializing instead of some time later. Then
+  // "longPressActionsEnabled" will be set in WKWebViewConfigurationProvider.
+  WKWebView* webView = web::EnsureWebViewCreatedWithConfiguration(
+      _webState.get(), wkConfiguration);
   if (createdWebView) {
+    // If the created webView is needed, returns it by the out variable way.
     *createdWebView = webView;
   }
 

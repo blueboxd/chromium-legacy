@@ -22,15 +22,18 @@ class CookieSettings;
 class CookieControlsView;
 
 // A controller for CookieControlsIconView and CookieControlsBubbleView.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.settings.website
+// GENERATED_JAVA_CLASS_NAME_OVERRIDE: CookieControlsControllerStatus
 class CookieControlsController {
  public:
   enum class Status {
     kUninitialized,
-    // Cookie blocking is enabled.
+    // Third-Party cookie blocking is enabled.
     kEnabled,
-    // Cookie blocking is disabled.
+    // Third-Party cookie blocking is disabled.
     kDisabled,
-    // Cookie blocking is enabled in general but was disabled for this site.
+    // Third-Party cookie blocking is enabled in general but was disabled
+    // for this site.
     kDisabledForSite,
   };
 

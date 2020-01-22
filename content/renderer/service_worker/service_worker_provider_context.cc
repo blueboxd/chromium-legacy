@@ -62,14 +62,14 @@ void CreateSubresourceLoaderFactoryForProviderContext(
 }  // namespace
 
 ServiceWorkerProviderContext::ServiceWorkerProviderContext(
-    blink::mojom::ServiceWorkerProviderType provider_type,
+    blink::mojom::ServiceWorkerContainerType container_type,
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainer>
         receiver,
     mojo::PendingAssociatedRemote<blink::mojom::ServiceWorkerContainerHost>
         host_remote,
     blink::mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_loader_factory)
-    : provider_type_(provider_type),
+    : container_type_(container_type),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       receiver_(this, std::move(receiver)),
       fallback_loader_factory_(std::move(fallback_loader_factory)) {
@@ -168,8 +168,8 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
 
 blink::mojom::ServiceWorkerContainerHost*
 ServiceWorkerProviderContext::container_host() const {
-  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow,
-            provider_type_);
+  DCHECK_EQ(blink::mojom::ServiceWorkerContainerType::kForWindow,
+            container_type_);
   return container_host_ ? container_host_.get() : nullptr;
 }
 
@@ -243,8 +243,8 @@ void ServiceWorkerProviderContext::DispatchNetworkQuiet() {
 
 void ServiceWorkerProviderContext::NotifyExecutionReady() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
-  DCHECK_EQ(provider_type(),
-            blink::mojom::ServiceWorkerProviderType::kForWindow)
+  DCHECK_EQ(container_type(),
+            blink::mojom::ServiceWorkerContainerType::kForWindow)
       << "only windows need to send this message; shared workers have "
          "execution ready set on the browser-side when the response is "
          "committed";

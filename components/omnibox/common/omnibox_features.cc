@@ -294,19 +294,19 @@ const base::Feature kZeroSuggestionsOnSERP{"OmniboxZeroSuggestionsOnSERP",
 const base::Feature kOmniboxExperimentalSuggestScoring{
     "OmniboxExperimentalSuggestScoring", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If disabled, terms with no wordstart matches disqualify the suggestion. If
-// enabled, terms with no wordstart matches are allowed but not scored. E.g.,
-// both inputs 'java script' and 'java cript' will match a suggestion titled
-// 'javascript' and score equivalently.
+// If disabled, terms with no wordstart matches disqualify the suggestion unless
+// they occur in the URL host. If enabled, terms with no wordstart matches are
+// allowed but not scored. E.g., both inputs 'java script' and 'java cript' will
+// match a suggestion titled 'javascript' and score equivalently.
 const base::Feature kHistoryQuickProviderAllowButDoNotScoreMidwordTerms{
     "OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If disabled, midword matches are ignored and input terms with no wordstart
-// matches are scored 0, resulting in an overall score of 0. If enabled, midword
-// matches are allowed and scored when they begin immediately after the previous
-// match ends. E.g. 'java script' will match a suggestion titled 'javascript'
-// but the input 'java cript' won't.
+// If disabled, midword matches are ignored except in the URL host, and input
+// terms with no wordstart matches are scored 0, resulting in an overall score
+// of 0. If enabled, midword matches are allowed and scored when they begin
+// immediately after the previous match ends. E.g. 'java script' will match a
+// suggestion titled 'javascript' but the input 'java cript' won't.
 const base::Feature kHistoryQuickProviderAllowMidwordContinuations{
     "OmniboxHistoryQuickProviderAllowMidwordContinuations",
     base::FEATURE_DISABLED_BY_DEFAULT};

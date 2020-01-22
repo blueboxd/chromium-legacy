@@ -52,6 +52,8 @@ crbug.com/887140 virtual/hdr/video-canvas-alpha.html [ Failure ]
 
 crbug.com/1014421 external/wpt/css/cssom-view/MediaQueryList-addListener-handleEvent.html [ Timeout ]
 
+# Tested by paint/background/root-element-background-transparency.html for now.
+
 # ====== Site Isolation failures from here ======
 # See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
 #
@@ -371,9 +373,13 @@ crbug.com/997202 [ Win ] external/wpt/css/css-images/image-orientation/image-ori
 
 crbug.com/1042453 [ Win ] external/wpt/css/filter-effects/idlharness.any.html [ Timeout Pass ]
 crbug.com/1042453 [ Mac ] external/wpt/css/filter-effects/idlharness.any.html [ Timeout Pass ]
+crbug.com/1042453 [ Win ] external/wpt/css/filter-effects/idlharness.any.worker.html [ Timeout Pass ]
+crbug.com/1042453 [ Mac ] external/wpt/css/filter-effects/idlharness.any.worker.html [ Timeout Pass ]
 
 crbug.com/1042783 external/wpt/css/css-backgrounds/background-size/background-size-near-zero-png.html [ Failure ]
 crbug.com/1042783 external/wpt/css/css-backgrounds/background-size/background-size-near-zero-svg.html [ Failure ]
+
+crbug.com/898293 external/wpt/css/css-transforms/transform-translate-background-001.html [ Failure ]
 
 # ====== Paint team owned tests to here ======
 
@@ -2800,6 +2806,7 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-004.html [ Fail
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.10 ] external/wpt/webrtc/RTCPeerConnection-createDataChannel.html [ Failure Crash ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/html/webappapis/scripting/events/event-handler-attributes-body-window.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/webappapis/scripting/events/event-handler-attributes-body-window.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.https.any.worker.html?3001-last [ Failure Timeout ]
@@ -4533,10 +4540,6 @@ crbug.com/681468 [ Win ] virtual/scalefactor200withzoom/fast/hidpi/static/data-s
 crbug.com/681468 [ Win ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass Timeout ]
 
 crbug.com/683800 [ Win7 Debug ] external/wpt/selection/* [ Failure Pass ]
-
-# Arrow function name inferring
-crbug.com/916975 http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Failure ]
-crbug.com/916975 virtual/threaded/http/tests/devtools/tracing/timeline-misc/timeline-event-causes.js [ Pass Failure ]
 
 # Importing 'fetch' tests from WPT.
 crbug.com/705490 external/wpt/fetch/api/basic/error-after-response.html [ Timeout Pass ]

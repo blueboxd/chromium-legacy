@@ -483,10 +483,6 @@ interface FrameHost {
   [EnableIf=is_android]
   UpdateUserGestureCarryoverInfo();
 
-  // Sent after the onload handler has been invoked for the document
-  // in this frame. Sent for top-level frames.
-  DocumentOnLoadCompleted();
-
   // Blink and JavaScript error messages to log to the console or debugger UI.
   DidAddMessageToConsole(
       blink.mojom.ConsoleMessageLevel log_level,

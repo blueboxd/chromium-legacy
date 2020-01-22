@@ -91,6 +91,7 @@ CorsURLLoader::CorsURLLoader(
     uint32_t options,
     DeleteCallback delete_callback,
     const ResourceRequest& resource_request,
+    bool ignore_isolated_world_origin,
     mojo::PendingRemote<mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     mojom::URLLoaderFactory* network_loader_factory,
@@ -109,6 +110,9 @@ CorsURLLoader::CorsURLLoader(
       origin_access_list_(origin_access_list),
       factory_bound_origin_access_list_(factory_bound_origin_access_list),
       preflight_controller_(preflight_controller) {
+  if (ignore_isolated_world_origin)
+    request_.isolated_world_origin = base::nullopt;
+
   receiver_.set_disconnect_handler(
       base::BindOnce(&CorsURLLoader::OnMojoDisconnect, base::Unretained(this)));
   DCHECK(network_loader_factory_);

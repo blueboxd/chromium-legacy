@@ -134,6 +134,10 @@ void PageInfoControllerAndroid::SetPermissionInfo(
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
   if (cmd->HasSwitch(switches::kEnableExperimentalWebPlatformFeatures))
     permissions_to_display.push_back(ContentSettingsType::BLUETOOTH_SCANNING);
+  if (base::FeatureList::IsEnabled(features::kWebXrPermissionsApi)) {
+    permissions_to_display.push_back(ContentSettingsType::VR);
+    permissions_to_display.push_back(ContentSettingsType::AR);
+  }
 
   std::map<ContentSettingsType, ContentSetting>
       user_specified_settings_to_display;

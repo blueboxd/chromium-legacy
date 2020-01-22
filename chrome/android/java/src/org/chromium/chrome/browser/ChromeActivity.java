@@ -758,6 +758,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         IntentHandler.setTestIntentsEnabled(
                 CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TEST_INTENTS));
         mIntentHandler = new IntentHandler(createIntentHandlerDelegate(), getPackageName());
+
+        // This also ensures that subsequent native library and resource loading takes place
+        // immediately, needed by restored tabs that use DFM.
+        // TODO(https://crbug.com/1008162): Have the Module system register its own observer.
+        Module.doDeferredNativeRegistrations();
     }
 
     @Override
@@ -1348,9 +1353,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         OfflineContentAggregatorNotificationBridgeUiFactory.instance();
         maybeRemoveWindowBackground();
         DownloadManagerService.getDownloadManagerService().onActivityLaunched();
-
-        // TODO(https://crbug.com/1008162): Have the Module system register its own observer.
-        Module.doDeferredNativeRegistrations();
 
         VrModuleProvider.maybeInit();
         VrModuleProvider.getDelegate().onNativeLibraryAvailable();
@@ -2000,7 +2002,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         }
 
         if (id == R.id.preferences_id) {
-            SettingsLauncher.getInstance().launchSettingsPage(this, null);
+            SettingsLauncher.getInstance().launchSettingsPage(this);
             RecordUserAction.record("MobileMenuSettings");
         }
 

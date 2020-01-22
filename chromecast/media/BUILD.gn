@@ -36,25 +36,15 @@ group("media") {
 # Handles the various differences between (ATV, Things, desktop, device builds).
 group("libcast_media") {
   if (is_android) {
-    deps = [
-      "//chromecast/media/cma/backend/android:cast_media_android",
-    ]
+    deps = [ "//chromecast/media/cma/backend/android:cast_media_android" ]
   } else if (is_fuchsia) {
-    deps = [
-      "//chromecast/media/cma/backend/fuchsia:media_backend",
-    ]
+    deps = [ "//chromecast/media/cma/backend/fuchsia:media_backend" ]
   } else if (cast_static_media_lib_target != "") {
-    deps = [
-      "$cast_static_media_lib_target",
-    ]
+    deps = [ "$cast_static_media_lib_target" ]
   } else if (is_cast_desktop_build) {
-    deps = [
-      "//chromecast/media/cma/backend/desktop",
-    ]
+    deps = [ "//chromecast/media/cma/backend/desktop" ]
   } else {
-    deps = [
-      "//chromecast/media/cma/backend:libcast_media_1.0",
-    ]
+    deps = [ "//chromecast/media/cma/backend:libcast_media_1.0" ]
   }
 
   if (cast_volume_control_in_avsettings) {

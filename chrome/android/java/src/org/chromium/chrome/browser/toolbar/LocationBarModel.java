@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
+import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
@@ -343,7 +344,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
 
     @Override
     public boolean isPreview() {
-        return hasTab() && ((TabImpl) mTab).isPreview();
+        return hasTab() && Previews.isPreview(mTab);
     }
 
     @Override
@@ -377,19 +378,25 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
 
     @VisibleForTesting
     @ConnectionSecurityLevel
-    static int getSecurityLevel(Tab tab, boolean isOfflinePage, @Nullable String publisherUrl) {
+    int getSecurityLevel(Tab tab, boolean isOfflinePage, @Nullable String publisherUrl) {
         if (tab == null || isOfflinePage) {
             return ConnectionSecurityLevel.NONE;
         }
 
-        int securityLevel = ((TabImpl) tab).getSecurityLevel();
         if (publisherUrl != null) {
-            assert securityLevel != ConnectionSecurityLevel.DANGEROUS;
+            assert getSecurityLevelFromStateModel(tab.getWebContents())
+                    != ConnectionSecurityLevel.DANGEROUS;
             return (URI.create(publisherUrl).getScheme().equals(UrlConstants.HTTPS_SCHEME))
                     ? ConnectionSecurityLevel.SECURE
                     : ConnectionSecurityLevel.WARNING;
         }
-        return securityLevel;
+        return getSecurityLevelFromStateModel(tab.getWebContents());
+    }
+
+    @VisibleForTesting
+    @ConnectionSecurityLevel
+    int getSecurityLevelFromStateModel(WebContents webContents) {
+        return SecurityStateModel.getSecurityLevelForWebContents(webContents);
     }
 
     @VisibleForTesting

@@ -15,7 +15,7 @@ namespace blink {
 
 namespace scroll_timeline_util {
 
-std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
+scoped_refptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
     AnimationTimeline* timeline) {
   if (!timeline || IsA<DocumentTimeline>(timeline))
     return nullptr;
@@ -51,7 +51,7 @@ std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
     end_scroll_offset = resolved_end_scroll_offset;
   }
 
-  return std::make_unique<CompositorScrollTimeline>(
+  return base::MakeRefCounted<CompositorScrollTimeline>(
       element_id, orientation, start_scroll_offset, end_scroll_offset,
       time_range.GetAsDouble(), scroll_timeline->GetFillMode());
 }

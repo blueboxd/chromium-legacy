@@ -45,7 +45,6 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
-#include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/public/platform/web_touch_action.h"
@@ -253,7 +252,7 @@ class WebWidgetClient {
                              const gfx::Point& drag_image_offset) {}
 
   // Double tap zooms a rect in the main-frame renderer.
-  virtual void AnimateDoubleTapZoomInMainFrame(const blink::WebPoint& point,
+  virtual void AnimateDoubleTapZoomInMainFrame(const gfx::Point& point,
                                                const blink::WebRect& bounds) {}
 
   // Find in page zooms a rect in the main-frame renderer.

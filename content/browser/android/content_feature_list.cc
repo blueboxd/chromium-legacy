@@ -24,6 +24,7 @@ namespace {
 const base::Feature* kFeaturesExposedToJava[] = {
     &features::kBackgroundMediaRendererHasModerateBinding,
     &features::kWebNfc,
+    &features::kWebXrPermissionsApi,
     &kServiceGroupImportance,
 };
 

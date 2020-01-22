@@ -13,6 +13,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "extensions/browser/api/declarative_net_request/composite_matcher.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
@@ -166,6 +168,21 @@ void NotifyRequestWithheld(const ExtensionId& extension_id,
   ExtensionsAPIClient::Get()->NotifyWebRequestWithheld(
       request.render_process_id, request.frame_id, extension_id);
 }
+
+// Helper to log the time taken in RulesetManager::EvaluateRequestInternal.
+class ScopedEvaluateRequestTimer {
+ public:
+  ScopedEvaluateRequestTimer() = default;
+  ~ScopedEvaluateRequestTimer() {
+    UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
+        "Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions3",
+        timer_.Elapsed(), base::TimeDelta::FromMicroseconds(1),
+        base::TimeDelta::FromMilliseconds(50), 50);
+  }
+
+ private:
+  base::ElapsedTimer timer_;
+};
 
 }  // namespace
 
@@ -451,8 +468,7 @@ std::vector<RequestAction> RulesetManager::EvaluateRequestInternal(
   if (rulesets_.empty())
     return actions;
 
-  SCOPED_UMA_HISTOGRAM_TIMER(
-      "Extensions.DeclarativeNetRequest.EvaluateRequestTime.AllExtensions2");
+  ScopedEvaluateRequestTimer timer;
 
   const RequestParams params(request);
   const int tab_id = request.frame_data.tab_id;

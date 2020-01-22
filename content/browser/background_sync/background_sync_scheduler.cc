@@ -85,7 +85,17 @@ void BackgroundSyncScheduler::CancelDelayedProcessing(
   DCHECK(storage_partition);
 
   auto& delayed_processing_info = GetDelayedProcessingInfoMap(sync_type);
-  delayed_processing_info.erase(storage_partition);
+  if (delayed_processing_info.count(storage_partition)) {
+    base::TimeTicks run_time =
+        delayed_processing_info[storage_partition]->desired_run_time();
+
+    // If this storage partition was scheduling the next wakeup, reset the
+    // wakeup time for |sync_type|.
+    if (scheduled_wakeup_time_[sync_type] == run_time)
+      scheduled_wakeup_time_[sync_type] = base::TimeTicks::Max();
+
+    delayed_processing_info.erase(storage_partition);
+  }
 
 #if defined(OS_ANDROID)
   ScheduleOrCancelBrowserWakeupForSyncType(sync_type, storage_partition);
@@ -108,13 +118,7 @@ void BackgroundSyncScheduler::RunDelayedTaskAndPruneInfoMap(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   std::move(delayed_task).Run();
-
-  auto& delayed_processing_info = GetDelayedProcessingInfoMap(sync_type);
-  delayed_processing_info.erase(storage_partition);
-
-#if defined(OS_ANDROID)
-  ScheduleOrCancelBrowserWakeupForSyncType(sync_type, storage_partition);
-#endif
+  CancelDelayedProcessing(storage_partition, sync_type);
 }
 
 #if defined(OS_ANDROID)
@@ -133,6 +137,7 @@ void BackgroundSyncScheduler::ScheduleOrCancelBrowserWakeupForSyncType(
   // If no more scheduled tasks remain, cancel browser wakeup.
   // Canceling when there's no task scheduled is a no-op.
   if (delayed_processing_info.empty()) {
+    scheduled_wakeup_time_[sync_type] = base::TimeTicks::Max();
     controller->CancelBrowserWakeup(sync_type);
     return;
   }
@@ -144,6 +149,15 @@ void BackgroundSyncScheduler::ScheduleOrCancelBrowserWakeupForSyncType(
         return (lhs.second->desired_run_time() - base::TimeTicks::Now()) <
                (rhs.second->desired_run_time() - base::TimeTicks::Now());
       });
+
+  base::TimeTicks next_time = min_info.second->desired_run_time();
+  if (next_time >= scheduled_wakeup_time_[sync_type]) {
+    // There's an earlier wakeup time scheduled, no need to inform the
+    // scheduler.
+    return;
+  }
+
+  scheduled_wakeup_time_[sync_type] = next_time;
   controller->ScheduleBrowserWakeUpWithDelay(
       sync_type, min_info.second->desired_run_time() - base::TimeTicks::Now());
 }

@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
 @class FirstRunConfiguration;
 @protocol SyncPresenter;
 
@@ -14,9 +16,6 @@ namespace base {
 class TimeTicks;
 }
 
-namespace ios {
-class ChromeBrowserState;
-}
 namespace web {
 class WebState;
 }

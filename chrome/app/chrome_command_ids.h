@@ -395,6 +395,12 @@
 #define IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS 52411
 #define IDC_CONTENT_CONTEXT_ACCESSIBILITY_LABELS_TOGGLE_ONCE 52412
 
+#if defined(OS_CHROMEOS)
+// Quick Answers context menu items.
+#define IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_ANSWER 52413
+#define IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY 52414
+#endif
+
 // NOTE: The last valid command value is 57343 (0xDFFF)
 // See http://msdn.microsoft.com/en-us/library/t2zechd4(VS.71).aspx
 

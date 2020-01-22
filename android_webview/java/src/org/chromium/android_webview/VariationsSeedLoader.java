@@ -17,6 +17,7 @@ import android.os.SystemClock;
 import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.services.IVariationsSeedServer;
 import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.android_webview.common.variations.VariationsUtils;
@@ -144,12 +145,15 @@ public class VariationsSeedLoader {
         if (lastRequestTime == 0) {
             return false;
         }
-        return now < lastRequestTime + MAX_REQUEST_PERIOD_MILLIS;
+        long maxRequestPeriodMillis = VariationsUtils.getDurationSwitchValueInMillis(
+                AwSwitches.FINCH_SEED_MIN_UPDATE_PERIOD, MAX_REQUEST_PERIOD_MILLIS);
+        return now < lastRequestTime + maxRequestPeriodMillis;
     }
 
     private boolean isSeedExpired(long seedFileTime) {
-        long expirationTime = seedFileTime + SEED_EXPIRATION_MILLIS;
-        return getCurrentTimeMillis() > expirationTime;
+        long expirationDuration = VariationsUtils.getDurationSwitchValueInMillis(
+                AwSwitches.FINCH_SEED_EXPIRATION_AGE, SEED_EXPIRATION_MILLIS);
+        return getCurrentTimeMillis() > seedFileTime + expirationDuration;
     }
 
     // Loads our local copy of the seed, if any, and then renames our local copy and/or requests a

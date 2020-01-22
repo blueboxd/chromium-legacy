@@ -874,8 +874,7 @@ bool ContentBrowserClient::ShouldCreateThreadPool() {
 
 std::unique_ptr<AuthenticatorRequestClientDelegate>
 ContentBrowserClient::GetWebAuthenticationRequestDelegate(
-    RenderFrameHost* render_frame_host,
-    const std::string& relying_party_id) {
+    RenderFrameHost* render_frame_host) {
   return std::make_unique<AuthenticatorRequestClientDelegate>();
 }
 

@@ -93,6 +93,7 @@ Some interesting flags and Features:
    useful for identifying which content in the app is rendered by a WebView.
  * `--force-enable-metrics-reporting`: enable UMA metrics reporting (does not
    override app opt-out)
+ * `--finch-seed-expiration-age=0 --finch-seed-min-update-period=0 --finch-seed-min-download-period=0 --finch-seed-ignore-pending-download`: always request a new finch seed when an app starts
 
 WebView also defines its own flags and Features:
 

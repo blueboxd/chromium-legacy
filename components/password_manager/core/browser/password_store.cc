@@ -378,12 +378,12 @@ void PasswordStore::AddCompromisedCredentials(
 }
 
 void PasswordStore::RemoveCompromisedCredentials(
-    const GURL& url,
+    const std::string& signon_realm,
     const base::string16& username,
     RemoveCompromisedCredentialsReason reason) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
   ScheduleTask(base::BindOnce(&PasswordStore::RemoveCompromisedCredentialsImpl,
-                              this, url, username, reason));
+                              this, signon_realm, username, reason));
 }
 
 void PasswordStore::GetAllCompromisedCredentials(

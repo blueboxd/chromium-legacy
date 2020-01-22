@@ -1821,7 +1821,7 @@ void UserSessionManager::InitializeStartUrls() const {
     // background.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kSilentLaunch);
-    first_run::MaybeLaunchDialogAfterSessionStart();
+    first_run::MaybeLaunchHelpAppAfterSessionStart();
   } else {
     for (size_t i = 0; i < start_urls.size(); ++i) {
       base::CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);

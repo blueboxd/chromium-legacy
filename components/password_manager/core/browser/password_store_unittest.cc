@@ -22,6 +22,7 @@
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
 #include "components/password_manager/core/browser/android_affiliation/mock_affiliated_match_helper.h"
+#include "components/password_manager/core/browser/form_parsing/form_parser.h"
 #include "components/password_manager/core/browser/password_leak_history_consumer.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
@@ -377,7 +378,7 @@ TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnRemoveLogin) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
   CompromisedCredentials compromised_credentials(
-      GURL(kTestWebRealm1), base::ASCIIToUTF16("username_value_1"),
+      kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
       base::Time::FromTimeT(1), CompromiseType::kLeaked);
 
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
@@ -420,7 +421,7 @@ TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnLoginUpdated) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
   CompromisedCredentials compromised_credentials(
-      GURL(kTestWebRealm1), base::ASCIIToUTF16("username_value_1"),
+      kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
       base::Time::FromTimeT(1), CompromiseType::kLeaked);
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
@@ -462,7 +463,7 @@ TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnLoginAdded) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
   CompromisedCredentials compromised_credentials(
-      GURL(kTestWebRealm1), base::ASCIIToUTF16("username_value_1"),
+      kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
       base::Time::FromTimeT(1), CompromiseType::kLeaked);
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
@@ -1388,10 +1389,10 @@ TEST_F(PasswordStoreTest, GetAllCompromisedCredentials) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
   CompromisedCredentials compromised_credentials(
-      GURL("https://example.com"), base::ASCIIToUTF16("username"),
+      "https://example.com/", base::ASCIIToUTF16("username"),
       base::Time::FromTimeT(1), CompromiseType::kLeaked);
   CompromisedCredentials compromised_credentials2(
-      GURL("https://2.example.com"), base::ASCIIToUTF16("username2"),
+      "https://2.example.com/", base::ASCIIToUTF16("username2"),
       base::Time::FromTimeT(2), CompromiseType::kLeaked);
 
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
@@ -1408,7 +1409,7 @@ TEST_F(PasswordStoreTest, GetAllCompromisedCredentials) {
   testing::Mock::VerifyAndClearExpectations(&consumer);
 
   store->RemoveCompromisedCredentials(
-      compromised_credentials.url, compromised_credentials.username,
+      compromised_credentials.signon_realm, compromised_credentials.username,
       RemoveCompromisedCredentialsReason::kRemove);
   EXPECT_CALL(consumer, OnGetCompromisedCredentials(
                             UnorderedElementsAre(compromised_credentials2)));
@@ -1422,13 +1423,13 @@ TEST_F(PasswordStoreTest, RemoveCompromisedCredentialsCreatedBetween) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(password_manager::features::kLeakHistory);
   CompromisedCredentials compromised_credentials1(
-      GURL("https://example1.com"), base::ASCIIToUTF16("username1"),
+      "https://example1.com/", base::ASCIIToUTF16("username1"),
       base::Time::FromTimeT(100), CompromiseType::kLeaked);
   CompromisedCredentials compromised_credentials2(
-      GURL("https://2.example.com"), base::ASCIIToUTF16("username2"),
+      "https://2.example.com/", base::ASCIIToUTF16("username2"),
       base::Time::FromTimeT(200), CompromiseType::kLeaked);
   CompromisedCredentials compromised_credentials3(
-      GURL("https://example3.com"), base::ASCIIToUTF16("username3"),
+      "https://example3.com/", base::ASCIIToUTF16("username3"),
       base::Time::FromTimeT(300), CompromiseType::kLeaked);
 
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
@@ -1448,7 +1449,7 @@ TEST_F(PasswordStoreTest, RemoveCompromisedCredentialsCreatedBetween) {
 
   store->RemoveCompromisedCredentialsByUrlAndTime(
       base::BindRepeating(std::not_equal_to<GURL>(),
-                          compromised_credentials3.url),
+                          GURL(compromised_credentials3.signon_realm)),
       base::Time::FromTimeT(150), base::Time::FromTimeT(350), base::Closure());
 
   EXPECT_CALL(consumer,

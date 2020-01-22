@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics_factory.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper.h"
+#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "content/public/browser/web_contents.h"
 
@@ -97,9 +97,10 @@ void WebAppMetrics::OnEngagementEvent(
                               engagement_type);
   }
 
-  // A presence of WebAppTabHelper with valid app_id indicates a web app.
-  WebAppTabHelper* tab_helper = WebAppTabHelper::FromWebContents(web_contents);
-  if (!tab_helper || tab_helper->app_id().empty())
+  // A presence of WebAppTabHelperBase with valid app_id indicates a web app.
+  WebAppTabHelperBase* tab_helper =
+      WebAppTabHelperBase::FromWebContents(web_contents);
+  if (!tab_helper || tab_helper->GetAppId().empty())
     return;
 
   // No HostedAppBrowserController if app is running as a tab in common browser.

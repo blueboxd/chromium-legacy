@@ -83,7 +83,7 @@
   },
 
   "HomepageLocation": {
-    "os": ["win", "linux", "mac", "chromeos"],
+    "os": ["win", "linux", "mac", "chromeos", "android"],
     "can_be_recommended": true,
     "policy_pref_mapping_test": [
       {

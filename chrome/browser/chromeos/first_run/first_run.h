@@ -15,10 +15,10 @@ namespace first_run {
 // Registers preferences related to ChromeOS first-run tutorial.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-// Probably launches first-run dialog after session start depending on synced
-// user prefs. This method should be called after user already logged in but
-// session didn't started yet.
-void MaybeLaunchDialogAfterSessionStart();
+// Maybe launches the help app after session start (depending on synced user
+// prefs and flags). This method should be called after the user has already
+// logged in and before the session starts.
+void MaybeLaunchHelpAppAfterSessionStart();
 
 // Launches overlay tutorial for current user.
 void LaunchTutorial();

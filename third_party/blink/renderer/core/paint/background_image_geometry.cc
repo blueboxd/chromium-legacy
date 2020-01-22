@@ -729,14 +729,6 @@ void BackgroundImageGeometry::ComputePositioningArea(
     snapped_box_offset =
         LayoutPoint(snapped_box_outset.Left() - snapped_dest_adjust.Left(),
                     snapped_box_outset.Top() - snapped_dest_adjust.Top());
-    // For view backgrounds, the input paint rect is specified in root element
-    // local coordinate (i.e. a transform is applied on the context for
-    // painting), and is expanded to cover the whole canvas. Since left/top is
-    // relative to the paint rect, we need to offset them back.
-    if (painting_view_) {
-      unsnapped_box_offset -= paint_rect.Location();
-      snapped_box_offset -= paint_rect.Location();
-    }
   }
 }
 

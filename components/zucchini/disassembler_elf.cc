@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/numerics/checked_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "components/zucchini/abs32_utils.h"
 #include "components/zucchini/algorithm.h"
@@ -275,10 +276,16 @@ bool DisassemblerElf<Traits>::ParseHeader() {
   // Visits |segments_| to get estimate on |offset_bound|.
   for (const typename Traits::Elf_Phdr* segment = segments_;
        segment != segments_ + segments_count_; ++segment) {
-    if (!image_.covers({segment->p_offset, segment->p_filesz}))
+    // |image_.covers()| is a sufficient check except when size_t is 32 bit and
+    // parsing ELF64. In such cases a value-in-range check is needed on the
+    // segment. This fixes crbug/1035603.
+    offset_t segment_end;
+    base::CheckedNumeric<offset_t> checked_segment_end = segment->p_offset;
+    checked_segment_end += segment->p_filesz;
+    if (!checked_segment_end.AssignIfValid(&segment_end) ||
+        !image_.covers({segment->p_offset, segment->p_filesz})) {
       return false;
-    offset_t segment_end =
-        base::checked_cast<offset_t>(segment->p_offset + segment->p_filesz);
+    }
     offset_bound = std::max(offset_bound, segment_end);
   }
 

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.feed.library.feedactionparser;
 import static org.chromium.chrome.browser.feed.library.common.Validators.checkState;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.DOWNLOAD;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.LEARN_MORE;
+import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.MANAGE_INTERESTS;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.OPEN_URL;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.OPEN_URL_INCOGNITO;
 import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.FeedActionMetadata.Type.OPEN_URL_NEW_TAB;
@@ -44,6 +45,8 @@ import java.util.List;
  */
 public final class FeedActionParser implements ActionParser {
     private static final String TAG = "FeedActionParser";
+    static final String EXPECTED_MANAGE_INTERESTS_URL =
+            "https://www.google.com/preferences/interests";
 
     private final PietFeedActionPayloadRetriever mPietFeedActionPayloadRetriever;
     private final ProtocolAdapter mProtocolAdapter;
@@ -81,6 +84,13 @@ public final class FeedActionParser implements ActionParser {
             case OPEN_URL_NEW_WINDOW:
             case OPEN_URL_INCOGNITO:
             case OPEN_URL_NEW_TAB:
+                // TODO(freedjm): Use a different action type for Manage Interests to handle it
+                // separately from a simple OPEN_URL action.
+                if (feedActionMetadata.getOpenUrlData().hasUrl()
+                        && feedActionMetadata.getOpenUrlData().getUrl().equals(
+                                EXPECTED_MANAGE_INTERESTS_URL)) {
+                    streamActionApi.onClientAction(ActionTypesConverter.convert(MANAGE_INTERESTS));
+                }
                 handleOpenUrl(feedActionMetadata.getType(), feedActionMetadata.getOpenUrlData(),
                         streamActionApi);
                 break;

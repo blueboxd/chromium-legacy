@@ -155,10 +155,17 @@ class CORE_EXPORT FrameLoader final {
   }
 
   // Includes the collection of forced, inherited, and FrameOwner's sandbox
+  // flags, where the FrameOwner's flag is snapshotted from the last committed
+  // navigation. Note: with FeaturePolicyForSandbox the frame owner's sandbox
+  // flags only includes the flags which are *not* implemented as feature
+  // policies already present in the FrameOwner's ContainerPolicy.
+  WebSandboxFlags EffectiveSandboxFlags() const;
+
+  // Includes the collection of forced, inherited, and FrameOwner's sandbox
   // flags. Note: with FeaturePolicyForSandbox the frame owner's sandbox flags
   // only includes the flags which are *not* implemented as feature policies
   // already present in the FrameOwner's ContainerPolicy.
-  WebSandboxFlags EffectiveSandboxFlags() const;
+  WebSandboxFlags PendingEffectiveSandboxFlags() const;
 
   // Modifying itself is done based on |fetch_client_settings_object|.
   // |document_for_logging| is used only for logging, use counters,

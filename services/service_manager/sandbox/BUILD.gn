@@ -20,9 +20,7 @@ component("sandbox") {
     "switches.h",
   ]
   defines = [ "SERVICE_MANAGER_SANDBOX_IMPL" ]
-  public_deps = [
-    "//services/service_manager/embedder:embedder_switches",
-  ]
+  public_deps = [ "//services/service_manager/embedder:embedder_switches" ]
   deps = [
     ":sanitizer_buildflags",
     "//base",

@@ -577,7 +577,7 @@ TEST_F(ContextMenuControllerTest, ShowNonLocatedContextMenuEvent) {
   LayoutPoint middle_point((rect->left() + rect->right()) / 2,
                            (rect->top() + rect->bottom()) / 2);
   LocalMainFrame()->MoveRangeSelectionExtent(
-      WebPoint(middle_point.X().ToInt(), middle_point.Y().ToInt()));
+      gfx::Point(middle_point.X().ToInt(), middle_point.Y().ToInt()));
   GetWebView()->MainFrameWidget()->ShowContextMenu(kMenuSourceTouchHandle);
 
   context_menu_data = GetWebFrameClient().GetContextMenuData();
@@ -589,7 +589,7 @@ TEST_F(ContextMenuControllerTest, ShowNonLocatedContextMenuEvent) {
   // Select all the value of |input| to ensure the start of selection is
   // invisible.
   LocalMainFrame()->MoveRangeSelectionExtent(
-      WebPoint(rect->right(), rect->bottom()));
+      gfx::Point(rect->right(), rect->bottom()));
   GetWebView()->MainFrameWidget()->ShowContextMenu(kMenuSourceTouchHandle);
 
   context_menu_data = GetWebFrameClient().GetContextMenuData();

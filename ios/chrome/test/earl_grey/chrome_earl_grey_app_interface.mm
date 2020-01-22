@@ -610,10 +610,6 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
   return base::FeatureList::IsEnabled(kBlockNewTabPagePendingLoad);
 }
 
-+ (BOOL)isNewOmniboxPopupLayoutEnabled {
-  return base::FeatureList::IsEnabled(kNewOmniboxPopupLayout);
-}
-
 + (BOOL)isVariationEnabled:(int)variationID {
   variations::VariationsHttpHeaderProvider* provider =
       variations::VariationsHttpHeaderProvider::GetInstance();
@@ -636,6 +632,10 @@ using chrome_test_util::BrowserCommandDispatcherForMainBVC;
 
 + (BOOL)isUKMEnabled {
   return base::FeatureList::IsEnabled(ukm::kUkmFeature);
+}
+
++ (BOOL)isTestFeatureEnabled {
+  return base::FeatureList::IsEnabled(kTestFeature);
 }
 
 + (BOOL)isCreditCardScannerEnabled {

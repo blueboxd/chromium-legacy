@@ -1756,12 +1756,11 @@
         'args': [
           '--num-retries=3',
           '--additional-driver-flag=--enable-gpu-rasterization',
-          '--additional-driver-flag=--enable-features=UseSkiaRenderer',
+          '--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan',
           '--additional-driver-flag=--use-gl=any',
           '--additional-driver-flag=--force-gpu-rasterization',
           '--additional-driver-flag=--enable-oop-rasterization',
           '--additional-driver-flag=--disable-software-compositing-fallback',
-          '--additional-driver-flag=--gr-context-type=vulkan',
           '--additional-driver-flag=--use-vulkan=native',
           '--additional-driver-flag=--disable-vulkan-fallback-to-gl-for-testing',
           '--additional-driver-flag=--disable-headless-mode',
@@ -2028,8 +2027,7 @@
           '--test-launcher-bot-mode',
           '--test-launcher-jobs=1',
           '--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter',
-          '--enable-features=UseSkiaRenderer,UiGpuRasterization',
-          '--gr-context-type=vulkan',
+          '--enable-features=UseSkiaRenderer,UiGpuRasterization,Vulkan',
           '--use-vulkan=native',
           '--enable-oop-rasterization',
           '--enable-gpu-rasterization',
@@ -2050,8 +2048,7 @@
           '--test-launcher-bot-mode',
           '--test-launcher-jobs=1',
           '--test-launcher-filter-file=../../testing/buildbot/filters/vulkan.content_browsertests.filter',
-          '--enable-features=UseSkiaRenderer,UiGpuRasterization',
-          '--gr-context-type=vulkan',
+          '--enable-features=UseSkiaRenderer,UiGpuRasterization,Vulkan',
           '--use-vulkan=swiftshader',
           '--enable-oop-rasterization',
           '--enable-gpu-rasterization',
@@ -2222,9 +2219,8 @@
       'vulkan_content_browsertests': {
         'args': [
           '--use-vulkan=native',
-          '--gr-context-type=vulkan',
           '--disable-vulkan-fallback-to-gl-for-testing',
-          '--enable-features=UseSkiaRenderer',
+          '--enable-features=UseSkiaRenderer,Vulkan',
           '--test-launcher-filter-file=../../testing/buildbot/filters/gpu.skiarenderer_vulkan_content_browsertests.filter',
         ],
         'swarming': {
@@ -2246,7 +2242,7 @@
           '${got_revision}',
           '--test-machine-name',
           '${buildername}',
-          '--extra-browser-args=--gr-context-type=vulkan --use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer --use-cmd-decoder=validating',
+          '--extra-browser-args=--use-vulkan=native --disable-vulkan-fallback-to-gl-for-testing --enable-features=UseSkiaRenderer,Vulkan --use-cmd-decoder=validating',
         ],
         'precommit_args': [
           # Gerrit issue ID
@@ -3163,10 +3159,9 @@
         'args': [
           '--num-retries=3',
           '--additional-driver-flag=--enable-gpu-rasterization',
-          '--additional-driver-flag=--enable-features=UseSkiaRenderer',
+          '--additional-driver-flag=--enable-features=UseSkiaRenderer,Vulkan',
           '--additional-driver-flag=--force-gpu-rasterization',
           '--additional-driver-flag=--enable-oop-rasterization',
-          '--additional-driver-flag=--gr-context-type=vulkan',
           '--additional-driver-flag=--use-vulkan=swiftshader',
           '--additional-driver-flag=--disable-vulkan-fallback-to-gl-for-testing',
           '--fuzzy-diff',

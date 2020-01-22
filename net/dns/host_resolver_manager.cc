@@ -650,7 +650,7 @@ class HostResolverManager::RequestImpl
     LogFinishRequest(error);
 
     DCHECK(callback_);
-    std::move(callback_).Run(error);
+    std::move(callback_).Run(HostResolver::SquashErrorCode(error));
   }
 
   Job* job() const { return job_; }
@@ -3015,7 +3015,7 @@ int HostResolverManager::Resolve(RequestImpl* request) {
                     effective_secure_dns_mode, base::TimeDelta());
     request->set_error_info(results.error(),
                             false /* is_secure_network_error */);
-    return results.error();
+    return HostResolver::SquashErrorCode(results.error());
   }
 
   CreateAndStartJob(effective_query_type, effective_host_resolver_flags,

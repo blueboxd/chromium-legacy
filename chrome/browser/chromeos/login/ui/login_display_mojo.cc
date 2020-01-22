@@ -169,7 +169,8 @@ void LoginDisplayMojo::ShowError(int error_msg_id,
       error_msg_id != IDS_ENTERPRISE_LOGIN_ERROR_WHITELIST &&
       error_msg_id != IDS_LOGIN_ERROR_OWNER_KEY_LOST &&
       error_msg_id != IDS_LOGIN_ERROR_OWNER_REQUIRED &&
-      error_msg_id != IDS_LOGIN_ERROR_GOOGLE_ACCOUNT_NOT_ALLOWED) {
+      error_msg_id != IDS_LOGIN_ERROR_GOOGLE_ACCOUNT_NOT_ALLOWED &&
+      error_msg_id != IDS_LOGIN_ERROR_TPM_UPDATE_REQUIRED) {
     input_method::InputMethodManager* ime_manager =
         input_method::InputMethodManager::Get();
     // Display a hint to switch keyboards if there are other active input

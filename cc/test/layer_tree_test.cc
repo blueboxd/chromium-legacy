@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -48,6 +49,7 @@
 #include "components/viz/test/fake_skia_output_surface.h"
 #include "components/viz/test/test_context_provider.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gl/gl_switches.h"
@@ -639,8 +641,8 @@ LayerTreeTest::LayerTreeTest(LayerTreeTest::RendererType renderer_type)
         ::switches::kUseVulkan,
         use_gpu ? ::switches::kVulkanImplementationNameNative
                 : ::switches::kVulkanImplementationNameSwiftshader);
-    command_line->AppendSwitchASCII(::switches::kGrContextType,
-                                    ::switches::kGrContextTypeVulkan);
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+    scoped_feature_list_->InitAndEnableFeature(features::kVulkan);
   }
 }
 

@@ -29,7 +29,7 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.settings.datareduction.DataReductionPreferenceFragment;
 import org.chromium.chrome.browser.settings.developer.DeveloperSettings;
 import org.chromium.chrome.browser.settings.sync.SignInPreference;
-import org.chromium.chrome.browser.settings.sync.SyncPreferenceUtils;
+import org.chromium.chrome.browser.settings.sync.SyncSettingsUtils;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -227,8 +227,8 @@ public class MainPreferences extends PreferenceFragmentCompat
     private void updateSyncAndServicesPreference() {
         ChromeBasePreference syncAndServices =
                 (ChromeBasePreference) findPreference(PREF_SYNC_AND_SERVICES);
-        syncAndServices.setIcon(SyncPreferenceUtils.getSyncStatusIcon(getActivity()));
-        syncAndServices.setSummary(SyncPreferenceUtils.getSyncStatusSummary(getActivity()));
+        syncAndServices.setIcon(SyncSettingsUtils.getSyncStatusIcon(getActivity()));
+        syncAndServices.setSummary(SyncSettingsUtils.getSyncStatusSummary(getActivity()));
     }
 
     private void updateSearchEnginePreference() {

@@ -609,6 +609,12 @@ STDMETHODIMP TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
   if (string_pending_insertion_.empty()) {
     if (!text_input_client_->HasCompositionText()) {
       if (has_composition_range_) {
+        // Remove replacing text first before starting composition.
+        if (new_text_inserted_ && !replace_text_range_.is_empty() &&
+            !replace_text_size_) {
+          text_input_client_->SetEditableSelectionRange(replace_text_range_);
+          text_input_client_->ExtendSelectionAndDelete(0, 0);
+        }
         string_pending_insertion_ = string_buffer_document_.substr(
             composition_range_.GetMin(), composition_range_.length());
         StartCompositionOnExistingText();
@@ -791,7 +797,7 @@ STDMETHODIMP TSFTextStore::SetText(DWORD flags,
     return ret;
 
   TS_TEXTCHANGE change;
-  if (text_buffer_size > 0) {
+  if (text_buffer_size >= 0) {
     new_text_inserted_ = true;
     replace_text_range_.set_start(acp_start);
     replace_text_range_.set_end(acp_end);

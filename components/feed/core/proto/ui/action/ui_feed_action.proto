@@ -30,7 +30,7 @@ message FeedAction {
 }
 
 // Metadata needed by the host to handle the action.
-// Next Id: 18
+// Next Id: 19
 message FeedActionMetadata {
   // The type of action, used by the host to perform any custom logic needed for
   // a specific type of action.
@@ -59,6 +59,7 @@ message FeedActionMetadata {
     NOT_INTERESTED_IN = 15;
     SEE_SUGGESTED_SITES = 16;
     SEND_FEEDBACK = 17;
+    MANAGE_INTERESTS = 18;
     reserved 9, 10;  // Deprecated
   }
   optional Type type = 1;

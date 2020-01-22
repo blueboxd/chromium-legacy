@@ -168,8 +168,6 @@ class MockFrameHost : public mojom::FrameHost {
 
   void CancelInitialHistoryLoad() override {}
 
-  void DocumentOnLoadCompleted() override {}
-
   void UpdateEncoding(const std::string& encoding_name) override {}
 
   void FrameSizeChanged(const gfx::Size& frame_size) override {}

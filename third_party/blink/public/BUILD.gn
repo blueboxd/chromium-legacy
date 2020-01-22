@@ -236,7 +236,6 @@ source_set("blink_headers") {
     "platform/web_mixed_content_context_type.h",
     "platform/web_navigation_body_loader.h",
     "platform/web_network_state_notifier.h",
-    "platform/web_point.h",
     "platform/web_prerender.h",
     "platform/web_prerendering_support.h",
     "platform/web_prescient_networking.h",

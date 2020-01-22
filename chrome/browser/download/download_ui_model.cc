@@ -281,7 +281,7 @@ base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
       request_ap_verdicts =
           safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
               profile())
-              ->RequestsAdvancedProtectionVerdicts();
+              ->IsUnderAdvancedProtection();
 #endif
       return l10n_util::GetStringFUTF16(
           request_ap_verdicts

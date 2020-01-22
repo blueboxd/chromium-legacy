@@ -196,12 +196,12 @@
 // ensureAppLaunchedWithFeaturesEnabled]
 - (void)testAppLaunchManagerLaunchWithFeatures {
   [[AppLaunchManager sharedManager]
-      ensureAppLaunchedWithFeaturesEnabled:{kNewOmniboxPopupLayout}
+      ensureAppLaunchedWithFeaturesEnabled:{kTestFeature}
                                   disabled:{}
                             relaunchPolicy:NoForceRelaunchAndResetState];
 
-  GREYAssertTrue([ChromeEarlGrey isNewOmniboxPopupLayoutEnabled],
-                 @"NewOmniboxPopupLayout should be enabled");
+  GREYAssertTrue([ChromeEarlGrey isTestFeatureEnabled],
+                 @"kTestFeature should be enabled");
 
   GREYAssertEqual([ChromeEarlGrey mainTabCount], 1U,
                   @"Exactly one new tab should be opened.");
@@ -256,7 +256,7 @@
   [self disableMockAuthentication];
   [ChromeEarlGrey openNewTab];
   [[AppLaunchManager sharedManager]
-      ensureAppLaunchedWithFeaturesEnabled:{kNewOmniboxPopupLayout}
+      ensureAppLaunchedWithFeaturesEnabled:{kTestFeature}
                                   disabled:{}
                             relaunchPolicy:NoForceRelaunchAndResetState];
   [ChromeEarlGrey waitForMainTabCount:1];

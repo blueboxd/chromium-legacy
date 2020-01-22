@@ -177,7 +177,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       bool include_reserved_clients);
 
   // Runs the callback with true if there is a ContainerHost for |origin| of
-  // type blink::mojom::ServiceWorkerProviderType::kForWindow which is a main
+  // type blink::mojom::ServiceWorkerContainerType::kForWindow which is a main
   // (top-level) frame. Reserved clients are ignored.
   // TODO(crbug.com/824858): Make this synchronously return bool when the core
   // thread is UI.

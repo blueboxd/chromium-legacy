@@ -12,4 +12,4 @@ file that contains host-specific binaries, which must be extracted. They are
 distributed here as a CIPD package instead. See cipd.yaml for details.
 
 Local Modifications:
-Fetched prebuilt from go/aapt2-6089589 (version not yet published to maven).
+Fetched prebuilt from go/aapt2-6143298 (version not yet published to maven).

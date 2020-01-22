@@ -45,6 +45,8 @@ class LocalHostResolverProc : public net::HostResolverProc {
     // queries, rather than perform them.
     // If you really need to make an external DNS query, use
     // net::RuleBasedHostResolverProc and its AllowDirectLookup method.
+    // TODO(crbug.com/1040686): Simulate failure using ERR_NAME_NOT_RESOLVED
+    // rather than ERR_NOT_IMPLEMENTED.
     if (!local) {
       DVLOG(1) << "To avoid external dependencies, simulating failure for "
                   "external DNS lookup of "

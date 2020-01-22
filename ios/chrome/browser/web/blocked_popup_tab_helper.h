@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/web_state_user_data.h"
 #include "url/gurl.h"
@@ -17,10 +18,6 @@
 namespace infobars {
 class InfoBar;
 }  // namespace infobars
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 namespace web {
 class WebState;

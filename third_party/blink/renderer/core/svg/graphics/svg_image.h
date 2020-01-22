@@ -247,6 +247,7 @@ class CORE_EXPORT SVGImage final : public Image {
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, LayoutShiftTrackerDisabled);
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, SetSizeOnVisualViewport);
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, IsSizeAvailable);
+  FRIEND_TEST_ALL_PREFIXES(SVGImageTest, DisablesSMILEvents);
 };
 
 DEFINE_IMAGE_TYPE_CASTS(SVGImage);

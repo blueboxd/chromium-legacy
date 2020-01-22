@@ -96,6 +96,8 @@ struct CORE_EXPORT PhysicalOffset {
       : left(point.X()), top(point.Y()) {}
   explicit PhysicalOffset(const IntSize& size)
       : left(size.Width()), top(size.Height()) {}
+  explicit PhysicalOffset(const gfx::Point& point)
+      : left(point.x()), top(point.y()) {}
 
   static PhysicalOffset FromFloatPointFloor(const FloatPoint& point) {
     return {LayoutUnit::FromFloatFloor(point.X()),

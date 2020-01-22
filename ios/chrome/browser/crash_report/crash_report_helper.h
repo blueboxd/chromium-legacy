@@ -9,6 +9,9 @@
 
 @class NSString;
 
+class BreadcrumbManager;
+class BreadcrumbManagerKeyedService;
+
 namespace web {
 class WebState;
 }  // namespace web
@@ -44,15 +47,21 @@ void StopMonitoringTabStateForWebStateList(WebStateList* web_state_list);
 // be called when the WebStateList is deactivated.
 void ClearStateForWebStateList(WebStateList* web_state_list);
 
-// Starts listening for breadcrumbs logged to |browser_state|'s
-// BreadcrumbManagerKeyedService. Collected breadcrumbs will be attached to
-// crash reports.
-void MonitorBreadcrumbsForBrowserState(ios::ChromeBrowserState* browser_state);
+// Starts listening for breadcrumbs logged to |breadcrumb_manager|. Collected
+// breadcrumbs will be attached to crash reports.
+void MonitorBreadcrumbManager(BreadcrumbManager* breadcrumb_manager);
 
-// Stops listening for breadcrumbs logged to |browser_state|'s
-// BreadcrumbManagerKeyedService.
-void StopMonitoringBreadcrumbsForBrowserState(
-    ios::ChromeBrowserState* browser_state);
+// Stops listening for breadcrumbs logged to |breadcrumb_manager|.
+void StopMonitoringBreadcrumbManager(BreadcrumbManager* breadcrumb_manager);
+
+// Starts listening for breadcrumbs logged to |breadcrumb_manager_service|.
+// Collected breadcrumbs will be attached to crash reports.
+void MonitorBreadcrumbManagerService(
+    BreadcrumbManagerKeyedService* breadcrumb_manager_service);
+
+// Stops listening for breadcrumbs logged to |breadcrumb_manager_service|.
+void StopMonitoringBreadcrumbManagerService(
+    BreadcrumbManagerKeyedService* breadcrumb_manager_service);
 
 }  // namespace breakpad
 

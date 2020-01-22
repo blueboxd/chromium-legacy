@@ -53,7 +53,7 @@ ApiImplementation.init = function(opt_onload) {
  * @return {boolean} True if default event processing should continue.
  */
 ApiImplementation.portSetup = function(event) {
-  if (event.data == 'PortSetup') {
+  if (event.data == 'cvox.PortSetup') {
     ApiImplementation.port = event.ports[0];
     ApiImplementation.port.onmessage = function(event) {
       ApiImplementation.dispatchApiMessage(JSON.parse(event.data));

@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 
 namespace blink {
 
@@ -201,25 +202,31 @@ void RemoteFrameView::Paint(GraphicsContext& context,
                             const GlobalPaintFlags flags,
                             const CullRect& rect,
                             const IntSize& paint_offset) const {
-  // Painting remote frames is only for printing.
-  if (!context.Printing())
-    return;
-
   if (!rect.Intersects(FrameRect()))
     return;
 
-  DrawingRecorder recorder(context, *GetFrame().OwnerLayoutObject(),
-                           DisplayItem::kDocumentBackground);
-  context.Save();
-  context.Translate(paint_offset.Width(), paint_offset.Height());
+  if (context.Printing()) {
+    DrawingRecorder recorder(context, *GetFrame().OwnerLayoutObject(),
+                             DisplayItem::kDocumentBackground);
+    context.Save();
+    context.Translate(paint_offset.Width(), paint_offset.Height());
 
-  DCHECK(context.Canvas());
-  // Inform the remote frame to print.
-  uint32_t content_id = Print(FrameRect(), context.Canvas());
+    DCHECK(context.Canvas());
+    // Inform the remote frame to print.
+    uint32_t content_id = Print(FrameRect(), context.Canvas());
 
-  // Record the place holder id on canvas.
-  context.Canvas()->recordCustomData(content_id);
-  context.Restore();
+    // Record the place holder id on canvas.
+    context.Canvas()->recordCustomData(content_id);
+    context.Restore();
+  }
+
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      GetFrame().GetCcLayer()) {
+    auto offset = GetLayoutEmbeddedContent()->ReplacedContentRect().offset;
+    RecordForeignLayer(context, *GetFrame().OwnerLayoutObject(),
+                       DisplayItem::kForeignLayerRemoteFrame,
+                       GetFrame().GetCcLayer(), FloatPoint(offset));
+  }
 }
 
 void RemoteFrameView::UpdateGeometry() {

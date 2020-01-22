@@ -14,7 +14,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.checkElementExists;
-import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getAbsoluteBoundingRect;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getBoundingRectForElement;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getViewport;
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
@@ -26,7 +25,6 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.util.DisplayMetrics;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,7 +42,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
-import org.chromium.content_public.browser.test.util.TestTouchUtils;
 
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
@@ -216,22 +213,9 @@ public class AutofillAssistantOverlayUiTest {
         }
     }
 
-    /** Performs a single tap on the center of the specified element. */
-    private void tapElement(String elementId) throws Exception {
-        Rect coords = getAbsoluteBoundingRect(elementId, mTestRule);
-        float x = coords.left + 0.5f * (coords.right - coords.left);
-        float y = coords.top + 0.5f * (coords.bottom - coords.top);
-
-        // Sanity check, can only click on coordinates on screen.
-        DisplayMetrics displayMetrics = mTestRule.getActivity().getResources().getDisplayMetrics();
-        if (x < 0 || x > displayMetrics.widthPixels || y < 0 || y > displayMetrics.heightPixels) {
-            throw new IllegalArgumentException(elementId + " not on screen: tried to tap x=" + x
-                    + ", y=" + y + ", which is outside of display with w="
-                    + displayMetrics.widthPixels + ", h=" + displayMetrics.heightPixels);
-        }
-        TestTouchUtils.singleClick(InstrumentationRegistry.getInstrumentation(), x, y);
+    void tapElement(String elementId) throws Exception {
+        AutofillAssistantUiTestUtil.tapElement(elementId, mTestRule);
     }
-
 
     /**
      * Scrolls to the specified element on the webpage, if necessary.

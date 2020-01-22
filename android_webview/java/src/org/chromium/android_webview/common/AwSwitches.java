@@ -33,6 +33,28 @@ public final class AwSwitches {
     public static final String WEBVIEW_SAFEBROWSING_BLOCK_ALL_RESOURCES =
             "webview-safebrowsing-block-all-resources";
 
+    // The length of time in seconds that an app's copy of the variations seed should be considered
+    // fresh. If an app's seed is older than this, a new seed will be requested from WebView's
+    // IVariationsSeedServer.
+    // No native switch.
+    public static final String FINCH_SEED_EXPIRATION_AGE = "finch-seed-expiration-age";
+
+    // Forces WebView's service to always schedule a new variations seed download job, even if one
+    // is already pending.
+    // No native switch.
+    public static final String FINCH_SEED_IGNORE_PENDING_DOWNLOAD =
+            "finch-seed-ignore-pending-download";
+
+    // The minimum amount of time in seconds that WebView's service will wait between two
+    // variations seed downloads from the variations server.
+    // No native switch.
+    public static final String FINCH_SEED_MIN_DOWNLOAD_PERIOD = "finch-seed-min-download-period";
+
+    // The minimum amount of time in seconds that the embedded WebView implementation will wait
+    // between two requests to WebView's service for a new variations seed.
+    // No native switch.
+    public static final String FINCH_SEED_MIN_UPDATE_PERIOD = "finch-seed-min-update-period";
+
     // Do not instantiate this class.
     private AwSwitches() {}
 }

@@ -691,8 +691,16 @@ void PaintLayer::UpdateDescendantDependentFlags() {
     UpdateStackingNode();
 
     if (old_has_non_isolated_descendant_with_blend_mode !=
-        static_cast<bool>(has_non_isolated_descendant_with_blend_mode_))
+        static_cast<bool>(has_non_isolated_descendant_with_blend_mode_)) {
+      // The LayoutView DisplayItemClient owns painting of the background
+      // of the HTML element. When blending isolation of the HTML element's
+      // descendants change, there will be an addition or removal of an
+      // isolation effect node for the HTML element to add (or remove)
+      // isolated blending, and that case we need to re-paint the LayoutView.
+      if (Parent() && Parent()->IsRootLayer())
+        GetLayoutObject().View()->SetBackgroundNeedsFullPaintInvalidation();
       GetLayoutObject().SetNeedsPaintPropertyUpdate();
+    }
     needs_descendant_dependent_flags_update_ = false;
 
     if (IsSelfPaintingLayer() && needs_visual_overflow_recalc_) {

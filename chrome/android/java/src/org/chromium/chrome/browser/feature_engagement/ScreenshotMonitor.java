@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.feature_engagement;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.ContentObserver;
 import android.database.Cursor;
@@ -14,8 +13,6 @@ import android.os.Handler;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images.Media;
 import android.support.v4.content.ContextCompat;
-import android.util.DisplayMetrics;
-import android.view.WindowManager;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -25,6 +22,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.ui.display.DisplayAndroid;
 
 /**
  * This class detects screenshots by monitoring the screenshots directory on internal and external
@@ -153,13 +151,10 @@ public class ScreenshotMonitor {
         }
 
         // Check width and height.
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        WindowManager windowManager =
-                (WindowManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.WINDOW_SERVICE);
-        windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-        int screenHeight = displayMetrics.heightPixels;
-        int screenWidth = displayMetrics.widthPixels;
+        DisplayAndroid display =
+                DisplayAndroid.getNonMultiDisplay(ContextUtils.getApplicationContext());
+        int screenHeight = display.getDisplayWidth();
+        int screenWidth = display.getDisplayHeight();
         int imageHeight = Integer.parseInt(imageHeightString);
         int imageWidth = Integer.parseInt(imageWidthString);
 

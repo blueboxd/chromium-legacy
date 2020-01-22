@@ -4774,10 +4774,6 @@ void RenderFrameImpl::ForwardResourceTimingToParent(
       routing_id_, WebResourceTimingInfoToResourceTimingInfo(info)));
 }
 
-void RenderFrameImpl::DispatchLoad() {
-  Send(new FrameHostMsg_DispatchLoad(routing_id_));
-}
-
 base::UnguessableToken RenderFrameImpl::GetDevToolsFrameToken() {
   return devtools_frame_token_;
 }
@@ -6476,7 +6472,7 @@ void RenderFrameImpl::BeginNavigationInternal(
 
   // Set SiteForCookies.
   WebDocument frame_document = frame_->GetDocument();
-  if (info->frame_type == network::mojom::RequestContextFrameType::kTopLevel)
+  if (info->frame_type == blink::mojom::RequestContextFrameType::kTopLevel)
     request.SetSiteForCookies(net::SiteForCookies::FromUrl(request.Url()));
   else
     request.SetSiteForCookies(frame_document.SiteForCookies());
@@ -6520,10 +6516,9 @@ void RenderFrameImpl::BeginNavigationInternal(
   DCHECK_EQ(network::mojom::RedirectMode::kManual,
             info->url_request.GetRedirectMode());
   DCHECK(frame_->Parent() ||
-         info->frame_type ==
-             network::mojom::RequestContextFrameType::kTopLevel);
+         info->frame_type == blink::mojom::RequestContextFrameType::kTopLevel);
   DCHECK(!frame_->Parent() ||
-         info->frame_type == network::mojom::RequestContextFrameType::kNested);
+         info->frame_type == blink::mojom::RequestContextFrameType::kNested);
 
   bool is_form_submission =
       info->navigation_type == blink::kWebNavigationTypeFormSubmitted ||

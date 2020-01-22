@@ -9,7 +9,6 @@
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/ntp_tile_views/ntp_tile_layout_util.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
-#include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #include "ios/chrome/browser/ui/omnibox/popup/self_sizing_table_view.h"
 #include "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"

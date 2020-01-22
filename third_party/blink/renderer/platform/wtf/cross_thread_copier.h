@@ -69,6 +69,12 @@ struct SyncToken;
 namespace mojo {
 template <typename Interface>
 class PendingReceiver;
+template <typename Interface>
+class PendingRemote;
+template <typename Interface>
+class PendingAssociatedRemote;
+template <typename Interface>
+class PendingAssociatedReceiver;
 }
 
 namespace WTF {
@@ -78,6 +84,15 @@ struct CrossThreadCopierPassThrough {
   STATIC_ONLY(CrossThreadCopierPassThrough);
   typedef T Type;
   static Type Copy(const T& parameter) { return parameter; }
+};
+
+template <typename T>
+struct CrossThreadCopierByValuePassThrough {
+  STATIC_ONLY(CrossThreadCopierByValuePassThrough);
+  typedef T Type;
+  static Type Copy(T receiver) {
+    return receiver;  // This is in fact a move.
+  }
 };
 
 template <typename T, bool isArithmeticOrEnum>
@@ -273,12 +288,31 @@ struct CrossThreadCopier<String> {
 };
 
 template <typename Interface>
-struct CrossThreadCopier<mojo::PendingReceiver<Interface>> {
+struct CrossThreadCopier<mojo::PendingReceiver<Interface>>
+    : public CrossThreadCopierByValuePassThrough<
+          mojo::PendingReceiver<Interface>> {
   STATIC_ONLY(CrossThreadCopier);
-  using Type = mojo::PendingReceiver<Interface>;
-  static Type Copy(Type receiver) {
-    return receiver;  // This is in fact a move.
-  }
+};
+
+template <typename Interface>
+struct CrossThreadCopier<mojo::PendingRemote<Interface>>
+    : public CrossThreadCopierByValuePassThrough<
+          mojo::PendingRemote<Interface>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <typename Interface>
+struct CrossThreadCopier<mojo::PendingAssociatedRemote<Interface>>
+    : public CrossThreadCopierByValuePassThrough<
+          mojo::PendingAssociatedRemote<Interface>> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+template <typename Interface>
+struct CrossThreadCopier<mojo::PendingAssociatedReceiver<Interface>>
+    : public CrossThreadCopierByValuePassThrough<
+          mojo::PendingAssociatedReceiver<Interface>> {
+  STATIC_ONLY(CrossThreadCopier);
 };
 
 template <>

@@ -75,6 +75,13 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
       std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
       BlockingPageReadyCallback;
 
+  // Callback that is optionally used to inform the client that a blocking page
+  // has been shown in the specified WebContents for the specified URL with the
+  // given error string and network error code.
+  typedef base::RepeatingCallback<
+      void(content::WebContents*, const GURL&, const std::string&, int)>
+      OnBlockingPageShownCallback;
+
   ~SSLErrorHandler() override;
 
   // Events for UMA. Do not rename or remove values, add new values to the end.
@@ -146,6 +153,11 @@ class SSLErrorHandler : public content::WebContentsUserData<SSLErrorHandler>,
   static void SetErrorAssistantProto(
       std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
           config_proto);
+
+  // Invoke this method to have |callback| called whenever an interstitial is
+  // shown in an SSLErrorHandler instance.
+  static void SetClientCallbackOnInterstitialsShown(
+      OnBlockingPageShownCallback callback);
 
   // Testing methods.
   static void ResetConfigForTesting();

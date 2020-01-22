@@ -106,6 +106,7 @@ Polymer({
             SmbAuthMethod.KERBEROS :
             SmbAuthMethod.CREDENTIALS;
       },
+      observer: 'onAuthenticationMethodChanged_',
     },
 
     /** @private */
@@ -173,6 +174,15 @@ Polymer({
   },
 
   /**
+   * @param {string} newValue
+   * @param {string} oldValue
+   * @private
+   */
+  onAuthenticationMethodChanged_(newValue, oldValue) {
+    this.resetErrorState_();
+  },
+
+  /**
    * @return {boolean}
    * @private
    */
@@ -223,8 +233,13 @@ Polymer({
     switch (result) {
       // Credential Error
       case SmbMountResult.AUTHENTICATION_FAILED:
-        this.setCredentialError_(
-            loadTimeData.getString('smbShareAddedAuthFailedMessage'));
+        if (this.authenticationMethod_ === SmbAuthMethod.KERBEROS) {
+          this.setGeneralError_(
+              loadTimeData.getString('smbShareAddedAuthFailedMessage'));
+        } else {
+          this.setCredentialError_(
+              loadTimeData.getString('smbShareAddedAuthFailedMessage'));
+        }
         break;
 
       // Path Errors

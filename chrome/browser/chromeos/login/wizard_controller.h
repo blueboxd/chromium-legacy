@@ -185,7 +185,6 @@ class WizardController {
   void ShowAppDownloadingScreen();
   void ShowWrongHWIDScreen();
   void ShowAutoEnrollmentCheckScreen();
-  void ShowArcKioskSplashScreen();
   void ShowHIDDetectionScreen();
   void ShowDeviceDisabledScreen();
   void ShowEncryptionMigrationScreen();

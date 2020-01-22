@@ -94,10 +94,10 @@ interface DevToolsAgent {
   ReportChildWorkers(bool report, bool wait_for_debugger) => ();
 };
 
-// This interface is implemented in browser and is notified by DevToolsAgent
-// when new child worker is available for future debugging.
+// This interface is implemented in the browser and is notified by
+// DevToolsAgent when a new child worker is available for future debugging.
 interface DevToolsAgentHost {
-  // Informs the host about new child worker and gives its DevToolsAgent
+  // Informs the host about the new child worker and gives its DevToolsAgent
   // for debugging.
   // |devtools_worker_token| is a unique token identifying this worker.
   // |waiting_for_debugger| is true if worker was paused on startup and

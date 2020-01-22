@@ -119,11 +119,11 @@ const String GetMessageForResponseError(ServiceWorkerResponseError error,
   return error_message;
 }
 
-bool IsNavigationRequest(network::mojom::RequestContextFrameType frame_type) {
-  return frame_type != network::mojom::RequestContextFrameType::kNone;
+bool IsNavigationRequest(mojom::RequestContextFrameType frame_type) {
+  return frame_type != mojom::RequestContextFrameType::kNone;
 }
 
-bool IsClientRequest(network::mojom::RequestContextFrameType frame_type,
+bool IsClientRequest(mojom::RequestContextFrameType frame_type,
                      mojom::RequestContextType request_context) {
   return IsNavigationRequest(frame_type) ||
          request_context == mojom::RequestContextType::SHARED_WORKER ||

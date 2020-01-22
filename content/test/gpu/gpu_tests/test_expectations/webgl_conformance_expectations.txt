@@ -202,8 +202,9 @@ crbug.com/690248 [ win7 nvidia d3d9 ] conformance/canvas/canvas-test.html [ Retr
 # Mark as Fail since it often flakes in all 3 retries
 crbug.com/653533 [ win amd-0x6613 no-passthrough ] conformance/extensions/oes-texture-half-float.html [ Failure ]
 
-# Win / AMD D3D11 failures
+# Win / AMD D3D11 (default) failures
 crbug.com/878780 [ win amd ] conformance/textures/webgl_canvas/* [ RetryOnFailure ]
+crbug.com/1043773 [ win amd ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ RetryOnFailure ]
 
 # Win / AMD D3D9 failures
 crbug.com/475095 [ win amd d3d9 ] conformance/extensions/angle-instanced-arrays.html [ Failure ]

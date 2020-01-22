@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 suite('CrSettingsSecurityPageTest', function() {
+  /** @type {settings.TestMetricsBrowserProxy} */
+  let testMetricsBrowserProxy;
+
   /** @type {settings.SyncBrowserProxy} */
   let syncBrowserProxy;
 
@@ -13,6 +16,8 @@ suite('CrSettingsSecurityPageTest', function() {
   let page;
 
   setup(function() {
+    testMetricsBrowserProxy = new TestMetricsBrowserProxy();
+    settings.MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
     testPrivacyBrowserProxy = new TestPrivacyPageBrowserProxy();
     settings.PrivacyPageBrowserProxyImpl.instance_ = testPrivacyBrowserProxy;
     syncBrowserProxy = new TestSyncBrowserProxy();
@@ -45,7 +50,7 @@ suite('CrSettingsSecurityPageTest', function() {
 
   test('LogManageCerfificatesClick', function() {
     page.$$('#manageCertificates').click();
-    return testPrivacyBrowserProxy.whenCalled('recordSettingsPageHistogram')
+    return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
         .then(result => {
           assertEquals(
               settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES,

@@ -812,7 +812,7 @@ void MixedContentChecker::UpgradeInsecureRequest(
     ResourceRequest& resource_request,
     const FetchClientSettingsObject* fetch_client_settings_object,
     ExecutionContext* execution_context_for_logging,
-    network::mojom::RequestContextFrameType frame_type,
+    mojom::RequestContextFrameType frame_type,
     WebContentSettingsClient* settings_client) {
   // We always upgrade requests that meet any of the following criteria:
   //  1. Are for subresources.
@@ -854,7 +854,7 @@ void MixedContentChecker::UpgradeInsecureRequest(
   }
 
   // Nested frames are always upgraded on the browser process.
-  if (frame_type == network::mojom::RequestContextFrameType::kNested)
+  if (frame_type == mojom::RequestContextFrameType::kNested)
     return;
 
   // We set the UpgradeIfInsecure flag even if the current request wasn't
@@ -869,7 +869,7 @@ void MixedContentChecker::UpgradeInsecureRequest(
     return;
   }
 
-  if (frame_type == network::mojom::RequestContextFrameType::kNone ||
+  if (frame_type == mojom::RequestContextFrameType::kNone ||
       resource_request.GetRequestContext() == mojom::RequestContextType::FORM ||
       (!url.Host().IsNull() &&
        fetch_client_settings_object->GetUpgradeInsecureNavigationsSet()

@@ -44,7 +44,7 @@ class HistoryCounter : public browsing_data::BrowsingDataCounter {
   void OnInitialized() override;
 
   // Whether there are counting tasks in progress. Only used for testing.
-  bool HasTrackedTasks();
+  bool HasTrackedTasksForTesting();
 
   const char* GetPrefName() const override;
 

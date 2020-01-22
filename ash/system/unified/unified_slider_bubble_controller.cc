@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/unified_slider_bubble_controller.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
@@ -34,6 +35,7 @@ bool IsAnyMainBubbleShown() {
 }
 
 void ConfigureSliderViewStyle(views::View* slider_view) {
+  slider_view->SetBackground(UnifiedSystemTrayView::CreateBackground());
   slider_view->SetBorder(views::CreateEmptyBorder(kUnifiedSliderBubblePadding));
 }
 
@@ -169,18 +171,24 @@ void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
   init_params.insets = GetTrayBubbleInsets();
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
-  init_params.translucent = true;
 
   bubble_view_ = new TrayBubbleView(init_params);
   UnifiedSliderView* slider_view =
       static_cast<UnifiedSliderView*>(slider_controller_->CreateView());
   ConfigureSliderViewStyle(slider_view);
   bubble_view_->AddChildView(slider_view);
+  bubble_view_->set_color(SK_ColorTRANSPARENT);
+  bubble_view_->layer()->SetFillsBoundsOpaquely(false);
 
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
 
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
+
+  if (features::IsBackgroundBlurEnabled()) {
+    bubble_widget_->client_view()->layer()->SetBackgroundBlur(
+        kUnifiedMenuBackgroundBlur);
+  }
 
   // Notify value change accessibility event because the popup is triggered by
   // changing value using an accessor key like VolUp.

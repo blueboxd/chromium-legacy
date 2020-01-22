@@ -70,8 +70,6 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
  protected:
   virtual void OnStartSignInScreen(const LoginScreenContext& context) = 0;
   virtual void OnStartAppLaunch() = 0;
-  virtual void OnStartArcKiosk() = 0;
-  virtual void OnStartWebKiosk() = 0;
   virtual void OnBrowserCreated() = 0;
   virtual void OnStartUserAdding() = 0;
   virtual void OnFinalize() = 0;

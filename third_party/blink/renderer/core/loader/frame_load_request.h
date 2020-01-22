@@ -55,10 +55,8 @@ struct CORE_EXPORT FrameLoadRequest {
 
   Document* OriginDocument() const { return origin_document_.Get(); }
 
-  network::mojom::RequestContextFrameType GetFrameType() const {
-    return frame_type_;
-  }
-  void SetFrameType(network::mojom::RequestContextFrameType frame_type) {
+  mojom::RequestContextFrameType GetFrameType() const { return frame_type_; }
+  void SetFrameType(mojom::RequestContextFrameType frame_type) {
     frame_type_ = frame_type;
   }
 
@@ -165,8 +163,8 @@ struct CORE_EXPORT FrameLoadRequest {
   scoped_refptr<base::RefCountedData<mojo::Remote<mojom::blink::BlobURLToken>>>
       blob_url_token_;
   base::TimeTicks input_start_time_;
-  network::mojom::RequestContextFrameType frame_type_ =
-      network::mojom::RequestContextFrameType::kNone;
+  mojom::RequestContextFrameType frame_type_ =
+      mojom::RequestContextFrameType::kNone;
   WebWindowFeatures window_features_;
   bool is_window_open_ = false;
 };

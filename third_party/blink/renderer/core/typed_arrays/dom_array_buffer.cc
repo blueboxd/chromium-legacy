@@ -96,7 +96,7 @@ DOMArrayBuffer* DOMArrayBuffer::Create(
                                ArrayBufferContents::kDontInitialize);
   uint8_t* data = static_cast<uint8_t*>(contents.Data());
   if (UNLIKELY(!data))
-    OOM_CRASH();
+    OOM_CRASH(shared_buffer->size());
 
   for (const auto& span : *shared_buffer) {
     memcpy(data, span.data(), span.size());
@@ -116,7 +116,7 @@ DOMArrayBuffer* DOMArrayBuffer::Create(
                                ArrayBufferContents::kDontInitialize);
   uint8_t* ptr = static_cast<uint8_t*>(contents.Data());
   if (UNLIKELY(!ptr))
-    OOM_CRASH();
+    OOM_CRASH(size);
 
   for (const auto& span : data) {
     memcpy(ptr, span.data(), span.size());

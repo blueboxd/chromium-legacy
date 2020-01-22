@@ -77,6 +77,8 @@ void FakeLocalFrameHost::DidBlockNavigation(
     const KURL& initiator_url,
     mojom::NavigationBlockedReason reason) {}
 
+void FakeLocalFrameHost::DispatchLoad() {}
+
 void FakeLocalFrameHost::RenderFallbackContentInParentProcess() {}
 
 void FakeLocalFrameHost::BindFrameHostReceiver(

@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -99,7 +100,8 @@ bool NavigatorBeacon::SendBeaconImpl(
         PingLoader::SendBeacon(GetSupplementable()->GetFrame(), url, data_view);
   } else if (data.IsBlob()) {
     Blob* blob = data.GetAsBlob();
-    if (!cors::IsCorsSafelistedContentType(blob->type())) {
+    if (!RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
+        !cors::IsCorsSafelistedContentType(blob->type())) {
       UseCounter::Count(context,
                         WebFeature::kSendBeaconWithNonSimpleContentType);
       if (RuntimeEnabledFeatures::

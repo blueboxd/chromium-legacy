@@ -38,7 +38,8 @@ void DevToolsRendererChannel::SetRenderer(
     agent_remote_.set_disconnect_handler(std::move(connection_error));
   if (host_receiver)
     receiver_.Bind(std::move(host_receiver));
-  SetRendererInternal(agent, process_id, nullptr);
+  const bool force_using_io = true;
+  SetRendererInternal(agent, process_id, nullptr, force_using_io);
 }
 
 void DevToolsRendererChannel::SetRendererAssociated(
@@ -55,7 +56,8 @@ void DevToolsRendererChannel::SetRendererAssociated(
   }
   if (host_receiver)
     associated_receiver_.Bind(std::move(host_receiver));
-  SetRendererInternal(agent, process_id, frame_host);
+  const bool force_using_io = false;
+  SetRendererInternal(agent, process_id, frame_host, force_using_io);
 }
 
 void DevToolsRendererChannel::CleanupConnection() {
@@ -73,7 +75,8 @@ void DevToolsRendererChannel::ForceDetachWorkerSessions() {
 void DevToolsRendererChannel::SetRendererInternal(
     blink::mojom::DevToolsAgent* agent,
     int process_id,
-    RenderFrameHostImpl* frame_host) {
+    RenderFrameHostImpl* frame_host,
+    bool force_using_io) {
   ReportChildWorkersCallback();
   process_id_ = process_id;
   frame_host_ = frame_host;
@@ -85,7 +88,7 @@ void DevToolsRendererChannel::SetRendererInternal(
   for (DevToolsSession* session : owner_->sessions()) {
     for (auto& pair : session->handlers())
       pair.second->SetRenderer(process_id_, frame_host_);
-    session->AttachToAgent(agent);
+    session->AttachToAgent(agent, force_using_io);
   }
 }
 
@@ -95,9 +98,9 @@ void DevToolsRendererChannel::AttachSession(DevToolsSession* session) {
   for (auto& pair : session->handlers())
     pair.second->SetRenderer(process_id_, frame_host_);
   if (agent_remote_)
-    session->AttachToAgent(agent_remote_.get());
+    session->AttachToAgent(agent_remote_.get(), true);
   else if (associated_agent_remote_)
-    session->AttachToAgent(associated_agent_remote_.get());
+    session->AttachToAgent(associated_agent_remote_.get(), false);
 }
 
 void DevToolsRendererChannel::InspectElement(const gfx::Point& point) {

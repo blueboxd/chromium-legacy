@@ -1139,10 +1139,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64_t /* id */)
 IPC_MESSAGE_ROUTED1(FrameHostMsg_ForwardResourceTimingToParent,
                     content::ResourceTimingInfo)
 
-// Dispatch a load event for this frame in the iframe element of an
-// out-of-process parent frame.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_DispatchLoad)
-
 // Sent to the browser from a frame proxy to post a message to the frame's
 // active renderer.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_RouteMessageEvent,

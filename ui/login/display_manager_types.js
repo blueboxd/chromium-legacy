@@ -73,7 +73,6 @@ var DISPLAY_TYPE = {
   LOCK: 'lock',
   USER_ADDING: 'user-adding',
   APP_LAUNCH_SPLASH: 'app-launch-splash',
-  ARC_KIOSK_SPLASH: 'arc-kiosk-splash',
   DESKTOP_USER_MANAGER: 'login-add-user',
   GAIA_SIGNIN: 'gaia-signin'
 };

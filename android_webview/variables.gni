@@ -7,7 +7,8 @@ import("//weblayer/variables.gni")
 
 declare_args() {
   # Show a launcher icon to open WebView developer UI, enabled by default for dev and canary
-  # channels. The icon for Monochrome is always hidden by default (https://crbug.com/1026062)
+  # channels. The icon for Monochrome is shown dynamically at runtime if Monochrome is the current
+  # selected system WebView implementation or hidden otherwise.
   # TODO(https://crbug.com/1002589): add beta channel when approved
   webview_devui_show_icon =
       android_channel == "canary" || android_channel == "dev"

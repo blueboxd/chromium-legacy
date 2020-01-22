@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 
 @protocol ApplicationCommands;
@@ -16,10 +17,6 @@
 @protocol WebStateListObserving;
 
 class AppUrlLoadingService;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // Protocol for objects that can handle switching browser state storage.
 @protocol BrowserStateStorageSwitching

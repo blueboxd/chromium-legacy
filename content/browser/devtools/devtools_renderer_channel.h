@@ -80,7 +80,8 @@ class CONTENT_EXPORT DevToolsRendererChannel
   void CleanupConnection();
   void SetRendererInternal(blink::mojom::DevToolsAgent* agent,
                            int process_id,
-                           RenderFrameHostImpl* frame_host);
+                           RenderFrameHostImpl* frame_host,
+                           bool force_using_io);
   void ReportChildWorkersCallback();
 
   DevToolsAgentHostImpl* owner_;

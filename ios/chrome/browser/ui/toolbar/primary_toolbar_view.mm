@@ -257,10 +257,16 @@
   self.tabGridButton = [self.buttonFactory tabGridButton];
   self.toolsMenuButton = [self.buttonFactory toolsMenuButton];
 
-  self.trailingStackViewButtons = @[
-    self.bookmarkButton, self.shareButton, self.tabGridButton,
-    self.toolsMenuButton
-  ];
+  if (base::FeatureList::IsEnabled(kChangeTabSwitcherPosition)) {
+    self.trailingStackViewButtons =
+        @[ self.shareButton, self.tabGridButton, self.toolsMenuButton ];
+  } else {
+    self.trailingStackViewButtons = @[
+      self.bookmarkButton, self.shareButton, self.tabGridButton,
+      self.toolsMenuButton
+    ];
+  }
+
   self.trailingStackView = [[UIStackView alloc]
       initWithArrangedSubviews:self.trailingStackViewButtons];
   self.trailingStackView.translatesAutoresizingMaskIntoConstraints = NO;

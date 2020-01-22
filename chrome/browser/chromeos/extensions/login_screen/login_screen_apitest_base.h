@@ -41,6 +41,8 @@ class LoginScreenApitestBase
 
   void SetUpTestListeners();
 
+  void ClearTestListeners();
+
   void RunTest(const std::string& test_name);
   void RunTest(const std::string& test_name, bool assert_test_succeed);
 
@@ -48,9 +50,15 @@ class LoginScreenApitestBase
   void SetUpLoginScreenExtensionAndRunTest(const std::string& test_name,
                                            bool assert_test_succeed);
 
+  std::string extension_id() { return extension_id_; }
+
+  std::string listener_message() { return listener_message_; }
+
  protected:
   const std::string extension_id_;
   const std::string extension_update_manifest_path_;
+  // The message |listener_| is listening for.
+  const std::string listener_message_;
   std::unique_ptr<extensions::ResultCatcher> catcher_;
   std::unique_ptr<ExtensionTestMessageListener> listener_;
 };

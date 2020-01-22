@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -112,7 +113,7 @@ class BrowserSwitcherPrefs : public KeyedService,
 
   // Returns the path to the Chrome executable to launch when switching from IE,
   // before substitutions.
-  const std::string& GetChromePath() const;
+  const base::FilePath& GetChromePath() const;
 
   // Returns the arguments to pass to Chrome when switching from IE, before
   // substitutions.
@@ -165,7 +166,7 @@ class BrowserSwitcherPrefs : public KeyedService,
   std::string alt_browser_path_;
   std::vector<std::string> alt_browser_params_;
 #if defined(OS_WIN)
-  std::string chrome_path_;
+  base::FilePath chrome_path_;
   std::vector<std::string> chrome_params_;
 #endif
 

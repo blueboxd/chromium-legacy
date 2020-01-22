@@ -127,9 +127,6 @@ const char kUserAddingURL[] = "chrome://oobe/user-adding";
 // URL which corresponds to the app launch splash WebUI.
 const char kAppLaunchSplashURL[] = "chrome://oobe/app-launch-splash";
 
-// URL which corresponds to the ARC kiosk splash WebUI.
-const char kArcKioskSplashURL[] = "chrome://oobe/arc-kiosk-splash";
-
 // Duration of sign-in transition animation.
 const int kLoginFadeoutTransitionDurationMs = 700;
 
@@ -649,24 +646,6 @@ void LoginDisplayHostWebUI::OnStartAppLaunch() {
   finalize_animation_type_ = ANIMATION_FADE_OUT;
   if (!login_window_)
     LoadURL(GURL(kAppLaunchSplashURL));
-
-  login_view_->set_should_emit_login_prompt_visible(false);
-}
-
-void LoginDisplayHostWebUI::OnStartArcKiosk() {
-  finalize_animation_type_ = ANIMATION_FADE_OUT;
-  if (!login_window_) {
-    LoadURL(GURL(kArcKioskSplashURL));
-  }
-
-  login_view_->set_should_emit_login_prompt_visible(false);
-}
-
-void LoginDisplayHostWebUI::OnStartWebKiosk() {
-  finalize_animation_type_ = ANIMATION_FADE_OUT;
-  if (!login_window_) {
-    LoadURL(GURL(kAppLaunchSplashURL));
-  }
 
   login_view_->set_should_emit_login_prompt_visible(false);
 }

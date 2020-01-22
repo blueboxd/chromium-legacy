@@ -839,7 +839,7 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   auto navigation_info = std::make_unique<blink::WebNavigationInfo>();
   navigation_info->url_request = request;
   navigation_info->frame_type =
-      network::mojom::RequestContextFrameType::kTopLevel;
+      blink::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
   DCHECK(!navigation_info->url_request.RequestorOrigin().IsNull());
@@ -858,7 +858,7 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   form_navigation_info->url_request.SetHttpBody(post_body);
   form_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   form_navigation_info->frame_type =
-      network::mojom::RequestContextFrameType::kTopLevel;
+      blink::mojom::RequestContextFrameType::kTopLevel;
   form_navigation_info->navigation_type =
       blink::kWebNavigationTypeFormSubmitted;
   form_navigation_info->navigation_policy =
@@ -874,7 +874,7 @@ TEST_F(RenderViewImplTest, BeginNavigation) {
   popup_navigation_info->url_request = blink::WebURLRequest(GetWebUIURL("foo"));
   popup_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   popup_navigation_info->frame_type =
-      network::mojom::RequestContextFrameType::kAuxiliary;
+      blink::mojom::RequestContextFrameType::kAuxiliary;
   popup_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   popup_navigation_info->navigation_policy =
       blink::kWebNavigationPolicyNewForegroundTab;
@@ -904,7 +904,7 @@ TEST_F(RenderViewImplTest, BeginNavigationHandlesAllTopLevel) {
     navigation_info->url_request.SetRequestorOrigin(
         blink::WebSecurityOrigin::Create(GURL("http://foo.com")));
     navigation_info->frame_type =
-        network::mojom::RequestContextFrameType::kTopLevel;
+        blink::mojom::RequestContextFrameType::kTopLevel;
     navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
     navigation_info->navigation_type = kNavTypes[i];
 
@@ -927,7 +927,7 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   navigation_info->url_request = blink::WebURLRequest(GURL("http://foo.com"));
   navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   navigation_info->frame_type =
-      network::mojom::RequestContextFrameType::kTopLevel;
+      blink::mojom::RequestContextFrameType::kTopLevel;
   navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   navigation_info->navigation_policy = blink::kWebNavigationPolicyCurrentTab;
 
@@ -941,7 +941,7 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   webui_navigation_info->url_request = blink::WebURLRequest(GetWebUIURL("foo"));
   webui_navigation_info->url_request.SetRequestorOrigin(requestor_origin);
   webui_navigation_info->frame_type =
-      network::mojom::RequestContextFrameType::kTopLevel;
+      blink::mojom::RequestContextFrameType::kTopLevel;
   webui_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   webui_navigation_info->navigation_policy =
       blink::kWebNavigationPolicyCurrentTab;
@@ -961,7 +961,7 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   post_body.AppendData("blah");
   data_navigation_info->url_request.SetHttpBody(post_body);
   data_navigation_info->frame_type =
-      network::mojom::RequestContextFrameType::kTopLevel;
+      blink::mojom::RequestContextFrameType::kTopLevel;
   data_navigation_info->navigation_type =
       blink::kWebNavigationTypeFormSubmitted;
   data_navigation_info->navigation_policy =
@@ -985,7 +985,7 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
   auto popup_navigation_info = std::make_unique<blink::WebNavigationInfo>();
   popup_navigation_info->url_request = popup_request;
   popup_navigation_info->frame_type =
-      network::mojom::RequestContextFrameType::kAuxiliary;
+      blink::mojom::RequestContextFrameType::kAuxiliary;
   popup_navigation_info->navigation_type = blink::kWebNavigationTypeLinkClicked;
   popup_navigation_info->navigation_policy =
       blink::kWebNavigationPolicyNewForegroundTab;

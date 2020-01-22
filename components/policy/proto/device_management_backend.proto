@@ -1030,6 +1030,19 @@ message GraphicsStatus {
   repeated DisplayInfo displays = 2;
 }
 
+// Status of a crash report.
+message CrashReportInfo {
+  // ID as provided by chrome://crashes.
+  optional string remote_id = 1;
+
+  // The timestamp when the crash is captured.
+  // [timestamp] is milliseconds since Epoch in UTC timezone (Java time).
+  optional int64 capture_timestamp = 2;
+
+  // Human readable string that identifies what caused the crash.
+  optional string cause = 3;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   reserved 4, 7, 13, 20;
@@ -1127,6 +1140,9 @@ message DeviceStatusReportRequest {
 
   // Status of the graphics adapter(s) and display(s).
   optional GraphicsStatus graphics_status = 33;
+
+  // Information about the crash report(s) generated from the local device.
+  repeated CrashReportInfo crash_report_infos = 34;
 }
 
 message OsUpdateStatus {

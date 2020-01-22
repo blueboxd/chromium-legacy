@@ -689,8 +689,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
   resource_request.SetRequestDestination(
       DetermineRequestDestinationFromNavigationType(navigation_type));
   request.SetFrameType(frame_->IsMainFrame()
-                           ? network::mojom::RequestContextFrameType::kTopLevel
-                           : network::mojom::RequestContextFrameType::kNested);
+                           ? mojom::RequestContextFrameType::kTopLevel
+                           : mojom::RequestContextFrameType::kNested);
 
   mojo::PendingRemote<mojom::blink::NavigationInitiator> navigation_initiator;
   WebContentSecurityPolicyList initiator_csp;
@@ -1526,7 +1526,7 @@ void FrameLoader::ModifyRequestForCSP(
     ResourceRequest& resource_request,
     const FetchClientSettingsObject* fetch_client_settings_object,
     Document* document_for_logging,
-    network::mojom::RequestContextFrameType frame_type) const {
+    mojom::RequestContextFrameType frame_type) const {
   if (!RequiredCSP().IsEmpty()) {
     DCHECK(
         ContentSecurityPolicy::IsValidCSPAttr(RequiredCSP().GetString(), ""));
@@ -1537,7 +1537,7 @@ void FrameLoader::ModifyRequestForCSP(
   // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational
   // requests, as described in
   // https://w3c.github.io/webappsec-upgrade-insecure-requests/#feature-detect
-  if (frame_type != network::mojom::RequestContextFrameType::kNone) {
+  if (frame_type != mojom::RequestContextFrameType::kNone) {
     // Early return if the request has already been upgraded.
     if (!resource_request.HttpHeaderField(http_names::kUpgradeInsecureRequests)
              .IsNull()) {

@@ -31,23 +31,12 @@ class CONTENT_EXPORT ConditionalCacheDeletionHelper {
 
   // A convenience method to create a condition matching cache entries whose
   // last modified time is between |begin_time| (inclusively), |end_time|
-  // (exclusively) and whose URL is matched by the |url_predicate|. Note that
-  // |begin_time| and |end_time| can be null to indicate unbounded time interval
-  // in their respective direction.
-  static base::RepeatingCallback<bool(const disk_cache::Entry*)>
-  CreateURLAndTimeCondition(
-      base::RepeatingCallback<bool(const GURL&)> url_predicate,
-      base::Time begin_time,
-      base::Time end_time);
-
-  // A convenience method to create a condition matching cache entries whose
-  // last modified time is between |begin_time| (inclusively), |end_time|
   // (exclusively) and whose URL obtained by passing the key to the
   // |get_url_from_key| is matched by the |url_predicate|. The
   // |get_url_from_key| method is useful when the entries are not keyed by the
   // resource url alone. For ex: using two keys for site isolation.
   static base::RepeatingCallback<bool(const disk_cache::Entry*)>
-  CreateCustomKeyURLAndTimeCondition(
+  CreateURLAndTimeCondition(
       base::RepeatingCallback<bool(const GURL&)> url_predicate,
       base::RepeatingCallback<std::string(const std::string&)> get_url_from_key,
       base::Time begin_time,

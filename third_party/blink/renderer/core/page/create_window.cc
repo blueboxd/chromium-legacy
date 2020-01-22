@@ -236,7 +236,7 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
     return nullptr;
   }
 
-  request.SetFrameType(network::mojom::RequestContextFrameType::kAuxiliary);
+  request.SetFrameType(mojom::RequestContextFrameType::kAuxiliary);
 
   const KURL& url = request.GetResourceRequest().Url();
   if (url.ProtocolIsJavaScript() &&

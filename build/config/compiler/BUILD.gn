@@ -1552,13 +1552,6 @@ config("default_warnings") {
           "-Wno-deprecated-copy",
         ]
 
-        if (is_win) {
-          cflags += [
-            # TODO(https://crbug.com/1002945): Clean up, enable.
-            "-Wno-sizeof-array-div",
-          ]
-        }
-
         cflags_c += [
           # TODO(https://crbug.com/995993): Clean up and enable.
           "-Wno-implicit-fallthrough",

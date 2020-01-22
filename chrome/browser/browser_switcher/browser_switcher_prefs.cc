@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_switcher/browser_switcher_sitelist.h"
@@ -15,6 +17,10 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 namespace browser_switcher {
 
@@ -215,7 +221,7 @@ bool BrowserSwitcherPrefs::UseIeSitelist() const {
   return prefs_->GetBoolean(prefs::kUseIeSitelist);
 }
 
-const std::string& BrowserSwitcherPrefs::GetChromePath() const {
+const base::FilePath& BrowserSwitcherPrefs::GetChromePath() const {
   return chrome_path_;
 }
 
@@ -319,7 +325,14 @@ void BrowserSwitcherPrefs::GreylistChanged() {
 void BrowserSwitcherPrefs::ChromePathChanged() {
   chrome_path_.clear();
   if (prefs_->IsManagedPreference(prefs::kChromePath))
-    chrome_path_ = prefs_->GetString(prefs::kChromePath);
+    chrome_path_ = prefs_->GetFilePath(prefs::kChromePath);
+#if defined(OS_WIN)
+  if (chrome_path_.empty()) {
+    base::FilePath::CharType chrome_path[MAX_PATH];
+    ::GetModuleFileName(NULL, chrome_path, ARRAYSIZE(chrome_path));
+    chrome_path_ = base::FilePath(chrome_path);
+  }
+#endif
 }
 
 void BrowserSwitcherPrefs::ChromeParametersChanged() {

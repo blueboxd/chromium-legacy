@@ -126,6 +126,12 @@ const char kClearSyncedDataDescription[] =
     "presented with the option to clear synced data from the local "
     "device when signing out.";
 
+extern const char kChangeTabSwitcherPositionName[] =
+    "Change tab switcher button position";
+extern const char kChangeTabSwitcherPositionDescription[] =
+    "When enable, the tab switcher button position changes from tab strip to "
+    "toolbar and bookmark button is removed.";
+
 const char kCollectionsCardPresentationStyleName[] =
     "Card style presentation for Collections.";
 const char kCollectionsCardPresentationStyleDescription[] =

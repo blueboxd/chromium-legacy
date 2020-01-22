@@ -132,8 +132,6 @@ const CGFloat kClearButtonSize = 28.0f;
          selector:@selector(textInputModeDidChange)
              name:UITextInputCurrentInputModeDidChangeNotification
            object:nil];
-
-  [self updateLeadingImageVisibility];
 }
 
 - (void)viewDidAppear:(BOOL)animated {
@@ -147,11 +145,6 @@ const CGFloat kClearButtonSize = 28.0f;
   self.textField.selectedTextRange =
       [self.textField textRangeFromPosition:self.textField.beginningOfDocument
                                  toPosition:self.textField.beginningOfDocument];
-}
-
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  [self updateLeadingImageVisibility];
 }
 
 - (void)setTextChangeDelegate:(OmniboxTextChangeDelegate*)textChangeDelegate {
@@ -289,10 +282,6 @@ const CGFloat kClearButtonSize = 28.0f;
 }
 
 #pragma mark - private
-
-- (void)updateLeadingImageVisibility {
-  [self.view setLeadingImageHidden:NO];
-}
 
 // Tint color for the textfield placeholder and the clear button.
 - (UIColor*)placeholderAndClearButtonColor {

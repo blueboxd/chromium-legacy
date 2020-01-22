@@ -21,7 +21,6 @@ class BrowsingDataFlashLSOHelper;
 class HostContentSettingsMap;
 
 namespace content {
-struct SessionStorageUsageInfo;
 struct StorageUsageInfo;
 }
 
@@ -49,10 +48,6 @@ class SiteDataCountingHelper {
   void GetOriginsFromHostContentSettignsMap(HostContentSettingsMap* hcsm,
                                             ContentSettingsType type);
   void GetCookiesCallback(const net::CookieList& cookies);
-  void GetSessionStorageUsageInfoCallback(
-      const scoped_refptr<storage::SpecialStoragePolicy>&
-          special_storage_policy,
-      const std::vector<content::SessionStorageUsageInfo>& infos);
   void GetLocalStorageUsageInfoCallback(
       const scoped_refptr<storage::SpecialStoragePolicy>&
           special_storage_policy,

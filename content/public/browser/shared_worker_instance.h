@@ -82,9 +82,11 @@ class CONTENT_EXPORT SharedWorkerInstance {
   int64_t id_;
 
   GURL url_;
-  // Used for fetching the top-level worker script.
   blink::mojom::ScriptType script_type_;
+
+  // Used for fetching the top-level worker script.
   network::mojom::CredentialsMode credentials_mode_;
+
   std::string name_;
 
   // The origin of the document that created this shared worker instance. Used

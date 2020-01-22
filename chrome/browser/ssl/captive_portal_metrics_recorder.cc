@@ -51,10 +51,10 @@ CaptivePortalMetricsRecorder::CaptivePortalMetricsRecorder(
   captive_portal_detection_enabled_ =
       CaptivePortalServiceFactory::GetForProfile(profile)->enabled();
   registrar_.Add(this, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-                 content::Source<Profile>(profile));
+                 content::Source<content::BrowserContext>(profile));
 }
 
-CaptivePortalMetricsRecorder::~CaptivePortalMetricsRecorder() {}
+CaptivePortalMetricsRecorder::~CaptivePortalMetricsRecorder() = default;
 
 void CaptivePortalMetricsRecorder::RecordCaptivePortalUMAStatistics() const {
   RecordCaptivePortalEventStats(CAPTIVE_PORTAL_ALL);

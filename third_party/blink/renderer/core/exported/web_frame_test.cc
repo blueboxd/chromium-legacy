@@ -12347,10 +12347,6 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
       EXPECT_TRUE(false) << "didFinishLoad() should not have been called.";
     }
 
-    void DispatchLoad() override {
-      EXPECT_TRUE(false) << "dispatchLoad() should not have been called.";
-    }
-
     bool DidCallFrameDetached() const { return did_call_frame_detached_; }
     bool DidCallDidStopLoading() const { return did_call_did_stop_loading_; }
     bool DidCallDidFinishDocumentLoad() const {

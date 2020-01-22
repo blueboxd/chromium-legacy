@@ -114,7 +114,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   void BeginNavigation(
       const ResourceRequest&,
-      network::mojom::RequestContextFrameType,
+      mojom::RequestContextFrameType,
       Document* origin_document,
       DocumentLoader*,
       WebNavigationType,

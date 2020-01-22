@@ -495,7 +495,7 @@ void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
       resource_request,
       &GetResourceFetcherProperties().GetFetchClientSettingsObject(),
       &frame_or_imported_document_->GetDocument(),
-      network::mojom::RequestContextFrameType::kNone);
+      mojom::RequestContextFrameType::kNone);
 }
 
 void FrameFetchContext::AddClientHintsIfNecessary(

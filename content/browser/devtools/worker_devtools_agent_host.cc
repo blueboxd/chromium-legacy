@@ -38,7 +38,7 @@ WorkerDevToolsAgentHost::WorkerDevToolsAgentHost(
                                     std::move(connection_error));
 }
 
-WorkerDevToolsAgentHost::~WorkerDevToolsAgentHost() {}
+WorkerDevToolsAgentHost::~WorkerDevToolsAgentHost() = default;
 
 void WorkerDevToolsAgentHost::Disconnected() {
   ForceDetachAllSessions();

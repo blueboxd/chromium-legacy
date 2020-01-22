@@ -42,7 +42,6 @@ android_library("java") {
     "org/chromium/weblayer_private/FragmentWindowAndroid.java",
     "org/chromium/weblayer_private/FullscreenCallbackProxy.java",
     "org/chromium/weblayer_private/LocaleChangedBroadcastReceiver.java",
-    "org/chromium/weblayer_private/MinidumpUploader.java",
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
     "org/chromium/weblayer_private/NewTabCallbackProxy.java",

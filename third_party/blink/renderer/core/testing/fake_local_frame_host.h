@@ -54,6 +54,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void DidBlockNavigation(const KURL& blocked_url,
                           const KURL& initiator_url,
                           mojom::NavigationBlockedReason reason) override;
+  void DispatchLoad() override;
   void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override;
   void RenderFallbackContentInParentProcess() override;
   void HandleAccessibilityFindInPageResult(

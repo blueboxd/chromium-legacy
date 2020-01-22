@@ -675,3 +675,7 @@ crbug.com/1020379 http/tests/devtools/a11y-axe-core/* [ Slow ]
 
 crbug.com/1040054 http/tests/devtools/cache-storage/cache-data.js [ Slow ]
 crbug.com/1040450 http/tests/devtools/persistence/persistence-external-change-breakpoints.js [ Slow ]
+
+# Reaching the stack size limit makes for a consistently slow test with
+# occasional timeouts on Win7
+crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Slow ]

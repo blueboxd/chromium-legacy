@@ -122,6 +122,7 @@
 #include "third_party/blink/public/common/feature_policy/policy_value.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
@@ -8438,21 +8439,27 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SessionHistoryReplication) {
   EXPECT_EQ(child2_last_url, child2->current_url());
 }
 
-// A BrowserMessageFilter that drops FrameHostMsg_OnDispatchLoad messages.
-class DispatchLoadMessageFilter : public BrowserMessageFilter {
+// Intercepts calls to LocalFrameHost::DispatchLoad method(), and discards them.
+class DispatchLoadInterceptor
+    : public blink::mojom::LocalFrameHostInterceptorForTesting {
  public:
-  DispatchLoadMessageFilter() : BrowserMessageFilter(FrameMsgStart) {}
-
- protected:
-  ~DispatchLoadMessageFilter() override {}
-
- private:
-  // BrowserMessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    return message.type() == FrameHostMsg_DispatchLoad::ID;
+  explicit DispatchLoadInterceptor(RenderFrameHostImpl* render_frame_host)
+      : render_frame_host_(render_frame_host) {
+    render_frame_host_->local_frame_host_receiver_for_testing()
+        .SwapImplForTesting(this);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(DispatchLoadMessageFilter);
+  ~DispatchLoadInterceptor() override = default;
+
+  LocalFrameHost* GetForwardingInterface() override {
+    return render_frame_host_;
+  }
+
+  // Discard incoming calls to LocalFrameHost::DispatchLoad().
+  void DispatchLoad() override {}
+
+ private:
+  RenderFrameHostImpl* render_frame_host_;
 };
 
 // Test that the renderer isn't killed when a frame generates a load event just
@@ -8470,13 +8477,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   Shell* popup_shell = OpenPopup(root, popup_url, "foo");
   EXPECT_TRUE(popup_shell);
 
-  // Install a filter to drop DispatchLoad messages from b.com.
-  scoped_refptr<DispatchLoadMessageFilter> filter =
-      new DispatchLoadMessageFilter();
-  RenderProcessHost* b_process =
-      popup_shell->web_contents()->GetMainFrame()->GetProcess();
-  b_process->AddFilter(filter.get());
-
   // Navigate subframe to b.com.  Wait for commit but not full load.
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
   {
@@ -8490,6 +8490,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // At this point, the subframe should have a proxy in its parent's
   // SiteInstance, a.com.
   EXPECT_TRUE(child->render_manager()->GetProxyToParent());
+
+  // Intercept calls to the LocalFrameHost::DispatchLoad() method.
+  DispatchLoadInterceptor interceptor(child_rfh);
 
   // Now, go back to a.com in the subframe and wait for commit.
   {
@@ -8505,9 +8508,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Simulate that the load event is dispatched from |child_rfh| just after
   // it's become pending deletion.
-  child_rfh->OnDispatchLoad();
+  child_rfh->DispatchLoad();
 
-  // In the bug, OnDispatchLoad killed the b.com renderer.  Ensure that this is
+  // In the bug, DispatchLoad killed the b.com renderer.  Ensure that this is
   // not the case. Note that the process kill doesn't happen immediately, so
   // IsRenderFrameLive() can't be checked here (yet).  Instead, check that
   // JavaScript can still execute in b.com using the popup.

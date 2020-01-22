@@ -60,6 +60,14 @@ const DWORD kOomExceptionCode = 0xe0000008;
 }  // namespace win
 #endif
 
+namespace internal {
+
+// Handles out of memory, with the failed allocation |size|, or 0 when it is not
+// known.
+BASE_EXPORT void OnNoMemoryInternal(size_t size);
+
+}  // namespace internal
+
 // Special allocator functions for callers that want to check for OOM.
 // These will not abort if the allocation fails even if
 // EnableTerminationOnOutOfMemory has been called.

@@ -175,6 +175,11 @@ CookiePriority ParsedCookie::Priority() const {
 bool ParsedCookie::SetName(const std::string& name) {
   if (!name.empty() && !HttpUtil::IsToken(name))
     return false;
+
+  // Fail if we'd be creating a cookie with an empty name and value.
+  if (name.empty() && (pairs_.empty() || pairs_[0].second.empty()))
+    return false;
+
   if (pairs_.empty())
     pairs_.push_back(std::make_pair("", ""));
   pairs_[0].first = name;
@@ -184,6 +189,11 @@ bool ParsedCookie::SetName(const std::string& name) {
 bool ParsedCookie::SetValue(const std::string& value) {
   if (!IsValidCookieValue(value))
     return false;
+
+  // Fail if we'd be creating a cookie with an empty name and value.
+  if (value.empty() && (pairs_.empty() || pairs_[0].first.empty()))
+    return false;
+
   if (pairs_.empty())
     pairs_.push_back(std::make_pair("", ""));
   pairs_[0].second = value;

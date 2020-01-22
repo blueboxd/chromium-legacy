@@ -98,6 +98,8 @@ static_library("test_support") {
   sources = [
     "../browser/autofill/automated_tests/cache_replayer.cc",
     "../browser/autofill/automated_tests/cache_replayer.h",
+    "../browser/permissions/crowd_deny_fake_safe_browsing_database_manager.cc",
+    "../browser/permissions/crowd_deny_fake_safe_browsing_database_manager.h",
     "base/chrome_render_view_host_test_harness.cc",
     "base/chrome_render_view_host_test_harness.h",
     "base/chrome_test_launcher.cc",

@@ -278,7 +278,7 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, HistoryCounter) {
   sync_service->GetUserSettings()->SetSelectedTypes(/*sync_everything=*/false,
                                                     only_passwords);
   sync_blocker.reset();
-  EXPECT_FALSE(counter.HasTrackedTasks());
+  EXPECT_FALSE(counter.HasTrackedTasksForTesting());
   EXPECT_FALSE(CountingFinishedSinceLastAsked());
 
   // Same in this case.
@@ -289,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(SyncAwareCounterTest, HistoryCounter) {
   sync_service->GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false, autofill_and_passwords);
   sync_blocker.reset();
-  EXPECT_FALSE(counter.HasTrackedTasks());
+  EXPECT_FALSE(counter.HasTrackedTasksForTesting());
   EXPECT_FALSE(CountingFinishedSinceLastAsked());
 
   // We start syncing history deletion again. This restarts the counter.

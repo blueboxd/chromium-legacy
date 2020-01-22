@@ -97,7 +97,6 @@
 #include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/arc_kiosk_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
@@ -197,7 +196,6 @@ const chromeos::StaticOobeScreenId kResumableScreens[] = {
 };
 
 const chromeos::StaticOobeScreenId kScreensWithHiddenStatusArea[] = {
-    chromeos::ArcKioskSplashScreenView::kScreenId,
     chromeos::EnableAdbSideloadingScreenView::kScreenId,
     chromeos::EnableDebuggingScreenView::kScreenId,
     chromeos::KioskAutolaunchScreenView::kScreenId,
@@ -716,10 +714,6 @@ void WizardController::ShowAutoEnrollmentCheckScreen() {
     screen->ClearState();
   screen->set_auto_enrollment_controller(GetAutoEnrollmentController());
   SetCurrentScreen(screen);
-}
-
-void WizardController::ShowArcKioskSplashScreen() {
-  SetCurrentScreen(GetScreen(ArcKioskSplashScreenView::kScreenId));
 }
 
 void WizardController::ShowHIDDetectionScreen() {
@@ -1508,8 +1502,6 @@ void WizardController::AdvanceToScreen(OobeScreenId screen) {
     ShowAutoEnrollmentCheckScreen();
   } else if (screen == AppLaunchSplashScreenView::kScreenId) {
     AutoLaunchKioskApp();
-  } else if (screen == ArcKioskSplashScreenView::kScreenId) {
-    ShowArcKioskSplashScreen();
   } else if (screen == HIDDetectionView::kScreenId) {
     ShowHIDDetectionScreen();
   } else if (screen == DeviceDisabledScreenView::kScreenId) {

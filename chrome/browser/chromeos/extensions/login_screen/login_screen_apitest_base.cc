@@ -26,18 +26,23 @@ namespace chromeos {
 LoginScreenApitestBase::LoginScreenApitestBase(version_info::Channel channel)
     : SigninProfileExtensionsPolicyTestBase(channel),
       extension_id_(kExtensionId),
-      extension_update_manifest_path_(kExtensionUpdateManifestPath) {}
+      extension_update_manifest_path_(kExtensionUpdateManifestPath),
+      listener_message_(kWaitingForTestName) {}
 
 LoginScreenApitestBase::~LoginScreenApitestBase() {
-  catcher_.reset();
-  listener_.reset();
+  ClearTestListeners();
 }
 
 void LoginScreenApitestBase::SetUpTestListeners() {
   catcher_ = std::make_unique<extensions::ResultCatcher>();
   listener_ =
-      std::make_unique<ExtensionTestMessageListener>(kWaitingForTestName,
+      std::make_unique<ExtensionTestMessageListener>(listener_message_,
                                                      /*will_reply=*/true);
+}
+
+void LoginScreenApitestBase::ClearTestListeners() {
+  catcher_.reset();
+  listener_.reset();
 }
 
 void LoginScreenApitestBase::RunTest(const std::string& test_name) {

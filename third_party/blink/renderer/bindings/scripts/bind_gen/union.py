@@ -10,6 +10,7 @@ from . import name_style
 from .code_node import ListNode
 from .code_node import TextNode
 from .code_node_cxx import CxxClassDefNode
+from .code_node_cxx import CxxFuncDeclNode
 from .code_node_cxx import CxxNamespaceNode
 from .codegen_accumulator import CodeGenAccumulator
 from .codegen_context import CodeGenContext
@@ -24,6 +25,33 @@ from .mako_renderer import MakoRenderer
 from .path_manager import PathManager
 
 
+def make_union_constructor_defs(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    class_name = cg_context.class_name
+
+    return ListNode([
+        CxxFuncDeclNode(
+            name=class_name, arg_decls=[], return_type="", default=True),
+        CxxFuncDeclNode(
+            name=class_name,
+            arg_decls=["const ${class_name}&"],
+            return_type="",
+            default=True),
+        CxxFuncDeclNode(
+            name=class_name,
+            arg_decls=["${class_name}&&"],
+            return_type="",
+            default=True),
+        CxxFuncDeclNode(
+            name="~${class_name}",
+            arg_decls=[],
+            return_type="",
+            override=True,
+            default=True),
+    ])
+
+
 def make_union_class_def(cg_context):
     assert isinstance(cg_context, CodeGenContext)
 
@@ -36,12 +64,12 @@ def make_union_class_def(cg_context):
         cg_context.class_name, export=component_export(component))
     class_def.set_base_template_vars(cg_context.template_bindings())
 
-    class_def.top_section.extend([
-        T("DISALLOW_NEW();"),
-    ])
-
-    class_def.public_section.extend([
-        T("void Trace(Visitor*);"),
+    public_section = class_def.public_section
+    public_section.extend([
+        make_union_constructor_defs(cg_context),
+        T(""),
+        CxxFuncDeclNode(
+            name="Trace", arg_decls=["Visitor*"], return_type="void"),
     ])
 
     return class_def

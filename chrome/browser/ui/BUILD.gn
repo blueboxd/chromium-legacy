@@ -1756,8 +1756,6 @@ jumbo_static_library("ui") {
       "webui/chromeos/login/app_downloading_screen_handler.h",
       "webui/chromeos/login/app_launch_splash_screen_handler.cc",
       "webui/chromeos/login/app_launch_splash_screen_handler.h",
-      "webui/chromeos/login/arc_kiosk_splash_screen_handler.cc",
-      "webui/chromeos/login/arc_kiosk_splash_screen_handler.h",
       "webui/chromeos/login/arc_terms_of_service_screen_handler.cc",
       "webui/chromeos/login/arc_terms_of_service_screen_handler.h",
       "webui/chromeos/login/assistant_optin_flow_screen_handler.cc",

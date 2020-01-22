@@ -14,6 +14,7 @@
         <activity-alias android:name="org.chromium.android_webview.devui.MonochromeLauncherActivity"
                   android:targetActivity="org.chromium.android_webview.devui.MainActivity"
                   android:label="WebView DevTools"
+                  android:icon="@drawable/icon_webview"
                   android:exported="true"
                   android:enabled="false">
             <intent-filter>

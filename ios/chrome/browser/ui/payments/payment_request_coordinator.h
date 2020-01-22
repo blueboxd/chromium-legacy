@@ -10,6 +10,7 @@
 #include "base/ios/block_types.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/payments/address_edit_coordinator.h"
 #import "ios/chrome/browser/ui/payments/contact_info_edit_coordinator.h"
@@ -24,10 +25,6 @@
 namespace autofill {
 class AutofillManager;
 }  // namespace autofill
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 namespace payments {
 class PaymentDetails;

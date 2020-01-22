@@ -4,6 +4,7 @@
 
 #include "ash/system/accessibility/autoclick_scroll_bubble_controller.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -199,16 +200,16 @@ void AutoclickScrollBubbleController::ShowBubble(
   init_params.max_height = kAutoclickScrollMenuSizeDips;
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
-  init_params.translucent = true;
   bubble_view_ = new AutoclickScrollBubbleView(init_params);
   bubble_view_->SetArrow(alignment);
 
   scroll_view_ = new AutoclickScrollView();
+  scroll_view_->SetBackground(UnifiedSystemTrayView::CreateBackground());
   scroll_view_->SetBorder(
       views::CreateEmptyBorder(kUnifiedTopShortcutSpacing, 0, 0, 0));
   bubble_view_->AddChildView(scroll_view_);
-  scroll_view_->SetPaintToLayer();
-  scroll_view_->layer()->SetFillsBoundsOpaquely(false);
+  bubble_view_->set_color(SK_ColorTRANSPARENT);
+  bubble_view_->layer()->SetFillsBoundsOpaquely(false);
 
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
@@ -216,6 +217,11 @@ void AutoclickScrollBubbleController::ShowBubble(
       bubble_widget_->GetNativeWindow(),
       CollisionDetectionUtils::RelativePriority::kAutomaticClicksScrollMenu);
   bubble_view_->InitializeAndShowBubble();
+
+  if (features::IsBackgroundBlurEnabled()) {
+    bubble_widget_->client_view()->layer()->SetBackgroundBlur(
+        kUnifiedMenuBackgroundBlur);
+  }
 }
 
 void AutoclickScrollBubbleController::CloseBubble() {

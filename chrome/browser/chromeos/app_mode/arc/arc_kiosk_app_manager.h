@@ -42,7 +42,7 @@ class ArcKioskAppManager : public KioskAppManagerBase {
   // KioskAppManagerBase:
   void GetApps(std::vector<App>* apps) const override;
 
-  void UpdateNameAndIcon(const std::string& app_id,
+  void UpdateNameAndIcon(const AccountId& account_id,
                          const std::string& name,
                          const gfx::ImageSkia& icon);
 

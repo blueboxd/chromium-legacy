@@ -177,7 +177,7 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
     results.result = result;
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-        content::Source<Profile>(profile_),
+        content::Source<content::BrowserContext>(profile_),
         content::Details<CaptivePortalService::Results>(&results));
   }
 

@@ -14,6 +14,11 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("android_webview")
 public class AwCrashReporterClient {
+    // The filename prefix used by GMS proguarding, which we use to recognise
+    // otherwise colliding proguarded class names as belonging to dynamite
+    // modules.
+    private static final String DYNAMITE_PREFIX = ":com.google.android.gms";
+
     /**
      * Determine if a Throwable should be reported to the crash reporting mechanism.
      *
@@ -31,10 +36,15 @@ public class AwCrashReporterClient {
     public static boolean stackTraceContainsWebViewCode(Throwable t) {
         ClassLoader webViewClassLoader = AwCrashReporterClient.class.getClassLoader();
         for (StackTraceElement frame : t.getStackTrace()) {
+            if (frame.getClassName().startsWith("android.webkit.")) {
+                return true;
+            }
+            if (frame.getFileName().startsWith(DYNAMITE_PREFIX)) {
+                continue;
+            }
             try {
                 Class frameClass = webViewClassLoader.loadClass(frame.getClassName());
-                if (frameClass.getClassLoader() == webViewClassLoader
-                        || frameClass.getPackage().getName().equals("android.webkit")) {
+                if (frameClass.getClassLoader() == webViewClassLoader) {
                     return true;
                 }
             } catch (ClassNotFoundException e) {

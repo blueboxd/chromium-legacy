@@ -452,6 +452,11 @@ bool AXPlatformNodeBase::IsSelectionItemSupported() const {
     case ax::mojom::Role::kColumnHeader:
     case ax::mojom::Role::kRow:
     case ax::mojom::Role::kRowHeader: {
+      // An ARIA grid subwidget is only selectable if explicitly marked as
+      // selected (or not) with the aria-selected property.
+      if (!HasBoolAttribute(ax::mojom::BoolAttribute::kSelected))
+        return false;
+
       AXPlatformNodeBase* table = GetTable();
       if (!table)
         return false;

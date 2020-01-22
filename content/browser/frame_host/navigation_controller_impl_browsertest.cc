@@ -10266,27 +10266,6 @@ IN_PROC_BROWSER_TEST_F(
 
 namespace {
 
-// A request handler that returns a 301 or 307 response to /redirect-301 or
-// /redirect-307 respectively, redirecting to the URL provided in the query
-// string. The error codes 301 and 307 are used as examples of codes that switch
-// the method to GET across the redirect (301) versus those that preserve the
-// method (307).
-std::unique_ptr<net::test_server::HttpResponse> HandleRedirect(
-    const net::test_server::HttpRequest& request) {
-  GURL url = request.base_url.Resolve(request.relative_url);
-  std::unique_ptr<net::test_server::BasicHttpResponse> response =
-      std::make_unique<net::test_server::BasicHttpResponse>();
-  if (url.path() == "/redirect-301") {
-    response->set_code(net::HTTP_MOVED_PERMANENTLY);
-  } else if (url.path() == "/redirect-307") {
-    response->set_code(net::HTTP_TEMPORARY_REDIRECT);
-  } else {
-    return nullptr;
-  }
-  response->AddCustomHeader("Location", url.query());
-  return std::move(response);
-}
-
 // A request handler that returns a simple page for requests using |method| to
 // /handle-method-only, and closes the socket for any other method.
 std::unique_ptr<net::test_server::HttpResponse> HandleMethodOnly(
@@ -10311,13 +10290,6 @@ std::unique_ptr<net::test_server::HttpResponse> HandleMethodOnly(
 // 301 redirect that encounters an error page. See https://crbug.com/1041597.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
                        UpdateMethodOn301RedirectError) {
-  // Install a request handler to serve 301 or 307 redirects. In this test,
-  // which uses a 301 redirect, the default handler for "/server-redirect?..."
-  // would work. But this test still installs a custom request handler anyway
-  // just for symmetry with the PreserveMethodOn307RedirectError test below,
-  // which requires a custom handler to serve 307 responses.
-  embedded_test_server()->RegisterRequestHandler(
-      base::BindRepeating(&HandleRedirect));
   // HandleMethodOnly serves the final endpoint that the test ends up at. It
   // lets the test distinguish a GET from a POST by serving a response only for
   // POST requests.
@@ -10330,8 +10302,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
   GURL post_only_url = embedded_test_server()->GetURL("/handle-method-only");
-  GURL form_action_url(
-      embedded_test_server()->GetURL("/redirect-301?" + post_only_url.spec()));
+  GURL form_action_url(embedded_test_server()->GetURL("/server-redirect-301?" +
+                                                      post_only_url.spec()));
 
   // Inject a form into the page and submit it, to create a POST request to
   // |form_action_url|. This POST request will redirect to |post_only_url|. The
@@ -10374,8 +10346,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
 // should be preserved as POST.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
                        UpdateMethodOn307RedirectError) {
-  embedded_test_server()->RegisterRequestHandler(
-      base::BindRepeating(&HandleRedirect));
   // HandleMethodOnly serves the final endpoint that the test ends up at. It
   // lets the test distinguish a GET from a POST by serving a response only for
   // GET requests.
@@ -10388,8 +10358,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
   GURL get_only_url = embedded_test_server()->GetURL("/handle-method-only");
-  GURL form_action_url(
-      embedded_test_server()->GetURL("/redirect-307?" + get_only_url.spec()));
+  GURL form_action_url(embedded_test_server()->GetURL("/server-redirect-307?" +
+                                                      get_only_url.spec()));
 
   // Inject a form into the page and submit it, to create a POST request to
   // |form_action_url|. This POST request will redirect to |get_only_url|. The

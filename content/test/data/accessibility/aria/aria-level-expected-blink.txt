@@ -22,23 +22,23 @@ rootWebArea
 ++++++staticText name='Level 5'
 ++++++++inlineTextBox name='Level 5'
 ++++tree
-++++++treeItem name='Tree item at level 1' hierarchicalLevel=1 selected=false
+++++++treeItem name='Tree item at level 1' hierarchicalLevel=1
 ++++++++staticText name='Tree item at level 1'
 ++++++++++inlineTextBox name='Tree item at level 1'
 ++++++++group
-++++++++++treeItem name='Tree item at level 2' hierarchicalLevel=2 selected=false
+++++++++++treeItem name='Tree item at level 2' hierarchicalLevel=2
 ++++++++++++staticText name='Tree item at level 2'
 ++++++++++++++inlineTextBox name='Tree item at level 2'
-++++++treeItem name='Tree item at level 3' hierarchicalLevel=3 selected=false
+++++++treeItem name='Tree item at level 3' hierarchicalLevel=3
 ++++++++staticText name='Tree item at level 3'
 ++++++++++inlineTextBox name='Tree item at level 3'
 ++++treeGrid
-++++++row hierarchicalLevel=1 selected=false
-++++++++cell name='Cell at level 1' selected=false
+++++++row hierarchicalLevel=1
+++++++++cell name='Cell at level 1'
 ++++++++++staticText name='Cell at level 1'
 ++++++++++++inlineTextBox name='Cell at level 1'
-++++++row hierarchicalLevel=2 selected=false
-++++++++cell name='Cell at level 2' selected=false
+++++++row hierarchicalLevel=2
+++++++++cell name='Cell at level 2'
 ++++++++++staticText name='Cell at level 2'
 ++++++++++++inlineTextBox name='Cell at level 2'
 ++++listItem hierarchicalLevel=1

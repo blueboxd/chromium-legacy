@@ -795,22 +795,28 @@ VISIT_PROTO_FIELDS(const sync_pb::SessionWindow& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SharingMessageSpecifics& proto) {
-  VISIT(fcm_channel_configuration);
-  VISIT(server_channel_configuration);
+  VISIT(channel_configuration);
   VISIT_BYTES(payload);
 }
 
 VISIT_PROTO_FIELDS(
-    const sync_pb::SharingMessageSpecifics::ServerChannelConfiguration& proto) {
+    const sync_pb::SharingMessageSpecifics::ChannelConfiguration::
+        ServerChannelConfiguration& proto) {
   VISIT(channel_id);
   VISIT_BYTES(session_cookie);
 }
 
-VISIT_PROTO_FIELDS(
-    const sync_pb::SharingMessageSpecifics::FCMChannelConfiguration& proto) {
+VISIT_PROTO_FIELDS(const sync_pb::SharingMessageSpecifics::
+                       ChannelConfiguration::FCMChannelConfiguration& proto) {
   VISIT(token);
   VISIT(ttl);
   VISIT(priority);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::SharingMessageSpecifics::ChannelConfiguration& proto) {
+  VISIT(fcm);
+  VISIT(server);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SyncCycleCompletedEventInfo& proto) {

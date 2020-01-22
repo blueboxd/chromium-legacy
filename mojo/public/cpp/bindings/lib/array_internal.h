@@ -87,7 +87,8 @@ struct ArrayDataTraits<bool> {
   };
 
   // Because each element consumes only 1/8 byte.
-  static const uint32_t kMaxNumElements = std::numeric_limits<uint32_t>::max();
+  static const uint32_t kMaxNumElements =
+      std::numeric_limits<uint32_t>::max() - 7;
 
   using StorageType = uint8_t;
   using Ref = BitRef;

@@ -82,8 +82,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void OnStartSignInScreen(const LoginScreenContext& context) override;
   void OnPreferencesChanged() override;
   void OnStartAppLaunch() override;
-  void OnStartArcKiosk() override;
-  void OnStartWebKiosk() override;
   void OnBrowserCreated() override;
   void ShowGaiaDialog(bool can_close,
                       const AccountId& prefilled_account) override;

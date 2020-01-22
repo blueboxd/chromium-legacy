@@ -35,6 +35,7 @@
 
 #include "base/auto_reset.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
@@ -3425,6 +3426,12 @@ void WebViewImpl::RestorePageFromBackForwardCache(
       if (frame->DomWindow() && frame->DomWindow()->IsLocalDOMWindow()) {
         frame->DomWindow()->ToLocalDOMWindow()->DispatchPersistedPageshowEvent(
             navigation_start);
+        if (frame->IsMainFrame()) {
+          UMA_HISTOGRAM_BOOLEAN(
+              "BackForwardCache.MainFrameHasPageshowListenersOnRestore",
+              frame->DomWindow()->ToLocalDOMWindow()->HasEventListeners(
+                  event_type_names::kPageshow));
+        }
       }
     }
   }

@@ -29,6 +29,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
 #include "chromeos/dbus/fake_concierge_client.h"
+#include "chromeos/dbus/fake_vm_plugin_dispatcher_client.h"
 #include "components/account_id/account_id.h"
 #include "components/download/public/background_service/test/test_download_service.h"
 #include "components/drive/service/dummy_drive_service.h"
@@ -70,6 +71,7 @@ const int kDownloadedPluginVmImageSizeInMb = 123456789u / (1024 * 1024);
 
 class MockObserver : public PluginVmInstaller::Observer {
  public:
+  MOCK_METHOD0(OnVmExists, void());
   MOCK_METHOD2(OnDlcDownloadProgressUpdated,
                void(double progress, base::TimeDelta elapsed_time));
   MOCK_METHOD0(OnDlcDownloadCompleted, void());
@@ -379,6 +381,19 @@ class PluginVmInstallerDriveTest : public PluginVmInstallerTestBase {
  private:
   DISALLOW_COPY_AND_ASSIGN(PluginVmInstallerDriveTest);
 };
+
+TEST_F(PluginVmInstallerDownloadServiceTest, VmExists) {
+  vm_tools::plugin_dispatcher::ListVmResponse list_vms_response;
+  list_vms_response.add_vm_info()->set_state(
+      vm_tools::plugin_dispatcher::VmState::VM_STATE_STOPPED);
+  static_cast<chromeos::FakeVmPluginDispatcherClient*>(
+      chromeos::DBusThreadManager::Get()->GetVmPluginDispatcherClient())
+      ->set_list_vms_response(list_vms_response);
+
+  EXPECT_CALL(*observer_, OnVmExists());
+  EXPECT_CALL(*observer_, OnDlcDownloadCompleted()).Times(0);
+  StartAndRunToCompletion();
+}
 
 TEST_F(PluginVmInstallerDownloadServiceTest, DownloadPluginVmImageParamsTest) {
   SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);

@@ -133,7 +133,7 @@ class CORE_EXPORT MixedContentChecker final {
       ResourceRequest&,
       const FetchClientSettingsObject* fetch_client_settings_object,
       ExecutionContext* execution_context_for_logging,
-      network::mojom::RequestContextFrameType,
+      mojom::RequestContextFrameType,
       WebContentSettingsClient* settings_client);
 
  private:

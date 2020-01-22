@@ -82,9 +82,9 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
   if (!navigation_rate_limiter().CanProceed())
     return;
 
-  frame_request.SetFrameType(
-      IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
-                    : network::mojom::RequestContextFrameType::kNested);
+  frame_request.SetFrameType(IsMainFrame()
+                                 ? mojom::RequestContextFrameType::kTopLevel
+                                 : mojom::RequestContextFrameType::kNested);
 
   const KURL& url = frame_request.GetResourceRequest().Url();
   if (!frame_request.CanDisplay(url)) {

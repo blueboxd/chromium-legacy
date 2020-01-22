@@ -737,7 +737,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidUpdateCurrentHistoryItem() override;
   void ForwardResourceTimingToParent(
       const blink::WebResourceTimingInfo& info) override;
-  void DispatchLoad() override;
   base::UnguessableToken GetDevToolsFrameToken() override;
   void AbortClientNavigation() override;
   void DidChangeSelection(bool is_empty_selection) override;

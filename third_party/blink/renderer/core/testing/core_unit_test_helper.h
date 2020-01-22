@@ -97,6 +97,13 @@ class RenderingTestChromeClient : public EmptyChromeClient {
     return device_emulation_transform_;
   }
 
+  void InjectGestureScrollEvent(LocalFrame& local_frame,
+                                WebGestureDevice device,
+                                const gfx::Vector2dF& delta,
+                                ScrollGranularity granularity,
+                                CompositorElementId scrollable_area_element_id,
+                                WebInputEvent::Type injected_type) override;
+
  private:
   std::unique_ptr<LayerTreeHostEmbedder> layer_tree_;
   TransformationMatrix device_emulation_transform_;

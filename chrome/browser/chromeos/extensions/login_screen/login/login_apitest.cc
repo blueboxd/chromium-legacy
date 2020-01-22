@@ -40,6 +40,8 @@
 #include "extensions/browser/api/test/test_api.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "extensions/test/extension_test_message_listener.h"
+#include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -290,15 +292,28 @@ IN_PROC_BROWSER_TEST_F(LoginApitest, UnlockManagedGuestSessionLockedWithApi) {
   SetUpDeviceLocalAccountPolicy();
   LogInWithPassword();
 
-  SetUpTestListeners();
+  // |RunTest()| has to be handled by the test as it requires multiple
+  // listeners. Using one listener at a time would result in race conditions.
+  ClearTestListeners();
+  extensions::ResultCatcher catcher;
+  ExtensionTestMessageListener login_screen_listener(listener_message(),
+                                                     /*will_reply=*/true);
+  login_screen_listener.set_extension_id(extension_id());
+  ExtensionTestMessageListener in_session_listener(listener_message(),
+                                                   /*will_reply=*/true);
+  in_session_listener.set_extension_id(kInSessionExtensionId);
+
   SetUpInSessionExtension();
   SessionStateWaiter locked_waiter(session_manager::SessionState::LOCKED);
-  RunTest(kInSessionLoginLockManagedGuestSession);
+  ASSERT_TRUE(in_session_listener.WaitUntilSatisfied());
+  in_session_listener.Reply(kInSessionLoginLockManagedGuestSession);
+  ASSERT_TRUE(catcher.GetNextResult());
   locked_waiter.Wait();
 
-  SetUpTestListeners();
   SessionStateWaiter active_waiter(session_manager::SessionState::ACTIVE);
-  RunTest(kUnlockManagedGuestSession);
+  ASSERT_TRUE(login_screen_listener.WaitUntilSatisfied());
+  login_screen_listener.Reply(kUnlockManagedGuestSession);
+  ASSERT_TRUE(catcher.GetNextResult());
   active_waiter.Wait();
 }
 

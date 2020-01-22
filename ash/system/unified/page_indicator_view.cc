@@ -169,11 +169,11 @@ PageIndicatorView::PageIndicatorView(UnifiedSystemTrayController* controller,
       expanded_amount_(initially_expanded ? 1 : 0),
       buttons_container_(new views::View) {
   SetVisible(initially_expanded);
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 
   buttons_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets()));
-  buttons_container_->SetPaintToLayer();
-  buttons_container_->layer()->SetFillsBoundsOpaquely(false);
 
   AddChildView(buttons_container_);
 
@@ -209,11 +209,9 @@ void PageIndicatorView::SetExpandedAmount(double expanded_amount) {
   DCHECK(0.0 <= expanded_amount && expanded_amount <= 1.0);
   SetVisible(expanded_amount > 0.0);
   expanded_amount_ = expanded_amount;
+  InvalidateLayout();
   // TODO(amehfooz): Confirm animation curve with UX.
-  buttons_container_->layer()->SetOpacity(
-      std::max(0., 6 * expanded_amount_ - 5.));
-  if (CalculatePreferredSize() != size())
-    InvalidateLayout();
+  layer()->SetOpacity(std::max(0., 6 * expanded_amount_ - 5.));
 }
 
 int PageIndicatorView::GetExpandedHeight() {

@@ -4,6 +4,7 @@
 
 package org.chromium.components.minidump_uploader;
 
+import org.chromium.components.minidump_uploader.MinidumpUploaderTest.TestHttpURLConnectionFactory;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 
 import java.io.File;
@@ -32,7 +33,7 @@ public class TestMinidumpUploadJobImpl extends MinidumpUploadJobImpl {
     @Override
     public MinidumpUploadCallable createMinidumpUploadCallable(File minidumpFile, File logfile) {
         return new MinidumpUploadCallable(minidumpFile, logfile,
-                new MinidumpUploadCallableTest.TestHttpURLConnectionFactory(),
+                new MinidumpUploader(new TestHttpURLConnectionFactory()),
                 mDelegate.createCrashReportingPermissionManager());
     }
 }

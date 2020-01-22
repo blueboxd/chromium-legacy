@@ -1681,7 +1681,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFrameOwnerProperties,
                         OnDidChangeFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateTitle, OnUpdateTitle)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DispatchLoad, OnDispatchLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ForwardResourceTimingToParent,
                         OnForwardResourceTimingToParent)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_EventBundle, OnAccessibilityEvents)
@@ -2164,6 +2163,9 @@ void RenderFrameHostImpl::SetRenderFrameCreated(bool created) {
       delegate_->RenderFrameDeleted(this);
     }
   }
+  // TODO(http://crbug.com/1014212): Change to DCHECK.
+  if (created)
+    CHECK(frame_);
 
   if (created && GetLocalRenderWidgetHost()) {
     mojo::PendingRemote<mojom::Widget> widget;
@@ -3602,6 +3604,32 @@ void RenderFrameHostImpl::DidBlockNavigation(
   delegate_->OnDidBlockNavigation(blocked_url, initiator_url, reason);
 }
 
+void RenderFrameHostImpl::DispatchLoad() {
+  TRACE_EVENT1("navigation", "RenderFrameHostImpl::DispatchLoad",
+               "frame_tree_node", frame_tree_node_->frame_tree_node_id());
+
+  // Don't forward the load event if this RFH is pending deletion. This can
+  // happen in a race where this RenderFrameHost finishes loading just after
+  // the frame navigates away. See https://crbug.com/626802.
+  if (!is_active())
+    return;
+
+  // We should never be receiving this message from a speculative RFH.
+  DCHECK(IsCurrent());
+
+  // Only frames with an out-of-process parent frame should be sending this
+  // message.
+  RenderFrameProxyHost* proxy =
+      frame_tree_node()->render_manager()->GetProxyToParent();
+  if (!proxy) {
+    bad_message::ReceivedBadMessage(GetProcess(),
+                                    bad_message::RFH_NO_PROXY_TO_PARENT);
+    return;
+  }
+
+  proxy->GetAssociatedRemoteFrame()->DispatchLoadEventForFrameOwner();
+}
+
 void RenderFrameHostImpl::GoToEntryAtOffset(int32_t offset,
                                             bool has_user_gesture) {
   delegate_->OnGoToEntryAtOffset(this, offset, has_user_gesture);
@@ -3659,32 +3687,6 @@ void RenderFrameHostImpl::OnForwardResourceTimingToParent(
   }
   proxy->Send(new FrameMsg_ForwardResourceTimingToParent(proxy->GetRoutingID(),
                                                          resource_timing));
-}
-
-void RenderFrameHostImpl::OnDispatchLoad() {
-  TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnDispatchLoad",
-               "frame_tree_node", frame_tree_node_->frame_tree_node_id());
-
-  // Don't forward the load event if this RFH is pending deletion. This can
-  // happen in a race where this RenderFrameHost finishes loading just after
-  // the frame navigates away. See https://crbug.com/626802.
-  if (!is_active())
-    return;
-
-  // We should never be receiving this message from a speculative RFH.
-  DCHECK(IsCurrent());
-
-  // Only frames with an out-of-process parent frame should be sending this
-  // message.
-  RenderFrameProxyHost* proxy =
-      frame_tree_node()->render_manager()->GetProxyToParent();
-  if (!proxy) {
-    bad_message::ReceivedBadMessage(GetProcess(),
-                                    bad_message::RFH_NO_PROXY_TO_PARENT);
-    return;
-  }
-
-  proxy->GetAssociatedRemoteFrame()->DispatchLoadEventForFrameOwner();
 }
 
 RenderWidgetHostViewBase* RenderFrameHostImpl::GetViewForAccessibility() {
@@ -5787,6 +5789,9 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   mojo::Remote<mojom::FrameFactory>(std::move(frame_factory))
       ->CreateFrame(routing_id_, frame_.BindNewPipeAndPassReceiver());
 
+  // TODO(http://crbug.com/1014212): Change to DCHECK.
+  CHECK(frame_);
+
   mojo::PendingRemote<service_manager::mojom::InterfaceProvider>
       remote_interfaces;
   frame_->GetInterfaceProvider(
@@ -7662,6 +7667,8 @@ void RenderFrameHostImpl::RemoveServiceWorkerContainerHost(
 }
 
 void RenderFrameHostImpl::UpdateFrameFrozenState() {
+  // TODO(http://crbug.com/1014212): remove this.
+  CHECK(frame_);
   if (!IsFeatureEnabled(
           blink::mojom::FeaturePolicyFeature::kExecutionWhileNotRendered) &&
       visibility_ == blink::mojom::FrameVisibility::kNotRendered) {

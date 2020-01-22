@@ -45,8 +45,13 @@
 - (ToolbarComponentVisibility)tabGridButtonVisibility {
   switch (self.type) {
     case PRIMARY:
-      return ToolbarComponentVisibilityCompactWidthCompactHeight |
-             ToolbarComponentVisibilityRegularWidthCompactHeight;
+      if (base::FeatureList::IsEnabled(kChangeTabSwitcherPosition)) {
+        return ToolbarComponentVisibilityAlways &
+               ~ToolbarComponentVisibilitySplit;
+      } else {
+        return ToolbarComponentVisibilityCompactWidthCompactHeight |
+               ToolbarComponentVisibilityRegularWidthCompactHeight;
+      }
     case SECONDARY:
       return ToolbarComponentVisibilitySplit;
   }

@@ -597,6 +597,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSSLCommittedInterstitialsName,
      flag_descriptions::kSSLCommittedInterstitialsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kSSLCommittedInterstitials)},
+    {"change-tab-switcher-position",
+     flag_descriptions::kChangeTabSwitcherPositionName,
+     flag_descriptions::kChangeTabSwitcherPositionDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kChangeTabSwitcherPosition)},
 };
 
 // Add all switches from experimental flags to |command_line|.

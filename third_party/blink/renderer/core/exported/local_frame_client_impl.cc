@@ -465,7 +465,7 @@ void LocalFrameClientImpl::DispatchDidFinishLoad() {
 
 void LocalFrameClientImpl::BeginNavigation(
     const ResourceRequest& request,
-    network::mojom::RequestContextFrameType frame_type,
+    mojom::RequestContextFrameType frame_type,
     Document* origin_document,
     DocumentLoader* document_loader,
     WebNavigationType type,

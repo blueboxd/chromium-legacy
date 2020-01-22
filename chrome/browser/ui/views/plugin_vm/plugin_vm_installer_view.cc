@@ -222,6 +222,19 @@ gfx::Size PluginVmInstallerView::CalculatePreferredSize() const {
   return gfx::Size(kWindowWidth, kWindowHeight);
 }
 
+void PluginVmInstallerView::OnVmExists() {
+  // This case should only occur if the user manually installed a VM via vmc,
+  // which is rare enough so we just re-use the regular success strings.
+  DCHECK_EQ(state_, State::DOWNLOADING_DLC);
+  state_ = State::FINISHED;
+  OnStateUpdated();
+
+  plugin_vm::RecordPluginVmSetupResultHistogram(
+      plugin_vm::PluginVmSetupResult::kVmAlreadyExists);
+  plugin_vm::RecordPluginVmSetupTimeHistogram(base::TimeTicks::Now() -
+                                              setup_start_tick_);
+}
+
 void PluginVmInstallerView::OnDlcDownloadProgressUpdated(
     double progress,
     base::TimeDelta elapsed_time) {

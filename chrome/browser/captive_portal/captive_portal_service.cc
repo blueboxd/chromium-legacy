@@ -11,10 +11,10 @@
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/captive_portal/captive_portal_types.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
@@ -170,10 +170,11 @@ CaptivePortalService::RecheckPolicy::RecheckPolicy()
 }
 
 CaptivePortalService::CaptivePortalService(
-    Profile* profile,
+    content::BrowserContext* browser_context,
+    PrefService* pref_service,
     const base::TickClock* clock_for_testing,
     network::mojom::URLLoaderFactory* loader_factory_for_testing)
-    : profile_(profile),
+    : browser_context_(browser_context),
       state_(STATE_IDLE),
       enabled_(false),
       last_detection_result_(captive_portal::RESULT_INTERNET_CONNECTED),
@@ -185,7 +186,7 @@ CaptivePortalService::CaptivePortalService(
     loader_factory = loader_factory_for_testing;
   } else {
     shared_url_loader_factory_ =
-        content::BrowserContext::GetDefaultStoragePartition(profile)
+        content::BrowserContext::GetDefaultStoragePartition(browser_context)
             ->GetURLLoaderFactoryForBrowserProcess();
     loader_factory = shared_url_loader_factory_.get();
   }
@@ -197,8 +198,7 @@ CaptivePortalService::CaptivePortalService(
   // |resolve_errors_with_web_service_| must be initialized and |backoff_entry_|
   // created before the call to UpdateEnabledState.
   resolve_errors_with_web_service_.Init(
-      prefs::kAlternateErrorPagesEnabled,
-      profile_->GetPrefs(),
+      prefs::kAlternateErrorPagesEnabled, pref_service,
       base::Bind(&CaptivePortalService::UpdateEnabledState,
                  base::Unretained(this)));
   ResetBackoffEntry(last_detection_result_);
@@ -365,7 +365,7 @@ void CaptivePortalService::OnResult(CaptivePortalResult result,
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-      content::Source<Profile>(profile_),
+      content::Source<content::BrowserContext>(browser_context_),
       content::Details<Results>(&results));
 }
 

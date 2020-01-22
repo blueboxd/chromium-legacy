@@ -227,20 +227,6 @@ body.hide-fakebox #fakebox {
 #realbox-icon {
   background-position: center center;
   background-repeat: no-repeat;
-  bottom: 0;
-  left: 16px;
-  margin: auto;
-  position: absolute;
-  top: 0;
-  width: 24px;
-}
-
-[dir=rtl] #realbox-icon {
-  left: auto;
-  right: 16px;
-}
-
-#realbox-icon.load-favicon {
   background-size: 24px;
 }
 
@@ -514,7 +500,8 @@ html[dir=rtl] .microphone-icon {
   right: auto;
 }
 
-#realbox-input-wrapper > :-webkit-any(#realbox-icon, .microphone-icon) {
+#realbox-input-wrapper > :-webkit-any(.google-g-icon, .microphone-icon,
+                                      .search-icon) {
   z-index: 3;
 }
 

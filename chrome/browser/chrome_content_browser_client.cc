@@ -62,6 +62,7 @@
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/gpu/chrome_browser_main_extra_parts_gpu.h"
 #include "chrome/browser/hid/chrome_hid_delegate.h"
+#include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -3925,6 +3926,10 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   throttles.push_back(std::make_unique<PolicyBlacklistNavigationThrottle>(
       handle, handle->GetWebContents()->GetBrowserContext()));
 
+  // Before setting up SSL error detection, configure SSLErrorHandler to invoke
+  // the relevant extension API whenever an SSL interstitial is shown.
+  SSLErrorHandler::SetClientCallbackOnInterstitialsShown(
+      base::BindRepeating(&MaybeTriggerSecurityInterstitialShownEvent));
   throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
       handle,
       std::make_unique<CertificateReportingServiceCertReporter>(web_contents),

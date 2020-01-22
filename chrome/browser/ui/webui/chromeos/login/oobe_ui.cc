@@ -41,7 +41,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/active_directory_password_change_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/arc_kiosk_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/auto_enrollment_check_screen_handler.h"
@@ -114,7 +113,6 @@ namespace chromeos {
 namespace {
 
 const char* kKnownDisplayTypes[] = {OobeUI::kAppLaunchSplashDisplay,
-                                    OobeUI::kArcKioskSplashDisplay,
                                     OobeUI::kDiscoverDisplay,
                                     OobeUI::kGaiaSigninDisplay,
                                     OobeUI::kLoginDisplay,
@@ -326,7 +324,6 @@ void DisablePolymer2(content::URLDataSource* shared_source) {
 
 // static
 const char OobeUI::kAppLaunchSplashDisplay[] = "app-launch-splash";
-const char OobeUI::kArcKioskSplashDisplay[] = "arc-kiosk-splash";
 const char OobeUI::kDiscoverDisplay[] = "discover";
 const char OobeUI::kGaiaSigninDisplay[] = "gaia-signin";
 const char OobeUI::kLockDisplay[] = "lock";
@@ -445,9 +442,6 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<AppLaunchSplashScreenHandler>(
       js_calls_container_.get(), network_state_informer_, error_screen));
-
-  AddScreenHandler(
-      std::make_unique<ArcKioskSplashScreenHandler>(js_calls_container_.get()));
 
   AddScreenHandler(
       std::make_unique<DeviceDisabledScreenHandler>(js_calls_container_.get()));

@@ -22,7 +22,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/interstitials/enterprise_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/captive_portal_helper.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
@@ -184,6 +183,8 @@ class ConfigSingleton {
   base::TimeDelta interstitial_delay() const;
   SSLErrorHandler::TimerStartedCallback* timer_started_callback() const;
   base::Clock* clock() const;
+  SSLErrorHandler::OnBlockingPageShownCallback on_blocking_page_shown_callback()
+      const;
 
   bool IsKnownCaptivePortalCertificate(const net::SSLInfo& ssl_info);
 
@@ -212,6 +213,9 @@ class ConfigSingleton {
       std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
           error_assistant_proto);
 
+  void SetClientCallbackOnInterstitialsShown(
+      SSLErrorHandler::OnBlockingPageShownCallback callback);
+
   int GetErrorAssistantProtoVersionIdForTesting() const;
 
   void SetOSReportsCaptivePortalForTesting(bool os_reports_captive_portal);
@@ -233,6 +237,8 @@ class ConfigSingleton {
   base::Clock* testing_clock_ = nullptr;
 
   base::OnceClosure report_network_connectivity_callback_;
+
+  SSLErrorHandler::OnBlockingPageShownCallback on_blocking_page_shown_callback_;
 
   enum OSCaptivePortalStatus {
     OS_CAPTIVE_PORTAL_STATUS_NOT_SET,
@@ -263,10 +269,17 @@ base::Clock* ConfigSingleton::clock() const {
   return testing_clock_;
 }
 
+SSLErrorHandler::OnBlockingPageShownCallback
+ConfigSingleton::on_blocking_page_shown_callback() const {
+  return on_blocking_page_shown_callback_;
+}
+
 void ConfigSingleton::ResetForTesting() {
   interstitial_delay_ =
       base::TimeDelta::FromMilliseconds(kInterstitialDelayInMilliseconds);
   timer_started_callback_ = nullptr;
+  on_blocking_page_shown_callback_ =
+      SSLErrorHandler::OnBlockingPageShownCallback();
   testing_clock_ = nullptr;
   ssl_error_assistant_->ResetForTesting();
   os_captive_portal_status_for_testing_ = OS_CAPTIVE_PORTAL_STATUS_NOT_SET;
@@ -313,6 +326,11 @@ void ConfigSingleton::SetErrorAssistantProto(
   ssl_error_assistant_->SetErrorAssistantProto(std::move(proto));
 }
 
+void ConfigSingleton::SetClientCallbackOnInterstitialsShown(
+    SSLErrorHandler::OnBlockingPageShownCallback callback) {
+  on_blocking_page_shown_callback_ = callback;
+}
+
 bool ConfigSingleton::IsKnownCaptivePortalCertificate(
     const net::SSLInfo& ssl_info) {
   return ssl_error_assistant_->IsKnownCaptivePortalCertificate(ssl_info);
@@ -340,6 +358,8 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
       int options_mask,
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+      SSLErrorHandler::OnBlockingPageShownCallback
+          on_blocking_page_shown_callback,
       SSLErrorHandler::BlockingPageReadyCallback blocking_page_ready_callback)
       : web_contents_(web_contents),
         ssl_info_(ssl_info),
@@ -348,6 +368,7 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
         options_mask_(options_mask),
         request_url_(request_url),
         ssl_cert_reporter_(std::move(ssl_cert_reporter)),
+        on_blocking_page_shown_callback_(on_blocking_page_shown_callback),
         blocking_page_ready_callback_(std::move(blocking_page_ready_callback)) {
     DCHECK(!blocking_page_ready_callback_.is_null());
   }
@@ -387,6 +408,7 @@ class SSLErrorHandlerDelegateImpl : public SSLErrorHandler::Delegate {
   const GURL request_url_;
   std::unique_ptr<CommonNameMismatchHandler> common_name_mismatch_handler_;
   std::unique_ptr<SSLCertReporter> ssl_cert_reporter_;
+  SSLErrorHandler::OnBlockingPageShownCallback on_blocking_page_shown_callback_;
   SSLErrorHandler::BlockingPageReadyCallback blocking_page_ready_callback_;
 };
 
@@ -508,8 +530,11 @@ bool SSLErrorHandlerDelegateImpl::HasBlockedInterception() const {
 
 void SSLErrorHandlerDelegateImpl::OnBlockingPageReady(
     security_interstitials::SecurityInterstitialPage* interstitial_page) {
-  MaybeTriggerSecurityInterstitialShownEvent(web_contents_, request_url_,
-                                             "SSL_ERROR", cert_error_);
+  if (on_blocking_page_shown_callback_) {
+    on_blocking_page_shown_callback_.Run(web_contents_, request_url_,
+                                         "SSL_ERROR", cert_error_);
+  }
+
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(blocking_page_ready_callback_),
                                 base::WrapUnique(interstitial_page)));
@@ -552,6 +577,7 @@ void SSLErrorHandler::HandleSSLError(
           new SSLErrorHandlerDelegateImpl(
               web_contents, ssl_info, profile, cert_error, options_mask,
               request_url, std::move(ssl_cert_reporter),
+              g_config.Pointer()->on_blocking_page_shown_callback(),
               std::move(blocking_page_ready_callback))),
       web_contents, profile, cert_error, ssl_info, network_time_tracker,
       request_url);
@@ -613,6 +639,12 @@ bool SSLErrorHandler::IsTimerRunningForTesting() const {
 void SSLErrorHandler::SetErrorAssistantProto(
     std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig> config_proto) {
   g_config.Pointer()->SetErrorAssistantProto(std::move(config_proto));
+}
+
+// static
+void SSLErrorHandler::SetClientCallbackOnInterstitialsShown(
+    OnBlockingPageShownCallback callback) {
+  g_config.Pointer()->SetClientCallbackOnInterstitialsShown(callback);
 }
 
 SSLErrorHandler::SSLErrorHandler(
@@ -742,7 +774,7 @@ void SSLErrorHandler::StartHandlingError() {
   // because profile_ isn't used. This is a no-op on platforms where
   // captive portal detection is disabled.
   registrar_.Add(this, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-                 content::Source<Profile>(profile_));
+                 content::Source<content::BrowserContext>(profile_));
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   CaptivePortalTabHelper* captive_portal_tab_helper =

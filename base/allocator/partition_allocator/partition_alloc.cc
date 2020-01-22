@@ -62,7 +62,7 @@ subtle::SpinLock& GetLock() {
 }
 static bool g_initialized = false;
 
-void (*internal::PartitionRootBase::gOomHandlingFunction)() = nullptr;
+OomFunction internal::PartitionRootBase::g_oom_handling_function = nullptr;
 std::atomic<bool> PartitionAllocHooks::hooks_enabled_(false);
 subtle::SpinLock PartitionAllocHooks::set_hooks_lock_;
 std::atomic<PartitionAllocHooks::AllocationObserverHook*>
@@ -187,9 +187,9 @@ static void PartitionAllocBaseInit(internal::PartitionRootBase* root) {
   root->inverted_self = ~reinterpret_cast<uintptr_t>(root);
 }
 
-void PartitionAllocGlobalInit(void (*oom_handling_function)()) {
-  DCHECK(oom_handling_function);
-  internal::PartitionRootBase::gOomHandlingFunction = oom_handling_function;
+void PartitionAllocGlobalInit(OomFunction on_out_of_memory) {
+  DCHECK(on_out_of_memory);
+  internal::PartitionRootBase::g_oom_handling_function = on_out_of_memory;
 }
 
 void PartitionRoot::Init(size_t bucket_count, size_t maximum_allocation) {
@@ -370,7 +370,7 @@ void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
   if (new_size > kGenericMaxDirectMapped) {
     if (flags & PartitionAllocReturnNull)
       return nullptr;
-    internal::PartitionExcessiveAllocationSize();
+    internal::PartitionExcessiveAllocationSize(new_size);
   }
 
   const bool hooks_enabled = PartitionAllocHooks::AreHooksEnabled();
@@ -425,7 +425,7 @@ void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
   if (!ret) {
     if (flags & PartitionAllocReturnNull)
       return nullptr;
-    internal::PartitionExcessiveAllocationSize();
+    internal::PartitionExcessiveAllocationSize(new_size);
   }
 
   size_t copy_size = actual_old_size;

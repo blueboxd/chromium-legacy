@@ -50768,6 +50768,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="User cancelled setup while importing Plugin VM image"/>
   <int value="6" label="Error while downloading Plugin VM DLC"/>
   <int value="7" label="User cancelled setup while downloading Plugin VM DLC"/>
+  <int value="8" label="Plugin VM was already installed"/>
 </enum>
 
 <enum name="PNaClOptionsOptLevelEnum">
@@ -57771,6 +57772,35 @@ Called by update_net_trust_anchors.py.-->
   <int value="6" label="PRIVACY_SECURITY_KEYS"/>
   <int value="7" label="PRIVACY_SITE_SETTINGS"/>
   <int value="8" label="PRIVACY_CLEAR_BROWSING_DATA"/>
+  <int value="9" label="PRIVACY_SAFE_BROWSING"/>
+  <int value="10" label="PRIVACY_PASSWORD_CHECK"/>
+  <int value="11" label="PRIVACY_IMPROVE_SECUITRY"/>
+  <int value="12" label="PRIVACY_SITE_SETTINGS_COOKIES"/>
+  <int value="13" label="PRIVACY_SITE_SETTINGS_LOCATION"/>
+  <int value="14" label="PRIVACY_SITE_SETTINGS_CAMERA"/>
+  <int value="15" label="PRIVACY_SITE_SETTINGS_MICROPHONE"/>
+  <int value="16" label="PRIVACY_SITE_SETTINGS_SENSORS"/>
+  <int value="17" label="PRIVACY_SITE_SETTINGS_NOTIFICATIONS"/>
+  <int value="18" label="PRIVACY_SITE_SETTINGS_JAVASCRIPT"/>
+  <int value="19" label="PRIVACY_SITE_SETTINGS_FLASH"/>
+  <int value="20" label="PRIVACY_SITE_SETTINGS_IMAGES"/>
+  <int value="21" label="PRIVACY_SITE_SETTINGS_POPUPS"/>
+  <int value="22" label="PRIVACY_SITE_SETTINGS_ADS"/>
+  <int value="23" label="PRIVACY_SITE_SETTINGS_BACKGROUND_SYNC"/>
+  <int value="24" label="PRIVACY_SITE_SETTINGS_SOUND"/>
+  <int value="25" label="PRIVACY_SITE_SETTINGS_AUTOMATIC_DOWNLOADS"/>
+  <int value="26" label="PRIVACY_SITE_SETTINGS_UNSANDBOXED_PLUGINS"/>
+  <int value="27" label="PRIVACY_SITE_SETTINGS_HANDLERS"/>
+  <int value="28" label="PRIVACY_SITE_SETTINGS_MIDI_DEVICES"/>
+  <int value="29" label="PRIVACY_SITE_SETTINGS_ZOOM_LEVELS"/>
+  <int value="30" label="PRIVACY_SITE_SETTINGS_USB_DEVICES"/>
+  <int value="31" label="PRIVACY_SITE_SETTINGS_SERIAL_PORTS"/>
+  <int value="32" label="PRIVACY_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE"/>
+  <int value="33" label="PRIVACY_SITE_SETTINGS_PDF_DOCUMENTS"/>
+  <int value="34" label="PRIVACY_SITE_SETTINGS_PROTECTED_CONTENT"/>
+  <int value="35" label="PRIVACY_SITE_SETTINGS_CLIPBOARD"/>
+  <int value="36" label="PRIVACY_SITE_SETTINGS_PAYMENT_HANDLER"/>
+  <int value="37" label="PRIVACY_SITE_SETTINGS_MIXEDSCRIPT"/>
 </enum>
 
 <enum name="SettingsResetPromptConfigError">

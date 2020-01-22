@@ -27,7 +27,6 @@
 /** @const */ var SCREEN_TPM_ERROR = 'tpm-error-message';
 /** @const */ var SCREEN_PASSWORD_CHANGED = 'password-changed';
 /** @const */ var SCREEN_APP_LAUNCH_SPLASH = 'app-launch-splash';
-/** @const */ var SCREEN_ARC_KIOSK_SPLASH = 'arc-kiosk-splash';
 /** @const */ var SCREEN_CONFIRM_PASSWORD = 'confirm-password';
 /** @const */ var SCREEN_FATAL_ERROR = 'fatal-error';
 /** @const */ var SCREEN_KIOSK_ENABLE = 'kiosk-enable';
@@ -450,8 +449,6 @@ cr.define('cr.ui.login', function() {
       } else if (name == ACCELERATOR_APP_LAUNCH_BAILOUT) {
         if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
           chrome.send('cancelAppLaunch');
-        if (currentStepId == SCREEN_ARC_KIOSK_SPLASH)
-          chrome.send('cancelArcKioskLaunch');
       } else if (name == ACCELERATOR_APP_LAUNCH_NETWORK_CONFIG) {
         if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
           chrome.send('networkConfigRequest');
@@ -689,8 +686,7 @@ cr.define('cr.ui.login', function() {
       // screen.
       // TODO: remove this special case when a better fix is found for the race
       // condition. This if statement was introduced to fix http://b/113786350.
-      if ((this.currentScreen.id == SCREEN_APP_LAUNCH_SPLASH ||
-           this.currentScreen.id == SCREEN_ARC_KIOSK_SPLASH) &&
+      if (this.currentScreen.id == SCREEN_APP_LAUNCH_SPLASH &&
           screen.id == SCREEN_GAIA_SIGNIN) {
         console.log(
             this.currentScreen.id +

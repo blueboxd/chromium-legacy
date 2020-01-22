@@ -320,6 +320,13 @@ const struct QuicErrorMapping {
      "quic.stream.data.beyond.close.offset"},
     {quic::QUIC_STREAM_MULTIPLE_OFFSET, "quic.stream.multiple.offset"},
 
+    {quic::QUIC_HTTP_FRAME_TOO_LARGE, "quic.http.frame.too.large,"},
+    {quic::QUIC_HTTP_FRAME_ERROR, "quic.http.frame.error"},
+    {quic::QUIC_HTTP_FRAME_UNEXPECTED_ON_SPDY_STREAM,
+     "quic.http.frame.unexpected.on.spdy.stream"},
+    {quic::QUIC_HTTP_FRAME_UNEXPECTED_ON_CONTROL_STREAM,
+     "quic.http.frame.unexpected.on.control.stream"},
+
     // QUIC_INVALID_APPLICATION_CLOSE_DATA was code 101. The code has been
     // deprecated, but to keep the assert below happy, there needs to be
     // an entry for it, but the symbol is gone.

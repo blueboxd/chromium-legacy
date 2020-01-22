@@ -334,6 +334,9 @@ void CrossProcessFrameConnector::OnVisibilityChanged(
   if (!view_)
     return;
 
+  // TODO(https://crbug.com/1014212) Remove this CHECK when the bug is fixed.
+  CHECK(
+      frame_proxy_in_parent_renderer_->frame_tree_node()->current_frame_host());
   frame_proxy_in_parent_renderer_->frame_tree_node()
       ->current_frame_host()
       ->VisibilityChanged(visibility);

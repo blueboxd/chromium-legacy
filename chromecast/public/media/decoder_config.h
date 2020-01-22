@@ -362,11 +362,10 @@ inline bool IsValidConfig(const AudioConfig& config) {
          config.channel_layout != ChannelLayout::UNSUPPORTED &&
          config.sample_format >= kSampleFormatMin &&
          config.sample_format <= kSampleFormatMax &&
-         config.sample_format != kUnknownSampleFormat &&
-         (config.channel_number > 0 ||
+         ((config.sample_format != kUnknownSampleFormat &&
+           config.channel_number > 0 && config.bytes_per_channel > 0 &&
+           config.bytes_per_channel <= kMaxBytesPerSample) ||
           config.channel_layout == ChannelLayout::BITSTREAM) &&
-         config.bytes_per_channel > 0 &&
-         config.bytes_per_channel <= kMaxBytesPerSample &&
          config.samples_per_second > 0 &&
          config.samples_per_second <= kMaxSampleRate;
 }

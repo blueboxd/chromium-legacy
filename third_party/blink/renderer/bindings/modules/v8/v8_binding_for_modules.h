@@ -34,8 +34,7 @@ MODULES_EXPORT bool CanInjectIDBKeyIntoScriptValue(v8::Isolate*,
                                                    const IDBKeyPath&);
 ScriptValue DeserializeScriptValue(ScriptState*,
                                    SerializedScriptValue*,
-                                   const Vector<WebBlobInfo>*,
-                                   bool read_wasm_from_stream);
+                                   const Vector<WebBlobInfo>*);
 
 #if DCHECK_IS_ON()
 void AssertPrimaryKeyValidOrInjectable(ScriptState*, const IDBValue*);

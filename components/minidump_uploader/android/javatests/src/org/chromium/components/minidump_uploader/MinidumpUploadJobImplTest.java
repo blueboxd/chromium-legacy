@@ -14,6 +14,8 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.components.minidump_uploader.CrashTestRule.MockCrashReportingPermissionManager;
+import org.chromium.components.minidump_uploader.MinidumpUploaderTest.TestHttpURLConnection;
+import org.chromium.components.minidump_uploader.MinidumpUploaderTest.TestHttpURLConnectionFactory;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 import org.chromium.components.minidump_uploader.util.HttpURLConnectionFactory;
 
@@ -38,6 +40,31 @@ public class MinidumpUploadJobImplTest {
     public CrashTestRule mTestRule = new CrashTestRule();
 
     private static final String BOUNDARY = "TESTBOUNDARY";
+
+    /**
+     * Test to ensure the minidump uploading mechanism allows the expected number of upload retries.
+     */
+    @Test
+    @MediumTest
+    public void testRetryCountRespected() throws IOException {
+        final CrashReportingPermissionManager permManager =
+                new MockCrashReportingPermissionManager() {
+                    {
+                        mIsInSample = true;
+                        mIsUserPermitted = true;
+                        mIsNetworkAvailable = false; // Will cause us to fail uploads
+                        mIsEnabledForTests = false;
+                    }
+                };
+
+        File firstFile = createMinidumpFileInCrashDir("1_abc.dmp0.try0");
+
+        for (int i = 0; i < MinidumpUploadJobImpl.MAX_UPLOAD_TRIES_ALLOWED; ++i) {
+            MinidumpUploadTestUtility.uploadMinidumpsSync(
+                    new TestMinidumpUploadJobImpl(mTestRule.getExistingCacheDir(), permManager),
+                    i + 1 < MinidumpUploadJobImpl.MAX_UPLOAD_TRIES_ALLOWED);
+        }
+    }
 
     /**
      * Test to ensure the minidump uploading mechanism behaves as expected when we fail to upload
@@ -94,15 +121,15 @@ public class MinidumpUploadJobImplTest {
         callables.add(new MinidumpUploadCallableCreator() {
             @Override
             public MinidumpUploadCallable createCallable(File minidumpFile, File logfile) {
-                return new MinidumpUploadCallable(
-                        minidumpFile, logfile, new FailingHttpUrlConnectionFactory(), permManager);
+                return new MinidumpUploadCallable(minidumpFile, logfile,
+                        new MinidumpUploader(new FailingHttpUrlConnectionFactory()), permManager);
             }
         });
         callables.add(new MinidumpUploadCallableCreator() {
             @Override
             public MinidumpUploadCallable createCallable(File minidumpFile, File logfile) {
                 return new MinidumpUploadCallable(minidumpFile, logfile,
-                        new MinidumpUploadCallableTest.TestHttpURLConnectionFactory(), permManager);
+                        new MinidumpUploader(new TestHttpURLConnectionFactory()), permManager);
             }
         });
         MinidumpUploadJob minidumpUploadJob = createCallableListMinidumpUploadJob(
@@ -328,7 +355,8 @@ public class MinidumpUploadJobImplTest {
         public MinidumpUploadCallable createMinidumpUploadCallable(
                 File minidumpFile, File logfile) {
             return new MinidumpUploadCallable(minidumpFile, logfile,
-                    new StallingHttpUrlConnectionFactory(mStopStallingLatch, mSuccessfulUpload),
+                    new MinidumpUploader(new StallingHttpUrlConnectionFactory(
+                            mStopStallingLatch, mSuccessfulUpload)),
                     mDelegate.createCrashReportingPermissionManager());
         }
     }
@@ -359,7 +387,7 @@ public class MinidumpUploadJobImplTest {
         @Override
         public HttpURLConnection createHttpURLConnection(String url) {
             try {
-                return new MinidumpUploadCallableTest.TestHttpURLConnection(new URL(url)) {
+                return new TestHttpURLConnection(new URL(url)) {
                     @Override
                     public OutputStream getOutputStream() {
                         return new StallingOutputStream();

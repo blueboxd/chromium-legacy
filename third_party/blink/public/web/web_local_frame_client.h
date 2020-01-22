@@ -459,10 +459,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Only used when the parent frame is remote.
   virtual void ForwardResourceTimingToParent(const WebResourceTimingInfo&) {}
 
-  // Called to dispatch a load event for this frame in the FrameOwner of an
-  // out-of-process parent frame.
-  virtual void DispatchLoad() {}
-
   // Returns the effective connection type when the frame was fetched.
   virtual WebEffectiveConnectionType GetEffectiveConnectionType() {
     return WebEffectiveConnectionType::kTypeUnknown;

@@ -73,7 +73,6 @@ class CORE_EXPORT StringUtil {
   static void builderAppend(StringBuilder& builder, const char* s, size_t len) {
     builder.Append(s, static_cast<wtf_size_t>(len));
   }
-  static void builderAppendQuotedString(StringBuilder&, const String&);
   static void builderReserve(StringBuilder& builder, uint64_t capacity) {
     builder.ReserveCapacity(static_cast<wtf_size_t>(capacity));
   }

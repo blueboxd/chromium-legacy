@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
+#import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -143,6 +144,8 @@ NSString* const kActiveKeyPath = @"active";
 #pragma mark - Public
 
 + (instancetype)guideWithName:(GuideName*)name view:(UIView*)view {
+  DCHECK(name != kTabStripTabSwitcherGuide ||
+         !base::FeatureList::IsEnabled(kChangeTabSwitcherPosition));
   while (view) {
     for (UILayoutGuide* guide in view.layoutGuides) {
       NamedGuide* namedGuide = base::mac::ObjCCast<NamedGuide>(guide);

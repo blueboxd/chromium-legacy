@@ -5247,6 +5247,7 @@ TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderSupportedPatterns) {
   update.nodes[13].child_ids = {grid_without_header_cell_id};
   update.nodes[14].id = grid_without_header_cell_id;
   update.nodes[14].role = ax::mojom::Role::kCell;
+  update.nodes[14].AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, false);
   update.nodes[15].id = grid_with_header_id;
   update.nodes[15].role = ax::mojom::Role::kGrid;
   update.nodes[15].child_ids = {grid_with_header_row_1_id,
@@ -5256,11 +5257,13 @@ TEST_F(AXPlatformNodeWinTest, TestGetPatternProviderSupportedPatterns) {
   update.nodes[16].child_ids = {grid_with_header_column_header_id};
   update.nodes[17].id = grid_with_header_column_header_id;
   update.nodes[17].role = ax::mojom::Role::kColumnHeader;
+  update.nodes[17].AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, false);
   update.nodes[18].id = grid_with_header_row_2_id;
   update.nodes[18].role = ax::mojom::Role::kRow;
   update.nodes[18].child_ids = {grid_with_header_cell_id};
   update.nodes[19].id = grid_with_header_cell_id;
   update.nodes[19].role = ax::mojom::Role::kCell;
+  update.nodes[19].AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, false);
 
   Init(update);
 

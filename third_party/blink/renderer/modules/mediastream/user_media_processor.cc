@@ -980,6 +980,11 @@ void UserMediaProcessor::OnStreamGenerated(
   }
 
   for (const auto& video_device : video_devices) {
+    SendLogMessage(base::StringPrintf(
+        "OnStreamGenerated({request_id=%d}, {label=%s}, {device=[id: %s, "
+        "name: %s]}) => (Requesting video device formats)",
+        request_id, label.Utf8().c_str(), video_device.id.c_str(),
+        video_device.name.c_str()));
     String video_device_id(video_device.id.data());
     GetMediaDevicesDispatcher()->GetAllVideoInputDeviceFormats(
         video_device_id,
@@ -1002,6 +1007,11 @@ void UserMediaProcessor::GotAllVideoInputFormatsForDevice(
   if (!IsCurrentRequestInfo(web_request))
     return;
 
+  SendLogMessage(
+      base::StringPrintf("GotAllVideoInputFormatsForDevice({request_id=%d}, "
+                         "{label=%s}, {device=[id: %s]})",
+                         current_request_info_->request_id(),
+                         label.Utf8().c_str(), device_id.Utf8().c_str()));
   current_request_info_->AddNativeVideoFormats(device_id, formats);
   if (current_request_info_->CanStartTracks())
     StartTracks(label);
@@ -1333,7 +1343,9 @@ UserMediaProcessor::CreateVideoSource(
 
 void UserMediaProcessor::StartTracks(const String& label) {
   DCHECK(!current_request_info_->web_request().IsNull());
-  SendLogMessage("StartTracks({label=" + label.Utf8() + "})");
+  SendLogMessage(base::StringPrintf("StartTracks({request_id=%d}, {label=%s})",
+                                    current_request_info_->request_id(),
+                                    label.Utf8().c_str()));
   if (auto* media_stream_device_observer = GetMediaStreamDeviceObserver()) {
     media_stream_device_observer->AddStream(
         blink::WebString(label),

@@ -12315,6 +12315,22 @@ should be able to be added at any place in this file.
   <description>User was presented with the Download file UI.</description>
 </action>
 
+<action name="MobileDownloadFolderUIShownFromDownloadManager">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User pressed &quot;Open in Downloads&quot; button from the download manager.
+  </description>
+</action>
+
+<action name="MobileDownloadFolderUIShownFromToolsMenu">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>
+    User pressed &quot;Downloads&quot; button from the tools menu.
+  </description>
+</action>
+
 <action name="MobileDownloadRetryDownload">
   <owner>eugenebut@chromium.org</owner>
   <description>

@@ -3,6 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/process/memory.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif  // defined(OS_WIN)
+
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/partition_alloc_buildflags.h"
@@ -13,6 +18,29 @@
 
 namespace base {
 
+namespace internal {
+
+void OnNoMemoryInternal(size_t size) {
+#if defined(OS_WIN)
+  // Kill the process. This is important for security since most of code
+  // does not check the result of memory allocation.
+  // https://msdn.microsoft.com/en-us/library/het71c37.aspx
+  // Pass the size of the failed request in an exception argument.
+  ULONG_PTR exception_args[] = {size};
+  ::RaiseException(base::win::kOomExceptionCode, EXCEPTION_NONCONTINUABLE,
+                   base::size(exception_args), exception_args);
+
+  // Safety check, make sure process exits here.
+  _exit(win::kOomExceptionCode);
+#else
+  size_t tmp_size = size;
+  base::debug::Alias(&tmp_size);
+  LOG(FATAL) << "Out of memory. size=" << tmp_size;
+#endif  // defined(OS_WIN)
+}
+
+}  // namespace internal
+
 // Defined in memory_win.cc for Windows.
 #if !defined(OS_WIN)
 
@@ -21,9 +49,7 @@ namespace {
 // Breakpad server classifies base::`anonymous namespace'::OnNoMemory as
 // out-of-memory crash.
 NOINLINE void OnNoMemory(size_t size) {
-  size_t tmp_size = size;
-  base::debug::Alias(&tmp_size);
-  LOG(FATAL) << "Out of memory. size=" << tmp_size;
+  internal::OnNoMemoryInternal(size);
 }
 
 }  // namespace

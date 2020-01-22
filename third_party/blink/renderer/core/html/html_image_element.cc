@@ -658,14 +658,14 @@ bool HTMLImageElement::IsInteractiveContent() const {
 FloatSize HTMLImageElement::DefaultDestinationSize(
     const FloatSize& default_object_size) const {
   ImageResourceContent* image_content = CachedImage();
-  if (!image_content)
+  if (!image_content || !image_content->HasImage())
     return FloatSize();
 
   Image* image = image_content->GetImage();
   if (image->IsSVGImage())
     return ToSVGImage(image)->ConcreteObjectSize(default_object_size);
 
-  LayoutSize size(image_content->IntrinsicSize(
+  LayoutSize size(image->Size(
       LayoutObject::ShouldRespectImageOrientation(GetLayoutObject())));
   if (GetLayoutObject() && GetLayoutObject()->IsLayoutImage() &&
       image->HasIntrinsicSize())

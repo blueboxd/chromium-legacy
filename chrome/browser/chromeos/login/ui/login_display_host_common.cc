@@ -172,7 +172,7 @@ void LoginDisplayHostCommon::StartArcKiosk(const AccountId& account_id) {
       std::make_unique<ArcKioskController>(this, GetOobeUI());
   arc_kiosk_controller_->StartArcKiosk(account_id);
 
-  OnStartArcKiosk();
+  OnStartAppLaunch();
 }
 
 void LoginDisplayHostCommon::StartWebKiosk(const AccountId& account_id) {
@@ -200,7 +200,7 @@ void LoginDisplayHostCommon::StartWebKiosk(const AccountId& account_id) {
     // shown by the DeviceDisablingManager.
     return;
   }
-  OnStartWebKiosk();
+  OnStartAppLaunch();
 
   web_kiosk_controller_ =
       std::make_unique<WebKioskController>(this, GetOobeUI());

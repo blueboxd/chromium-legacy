@@ -165,9 +165,6 @@ Polymer({
           .sendPrefChange();
       this.showRestartToast_ = true;
     }
-
-    this.browserProxy_.recordSettingsPageHistogram(
-        settings.SettingsPageInteractions.PRIVACY_CHROME_SIGN_IN);
   },
 
   /** @private */

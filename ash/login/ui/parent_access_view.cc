@@ -52,6 +52,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/vector_icons.h"
 
 namespace ash {
 
@@ -67,8 +68,11 @@ constexpr int kParentAccessViewWidthDp = 340;
 constexpr int kParentAccessViewHeightDp = 340;
 constexpr int kParentAccessViewTabletModeHeightDp = 580;
 constexpr int kParentAccessViewRoundedCornerRadiusDp = 8;
-constexpr int kParentAccessViewVerticalInsetDp = 24;
-constexpr int kParentAccessViewHorizontalInsetDp = 36;
+constexpr int kParentAccessViewVerticalInsetDp = 8;
+// Inset for all elements except the back button.
+constexpr int kParentAccessViewMainHorizontalInsetDp = 36;
+// Minimum inset (= back button inset).
+constexpr int kParentAccessViewHorizontalInsetDp = 8;
 
 constexpr int kLockIconSizeDp = 24;
 
@@ -78,7 +82,7 @@ constexpr int kDescriptionToAccessCodeDistanceDp = 28;
 constexpr int kAccessCodeToPinKeyboardDistanceDp = 5;
 constexpr int kPinKeyboardToFooterDistanceDp = 57;
 constexpr int kPinKeyboardToFooterTabletModeDistanceDp = 17;
-constexpr int kSubmitButtonBottomMarginDp = 8;
+constexpr int kSubmitButtonBottomMarginDp = 28;
 
 constexpr int kTitleFontSizeDeltaDp = 3;
 constexpr int kDescriptionFontSizeDeltaDp = -1;
@@ -90,7 +94,9 @@ constexpr int kAccessCodeInputFieldUnderlineThicknessDp = 1;
 constexpr int kAccessCodeBetweenInputFieldsGapDp = 4;
 
 constexpr int kArrowButtonSizeDp = 48;
-constexpr int kArrowSizeDp = 20;
+
+constexpr int kCrossSizeDp = 20;
+constexpr int kBackButtonSizeDp = 36;
 
 constexpr int kAlpha70Percent = 178;
 constexpr int kAlpha74Percent = 189;
@@ -600,25 +606,29 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   layer()->SetBackgroundBlur(ShelfConfig::Get()->shelf_blur_radius());
 
   const int child_view_width =
-      kParentAccessViewWidthDp - 2 * kParentAccessViewHorizontalInsetDp;
+      kParentAccessViewWidthDp - 2 * kParentAccessViewMainHorizontalInsetDp;
 
-  // Header view contains back button that is aligned to its start.
+  // Header view contains back button that is aligned to its end.
   auto header_layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0);
   header_layout->set_main_axis_alignment(
-      views::BoxLayout::MainAxisAlignment::kStart);
+      views::BoxLayout::MainAxisAlignment::kEnd);
   auto* header = new NonAccessibleView();
-  header->SetPreferredSize(gfx::Size(child_view_width, 0));
+  header->SetPreferredSize(
+      gfx::Size(child_view_width + 2 * (kParentAccessViewMainHorizontalInsetDp -
+                                        kParentAccessViewHorizontalInsetDp),
+                0));
   header->SetLayoutManager(std::move(header_layout));
   AddChildView(header);
 
   back_button_ = new LoginButton(this);
-  back_button_->SetPreferredSize(gfx::Size(kArrowSizeDp, kArrowSizeDp));
+  back_button_->SetPreferredSize(
+      gfx::Size(kBackButtonSizeDp, kBackButtonSizeDp));
   back_button_->SetBackground(
       views::CreateSolidBackground(SK_ColorTRANSPARENT));
-  back_button_->SetImage(views::Button::STATE_NORMAL,
-                         gfx::CreateVectorIcon(kLockScreenArrowBackIcon,
-                                               kArrowSizeDp, SK_ColorWHITE));
+  back_button_->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(views::kIcCloseIcon, kCrossSizeDp, SK_ColorWHITE));
   back_button_->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   back_button_->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
   back_button_->SetAccessibleName(

@@ -50,7 +50,7 @@ blink::mojom::FetchAPIRequestPtr DeserializeFetchRequestFromString(
   request_ptr->request_context_type =
       static_cast<blink::mojom::RequestContextType>(
           request_proto.request_context_type());
-  request_ptr->frame_type = network::mojom::RequestContextFrameType::kNone;
+  request_ptr->frame_type = blink::mojom::RequestContextFrameType::kNone;
   request_ptr->url = GURL(request_proto.url());
   request_ptr->method = request_proto.method();
   request_ptr->headers = {request_proto.headers().begin(),

@@ -251,17 +251,12 @@ base::Optional<syncer::ModelError> AutofillProfileSyncBridge::FlushSyncTracker(
                      base::Unretained(web_data_backend_))));
 
   std::vector<std::unique_ptr<AutofillProfile>> profiles_to_upload_to_sync;
-  std::vector<std::string> profiles_to_delete_from_sync;
-  RETURN_IF_ERROR(tracker->FlushToSync(&profiles_to_upload_to_sync,
-                                       &profiles_to_delete_from_sync));
+  RETURN_IF_ERROR(tracker->FlushToSync(&profiles_to_upload_to_sync));
   for (const std::unique_ptr<AutofillProfile>& entry :
        profiles_to_upload_to_sync) {
     change_processor()->Put(GetStorageKeyFromAutofillProfile(*entry),
                             CreateEntityDataFromAutofillProfile(*entry),
                             metadata_change_list.get());
-  }
-  for (const std::string& storage_key : profiles_to_delete_from_sync) {
-    change_processor()->Delete(storage_key, metadata_change_list.get());
   }
 
   return static_cast<syncer::SyncMetadataStoreChangeList*>(

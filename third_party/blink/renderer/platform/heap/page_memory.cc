@@ -56,7 +56,8 @@ void PageMemoryRegion::PageDeleted(Address page) {
 // we should probably have a way to distinguish physical memory OOM from
 // virtual address space OOM.
 static NOINLINE void BlinkGCOutOfMemory() {
-  OOM_CRASH();
+  // TODO(lizeb): Add the real allocation size here as well.
+  OOM_CRASH(0);
 }
 
 PageMemoryRegion* PageMemoryRegion::Allocate(size_t size,

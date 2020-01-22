@@ -174,7 +174,7 @@ class CORE_EXPORT FrameLoader final {
       ResourceRequest&,
       const FetchClientSettingsObject* fetch_client_settings_object,
       Document* document_for_logging,
-      network::mojom::RequestContextFrameType) const;
+      mojom::RequestContextFrameType) const;
   void ReportLegacyTLSVersion(const KURL& url,
                               bool is_subresource,
                               bool is_ad_resource);

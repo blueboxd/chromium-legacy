@@ -196,19 +196,6 @@ void SiteDataCountingHelper::GetLocalStorageUsageInfoCallback(
   Done(origins);
 }
 
-void SiteDataCountingHelper::GetSessionStorageUsageInfoCallback(
-    const scoped_refptr<storage::SpecialStoragePolicy>& policy,
-    const std::vector<content::SessionStorageUsageInfo>& infos) {
-  std::vector<GURL> origins;
-  for (const auto& info : infos) {
-    // Session storage doesn't know about creation time.
-    if (!policy || !policy->IsStorageProtected(info.origin)) {
-      origins.push_back(info.origin);
-    }
-  }
-  Done(origins);
-}
-
 void SiteDataCountingHelper::SitesWithFlashDataCallback(
     const std::vector<std::string>& sites) {
   std::vector<GURL> origins;

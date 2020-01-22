@@ -421,9 +421,8 @@ CaptivePortalObserver::CaptivePortalObserver(Profile* profile)
           CaptivePortalServiceFactory::GetForProfile(profile)),
       captive_portal_result_(
           captive_portal_service_->last_detection_result()) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-                 content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
+                 content::Source<content::BrowserContext>(profile_));
 }
 
 void CaptivePortalObserver::WaitForResults(int num_results_to_wait_for) {
@@ -444,7 +443,7 @@ void CaptivePortalObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   ASSERT_EQ(type, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT);
-  ASSERT_EQ(profile_, content::Source<Profile>(source).ptr());
+  ASSERT_EQ(profile_, content::Source<content::BrowserContext>(source).ptr());
 
   CaptivePortalService::Results* results =
       content::Details<CaptivePortalService::Results>(details).ptr();

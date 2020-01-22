@@ -16,8 +16,8 @@ rootWebArea
 ++++++staticText name='illegal rowgroup'
 ++++++++inlineTextBox name='illegal rowgroup'
 ++++table
-++++++row selected=false
-++++++++cell name='legal cell' selected=false
+++++++row
+++++++++cell name='legal cell'
 ++++++++++genericContainer
 ++++++++++++staticText name='illegal cell inside another cell'
 ++++++++++++++inlineTextBox name='illegal cell inside another cell'

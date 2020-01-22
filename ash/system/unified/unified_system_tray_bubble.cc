@@ -92,7 +92,6 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   init_params.has_shadow = false;
   init_params.show_by_click = show_by_click;
   init_params.close_on_deactivate = false;
-  init_params.translucent = true;
 
   bubble_view_ = new TrayBubbleView(init_params);
 
@@ -105,11 +104,19 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   controller_->ResetToCollapsedIfRequired();
   bubble_view_->AddChildView(new ContainerView(unified_view_));
 
+  bubble_view_->set_color(SK_ColorTRANSPARENT);
+  bubble_view_->layer()->SetFillsBoundsOpaquely(false);
+
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
   bubble_widget_->AddObserver(this);
 
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
   bubble_view_->InitializeAndShowBubble();
+
+  if (features::IsBackgroundBlurEnabled()) {
+    bubble_widget_->client_view()->layer()->SetBackgroundBlur(
+        kUnifiedMenuBackgroundBlur);
+  }
 
   tray->tray_event_filter()->AddBubble(this);
   tray->shelf()->AddObserver(this);
@@ -227,7 +234,7 @@ void UnifiedSystemTrayBubble::UpdateTransform() {
 
   if (!unified_view_->IsTransformEnabled()) {
     unified_view_->SetTransform(gfx::Transform());
-    OnAnimationFinished();
+    DestroyBlurLayerForAnimation();
     SetFrameVisible(true);
     return;
   }
@@ -244,9 +251,13 @@ void UnifiedSystemTrayBubble::UpdateTransform() {
   transform.Translate(0, y_offset);
   unified_view_->SetTransform(transform);
 
-  gfx::Rect blur_bounds = bubble_view_->bounds();
-  blur_bounds.Inset(gfx::Insets(y_offset, 0, 0, 0));
-  bubble_view_->layer()->SetClipRect(blur_bounds);
+  CreateBlurLayerForAnimation();
+
+  if (blur_layer_) {
+    gfx::Rect blur_bounds = bubble_widget_->client_view()->layer()->bounds();
+    blur_bounds.Inset(gfx::Insets(y_offset, 0, 0, 0));
+    blur_layer_->layer()->SetBounds(blur_bounds);
+  }
 }
 
 TrayBackgroundView* UnifiedSystemTrayBubble::GetTray() const {
@@ -374,8 +385,44 @@ void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
     tray_->message_center_bubble()->UpdatePosition();
 }
 
-void UnifiedSystemTrayBubble::OnAnimationFinished() {
-  bubble_widget_->GetNativeWindow()->layer()->SetClipRect(gfx::Rect());
+void UnifiedSystemTrayBubble::CreateBlurLayerForAnimation() {
+  if (!features::IsBackgroundBlurEnabled())
+    return;
+
+  if (blur_layer_)
+    return;
+
+  DCHECK(bubble_widget_);
+
+  bubble_widget_->client_view()->layer()->SetBackgroundBlur(0);
+
+  blur_layer_ = std::make_unique<ui::LayerOwner>(
+      std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR));
+  blur_layer_->layer()->SetColor(SK_ColorTRANSPARENT);
+  blur_layer_->layer()->SetRoundedCornerRadius(
+      {kUnifiedTrayCornerRadius, kUnifiedTrayCornerRadius,
+       kUnifiedTrayCornerRadius, kUnifiedTrayCornerRadius});
+  blur_layer_->layer()->SetFillsBoundsOpaquely(false);
+
+  bubble_widget_->GetLayer()->Add(blur_layer_->layer());
+  bubble_widget_->GetLayer()->StackAtBottom(blur_layer_->layer());
+
+  blur_layer_->layer()->SetBounds(
+      bubble_widget_->client_view()->layer()->bounds());
+  blur_layer_->layer()->SetBackgroundBlur(kUnifiedMenuBackgroundBlur);
+}
+
+void UnifiedSystemTrayBubble::DestroyBlurLayerForAnimation() {
+  if (!features::IsBackgroundBlurEnabled())
+    return;
+
+  if (!blur_layer_)
+    return;
+
+  blur_layer_.reset();
+
+  bubble_widget_->client_view()->layer()->SetBackgroundBlur(
+      kUnifiedMenuBackgroundBlur);
 }
 
 void UnifiedSystemTrayBubble::SetFrameVisible(bool visible) {

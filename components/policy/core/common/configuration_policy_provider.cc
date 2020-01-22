@@ -11,7 +11,7 @@
 
 namespace policy {
 
-ConfigurationPolicyProvider::Observer::~Observer() {}
+ConfigurationPolicyProvider::Observer::~Observer() = default;
 
 ConfigurationPolicyProvider::ConfigurationPolicyProvider()
     : initialized_(false), schema_registry_(nullptr) {}

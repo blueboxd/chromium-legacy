@@ -220,7 +220,7 @@ class BASE_EXPORT PartitionStatsDumper {
                                          const PartitionBucketMemoryStats*) = 0;
 };
 
-BASE_EXPORT void PartitionAllocGlobalInit(void (*oom_handling_function)());
+BASE_EXPORT void PartitionAllocGlobalInit(OomFunction on_out_of_memory);
 
 // PartitionAlloc supports setting hooks to observe allocations/frees as they
 // occur as well as 'override' hooks that allow overriding those operations.

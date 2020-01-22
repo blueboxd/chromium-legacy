@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/union_base.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -83,6 +84,17 @@ inline v8::Local<v8::Value> ToV8(CallbackInterfaceBase* callback,
           &ScriptState::From(creation_context->CreationContext())->World()));
   return callback ? callback->CallbackObject().As<v8::Value>()
                   : v8::Null(isolate).As<v8::Value>();
+}
+
+// Union type
+
+inline v8::Local<v8::Value> ToV8(const bindings::UnionBase& value,
+                                 v8::Local<v8::Object> creation_context,
+                                 v8::Isolate* isolate) {
+  v8::Local<v8::Value> v8_value =
+      value.CreateV8Object(isolate, creation_context);
+  DCHECK(!v8_value.IsEmpty());
+  return v8_value;
 }
 
 // Primitives

@@ -39,7 +39,12 @@ bool ShouldInterruptForMethod(const String& method) {
          method == "Performance.getMetrics" || method == "Page.crash" ||
          method == "Runtime.terminateExecution" ||
          method == "Debugger.getStackTrace" ||
-         method == "Emulation.setScriptExecutionDisabled";
+         method == "Emulation.setScriptExecutionDisabled" ||
+         // Needed to start/stop the performance timeline.
+         method == "HeapProfiler.enable" || method == "Debugger.disable" ||
+         method == "Debugger.setAsyncCallStackDepth" ||
+         method == "Debugger.enable" ||
+         method == "Debugger.setPauseOnExceptions";
 }
 
 std::vector<uint8_t> Get8BitStringFrom(v8_inspector::StringBuffer* msg) {

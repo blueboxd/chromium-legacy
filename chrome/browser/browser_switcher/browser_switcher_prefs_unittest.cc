@@ -114,7 +114,7 @@ TEST_F(BrowserSwitcherPrefsTest, ListensForPrefChanges) {
   EXPECT_EQ("c", prefs()->GetAlternativeBrowserParameters()[2]);
 
 #if defined(OS_WIN)
-  EXPECT_EQ("cmd.exe", prefs()->GetChromePath());
+  EXPECT_EQ("cmd.exe", prefs()->GetChromePath().MaybeAsASCII());
 
   EXPECT_EQ(3u, prefs()->GetChromeParameters().size());
   EXPECT_EQ("d", prefs()->GetChromeParameters()[0]);

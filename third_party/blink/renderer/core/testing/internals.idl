@@ -268,10 +268,6 @@
     SerializedScriptValue deserializeBuffer(ArrayBuffer buffer);
     ArrayBuffer serializeObject(SerializedScriptValue obj);
 
-    [CallWith=ScriptState] any deserializeBufferContainingWasm(ArrayBuffer buffer);
-    ArrayBuffer serializeWithInlineWasm(any obj);
-
-
     void forceReload(boolean endToEnd);
 
     DOMString getImageSourceURL(Element element);

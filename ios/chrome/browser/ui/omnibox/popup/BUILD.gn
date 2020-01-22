@@ -67,10 +67,6 @@ source_set("popup_ui") {
     "omnibox_popup_base_view_controller+internal.h",
     "omnibox_popup_base_view_controller.h",
     "omnibox_popup_base_view_controller.mm",
-    "omnibox_popup_legacy_view_controller.h",
-    "omnibox_popup_legacy_view_controller.mm",
-    "omnibox_popup_row.h",
-    "omnibox_popup_row.mm",
     "omnibox_popup_row_cell.h",
     "omnibox_popup_row_cell.mm",
     "omnibox_popup_view_controller.h",
@@ -136,10 +132,7 @@ source_set("popup_internal") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [
-    "omnibox_popup_row_cell_unittest.mm",
-    "omnibox_popup_view_controller_unittest.mm",
-  ]
+  sources = [ "omnibox_popup_row_cell_unittest.mm" ]
   deps = [
     ":popup",
     ":popup_internal",

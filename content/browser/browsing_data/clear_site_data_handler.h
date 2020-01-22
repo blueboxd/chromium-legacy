@@ -55,7 +55,9 @@ class CONTENT_EXPORT ClearSiteDataHandler {
     virtual void OutputMessages(
         const base::RepeatingCallback<WebContents*()>& web_contents_getter);
 
-    const std::vector<Message>& messages() const { return messages_; }
+    const std::vector<Message>& GetMessagesForTesting() const {
+      return messages_;
+    }
 
    protected:
     void SetOutputFormattedMessageFunctionForTesting(

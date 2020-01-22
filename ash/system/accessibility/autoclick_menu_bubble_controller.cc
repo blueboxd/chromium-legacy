@@ -4,6 +4,7 @@
 
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -224,16 +225,15 @@ void AutoclickMenuBubbleController::ShowBubble(AutoclickEventType type,
   init_params.max_width = kAutoclickMenuWidth;
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
-  init_params.translucent = true;
   bubble_view_ = new AutoclickMenuBubbleView(init_params);
 
   menu_view_ = new AutoclickMenuView(type, position);
+  menu_view_->SetBackground(UnifiedSystemTrayView::CreateBackground());
   menu_view_->SetBorder(
       views::CreateEmptyBorder(kUnifiedTopShortcutSpacing, 0, 0, 0));
   bubble_view_->AddChildView(menu_view_);
-
-  menu_view_->SetPaintToLayer();
-  menu_view_->layer()->SetFillsBoundsOpaquely(false);
+  bubble_view_->set_color(SK_ColorTRANSPARENT);
+  bubble_view_->layer()->SetFillsBoundsOpaquely(false);
 
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
@@ -241,6 +241,11 @@ void AutoclickMenuBubbleController::ShowBubble(AutoclickEventType type,
       bubble_widget_->GetNativeWindow(),
       CollisionDetectionUtils::RelativePriority::kAutomaticClicksMenu);
   bubble_view_->InitializeAndShowBubble();
+
+  if (features::IsBackgroundBlurEnabled()) {
+    bubble_widget_->client_view()->layer()->SetBackgroundBlur(
+        kUnifiedMenuBackgroundBlur);
+  }
 
   SetPosition(position);
 }

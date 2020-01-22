@@ -133,7 +133,6 @@ V8ScriptValueDeserializer::V8ScriptValueDeserializer(
       transferred_message_ports_(options.message_ports),
       blob_info_array_(options.blob_info) {
   deserializer_.SetSupportsLegacyWireFormat(true);
-  deserializer_.SetExpectInlineWasm(options.read_wasm_from_stream);
 }
 
 v8::Local<v8::Value> V8ScriptValueDeserializer::Deserialize() {

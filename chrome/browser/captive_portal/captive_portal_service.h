@@ -18,7 +18,9 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace network {
 namespace mojom {
@@ -27,12 +29,13 @@ class URLLoaderFactory;
 }  // namespace network
 
 // Service that checks for captive portals when queried, and sends a
-// NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT with the Profile as the source and
-// a CaptivePortalService::Results as the details.
+// NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT with the BrowserContext as the
+// source and a CaptivePortalService::Results as the details.
 //
 // Captive portal checks are rate-limited.  The CaptivePortalService may only
 // be accessed on the UI thread.
-// Design doc: https://docs.google.com/document/d/1k-gP2sswzYNvryu9NcgN7q5XrsMlUdlUdoW9WRaEmfM/edit
+// Design doc:
+// https://docs.google.com/document/d/1k-gP2sswzYNvryu9NcgN7q5XrsMlUdlUdoW9WRaEmfM/edit
 class CaptivePortalService : public KeyedService {
  public:
   enum TestingState {
@@ -56,7 +59,8 @@ class CaptivePortalService : public KeyedService {
   };
 
   CaptivePortalService(
-      Profile* profile,
+      content::BrowserContext* browser_context,
+      PrefService* pref_service,
       const base::TickClock* clock_for_testing = nullptr,
       network::mojom::URLLoaderFactory* loader_factory_for_testing = nullptr);
   ~CaptivePortalService() override;
@@ -158,8 +162,8 @@ class CaptivePortalService : public KeyedService {
 
   void set_test_url(const GURL& test_url) { test_url_ = test_url; }
 
-  // The profile that owns this CaptivePortalService.
-  Profile* const profile_;
+  // The BrowserContext that owns this CaptivePortalService.
+  content::BrowserContext* const browser_context_;
 
   State state_;
 

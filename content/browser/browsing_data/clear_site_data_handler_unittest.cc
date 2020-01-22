@@ -101,7 +101,7 @@ class VectorConsoleMessagesDelegate : public ConsoleMessagesDelegate {
 
   void OutputMessages(const base::RepeatingCallback<WebContents*()>&
                           web_contents_getter) override {
-    *message_buffer_ = messages();
+    *message_buffer_ = GetMessagesForTesting();
   }
 
  private:
@@ -282,7 +282,7 @@ TEST_F(ClearSiteDataHandlerTest, InvalidHeader) {
         &console_delegate, GURL()));
 
     std::string multiline_message;
-    for (const auto& message : console_delegate.messages()) {
+    for (const auto& message : console_delegate.GetMessagesForTesting()) {
       EXPECT_EQ(blink::mojom::ConsoleMessageLevel::kError, message.level);
       multiline_message += message.text + "\n";
     }

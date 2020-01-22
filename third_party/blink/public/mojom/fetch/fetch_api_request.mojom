@@ -173,8 +173,7 @@ struct FetchAPIRequest {
   bool is_main_resource_load = false;
   RequestContextType request_context_type = RequestContextType.UNSPECIFIED;
   network.mojom.RequestDestination destination = network.mojom.RequestDestination.kEmpty;
-  network.mojom.RequestContextFrameType frame_type =
-    network.mojom.RequestContextFrameType.kNone;
+  RequestContextFrameType frame_type = RequestContextFrameType.kNone;
   url.mojom.Url url;
   string method;
   FetchAPIRequestHeaders headers;

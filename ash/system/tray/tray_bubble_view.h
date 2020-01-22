@@ -95,8 +95,6 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
     base::Optional<int> corner_radius;
     base::Optional<gfx::Insets> insets;
     bool has_shadow = true;
-    // Use half opaque widget instead of fully opaque.
-    bool translucent = false;
   };
 
   explicit TrayBubbleView(const InitParams& init_params);
@@ -166,7 +164,6 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
                                 views::Widget* bubble_widget) const override;
   void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
-  ui::LayerType GetLayerType() const override;
 
   // Overridden from views::View.
   gfx::Size CalculatePreferredSize() const override;
@@ -185,6 +182,8 @@ class ASH_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
 
   // Overridden from views::View.
   void ChildPreferredSizeChanged(View* child) override;
+  void ViewHierarchyChanged(
+      const views::ViewHierarchyChangedDetails& details) override;
 
   // Changes the insets from the bubble border. These were initially set using
   // the InitParams.insets, but may need to be reset programmatically.

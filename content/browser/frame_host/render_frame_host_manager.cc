@@ -2352,7 +2352,8 @@ void RenderFrameHostManager::CommitPending(
 
   // Swap in the new frame and make it active. Also ensure the FrameTree
   // stays in sync.
-  DCHECK(pending_rfh);
+  // TODO(http://crbug.com/1014212): Change to DCHECK.
+  CHECK(pending_rfh);
   std::unique_ptr<RenderFrameHostImpl> old_render_frame_host;
   old_render_frame_host = SetRenderFrameHost(std::move(pending_rfh));
 

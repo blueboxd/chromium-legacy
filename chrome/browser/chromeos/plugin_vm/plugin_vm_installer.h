@@ -66,6 +66,10 @@ class PluginVmInstaller : public KeyedService,
   class Observer {
    public:
     virtual ~Observer() = default;
+
+    // If a VM already exists, we call this and abort the installation process.
+    virtual void OnVmExists() = 0;
+
     virtual void OnDlcDownloadProgressUpdated(double progress,
                                               base::TimeDelta elapsed_time) = 0;
     virtual void OnDlcDownloadCompleted() = 0;
@@ -129,6 +133,7 @@ class PluginVmInstaller : public KeyedService,
   std::string GetCurrentDownloadGuidForTesting();
 
  private:
+  void OnUpdateVmState(bool default_vm_exists);
   void StartDlcDownload();
   void StartDownload();
   void StartImport();

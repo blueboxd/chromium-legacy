@@ -38,7 +38,7 @@ void HistoryCounter::OnInitialized() {
                                          base::Unretained(this)));
 }
 
-bool HistoryCounter::HasTrackedTasks() {
+bool HistoryCounter::HasTrackedTasksForTesting() {
   return cancelable_task_tracker_.HasTrackedTasks();
 }
 

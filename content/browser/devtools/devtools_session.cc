@@ -117,7 +117,8 @@ void DevToolsSession::TurnIntoExternalProxy(
   proxy_delegate_->Attach(this);
 }
 
-void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
+void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent,
+                                    bool force_using_io_session) {
   DCHECK(agent_host_);
   if (!agent) {
     receiver_.reset();
@@ -134,6 +135,7 @@ void DevToolsSession::AttachToAgent(blink::mojom::DevToolsAgent* agent) {
     io_session_.reset();
   }
 
+  use_io_session_ = force_using_io_session;
   agent->AttachDevToolsSession(receiver_.BindNewEndpointAndPassRemote(),
                                session_.BindNewEndpointAndPassReceiver(),
                                io_session_.BindNewPipeAndPassReceiver(),
@@ -290,7 +292,9 @@ void DevToolsSession::fallThrough(int call_id,
 
 void DevToolsSession::DispatchToAgent(const PendingMessage& message) {
   DCHECK(!browser_only_);
-  if (ShouldSendOnIO(message.method)) {
+  // We send all messages on the IO channel for workers so that messages like
+  // Debugger.pause don't get stuck behind other blocking messages.
+  if (ShouldSendOnIO(message.method) || use_io_session_) {
     if (io_session_) {
       TRACE_EVENT_WITH_FLOW2(
           "devtools", "DevToolsSession::DispatchToAgent on IO", message.call_id,

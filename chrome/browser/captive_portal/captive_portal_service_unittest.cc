@@ -40,9 +40,8 @@ class CaptivePortalObserver : public content::NotificationObserver {
         num_results_received_(0),
         profile_(profile),
         captive_portal_service_(captive_portal_service) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-                   content::Source<Profile>(profile_));
+    registrar_.Add(this, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
+                   content::Source<content::BrowserContext>(profile_));
   }
 
   CaptivePortalResult captive_portal_result() const {
@@ -56,7 +55,7 @@ class CaptivePortalObserver : public content::NotificationObserver {
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override {
     ASSERT_EQ(type, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT);
-    ASSERT_EQ(profile_, content::Source<Profile>(source).ptr());
+    ASSERT_EQ(profile_, content::Source<content::BrowserContext>(source).ptr());
 
     CaptivePortalService::Results *results =
         content::Details<CaptivePortalService::Results>(details).ptr();
@@ -104,8 +103,9 @@ class CaptivePortalServiceTest : public testing::Test,
     profile_.reset(new TestingProfile());
     tick_clock_.reset(new base::SimpleTestTickClock());
     tick_clock_->Advance(base::TimeTicks::Now() - tick_clock_->NowTicks());
-    service_.reset(new CaptivePortalService(profile_.get(), tick_clock_.get(),
-                                            test_loader_factory()));
+    service_.reset(
+        new CaptivePortalService(profile_.get(), profile_->GetPrefs(),
+                                 tick_clock_.get(), test_loader_factory()));
 
     // Use no delays for most tests.
     set_initial_backoff_no_portal(base::TimeDelta());
@@ -293,10 +293,10 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalTwoProfiles) {
   Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
   TestingProfile profile2;
   std::unique_ptr<CaptivePortalService> service2(
-      new CaptivePortalService(&profile2));
+      new CaptivePortalService(&profile2, profile2.GetPrefs()));
   CaptivePortalObserver observer2(&profile2, service2.get());
 
-  RunTest(captive_portal::RESULT_INTERNET_CONNECTED, net::OK, 204, 0, NULL);
+  RunTest(captive_portal::RESULT_INTERNET_CONNECTED, net::OK, 204, 0, nullptr);
   EXPECT_EQ(0, observer2.num_results_received());
 }
 

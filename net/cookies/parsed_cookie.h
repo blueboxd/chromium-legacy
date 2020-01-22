@@ -63,6 +63,9 @@ class NET_EXPORT ParsedCookie {
   // The functions return false in case an error occurred.
   // The cookie needs to be assigned a name/value before setting the other
   // attributes.
+  //
+  // TODO(chlily): Ideally, we can remove these mutators once we remove the
+  // single callsite.
   bool SetName(const std::string& name);
   bool SetValue(const std::string& value);
   bool SetPath(const std::string& path);

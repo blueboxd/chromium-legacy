@@ -62,9 +62,8 @@ void RemoteFrameOwner::AddResourceTiming(const ResourceTimingInfo& info) {
 }
 
 void RemoteFrameOwner::DispatchLoad() {
-  WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(To<LocalFrame>(*frame_));
-  web_frame->Client()->DispatchLoad();
+  auto& local_frame_host = To<LocalFrame>(*frame_).GetLocalFrameHostRemote();
+  local_frame_host.DispatchLoad();
 }
 
 void RemoteFrameOwner::RenderFallbackContent(Frame* failed_frame) {

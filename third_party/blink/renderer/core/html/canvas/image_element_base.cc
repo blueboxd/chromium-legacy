@@ -81,31 +81,18 @@ bool ImageElementBase::WouldTaintOrigin() const {
 FloatSize ImageElementBase::ElementSize(
     const FloatSize& default_object_size) const {
   ImageResourceContent* image_content = CachedImage();
-  if (!image_content)
+  if (!image_content || !image_content->HasImage())
     return FloatSize();
-
   Image* image = image_content->GetImage();
   if (image->IsSVGImage())
     return ToSVGImage(image)->ConcreteObjectSize(default_object_size);
-
-  return FloatSize(
-      image_content->IntrinsicSize(LayoutObject::ShouldRespectImageOrientation(
-          GetElement().GetLayoutObject())));
+  return FloatSize(image->Size(LayoutObject::ShouldRespectImageOrientation(
+      GetElement().GetLayoutObject())));
 }
 
 FloatSize ImageElementBase::DefaultDestinationSize(
     const FloatSize& default_object_size) const {
-  ImageResourceContent* image_content = CachedImage();
-  if (!image_content)
-    return FloatSize();
-
-  Image* image = image_content->GetImage();
-  if (image->IsSVGImage())
-    return ToSVGImage(image)->ConcreteObjectSize(default_object_size);
-
-  return FloatSize(
-      image_content->IntrinsicSize(LayoutObject::ShouldRespectImageOrientation(
-          GetElement().GetLayoutObject())));
+  return ElementSize(default_object_size);
 }
 
 bool ImageElementBase::IsAccelerated() const {

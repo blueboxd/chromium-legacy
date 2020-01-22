@@ -27,7 +27,6 @@
 // <include src="oobe_select.js">
 
 // <include src="screen_app_launch_splash.js">
-// <include src="screen_arc_kiosk_splash.js">
 // <include src="screen_arc_terms_of_service.js">
 // <include src="screen_error_message.js">
 // <include src="screen_password_changed.js">
@@ -88,7 +87,6 @@ cr.define('cr.ui.Oobe', function() {
       login.RecommendAppsScreen.register();
       login.AppDownloadingScreen.register();
       login.AppLaunchSplashScreen.register();
-      login.ArcKioskSplashScreen.register();
       login.ConfirmPasswordScreen.register();
       login.FatalErrorScreen.register();
       login.DeviceDisabledScreen.register();

@@ -65,10 +65,10 @@ function ImageLoader() {
  * @const
  * @type {Array<string>}
  */
-ImageLoader.ALLOWED_CLIENTS = [
-  'hhaomjibdihmijegdhdafkllkbggdgoj',  // File Manager's extension id.
-  'nlkncpkkdoccmpiclbokaimcnedabhhm',  // Gallery's extension id.
-  'jcgeabjmjgoblfofpppfkcoakmfobdko',  // Video Player's extension id.
+ImageLoader.ALLOWED_CLIENT_ORIGINS = [
+  'chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj',  // File Manager
+  'chrome-extension://nlkncpkkdoccmpiclbokaimcnedabhhm',  // Gallery
+  'chrome-extension://jcgeabjmjgoblfofpppfkcoakmfobdko',  // Video Player
 ];
 
 /**
@@ -80,10 +80,10 @@ ImageLoader.ALLOWED_CLIENTS = [
  */
 ImageLoader.prototype.onIncomingRequest_ = function(
     request_data, sender, sendResponse) {
-  if (!sender.id || !request_data) {
+  if (!sender.origin || !request_data) {
     return;
   }
-  if (ImageLoader.ALLOWED_CLIENTS.indexOf(sender.id) === -1) {
+  if (ImageLoader.ALLOWED_CLIENT_ORIGINS.indexOf(sender.origin) === -1) {
     return;
   }
 
@@ -108,14 +108,14 @@ ImageLoader.prototype.onIncomingRequest_ = function(
   } else {
     request.orientation = new ImageOrientation(1, 0, 0, 1);
   }
-  return this.onMessage_(sender.id, request, failSafeSendResponse);
+  return this.onMessage_(sender.origin, request, failSafeSendResponse);
 };
 
 /**
  * Handles a request. Depending on type of the request, starts or stops
  * an image task.
  *
- * @param {string} senderId Sender's extension id.
+ * @param {string} senderOrigin Sender's extension origin.
  * @param {!LoadImageRequest} request Pre-processed request.
  * @param {function(!LoadImageResponse)} callback Callback to be called to
  *     return response.
@@ -123,8 +123,8 @@ ImageLoader.prototype.onIncomingRequest_ = function(
  *     callback is called.
  * @private
  */
-ImageLoader.prototype.onMessage_ = function(senderId, request, callback) {
-  const requestId = senderId + ':' + request.taskId;
+ImageLoader.prototype.onMessage_ = function(senderOrigin, request, callback) {
+  const requestId = senderOrigin + ':' + request.taskId;
   if (request.cancel) {
     // Cancel a task.
     this.scheduler_.remove(requestId);

@@ -176,7 +176,6 @@ class CORE_EXPORT SerializedScriptValue
    public:
     MessagePortArray* message_ports = nullptr;
     const WebBlobInfoArray* blob_info = nullptr;
-    bool read_wasm_from_stream = false;
   };
   v8::Local<v8::Value> Deserialize(v8::Isolate* isolate) {
     return Deserialize(isolate, DeserializeOptions());

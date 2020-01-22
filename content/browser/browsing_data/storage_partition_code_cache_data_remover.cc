@@ -74,12 +74,11 @@ void StoragePartitionCodeCacheDataRemover::ClearCache(
   if (!url_predicate_.is_null()) {
     result =
         (new ConditionalCacheDeletionHelper(
-             backend,
-             ConditionalCacheDeletionHelper::CreateCustomKeyURLAndTimeCondition(
-                 std::move(url_predicate_),
-                 base::BindRepeating(
-                     &GeneratedCodeCache::GetResourceURLFromKey),
-                 begin_time_, end_time_)))
+             backend, ConditionalCacheDeletionHelper::CreateURLAndTimeCondition(
+                          std::move(url_predicate_),
+                          base::BindRepeating(
+                              &GeneratedCodeCache::GetResourceURLFromKey),
+                          begin_time_, end_time_)))
             ->DeleteAndDestroySelfWhenFinished(copyable_callback);
   } else if (begin_time_.is_null() && end_time_.is_max()) {
     result = backend->DoomAllEntries(copyable_callback);

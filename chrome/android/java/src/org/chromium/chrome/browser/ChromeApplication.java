@@ -180,7 +180,7 @@ public class ChromeApplication extends Application {
         return FeatureUtilities.isCommandLineOnNonRootedEnabled();
     }
 
-    private static boolean isBrowserProcess() {
+    protected static boolean isBrowserProcess() {
         return !ContextUtils.getProcessName().contains(":");
     }
 

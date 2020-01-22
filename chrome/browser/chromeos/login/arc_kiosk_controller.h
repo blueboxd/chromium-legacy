@@ -8,7 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager_base.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chromeos/login/auth/login_performer.h"
 
 class AccountId;
@@ -20,7 +22,6 @@ class OneShotTimer;
 
 namespace chromeos {
 
-class ArcKioskSplashScreenView;
 class LoginDisplayHost;
 class OobeUI;
 class UserContext;
@@ -30,7 +31,8 @@ class UserContext;
 // updating the splash screen UI.
 class ArcKioskController : public LoginPerformer::Delegate,
                            public UserSessionManagerDelegate,
-                           public ArcKioskAppService::Delegate {
+                           public ArcKioskAppService::Delegate,
+                           public AppLaunchSplashScreenView::Delegate {
  public:
   ArcKioskController(LoginDisplayHost* host, OobeUI* oobe_ui);
 
@@ -38,11 +40,6 @@ class ArcKioskController : public LoginPerformer::Delegate,
 
   // Starts ARC kiosk splash screen.
   void StartArcKiosk(const AccountId& account_id);
-
-  // Invoked when the launch bailout shortcut key is pressed.
-  void OnCancelArcKioskLaunch();
-  // Invoked when the splash screen view gets being deleted.
-  void OnDeletingSplashScreenView();
 
  private:
   void CleanUp();
@@ -61,13 +58,22 @@ class ArcKioskController : public LoginPerformer::Delegate,
   void OnProfilePrepared(Profile* profile, bool browser_launched) override;
 
   // ArcKioskAppService::Delegate implementation:
+  void OnAppDataUpdated() override;
   void OnAppStarted() override;
   void OnAppWindowLaunched() override;
+
+  // AppLaunchSplashScreenView::Delegate implementation:
+  KioskAppManagerBase::App GetAppData() override;
+  void OnCancelAppLaunch() override;
+  void OnDeletingSplashScreenView() override;
+
+  // Accound id of the app we are currently running.
+  AccountId account_id_;
 
   // LoginDisplayHost owns itself.
   LoginDisplayHost* const host_;
   // Owned by OobeUI.
-  ArcKioskSplashScreenView* arc_kiosk_splash_screen_view_;
+  AppLaunchSplashScreenView* arc_kiosk_splash_screen_view_;
   // Not owning here.
   Profile* profile_ = nullptr;
 

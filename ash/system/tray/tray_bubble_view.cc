@@ -8,8 +8,6 @@
 #include <numeric>
 
 #include "ash/public/cpp/ash_features.h"
-#include "ash/system/tray/tray_constants.h"
-#include "ash/system/unified/unified_system_tray_view.h"
 #include "base/macros.h"
 #include "base/numerics/ranges.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -240,22 +238,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
   set_notify_enter_exit_on_child(true);
   set_close_on_deactivate(init_params.close_on_deactivate);
   set_margins(gfx::Insets());
-
-  if (init_params.translucent) {
-    // The following code will not work with bubble's shadow.
-    DCHECK(!init_params.has_shadow);
-    SetPaintToLayer(ui::LAYER_SOLID_COLOR);
-
-    layer()->SetRoundedCornerRadius(
-        gfx::RoundedCornersF{kUnifiedTrayCornerRadius});
-    layer()->SetColor(UnifiedSystemTrayView::GetBackgroundColor());
-    layer()->SetFillsBoundsOpaquely(false);
-    layer()->SetIsFastRoundedCorner(true);
-    if (features::IsBackgroundBlurEnabled()) {
-      layer()->SetBackgroundBlur(kUnifiedMenuBackgroundBlur);
-      layer()->SetName("trayBubble");
-    }
-  }
+  SetPaintToLayer();
 
   auto layout = std::make_unique<BottomAlignedBoxLayout>(this);
   layout->SetDefaultFlex(1);
@@ -284,6 +267,10 @@ bool TrayBubbleView::IsATrayBubbleOpen() {
 }
 
 void TrayBubbleView::InitializeAndShowBubble() {
+  int radius = bubble_border_->corner_radius();
+  layer()->parent()->SetRoundedCornerRadius({radius, radius, radius, radius});
+  layer()->parent()->SetIsFastRoundedCorner(true);
+
   GetWidget()->Show();
   UpdateBubble();
 
@@ -393,12 +380,6 @@ void TrayBubbleView::OnWidgetActivationChanged(Widget* widget, bool active) {
   BubbleDialogDelegateView::OnWidgetActivationChanged(widget, active);
 }
 
-ui::LayerType TrayBubbleView::GetLayerType() const {
-  if (params_.translucent)
-    return ui::LAYER_NOT_DRAWN;
-  return ui::LAYER_TEXTURED;
-}
-
 NonClientFrameView* TrayBubbleView::CreateNonClientFrameView(Widget* widget) {
   BubbleFrameView* frame = static_cast<BubbleFrameView*>(
       BubbleDialogDelegateView::CreateNonClientFrameView(widget));
@@ -483,6 +464,14 @@ void TrayBubbleView::MouseMovedOutOfHost() {
 
 void TrayBubbleView::ChildPreferredSizeChanged(View* child) {
   SizeToContents();
+}
+
+void TrayBubbleView::ViewHierarchyChanged(
+    const views::ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this) {
+    details.parent->SetPaintToLayer();
+    details.parent->layer()->SetMasksToBounds(true);
+  }
 }
 
 void TrayBubbleView::SetBubbleBorderInsets(gfx::Insets insets) {

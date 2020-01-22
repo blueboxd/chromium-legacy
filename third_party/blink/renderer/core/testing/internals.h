@@ -430,10 +430,6 @@ class Internals final : public ScriptWrappable {
   DOMArrayBuffer* serializeObject(scoped_refptr<SerializedScriptValue>) const;
   scoped_refptr<SerializedScriptValue> deserializeBuffer(DOMArrayBuffer*) const;
 
-  DOMArrayBuffer* serializeWithInlineWasm(ScriptValue) const;
-  ScriptValue deserializeBufferContainingWasm(ScriptState*,
-                                              DOMArrayBuffer*) const;
-
   String getCurrentCursorInfo();
 
   bool cursorUpdatePending() const;

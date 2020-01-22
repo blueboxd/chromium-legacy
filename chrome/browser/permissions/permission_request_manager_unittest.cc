@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
+#include "chrome/browser/permissions/crowd_deny_fake_safe_browsing_database_manager.h"
 #include "chrome/browser/permissions/crowd_deny_preload_data.h"
 #include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/permissions/notification_permission_ui_selector.h"
@@ -25,14 +26,17 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/safe_browsing/core/db/test_database_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,6 +49,9 @@ const double kTestEngagementScore = 29;
 
 class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
  public:
+  using SiteReputation =
+      CrowdDenyPreloadData::SiteReputation::NotificationUserExperienceQuality;
+
   PermissionRequestManagerTest()
       : ChromeRenderViewHostTestHarness(),
         request1_("test1",
@@ -85,10 +92,19 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
     PermissionRequestManager::CreateForWebContents(web_contents());
     manager_ = PermissionRequestManager::FromWebContents(web_contents());
     prompt_factory_.reset(new MockPermissionPromptFactory(manager_));
+
+    db_manager_ =
+        base::MakeRefCounted<CrowdDenyFakeSafeBrowsingDatabaseManager>();
+    sb_factory_ =
+        std::make_unique<safe_browsing::TestSafeBrowsingServiceFactory>();
+    sb_factory_->SetTestDatabaseManager(db_manager_.get());
+    TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(
+        sb_factory_->CreateSafeBrowsingService());
   }
 
   void TearDown() override {
     prompt_factory_.reset();
+    TestingBrowserProcess::GetGlobal()->SetSafeBrowsingService(nullptr);
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -131,6 +147,20 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
     manager_->NavigationEntryCommitted(details);
   }
 
+  void SetUpPreloadDataForUrl(const GURL& url, SiteReputation reputation) {
+    CrowdDenyPreloadData::GetInstance()
+        ->set_origin_notification_user_experience_for_testing(
+            url::Origin::Create(url), reputation);
+  }
+
+  void SetUpSafeBrowsingMetadataForUrl(const GURL& url,
+                                       bool unsolicited_notifications) {
+    safe_browsing::ThreatMetadata test_metadata;
+    if (unsolicited_notifications)
+      test_metadata.api_permissions.emplace("NOTIFICATIONS");
+    db_manager_->SetSimulatedMetadataForUrl(url, test_metadata);
+  }
+
 #if defined(OS_CHROMEOS)
   std::unique_ptr<MockPermissionRequest> MakeRequestInWebKioskMode(
       const GURL& url,
@@ -170,6 +200,8 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
   MockPermissionRequest iframe_request_mic_other_domain_;
   PermissionRequestManager* manager_;
   std::unique_ptr<MockPermissionPromptFactory> prompt_factory_;
+  scoped_refptr<CrowdDenyFakeSafeBrowsingDatabaseManager> db_manager_;
+  std::unique_ptr<safe_browsing::TestSafeBrowsingServiceFactory> sb_factory_;
 };
 
 TEST_F(PermissionRequestManagerTest, SingleRequest) {
@@ -969,8 +1001,7 @@ TEST_F(PermissionRequestManagerTest, TestWebKioskModeDifferentOrigin) {
 }
 #endif  // defined(OS_CHROMEOS)
 
-// TODO(andypaicu): re-enable ASAP. crbug.com/1042611
-TEST_F(PermissionRequestManagerTest, DISABLED_TestCrowdDenyHoldbackChance) {
+TEST_F(PermissionRequestManagerTest, TestCrowdDenyHoldbackChance) {
   const struct {
     std::string holdback_chance;
     bool enabled_in_prefs;
@@ -987,10 +1018,10 @@ TEST_F(PermissionRequestManagerTest, DISABLED_TestCrowdDenyHoldbackChance) {
   };
 
   GURL url("https://spammy.com");
-  CrowdDenyPreloadData::GetInstance()
-      ->set_origin_notification_user_experience_for_testing(
-          url::Origin::Create(url),
-          CrowdDenyPreloadData::SiteReputation::UNSOLICITED_PROMPTS);
+
+  SetUpPreloadDataForUrl(
+      url, CrowdDenyPreloadData::SiteReputation::UNSOLICITED_PROMPTS);
+  SetUpSafeBrowsingMetadataForUrl(url, true);
 
   for (const auto& test : kTestCases) {
     base::HistogramTester histograms;
@@ -1020,5 +1051,43 @@ TEST_F(PermissionRequestManagerTest, DISABLED_TestCrowdDenyHoldbackChance) {
         "Permissions.CrowdDeny.DidHoldbackQuietUi",
         static_cast<base::HistogramBase::Sample>(test.expect_histogram_bucket),
         1);
+  }
+}
+
+TEST_F(PermissionRequestManagerTest, PreloadDataNeedsSafeBrowsingConfirmation) {
+  const struct {
+    SiteReputation preload_data_reputation;
+    bool safe_browsing_unsolicited_notifications;
+    bool expect_quiet_ui;
+  } kTestCases[] = {
+      {CrowdDenyPreloadData::SiteReputation::UNSOLICITED_PROMPTS, true, true},
+      {CrowdDenyPreloadData::SiteReputation::UNSOLICITED_PROMPTS, false, false},
+      {CrowdDenyPreloadData::SiteReputation::ACCEPTABLE, true, false},
+      {CrowdDenyPreloadData::SiteReputation::UNKNOWN, true, false},
+      {CrowdDenyPreloadData::SiteReputation::UNKNOWN, false, false},
+  };
+
+  const GURL url("https://spammy.com");
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeatureWithParameters(
+      features::kQuietNotificationPrompts,
+      {{QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation, "true"},
+       {QuietNotificationPermissionUiConfig::kEnableCrowdDenyTriggering,
+        "true"},
+       {QuietNotificationPermissionUiConfig::kCrowdDenyHoldBackChance, "0"}});
+
+  for (const auto& test : kTestCases) {
+    SetUpPreloadDataForUrl(url, test.preload_data_reputation);
+    SetUpSafeBrowsingMetadataForUrl(
+        url, test.safe_browsing_unsolicited_notifications);
+
+    MockPermissionRequest request(
+        "request", PermissionRequestType::PERMISSION_NOTIFICATIONS, url);
+
+    manager_->AddRequest(&request);
+    WaitForBubbleToBeShown();
+    EXPECT_EQ(test.expect_quiet_ui, manager_->ShouldCurrentRequestUseQuietUI());
+    Closing();
   }
 }

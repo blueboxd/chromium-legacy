@@ -149,59 +149,60 @@ size_t Partitions::TotalActiveBytes() {
   return dumper.TotalActiveBytes();
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing2G() {
+static NOINLINE void PartitionsOutOfMemoryUsing2G(size_t size) {
   size_t signature = 2UL * 1024 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing1G() {
+static NOINLINE void PartitionsOutOfMemoryUsing1G(size_t size) {
   size_t signature = 1UL * 1024 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing512M() {
+static NOINLINE void PartitionsOutOfMemoryUsing512M(size_t size) {
   size_t signature = 512 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing256M() {
+static NOINLINE void PartitionsOutOfMemoryUsing256M(size_t size) {
   size_t signature = 256 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing128M() {
+static NOINLINE void PartitionsOutOfMemoryUsing128M(size_t size) {
   size_t signature = 128 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing64M() {
+static NOINLINE void PartitionsOutOfMemoryUsing64M(size_t size) {
   size_t signature = 64 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing32M() {
+static NOINLINE void PartitionsOutOfMemoryUsing32M(size_t size) {
   size_t signature = 32 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsing16M() {
+static NOINLINE void PartitionsOutOfMemoryUsing16M(size_t size) {
   size_t signature = 16 * 1024 * 1024;
   base::debug::Alias(&signature);
-  OOM_CRASH();
+  OOM_CRASH(size);
 }
 
-static NOINLINE void PartitionsOutOfMemoryUsingLessThan16M() {
+static NOINLINE void PartitionsOutOfMemoryUsingLessThan16M(size_t size) {
   size_t signature = 16 * 1024 * 1024 - 1;
   base::debug::Alias(&signature);
-  DLOG(FATAL) << "ParitionAlloc: out of memory with < 16M usage (error:"
+  DLOG(FATAL) << "PartitionAlloc: out of memory with < 16M usage (error:"
               << base::GetAllocPageErrorCode() << ")";
+  OOM_CRASH(size);
 }
 
 // static
@@ -241,28 +242,28 @@ void Partitions::FastFree(void* p) {
 }
 
 // static
-void Partitions::HandleOutOfMemory() {
+void Partitions::HandleOutOfMemory(size_t size) {
   volatile size_t total_usage = TotalSizeOfCommittedPages();
   uint32_t alloc_page_error_code = base::GetAllocPageErrorCode();
   base::debug::Alias(&alloc_page_error_code);
 
   if (total_usage >= 2UL * 1024 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing2G();
+    PartitionsOutOfMemoryUsing2G(size);
   if (total_usage >= 1UL * 1024 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing1G();
+    PartitionsOutOfMemoryUsing1G(size);
   if (total_usage >= 512 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing512M();
+    PartitionsOutOfMemoryUsing512M(size);
   if (total_usage >= 256 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing256M();
+    PartitionsOutOfMemoryUsing256M(size);
   if (total_usage >= 128 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing128M();
+    PartitionsOutOfMemoryUsing128M(size);
   if (total_usage >= 64 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing64M();
+    PartitionsOutOfMemoryUsing64M(size);
   if (total_usage >= 32 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing32M();
+    PartitionsOutOfMemoryUsing32M(size);
   if (total_usage >= 16 * 1024 * 1024)
-    PartitionsOutOfMemoryUsing16M();
-  PartitionsOutOfMemoryUsingLessThan16M();
+    PartitionsOutOfMemoryUsing16M(size);
+  PartitionsOutOfMemoryUsingLessThan16M(size);
 }
 
 }  // namespace WTF

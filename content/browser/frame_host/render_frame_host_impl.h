@@ -907,6 +907,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return frame_host_associated_receiver_;
   }
 
+  mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>&
+  local_frame_host_receiver_for_testing() {
+    return local_frame_host_receiver_;
+  }
+
   mojo::Receiver<blink::mojom::BrowserInterfaceBroker>&
   browser_interface_broker_receiver_for_testing() {
     return broker_receiver_;
@@ -1321,6 +1326,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const GURL& blocked_url,
       const GURL& initiator_url,
       blink::mojom::NavigationBlockedReason reason) override;
+  void DispatchLoad() override;
   void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override;
   void RenderFallbackContentInParentProcess() override;
   void HandleAccessibilityFindInPageResult(
@@ -1492,7 +1498,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                      blink::WebTextDirection title_direction);
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
-  void OnDispatchLoad();
   void OnAccessibilityEvents(
       const AccessibilityHostMsg_EventBundleParams& params,
       int reset_token,

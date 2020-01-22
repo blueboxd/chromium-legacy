@@ -50,7 +50,7 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
   const KURL request_url_;
   const network::mojom::RequestMode request_mode_;
   const network::mojom::RedirectMode redirect_mode_;
-  const network::mojom::RequestContextFrameType frame_type_;
+  const mojom::RequestContextFrameType frame_type_;
   const mojom::RequestContextType request_context_;
   const network::mojom::blink::CrossOriginEmbedderPolicy requestor_coep_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

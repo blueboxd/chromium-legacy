@@ -10,13 +10,13 @@
 namespace base {
 namespace internal {
 
-void NOINLINE PartitionExcessiveAllocationSize() {
-  OOM_CRASH();
+void NOINLINE PartitionExcessiveAllocationSize(size_t size) {
+  OOM_CRASH(size);
 }
 
 #if !defined(ARCH_CPU_64_BITS)
-NOINLINE void PartitionOutOfMemoryWithLotsOfUncommitedPages() {
-  OOM_CRASH();
+NOINLINE void PartitionOutOfMemoryWithLotsOfUncommitedPages(size_t size) {
+  OOM_CRASH(size);
 }
 #endif
 

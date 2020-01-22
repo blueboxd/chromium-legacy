@@ -44,19 +44,6 @@ ConditionalCacheDeletionHelper::ConditionalCacheDeletionHelper(
 base::RepeatingCallback<bool(const disk_cache::Entry*)>
 ConditionalCacheDeletionHelper::CreateURLAndTimeCondition(
     base::RepeatingCallback<bool(const GURL&)> url_predicate,
-    base::Time begin_time,
-    base::Time end_time) {
-  return base::BindRepeating(
-      &EntryPredicateFromURLsAndTime, std::move(url_predicate),
-      base::RepeatingCallback<std::string(const std::string&)>(),
-      begin_time.is_null() ? base::Time() : begin_time,
-      end_time.is_null() ? base::Time::Max() : end_time);
-}
-
-// static
-base::RepeatingCallback<bool(const disk_cache::Entry*)>
-ConditionalCacheDeletionHelper::CreateCustomKeyURLAndTimeCondition(
-    base::RepeatingCallback<bool(const GURL&)> url_predicate,
     base::RepeatingCallback<std::string(const std::string&)> get_url_from_key,
     base::Time begin_time,
     base::Time end_time) {

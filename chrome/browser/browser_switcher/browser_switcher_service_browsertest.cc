@@ -768,22 +768,29 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, WritesSitelistsToCacheFile) {
                             base::File::FLAG_OPEN | base::File::FLAG_READ);
             ASSERT_TRUE(file.IsValid());
 
-            const char expected_output[] =
+            base::FilePath expected_chrome_path;
+            base::FilePath::CharType chrome_path[MAX_PATH];
+#if defined(OS_WIN)
+            ::GetModuleFileName(NULL, chrome_path, ARRAYSIZE(chrome_path));
+            expected_chrome_path = base::FilePath(chrome_path);
+#endif
+            std::string expected_output = base::StringPrintf(
                 "1\n"
                 "\n"
                 "\n"
-                "\n"
+                "%s\n"
                 "\n"
                 "2\n"
                 "docs.google.com\n"
                 "yahoo.com\n"
                 "1\n"
-                "greylist.invalid.com\n";
+                "greylist.invalid.com\n",
+                expected_chrome_path.MaybeAsASCII().c_str());
 
             std::unique_ptr<char[]> buffer(new char[file.GetLength() + 1]);
             buffer.get()[file.GetLength()] = '\0';
             file.Read(0, buffer.get(), file.GetLength());
-            EXPECT_EQ(std::string(expected_output), std::string(buffer.get()));
+            EXPECT_EQ(expected_output, std::string(buffer.get()));
 
             // Check that sitelistcache.dat doesn't exist.
             EXPECT_FALSE(base::PathExists(sitelist_cache_file_path));
@@ -843,21 +850,27 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, CacheFileCorrectOnStartup) {
             base::File file(cache_file_path,
                             base::File::FLAG_OPEN | base::File::FLAG_READ);
             ASSERT_TRUE(file.IsValid());
-
-            const char expected_output[] =
+            base::FilePath expected_chrome_path;
+            base::FilePath::CharType chrome_path[MAX_PATH];
+#if defined(OS_WIN)
+            ::GetModuleFileName(NULL, chrome_path, ARRAYSIZE(chrome_path));
+            expected_chrome_path = base::FilePath(chrome_path);
+#endif
+            std::string expected_output = base::StringPrintf(
                 "1\n"
                 "\n"
                 "\n"
-                "\n"
+                "%s\n"
                 "\n"
                 "1\n"
                 "docs.google.com\n"
-                "0\n";
+                "0\n",
+                expected_chrome_path.MaybeAsASCII().c_str());
 
             std::unique_ptr<char[]> buffer(new char[file.GetLength() + 1]);
             buffer.get()[file.GetLength()] = '\0';
             file.Read(0, buffer.get(), file.GetLength());
-            EXPECT_EQ(std::string(expected_output), std::string(buffer.get()));
+            EXPECT_EQ(expected_output, std::string(buffer.get()));
 
             std::move(quit).Run();
           },

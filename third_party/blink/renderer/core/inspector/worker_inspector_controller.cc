@@ -87,9 +87,10 @@ WorkerInspectorController::WorkerInspectorController(
     agent_ = MakeGarbageCollected<DevToolsAgent>(
         this, inspected_frames_.Get(), probe_sink_.Get(),
         std::move(inspector_task_runner), std::move(io_task_runner));
-    agent_->BindReceiver(std::move(devtools_params->agent_host_remote),
-                         std::move(devtools_params->agent_receiver),
-                         thread->GetTaskRunner(TaskType::kInternalInspector));
+    agent_->BindReceiverForWorker(
+        std::move(devtools_params->agent_host_remote),
+        std::move(devtools_params->agent_receiver),
+        thread->GetTaskRunner(TaskType::kInternalInspector));
   }
   trace_event::AddEnabledStateObserver(this);
   EmitTraceEvent();

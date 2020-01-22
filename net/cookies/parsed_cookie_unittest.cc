@@ -29,6 +29,28 @@ TEST(ParsedCookieTest, TestEmpty) {
   }
 }
 
+TEST(ParsedCookieTest, TestSetEmptyNameValue) {
+  ParsedCookie empty("");
+  EXPECT_FALSE(empty.IsValid());
+  EXPECT_FALSE(empty.SetName(""));
+  EXPECT_FALSE(empty.SetValue(""));
+  EXPECT_FALSE(empty.IsValid());
+
+  ParsedCookie empty_value("name=");
+  EXPECT_TRUE(empty_value.IsValid());
+  EXPECT_EQ("name", empty_value.Name());
+  EXPECT_FALSE(empty_value.SetName(""));
+  EXPECT_EQ("name", empty_value.Name());
+  EXPECT_TRUE(empty_value.IsValid());
+
+  ParsedCookie empty_name("value");
+  EXPECT_TRUE(empty_name.IsValid());
+  EXPECT_EQ("value", empty_name.Value());
+  EXPECT_FALSE(empty_name.SetValue(""));
+  EXPECT_EQ("value", empty_name.Value());
+  EXPECT_TRUE(empty_value.IsValid());
+}
+
 TEST(ParsedCookieTest, TestQuoted) {
   // These are some quoting cases which the major browsers all
   // handle differently.  I've tested Internet Explorer 6, Opera 9.6,

@@ -17,23 +17,20 @@
 namespace {
 // The crash is generated in a NOINLINE function so that we can classify the
 // crash as an OOM solely by analyzing the stack trace.
-NOINLINE void OnNoMemory() {
+NOINLINE void OnNoMemory(size_t size) {
   base::internal::RunPartitionAllocOomCallback();
-#if defined(OS_WIN)
-  ::RaiseException(base::win::kOomExceptionCode, EXCEPTION_NONCONTINUABLE, 0,
-                   nullptr);
-#endif
+  base::internal::OnNoMemoryInternal(size);
   IMMEDIATE_CRASH();
 }
 }  // namespace
 
-// OOM_CRASH() - Specialization of IMMEDIATE_CRASH which will raise a custom
+// OOM_CRASH(size) - Specialization of IMMEDIATE_CRASH which will raise a custom
 // exception on Windows to signal this is OOM and not a normal assert.
-// OOM_CRASH() is called by users of PageAllocator (including PartitionAlloc) to
-// signify an allocation failure from the platform.
-#define OOM_CRASH() \
-  do {              \
-    OnNoMemory();   \
+// OOM_CRASH(size) is called by users of PageAllocator (including
+// PartitionAlloc) to signify an allocation failure from the platform.
+#define OOM_CRASH(size) \
+  do {                  \
+    OnNoMemory(size);   \
   } while (0)
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_OOM_H_

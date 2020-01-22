@@ -2823,30 +2823,6 @@ scoped_refptr<SerializedScriptValue> Internals::deserializeBuffer(
                                        buffer->ByteLengthAsSizeT());
 }
 
-DOMArrayBuffer* Internals::serializeWithInlineWasm(ScriptValue value) const {
-  v8::Isolate* isolate = value.GetIsolate();
-  ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
-                                 "Internals", "serializeWithInlineWasm");
-  v8::Local<v8::Value> v8_value = value.V8Value();
-  SerializedScriptValue::SerializeOptions options;
-  options.wasm_policy = SerializedScriptValue::SerializeOptions::kSerialize;
-  scoped_refptr<SerializedScriptValue> obj = SerializedScriptValue::Serialize(
-      isolate, v8_value, options, exception_state);
-  if (exception_state.HadException())
-    return nullptr;
-  return serializeObject(obj);
-}
-
-ScriptValue Internals::deserializeBufferContainingWasm(
-    ScriptState* state,
-    DOMArrayBuffer* buffer) const {
-  DummyExceptionStateForTesting exception_state;
-  SerializedScriptValue::DeserializeOptions options;
-  options.read_wasm_from_stream = true;
-  return ScriptValue::From(state, deserializeBuffer(buffer)->Deserialize(
-                                      state->GetIsolate(), options));
-}
-
 void Internals::forceReload(bool bypass_cache) {
   if (!GetFrame())
     return;

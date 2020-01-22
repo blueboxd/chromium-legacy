@@ -32,7 +32,8 @@ CaptivePortalServiceFactory::~CaptivePortalServiceFactory() {
 
 KeyedService* CaptivePortalServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  return new CaptivePortalService(static_cast<Profile*>(profile));
+  return new CaptivePortalService(profile,
+                                  static_cast<Profile*>(profile)->GetPrefs());
 }
 
 content::BrowserContext* CaptivePortalServiceFactory::GetBrowserContextToUse(

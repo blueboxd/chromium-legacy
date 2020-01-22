@@ -69,7 +69,13 @@ void PluginVmInstaller::Start() {
     return;
   }
 
-  StartDlcDownload();
+  // If there's an existing VM, we can complete without running the install
+  // flow.
+  PluginVmManager::GetForProfile(profile_)->UpdateVmState(
+      base::BindOnce(&PluginVmInstaller::OnUpdateVmState,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&PluginVmInstaller::StartDlcDownload,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PluginVmInstaller::Cancel() {
@@ -88,6 +94,18 @@ void PluginVmInstaller::Cancel() {
                  << GetStateName(state_);
       return;
   }
+}
+
+void PluginVmInstaller::OnUpdateVmState(bool default_vm_exists) {
+  if (default_vm_exists) {
+    if (observer_)
+      observer_->OnVmExists();
+    profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmImageExists,
+                                     true);
+    state_ = State::CONFIGURED;
+    return;
+  }
+  StartDlcDownload();
 }
 
 void PluginVmInstaller::StartDlcDownload() {

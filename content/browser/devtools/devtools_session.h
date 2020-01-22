@@ -52,7 +52,8 @@ class DevToolsSession : public protocol::FrontendChannel,
   void AddHandler(std::unique_ptr<protocol::DevToolsDomainHandler> handler);
   void TurnIntoExternalProxy(DevToolsExternalAgentProxyDelegate* delegate);
 
-  void AttachToAgent(blink::mojom::DevToolsAgent* agent);
+  void AttachToAgent(blink::mojom::DevToolsAgent* agent,
+                     bool force_using_io_session);
   bool DispatchProtocolMessage(base::span<const uint8_t> message);
   void SuspendSendingMessagesToAgent();
   void ResumeSendingMessagesToAgent();
@@ -124,6 +125,7 @@ class DevToolsSession : public protocol::FrontendChannel,
   mojo::AssociatedReceiver<blink::mojom::DevToolsSessionHost> receiver_{this};
   mojo::AssociatedRemote<blink::mojom::DevToolsSession> session_;
   mojo::Remote<blink::mojom::DevToolsSession> io_session_;
+  bool use_io_session_{false};
   DevToolsAgentHostImpl* agent_host_ = nullptr;
   DevToolsAgentHostClient* client_;
   bool browser_only_ = false;

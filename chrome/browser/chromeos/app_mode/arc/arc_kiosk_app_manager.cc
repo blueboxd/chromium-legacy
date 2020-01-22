@@ -86,11 +86,11 @@ void ArcKioskAppManager::GetAppsForTesting(
   }
 }
 
-void ArcKioskAppManager::UpdateNameAndIcon(const std::string& app_id,
+void ArcKioskAppManager::UpdateNameAndIcon(const AccountId& account_id,
                                            const std::string& name,
                                            const gfx::ImageSkia& icon) {
   for (auto& app : apps_) {
-    if (app->app_id() == app_id) {
+    if (app->account_id() == account_id) {
       app->SetCache(name, icon);
       return;
     }

@@ -25,7 +25,9 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
 
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -93,7 +95,7 @@ static void ReportFatalErrorInMainThread(const char* location,
 static void ReportOOMErrorInMainThread(const char* location, bool is_js_heap) {
   DVLOG(1) << "V8 " << (is_js_heap ? "javascript" : "process") << " OOM: ("
            << location << ").";
-  OOM_CRASH();
+  OOM_CRASH(0);
 }
 
 static String ExtractMessageForConsole(v8::Isolate* isolate,

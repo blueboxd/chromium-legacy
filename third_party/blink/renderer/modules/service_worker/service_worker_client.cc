@@ -53,13 +53,13 @@ String ServiceWorkerClient::frameType(ScriptState* script_state) const {
   UseCounter::Count(ExecutionContext::From(script_state),
                     WebFeature::kServiceWorkerClientFrameType);
   switch (frame_type_) {
-    case network::mojom::RequestContextFrameType::kAuxiliary:
+    case mojom::RequestContextFrameType::kAuxiliary:
       return "auxiliary";
-    case network::mojom::RequestContextFrameType::kNested:
+    case mojom::RequestContextFrameType::kNested:
       return "nested";
-    case network::mojom::RequestContextFrameType::kNone:
+    case mojom::RequestContextFrameType::kNone:
       return "none";
-    case network::mojom::RequestContextFrameType::kTopLevel:
+    case mojom::RequestContextFrameType::kTopLevel:
       return "top-level";
   }
 

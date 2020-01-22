@@ -60,24 +60,6 @@ std::unique_ptr<protocol::Value> StringUtil::parseJSON(const String& string) {
 }
 
 // static
-void StringUtil::builderAppendQuotedString(StringBuilder& builder,
-                                           const String& str) {
-  builder.Append('"');
-  if (!str.IsEmpty()) {
-    if (str.Is8Bit()) {
-      escapeLatinStringForJSON(
-          reinterpret_cast<const uint8_t*>(str.Characters8()), str.length(),
-          &builder);
-    } else {
-      escapeWideStringForJSON(
-          reinterpret_cast<const uint16_t*>(str.Characters16()), str.length(),
-          &builder);
-    }
-  }
-  builder.Append('"');
-}
-
-// static
 String StringUtil::fromUTF16LE(const uint16_t* data, size_t length) {
   // Chromium doesn't support big endian architectures, so it's OK to cast here.
   return String(reinterpret_cast<const UChar*>(data), length);

@@ -173,7 +173,6 @@ class QuickViewController {
    */
   onQuickViewKeyDown_(event) {
     if (this.quickView_.isOpened()) {
-      let index;
       switch (event.key) {
         case ' ':
         case 'Escape':

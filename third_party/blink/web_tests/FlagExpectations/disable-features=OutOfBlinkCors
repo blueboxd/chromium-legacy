@@ -49,3 +49,13 @@ crbug.com/870173 virtual/cache-storage-high-priority-match/external/wpt/service-
 crbug.com/870173 virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 crbug.com/870173 virtual/omt-service-worker-startup/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/service-workers/service-worker/fetch-request-xhr.https.html [ Failure ]
+
+# preflight support for fetch keepalive and sendBeacon is only for OOR-CORS.
+crbug.com/835821 external/wpt/beacon/beacon-basic-blob.html [ Failure ]
+crbug.com/835821 external/wpt/beacon/beacon-basic-blobMax.html [ Failure ]
+crbug.com/835821 external/wpt/beacon/beacon-cors.sub.window.html [ Failure ]
+crbug.com/835821 external/wpt/beacon/beacon-navigate.html [ Failure ]
+crbug.com/835821 external/wpt/beacon/beacon-redirect.window.html [ Failure ]
+crbug.com/835821 external/wpt/fetch/api/basic/keepalive.html [ Failure ]
+crbug.com/835821 http/tests/sendbeacon/beacon-blob-with-non-simple-type.html [ Failure ]
+crbug.com/835821 virtual/stable/http/tests/sendbeacon/beacon-blob-with-non-simple-type.html [ Failure ]

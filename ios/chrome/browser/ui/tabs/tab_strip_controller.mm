@@ -37,6 +37,7 @@
 #import "ios/chrome/browser/ui/tabs/tab_strip_view.h"
 #import "ios/chrome/browser/ui/tabs/tab_view.h"
 #include "ios/chrome/browser/ui/tabs/target_frame_cache.h"
+#import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
@@ -505,7 +506,8 @@ UIColor* BackgroundColor() {
 
     [_tabStripView addSubview:_buttonNewTab];
 
-    [self installTabSwitcherButton];
+    if (!base::FeatureList::IsEnabled(kChangeTabSwitcherPosition))
+      [self installTabSwitcherButton];
 
     // Add tab buttons to tab strip.
     if (_tabModel)
@@ -765,6 +767,9 @@ UIColor* BackgroundColor() {
 // here views use CGAffineTransformMakeScale to support RTL, and NamedGuide
 // doesn't honor transforms. Instead we set the tabSwitcherGuide as necessary.
 - (void)updateTabSwitcherGuide {
+  if (base::FeatureList::IsEnabled(kChangeTabSwitcherPosition))
+    return;
+
   NamedGuide* tabSwitcherGuide =
       [NamedGuide guideWithName:kTabStripTabSwitcherGuide view:self.view];
   if (self.view.hidden) {
@@ -1202,6 +1207,7 @@ UIColor* BackgroundColor() {
 }
 
 - (void)installTabSwitcherButton {
+  DCHECK(!base::FeatureList::IsEnabled(kChangeTabSwitcherPosition));
   DCHECK(!_tabSwitcherButton);
   UIImage* tabSwitcherButtonIcon;
   UIImage* tabSwitcherButtonIconPressed;
@@ -1444,29 +1450,31 @@ UIColor* BackgroundColor() {
 - (void)updateScrollViewFrameForTabSwitcherButton {
   CGRect tabFrame = _tabStripView.frame;
   tabFrame.size.width = _view.bounds.size.width;
-  if (self.useTabStacking) {
-    tabFrame.size.width -= kTabSwitcherButtonWidth;
-    _tabStripView.contentInset = UIEdgeInsetsZero;
-    [_tabSwitcherButtonBackgroundView setHidden:YES];
-  } else {
-    if (!_tabSwitcherButtonBackgroundView) {
-      _tabSwitcherButtonBackgroundView = [[UIImageView alloc] init];
-      const CGFloat tabStripHeight = _view.frame.size.height;
-      const CGRect backgroundViewFrame = CGRectMake(
-          CGRectGetMaxX(_view.frame) - kTabSwitcherButtonBackgroundWidth, 0.0,
-          kTabSwitcherButtonBackgroundWidth, tabStripHeight);
-      [_tabSwitcherButtonBackgroundView setFrame:backgroundViewFrame];
-      [_tabSwitcherButtonBackgroundView
-          setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin];
-      UIImage* backgroundTabSwitcherImage =
-          [UIImage imageNamed:@"tabstrip_toggle_button_gradient"];
-      [_tabSwitcherButtonBackgroundView setImage:backgroundTabSwitcherImage];
-      [_view addSubview:_tabSwitcherButtonBackgroundView];
+  if (!base::FeatureList::IsEnabled(kChangeTabSwitcherPosition)) {
+    if (self.useTabStacking) {
+      tabFrame.size.width -= kTabSwitcherButtonWidth;
+      _tabStripView.contentInset = UIEdgeInsetsZero;
+      [_tabSwitcherButtonBackgroundView setHidden:YES];
+    } else {
+      if (!_tabSwitcherButtonBackgroundView) {
+        _tabSwitcherButtonBackgroundView = [[UIImageView alloc] init];
+        const CGFloat tabStripHeight = _view.frame.size.height;
+        const CGRect backgroundViewFrame = CGRectMake(
+            CGRectGetMaxX(_view.frame) - kTabSwitcherButtonBackgroundWidth, 0.0,
+            kTabSwitcherButtonBackgroundWidth, tabStripHeight);
+        [_tabSwitcherButtonBackgroundView setFrame:backgroundViewFrame];
+        [_tabSwitcherButtonBackgroundView
+            setAutoresizingMask:UIViewAutoresizingFlexibleLeftMargin];
+        UIImage* backgroundTabSwitcherImage =
+            [UIImage imageNamed:@"tabstrip_toggle_button_gradient"];
+        [_tabSwitcherButtonBackgroundView setImage:backgroundTabSwitcherImage];
+        [_view addSubview:_tabSwitcherButtonBackgroundView];
+      }
+      [_tabSwitcherButtonBackgroundView setHidden:NO];
+      _tabStripView.contentInset =
+          UIEdgeInsetsMake(0, 0, 0, kTabSwitcherButtonWidth);
+      [_view bringSubviewToFront:_tabSwitcherButton];
     }
-    [_tabSwitcherButtonBackgroundView setHidden:NO];
-    _tabStripView.contentInset =
-        UIEdgeInsetsMake(0, 0, 0, kTabSwitcherButtonWidth);
-    [_view bringSubviewToFront:_tabSwitcherButton];
   }
   [_tabStripView setFrame:tabFrame];
 }

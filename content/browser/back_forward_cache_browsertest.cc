@@ -287,6 +287,8 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
 
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
 
+  base::HistogramTester histogram_tester_;
+
  private:
   void AddSampleToBuckets(std::vector<base::Bucket>* buckets,
                           base::HistogramBase::Sample sample) {
@@ -303,7 +305,6 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
   base::test::ScopedFeatureList feature_list_;
 
   FrameTreeVisualizer visualizer_;
-  base::HistogramTester histogram_tester_;
   std::vector<base::Bucket> expected_outcomes_;
   std::vector<base::Bucket> expected_not_restored_;
   std::vector<base::Bucket> expected_blocklisted_features_;
@@ -5335,6 +5336,54 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, NotFetchedScriptNotCached) {
   ExpectBlocklistedFeature(
       blink::scheduler::WebSchedulerTrackedFeature::kOutstandingNetworkRequest,
       FROM_HERE);
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, PageshowMetrics) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const char kHistogramName[] =
+      "BackForwardCache.MainFrameHasPageshowListenersOnRestore";
+
+  const GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  const GURL url2(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to the page.
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_TRUE(ExecJs(current_frame_host(), R"(
+    window.foo = 42;
+  )"));
+
+  // 2) Navigate away and back.
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // As we don't get an explicit ACK when the page is restored (yet), force
+  // a round-trip to the renderer to effectively flush the queue.
+  EXPECT_EQ(42, EvalJs(current_frame_host(), "window.foo"));
+
+  // Expect the back-forward restore without pageshow to be detected.
+  content::FetchHistogramsFromChildProcesses();
+  EXPECT_THAT(histogram_tester_.GetAllSamples(kHistogramName),
+              ElementsAre(base::Bucket(0, 1)));
+
+  EXPECT_TRUE(ExecJs(current_frame_host(), R"(
+    window.addEventListener("pageshow", () => {});
+  )"));
+
+  // 3) Navigate away and back (again).
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // As we don't get an explicit ACK when the page is restored (yet), force
+  // a round-trip to the renderer to effectively flush the queue.
+  EXPECT_EQ(42, EvalJs(current_frame_host(), "window.foo"));
+
+  // Expect the back-forward restore with pageshow to be detected.
+  content::FetchHistogramsFromChildProcesses();
+  EXPECT_THAT(histogram_tester_.GetAllSamples(kHistogramName),
+              ElementsAre(base::Bucket(0, 1), base::Bucket(1, 1)));
 }
 
 }  // namespace content

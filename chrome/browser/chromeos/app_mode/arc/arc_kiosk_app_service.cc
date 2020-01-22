@@ -128,8 +128,10 @@ void ArcKioskAppService::OnIconUpdated(ArcAppIcon* icon) {
     app_icon_.release();
     return;
   }
-  app_manager_->UpdateNameAndIcon(app_id_, app_info_->name,
+  AccountId account_id = multi_user_util::GetAccountIdFromProfile(profile_);
+  app_manager_->UpdateNameAndIcon(account_id, app_info_->name,
                                   app_icon_->image_skia());
+  delegate_->OnAppDataUpdated();
 }
 
 void ArcKioskAppService::OnArcSessionRestarting() {
@@ -217,6 +219,7 @@ void ArcKioskAppService::PreconditionsChanged() {
           << (pending_policy_app_installs_.count(app_info_->package_name)
                   ? "non-compliant"
                   : "compliant");
+  RequestNameAndIconUpdate();
   if (app_info_ && app_info_->ready && !maintenance_session_running_ &&
       compliance_report_received_ &&
       pending_policy_app_installs_.count(app_info_->package_name) == 0) {
@@ -229,7 +232,6 @@ void ArcKioskAppService::PreconditionsChanged() {
     VLOG(2) << "Kiosk app should be closed";
     arc::CloseTask(task_id_);
   }
-  RequestNameAndIconUpdate();
 }
 
 std::string ArcKioskAppService::GetAppId() {

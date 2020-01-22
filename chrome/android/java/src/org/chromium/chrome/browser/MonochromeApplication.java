@@ -9,6 +9,8 @@ import android.content.Context;
 import com.android.webview.chromium.MonochromeLibraryPreloader;
 
 import org.chromium.android_webview.nonembedded.WebViewApkApplication;
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
@@ -42,6 +44,31 @@ public class MonochromeApplication extends ChromeApplication {
         ChildProcessCreationParams.set(getPackageName(), null /* privilegedServicesName */,
                 getPackageName(), null /* sandboxedServicesName */, true /* isExternalService */,
                 LibraryProcessType.PROCESS_CHILD, bindToCaller, ignoreVisibilityForImportance);
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        // TODO(https://crbug.com/1002589): remove beta channel check when approved
+        if (!ChromeVersionInfo.isStableBuild() && !ChromeVersionInfo.isBetaBuild()) {
+            // Performing Monochrome WebView DevTools Launcher icon showing/hiding logic in onCreate
+            // rather than in attachBaseContext() because it depends on application context being
+            // initiatied.
+            if (isWebViewProcess()) {
+                // Whenever a monochrome webview process is launched (WebView service or developer
+                // UI), post a background task to show/hide the DevTools icon.
+                WebViewApkApplication.postDeveloperUiLauncherIconTask();
+            } else if (isBrowserProcess()) {
+                // Frequently check current system webview provider and show/hide the icon
+                // accordingly by listening to Monochrome browser Activities status (whenever a
+                // browser activity comes to the foreground).
+                ApplicationStatus.registerStateListenerForAllActivities((activity, state) -> {
+                    if (state == ActivityState.RESUMED) {
+                        WebViewApkApplication.postDeveloperUiLauncherIconTask();
+                    }
+                });
+            }
+        }
     }
 
     @Override

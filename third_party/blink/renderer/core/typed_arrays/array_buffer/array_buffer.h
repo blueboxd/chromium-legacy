@@ -126,7 +126,7 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::Create(const void* source,
   ArrayBufferContents contents(byte_length, 1, ArrayBufferContents::kNotShared,
                                ArrayBufferContents::kDontInitialize);
   if (UNLIKELY(!contents.Data()))
-    OOM_CRASH();
+    OOM_CRASH(byte_length);
   scoped_refptr<ArrayBuffer> buffer = base::AdoptRef(new ArrayBuffer(contents));
   memcpy(buffer->Data(), source, byte_length);
   return buffer;
@@ -157,7 +157,7 @@ scoped_refptr<ArrayBuffer> ArrayBuffer::Create(
   ArrayBufferContents contents(num_elements, element_byte_size,
                                ArrayBufferContents::kNotShared, policy);
   if (UNLIKELY(!contents.Data()))
-    OOM_CRASH();
+    OOM_CRASH(num_elements * element_byte_size);
   return base::AdoptRef(new ArrayBuffer(contents));
 }
 

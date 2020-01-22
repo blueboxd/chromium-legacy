@@ -61,8 +61,8 @@ struct BLINK_EXPORT WebNavigationInfo {
 
   // The frame type. This must not be kNone. See RequestContextFrameType.
   // TODO(dgozman): enforce this is not kNone.
-  network::mojom::RequestContextFrameType frame_type =
-      network::mojom::RequestContextFrameType::kNone;
+  mojom::RequestContextFrameType frame_type =
+      mojom::RequestContextFrameType::kNone;
 
   // The navigation type. See WebNavigationType.
   WebNavigationType navigation_type = kWebNavigationTypeOther;

@@ -133,6 +133,7 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 }
 
 - (void)showTabStripTabGridButtonPopup {
+  DCHECK(!base::FeatureList::IsEnabled(kChangeTabSwitcherPosition));
   base::RecordAction(base::UserMetricsAction("MobileTabStripShowTabGridMenu"));
   [self presentPopupOfType:PopupMenuTypeTabStripTabGrid
             fromNamedGuide:kTabStripTabSwitcherGuide];

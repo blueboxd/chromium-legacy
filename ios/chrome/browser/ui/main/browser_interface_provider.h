@@ -8,15 +8,12 @@
 #import <UIKit/UIKit.h>
 
 #include "base/ios/block_types.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 class Browser;
 @class BrowserCoordinator;
 @class BrowserViewController;
 @class TabModel;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // A BrowserInterface is an abstraction that exposes an interface to the Chrome
 // user interface (and related model objects) to the application layer. Each

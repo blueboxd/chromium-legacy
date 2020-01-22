@@ -243,7 +243,7 @@ void WorkerFetchContext::PopulateResourceRequest(
   MixedContentChecker::UpgradeInsecureRequest(
       out_request,
       &GetResourceFetcherProperties().GetFetchClientSettingsObject(),
-      global_scope_, network::mojom::RequestContextFrameType::kNone,
+      global_scope_, mojom::RequestContextFrameType::kNone,
       global_scope_->ContentSettingsClient());
   SetFirstPartyCookie(out_request);
   if (!out_request.TopFrameOrigin())

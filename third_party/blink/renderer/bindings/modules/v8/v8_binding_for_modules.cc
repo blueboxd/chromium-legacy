@@ -542,7 +542,6 @@ static v8::Local<v8::Value> DeserializeIDBValueData(v8::Isolate* isolate,
       value->CreateSerializedValue();
   SerializedScriptValue::DeserializeOptions options;
   options.blob_info = &value->BlobInfo();
-  options.read_wasm_from_stream = true;
 
   // deserialize() returns null when serialization fails.  This is sub-optimal
   // because IndexedDB values can be null, so an application cannot distinguish
@@ -758,8 +757,7 @@ bool CanInjectIDBKeyIntoScriptValue(v8::Isolate* isolate,
 
 ScriptValue DeserializeScriptValue(ScriptState* script_state,
                                    SerializedScriptValue* serialized_value,
-                                   const Vector<WebBlobInfo>* blob_info,
-                                   bool read_wasm_from_stream) {
+                                   const Vector<WebBlobInfo>* blob_info) {
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::HandleScope handle_scope(isolate);
   if (!serialized_value)
@@ -767,7 +765,6 @@ ScriptValue DeserializeScriptValue(ScriptState* script_state,
 
   SerializedScriptValue::DeserializeOptions options;
   options.blob_info = blob_info;
-  options.read_wasm_from_stream = read_wasm_from_stream;
   return ScriptValue(isolate, serialized_value->Deserialize(isolate, options));
 }
 

@@ -141,7 +141,7 @@ int Scrollbar::Maximum() const {
                                               : max_offset.Height();
 }
 
-void Scrollbar::OffsetDidChange() {
+void Scrollbar::OffsetDidChange(ScrollType scroll_type) {
   DCHECK(scrollable_area_);
 
   float position = ScrollableAreaCurrentPos();
@@ -157,9 +157,13 @@ void Scrollbar::OffsetDidChange() {
                                                         position);
   SetNeedsPaintInvalidation(invalid_parts);
 
-  if (pressed_part_ == kThumbPart)
+  // Don't update the pressed position if scroll anchoring takes place as
+  // otherwise the next thumb movement will undo anchoring.
+  if (pressed_part_ == kThumbPart &&
+      scroll_type != ScrollType::kAnchoringScroll) {
     SetPressedPos(pressed_pos_ + GetTheme().ThumbPosition(*this) -
                   old_thumb_position);
+  }
 }
 
 void Scrollbar::DisconnectFromScrollableArea() {

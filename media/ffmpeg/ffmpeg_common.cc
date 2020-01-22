@@ -120,6 +120,10 @@ AudioCodec CodecIDToAudioCodec(AVCodecID codec_id) {
       return kCodecOpus;
     case AV_CODEC_ID_ALAC:
       return kCodecALAC;
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
+    case AV_CODEC_ID_MPEGH_3D_AUDIO:
+      return kCodecMpegHAudio;
+#endif
     default:
       DVLOG(1) << "Unknown audio CodecID: " << codec_id;
   }
@@ -171,6 +175,10 @@ AVCodecID AudioCodecToCodecID(AudioCodec audio_codec,
       return AV_CODEC_ID_PCM_MULAW;
     case kCodecOpus:
       return AV_CODEC_ID_OPUS;
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
+    case kCodecMpegHAudio:
+      return AV_CODEC_ID_MPEGH_3D_AUDIO;
+#endif
     default:
       DVLOG(1) << "Unknown AudioCodec: " << audio_codec;
   }
@@ -352,6 +360,12 @@ bool AVCodecContextToAudioDecoderConfig(const AVCodecContext* codec_context,
       NOTREACHED();
 #endif
       break;
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
+    case kCodecMpegHAudio:
+      channel_layout = CHANNEL_LAYOUT_BITSTREAM;
+      sample_format = kSampleFormatMpegHAudio;
+      break;
+#endif
 
     default:
       break;
@@ -389,6 +403,10 @@ bool AVCodecContextToAudioDecoderConfig(const AVCodecContext* codec_context,
   // These are bitstream formats unknown to ffmpeg, so they don't have
   // a known sample format size.
   if (codec == kCodecAC3 || codec == kCodecEAC3)
+    return true;
+#endif
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
+  if (codec == kCodecMpegHAudio)
     return true;
 #endif
 

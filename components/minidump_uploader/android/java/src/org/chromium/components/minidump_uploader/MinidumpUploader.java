@@ -1,8 +1,8 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.weblayer_private;
+package org.chromium.components.minidump_uploader;
 
 import org.chromium.components.minidump_uploader.util.HttpURLConnectionFactory;
 import org.chromium.components.minidump_uploader.util.HttpURLConnectionFactoryImpl;
@@ -25,33 +25,75 @@ import java.util.zip.GZIPOutputStream;
  * boundary forms the first line of the file.
  */
 public class MinidumpUploader {
-    // TODO(crbug.com/1029724) unfork this class back to //components/minidump_uploader
-    private static final String CRASH_URL_STRING = "https://clients2.google.com/cr/report";
-    private static final String CONTENT_TYPE_TMPL = "multipart/form-data; boundary=%s";
+    /* package */
+    static final String CRASH_URL_STRING = "https://clients2.google.com/cr/report";
+    /* package */
+    static final String CONTENT_TYPE_TMPL = "multipart/form-data; boundary=%s";
 
     private final HttpURLConnectionFactory mHttpURLConnectionFactory;
 
-    /* package */ static final class Result {
-        final boolean mSuccess;
-        final int mStatus;
-        final String mResult;
+    /**
+     * The result of an upload attempt.
+     *
+     * An upload attempt may succeed, in which case the result message is the upload ID.
+     * Alternatively it may fail either as a result of either a local or a remote error.
+     */
+    public static final class Result {
+        private final int mErrorCode;
+        private final String mResult;
 
-        private Result(boolean success, int status, String result) {
-            mSuccess = success;
-            mStatus = status;
+        private Result(int errorCode, String result) {
+            mErrorCode = errorCode;
             mResult = result;
         }
 
-        static Result failure(String result) {
-            return new Result(false, -1, result);
+        /** Returns true if this result represents a succesful upload. */
+        public boolean isSuccess() {
+            return mErrorCode == 0;
         }
 
-        static Result failure(int status, String result) {
-            return new Result(false, status, result);
+        /** Returns true if this result represents a remote error. */
+        public boolean isUploadError() {
+            return mErrorCode > 0;
+        }
+
+        /** Returns true if this result represents a local error. */
+        public boolean isFailure() {
+            return mErrorCode < 0;
+        }
+
+        /**
+         * Returns the upload error code.
+         *
+         * @return 0 on success
+         * @return <0 on local error
+         * @return HTTP status code on remote error
+         */
+        public int errorCode() {
+            return mErrorCode;
+        }
+
+        /**
+         * The message associated with this result.
+         *
+         * @return the remotely assigned upload id, on success
+         * @return descriptive error text otherwise.
+         */
+        public String message() {
+            return mResult;
+        }
+
+        static Result failure(String result) {
+            return new Result(-1, result);
+        }
+
+        static Result uploadError(int status, String result) {
+            assert status > 0;
+            return new Result(status, result);
         }
 
         static Result success(String result) {
-            return new Result(true, 0, result);
+            return new Result(0, result);
         }
     }
 
@@ -63,6 +105,16 @@ public class MinidumpUploader {
         mHttpURLConnectionFactory = httpURLConnectionFactory;
     }
 
+    /**
+     * Attempt to upload a single file to the crash server.
+     *
+     * The result of the upload attempt is either success (and an associated report ID), or failure.
+     * Failure may occur locally (the file is invalid or the network connection could not be
+     * created) or remotely (the crash server rejected the upload with a HTTP error).
+     *
+     * @param fileToUpload the file containing a MIME-body with an attached minidump.
+     * @return the success/failure result of the upload attempt.
+     */
     public Result upload(File fileToUpload) {
         try {
             if (fileToUpload == null || !fileToUpload.exists()) {
@@ -87,13 +139,13 @@ public class MinidumpUploader {
                     return Result.success(uploadId);
                 } else {
                     // Return the remote error code and message.
-                    return Result.failure(responseCode, connection.getResponseMessage());
+                    return Result.uploadError(responseCode, connection.getResponseMessage());
                 }
             } finally {
                 connection.disconnect();
             }
         } catch (IOException | RuntimeException e) {
-            return Result.failure(e.getMessage());
+            return Result.failure(e.toString());
         }
     }
 
@@ -113,28 +165,28 @@ public class MinidumpUploader {
     }
 
     /**
-     * Get the boundary from the file, we need it for the content-type.
+     * Get the MIME boundary from the file, for inclusion in Content-Type header.
      *
-     * @return the boundary if found, else null.
-     * @throws IOException
+     * @return the MIME boundary used in the file.
+     * @throws IOException if fileToUpload cannot be read
+     * @throws RuntimeException if the MIME boundary is missing or malformed.
      */
     private String readBoundary(File fileToUpload) throws IOException {
         try (FileReader fileReader = new FileReader(fileToUpload);
                 BufferedReader reader = new BufferedReader(fileReader)) {
             String boundary = reader.readLine();
             if (boundary == null || boundary.trim().isEmpty()) {
-                throw new RuntimeException(fileToUpload + " does not have a MIME boundary");
+                throw new RuntimeException("File does not have a MIME boundary");
             }
             boundary = boundary.trim();
             if (!boundary.startsWith("--") || boundary.length() < 10) {
-                throw new RuntimeException(fileToUpload + " does not have a MIME boundary");
+                throw new RuntimeException("File does not have a MIME boundary");
             }
             // Note: The regex allows all alphanumeric characters, as well as dashes.
             // This matches the code that generates minidumps boundaries:
             // https://chromium.googlesource.com/crashpad/crashpad/+/0c322ecc3f711c34fbf85b2cbe69f38b8dbccf05/util/net/http_multipart_builder.cc#36
             if (!boundary.matches("^[a-zA-Z0-9-]*$")) {
-                throw new RuntimeException(
-                        fileToUpload.getName() + " has an illegal MIME boundary: " + boundary);
+                throw new RuntimeException("File has an illegal MIME boundary: " + boundary);
             }
             boundary = boundary.substring(2); // Remove the initial --
             return boundary;

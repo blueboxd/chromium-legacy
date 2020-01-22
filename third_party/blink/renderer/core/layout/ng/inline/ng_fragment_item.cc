@@ -240,6 +240,24 @@ TextDirection NGFragmentItem::ResolvedDirection() const {
 }
 
 String NGFragmentItem::DebugName() const {
+  // TODO(yosin): Once |NGPaintFragment| is removed, we should get rid of
+  // following if-statements.
+  // For ease of rebasing, we use same |DebugName()| as |NGPaintFrgment|.
+  if (Type() == NGFragmentItem::kBox) {
+    StringBuilder name;
+    name.Append("NGPhysicalBoxFragment ");
+    name.Append(layout_object_->DebugName());
+    return name.ToString();
+  }
+  if (Type() == NGFragmentItem::kText) {
+    StringBuilder name;
+    name.Append("NGPhysicalTextFragment '");
+    name.Append(Text(*layout_object_->ContainingBlockFlowFragment()->Items()));
+    name.Append('\'');
+    return name.ToString();
+  }
+  if (Type() == NGFragmentItem::kLine)
+    return "NGPhysicalLineBoxFragment";
   return "NGFragmentItem";
 }
 

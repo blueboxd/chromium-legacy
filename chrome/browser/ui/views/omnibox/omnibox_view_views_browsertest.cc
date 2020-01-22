@@ -664,6 +664,35 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, AccessiblePopup) {
   EXPECT_FALSE(popup_node_data_2.HasState(ax::mojom::State::kInvisible));
 }
 
+// Omnibox returns to clean state after chrome://kill and reload.
+// https://crbug.com/993701 left the URL and icon as chrome://kill after reload.
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, ReloadAfterKill) {
+  OmniboxView* omnibox_view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
+  OmniboxViewViews* omnibox_view_views =
+      static_cast<OmniboxViewViews*>(omnibox_view);
+
+  // Open new tab page.
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
+
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  // Kill the tab with chrome://kill
+  {
+    content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
+    ui_test_utils::NavigateToURL(browser(), GURL("chrome://kill"));
+    EXPECT_TRUE(tab->IsCrashed());
+  }
+
+  // Reload the tab.
+  tab->GetController().Reload(content::ReloadType::NORMAL, false);
+  content::WaitForLoadStop(tab);
+
+  // Verify the omnibox contents, URL and icon.
+  EXPECT_EQ(base::ASCIIToUTF16(""), omnibox_view_views->GetText());
+  EXPECT_EQ(GURL("about:blank"), browser()->location_bar_model()->GetURL());
+}
+
 // The following set of tests require UIA accessibility support, which only
 // exists on Windows.
 #if defined(OS_WIN)

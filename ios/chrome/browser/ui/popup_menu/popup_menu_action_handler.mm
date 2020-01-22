@@ -106,6 +106,8 @@ using base::UserMetricsAction;
       [self.dispatcher showHelpPage];
       break;
     case PopupMenuActionOpenDownloads:
+      RecordAction(
+          UserMetricsAction("MobileDownloadFolderUIShownFromToolsMenu"));
       [self.dispatcher showDownloadsFolder];
       break;
     case PopupMenuActionTextZoom:

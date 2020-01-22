@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_positioner.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_transition_driver.h"
+#import "ios/chrome/browser/ui/toolbar/public/features.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 
@@ -26,9 +27,8 @@
 #endif
 
 namespace {
-// Banner View constants.
-const CGFloat kiPhoneBannerOverlapWithOmnibox = 5.0;
-const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
+// Banner View constant.
+const CGFloat kBannerOverlapWithOmnibox = 5.0;
 }  // namespace
 
 @interface InfobarCoordinator () <InfobarCoordinatorImplementation,
@@ -277,23 +277,12 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   NamedGuide* omniboxGuide =
       [NamedGuide guideWithName:kOmniboxGuide
                            view:self.baseViewController.view];
-  UIView* omniboxView = omniboxGuide.constrainedView;
-  CGRect omniboxFrame = omniboxView.frame;
+  UIView* omniboxView = omniboxGuide.owningView;
+  CGRect omniboxFrame = [omniboxView convertRect:omniboxGuide.layoutFrame
+                                          toView:self.baseViewController.view];
 
-  // TODO(crbug.com/964136): The TabStrip on iPad is pushing down the Omnibox
-  // view. On iPad when the TabStrip is visible convert the Omnibox frame to the
-  // self.baseViewController.view coordinate system.
-  CGFloat bannerOverlap = kiPhoneBannerOverlapWithOmnibox;
-  NamedGuide* tabStripGuide =
-      [NamedGuide guideWithName:kTabStripTabSwitcherGuide
-                           view:self.baseViewController.view];
-  if (tabStripGuide.constrainedFrame.size.height) {
-    omniboxFrame = [omniboxView convertRect:omniboxView.frame
-                                     toView:self.baseViewController.view];
-    bannerOverlap = kiPadBannerOverlapWithOmnibox;
-  }
-
-  return omniboxFrame.origin.y + omniboxFrame.size.height - bannerOverlap;
+  return omniboxFrame.origin.y + omniboxFrame.size.height -
+         kBannerOverlapWithOmnibox;
 }
 
 - (UIView*)bannerView {

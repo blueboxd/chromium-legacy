@@ -897,6 +897,7 @@ CrSettingsPrivacyPageTest.prototype = {
     '../test_util.js',
     '../test_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
+    'test_metrics_browser_proxy.js',
     'test_sync_browser_proxy.js',
     'privacy_page_test.js',
   ]),
@@ -950,6 +951,40 @@ GEN('#endif');
 
 /**
  * Test fixture for
+ * chrome/browser/resources/settings/site_settings_page/site_settings_page.html.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSiteSettingsPageTest() {}
+
+CrSettingsSiteSettingsPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/site_settings_page/site_settings_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '//ui/webui/resources/js/promise_resolver.js',
+    '../test_util.js',
+    '../test_browser_proxy.js',
+    'test_metrics_browser_proxy.js',
+    'site_settings_page_test.js',
+  ])
+};
+
+TEST_F('CrSettingsSiteSettingsPageTest', 'UMALoggingTests', function() {
+  settings_site_settings_page.registerUMALoggingTests();
+  mocha.run();
+});
+
+TEST_F('CrSettingsSiteSettingsPageTest', 'UMALoggingTestsPart2', function() {
+  settings_site_settings_page.registerUMALoggingTestsPart2();
+  mocha.run();
+});
+
+/**
+ * Test fixture for
  * chrome/browser/resources/settings/privacy_page/
  *        passwords-leak-detection-toggle.html.
  * @constructor
@@ -968,6 +1003,7 @@ CrSettingsPasswordsLeakDetectionToggleTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     'sync_test_util.js',
     '../test_browser_proxy.js',
+    'test_metrics_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
     'test_sync_browser_proxy.js',
     'passwords_leak_detection_toggle_test.js',
@@ -1216,6 +1252,7 @@ CrSettingsSecurityPageTest.prototype = {
     '../test_browser_proxy.js',
     'test_sync_browser_proxy.js',
     'test_privacy_page_browser_proxy.js',
+    'test_metrics_browser_proxy.js',
     'security_page_test.js',
   ]),
 };

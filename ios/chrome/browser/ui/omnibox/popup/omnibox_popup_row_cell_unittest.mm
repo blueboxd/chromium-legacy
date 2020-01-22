@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row_cell.h"
 
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
-#import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"

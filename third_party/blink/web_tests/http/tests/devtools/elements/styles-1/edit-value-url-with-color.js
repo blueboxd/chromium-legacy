@@ -23,7 +23,7 @@
   var maxIndex = 11;
   var idIndex = 1;
 
-  Common.Color.detectColorFormat = function() {
+  Common.Color.detectColorFormat = Common.Settings.detectColorFormat = function() {
     return Common.Color.Format.RGB;
   };
 

@@ -250,14 +250,6 @@ void LoginDisplayHostMojo::OnStartAppLaunch() {
   ShowFullScreen();
 }
 
-void LoginDisplayHostMojo::OnStartArcKiosk() {
-  ShowFullScreen();
-}
-
-void LoginDisplayHostMojo::OnStartWebKiosk() {
-  ShowFullScreen();
-}
-
 void LoginDisplayHostMojo::OnBrowserCreated() {
   NOTIMPLEMENTED();
 }

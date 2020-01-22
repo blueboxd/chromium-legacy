@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
 // Names identifying the errors used in Payment Request API:
 // https://www.w3.org/TR/payment-request/
 // A complete list of DOMException error names and descriptions can be found at:
@@ -18,10 +20,6 @@ extern NSString* const kNotSupportedError;
 
 @protocol ApplicationCommands;
 class LocationBarModel;
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 namespace web {
 class WebState;

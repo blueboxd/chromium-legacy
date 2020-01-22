@@ -3980,7 +3980,6 @@ crbug.com/796961 external/wpt/css/css-pseudo/marker-content-005.html [ Failure ]
 crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-007.tentative.html [ Failure ]
 crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-008.tentative.html [ Failure ]
 crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-009.tentative.html [ Failure ]
-crbug.com/457718 external/wpt/css/css-pseudo/marker-content-010.html [ Failure ]
 crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-011.tentative.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-font-variant-numeric-normal.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-list-style-position.html [ Failure ]
@@ -5737,9 +5736,6 @@ crbug.com/971612 fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass
 # Sheriff 2019-06-13
 crbug.com/973692 [ Mac ] external/wpt/css/css-text/parsing/hyphens-computed.html [ Failure ]
 crbug.com/973726 [ Mac ] fast/css/large-list-of-rules-crash.html [ Pass Timeout ]
-crbug.com/937546 [ Win7 ] http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Pass Timeout ]
-
-# Sheriff 2019-06-14
 
 # Sheriff 2019-06-20
 crbug.com/976045 fast/scrolling/unscrollable-layer-subpixel-size-with-negative-overflow.html [ Pass Failure ]
@@ -6307,3 +6303,8 @@ crbug.com/1042688 http/tests/devtools/elements/highlight/highlight-dom-updates.j
 # Sheriff 2020-01-20
 crbug.com/1043357 http/tests/credentialmanager/credentialscontainer-get-with-virtual-authenticator.html [ Pass Timeout Failure ]
 crbug.com/1043774 [ Linux ] virtual/web-components-v0-disabled/external/wpt/html/dom/reflection-grouping.html [ Pass Failure ]
+
+# Sheriff 2020-01-22
+crbug.com/1044567 [ Mac10.10 ] media/video-colorspace-yuv420.html [ Pass Failure ]
+crbug.com/1044567 [ Mac10.10 ] virtual/audio-service/media/video-colorspace-yuv420.html [ Pass Failure ]
+crbug.com/1044568 [ Mac10.11 ] virtual/cascade/fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]

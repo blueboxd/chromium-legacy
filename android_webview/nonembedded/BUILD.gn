@@ -127,6 +127,7 @@ android_resources("devui_launcher_icon_resources") {
 android_resources("monochrome_devui_launcher_icon_resources") {
   resource_dirs = []
   android_manifest = "java/MonochromeDeveloperUiLauncherManifest.xml"
+  deps = [ ":icon_resources" ]
   custom_package = "org.chromium.android_webview.devui.icon"
 }
 

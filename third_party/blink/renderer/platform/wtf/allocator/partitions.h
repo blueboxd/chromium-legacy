@@ -91,7 +91,7 @@ class WTF_EXPORT Partitions {
   static void* FastZeroedMalloc(size_t n, const char* type_name);
   static void FastFree(void* p);
 
-  static void HandleOutOfMemory();
+  static void HandleOutOfMemory(size_t size);
 
  private:
   ALWAYS_INLINE static base::PartitionRootGeneric* FastMallocPartition() {

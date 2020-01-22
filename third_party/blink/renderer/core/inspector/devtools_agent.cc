@@ -20,7 +20,19 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_copier.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
+namespace WTF {
+
+using StatePtr = mojo::StructPtr<blink::mojom::blink::DevToolsSessionState>;
+template <>
+struct CrossThreadCopier<StatePtr>
+    : public CrossThreadCopierByValuePassThrough<StatePtr> {
+  STATIC_ONLY(CrossThreadCopier);
+};
+
+}  // namespace WTF
 
 namespace blink {
 
@@ -49,6 +61,73 @@ DevToolsAgent* DevToolsAgentFromContext(ExecutionContext* execution_context) {
 
 }  // namespace
 
+class DevToolsAgent::IOAgent : public mojom::blink::DevToolsAgent {
+ public:
+  IOAgent(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+          scoped_refptr<InspectorTaskRunner> inspector_task_runner,
+          CrossThreadWeakPersistent<::blink::DevToolsAgent> agent,
+          mojo::PendingReceiver<mojom::blink::DevToolsAgent> receiver)
+      : io_task_runner_(io_task_runner),
+        inspector_task_runner_(inspector_task_runner),
+        agent_(std::move(agent)) {
+    // Binds on the IO thread and receive messages there too. Messages are
+    // posted to the worker thread in a way that interrupts V8 execution. This
+    // is necessary so that AttachDevToolsSession can be called on a worker
+    // which has already started and is stuck in JS, e.g. polling using
+    // Atomics.wait() which is a common pattern.
+    PostCrossThreadTask(
+        *io_task_runner_, FROM_HERE,
+        CrossThreadBindOnce(&IOAgent::BindInterface,
+                            CrossThreadUnretained(this), std::move(receiver)));
+  }
+
+  void BindInterface(
+      mojo::PendingReceiver<mojom::blink::DevToolsAgent> receiver) {
+    receiver_.Bind(std::move(receiver), io_task_runner_);
+  }
+
+  void DeleteSoon() { io_task_runner_->DeleteSoon(FROM_HERE, this); }
+
+  ~IOAgent() override = default;
+
+  // mojom::blink::DevToolsAgent implementation.
+  void AttachDevToolsSession(
+      mojo::PendingAssociatedRemote<mojom::blink::DevToolsSessionHost> host,
+      mojo::PendingAssociatedReceiver<mojom::blink::DevToolsSession>
+          main_session,
+      mojo::PendingReceiver<mojom::blink::DevToolsSession> io_session,
+      mojom::blink::DevToolsSessionStatePtr reattach_session_state,
+      bool client_expects_binary_responses) override {
+    DCHECK(receiver_.is_bound());
+    inspector_task_runner_->AppendTask(CrossThreadBindOnce(
+        &::blink::DevToolsAgent::AttachDevToolsSessionImpl, agent_,
+        std::move(host), std::move(main_session), std::move(io_session),
+        std::move(reattach_session_state), client_expects_binary_responses));
+  }
+
+  void InspectElement(const gfx::Point& point) override {
+    // InspectElement on a worker doesn't make sense.
+    NOTREACHED();
+  }
+
+  void ReportChildWorkers(bool report,
+                          bool wait_for_debugger,
+                          base::OnceClosure callback) override {
+    DCHECK(receiver_.is_bound());
+    inspector_task_runner_->AppendTask(CrossThreadBindOnce(
+        &::blink::DevToolsAgent::ReportChildWorkersPostCallbackToIO, agent_,
+        report, wait_for_debugger, CrossThreadBindOnce(std::move(callback))));
+  }
+
+ private:
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
+  CrossThreadWeakPersistent<::blink::DevToolsAgent> agent_;
+  mojo::Receiver<mojom::blink::DevToolsAgent> receiver_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(IOAgent);
+};
+
 DevToolsAgent::DevToolsAgent(
     Client* client,
     InspectedFrames* inspected_frames,
@@ -76,23 +155,25 @@ void DevToolsAgent::Dispose() {
   CleanupConnection();
 }
 
-void DevToolsAgent::BindReceiver(
+void DevToolsAgent::BindReceiverForWorker(
     mojo::PendingRemote<mojom::blink::DevToolsAgentHost> host_remote,
     mojo::PendingReceiver<mojom::blink::DevToolsAgent> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(!receiver_.is_bound());
   DCHECK(!associated_receiver_.is_bound());
-  receiver_.Bind(std::move(receiver), std::move(task_runner));
+
   host_remote_.Bind(std::move(host_remote));
   host_remote_.set_disconnect_handler(
       WTF::Bind(&DevToolsAgent::CleanupConnection, WrapWeakPersistent(this)));
+
+  io_agent_ =
+      new IOAgent(io_task_runner_, inspector_task_runner_,
+                  WrapCrossThreadWeakPersistent(this), std::move(receiver));
 }
 
 void DevToolsAgent::BindReceiver(
     mojo::PendingAssociatedRemote<mojom::blink::DevToolsAgentHost> host_remote,
     mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(!receiver_.is_bound());
   DCHECK(!associated_receiver_.is_bound());
   associated_receiver_.Bind(std::move(receiver), std::move(task_runner));
   associated_host_remote_.Bind(std::move(host_remote));
@@ -100,13 +181,14 @@ void DevToolsAgent::BindReceiver(
       WTF::Bind(&DevToolsAgent::CleanupConnection, WrapWeakPersistent(this)));
 }
 
-void DevToolsAgent::AttachDevToolsSession(
+void DevToolsAgent::AttachDevToolsSessionImpl(
     mojo::PendingAssociatedRemote<mojom::blink::DevToolsSessionHost> host,
     mojo::PendingAssociatedReceiver<mojom::blink::DevToolsSession>
         session_receiver,
     mojo::PendingReceiver<mojom::blink::DevToolsSession> io_session_receiver,
     mojom::blink::DevToolsSessionStatePtr reattach_session_state,
     bool client_expects_binary_responses) {
+  TRACE_EVENT0("devtools", "Agent::AttachDevToolsSessionImpl");
   client_->DebuggerTaskStarted();
   DevToolsSession* session = MakeGarbageCollected<DevToolsSession>(
       this, std::move(host), std::move(session_receiver),
@@ -116,8 +198,38 @@ void DevToolsAgent::AttachDevToolsSession(
   client_->DebuggerTaskFinished();
 }
 
-void DevToolsAgent::InspectElement(const gfx::Point& point) {
+void DevToolsAgent::AttachDevToolsSession(
+    mojo::PendingAssociatedRemote<mojom::blink::DevToolsSessionHost> host,
+    mojo::PendingAssociatedReceiver<mojom::blink::DevToolsSession>
+        session_receiver,
+    mojo::PendingReceiver<mojom::blink::DevToolsSession> io_session_receiver,
+    mojom::blink::DevToolsSessionStatePtr reattach_session_state,
+    bool client_expects_binary_responses) {
+  TRACE_EVENT0("devtools", "Agent::AttachDevToolsSession");
+  if (associated_receiver_.is_bound()) {
+    AttachDevToolsSessionImpl(std::move(host), std::move(session_receiver),
+                              std::move(io_session_receiver),
+                              std::move(reattach_session_state),
+                              client_expects_binary_responses);
+  } else {
+    io_agent_->AttachDevToolsSession(
+        std::move(host), std::move(session_receiver),
+        std::move(io_session_receiver), std::move(reattach_session_state),
+        client_expects_binary_responses);
+  }
+}
+
+void DevToolsAgent::InspectElementImpl(const gfx::Point& point) {
   client_->InspectElement(point);
+}
+
+void DevToolsAgent::InspectElement(const gfx::Point& point) {
+  if (associated_receiver_.is_bound()) {
+    client_->InspectElement(point);
+  } else {
+    // InspectElement on a worker doesn't make sense.
+    NOTREACHED();
+  }
 }
 
 void DevToolsAgent::FlushProtocolNotifications() {
@@ -125,9 +237,24 @@ void DevToolsAgent::FlushProtocolNotifications() {
     session->FlushProtocolNotifications();
 }
 
-void DevToolsAgent::ReportChildWorkers(bool report,
-                                       bool wait_for_debugger,
-                                       base::OnceClosure callback) {
+void DevToolsAgent::ReportChildWorkersPostCallbackToIO(
+    bool report,
+    bool wait_for_debugger,
+    CrossThreadOnceClosure callback) {
+  TRACE_EVENT0("devtools", "Agent::ReportChildWorkersPostCallbackToIO");
+  ReportChildWorkersImpl(report, wait_for_debugger, base::DoNothing());
+  // This message originally came from the IOAgent for a worker which means the
+  // response needs to be sent on the IO thread as well, so we post the callback
+  // task back there to be run. In the non-IO case, this callback would be run
+  // synchronously at the end of ReportChildWorkersImpl, so the ordering between
+  // ReportChildWorkers and running the callback is preserved.
+  PostCrossThreadTask(*io_task_runner_, FROM_HERE, std::move(callback));
+}
+
+void DevToolsAgent::ReportChildWorkersImpl(bool report,
+                                           bool wait_for_debugger,
+                                           base::OnceClosure callback) {
+  TRACE_EVENT0("devtools", "Agent::ReportChildWorkersImpl");
   report_child_workers_ = report;
   pause_child_workers_on_start_ = wait_for_debugger;
   if (report_child_workers_) {
@@ -136,6 +263,18 @@ void DevToolsAgent::ReportChildWorkers(bool report,
       ReportChildWorker(std::move(it.value));
   }
   std::move(callback).Run();
+}
+
+void DevToolsAgent::ReportChildWorkers(bool report,
+                                       bool wait_for_debugger,
+                                       base::OnceClosure callback) {
+  TRACE_EVENT0("devtools", "Agent::ReportChildWorkers");
+  if (associated_receiver_.is_bound()) {
+    ReportChildWorkersImpl(report, wait_for_debugger, std::move(callback));
+  } else {
+    io_agent_->ReportChildWorkers(report, wait_for_debugger,
+                                  std::move(callback));
+  }
 }
 
 // static
@@ -192,7 +331,10 @@ void DevToolsAgent::ReportChildWorker(std::unique_ptr<WorkerData> data) {
 }
 
 void DevToolsAgent::CleanupConnection() {
-  receiver_.reset();
+  if (io_agent_) {
+    io_agent_->DeleteSoon();
+    io_agent_ = nullptr;
+  }
   associated_receiver_.reset();
   host_remote_.reset();
   associated_host_remote_.reset();

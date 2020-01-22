@@ -59,6 +59,7 @@ Polymer({
     syncBrowserProxy.getStoredAccounts().then(storedAccountsChanged);
     this.addWebUIListener('stored-accounts-updated', storedAccountsChanged);
     // </if>
+    this.metricsBrowserProxy_ = settings.MetricsBrowserProxyImpl.getInstance();
   },
 
   /**
@@ -107,6 +108,8 @@ Polymer({
 
   /** @private */
   onPasswordsLeakDetectionChange_() {
+    this.metricsBrowserProxy_.recordSettingsPageHistogram(
+        settings.SettingsPageInteractions.PRIVACY_PASSWORD_CHECK);
     this.setPrefValue(
         'profile.password_manager_leak_detection',
         this.$.passwordsLeakDetectionCheckbox.checked);

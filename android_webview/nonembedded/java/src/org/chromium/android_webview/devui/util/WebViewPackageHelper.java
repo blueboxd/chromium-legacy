@@ -120,6 +120,18 @@ public final class WebViewPackageHelper {
         }
     }
 
+    /**
+     * Check if the given context is a WebView package and if it's currently selected as system's
+     * WebView implementation.
+     *
+     * @param context the {@link Context} to check its package.
+     */
+    public static boolean isCurrentSystemWebViewImplementation(Context context) {
+        PackageInfo systemWebViewPackage = getCurrentWebViewPackage(context);
+        if (systemWebViewPackage == null) return false;
+        return context.getPackageName().equals(systemWebViewPackage.packageName);
+    }
+
     // Do not instantiate this class.
     private WebViewPackageHelper() {}
 }

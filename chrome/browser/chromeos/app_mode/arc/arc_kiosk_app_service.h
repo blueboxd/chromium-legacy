@@ -45,6 +45,7 @@ class ArcKioskAppService : public KeyedService,
   class Delegate {
    public:
     Delegate() = default;
+    virtual void OnAppDataUpdated() = 0;
     virtual void OnAppStarted() = 0;
     virtual void OnAppWindowLaunched() = 0;
 

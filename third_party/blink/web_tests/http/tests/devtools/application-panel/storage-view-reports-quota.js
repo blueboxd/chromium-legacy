@@ -39,7 +39,7 @@
     // Quota will vary between setups, rather strip it altogether
     var clean = view._quotaRow.innerHTML.replace(/\&nbsp;/g, ' ');
     // Clean usage value because it's platform-dependent.
-    var quotaStripped = clean.replace(/[\d.]+ (K?B used out of) \d+ .?B([^\d]*)/, '-- $1 --$2');
+    var quotaStripped = clean.replace(/[\d.]+ (k?B used out of) \d+ .?B([^\d]*)/, '-- $1 --$2');
     TestRunner.addResult(quotaStripped);
 
     TestRunner.addResult('Usage breakdown:');
@@ -53,7 +53,7 @@
           typeUsage = children[j].textContent + typeUsage;
         if (children[j].classList.contains('pie-chart-size')) {
           // Clean usage value because it's platform-dependent.
-          var cleanedValue = children[j].textContent.replace(/\d+.\d\sKB/, '--.- KB');
+          var cleanedValue = children[j].textContent.replace(/\d+.\d\skB/, '--.- kB');
           typeUsage = typeUsage + cleanedValue;
         }
       }

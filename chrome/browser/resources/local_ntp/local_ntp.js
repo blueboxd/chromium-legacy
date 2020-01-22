@@ -91,7 +91,6 @@ const CLASSES = {
   IMAGE_CONTAINER: 'image-container',
   INITED: 'inited',  // Reveals the <body> once init() is done.
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
-  LOAD_FAVICON: 'load-favicon',
   // The image next to a realbox match.
   MATCH_IMAGE: 'match-image',
   // Vertically centers the most visited section for a non-Google provided page.
@@ -2119,19 +2118,13 @@ function setFakeboxVisibility(show) {
 
 /** @param {!AutocompleteMatch|undefined} match */
 function setRealboxIcon(match) {
-  const loadFavicon = match && !match.isSearchType;
+  const showIcon = match && !match.isSearchType;
 
   const realboxIcon = $(IDS.REALBOX_ICON);
-  realboxIcon.style.webkitMask = loadFavicon ? 'none' : '';
-  realboxIcon.style.backgroundColor = loadFavicon ? 'transparent' : '';
+  realboxIcon.style.webkitMask = showIcon ? 'none' : '';
+  realboxIcon.style.backgroundColor = showIcon ? 'transparent' : '';
   realboxIcon.style.backgroundImage =
-      loadFavicon ? `url(${getIconUrl(match.destinationUrl)})` : '';
-
-  const historical = match && SEARCH_HISTORY_MATCH_TYPES.includes(match.type);
-  realboxIcon.className = loadFavicon ?
-      CLASSES.LOAD_FAVICON :
-      (historical ? CLASSES.CLOCK_ICON :
-                    realboxIcon.dataset['realboxIconClass']);
+      showIcon ? `url(${getIconUrl(match.destinationUrl)})` : '';
 }
 
 /** @param {boolean} visible */

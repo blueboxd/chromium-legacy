@@ -44,9 +44,8 @@ CaptivePortalTabHelper::CaptivePortalTabHelper(
       login_detector_(new CaptivePortalLoginDetector(profile_)),
       is_captive_portal_window_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-                 content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
+                 content::Source<content::BrowserContext>(profile_));
 }
 
 CaptivePortalTabHelper::~CaptivePortalTabHelper() {
@@ -136,7 +135,7 @@ void CaptivePortalTabHelper::Observe(
     const content::NotificationDetails& details) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK_EQ(chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT, type);
-  DCHECK_EQ(profile_, content::Source<Profile>(source).ptr());
+  DCHECK_EQ(profile_, content::Source<content::BrowserContext>(source).ptr());
 
   const CaptivePortalService::Results* results =
       content::Details<CaptivePortalService::Results>(details).ptr();

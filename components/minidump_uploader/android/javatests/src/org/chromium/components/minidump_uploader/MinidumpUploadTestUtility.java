@@ -13,6 +13,7 @@ import org.chromium.base.ThreadUtils;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Utility class for testing the minidump-uploading mechanism.
@@ -69,17 +70,19 @@ public class MinidumpUploadTestUtility {
     public static void uploadMinidumpsSync(
             MinidumpUploadJob minidumpUploadJob, final boolean expectReschedule) {
         final CountDownLatch uploadsFinishedLatch = new CountDownLatch(1);
+        AtomicBoolean wasRescheduled = new AtomicBoolean();
         uploadAllMinidumpsOnUiThread(
                 minidumpUploadJob, new MinidumpUploadJob.UploadsFinishedCallback() {
                     @Override
                     public void uploadsFinished(boolean reschedule) {
-                        assertEquals(expectReschedule, reschedule);
+                        wasRescheduled.set(reschedule);
                         uploadsFinishedLatch.countDown();
                     }
                 });
         try {
             assertTrue(uploadsFinishedLatch.await(
                     scaleTimeout(TIME_OUT_MILLIS), TimeUnit.MILLISECONDS));
+            assertEquals(expectReschedule, wasRescheduled.get());
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

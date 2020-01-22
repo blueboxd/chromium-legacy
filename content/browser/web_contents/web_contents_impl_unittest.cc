@@ -1071,9 +1071,7 @@ TEST_F(WebContentsImplTest, CrossSiteUnloadHandlers) {
   controller().LoadURL(
       url2, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   EXPECT_TRUE(orig_rfh->is_waiting_for_beforeunload_ack());
-  base::TimeTicks now = base::TimeTicks::Now();
-  orig_rfh->OnMessageReceived(
-      FrameHostMsg_BeforeUnload_ACK(0, false, now, now));
+  orig_rfh->SendBeforeUnloadACK(false);
   EXPECT_FALSE(orig_rfh->is_waiting_for_beforeunload_ack());
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, main_test_rfh());

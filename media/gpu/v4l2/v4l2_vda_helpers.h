@@ -57,6 +57,14 @@ std::unique_ptr<ImageProcessor> CreateImageProcessor(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     ImageProcessor::ErrorCB error_cb);
 
+// When importing a buffer (ARC++ use-case), the buffer's actual size may
+// be different from the requested one. However, the actual size is never
+// provided to us - so we need to compute it from the NativePixmapHandle.
+// Given the |handle| and |fourcc| of the buffer, adjust |current_size| to
+// the actual computed size of the buffer and return the new size.
+gfx::Size NativePixmapSizeFromHandle(const gfx::NativePixmapHandle& handle,
+                                     const Fourcc fourcc,
+                                     const gfx::Size& current_size);
 }  // namespace v4l2_vda_helpers
 }  // namespace media
 

@@ -1053,7 +1053,6 @@ class CONTENT_EXPORT RenderFrameImpl
   //
   // The documentation for these functions should be in
   // content/common/*_messages.h for the message that the function is handling.
-  void OnBeforeUnload(bool is_reload);
   void OnSwapIn();
   void OnUnload(int proxy_routing_id,
                 bool is_loading,

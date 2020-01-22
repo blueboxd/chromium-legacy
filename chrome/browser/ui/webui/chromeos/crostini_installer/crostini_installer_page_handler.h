@@ -34,7 +34,7 @@ class CrostiniInstallerPageHandler
   ~CrostiniInstallerPageHandler() override;
 
   // chromeos::crostini_installer::mojom::PageHandler:
-  void Install(int64_t disk_size) override;
+  void Install(int64_t disk_size_bytes, const std::string& username) override;
   void Cancel() override;
   void CancelBeforeStart() override;
   void Close() override;

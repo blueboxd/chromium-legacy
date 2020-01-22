@@ -102,9 +102,9 @@ message UserSettingsEvent {
     // Whether the user has connected to a cellular network in the current
     // session.
     optional bool used_cellular_in_session = 17;
-    // Whether there are previously paired bluetooth devices available for
-    // connection.
-    optional bool has_available_bluetooth_devices = 18;
+    // Whether or not the current bluetooth device was already paired. Only
+    // populated upon connection to a bluetooth device.
+    optional bool is_paired_bluetooth_device = 18;
     // Whether the user has set up a night light schedule.
     optional bool has_night_light_schedule = 19;
     // True if it is after sunset and before sunrise in the local time.

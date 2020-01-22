@@ -7,6 +7,7 @@ module blink.mojom;
 import "cc/mojom/touch_action.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/content_security_policy.mojom";
 import "skia/public/mojom/skcolor.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
@@ -247,6 +248,16 @@ interface LocalFrame {
   // contents. This only happens for frame owners which render their own
   // fallback contents (i.e., <object>).
   RenderFallbackContent();
+
+  // Instructs the frame to invoke the beforeunload event handler.
+  //
+  // The closure callback is invoked to acknowledge the browser that
+  // the beforeunload event is handled. |proceed| matches the return value
+  // of the frame's beforeunload handler: true if the user decided to proceed
+  // with leaving the page.
+  BeforeUnload(bool is_reload)
+      => (bool proceed, mojo_base.mojom.TimeTicks before_unload_start_time,
+          mojo_base.mojom.TimeTicks before_unload_end_time);
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that

@@ -1,7 +1,5 @@
 executable("get_accessible_interfaces") {
-  sources = [
-    "get_accessible_interfaces.cc",
-  ]
+  sources = [ "get_accessible_interfaces.cc" ]
 
   deps = [
     "//base",

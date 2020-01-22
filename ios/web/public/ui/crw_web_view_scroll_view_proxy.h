@@ -23,6 +23,8 @@
 // TODO(crbug.com/546152): rename class to CRWContentViewScrollViewProxy.
 @interface CRWWebViewScrollViewProxy : NSObject
 
+@property(nonatomic, readonly, copy) NSArray<__kindof UIView*>* subviews;
+
 // Used by the CRWWebViewProxy to set the UIScrollView to be managed.
 - (void)setScrollView:(UIScrollView*)scrollView;
 
@@ -71,7 +73,6 @@
     UIPanGestureRecognizer* panGestureRecognizer;
 // Returns the scrollview's gesture recognizers.
 @property(weak, nonatomic, readonly) NSArray* gestureRecognizers;
-@property(nonatomic, readonly, copy) NSArray<__kindof UIView*>* subviews;
 
 - (void)addGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer;
 - (void)removeGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer;

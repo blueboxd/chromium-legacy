@@ -52,6 +52,12 @@ void FakeLocalFrame::ReportBlinkFeatureUsage(
 
 void FakeLocalFrame::RenderFallbackContent() {}
 
+void FakeLocalFrame::BeforeUnload(bool is_reload,
+                                  BeforeUnloadCallback callback) {
+  base::TimeTicks now = base::TimeTicks::Now();
+  std::move(callback).Run(true /*leave the page*/, now, now);
+}
+
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<blink::mojom::LocalFrame>(

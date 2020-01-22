@@ -7,7 +7,4 @@
 
 [RuntimeEnabled=FileHandling] interface LaunchParams {
   readonly attribute FrozenArray<FileSystemHandle> files;
-
-  [CallWith=ScriptState]
-  readonly attribute Request request;
 };

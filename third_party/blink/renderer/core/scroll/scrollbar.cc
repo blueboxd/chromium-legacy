@@ -176,8 +176,9 @@ void Scrollbar::SetProportion(int visible_size, int total_size) {
   SetNeedsPaintInvalidation(kAllParts);
 }
 
-void Scrollbar::Paint(GraphicsContext& context) const {
-  GetTheme().Paint(*this, context);
+void Scrollbar::Paint(GraphicsContext& context,
+                      const IntPoint& paint_offset) const {
+  GetTheme().Paint(*this, context, paint_offset);
 }
 
 void Scrollbar::AutoscrollTimerFired(TimerBase*) {

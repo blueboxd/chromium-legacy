@@ -161,6 +161,9 @@ class CORE_EXPORT HTMLSelectElement final
   void PopupDidHide();
   bool PopupIsVisible() const { return popup_is_visible_; }
   HTMLOptionElement* OptionToBeShown() const;
+  // Style of the selected OPTION. This is nullable, and only for
+  // the menulist mode.
+  const ComputedStyle* OptionStyle() const;
   void ShowPopup();
   void HidePopup();
   PopupMenu* Popup() const { return popup_.Get(); }
@@ -305,6 +308,7 @@ class CORE_EXPORT HTMLSelectElement final
   Member<HTMLOptionElement> active_selection_end_;
   Member<HTMLOptionElement> option_to_scroll_to_;
   Member<HTMLOptionElement> suggested_option_;
+  scoped_refptr<const ComputedStyle> option_style_;
   int ax_menulist_last_active_index_ = -1;
   bool has_updated_menulist_active_option_ = false;
   bool is_multiple_;

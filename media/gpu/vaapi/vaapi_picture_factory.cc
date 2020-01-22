@@ -44,7 +44,8 @@ std::unique_ptr<VaapiPicture> VaapiPictureFactory::Create(
     scoped_refptr<VaapiWrapper> vaapi_wrapper,
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
-    const PictureBuffer& picture_buffer) {
+    const PictureBuffer& picture_buffer,
+    const gfx::Size& visible_size) {
   // ARC++ sends |picture_buffer| with no texture_target().
   DCHECK(picture_buffer.texture_target() == GetGLTextureTarget() ||
          picture_buffer.texture_target() == 0u);
@@ -70,15 +71,17 @@ std::unique_ptr<VaapiPicture> VaapiPictureFactory::Create(
     case kVaapiImplementationDrm:
       picture.reset(new VaapiPictureNativePixmapOzone(
           std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
-          picture_buffer.id(), picture_buffer.size(), service_texture_id,
-          client_texture_id, picture_buffer.texture_target()));
+          picture_buffer.id(), picture_buffer.size(), visible_size,
+          service_texture_id, client_texture_id,
+          picture_buffer.texture_target()));
       break;
 #elif defined(USE_EGL)
     case kVaapiImplementationDrm:
       picture.reset(new VaapiPictureNativePixmapEgl(
           std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
-          picture_buffer.id(), picture_buffer.size(), service_texture_id,
-          client_texture_id, picture_buffer.texture_target()));
+          picture_buffer.id(), picture_buffer.size(), visible_size,
+          service_texture_id, client_texture_id,
+          picture_buffer.texture_target()));
       break;
 #endif
 
@@ -86,8 +89,9 @@ std::unique_ptr<VaapiPicture> VaapiPictureFactory::Create(
     case kVaapiImplementationX11:
       picture.reset(new VaapiTFPPicture(
           std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
-          picture_buffer.id(), picture_buffer.size(), service_texture_id,
-          client_texture_id, picture_buffer.texture_target()));
+          picture_buffer.id(), picture_buffer.size(), visible_size,
+          service_texture_id, client_texture_id,
+          picture_buffer.texture_target()));
       break;
 #endif  // USE_X11
 

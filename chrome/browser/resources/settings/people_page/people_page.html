@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
@@ -32,7 +33,6 @@
 <link rel="import" href="chrome://resources/cr_elements/chromeos/cr_picture/cr_png_behavior.html">
 </if>
 <if expr="not chromeos">
-<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 <link rel="import" href="import_data_dialog.html">
 <link rel="import" href="manage_profile.html">
 </if>
@@ -76,7 +76,6 @@
         width: 40px;
       }
 
-<if expr="not chromeos">
       #toast {
         left: 0;
         z-index: 1;
@@ -98,12 +97,10 @@
         font-size: 1.1rem;
         line-height: 1.625rem;
       }
-</if>
     </style>
     <settings-animated-pages id="pages" section="people"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-<if expr="not chromeos">
         <template is="dom-if" if="[[shouldShowSyncAccountControl_(
             syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]">
           <settings-sync-account-control
@@ -117,8 +114,8 @@
                   "$i18n{peopleSignInPromptSecondaryWithNoAccount}">
           </settings-sync-account-control>
         </template>
-        <template is="dom-if" if="[[!diceEnabled_]]">
-</if>
+        <template is="dom-if" if="[[shouldShowProfile_(
+            syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]" restamp>
           <div id="picture-subpage-trigger" class="settings-box first two-line">
             <template is="dom-if" if="[[syncStatus]]">
               <div id="profile-icon" on-click="onProfileTap_"
@@ -151,6 +148,7 @@
                     aria-describedby="profile-name"></cr-icon-button>
 </if>
               </div>
+<!-- Chrome OS is always signed-in and does not show a sign-out button. -->
 <if expr="not chromeos">
               <template is="dom-if" if="[[showSignin_(syncStatus)]]">
                 <div class="separator"></div>
@@ -169,14 +167,12 @@
 </if>
             </template>
           </div>
-<if expr="not chromeos">
-        </template> <!-- if="[[!diceEnabled_]]" -->
-</if>
+        </template> <!-- if="[[shouldShowProfile_()]]" -->
 
-        <template is="dom-if" if="[[!syncStatus.signedIn]]">
+<!-- Chrome OS uses settings-sync-account-control for sync promos. -->
 <if expr="not chromeos">
+        <template is="dom-if" if="[[!syncStatus.signedIn]]">
           <template is="dom-if" if="[[!diceEnabled_]]">
-</if>
             <div class="settings-box two-line" id="sync-overview"
                 hidden="[[!syncStatus.signinAllowed]]">
               <div class="start settings-box-text">
@@ -186,10 +182,9 @@
                 </a>
               </div>
             </div>
-<if expr="not chromeos">
           </template> <!-- if="[[!diceEnabled_]]" -->
-</if>
         </template>
+</if>
 
         <cr-link-row id="sync-setup"
             label="$i18n{syncAndNonPersonalizedServices}"
@@ -230,9 +225,6 @@
             page-title="$i18n{syncPageTitle}"
             learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
           <settings-sync-page
-<if expr="not chromeos">
-              dice-enabled="[[diceEnabled_]]"
-</if>
               sync-status="[[syncStatus]]" prefs="{{prefs}}"
               page-visibility="[[pageVisibility.privacy]]">
           </settings-sync-page>
@@ -272,11 +264,9 @@
           on-close="onImportDataDialogClosed_">
       </settings-import-data-dialog>
     </template>
-<if expr="not chromeos">
     <cr-toast duration="3000" id="toast">
       <span>$i18n{syncSettingsSavedToast}</span>
     </cr-toast>
-</if>
   </template>
   <script src="people_page.js"></script>
 </dom-module>

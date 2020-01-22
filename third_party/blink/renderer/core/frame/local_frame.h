@@ -486,6 +486,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void SaveImageAt(const gfx::Point& window_point) final;
   void ReportBlinkFeatureUsage(const Vector<mojom::blink::WebFeature>&) final;
   void RenderFallbackContent() final;
+  void BeforeUnload(bool is_reload, BeforeUnloadCallback callback) final;
 
   SystemClipboard* GetSystemClipboard();
 

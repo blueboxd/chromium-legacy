@@ -159,7 +159,7 @@
   {
     "name": "arc-file-picker-experiment",
     "owners": [ "niwa" ],
-    "expiry_milestone": 80
+    "expiry_milestone": 88
   },
   {
     "name": "arc-graphics-buffer-visualization-tool",

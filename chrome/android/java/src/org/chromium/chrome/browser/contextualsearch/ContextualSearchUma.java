@@ -1388,7 +1388,7 @@ public class ContextualSearchUma {
         if (quickActionShown) {
             RecordHistogram.recordEnumeratedHistogram(
                     "Search.ContextualSearchQuickActions.Category", quickActionCategory,
-                    QuickActionResolve.NUM_ENTRIES);
+                    QuickActionCategory.BOUNDARY);
         }
     }
 

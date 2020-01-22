@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_MACHINE_LEARNING_USER_SETTINGS_EVENT_LOGGER_H_
 #define ASH_SYSTEM_MACHINE_LEARNING_USER_SETTINGS_EVENT_LOGGER_H_
 
+#include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/machine_learning/user_settings_event.pb.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
 
@@ -27,6 +28,9 @@ class UserSettingsEventLogger {
   // Logs an event to UKM that the user has connected to the given network.
   void LogNetworkUkmEvent(
       const chromeos::network_config::mojom::NetworkStateProperties& network);
+  // Logs an event to UKM that the user has connected to the given bluetooth
+  // device.
+  void LogBluetoothUkmEvent(const BluetoothAddress& device_address);
 
  private:
   UserSettingsEventLogger();

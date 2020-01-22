@@ -41,6 +41,7 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
 
   HTMLSelectElement* SelectElement() const;
   String GetText() const;
+  void SetText(const String&);
 
   const char* GetName() const override { return "LayoutMenuList"; }
 
@@ -96,7 +97,6 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
   void UpdateInnerStyle();
   void AdjustInnerStyle(ComputedStyle&) const;
   bool HasOptionStyleChanged(const ComputedStyle& inner_style) const;
-  void SetText(const String&);
   void UpdateInnerBlockHeight();
   void UpdateOptionsWidth() const;
   void SetIndexToSelectOnCancel(int list_index);
@@ -109,8 +109,6 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
   // m_optionsWidth is calculated and cached on demand.
   // updateOptionsWidth() should be called before reading them.
   mutable int options_width_;
-
-  scoped_refptr<const ComputedStyle> option_style_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMenuList, IsMenuList());

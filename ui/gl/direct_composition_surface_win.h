@@ -60,6 +60,9 @@ class GL_EXPORT DirectCompositionSurfaceWin : public GLSurfaceEGL,
   // current GPU process' lifetime.
   static void DisableOverlays();
 
+  // Indicate the overlay caps are invalid.
+  static void InvalidateOverlayCaps();
+
   // Returns true if scaled hardware overlays are supported.
   static bool AreScaledOverlaysSupported();
 

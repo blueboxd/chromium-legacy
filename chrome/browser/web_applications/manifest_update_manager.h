@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_MANIFEST_UPDATE_MANAGER_H_
-#define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_MANIFEST_UPDATE_MANAGER_H_
+#ifndef CHROME_BROWSER_WEB_APPLICATIONS_MANIFEST_UPDATE_MANAGER_H_
+#define CHROME_BROWSER_WEB_APPLICATIONS_MANIFEST_UPDATE_MANAGER_H_
 
 #include <memory>
 
@@ -14,8 +14,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
-#include "chrome/browser/web_applications/components/manifest_update_task.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/manifest_update_task.h"
 
 class Profile;
 
@@ -92,4 +92,4 @@ class ManifestUpdateManager final : public AppRegistrarObserver {
 
 }  // namespace web_app
 
-#endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_MANIFEST_UPDATE_MANAGER_H_
+#endif  // CHROME_BROWSER_WEB_APPLICATIONS_MANIFEST_UPDATE_MANAGER_H_

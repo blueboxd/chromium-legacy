@@ -294,15 +294,6 @@ class QuickViewController {
   }
 
   /**
-   * @param {!FileEntry} entry
-   * @return {!Promise<!FileTasks>}
-   * @private
-   */
-  getAvailableTasks_(entry) {
-    return this.taskController_.getEntryFileTasks(entry);
-  }
-
-  /**
    * Update quick view using current entries.
    *
    * @return {!Promise} Promise fulfilled after quick view is updated.
@@ -328,7 +319,7 @@ class QuickViewController {
     return Promise
         .all([
           this.metadataModel_.get([entry], ['thumbnailUrl']),
-          this.getAvailableTasks_(entry)
+          this.taskController_.getEntryFileTasks(entry)
         ])
         .then(values => {
           const items = (/**@type{Array<MetadataItem>}*/ (values[0]));
@@ -373,7 +364,10 @@ class QuickViewController {
         browsable: params.browsable || false,
       });
 
-      this.tasks_ = fileTasks;
+      if (params.hasTask) {
+        this.tasks_ = fileTasks;
+      }
+
     });
   }
 

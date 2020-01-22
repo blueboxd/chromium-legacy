@@ -45,7 +45,6 @@ class PageTestBase : public testing::Test, public ScopedMockOverlayScrollbars {
     void BindClipboardHost(mojo::ScopedMessagePipeHandle handle);
 
     MockClipboardHost host_;
-    std::unique_ptr<service_manager::InterfaceProvider::TestApi> clipboard_api_;
   };
 
   PageTestBase();

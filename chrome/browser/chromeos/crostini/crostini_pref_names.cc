@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/values.h"
+#include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -28,6 +29,7 @@ const char kCrostiniContainers[] = "crostini.containers";
 const char kCrostiniTerminalSettings[] = "crostini.terminal_settings";
 const char kVmKey[] = "vm_name";
 const char kContainerKey[] = "container_name";
+const char kContainerOsVersionKey[] = "container_os_version";
 
 // A boolean preference representing a user level enterprise policy to enable
 // Crostini use.

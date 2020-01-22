@@ -72,6 +72,7 @@ void AddStringResources(content::WebUIDataSource* source) {
 
       {"configureMessage", IDS_CROSTINI_INSTALLER_CONFIGURE_MESSAGE},
       {"diskSizeMessage", IDS_CROSTINI_INSTALLER_DISK_SIZE_MESSAGE},
+      {"usernameMessage", IDS_CROSTINI_INSTALLER_USERNAME_MESSAGE},
   };
   AddLocalizedStringsBulk(source, kStrings);
 
@@ -111,12 +112,18 @@ CrostiniInstallerUI::CrostiniInstallerUI(content::WebUI* web_ui)
     : ui::MojoWebDialogUI{web_ui} {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUICrostiniInstallerHost);
+  auto* profile = Profile::FromWebUI(web_ui);
   source->OverrideContentSecurityPolicyScriptSrc(
       "script-src chrome://resources chrome://test 'self';");
   AddStringResources(source);
   source->AddBoolean(
       "diskResizingEnabled",
       base::FeatureList::IsEnabled(chromeos::features::kCrostiniDiskResizing));
+  source->AddBoolean(
+      "crostiniCustomUsername",
+      base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsername));
+  source->AddString("defaultContainerUsername",
+                    crostini::DefaultContainerUserNameForProfile(profile));
 
   source->AddResourcePath("app.js", IDR_CROSTINI_INSTALLER_APP_JS);
   source->AddResourcePath("browser_proxy.js",
@@ -133,7 +140,7 @@ CrostiniInstallerUI::CrostiniInstallerUI(content::WebUI* web_ui)
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();
 
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
+  content::WebUIDataSource::Add(profile, source);
 }
 
 CrostiniInstallerUI::~CrostiniInstallerUI() = default;

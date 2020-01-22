@@ -725,7 +725,7 @@ function getIconUrl(url) {
   // TODO(crbug.com/997229): use chrome://favicon/<url> when perms allow.
   const iconUrl = new URL('chrome-search://ntpicon/');
   iconUrl.searchParams.set('show_fallback_monogram', 'false');
-  iconUrl.searchParams.set('size', '24@' + window.devicePixelRatio + 'x');
+  iconUrl.searchParams.set('size', '32@' + window.devicePixelRatio + 'x');
   // The fallback color must match that of .clock-icon and .search-icon
   iconUrl.searchParams.set(
       'color',

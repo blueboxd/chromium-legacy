@@ -41,12 +41,14 @@ CrostiniInstallerPageHandler::CrostiniInstallerPageHandler(
 
 CrostiniInstallerPageHandler::~CrostiniInstallerPageHandler() = default;
 
-void CrostiniInstallerPageHandler::Install(int64_t disk_size) {
-  // TODO(crbug.com/1016195): Web page should allow input container username,
-  // and here we will pass that to Install().
+void CrostiniInstallerPageHandler::Install(int64_t disk_size_bytes,
+                                           const std::string& username) {
   crostini::CrostiniManager::RestartOptions options{};
   if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniDiskResizing)) {
-    options.disk_size = disk_size;
+    options.disk_size_bytes = disk_size_bytes;
+  }
+  if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsername)) {
+    options.container_username = username;
   }
   installer_ui_delegate_->Install(
       std::move(options),

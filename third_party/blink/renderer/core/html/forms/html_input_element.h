@@ -265,6 +265,11 @@ class CORE_EXPORT HTMLInputElement
 
   String DefaultToolTip() const override;
 
+  // Type=file only: Text not in the button such as "No file chosen". The string
+  // is not truncated by ellipsis.
+  // Return a null string for other types.
+  String FileStatusText() const;
+
   unsigned height() const;
   unsigned width() const;
   void setHeight(unsigned);

@@ -310,7 +310,7 @@ void MDnsHostLocator::Impl::OnATransactionResponse(
     const net::ARecordRdata* ip = record->rdata<net::ARecordRdata>();
     DCHECK(ip);
 
-    results_[RemoveLocal(raw_hostname)] = ip->address().ToString();
+    results_[RemoveLocal(raw_hostname)] = ip->address();
   }
 
   // Regardless of what the result is, check to see if the callback can be fired

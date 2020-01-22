@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/components/manifest_update_manager.h"
+#include "chrome/browser/web_applications/manifest_update_manager.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/util/values/values_util.h"

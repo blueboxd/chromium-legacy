@@ -21,6 +21,7 @@ VaapiPictureNativePixmapEgl::VaapiPictureNativePixmapEgl(
     const MakeGLContextCurrentCallback& make_context_current_cb,
     const BindGLImageCallback& bind_image_cb,
     int32_t picture_buffer_id,
+    const gfx::Size& visible_size,
     const gfx::Size& size,
     uint32_t texture_id,
     uint32_t client_texture_id,
@@ -30,6 +31,7 @@ VaapiPictureNativePixmapEgl::VaapiPictureNativePixmapEgl(
                                bind_image_cb,
                                picture_buffer_id,
                                size,
+                               visible_size,
                                texture_id,
                                client_texture_id,
                                texture_target) {
@@ -75,7 +77,8 @@ bool VaapiPictureNativePixmapEgl::Allocate(gfx::BufferFormat format) {
   if (make_context_current_cb_ && !make_context_current_cb_.Run())
     return false;
 
-  auto image = base::MakeRefCounted<gl::GLImageNativePixmap>(size_, format);
+  auto image =
+      base::MakeRefCounted<gl::GLImageNativePixmap>(visible_size_, format);
   // Create an EGLImage from a gl texture
   if (!image->InitializeFromTexture(texture_id_)) {
     DLOG(ERROR) << "Failed to initialize eglimage from texture id: "
@@ -87,6 +90,14 @@ bool VaapiPictureNativePixmapEgl::Allocate(gfx::BufferFormat format) {
   gfx::NativePixmapHandle native_pixmap_handle = image->ExportHandle();
   if (!native_pixmap_handle.planes.size()) {
     DLOG(ERROR) << "Failed to export EGLImage as dmabuf fds";
+    return false;
+  }
+
+  if (size_.width() > static_cast<int>(native_pixmap_handle.planes[0].stride) ||
+      size_.GetArea() > static_cast<int>(native_pixmap_handle.planes[0].size)) {
+    DLOG(ERROR) << "EGLImage (stride=" << native_pixmap_handle.planes[0].stride
+                << ", size=" << native_pixmap_handle.planes[0].size
+                << "is smaller than size_=" << size_.ToString();
     return false;
   }
 

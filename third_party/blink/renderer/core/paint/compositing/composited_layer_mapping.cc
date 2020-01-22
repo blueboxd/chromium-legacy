@@ -2189,12 +2189,12 @@ void CompositedLayerMapping::PaintScrollableArea(
   if (graphics_layer == LayerForHorizontalScrollbar()) {
     if (const Scrollbar* scrollbar = scrollable_area->HorizontalScrollbar()) {
       if (cull_rect.Intersects(scrollbar->FrameRect()))
-        scrollbar->Paint(context);
+        scrollbar->Paint(context, IntPoint());
     }
   } else if (graphics_layer == LayerForVerticalScrollbar()) {
     if (const Scrollbar* scrollbar = scrollable_area->VerticalScrollbar()) {
       if (cull_rect.Intersects(scrollbar->FrameRect()))
-        scrollbar->Paint(context);
+        scrollbar->Paint(context, IntPoint());
     }
   } else if (graphics_layer == LayerForScrollCorner()) {
     ScrollableAreaPainter painter(*scrollable_area);

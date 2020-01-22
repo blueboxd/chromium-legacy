@@ -2005,6 +2005,21 @@ void LocalFrame::RenderFallbackContent() {
   owner->RenderFallbackContent(this);
 }
 
+void LocalFrame::BeforeUnload(bool is_reload, BeforeUnloadCallback callback) {
+  base::TimeTicks before_unload_start_time = base::TimeTicks::Now();
+
+  // This will execute the BeforeUnload event in this frame and all of its
+  // local descendant frames, including children of remote frames.  The browser
+  // process will send separate IPCs to dispatch beforeunload in any
+  // out-of-process child frames.
+  bool proceed = Loader().ShouldClose(is_reload);
+
+  DCHECK(!callback.is_null());
+  base::TimeTicks before_unload_end_time = base::TimeTicks::Now();
+  std::move(callback).Run(proceed, before_unload_start_time,
+                          before_unload_end_time);
+}
+
 void LocalFrame::BindToReceiver(
     blink::LocalFrame* frame,
     mojo::PendingAssociatedReceiver<mojom::blink::LocalFrame> receiver) {

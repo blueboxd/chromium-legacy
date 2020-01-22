@@ -17,9 +17,11 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
 #include "content/browser/media/session/mock_media_session_player_observer.h"
 #include "content/browser/media/session/mock_media_session_service_impl.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/favicon_url.h"
@@ -32,14 +34,6 @@
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-using content::WebContents;
-using content::MediaSession;
-using content::MediaSessionImpl;
-using content::AudioFocusDelegate;
-using content::MediaSessionPlayerObserver;
-using content::MediaSessionUmaHelper;
-using content::MockMediaSessionPlayerObserver;
 
 using media_session::mojom::AudioFocusType;
 using media_session::mojom::MediaPlaybackState;
@@ -61,9 +55,10 @@ const base::string16 kExpectedSourceTitlePrefix =
 
 constexpr gfx::Size kDefaultFaviconSize = gfx::Size(16, 16);
 
-class MockAudioFocusDelegate : public AudioFocusDelegate {
+class MockAudioFocusDelegate : public content::AudioFocusDelegate {
  public:
-  MockAudioFocusDelegate(MediaSessionImpl* media_session, bool async_mode)
+  MockAudioFocusDelegate(content::MediaSessionImpl* media_session,
+                         bool async_mode)
       : media_session_(media_session), async_mode_(async_mode) {}
 
   MOCK_METHOD0(AbandonAudioFocus, void());
@@ -109,7 +104,7 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
   AudioFocusDelegate::AudioFocusResult sync_result_ =
       AudioFocusDelegate::AudioFocusResult::kSuccess;
 
-  MediaSessionImpl* media_session_;
+  content::MediaSessionImpl* media_session_;
   const bool async_mode_ = false;
 
   std::list<AudioFocusType> requests_;
@@ -118,7 +113,9 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
 
 }  // namespace
 
-class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
+namespace content {
+
+class MediaSessionImplBrowserTest : public ContentBrowserTest {
  protected:
   MediaSessionImplBrowserTest() = default;
 
@@ -220,9 +217,8 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
   void SystemStopDucking() { media_session_->StopDucking(); }
 
   void EnsureMediaSessionService() {
-    mock_media_session_service_.reset(
-        new NiceMock<content::MockMediaSessionServiceImpl>(
-            shell()->web_contents()->GetMainFrame()));
+    mock_media_session_service_.reset(new NiceMock<MockMediaSessionServiceImpl>(
+        shell()->web_contents()->GetMainFrame()));
   }
 
   void SetPlaybackState(blink::mojom::MediaSessionPlaybackState state) {
@@ -277,8 +273,7 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
  protected:
   MediaSessionImpl* media_session_;
   MockAudioFocusDelegate* mock_audio_focus_delegate_;
-  std::unique_ptr<content::MockMediaSessionServiceImpl>
-      mock_media_session_service_;
+  std::unique_ptr<MockMediaSessionServiceImpl> mock_media_session_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionImplBrowserTest);
 };
@@ -2479,7 +2474,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, Async_Unducking_Suspended) {
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, MetadataWhenFileUrlScheme) {
-  base::FilePath path = content::GetTestFilePath(nullptr, "title1.html");
+  base::FilePath path = GetTestFilePath(nullptr, "title1.html");
   GURL file_url = net::FilePathToFileURL(path);
   EXPECT_TRUE(NavigateToURL(shell(), file_url));
 
@@ -2496,27 +2491,24 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, UpdateFaviconURL) {
   valid_sizes.push_back(gfx::Size(100, 100));
   valid_sizes.push_back(gfx::Size(200, 200));
 
-  std::vector<content::FaviconURL> favicons;
-  favicons.push_back(content::FaviconURL(
-      GURL("https://www.example.org/favicon1.png"),
-      content::FaviconURL::IconType::kInvalid, valid_sizes));
-  favicons.push_back(content::FaviconURL(
-      GURL(), content::FaviconURL::IconType::kFavicon, valid_sizes));
-  favicons.push_back(content::FaviconURL(
-      GURL("https://www.example.org/favicon2.png"),
-      content::FaviconURL::IconType::kFavicon, std::vector<gfx::Size>()));
-  favicons.push_back(content::FaviconURL(
-      GURL("https://www.example.org/favicon3.png"),
-      content::FaviconURL::IconType::kFavicon, valid_sizes));
-  favicons.push_back(content::FaviconURL(
-      GURL("https://www.example.org/favicon4.png"),
-      content::FaviconURL::IconType::kTouchIcon, valid_sizes));
-  favicons.push_back(content::FaviconURL(
-      GURL("https://www.example.org/favicon5.png"),
-      content::FaviconURL::IconType::kTouchPrecomposedIcon, valid_sizes));
-  favicons.push_back(content::FaviconURL(
-      GURL("https://www.example.org/favicon6.png"),
-      content::FaviconURL::IconType::kTouchIcon, std::vector<gfx::Size>()));
+  std::vector<FaviconURL> favicons;
+  favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon1.png"),
+                                FaviconURL::IconType::kInvalid, valid_sizes));
+  favicons.push_back(
+      FaviconURL(GURL(), FaviconURL::IconType::kFavicon, valid_sizes));
+  favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon2.png"),
+                                FaviconURL::IconType::kFavicon,
+                                std::vector<gfx::Size>()));
+  favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon3.png"),
+                                FaviconURL::IconType::kFavicon, valid_sizes));
+  favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon4.png"),
+                                FaviconURL::IconType::kTouchIcon, valid_sizes));
+  favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon5.png"),
+                                FaviconURL::IconType::kTouchPrecomposedIcon,
+                                valid_sizes));
+  favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon6.png"),
+                                FaviconURL::IconType::kTouchIcon,
+                                std::vector<gfx::Size>()));
 
   media_session_->DidUpdateFaviconURL(favicons);
 
@@ -2545,7 +2537,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, UpdateFaviconURL) {
 
   {
     media_session::test::MockMediaSessionMojoObserver observer(*media_session_);
-    media_session_->DidUpdateFaviconURL(std::vector<content::FaviconURL>());
+    media_session_->DidUpdateFaviconURL(std::vector<FaviconURL>());
     observer.WaitForExpectedImagesOfType(
         media_session::mojom::MediaSessionImageType::kSourceIcon,
         std::vector<media_session::MediaImage>());
@@ -2554,10 +2546,10 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, UpdateFaviconURL) {
 
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
                        UpdateFaviconURL_ClearOnNavigate) {
-  std::vector<content::FaviconURL> favicons;
-  favicons.push_back(content::FaviconURL(
-      GURL("https://www.example.org/favicon1.png"),
-      content::FaviconURL::IconType::kFavicon, std::vector<gfx::Size>()));
+  std::vector<FaviconURL> favicons;
+  favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon1.png"),
+                                FaviconURL::IconType::kFavicon,
+                                std::vector<gfx::Size>()));
 
   media_session_->DidUpdateFaviconURL(favicons);
 
@@ -2590,6 +2582,69 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
         media_session::mojom::MediaSessionImageType::kSourceIcon,
         expected_images);
   }
+}
+
+class MediaSessionFaviconBrowserTest : public ContentBrowserTest {
+ protected:
+  MediaSessionFaviconBrowserTest() = default;
+
+  void SetUpOnMainThread() override {
+    ContentBrowserTest::SetUpOnMainThread();
+
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+};
+
+// Helper class that waits to receive a favicon from the renderer process.
+class FaviconWaiter : public WebContentsObserver {
+ public:
+  explicit FaviconWaiter(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) override {
+    received_favicon_ = true;
+    run_loop_.Quit();
+  }
+
+  void Wait() {
+    if (received_favicon_)
+      return;
+    run_loop_.Run();
+  }
+
+ private:
+  bool received_favicon_ = false;
+  base::RunLoop run_loop_;
+};
+
+IN_PROC_BROWSER_TEST_F(MediaSessionFaviconBrowserTest, StartupInitalization) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("example.com", "/title1.html")));
+
+  std::unique_ptr<FaviconWaiter> favicon_waiter(
+      new FaviconWaiter(shell()->web_contents()));
+
+  // Insert the favicon dynamically.
+  ASSERT_TRUE(content::ExecuteScript(
+      shell()->web_contents(),
+      "let l = document.createElement('link'); "
+      "l.rel='icon'; l.type='image/png'; l.href='single_face.jpg'; "
+      "document.head.appendChild(l)"));
+
+  // Wait until it's received by the browser process.
+  favicon_waiter->Wait();
+
+  // The MediaSession should be created with the favicon already available.
+  MediaSession* media_session = MediaSessionImpl::Get(shell()->web_contents());
+
+  media_session::MediaImage icon;
+  icon.src = embedded_test_server()->GetURL("example.com", "/single_face.jpg");
+  icon.sizes.push_back({16, 16});
+
+  media_session::test::MockMediaSessionMojoObserver observer(*media_session);
+  observer.WaitForExpectedImagesOfType(
+      media_session::mojom::MediaSessionImageType::kSourceIcon, {icon});
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
@@ -2794,3 +2849,5 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
     observer.WaitForEmptyPosition();
   }
 }
+
+}  // namespace content

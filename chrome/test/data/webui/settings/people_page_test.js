@@ -17,14 +17,14 @@ cr.define('settings_people_page', function() {
     }
   }
 
-  suite('ProfileInfoTests', function() {
-    /** @type {SettingsPeoplePageElement} */
-    let peoplePage = null;
-    /** @type {settings.ProfileInfoBrowserProxy} */
-    let browserProxy = null;
-    /** @type {settings.SyncBrowserProxy} */
-    let syncBrowserProxy = null;
+  /** @type {?SettingsPeoplePageElement} */
+  let peoplePage = null;
+  /** @type {?settings.ProfileInfoBrowserProxy} */
+  let profileInfoBrowserProxy = null;
+  /** @type {?settings.SyncBrowserProxy} */
+  let syncBrowserProxy = null;
 
+  suite('ProfileInfoTests', function() {
     suiteSetup(function() {
       loadTimeData.overrideValues({
         // Force Dice off. Dice is tested in the DiceUITest suite.
@@ -39,8 +39,8 @@ cr.define('settings_people_page', function() {
     });
 
     setup(async function() {
-      browserProxy = new TestProfileInfoBrowserProxy();
-      settings.ProfileInfoBrowserProxyImpl.instance_ = browserProxy;
+      profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
+      settings.ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;
 
       syncBrowserProxy = new TestSyncBrowserProxy();
       settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
@@ -51,7 +51,7 @@ cr.define('settings_people_page', function() {
       document.body.appendChild(peoplePage);
 
       await syncBrowserProxy.whenCalled('getSyncStatus');
-      await browserProxy.whenCalled('getProfileInfo');
+      await profileInfoBrowserProxy.whenCalled('getProfileInfo');
       Polymer.dom.flush();
     });
 
@@ -61,10 +61,10 @@ cr.define('settings_people_page', function() {
 
     test('GetProfileInfo', function() {
       assertEquals(
-          browserProxy.fakeProfileInfo.name,
+          profileInfoBrowserProxy.fakeProfileInfo.name,
           peoplePage.$$('#profile-name').textContent.trim());
       const bg = peoplePage.$$('#profile-icon').style.backgroundImage;
-      assertTrue(bg.includes(browserProxy.fakeProfileInfo.iconUrl));
+      assertTrue(bg.includes(profileInfoBrowserProxy.fakeProfileInfo.iconUrl));
 
       const iconDataUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEA' +
           'LAAAAAABAAEAAAICTAEAOw==';
@@ -81,16 +81,9 @@ cr.define('settings_people_page', function() {
 
   if (!cr.isChromeOS) {
     suite('SyncStatusTests', function() {
-      /** @type {SettingsPeoplePageElement} */
-      let peoplePage = null;
-      /** @type {settings.SyncBrowserProxy} */
-      let browserProxy = null;
-      /** @type {settings.ProfileInfoBrowserProxy} */
-      let profileInfoBrowserProxy = null;
-
       setup(function() {
-        browserProxy = new TestSyncBrowserProxy();
-        settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+        syncBrowserProxy = new TestSyncBrowserProxy();
+        settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
 
         profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
         settings.ProfileInfoBrowserProxyImpl.instance_ =
@@ -122,7 +115,7 @@ cr.define('settings_people_page', function() {
 
       test('GetProfileInfo', function() {
         let disconnectButton = null;
-        return browserProxy.whenCalled('getSyncStatus')
+        return syncBrowserProxy.whenCalled('getSyncStatus')
             .then(function() {
               Polymer.dom.flush();
               disconnectButton = peoplePage.$$('#disconnectButton');
@@ -154,7 +147,7 @@ cr.define('settings_people_page', function() {
               return popstatePromise;
             })
             .then(function() {
-              return browserProxy.whenCalled('signOut');
+              return syncBrowserProxy.whenCalled('signOut');
             })
             .then(function(deleteProfile) {
               assertFalse(deleteProfile);
@@ -182,7 +175,7 @@ cr.define('settings_people_page', function() {
               assertTrue(!!disconnectManagedProfileConfirm);
               assertFalse(disconnectManagedProfileConfirm.hidden);
 
-              browserProxy.resetResolver('signOut');
+              syncBrowserProxy.resetResolver('signOut');
 
               const popstatePromise = new Promise(function(resolve) {
                 listenOnce(window, 'popstate', resolve);
@@ -193,7 +186,7 @@ cr.define('settings_people_page', function() {
               return popstatePromise;
             })
             .then(function() {
-              return browserProxy.whenCalled('signOut');
+              return syncBrowserProxy.whenCalled('signOut');
             })
             .then(function(deleteProfile) {
               assertTrue(deleteProfile);
@@ -201,7 +194,7 @@ cr.define('settings_people_page', function() {
       });
 
       test('getProfileStatsCount', function() {
-        return browserProxy.whenCalled('getSyncStatus')
+        return syncBrowserProxy.whenCalled('getSyncStatus')
             .then(function() {
               Polymer.dom.flush();
 
@@ -279,7 +272,7 @@ cr.define('settings_people_page', function() {
       });
 
       test('Signout dialog suppressed when not signed in', function() {
-        return browserProxy.whenCalled('getSyncStatus')
+        return syncBrowserProxy.whenCalled('getSyncStatus')
             .then(function() {
               settings.Router.getInstance().navigateTo(
                   settings.routes.SIGN_OUT);
@@ -315,13 +308,6 @@ cr.define('settings_people_page', function() {
     });
 
     suite('DiceUITest', function() {
-      /** @type {SettingsPeoplePageElement} */
-      let peoplePage = null;
-      /** @type {settings.SyncBrowserProxy} */
-      let browserProxy = null;
-      /** @type {settings.ProfileInfoBrowserProxy} */
-      let profileInfoBrowserProxy = null;
-
       suiteSetup(function() {
         // Force UIs to think DICE is enabled for this profile.
         loadTimeData.overrideValues({
@@ -330,8 +316,8 @@ cr.define('settings_people_page', function() {
       });
 
       setup(function() {
-        browserProxy = new TestSyncBrowserProxy();
-        settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+        syncBrowserProxy = new TestSyncBrowserProxy();
+        settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
 
         profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
         settings.ProfileInfoBrowserProxyImpl.instance_ =
@@ -350,7 +336,7 @@ cr.define('settings_people_page', function() {
       });
 
       test('ShowCorrectRows', function() {
-        return browserProxy.whenCalled('getSyncStatus').then(function() {
+        return syncBrowserProxy.whenCalled('getSyncStatus').then(function() {
           // The correct /manageProfile link row is shown.
           assertTrue(!!peoplePage.$$('#edit-profile'));
           assertFalse(!!peoplePage.$$('#picture-subpage-trigger'));
@@ -455,16 +441,9 @@ cr.define('settings_people_page', function() {
   }
 
   suite('SyncSettings', function() {
-    /** @type {SettingsPeoplePageElement} */
-    let peoplePage = null;
-    /** @type {settings.SyncBrowserProxy} */
-    let browserProxy = null;
-    /** @type {settings.ProfileInfoBrowserProxy} */
-    let profileInfoBrowserProxy = null;
-
     setup(async function() {
-      browserProxy = new TestSyncBrowserProxy();
-      settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+      syncBrowserProxy = new TestSyncBrowserProxy();
+      settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
 
       profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
       settings.ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;
@@ -474,7 +453,7 @@ cr.define('settings_people_page', function() {
       peoplePage.pageVisibility = settings.pageVisibility;
       document.body.appendChild(peoplePage);
 
-      await browserProxy.whenCalled('getSyncStatus');
+      await syncBrowserProxy.whenCalled('getSyncStatus');
       Polymer.dom.flush();
     });
 
@@ -550,16 +529,22 @@ cr.define('settings_people_page', function() {
       }
     }
 
-    suite('Chrome OS', function() {
-      /** @type {SettingsPeoplePageElement} */
-      let peoplePage = null;
-      /** @type {settings.SyncBrowserProxy} */
-      let browserProxy = null;
-      /** @type {settings.ProfileInfoBrowserProxy} */
-      let profileInfoBrowserProxy = null;
-      /** @type {settings.AccountManagerBrowserProxy} */
-      let accountManagerBrowserProxy = null;
+    /** @type {?settings.AccountManagerBrowserProxy} */
+    let accountManagerBrowserProxy = null;
 
+    // Preferences should exist for embedded 'personalization_options.html'.
+    // We don't perform tests on them.
+    const DEFAULT_PREFS = {
+      profile: {password_manager_leak_detection: {value: true}},
+      signin: {
+        allowed_on_next_startup:
+            {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
+      },
+      safebrowsing:
+          {enabled: {value: true}, scout_reporting_enabled: {value: true}},
+    };
+
+    suite('Chrome OS', function() {
       suiteSetup(function() {
         loadTimeData.overrideValues({
           // Simulate SplitSettings (OS settings in their own surface).
@@ -570,8 +555,8 @@ cr.define('settings_people_page', function() {
       });
 
       setup(async function() {
-        browserProxy = new TestSyncBrowserProxy();
-        settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+        syncBrowserProxy = new TestSyncBrowserProxy();
+        settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
 
         profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
         settings.ProfileInfoBrowserProxyImpl.instance_ =
@@ -583,18 +568,12 @@ cr.define('settings_people_page', function() {
 
         PolymerTest.clearBody();
         peoplePage = document.createElement('settings-people-page');
-        // Preferences should exist for embedded 'personalization_options.html'.
-        // We don't perform tests on them.
-        peoplePage.prefs = {
-          profile: {password_manager_leak_detection: {value: true}},
-          safebrowsing:
-              {enabled: {value: true}, scout_reporting_enabled: {value: true}},
-        };
+        peoplePage.prefs = DEFAULT_PREFS;
         peoplePage.pageVisibility = settings.pageVisibility;
         document.body.appendChild(peoplePage);
 
         await accountManagerBrowserProxy.whenCalled('getAccounts');
-        await browserProxy.whenCalled('getSyncStatus');
+        await syncBrowserProxy.whenCalled('getSyncStatus');
         Polymer.dom.flush();
       });
 
@@ -628,10 +607,6 @@ cr.define('settings_people_page', function() {
     });
 
     suite('Chrome OS with account manager disabled', function() {
-      let peoplePage = null;
-      let syncBrowserProxy = null;
-      let profileInfoBrowserProxy = null;
-
       suiteSetup(function() {
         loadTimeData.overrideValues({
           // Simulate SplitSettings (OS settings in their own surface).
@@ -651,13 +626,7 @@ cr.define('settings_people_page', function() {
 
         PolymerTest.clearBody();
         peoplePage = document.createElement('settings-people-page');
-        // Preferences should exist for embedded 'personalization_options.html'.
-        // We don't perform tests on them.
-        peoplePage.prefs = {
-          profile: {password_manager_leak_detection: {value: true}},
-          safebrowsing:
-              {enabled: {value: true}, scout_reporting_enabled: {value: true}},
-        };
+        peoplePage.prefs = DEFAULT_PREFS;
         peoplePage.pageVisibility = settings.pageVisibility;
         document.body.appendChild(peoplePage);
 
@@ -687,6 +656,52 @@ cr.define('settings_people_page', function() {
         const oldRoute = settings.Router.getInstance().getCurrentRoute();
         profileIcon.click();
         assertEquals(oldRoute, settings.Router.getInstance().getCurrentRoute());
+      });
+    });
+
+    suite('Chrome OS with SplitSettingsSync', function() {
+      suiteSetup(function() {
+        loadTimeData.overrideValues({
+          splitSettingsSyncEnabled: true,
+        });
+      });
+
+      setup(async function() {
+        syncBrowserProxy = new TestSyncBrowserProxy();
+        settings.SyncBrowserProxyImpl.instance_ = syncBrowserProxy;
+
+        profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
+        settings.ProfileInfoBrowserProxyImpl.instance_ =
+            profileInfoBrowserProxy;
+
+        PolymerTest.clearBody();
+        peoplePage = document.createElement('settings-people-page');
+        peoplePage.prefs = DEFAULT_PREFS;
+        peoplePage.pageVisibility = settings.pageVisibility;
+        document.body.appendChild(peoplePage);
+
+        await syncBrowserProxy.whenCalled('getSyncStatus');
+        Polymer.dom.flush();
+      });
+
+      teardown(function() {
+        peoplePage.remove();
+      });
+
+      test('Sync account control is shown', () => {
+        sync_test_util.simulateSyncStatus({
+          signinAllowed: true,
+          syncSystemEnabled: true,
+        });
+
+        // Account control is visible.
+        const accountControl = peoplePage.$$('settings-sync-account-control');
+        assertNotEquals(
+            'none', window.getComputedStyle(accountControl).display);
+
+        // Profile row items are not available.
+        assertFalse(!!peoplePage.$$('#profile-icon'));
+        assertFalse(!!peoplePage.$$('#profile-row'));
       });
     });
   }

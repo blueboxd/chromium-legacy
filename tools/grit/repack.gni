@@ -54,9 +54,7 @@ template("repack") {
     script = "//tools/grit/pak_util.py"
 
     inputs = invoker.sources
-    outputs = [
-      invoker.output,
-    ]
+    outputs = [ invoker.output ]
 
     args = [ "repack" ]
     if (defined(invoker.repack_whitelist)) {
@@ -80,20 +78,12 @@ template("repack") {
                                "visibility",
                              ])
 
-      public_deps = [
-        ":$_repack_target_name",
-      ]
-      sources = [
-        invoker.output,
-      ]
+      public_deps = [ ":$_repack_target_name" ]
+      sources = [ invoker.output ]
       if (defined(invoker.bundle_output)) {
-        outputs = [
-          invoker.bundle_output,
-        ]
+        outputs = [ invoker.bundle_output ]
       } else {
-        outputs = [
-          "{{bundle_resources_dir}}/{{source_file_part}}",
-        ]
+        outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
       }
     }
   }

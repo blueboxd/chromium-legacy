@@ -3,9 +3,7 @@
 # found in the LICENSE file.
 
 static_library("cygprofile_win") {
-  sources = [
-    "cygprofile.cc",
-  ]
+  sources = [ "cygprofile.cc" ]
 
   # Don't instrument this library.
   configs -= [ "//build/config/win:default_cygprofile_instrumentation" ]

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/components/manifest_update_task.h"
+#include "chrome/browser/web_applications/manifest_update_task.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/installable/installable_manager.h"

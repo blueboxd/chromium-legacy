@@ -20,6 +20,7 @@ class TabGroupController {
   virtual void CreateTabGroup(const tab_groups::TabGroupId& group) = 0;
   virtual void ChangeTabGroupContents(const tab_groups::TabGroupId& group) = 0;
   virtual void ChangeTabGroupVisuals(const tab_groups::TabGroupId& group) = 0;
+  virtual void MoveTabGroup(const tab_groups::TabGroupId& group) = 0;
   virtual void CloseTabGroup(const tab_groups::TabGroupId& group) = 0;
 
   // Methods from TabStipModel that are exposed to TabGroup.

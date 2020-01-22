@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/mojo/test/mojo_interface_interceptor.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -84,32 +83,7 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
           "Interface " + interface_name_ +
               " is already intercepted by another MojoInterfaceInterceptor.");
     }
-    return;
   }
-
-  // TODO(crbug.com/994843): remove when no longer used.
-  service_manager::InterfaceProvider* interface_provider =
-      GetInterfaceProvider();
-  if (!interface_provider) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "The interface provider is unavailable.");
-    return;
-  }
-
-  service_manager::InterfaceProvider::TestApi test_api(interface_provider);
-  if (test_api.HasBinderForName(interface_name)) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kInvalidModificationError,
-        "Interface " + interface_name_ +
-            " is already intercepted by another MojoInterfaceInterceptor.");
-    return;
-  }
-
-  started_ = true;
-  test_api.SetBinderForName(
-      interface_name,
-      WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
-                         WrapWeakPersistent(this)));
 }
 
 void MojoInterfaceInterceptor::stop() {
@@ -130,15 +104,7 @@ void MojoInterfaceInterceptor::stop() {
     DCHECK(context);
     context->GetBrowserInterfaceBroker().SetBinderForTesting(interface_name,
                                                              {});
-    return;
   }
-
-  // TODO(crbug.com/994843): remove when no longer used.
-  // GetInterfaceProvider() is guaranteed not to return nullptr because this
-  // method is called when the context is destroyed.
-  service_manager::InterfaceProvider::TestApi test_api(GetInterfaceProvider());
-  DCHECK(test_api.HasBinderForName(interface_name));
-  test_api.ClearBinderForName(interface_name);
 }
 
 void MojoInterfaceInterceptor::Trace(blink::Visitor* visitor) {
@@ -172,19 +138,10 @@ MojoInterfaceInterceptor::MojoInterfaceInterceptor(
       process_scope_(process_scope),
       use_browser_interface_broker_(use_browser_interface_broker) {}
 
-service_manager::InterfaceProvider*
-MojoInterfaceInterceptor::GetInterfaceProvider() const {
-  ExecutionContext* context = GetExecutionContext();
-  if (!context)
-    return nullptr;
-
-  return context->GetInterfaceProvider();
-}
-
 void MojoInterfaceInterceptor::OnInterfaceRequest(
     mojo::ScopedMessagePipeHandle handle) {
   // Execution of JavaScript may be forbidden in this context as this method is
-  // called synchronously by the InterfaceProvider. Dispatching of the
+  // called synchronously by the BrowserInterfaceBroker. Dispatching of the
   // 'interfacerequest' event is therefore scheduled to take place in the next
   // microtask. This also more closely mirrors the behavior when an interface
   // request is being satisfied by another process.

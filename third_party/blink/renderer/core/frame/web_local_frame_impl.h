@@ -112,7 +112,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SetContentCaptureClient(WebContentCaptureClient*) override;
   WebContentCaptureClient* ContentCaptureClient() const override;
   void DispatchUnloadEvent() override;
-  bool HasAccessedInitialDocument() override;
   WebVector<WebIconURL> IconURLs(int icon_types_mask) const override;
   WebDocument GetDocument() const override;
   WebString AssignedName() const override;

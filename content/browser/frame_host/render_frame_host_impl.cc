@@ -1668,7 +1668,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_BeforeUnload_ACK, OnBeforeUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Unload_ACK, OnUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse, OnVisualStateResponse)
@@ -2859,15 +2858,6 @@ void RenderFrameHostImpl::DetachFromProxy() {
   // Some children with no unload handler may be eligible for immediate
   // deletion. Cut the dead branches now. This is a performance optimization.
   PendingDeletionCheckCompletedOnSubtree();  // May delete |this|.
-}
-
-void RenderFrameHostImpl::OnBeforeUnloadACK(
-    bool proceed,
-    const base::TimeTicks& renderer_before_unload_start_time,
-    const base::TimeTicks& renderer_before_unload_end_time) {
-  ProcessBeforeUnloadACK(proceed, false /* treat_as_final_ack */,
-                         renderer_before_unload_start_time,
-                         renderer_before_unload_end_time);
 }
 
 void RenderFrameHostImpl::ProcessBeforeUnloadACK(
@@ -5047,7 +5037,7 @@ bool RenderFrameHostImpl::CheckOrDispatchBeforeUnloadForSubtree(
     // ACKs.
     beforeunload_pending_replies_.insert(rfh);
 
-    rfh->Send(new FrameMsg_BeforeUnload(rfh->GetRoutingID(), is_reload));
+    SendBeforeUnload(is_reload, rfh->GetWeakPtr());
   }
 
   return found_beforeunload;
@@ -7631,6 +7621,24 @@ RenderFrameHostImpl::BuildCommitFailedNavigationCallback(
   return base::BindOnce(
       &RenderFrameHostImpl::DidCommitPerNavigationMojoInterfaceNavigation,
       base::Unretained(this), navigation_request);
+}
+
+void RenderFrameHostImpl::SendBeforeUnload(
+    bool is_reload,
+    base::WeakPtr<RenderFrameHostImpl> rfh) {
+  auto before_unload_closure = base::BindOnce(
+      [](base::WeakPtr<RenderFrameHostImpl> impl, bool proceed,
+         base::TimeTicks renderer_before_unload_start_time,
+         base::TimeTicks renderer_before_unload_end_time) {
+        if (!impl)
+          return;
+        impl->ProcessBeforeUnloadACK(proceed, false /* treat_as_final_ack */,
+                                     renderer_before_unload_start_time,
+                                     renderer_before_unload_end_time);
+      },
+      rfh);
+  rfh->GetAssociatedLocalFrame()->BeforeUnload(
+      is_reload, std::move(before_unload_closure));
 }
 
 void RenderFrameHostImpl::AddServiceWorkerContainerHost(

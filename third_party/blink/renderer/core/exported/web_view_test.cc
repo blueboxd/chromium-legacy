@@ -4387,7 +4387,6 @@ class MojoTestHelper {
   WebViewImpl* web_view_;
   frame_test_helpers::WebViewHelper& web_view_helper_;
   frame_test_helpers::TestWebFrameClient web_frame_client_;
-  std::unique_ptr<service_manager::InterfaceProvider::TestApi> test_api_;
 };
 
 // Mock implementation of the UnhandledTapNotifier Mojo receiver, for testing

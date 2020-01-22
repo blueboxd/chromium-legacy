@@ -2545,8 +2545,7 @@ TEST_F(RenderViewImplTest, DispatchBeforeUnloadCanDetachFrame) {
       })));
 
   // Simulate a BeforeUnload IPC received from the browser.
-  frame()->OnMessageReceived(
-      FrameMsg_BeforeUnload(frame()->GetRoutingID(), false));
+  frame()->SimulateBeforeUnload(false);
 
   run_loop.Run();
   ASSERT_TRUE(was_callback_run);

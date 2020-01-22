@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_slider/cr_slider.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
@@ -94,6 +95,12 @@ Polymer({
     chosenDiskSize_: {
       type: Number,
     },
+
+    username_: {
+      type: String,
+      notify: true,
+      value: loadTimeData.getString('defaultContainerUsername'),
+    },
   },
 
   /** @override */
@@ -167,7 +174,7 @@ Polymer({
     this.installerState_ = InstallerState.kStart;
     this.installerProgress_ = 0;
     this.state_ = State.INSTALLING;
-    BrowserProxy.getInstance().handler.install(diskSize);
+    BrowserProxy.getInstance().handler.install(diskSize, this.username_);
   },
 
   /** @private */
@@ -242,7 +249,7 @@ Polymer({
    * @private
    */
   canInstall_(state) {
-    if (loadTimeData.getBoolean('diskResizingEnabled')) {
+    if (this.configurePageAccessible_()) {
       return state === State.CONFIGURE || state === State.ERROR;
     } else {
       return state === State.PROMPT || state === State.ERROR;
@@ -255,8 +262,7 @@ Polymer({
    * @private
    */
   showNextButton_(state) {
-    return loadTimeData.getBoolean('diskResizingEnabled') &&
-        state === State.PROMPT;
+    return this.configurePageAccessible_() && state === State.PROMPT;
   },
 
   /**
@@ -273,10 +279,7 @@ Polymer({
    * @private
    */
   getInstallButtonLabel_(state) {
-    if (!loadTimeData.getBoolean('diskResizingEnabled') &&
-        state === State.PROMPT) {
-      // TODO(dmunro): Remove all the flag checks once we're rolled out and no
-      // longer need them.
+    if (!this.configurePageAccessible_() && state === State.PROMPT) {
       return loadTimeData.getString('install');
     }
     switch (state) {
@@ -392,5 +395,26 @@ Polymer({
     }
 
     return messageId ? loadTimeData.getString(messageId) : '';
+  },
+
+  /**
+   * @private
+   */
+  configurePageAccessible_() {
+    return this.showDiskResizing_() || this.showUsernameSelection_();
+  },
+
+  /**
+   * @private
+   */
+  showDiskResizing_() {
+    return loadTimeData.getBoolean('diskResizingEnabled');
+  },
+
+  /**
+   * @private
+   */
+  showUsernameSelection_() {
+    return loadTimeData.getBoolean('crostiniCustomUsername');
   },
 });

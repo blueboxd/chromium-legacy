@@ -42,7 +42,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/test/stub_layer_tree_view_delegate.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
@@ -440,9 +439,6 @@ class TestWebFrameClient : public WebLocalFrameClient {
                                   FrameOwnerElementType) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
-  service_manager::InterfaceProvider* GetInterfaceProvider() override {
-    return interface_provider_.get();
-  }
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory()
       override {
     // TODO(kinuko,toyoshim): Stop using Platform's URLLoaderFactory, but create
@@ -468,10 +464,6 @@ class TestWebFrameClient : public WebLocalFrameClient {
 
   // If set to a non-null value, self-deletes on frame detach.
   std::unique_ptr<TestWebFrameClient> self_owned_;
-
-  // Use service_manager::InterfaceProvider::TestApi to provide test interfaces
-  // through this client.
-  std::unique_ptr<service_manager::InterfaceProvider> interface_provider_;
 
   std::unique_ptr<AssociatedInterfaceProvider> associated_interface_provider_;
 

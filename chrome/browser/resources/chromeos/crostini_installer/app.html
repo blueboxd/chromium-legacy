@@ -83,16 +83,24 @@
     </div>
     <div id="configure-message" hidden="[[!isState_(state_, State.CONFIGURE)]]">
       <div>$i18n{configureMessage}</div>
-      <div>$i18n{diskSizeMessage}</div>
-      <div class="outer">
-        <cr-slider id="diskSlider" pin="true"
-                   value="[[defaultDiskSizeTick_]]"
-                   area-describedby="configure-message"
-                   ticks="[[diskSizeTicks_]]">
-        </cr-slider>
-        <div id="labels">
-          <div id="label-begin">[[minDisk_]]</div>
-          <div id="label-end">[[maxDisk_]]</div>
+      <div hidden="[[!showUsernameSelection_()]]">
+        <div>$i18n{usernameMessage}</div>
+        <cr-input label="Username" id="username" type="text"
+                  value="{{username_}}">
+        </cr-input>
+      </div>
+      <div hidden="[[!showDiskResizing_()]]">
+        <div>$i18n{diskSizeMessage}</div>
+        <div class="outer">
+          <cr-slider id="diskSlider" pin="true"
+                    value="[[defaultDiskSizeTick_]]"
+                    area-describedby="configure-message"
+                    ticks="[[diskSizeTicks_]]">
+          </cr-slider>
+          <div id="labels">
+            <div id="label-begin">[[minDisk_]]</div>
+            <div id="label-end">[[maxDisk_]]</div>
+          </div>
         </div>
       </div>
     </div>

@@ -19,6 +19,7 @@ VaapiTFPPicture::VaapiTFPPicture(
     const BindGLImageCallback& bind_image_cb,
     int32_t picture_buffer_id,
     const gfx::Size& size,
+    const gfx::Size& visible_size,
     uint32_t texture_id,
     uint32_t client_texture_id,
     uint32_t texture_target)
@@ -27,6 +28,7 @@ VaapiTFPPicture::VaapiTFPPicture(
                    bind_image_cb,
                    picture_buffer_id,
                    size,
+                   visible_size,
                    texture_id,
                    client_texture_id,
                    texture_target),

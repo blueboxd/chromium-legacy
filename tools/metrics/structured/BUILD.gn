@@ -9,9 +9,7 @@ action("gen_structured_events") {
     "//tools/metrics/structured/events_template.py",
     "//tools/metrics/structured/gen_events.py",
   ]
-  sources = [
-    "//tools/metrics/structured/structured.xml",
-  ]
+  sources = [ "//tools/metrics/structured/structured.xml" ]
 
   outdir = "$target_gen_dir"
 

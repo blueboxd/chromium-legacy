@@ -184,6 +184,10 @@ class TabStrip : public views::AccessiblePaneView,
   // |TabStripController::GetGroupColorId(group)| changes.
   void OnGroupVisualsChanged(const tab_groups::TabGroupId& group);
 
+  // Updates the ordering of the group header when the whole group is moved.
+  // Needed to ensure display and focus order of the group header view.
+  void OnGroupMoved(const tab_groups::TabGroupId& group);
+
   // Destroys the views associated with a recently deleted tab group. The
   // associated view mappings are erased in OnGroupCloseAnimationCompleted().
   void OnGroupClosed(const tab_groups::TabGroupId& group);
@@ -215,8 +219,8 @@ class TabStrip : public views::AccessiblePaneView,
   Tab* tab_at(int index) const { return tabs_.view_at(index); }
 
   // Returns the TabGroupHeader with ID |id|.
-  TabGroupHeader* group_header(const tab_groups::TabGroupId& id) {
-    return group_views_[id].get()->header();
+  TabGroupHeader* group_header(const tab_groups::TabGroupId& id) const {
+    return group_views_.at(id).get()->header();
   }
 
   // Returns the NewTabButton.
@@ -490,6 +494,13 @@ class TabStrip : public views::AccessiblePaneView,
   // Returns the last tab in the strip that's actually visible.  This will be
   // the actual last tab unless the strip is in the overflow node_data.
   const Tab* GetLastVisibleTab() const;
+
+  // Returns the view index (the order of ChildViews of the TabStrip) of the
+  // given |tab| based on its model index when it moves. Used to reorder the
+  // child views of the tabstrip so that focus order stays consistent.
+  int GetViewInsertionIndex(Tab* tab,
+                            base::Optional<int> from_model_index,
+                            int to_model_index) const;
 
   // Removes the tab at |index| from |tabs_|.
   void RemoveTabFromViewModel(int index);

@@ -32,7 +32,7 @@ namespace {
 class TestWebStateWithProxy : public web::TestWebState {
  public:
   TestWebStateWithProxy() {
-    scroll_view_proxy_ = OCMClassMock([CRWWebViewScrollViewProxy class]);
+    scroll_view_proxy_ = [[CRWWebViewScrollViewProxy alloc] init];
     id web_view_proxy_mock = OCMProtocolMock(@protocol(CRWWebViewProxy));
     [[[web_view_proxy_mock stub] andReturn:scroll_view_proxy_] scrollViewProxy];
     web_view_proxy_ = web_view_proxy_mock;

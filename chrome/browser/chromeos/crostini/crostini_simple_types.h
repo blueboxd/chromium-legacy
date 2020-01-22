@@ -188,7 +188,7 @@ enum class CorruptionStates {
 }  // namespace crostini
 
 enum class ContainerOsVersion {
-  kUnkown = 0,
+  kUnknown = 0,
   kDebianStretch = 1,
   kDebianBuster = 2,
   kDebianOther = 3,

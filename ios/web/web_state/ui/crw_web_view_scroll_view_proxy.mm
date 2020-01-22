@@ -173,14 +173,6 @@
   [self stopObservingScrollView:self.underlyingScrollView];
 }
 
-- (void)addGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer {
-  [self.underlyingScrollView addGestureRecognizer:gestureRecognizer];
-}
-
-- (void)removeGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer {
-  [self.underlyingScrollView removeGestureRecognizer:gestureRecognizer];
-}
-
 - (void)addObserver:(id<CRWWebViewScrollViewProxyObserver>)observer {
   [_observers addObserver:observer];
 }
@@ -232,27 +224,6 @@
   [_observers webViewScrollViewProxyDidSetScrollView:self];
 }
 
-- (CGRect)frame {
-  return self.underlyingScrollView ? [self.underlyingScrollView frame]
-                                   : CGRectZero;
-}
-
-- (BOOL)isScrollEnabled {
-  return [self.underlyingScrollView isScrollEnabled];
-}
-
-- (void)setScrollEnabled:(BOOL)scrollEnabled {
-  [self.underlyingScrollView setScrollEnabled:scrollEnabled];
-}
-
-- (BOOL)bounces {
-  return [self.underlyingScrollView bounces];
-}
-
-- (void)setBounces:(BOOL)bounces {
-  [self.underlyingScrollView setBounces:bounces];
-}
-
 - (BOOL)clipsToBounds {
   if (!self.underlyingScrollView && _storedClipsToBounds) {
     return *_storedClipsToBounds;
@@ -263,75 +234,6 @@
 - (void)setClipsToBounds:(BOOL)clipsToBounds {
   _storedClipsToBounds = std::make_unique<BOOL>(clipsToBounds);
   self.underlyingScrollView.clipsToBounds = clipsToBounds;
-}
-
-- (BOOL)isDecelerating {
-  return [self.underlyingScrollView isDecelerating];
-}
-
-- (BOOL)isDragging {
-  return [self.underlyingScrollView isDragging];
-}
-
-- (BOOL)isTracking {
-  return [self.underlyingScrollView isTracking];
-}
-
-- (BOOL)isZooming {
-  return [self.underlyingScrollView isZooming];
-}
-
-- (CGFloat)zoomScale {
-  return [self.underlyingScrollView zoomScale];
-}
-
-- (void)setContentOffset:(CGPoint)contentOffset {
-  [self.underlyingScrollView setContentOffset:contentOffset];
-}
-
-- (CGPoint)contentOffset {
-  return self.underlyingScrollView ? [self.underlyingScrollView contentOffset]
-                                   : CGPointZero;
-}
-
-- (void)setContentInset:(UIEdgeInsets)contentInset {
-  [self.underlyingScrollView setContentInset:contentInset];
-}
-
-- (UIEdgeInsets)contentInset {
-  return self.underlyingScrollView ? [self.underlyingScrollView contentInset]
-                                   : UIEdgeInsetsZero;
-}
-
-- (void)setScrollIndicatorInsets:(UIEdgeInsets)scrollIndicatorInsets {
-  [self.underlyingScrollView setScrollIndicatorInsets:scrollIndicatorInsets];
-}
-
-- (UIEdgeInsets)scrollIndicatorInsets {
-  return self.underlyingScrollView
-             ? [self.underlyingScrollView scrollIndicatorInsets]
-             : UIEdgeInsetsZero;
-}
-
-- (void)setContentSize:(CGSize)contentSize {
-  [self.underlyingScrollView setContentSize:contentSize];
-}
-
-- (CGSize)contentSize {
-  return self.underlyingScrollView ? [self.underlyingScrollView contentSize]
-                                   : CGSizeZero;
-}
-
-- (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated {
-  [self.underlyingScrollView setContentOffset:contentOffset animated:animated];
-}
-
-- (BOOL)scrollsToTop {
-  return [self.underlyingScrollView scrollsToTop];
-}
-
-- (void)setScrollsToTop:(BOOL)scrollsToTop {
-  [self.underlyingScrollView setScrollsToTop:scrollsToTop];
 }
 
 - (UIScrollViewContentInsetAdjustmentBehavior)contentInsetAdjustmentBehavior
@@ -345,10 +247,6 @@
   }
 }
 
-- (UIEdgeInsets)adjustedContentInset API_AVAILABLE(ios(11.0)) {
-  return [self.underlyingScrollView adjustedContentInset];
-}
-
 - (void)setContentInsetAdjustmentBehavior:
     (UIScrollViewContentInsetAdjustmentBehavior)contentInsetAdjustmentBehavior
     API_AVAILABLE(ios(11.0)) {
@@ -357,14 +255,6 @@
   _storedContentInsetAdjustmentBehavior =
       std::make_unique<UIScrollViewContentInsetAdjustmentBehavior>(
           contentInsetAdjustmentBehavior);
-}
-
-- (UIPanGestureRecognizer*)panGestureRecognizer {
-  return [self.underlyingScrollView panGestureRecognizer];
-}
-
-- (NSArray*)gestureRecognizers {
-  return [self.underlyingScrollView gestureRecognizers];
 }
 
 - (NSArray<__kindof UIView*>*)subviews {

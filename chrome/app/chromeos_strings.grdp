@@ -3591,6 +3591,9 @@
   <message name="IDS_CROSTINI_INSTALLER_DISK_SIZE_MESSAGE" desc="Text shown in the Crostini installer dialog describing how and why to choose the initial size of the Crostini disk">
     Disk space to reserve for Crostini (you can change this later).
   </message>
+  <message name="IDS_CROSTINI_INSTALLER_USERNAME_MESSAGE" desc="Text shown in the Crostini installer dialog prompting the user to pick their username">
+    Select a username
+  </message>
   <message name="IDS_CROSTINI_UNINSTALLER_TITLE" desc="Title of the Crostini uninstaller, a dialog for uninstalling Linux, the associated VM and Linux files.">
     Delete Linux (Beta)
   </message>

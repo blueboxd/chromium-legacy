@@ -201,18 +201,16 @@ void ScrollableAreaPainter::PaintScrollbar(GraphicsContext& context,
                                            Scrollbar& scrollbar,
                                            const CullRect& cull_rect,
                                            const IntPoint& paint_offset) {
-  // We create PaintOffsetTranslation for scrollable area, so the rounded
-  // paint offset is always zero.
   // TODO(crbug.com/1020913): We should not round paint_offset but should
   // consider subpixel accumulation when painting scrollbars.
-  DCHECK_EQ(paint_offset, IntPoint());
   IntRect rect = scrollbar.FrameRect();
+  rect.MoveBy(paint_offset);
   if (!cull_rect.Intersects(rect))
     return;
 
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
       scrollbar.IsCustomScrollbar()) {
-    scrollbar.Paint(context);
+    scrollbar.Paint(context, paint_offset);
     return;
   }
 

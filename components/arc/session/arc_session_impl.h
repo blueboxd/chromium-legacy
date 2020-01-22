@@ -169,11 +169,14 @@ class ArcSessionImpl
 
     // Returns the channel for the installation.
     virtual version_info::Channel GetChannel() = 0;
+
+    // Creates and returns a client adapter.
+    virtual std::unique_ptr<ArcClientAdapter> CreateClient() = 0;
   };
 
   ArcSessionImpl(std::unique_ptr<Delegate> delegate,
                  chromeos::SchedulerConfigurationManagerBase*
-                     scheduler_configuration_manager_);
+                     scheduler_configuration_manager);
   ~ArcSessionImpl() override;
 
   // Returns default delegate implementation used for the production.
@@ -183,6 +186,7 @@ class ArcSessionImpl
       version_info::Channel channel);
 
   State GetStateForTesting() { return state_; }
+  ArcClientAdapter* GetClientForTesting() { return client_.get(); }
 
   // ArcSession overrides:
   void StartMiniInstance() override;

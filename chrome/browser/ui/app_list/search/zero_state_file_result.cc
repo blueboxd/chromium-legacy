@@ -62,6 +62,7 @@ ZeroStateFileResult::ZeroStateFileResult(const base::FilePath& filepath,
   base::i18n::SanitizeUserSuppliedString(&sanitized_name);
   SetDetails(sanitized_name);
   SetIcon(GetIconForLocalFilePath(filepath));
+  SetChipIcon(GetIconForLocalFilePath(filepath));
 }
 
 ZeroStateFileResult::~ZeroStateFileResult() = default;

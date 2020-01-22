@@ -1785,6 +1785,10 @@ String HTMLInputElement::DefaultToolTip() const {
   return input_type_->DefaultToolTip(*input_type_view_);
 }
 
+String HTMLInputElement::FileStatusText() const {
+  return input_type_view_->FileStatusText();
+}
+
 bool HTMLInputElement::ShouldAppearIndeterminate() const {
   return input_type_->ShouldAppearIndeterminate();
 }

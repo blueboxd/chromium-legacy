@@ -156,11 +156,6 @@ class WebLocalFrame : public WebFrame {
   // Runs unload handlers for this frame.
   virtual void DispatchUnloadEvent() = 0;
 
-  // Indicates that the DOM of the initial empty document has been
-  // accessed via javascript. The BeforeUnload event will not be dispatched
-  // if the initial document has not been accessed.
-  virtual bool HasAccessedInitialDocument() = 0;
-
   // Basic properties ---------------------------------------------------
 
   // The urls of the given combination types of favicon (if any) specified by

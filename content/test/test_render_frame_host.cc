@@ -211,7 +211,7 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
 
 void TestRenderFrameHost::SendBeforeUnloadACK(bool proceed) {
   base::TimeTicks now = base::TimeTicks::Now();
-  OnBeforeUnloadACK(proceed, now, now);
+  ProcessBeforeUnloadACK(proceed, false /* treat_as_final_ack */, now, now);
 }
 
 void TestRenderFrameHost::SimulateUnloadACK() {

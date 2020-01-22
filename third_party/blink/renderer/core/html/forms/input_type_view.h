@@ -114,6 +114,7 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   virtual void CreateShadowSubtree();
   virtual void DestroyShadowSubtree();
   virtual HTMLInputElement* UploadButton() const;
+  virtual String FileStatusText() const;
 
   virtual void MinOrMaxAttributeChanged();
   virtual void StepAttributeChanged();

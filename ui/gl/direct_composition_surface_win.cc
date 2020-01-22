@@ -30,6 +30,8 @@
 
 namespace gl {
 namespace {
+// Whether the overlay caps are valid or not.
+bool g_overlay_caps_valid = false;
 // Indicates support for either NV12 or YUY2 hardware overlays.
 bool g_supports_overlays = false;
 
@@ -51,11 +53,19 @@ bool FlagsSupportsOverlays(UINT flags) {
                    DXGI_OVERLAY_SUPPORT_FLAG_SCALING));
 }
 
-void InitializeHardwareOverlaySupport() {
-  static bool overlay_support_initialized = false;
-  if (overlay_support_initialized)
+void UpdateHardwareOverlaySupport() {
+  if (g_overlay_caps_valid)
     return;
-  overlay_support_initialized = true;
+  g_overlay_caps_valid = true;
+
+  bool prev_supports_overlays = g_supports_overlays;
+  DXGI_FORMAT prev_overlay_format_used = g_overlay_format_used;
+  // Reset all caps in case of early exit.
+  g_supports_overlays = false;
+  g_overlay_format_used = DXGI_FORMAT_NV12;
+  g_nv12_overlay_support_flags = 0;
+  g_yuy2_overlay_support_flags = 0;
+  g_overlay_monitor_size = gfx::Size();
 
   // Check for DirectComposition support first to prevent likely crashes.
   if (!DirectCompositionSurfaceWin::IsDirectCompositionSupported())
@@ -92,6 +102,8 @@ void InitializeHardwareOverlaySupport() {
     return;
   }
 
+  bool supports_overlays = false;
+  DXGI_FORMAT overlay_format_used = DXGI_FORMAT_NV12;
   unsigned int i = 0;
   while (true) {
     Microsoft::WRL::ComPtr<IDXGIOutput> output;
@@ -128,17 +140,17 @@ void InitializeHardwareOverlaySupport() {
         // performing an extra scaling Blt before calling the driver. Even when
         // scaled overlays aren't actually supported, presentation using the
         // overlay path should be relatively efficient.
-        g_overlay_format_used = DXGI_FORMAT_NV12;
-        g_supports_overlays = true;
+        overlay_format_used = DXGI_FORMAT_NV12;
+        supports_overlays = true;
       }
     }
-    if (!g_supports_overlays &&
+    if (!supports_overlays &&
         FlagsSupportsOverlays(g_yuy2_overlay_support_flags)) {
       // If NV12 isn't supported, fallback to YUY2 if it's supported.
-      g_overlay_format_used = DXGI_FORMAT_YUY2;
-      g_supports_overlays = true;
+      overlay_format_used = DXGI_FORMAT_YUY2;
+      supports_overlays = true;
     }
-    if (g_supports_overlays) {
+    if (supports_overlays) {
       DXGI_OUTPUT_DESC monitor_desc = {};
       if (SUCCEEDED(output3->GetDesc(&monitor_desc))) {
         g_overlay_monitor_size =
@@ -151,15 +163,23 @@ void InitializeHardwareOverlaySupport() {
     // https://docs.microsoft.com/en-us/windows-hardware/drivers/display/multiplane-overlay-hardware-requirements
     // TODO(sunnyps): If the above is true, then we can only look at first
     // output instead of iterating over all outputs.
-    if (g_supports_overlays)
+    if (supports_overlays)
       break;
   }
-  if (g_supports_overlays) {
-    base::UmaHistogramSparse("GPU.DirectComposition.OverlayFormatUsed3",
-                             g_overlay_format_used);
+
+  g_supports_overlays = supports_overlays;
+  g_overlay_format_used = overlay_format_used;
+
+  if (supports_overlays != prev_supports_overlays ||
+      overlay_format_used != prev_overlay_format_used) {
+    // Record the new histograms
+    if (supports_overlays) {
+      base::UmaHistogramSparse("GPU.DirectComposition.OverlayFormatUsed3",
+                               overlay_format_used);
+    }
+    UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.OverlaysSupported",
+                          supports_overlays);
   }
-  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.OverlaysSupported",
-                        g_supports_overlays);
 }
 
 bool SupportsPresentationFeedback() {
@@ -267,7 +287,7 @@ bool DirectCompositionSurfaceWin::IsDirectCompositionSupported() {
 bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
   // Always initialize and record overlay support information irrespective of
   // command line flags.
-  InitializeHardwareOverlaySupport();
+  UpdateHardwareOverlaySupport();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   // Enable flag should be checked before the disable flag, so we could
@@ -284,7 +304,7 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
 bool DirectCompositionSurfaceWin::IsDecodeSwapChainSupported() {
   if (base::FeatureList::IsEnabled(
           features::kDirectCompositionUseNV12DecodeSwapChain)) {
-    InitializeHardwareOverlaySupport();
+    UpdateHardwareOverlaySupport();
     return GetOverlayFormatUsed() == DXGI_FORMAT_NV12;
   }
   return false;
@@ -296,8 +316,13 @@ void DirectCompositionSurfaceWin::DisableOverlays() {
 }
 
 // static
+void DirectCompositionSurfaceWin::InvalidateOverlayCaps() {
+  g_overlay_caps_valid = false;
+}
+
+// static
 bool DirectCompositionSurfaceWin::AreScaledOverlaysSupported() {
-  InitializeHardwareOverlaySupport();
+  UpdateHardwareOverlaySupport();
   if (g_overlay_format_used == DXGI_FORMAT_NV12)
     return !!(g_nv12_overlay_support_flags & DXGI_OVERLAY_SUPPORT_FLAG_SCALING);
   DCHECK_EQ(DXGI_FORMAT_YUY2, g_overlay_format_used);
@@ -306,7 +331,7 @@ bool DirectCompositionSurfaceWin::AreScaledOverlaysSupported() {
 
 // static
 UINT DirectCompositionSurfaceWin::GetOverlaySupportFlags(DXGI_FORMAT format) {
-  InitializeHardwareOverlaySupport();
+  UpdateHardwareOverlaySupport();
   if (format == DXGI_FORMAT_NV12)
     return g_nv12_overlay_support_flags;
   DCHECK_EQ(DXGI_FORMAT_YUY2, format);
@@ -326,7 +351,7 @@ DXGI_FORMAT DirectCompositionSurfaceWin::GetOverlayFormatUsed() {
 // static
 void DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(
     bool supported) {
-  InitializeHardwareOverlaySupport();
+  UpdateHardwareOverlaySupport();
   if (supported) {
     g_nv12_overlay_support_flags |= DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
     g_yuy2_overlay_support_flags |= DXGI_OVERLAY_SUPPORT_FLAG_SCALING;
@@ -341,7 +366,7 @@ void DirectCompositionSurfaceWin::SetScaledOverlaysSupportedForTesting(
 void DirectCompositionSurfaceWin::SetOverlayFormatUsedForTesting(
     DXGI_FORMAT format) {
   DCHECK(format == DXGI_FORMAT_NV12 || format == DXGI_FORMAT_YUY2);
-  InitializeHardwareOverlaySupport();
+  UpdateHardwareOverlaySupport();
   g_overlay_format_used = format;
   DCHECK_EQ(format, GetOverlayFormatUsed());
 }

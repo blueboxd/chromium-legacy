@@ -17,8 +17,9 @@ interface PageHandlerFactory {
 // Lives in the browser process. A renderer use this to control Crostini
 // installation.
 interface PageHandler {
-  // Start installation, |disk_size| is in bytes.
-  Install(int64 disk_size);
+  // Start installation, |disk_size| is in bytes, username is the user's
+  // desired username for inside the container.
+  Install(int64 disk_size, string username);
   // Cancel an on-going installation
   Cancel();
   // If a user cancels the installation without starting it at all, this should

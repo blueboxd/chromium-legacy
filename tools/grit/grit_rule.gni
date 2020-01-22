@@ -271,12 +271,8 @@ template("grit") {
     script = "//tools/grit/grit.py"
     depfile = "$target_gen_dir/$target_name.d"
 
-    inputs = [
-      invoker.source,
-    ]
-    deps = [
-      "//tools/grit:grit_sources",
-    ]
+    inputs = [ invoker.source ]
+    deps = [ "//tools/grit:grit_sources" ]
     outputs = [ "${depfile}.stamp" ] + _grit_outputs + _pak_info_outputs
 
     _grit_flags = grit_defines
@@ -455,13 +451,9 @@ template("grit") {
     # grit above rather than this library. This target needs to depend on the
     # action publicly so other scripts can take the outputs from the grit
     # script as inputs.
-    public_deps = [
-      ":$_grit_custom_target",
-    ]
+    public_deps = [ ":$_grit_custom_target" ]
 
-    deps = [
-      "//base",
-    ]
+    deps = [ "//base" ]
 
     if (defined(invoker.public_configs)) {
       public_configs += invoker.public_configs

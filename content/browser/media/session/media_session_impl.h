@@ -34,8 +34,6 @@
 #include "base/android/scoped_java_ref.h"
 #endif  // defined(OS_ANDROID)
 
-class MediaSessionImplBrowserTest;
-
 namespace media {
 enum class MediaContentType;
 }  // namespace media
@@ -273,7 +271,7 @@ class MediaSessionImpl : public MediaSession,
 
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
-  friend class ::MediaSessionImplBrowserTest;
+  friend class MediaSessionImplBrowserTest;
   friend class content::MediaSessionImplVisibilityBrowserTest;
   friend class content::AudioFocusManagerTest;
   friend class content::MediaSessionImplServiceRoutingTest;

@@ -1145,6 +1145,14 @@ TEST_F(CrostiniManagerRestartTest, OsReleaseSetCorrectly) {
             stored_os_release->SerializeAsString());
   histogram_tester.ExpectUniqueSample("Crostini.ContainerOsVersion",
                                       ContainerOsVersion::kDebianBuster, 1);
+
+  // The data for this container should also be stored in prefs.
+  const base::Value* os_release_pref_value =
+      GetContainerPrefValue(profile(), ContainerId(kVmName, kContainerName),
+                            prefs::kContainerOsVersionKey);
+  EXPECT_NE(os_release_pref_value, nullptr);
+  EXPECT_EQ(os_release_pref_value->GetInt(),
+            static_cast<int>(ContainerOsVersion::kDebianBuster));
 }
 
 TEST_F(CrostiniManagerRestartTest, RestartThenUninstall) {

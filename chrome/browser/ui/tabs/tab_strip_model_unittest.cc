@@ -290,6 +290,9 @@ class MockTabStripModelObserver : public TabStripModelObserver {
         group_updates_[change.group].visuals_update_count++;
         break;
       }
+      case TabGroupChange::kMoved: {
+        break;
+      }
       case TabGroupChange::kClosed: {
         group_updates_.erase(change.group);
         break;

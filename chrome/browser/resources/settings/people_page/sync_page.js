@@ -147,10 +147,6 @@ Polymer({
           'syncPrefs.trustedVaultKeysRequired)',
     },
 
-    // <if expr="not chromeos">
-    diceEnabled: Boolean,
-    // </if>
-
     /** @private */
     showSetupCancelDialog_: {
       type: Boolean,

@@ -2878,8 +2878,13 @@ static IntRect InvalidatePaintOfScrollbarIfNeeded(
   bool is_overlay = scrollbar && scrollbar->IsOverlayScrollbar();
 
   IntRect new_visual_rect;
-  if (scrollbar)
+  if (scrollbar) {
     new_visual_rect = scrollbar->FrameRect();
+    // TODO(crbug.com/1020913): We should not round paint_offset but should
+    // consider subpixel accumulation when painting scrollbars.
+    new_visual_rect.MoveBy(
+        RoundedIntPoint(context.fragment_data->PaintOffset()));
+  }
 
   if (needs_paint_invalidation && graphics_layer) {
     // If the scrollbar needs paint invalidation but didn't change location/size
@@ -2952,8 +2957,10 @@ void PaintLayerScrollableArea::InvalidatePaintOfScrollControlsIfNeeded(
       box_geometry_has_been_invalidated, context));
 
   IntRect scroll_corner_and_resizer_visual_rect = ScrollCornerAndResizerRect();
+  // TODO(crbug.com/1020913): We should not round paint_offset but should
+  // consider subpixel accumulation when painting scrollbars.
   scroll_corner_and_resizer_visual_rect.MoveBy(
-      RoundedIntPoint(box.FirstFragment().PaintOffset()));
+      RoundedIntPoint(context.fragment_data->PaintOffset()));
   if (ScrollControlNeedsPaintInvalidation(
           scroll_corner_and_resizer_visual_rect,
           scroll_corner_and_resizer_visual_rect_,

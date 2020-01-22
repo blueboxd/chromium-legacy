@@ -1756,7 +1756,6 @@ TEST_F(RenderFrameHostManagerTest, CancelPendingProperlyDeletesOrSwaps) {
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
   RenderFrameHostImpl* pending_rfh = nullptr;
-  base::TimeTicks now = base::TimeTicks::Now();
 
   // Navigate to the first page.
   contents()->NavigateAndCommit(kUrl1);
@@ -1771,8 +1770,7 @@ TEST_F(RenderFrameHostManagerTest, CancelPendingProperlyDeletesOrSwaps) {
     RenderFrameDeletedObserver rfh_deleted_observer(pending_rfh);
 
     // Cancel the navigation by simulating a declined beforeunload dialog.
-    contents()->GetMainFrame()->OnMessageReceived(
-        FrameHostMsg_BeforeUnload_ACK(0, false, now, now));
+    contents()->GetMainFrame()->SendBeforeUnloadACK(false);
     EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
     // Since the pending RFH is the only one for the new SiteInstance, it should
@@ -1794,8 +1792,7 @@ TEST_F(RenderFrameHostManagerTest, CancelPendingProperlyDeletesOrSwaps) {
         pending_rfh->GetSiteInstance();
     site_instance->IncrementActiveFrameCount();
 
-    contents()->GetMainFrame()->OnMessageReceived(
-        FrameHostMsg_BeforeUnload_ACK(0, false, now, now));
+    contents()->GetMainFrame()->SendBeforeUnloadACK(false);
     EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
     EXPECT_TRUE(rfh_deleted_observer.deleted());

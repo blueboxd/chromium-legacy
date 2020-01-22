@@ -99,6 +99,7 @@ class ArcSessionDelegateImpl : public ArcSessionImpl::Delegate {
   void GetLcdDensity(GetLcdDensityCallback callback) override;
   void GetFreeDiskSpace(GetFreeDiskSpaceCallback callback) override;
   version_info::Channel GetChannel() override;
+  std::unique_ptr<ArcClientAdapter> CreateClient() override;
 
  private:
   // Synchronously create a UNIX domain socket. This is designed to run on a
@@ -190,6 +191,10 @@ void ArcSessionDelegateImpl::GetFreeDiskSpace(
 
 version_info::Channel ArcSessionDelegateImpl::GetChannel() {
   return channel_;
+}
+
+std::unique_ptr<ArcClientAdapter> ArcSessionDelegateImpl::CreateClient() {
+  return ArcClientAdapter::Create(GetChannel());
 }
 
 // static
@@ -315,7 +320,7 @@ ArcSessionImpl::ArcSessionImpl(std::unique_ptr<Delegate> delegate,
                                chromeos::SchedulerConfigurationManagerBase*
                                    scheduler_configuration_manager)
     : delegate_(std::move(delegate)),
-      client_(ArcClientAdapter::Create(delegate_->GetChannel())),
+      client_(delegate_->CreateClient()),
       scheduler_configuration_manager_(scheduler_configuration_manager) {
   DCHECK(client_);
   client_->AddObserver(this);

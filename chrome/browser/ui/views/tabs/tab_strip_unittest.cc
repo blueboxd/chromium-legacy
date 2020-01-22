@@ -226,6 +226,41 @@ class TabStripTest : public ChromeViewsTestBase,
     return result;
   }
 
+  // Returns all TabSlotViews in the order that they have as ViewChildren of
+  // TabStrip. This should match the actual order that they appear in visually.
+  views::View::Views GetTabSlotViewsInFocusOrder() {
+    views::View::Views all_children = tab_strip_->children();
+
+    const int num_tab_slot_views =
+        tab_strip_->tab_count() + tab_strip_->group_views_.size();
+
+    return views::View::Views(all_children.begin(),
+                              all_children.begin() + num_tab_slot_views);
+  }
+
+  // Returns all TabSlotViews in the order that they appear visually. This is
+  // the expected order of the ViewChildren of TabStrip.
+  views::View::Views GetTabSlotViewsInVisualOrder() {
+    views::View::Views ordered_views;
+
+    base::Optional<tab_groups::TabGroupId> prev_group = base::nullopt;
+
+    for (int i = 0; i < tab_strip_->tab_count(); ++i) {
+      Tab* tab = tab_strip_->tab_at(i);
+
+      // If the current Tab is the first one in a group, first add the
+      // TabGroupHeader to the list of views.
+      base::Optional<tab_groups::TabGroupId> curr_group = tab->group();
+      if (curr_group.has_value() && curr_group != prev_group)
+        ordered_views.push_back(tab_strip_->group_header(curr_group.value()));
+      prev_group = curr_group;
+
+      ordered_views.push_back(tab);
+    }
+
+    return ordered_views;
+  }
+
   // Owned by TabStrip.
   FakeBaseTabStripController* controller_ = nullptr;
   TabStrip* tab_strip_ = nullptr;
@@ -352,38 +387,55 @@ TEST_P(TabStripTest, RemoveTab) {
   EXPECT_EQ(0, observer.last_tab_removed());
 }
 
-namespace {
-
-bool TabViewsInOrder(TabStrip* tab_strip) {
-  for (int i = 1; i < tab_strip->tab_count(); ++i) {
-    Tab* left = tab_strip->tab_at(i - 1);
-    Tab* right = tab_strip->tab_at(i);
-
-    if (tab_strip->FindChild(right) < tab_strip->FindChild(left)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-}  // namespace
-
 // Verifies child view order matches model order.
 TEST_P(TabStripTest, TabViewOrder) {
   controller_->AddTab(0, false);
   controller_->AddTab(1, false);
   controller_->AddTab(2, false);
-  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
+  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
 
   tab_strip_->MoveTab(0, 1, TabRendererData());
-  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
+  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
   tab_strip_->MoveTab(1, 2, TabRendererData());
-  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
+  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
   tab_strip_->MoveTab(1, 0, TabRendererData());
-  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
+  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
   tab_strip_->MoveTab(0, 2, TabRendererData());
-  EXPECT_TRUE(TabViewsInOrder(tab_strip_));
+  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
+}
+
+// Verifies child view order matches slot order with group headers.
+TEST_P(TabStripTest, TabViewOrderWithGroups) {
+  controller_->AddTab(0, false);
+  controller_->AddTab(1, false);
+  controller_->AddTab(2, false);
+  controller_->AddTab(3, false);
+  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
+
+  base::Optional<tab_groups::TabGroupId> group1 =
+      tab_groups::TabGroupId::GenerateNew();
+  base::Optional<tab_groups::TabGroupId> group2 =
+      tab_groups::TabGroupId::GenerateNew();
+
+  // Add multiple tabs to a group and verify view order.
+  controller_->MoveTabIntoGroup(0, group1);
+  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
+  controller_->MoveTabIntoGroup(1, group1);
+  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
+
+  // Move tabs within a group and verify view order.
+  controller_->MoveTab(1, 0);
+  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
+
+  // Add a single tab to a group and verify view order.
+  controller_->MoveTabIntoGroup(2, group2);
+  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
+
+  // Move and add tabs near a group and verify view order.
+  controller_->AddTab(2, false);
+  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
+  controller_->MoveTab(4, 3);
+  EXPECT_EQ(GetTabSlotViewsInFocusOrder(), GetTabSlotViewsInVisualOrder());
 }
 
 TEST_P(TabStripTest, VisibilityInOverflow) {

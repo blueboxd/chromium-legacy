@@ -1025,8 +1025,11 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
 
       attached_model->MoveSelectedTabsTo(to_index);
 
-      if (!header_drag_)
+      if (header_drag_) {
+        attached_model->MoveTabGroup(group_.value());
+      } else {
         UpdateGroupForDraggedTabs();
+      }
 
       // Move may do nothing in certain situations (such as when dragging pinned
       // tabs). Make sure the tabstrip actually changed before updating

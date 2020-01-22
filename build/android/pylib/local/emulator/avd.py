@@ -241,6 +241,7 @@ class AvdConfig(object):
                  or _DEFAULT_SCREEN_DENSITY)
 
       config_ini_contents = {
+          'disk.dataPartition.size': '4G',
           'hw.lcd.density': density,
           'hw.lcd.height': height,
           'hw.lcd.width': width,

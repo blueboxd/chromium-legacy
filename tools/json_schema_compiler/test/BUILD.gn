@@ -36,9 +36,7 @@ generated_types("generated_types") {
 
   root_namespace = "test::api::%(namespace)s"
 
-  deps = [
-    "//extensions/buildflags",
-  ]
+  deps = [ "//extensions/buildflags" ]
 }
 
 json_features("features_compiler_test") {
@@ -73,9 +71,7 @@ source_set("unit_tests") {
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
-  public_deps = [
-    ":features_compiler_test",
-  ]
+  public_deps = [ ":features_compiler_test" ]
 
   deps = [
     ":generated_types",

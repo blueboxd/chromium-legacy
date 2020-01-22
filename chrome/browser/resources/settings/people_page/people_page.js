@@ -25,6 +25,7 @@ Polymer({
       notify: true,
     },
 
+    // Chrome OS does not support DICE.
     // <if expr="not chromeos">
     /**
      * This flag is used to conditionally show a set of new sign-in UIs to the
@@ -278,13 +279,7 @@ Polymer({
 
     this.syncStatus = syncStatus;
 
-    if (
-        shouldRecordSigninImpression
-        // <if expr="not chromeos">
-        // Sync account control is not shown on Chrome OS.
-        && !this.shouldShowSyncAccountControl_()
-        // </if>
-    ) {
+    if (shouldRecordSigninImpression && !this.shouldShowSyncAccountControl_()) {
       // SyncAccountControl records the impressions user actions.
       chrome.metricsPrivate.recordUserAction('Signin_Impression_FromSettings');
     }
@@ -334,10 +329,6 @@ Polymer({
     }
     // </if>
 
-    // <if expr="chromeos">
-    cr.ui.focusWithoutInk(assert(this.$$('#disconnectButton')));
-    // </if>
-
     if (settings.Router.getInstance().getCurrentRoute() ==
         settings.routes.SIGN_OUT) {
       settings.Router.getInstance().navigateToPreviousRoute();
@@ -366,6 +357,7 @@ Polymer({
     settings.Router.getInstance().navigateToPreviousRoute();
     cr.ui.focusWithoutInk(assert(this.$.importDataDialogTrigger));
   },
+  // </if>
 
   /**
    * Open URL for managing your Google Account.
@@ -385,11 +377,30 @@ Polymer({
     if (this.syncStatus == undefined) {
       return false;
     }
-
+    // <if expr="chromeos">
+    if (!loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+      return false;
+    }
+    // </if>
     return !!this.syncStatus.syncSystemEnabled &&
         !!this.syncStatus.signinAllowed;
   },
-  // </if>
+
+  /**
+   * @return {boolean} Whether to show the profile row and associated controls.
+   * @private
+   */
+  shouldShowProfile_() {
+    // Closure compiler doesn't understand <if> so use a variable.
+    let show = false;
+    // <if expr="chromeos">
+    show = !this.shouldShowSyncAccountControl_();
+    // </if>
+    // <if expr="not chromeos">
+    show = !this.diceEnabled_;
+    // </if>
+    return show;
+  },
 
   /**
    * @param {string} iconUrl

@@ -98,9 +98,7 @@ component("url") {
 
 if (is_android) {
   static_library("origin_android") {
-    sources = [
-      "android/origin_android.cc",
-    ]
+    sources = [ "android/origin_android.cc" ]
 
     deps = [
       ":url",
@@ -111,18 +109,12 @@ if (is_android) {
   }
 
   android_library("url_java") {
-    sources = [
-      "android/java/src/org/chromium/url/IDNStringUtil.java",
-    ]
-    deps = [
-      "//base:base_java",
-    ]
+    sources = [ "android/java/src/org/chromium/url/IDNStringUtil.java" ]
+    deps = [ "//base:base_java" ]
   }
 
   android_library("origin_java") {
-    sources = [
-      "android/java/src/org/chromium/url/Origin.java",
-    ]
+    sources = [ "android/java/src/org/chromium/url/Origin.java" ]
     deps = [
       "//base:base_java",
       "//url/mojom:url_mojom_origin_java",
@@ -208,9 +200,7 @@ test("url_perftests") {
 }
 
 fuzzer_test("gurl_fuzzer") {
-  sources = [
-    "gurl_fuzzer.cc",
-  ]
+  sources = [ "gurl_fuzzer.cc" ]
   deps = [
     ":url",
     "//base",

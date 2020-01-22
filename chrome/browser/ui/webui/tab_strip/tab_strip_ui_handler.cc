@@ -238,6 +238,10 @@ void TabStripUIHandler::OnTabGroupChanged(const TabGroupChange& change) {
       break;
     }
 
+    case TabGroupChange::kMoved: {
+      break;
+    }
+
     case TabGroupChange::kClosed: {
       FireWebUIListener("tab-group-closed",
                         base::Value(change.group.ToString()));

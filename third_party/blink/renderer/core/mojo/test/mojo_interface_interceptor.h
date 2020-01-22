@@ -14,10 +14,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
-namespace service_manager {
-class InterfaceProvider;
-}
-
 namespace blink {
 
 class ExceptionState;
@@ -70,7 +66,6 @@ class MojoInterfaceInterceptor final
   void ContextDestroyed(ExecutionContext*) final;
 
  private:
-  service_manager::InterfaceProvider* GetInterfaceProvider() const;
   void OnInterfaceRequest(mojo::ScopedMessagePipeHandle);
   void DispatchInterfaceRequestEvent(mojo::ScopedMessagePipeHandle);
 

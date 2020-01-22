@@ -503,27 +503,72 @@ void AddNewLxdContainerToPrefs(Profile* profile,
   base::Value new_container(base::Value::Type::DICTIONARY);
   new_container.SetKey(prefs::kVmKey, base::Value(vm_name));
   new_container.SetKey(prefs::kContainerKey, base::Value(container_name));
+  new_container.SetIntKey(prefs::kContainerOsVersionKey,
+                          static_cast<int>(ContainerOsVersion::kUnknown));
 
   ListPrefUpdate updater(pref_service, crostini::prefs::kCrostiniContainers);
   updater->Append(std::move(new_container));
 }
+
+namespace {
+
+bool MatchContainerDict(const base::Value& dict,
+                        const ContainerId& container_id) {
+  const std::string* vm_name = dict.FindStringKey(prefs::kVmKey);
+  const std::string* container_name = dict.FindStringKey(prefs::kContainerKey);
+  return (vm_name && *vm_name == container_id.vm_name) &&
+         (container_name && *container_name == container_id.container_name);
+}
+
+}  // namespace
 
 void RemoveLxdContainerFromPrefs(Profile* profile,
                                  std::string vm_name,
                                  std::string container_name) {
   auto* pref_service = profile->GetPrefs();
   ListPrefUpdate updater(pref_service, crostini::prefs::kCrostiniContainers);
-  updater->EraseListIter(std::find_if(
-      updater->GetList().begin(), updater->GetList().end(),
-      [&](const auto& dict) {
-        return *dict.FindStringKey(prefs::kVmKey) == vm_name &&
-               *dict.FindStringKey(prefs::kContainerKey) == container_name;
-      }));
+  ContainerId container_id(vm_name, container_name);
+  updater->EraseListIter(
+      std::find_if(updater->GetList().begin(), updater->GetList().end(),
+                   [&](const auto& dict) {
+                     return MatchContainerDict(dict, container_id);
+                   }));
 
   CrostiniRegistryServiceFactory::GetForProfile(profile)->ClearApplicationList(
       vm_name, container_name);
   CrostiniMimeTypesServiceFactory::GetForProfile(profile)->ClearMimeTypes(
       vm_name, container_name);
+}
+
+const base::Value* GetContainerPrefValue(Profile* profile,
+                                         const ContainerId& container_id,
+                                         const std::string& key) {
+  const base::ListValue* containers =
+      profile->GetPrefs()->GetList(crostini::prefs::kCrostiniContainers);
+  if (!containers) {
+    return nullptr;
+  }
+  auto it = std::find_if(
+      containers->begin(), containers->end(),
+      [&](const auto& dict) { return MatchContainerDict(dict, container_id); });
+  if (it == containers->end()) {
+    return nullptr;
+  }
+  return it->FindKey(key);
+}
+
+void UpdateContainerPref(Profile* profile,
+                         const ContainerId& container_id,
+                         const std::string& key,
+                         base::Value value) {
+  ListPrefUpdate updater(profile->GetPrefs(),
+                         crostini::prefs::kCrostiniContainers);
+  auto it = std::find_if(
+      updater->GetList().begin(), updater->GetList().end(),
+      [&](const auto& dict) { return MatchContainerDict(dict, container_id); });
+  if (it != updater->GetList().end()) {
+    it->SetKey(key, std::move(value));
+  }
 }
 
 base::string16 GetTimeRemainingMessage(base::TimeTicks start, int percent) {

@@ -55,21 +55,21 @@ class InMemoryHostLocatorTest : public testing::Test {
 
 TEST_F(InMemoryHostLocatorTest, AddHostShouldNotBeEqual) {
   HostMap incorrect_map;
-  incorrect_map["host1"] = "1.2.3.4";
+  incorrect_map["host1"] = {1, 2, 3, 4};
 
   // Add a different host entry using AddHost().
-  locator_.AddHost("host2", "5.6.7.8");
+  locator_.AddHost("host2", {5, 6, 7, 8});
 
   ExpectHostMapNotEqual(incorrect_map);
 }
 
 TEST_F(InMemoryHostLocatorTest, AddHostsShouldNotBeEqual) {
   HostMap incorrect_map;
-  incorrect_map["host2"] = "6.7.8.9";
+  incorrect_map["host2"] = {6, 7, 8, 9};
 
   // Add a different host entry using AddHosts().
   HostMap host_map;
-  host_map["host1"] = "1.2.3.4";
+  host_map["host1"] = {1, 2, 3, 4};
   locator_.AddHosts(host_map);
 
   ExpectHostMapNotEqual(incorrect_map);
@@ -80,35 +80,35 @@ TEST_F(InMemoryHostLocatorTest, ShouldFindNoHosts) {
 }
 
 TEST_F(InMemoryHostLocatorTest, ShouldFindOneHost) {
-  locator_.AddHost("host1", "1.2.3.4");
+  locator_.AddHost("host1", {1, 2, 3, 4});
 
   HostMap expected;
-  expected["host1"] = "1.2.3.4";
+  expected["host1"] = {1, 2, 3, 4};
   ExpectHostMapEqual(expected);
 }
 
 TEST_F(InMemoryHostLocatorTest, ShouldFindMultipleHosts) {
   HostMap host_map;
-  host_map["host1"] = "1.2.3.4";
-  host_map["host2"] = "3.4.5.6";
+  host_map["host1"] = {1, 2, 3, 4};
+  host_map["host2"] = {3, 4, 5, 6};
   locator_.AddHosts(host_map);
 
   ExpectHostMapEqual(host_map);
 }
 
 TEST_F(InMemoryHostLocatorTest, ShouldOverwriteHostWithSameName) {
-  locator_.AddHost("host1", "1.2.3.4");
-  locator_.AddHost("host1", "5.6.7.8");
+  locator_.AddHost("host1", {1, 2, 3, 4});
+  locator_.AddHost("host1", {5, 6, 7, 8});
 
   HostMap expected;
-  expected["host1"] = "5.6.7.8";
+  expected["host1"] = {5, 6, 7, 8};
   ExpectHostMapEqual(expected);
 }
 
 TEST_F(InMemoryHostLocatorTest, ShouldRemoveHost) {
   HostMap host_map;
-  host_map["host1"] = "1.2.3.4";
-  host_map["host2"] = "3.4.5.6";
+  host_map["host1"] = {1, 2, 3, 4};
+  host_map["host2"] = {3, 4, 5, 6};
   locator_.AddHosts(host_map);
 
   ExpectHostMapEqual(host_map);
@@ -119,39 +119,39 @@ TEST_F(InMemoryHostLocatorTest, ShouldRemoveHost) {
 
   // The locator should only return the host that was not removed.
   HostMap expected;
-  expected["host1"] = "1.2.3.4";
+  expected["host1"] = {1, 2, 3, 4};
   ExpectHostMapEqual(expected);
 }
 
 TEST_F(InMemoryHostLocatorTest, AddHostsShouldKeepPreviousHosts) {
-  locator_.AddHost("host1", "1.2.3.4");
+  locator_.AddHost("host1", {1, 2, 3, 4});
 
   HostMap host_map;
-  host_map["host2"] = "5.6.7.8";
+  host_map["host2"] = {5, 6, 7, 8};
   locator_.AddHosts(host_map);
 
   HostMap expected;
-  expected["host1"] = "1.2.3.4";
-  expected["host2"] = "5.6.7.8";
+  expected["host1"] = {1, 2, 3, 4};
+  expected["host2"] = {5, 6, 7, 8};
   ExpectHostMapEqual(expected);
 }
 
 TEST_F(InMemoryHostLocatorTest, AddHostsShouldKeepPreviousHostsAndOverwrite) {
-  locator_.AddHost("host1", "1.2.3.4");
-  locator_.AddHost("host2", "5.6.7.8");
+  locator_.AddHost("host1", {1, 2, 3, 4});
+  locator_.AddHost("host2", {5, 6, 7, 8});
 
   // Add a host with same hostname but different address, along with a new host.
   HostMap host_map;
-  host_map["host2"] = "15.16.17.18";
-  host_map["host3"] = "25.26.27.28";
+  host_map["host2"] = {15, 16, 17, 18};
+  host_map["host3"] = {25, 26, 27, 28};
   locator_.AddHosts(host_map);
 
   // The host with the same name should be overwritten, and the new host
   // should be added.
   HostMap expected;
-  expected["host1"] = "1.2.3.4";
-  expected["host2"] = "15.16.17.18";
-  expected["host3"] = "25.26.27.28";
+  expected["host1"] = {1, 2, 3, 4};
+  expected["host2"] = {15, 16, 17, 18};
+  expected["host3"] = {25, 26, 27, 28};
   ExpectHostMapEqual(expected);
 }
 

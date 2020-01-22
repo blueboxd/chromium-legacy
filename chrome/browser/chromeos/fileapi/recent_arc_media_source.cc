@@ -36,8 +36,11 @@ const char kAndroidDownloadDirPrefix[] = "/storage/emulated/0/Download/";
 
 const char kMediaDocumentsProviderAuthority[] =
     "com.android.providers.media.documents";
+constexpr char kMediaDocumentsProviderImagesRoot[] = "images_root";
+constexpr char kMediaDocumentsProviderVideosRoot[] = "videos_root";
 const char* kMediaDocumentsProviderRootIds[] = {
-    "images_root", "videos_root",
+    kMediaDocumentsProviderImagesRoot,
+    kMediaDocumentsProviderVideosRoot,
 };
 
 base::FilePath GetRelativeMountPath(const std::string& root_id) {
@@ -89,6 +92,7 @@ class RecentArcMediaSource::MediaRoot {
 
   storage::FileSystemURL BuildDocumentsProviderUrl(
       const base::FilePath& path) const;
+  bool MatchesFileType(FileType file_type) const;
 
   // Set in the constructor.
   const std::string root_id_;
@@ -139,6 +143,13 @@ void RecentArcMediaSource::MediaRoot::GetRecentFiles(Params params) {
       arc::ArcFileSystemOperationRunner::GetForBrowserContext(profile_);
   if (!runner) {
     // This happens when ARC is not allowed in this profile.
+    OnComplete();
+    return;
+  }
+
+  if (!MatchesFileType(params_.value().file_type())) {
+    // Return immediately without results when this root's id does not match the
+    // requested file type.
     OnComplete();
     return;
   }
@@ -275,6 +286,20 @@ RecentArcMediaSource::MediaRoot::BuildDocumentsProviderUrl(
   return mount_points->CreateExternalFileSystemURL(
       params_.value().origin(), arc::kDocumentsProviderMountPointName,
       relative_mount_path_.Append(path));
+}
+
+bool RecentArcMediaSource::MediaRoot::MatchesFileType(
+    FileType file_type) const {
+  switch (file_type) {
+    case FileType::kAll:
+      return true;
+    case FileType::kImage:
+      return root_id_ == kMediaDocumentsProviderImagesRoot;
+    case FileType::kVideo:
+      return root_id_ == kMediaDocumentsProviderVideosRoot;
+    default:
+      return false;
+  }
 }
 
 RecentArcMediaSource::RecentArcMediaSource(Profile* profile)

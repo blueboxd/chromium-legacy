@@ -48,6 +48,7 @@
 #include "content/test/did_commit_navigation_interceptor.h"
 #include "content/test/frame_host_test_interface.mojom.h"
 #include "content/test/test_content_browser_client.h"
+#include "content/test/test_render_frame_host_factory.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_constants.h"
@@ -65,6 +66,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -412,20 +414,38 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
   DISALLOW_COPY_AND_ASSIGN(TestJavaScriptDialogManager);
 };
 
-class DropBeforeUnloadACKFilter : public BrowserMessageFilter {
+// A RenderFrameHostImpl that discards callback for BeforeUnload.
+class RenderFrameHostImplForBeforeUnloadInterceptor
+    : public RenderFrameHostImpl {
  public:
-  DropBeforeUnloadACKFilter() : BrowserMessageFilter(FrameMsgStart) {}
+  using RenderFrameHostImpl::RenderFrameHostImpl;
 
- protected:
-  ~DropBeforeUnloadACKFilter() override {}
-
- private:
-  // BrowserMessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    return message.type() == FrameHostMsg_BeforeUnload_ACK::ID;
+  void SendBeforeUnload(bool is_reload,
+                        base::WeakPtr<RenderFrameHostImpl> rfh) override {
+    rfh->GetAssociatedLocalFrame()->BeforeUnload(is_reload, base::DoNothing());
   }
 
-  DISALLOW_COPY_AND_ASSIGN(DropBeforeUnloadACKFilter);
+ private:
+  friend class RenderFrameHostFactoryForBeforeUnloadInterceptor;
+};
+
+class RenderFrameHostFactoryForBeforeUnloadInterceptor
+    : public TestRenderFrameHostFactory {
+ protected:
+  std::unique_ptr<RenderFrameHostImpl> CreateRenderFrameHost(
+      SiteInstance* site_instance,
+      scoped_refptr<RenderViewHostImpl> render_view_host,
+      RenderFrameHostDelegate* delegate,
+      FrameTree* frame_tree,
+      FrameTreeNode* frame_tree_node,
+      int32_t routing_id,
+      int32_t widget_routing_id,
+      bool renderer_initiated_creation) override {
+    return base::WrapUnique(new RenderFrameHostImplForBeforeUnloadInterceptor(
+        site_instance, std::move(render_view_host), delegate, frame_tree,
+        frame_tree_node, routing_id, widget_routing_id,
+        renderer_initiated_creation));
+  }
 };
 
 mojo::ScopedMessagePipeHandle CreateDisconnectedMessagePipeHandle() {
@@ -445,6 +465,8 @@ mojo::ScopedMessagePipeHandle CreateDisconnectedMessagePipeHandle() {
 #endif
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
                        MAYBE_IframeBeforeUnloadParentHang) {
+  RenderFrameHostFactoryForBeforeUnloadInterceptor interceptor;
+
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
   TestJavaScriptDialogManager dialog_manager;
   wc->SetDelegate(&dialog_manager);
@@ -472,12 +494,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   RenderFrameHostImpl* main_frame =
       static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
   EXPECT_TRUE(main_frame->is_waiting_for_beforeunload_ack());
-
-  // Set up a filter to make sure that when the dialog is answered below and the
-  // renderer sends the beforeunload ACK, it gets... ahem... lost.
-  scoped_refptr<DropBeforeUnloadACKFilter> filter =
-      new DropBeforeUnloadACKFilter();
-  main_frame->GetProcess()->AddFilter(filter.get());
 
   // Answer the dialog.
   dialog_manager.Run(true, base::string16());

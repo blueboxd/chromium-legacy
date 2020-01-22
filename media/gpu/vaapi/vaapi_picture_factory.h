@@ -36,7 +36,8 @@ class MEDIA_GPU_EXPORT VaapiPictureFactory {
       scoped_refptr<VaapiWrapper> vaapi_wrapper,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb,
-      const PictureBuffer& picture_buffer);
+      const PictureBuffer& picture_buffer,
+      const gfx::Size& visible_size);
 
   // Return the type of the VaapiPicture implementation for the given GL
   // implementation.

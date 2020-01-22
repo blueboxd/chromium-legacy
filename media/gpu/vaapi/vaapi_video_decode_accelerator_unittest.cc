@@ -89,6 +89,7 @@ class MockVaapiPicture : public VaapiPicture {
                    const BindGLImageCallback& bind_image_cb,
                    int32_t picture_buffer_id,
                    const gfx::Size& size,
+                   const gfx::Size& visible_size,
                    uint32_t texture_id,
                    uint32_t client_texture_id,
                    uint32_t texture_target)
@@ -97,6 +98,7 @@ class MockVaapiPicture : public VaapiPicture {
                      bind_image_cb,
                      picture_buffer_id,
                      size,
+                     visible_size,
                      texture_id,
                      client_texture_id,
                      texture_target) {}
@@ -124,19 +126,22 @@ class MockVaapiPictureFactory : public VaapiPictureFactory {
   MockVaapiPictureFactory() = default;
   ~MockVaapiPictureFactory() override = default;
 
-  MOCK_METHOD2(MockCreateVaapiPicture, void(VaapiWrapper*, const gfx::Size&));
+  MOCK_METHOD3(MockCreateVaapiPicture,
+               void(VaapiWrapper*, const gfx::Size&, const gfx::Size&));
   std::unique_ptr<VaapiPicture> Create(
       scoped_refptr<VaapiWrapper> vaapi_wrapper,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const BindGLImageCallback& bind_image_cb,
-      const PictureBuffer& picture_buffer) override {
+      const PictureBuffer& picture_buffer,
+      const gfx::Size& visible_size) override {
     const uint32_t service_texture_id = picture_buffer.service_texture_ids()[0];
     const uint32_t client_texture_id = picture_buffer.client_texture_ids()[0];
-    MockCreateVaapiPicture(vaapi_wrapper.get(), picture_buffer.size());
+    MockCreateVaapiPicture(vaapi_wrapper.get(), picture_buffer.size(),
+                           visible_size);
     return std::make_unique<MockVaapiPicture>(
         std::move(vaapi_wrapper), make_context_current_cb, bind_image_cb,
-        picture_buffer.id(), picture_buffer.size(), service_texture_id,
-        client_texture_id, picture_buffer.texture_target());
+        picture_buffer.id(), picture_buffer.size(), visible_size,
+        service_texture_id, client_texture_id, picture_buffer.texture_target());
   }
 };
 
@@ -288,9 +293,11 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
     if (GetParam().decode_using_client_picture_buffers) {
       EXPECT_CALL(*mock_vaapi_wrapper_, CreateContext(picture_size))
           .WillOnce(Return(true));
-      EXPECT_CALL(
-          *mock_vaapi_picture_factory_,
-          MockCreateVaapiPicture(mock_vaapi_wrapper_.get(), picture_size))
+      EXPECT_CALL(*mock_decoder_, GetVisibleRect())
+          .WillRepeatedly(Return(gfx::Rect(picture_size)));
+      EXPECT_CALL(*mock_vaapi_picture_factory_,
+                  MockCreateVaapiPicture(mock_vaapi_wrapper_.get(),
+                                         picture_size, picture_size))
           .Times(num_pictures);
     } else {
       EXPECT_EQ(
@@ -308,8 +315,10 @@ class VaapiVideoDecodeAcceleratorTest : public TestWithParam<TestParams>,
                 va_surface_ids->resize(kNumReferenceFrames);
               })),
               Return(true)));
+      EXPECT_CALL(*mock_decoder_, GetVisibleRect())
+          .WillRepeatedly(Return(gfx::Rect(picture_size)));
       EXPECT_CALL(*mock_vaapi_picture_factory_,
-                  MockCreateVaapiPicture(_, picture_size))
+                  MockCreateVaapiPicture(_, picture_size, picture_size))
           .Times(num_pictures);
     }
 

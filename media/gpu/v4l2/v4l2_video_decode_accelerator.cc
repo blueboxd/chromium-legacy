@@ -626,43 +626,37 @@ void V4L2VideoDecodeAccelerator::ImportBufferForPictureTask(
     return;
   }
 
-  // TODO(crbug.com/982172): This must be done in AssignPictureBuffers().
-  // However the size of PictureBuffer might not be adjusted by ARC++. So we
-  // keep this until ARC++ side is fixed.
+  // TODO(crbug.com/982172): ARC++ may adjust the size of the buffer due to
+  // allocator constraints, but the VDA API does not provide a way for it to
+  // communicate the actual buffer size. If we are importing, make sure that the
+  // actual buffer size is coherent with what we expect, and adjust our size if
+  // needed.
   if (output_mode_ == Config::OutputMode::IMPORT) {
     DCHECK_GT(handle.planes.size(), 0u);
-    const int32_t stride = handle.planes[0].stride;
-    int plane_horiz_bits_per_pixel = VideoFrame::PlaneHorizontalBitsPerPixel(
-        egl_image_format_fourcc_->ToVideoPixelFormat(), 0);
-    if (plane_horiz_bits_per_pixel == 0 ||
-        (stride * 8) % plane_horiz_bits_per_pixel != 0) {
-      VLOGF(1) << "Invalid format " << egl_image_format_fourcc_->ToString()
-               << " or stride " << stride;
-      NOTIFY_ERROR(INVALID_ARGUMENT);
-      return;
-    }
+    const gfx::Size handle_size = v4l2_vda_helpers::NativePixmapSizeFromHandle(
+        handle, *egl_image_format_fourcc_, egl_image_size_);
 
-    int adjusted_coded_width = stride * 8 / plane_horiz_bits_per_pixel;
     // If this is the first picture, then adjust the EGL width.
     // Otherwise just check that it remains the same.
     if (decoder_state_ == kAwaitingPictureBuffers) {
-      DCHECK_GE(adjusted_coded_width, egl_image_size_.width());
-      egl_image_size_.set_width(adjusted_coded_width);
+      DCHECK_GE(handle_size.width(), egl_image_size_.width());
+      DVLOGF(3) << "Original egl_image_size=" << egl_image_size_.ToString()
+                << ", adjusted buffer size=" << handle_size.ToString();
+      egl_image_size_ = handle_size;
     }
-    DCHECK_EQ(egl_image_size_.width(), adjusted_coded_width);
+    DCHECK_EQ(egl_image_size_, handle_size);
 
-    DVLOGF(3) << "Original egl_image_size=" << egl_image_size_.ToString()
-              << ", adjusted coded width=" << adjusted_coded_width;
-  }
-
-  if (image_processor_device_ && !image_processor_) {
-    DCHECK_EQ(kAwaitingPictureBuffers, decoder_state_);
-    // This is the first buffer import. Create the image processor and change
-    // the decoder state. The client may adjust the coded width. We don't have
-    // the final coded size in AssignPictureBuffers yet. Use the adjusted coded
-    // width to create the image processor.
-    if (!CreateImageProcessor())
-      return;
+    // For allocate mode, the IP will already have been created in
+    // AssignPictureBuffersTask.
+    if (image_processor_device_ && !image_processor_) {
+      DCHECK_EQ(kAwaitingPictureBuffers, decoder_state_);
+      // This is the first buffer import. Create the image processor and change
+      // the decoder state. The client may adjust the coded width. We don't have
+      // the final coded size in AssignPictureBuffers yet. Use the adjusted
+      // coded width to create the image processor.
+      if (!CreateImageProcessor())
+        return;
+    }
   }
 
   if (reset_pending_) {

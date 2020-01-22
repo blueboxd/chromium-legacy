@@ -372,6 +372,14 @@ TestRenderFrame::TakeLastBrowserInterfaceBrokerReceiver() {
   return mock_frame_host_->TakeLastBrowserInterfaceBrokerReceiver();
 }
 
+void TestRenderFrame::SimulateBeforeUnload(bool is_reload) {
+  // This will execute the BeforeUnload event in this frame and all of its
+  // local descendant frames, including children of remote frames. The browser
+  // process will send separate IPCs to dispatch beforeunload in any
+  // out-of-process child frames.
+  frame_->DispatchBeforeUnloadEvent(is_reload);
+}
+
 mojom::FrameHost* TestRenderFrame::GetFrameHost() {
   // Need to mock this interface directly without going through a binding,
   // otherwise calling its sync methods could lead to a deadlock.

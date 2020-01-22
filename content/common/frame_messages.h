@@ -658,10 +658,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_UpdateOpener, int /* opener_routing_id */)
 // commit, activation and frame swap of the current DOM tree in blink.
 IPC_MESSAGE_ROUTED1(FrameMsg_VisualStateRequest, uint64_t /* id */)
 
-// Instructs the renderer to invoke the frame's beforeunload event handler.
-// Expects the result to be returned via FrameHostMsg_BeforeUnload_ACK.
-IPC_MESSAGE_ROUTED1(FrameMsg_BeforeUnload, bool /* is_reload */)
-
 // Requests that a provisional RenderFrame swap itself into the frame tree,
 // replacing the RenderFrameProxy that it is associated with.  This is used
 // with remote-to-local frame navigations when the RenderFrameProxy corresponds
@@ -1050,14 +1046,6 @@ IPC_MESSAGE_CONTROL3(FrameHostMsg_PluginInstanceThrottleStateChange,
                      int32_t /* pp_instance */,
                      bool /* is_throttled */)
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
-
-// Provides the result from handling BeforeUnload.  |proceed| matches the return
-// value of the frame's beforeunload handler: true if the user decided to
-// proceed with leaving the page.
-IPC_MESSAGE_ROUTED3(FrameHostMsg_BeforeUnload_ACK,
-                    bool /* proceed */,
-                    base::TimeTicks /* before_unload_start_time */,
-                    base::TimeTicks /* before_unload_end_time */)
 
 // Indicates that the current frame has finished running its unload handler (if
 // one was registered) and has been detached, as a response to

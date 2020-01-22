@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/paint/file_upload_control_painter.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
+#include "third_party/blink/renderer/platform/fonts/string_truncator.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/text/text_run.h"
 
@@ -138,11 +139,15 @@ HTMLInputElement* LayoutFileUploadControl::UploadButton() const {
 }
 
 String LayoutFileUploadControl::FileTextValue() const {
+  int width = MaxFilenameWidth();
+  if (width <= 0)
+    return String();
   auto* input = To<HTMLInputElement>(GetNode());
   DCHECK(input->files());
-  return LayoutTheme::GetTheme().FileListNameForWidth(
-      input->GetLocale(), input->files(), StyleRef().GetFont(),
-      MaxFilenameWidth());
+  String text = input->FileStatusText();
+  if (input->files()->length() >= 2)
+    return StringTruncator::RightTruncate(text, width, StyleRef().GetFont());
+  return StringTruncator::CenterTruncate(text, width, StyleRef().GetFont());
 }
 
 PhysicalRect LayoutFileUploadControl::ControlClipRect(

@@ -221,6 +221,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   delayed_watchdog_enable = true;
 #endif
 
+  // PreSandbox is mainly for resource handling and not related to the GPU
+  // driver, it doesn't need the GPU watchdog. The loadLibrary may take long
+  // time that killing and restarting the GPU process will not help.
+  sandbox_helper_->PreSandboxStartup();
+
   // Start the GPU watchdog only after anything that is expected to be time
   // consuming has completed, otherwise the process is liable to be aborted.
   if (enable_watchdog && !delayed_watchdog_enable) {
@@ -302,14 +307,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
       VLOG(1) << "gl::init::InitializeStaticGLBindingsOneOff failed";
       return false;
     }
-
-    // The ContentSandboxHelper is currently the only one implementation of
-    // gpu::GpuSandboxHelper and it has no dependency. Except on Linux where
-    // VaapiWrapper checks the GL implementation to determine which display
-    // to use. So call PreSandboxStartup after GL initialization. But make
-    // sure the watchdog is still in pause as loadLibrary may take a long time
-    // and restarting the GPU process will not help.
-    sandbox_helper_->PreSandboxStartup();
 
     if (watchdog_thread_)
       watchdog_thread_->ResumeWatchdog();

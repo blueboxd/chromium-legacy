@@ -25,13 +25,9 @@ group("vr_perf_tests") {
     "//chrome/test/data/xr/webvr_info/samples/",
     "//third_party/webxr_test_pages/webxr-samples/",
   ]
-  data_deps = [
-    "//testing:run_perf_test",
-  ]
+  data_deps = [ "//testing:run_perf_test" ]
 
-  deps = [
-    "//tools/perf:perf",
-  ]
+  deps = [ "//tools/perf:perf" ]
 
   if (is_android) {
     data += [
@@ -71,9 +67,7 @@ action("generate_vr_assets_profile") {
     "//chrome/browser/resources/vr/assets/VERSION",
     "//chrome/browser/resources/vr/assets/vr_assets_component_files.json",
   ]
-  outputs = [
-    "$target_gen_dir/vr_assets_profile",
-  ]
+  outputs = [ "$target_gen_dir/vr_assets_profile" ]
   args = [
     "--output",
     rebase_path(target_gen_dir, root_build_dir),

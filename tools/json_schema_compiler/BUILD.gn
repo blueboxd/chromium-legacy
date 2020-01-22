@@ -8,7 +8,5 @@ source_set("generated_api_util") {
     "util.cc",
     "util.h",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

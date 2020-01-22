@@ -198,8 +198,9 @@ struct TabGroupChange {
   // A group is created when the first tab is added to it and closed when the
   // last tab is removed from it. Whenever the set of tabs in the group changes,
   // a kContentsChange event is fired. Whenever the group's visual data changes,
-  // such as its title or color, a kVisualsChange event is fired.
-  enum Type { kCreated, kContentsChanged, kVisualsChanged, kClosed };
+  // such as its title or color, a kVisualsChange event is fired. Whenever the
+  // group is moved by interacting with its header, a kMoved event is fired.
+  enum Type { kCreated, kContentsChanged, kVisualsChanged, kMoved, kClosed };
 
   TabGroupChange(tab_groups::TabGroupId group, Type type);
   ~TabGroupChange();

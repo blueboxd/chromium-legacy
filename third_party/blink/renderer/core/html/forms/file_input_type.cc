@@ -520,6 +520,20 @@ void FileInputType::WillOpenPopup() {
   }
 }
 
+String FileInputType::FileStatusText() const {
+  Locale& locale = GetLocale();
+
+  if (file_list_->IsEmpty())
+    return locale.QueryString(IDS_FORM_FILE_NO_FILE_LABEL);
+
+  if (file_list_->length() == 1)
+    return LayoutTheme::GetTheme().DisplayNameForFile(*file_list_->item(0));
+
+  return locale.QueryString(
+      IDS_FORM_FILE_MULTIPLE_UPLOAD,
+      locale.ConvertToLocalizedNumber(String::Number(file_list_->length())));
+}
+
 void FileInputType::UpdateView() {
   if (auto* layout_object = GetElement().GetLayoutObject())
     layout_object->SetShouldDoFullPaintInvalidation();

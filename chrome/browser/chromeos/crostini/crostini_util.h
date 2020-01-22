@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
+#include "base/values.h"
 #include "storage/browser/file_system/file_system_url.h"
 #include "ui/base/resource/scale_factor.h"
 
@@ -212,6 +213,17 @@ base::string16 GetTimeRemainingMessage(base::TimeTicks start, int percent);
 // empty set if the range is invalid (e.g. any numbers are negative).
 std::vector<int64_t> GetTicksForDiskSize(int64_t min_size,
                                          int64_t available_space);
+
+// Returns a pref value stored for a specific container.
+const base::Value* GetContainerPrefValue(Profile* profile,
+                                         const ContainerId& container_id,
+                                         const std::string& key);
+
+// Sets a pref value for a specific container.
+void UpdateContainerPref(Profile* profile,
+                         const ContainerId& container_id,
+                         const std::string& key,
+                         base::Value value);
 
 }  // namespace crostini
 

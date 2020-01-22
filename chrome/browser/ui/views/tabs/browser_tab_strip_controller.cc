@@ -586,6 +586,10 @@ void BrowserTabStripController::OnTabGroupChanged(
       tabstrip_->OnGroupVisualsChanged(change.group);
       break;
     }
+    case TabGroupChange::kMoved: {
+      tabstrip_->OnGroupMoved(change.group);
+      break;
+    }
     case TabGroupChange::kClosed: {
       tabstrip_->OnGroupClosed(change.group);
       break;

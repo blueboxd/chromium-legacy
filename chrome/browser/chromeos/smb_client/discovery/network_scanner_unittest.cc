@@ -56,7 +56,7 @@ class NetworkScannerTest : public testing::Test {
 
   void ExpectResolvedHostEquals(const std::string& expected,
                                 const std::string& host) {
-    EXPECT_EQ(expected, scanner_.ResolveHost(host));
+    EXPECT_EQ(expected, scanner_.ResolveHost(host).ToString());
   }
 
   // Registers |hosts| with a host locator and call FindHostsInNetwork() which
@@ -91,7 +91,7 @@ TEST_F(NetworkScannerTest, ShouldFindNoHostsWithMultipleLocators) {
 
 TEST_F(NetworkScannerTest, ShouldFindOneHostWithOneLocator) {
   HostMap hosts;
-  hosts["share1"] = "1.2.3.4";
+  hosts["share1"] = {1, 2, 3, 4};
   RegisterHostLocatorWithHosts(hosts);
 
   ExpectHostMapEqual(hosts);
@@ -99,8 +99,8 @@ TEST_F(NetworkScannerTest, ShouldFindOneHostWithOneLocator) {
 
 TEST_F(NetworkScannerTest, ShouldFindMultipleHostsWithOneLocator) {
   HostMap hosts;
-  hosts["share1"] = "1.2.3.4";
-  hosts["share2"] = "5.6.7.8";
+  hosts["share1"] = {1, 2, 3, 4};
+  hosts["share2"] = {5, 6, 7, 8};
   RegisterHostLocatorWithHosts(hosts);
 
   ExpectHostMapEqual(hosts);
@@ -108,40 +108,40 @@ TEST_F(NetworkScannerTest, ShouldFindMultipleHostsWithOneLocator) {
 
 TEST_F(NetworkScannerTest, ShouldFindMultipleHostsWithMultipleLocators) {
   HostMap hosts1;
-  hosts1["share1"] = "1.2.3.4";
-  hosts1["share2"] = "5.6.7.8";
+  hosts1["share1"] = {1, 2, 3, 4};
+  hosts1["share2"] = {5, 6, 7, 8};
   RegisterHostLocatorWithHosts(hosts1);
 
   HostMap hosts2;
-  hosts2["share3"] = "11.12.13.14";
-  hosts2["share4"] = "15.16.17.18";
+  hosts2["share3"] = {11, 12, 13, 14};
+  hosts2["share4"] = {15, 16, 17, 18};
   RegisterHostLocatorWithHosts(hosts2);
 
   HostMap expected;
-  expected["share1"] = "1.2.3.4";
-  expected["share2"] = "5.6.7.8";
-  expected["share3"] = "11.12.13.14";
-  expected["share4"] = "15.16.17.18";
+  expected["share1"] = {1, 2, 3, 4};
+  expected["share2"] = {5, 6, 7, 8};
+  expected["share3"] = {11, 12, 13, 14};
+  expected["share4"] = {15, 16, 17, 18};
 
   ExpectHostMapEqual(expected);
 }
 
 TEST_F(NetworkScannerTest, ShouldResolveMultipleHostsWithSameAddress) {
   HostMap hosts1;
-  hosts1["share1"] = "1.2.3.4";
-  hosts1["share2"] = "5.6.7.8";
+  hosts1["share1"] = {1, 2, 3, 4};
+  hosts1["share2"] = {5, 6, 7, 8};
   RegisterHostLocatorWithHosts(hosts1);
 
   HostMap hosts2;
-  hosts2["share2"] = "11.12.13.14";
-  hosts2["share3"] = "15.16.17.18";
+  hosts2["share2"] = {11, 12, 13, 14};
+  hosts2["share3"] = {15, 16, 17, 18};
   RegisterHostLocatorWithHosts(hosts2);
 
   // share2 should have the value from host1 since it is found first.
   HostMap expected;
-  expected["share1"] = "1.2.3.4";
-  expected["share2"] = "5.6.7.8";
-  expected["share3"] = "15.16.17.18";
+  expected["share1"] = {1, 2, 3, 4};
+  expected["share2"] = {5, 6, 7, 8};
+  expected["share3"] = {15, 16, 17, 18};
 
   ExpectHostMapEqual(expected);
 }
@@ -157,8 +157,8 @@ TEST_F(NetworkScannerTest, ResolveHostReturnsEmptyStringIfNoHostFound) {
 
 TEST_F(NetworkScannerTest, ResolveHostResolvesHostsFound) {
   HostMap hosts;
-  hosts["share1"] = "1.2.3.4";
-  hosts["share2"] = "4.5.6.7";
+  hosts["share1"] = {1, 2, 3, 4};
+  hosts["share2"] = {4, 5, 6, 7};
   RegisterAndCacheHosts(hosts);
 
   ExpectResolvedHostEquals("1.2.3.4", "share1");
@@ -170,7 +170,7 @@ TEST_F(NetworkScannerTest, ResolveHostResolvesHostsFound) {
 
 TEST_F(NetworkScannerTest, ResolveHostWithUppercaseHost) {
   HostMap hosts;
-  hosts["share1"] = "1.2.3.4";
+  hosts["share1"] = {1, 2, 3, 4};
   RegisterAndCacheHosts(hosts);
 
   ExpectResolvedHostEquals("1.2.3.4", "SHARE1");
@@ -178,16 +178,16 @@ TEST_F(NetworkScannerTest, ResolveHostWithUppercaseHost) {
 
 TEST_F(NetworkScannerTest, HostsAreStoredAsLowercase) {
   HostMap hosts;
-  hosts["SHARE1"] = "1.2.3.4";
-  hosts["sHaRe2"] = "11.12.13.14";
-  hosts["Share3"] = "21.22.23.24";
+  hosts["SHARE1"] = {1, 2, 3, 4};
+  hosts["sHaRe2"] = {11, 12, 13, 14};
+  hosts["Share3"] = {21, 22, 23, 24};
   RegisterHostLocatorWithHosts(hosts);
 
   // expected_hosts should have all lowercase hosts.
   HostMap expected_hosts;
-  expected_hosts["share1"] = "1.2.3.4";
-  expected_hosts["share2"] = "11.12.13.14";
-  expected_hosts["share3"] = "21.22.23.24";
+  expected_hosts["share1"] = {1, 2, 3, 4};
+  expected_hosts["share2"] = {11, 12, 13, 14};
+  expected_hosts["share3"] = {21, 22, 23, 24};
   ExpectHostMapEqual(expected_hosts);
 
   ExpectResolvedHostEquals("1.2.3.4", "share1");

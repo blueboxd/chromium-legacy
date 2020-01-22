@@ -375,7 +375,7 @@ bool ConvertPathToArcUrl(const base::FilePath& path, GURL* arc_url_out) {
   bool force_external = false;
   // Force external URL for DriveFS and Crostini.
   drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::FindForProfile(primary_profile);
+      drive::util::GetIntegrationServiceByProfile(primary_profile);
   if ((integration_service &&
        integration_service->GetMountPointPath().AppendRelativePath(
            path, &relative_path)) ||

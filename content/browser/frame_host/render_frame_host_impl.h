@@ -1385,6 +1385,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojom::NavigationClient::CommitFailedNavigationCallback
   BuildCommitFailedNavigationCallback(NavigationRequest* navigation_request);
 
+  // Protected / virtual so it can be overriden by tests.
+  virtual void SendBeforeUnload(bool is_reload,
+                                base::WeakPtr<RenderFrameHostImpl> impl);
+
  private:
   friend class RenderFrameHostFeaturePolicyTest;
   friend class TestRenderFrameHost;
@@ -1470,10 +1474,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDetach();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
   void OnUpdateState(const PageState& state);
-  void OnBeforeUnloadACK(
-      bool proceed,
-      const base::TimeTicks& renderer_before_unload_start_time,
-      const base::TimeTicks& renderer_before_unload_end_time);
   void OnUnloadACK();
   void OnContextMenu(const ContextMenuParams& params);
   void OnVisualStateResponse(uint64_t id);

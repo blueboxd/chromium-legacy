@@ -59,6 +59,7 @@ class MEDIA_GPU_EXPORT VaapiPicture {
                const BindGLImageCallback& bind_image_cb,
                int32_t picture_buffer_id,
                const gfx::Size& size,
+               const gfx::Size& visible_size,
                uint32_t texture_id,
                uint32_t client_texture_id,
                uint32_t texture_target);
@@ -69,6 +70,7 @@ class MEDIA_GPU_EXPORT VaapiPicture {
   const BindGLImageCallback bind_image_cb_;
 
   const gfx::Size size_;
+  const gfx::Size visible_size_;
   const uint32_t texture_id_;
   const uint32_t client_texture_id_;
   const uint32_t texture_target_;

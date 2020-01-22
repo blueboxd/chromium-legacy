@@ -12,7 +12,5 @@ shared_library("chromeexts") {
     "commands/hwnd_command.h",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }

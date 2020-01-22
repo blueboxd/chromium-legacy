@@ -145,6 +145,8 @@ enum class AppListSearchResultType {
   kArcAppShortcut,         // ARC++ app shortcuts.
   kZeroStateFile,          // Zero state local file results.
   kDriveQuickAccess,       // Drive QuickAccess results.
+  kFileChip,               // Local file results in suggestion chips.
+  kDriveQuickAccessChip,   // Drive file results in suggestion chips.
   // Add new values here.
 };
 

@@ -31,20 +31,18 @@
 #import "third_party/blink/public/resources/grit/blink_resources.h"
 #import "third_party/blink/public/strings/grit/blink_strings.h"
 #import "third_party/blink/renderer/core/css_value_keywords.h"
-#import "third_party/blink/renderer/core/fileapi/file_list.h"
+#import "third_party/blink/renderer/core/fileapi/file.h"
 #import "third_party/blink/renderer/core/html_names.h"
 #import "third_party/blink/renderer/core/layout/layout_progress.h"
 #import "third_party/blink/renderer/core/layout/layout_theme_default.h"
 #import "third_party/blink/renderer/core/layout/layout_view.h"
 #import "third_party/blink/renderer/core/style/shadow_list.h"
 #import "third_party/blink/renderer/platform/data_resource_helper.h"
-#import "third_party/blink/renderer/platform/fonts/string_truncator.h"
 #import "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #import "third_party/blink/renderer/platform/mac/block_exceptions.h"
 #import "third_party/blink/renderer/platform/mac/color_mac.h"
 #import "third_party/blink/renderer/platform/mac/web_core_ns_cell_extras.h"
 #import "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#import "third_party/blink/renderer/platform/text/platform_locale.h"
 #import "third_party/blink/renderer/platform/web_test_support.h"
 #include "ui/base/ui_base_features.h"
 
@@ -156,6 +154,11 @@ class LayoutThemeMacRefresh final : public LayoutThemeDefault {
       WebColorScheme color_scheme) const override;
   Color PlatformSpellingMarkerUnderlineColor() const override;
   Color PlatformGrammarMarkerUnderlineColor() const override;
+  String DisplayNameForFile(const File& file) const override {
+    if (file.GetUserVisibility() == File::kIsUserVisible)
+      return [[NSFileManager defaultManager] displayNameAtPath:file.GetPath()];
+    return file.name();
+  }
 };
 
 // Inflate an IntRect to account for specific padding around margins.
@@ -984,32 +987,10 @@ NSTextFieldCell* LayoutThemeMac::TextField() const {
   return text_field_;
 }
 
-String LayoutThemeMac::FileListNameForWidth(Locale& locale,
-                                            const FileList* file_list,
-                                            const Font& font,
-                                            int width) const {
-  if (width <= 0)
-    return String();
-
-  String str_to_truncate;
-  if (file_list->IsEmpty()) {
-    str_to_truncate = locale.QueryString(IDS_FORM_FILE_NO_FILE_LABEL);
-  } else if (file_list->length() == 1) {
-    File* file = file_list->item(0);
-    if (file->GetUserVisibility() == File::kIsUserVisible)
-      str_to_truncate = [[NSFileManager defaultManager]
-          displayNameAtPath:(file_list->item(0)->GetPath())];
-    else
-      str_to_truncate = file->name();
-  } else {
-    return StringTruncator::RightTruncate(
-        locale.QueryString(IDS_FORM_FILE_MULTIPLE_UPLOAD,
-                           locale.ConvertToLocalizedNumber(
-                               String::Number(file_list->length()))),
-        width, font);
-  }
-
-  return StringTruncator::CenterTruncate(str_to_truncate, width, font);
+String LayoutThemeMac::DisplayNameForFile(const File& file) const {
+  if (file.GetUserVisibility() == File::kIsUserVisible)
+    return [[NSFileManager defaultManager] displayNameAtPath:file.GetPath()];
+  return file.name();
 }
 
 NSView* FlippedView() {

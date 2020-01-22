@@ -9,12 +9,13 @@
 #include <string>
 
 #include "base/callback.h"
+#include "net/base/ip_address.h"
 
 namespace chromeos {
 namespace smb_client {
 
 using Hostname = std::string;
-using Address = std::string;
+using Address = net::IPAddress;
 using HostMap = std::map<Hostname, Address>;
 
 // |success| will be false if an error occurred when finding hosts. |success|

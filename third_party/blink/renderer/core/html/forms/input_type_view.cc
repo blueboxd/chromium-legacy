@@ -136,6 +136,10 @@ HTMLInputElement* InputTypeView::UploadButton() const {
   return nullptr;
 }
 
+String InputTypeView::FileStatusText() const {
+  return String();
+}
+
 void InputTypeView::AltAttributeChanged() {}
 
 void InputTypeView::SrcAttributeChanged() {}

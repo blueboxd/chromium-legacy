@@ -531,6 +531,8 @@ class FileManagerPathUtilConvertUrlTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->CreateTestingProfile("user2@gmail.com"));
     primary_profile->GetPrefs()->SetString(drive::prefs::kDriveFsProfileSalt,
                                            "a");
+    primary_profile->GetPrefs()->SetBoolean(
+        drive::prefs::kDriveFsPinnedMigrated, true);
 
     // Set up an Arc service manager with a fake file system.
     arc_service_manager_ = std::make_unique<arc::ArcServiceManager>();
@@ -550,10 +552,7 @@ class FileManagerPathUtilConvertUrlTest : public testing::Test {
     drive::DriveIntegrationService* integration_service =
         drive::DriveIntegrationServiceFactory::GetForProfile(primary_profile);
     drive_mount_point_ = integration_service->GetMountPointPath();
-    mount_points->RegisterFileSystem(
-        drive_mount_point_.BaseName().AsUTF8Unsafe(),
-        storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),
-        drive_mount_point_);
+    integration_service->OnMounted(drive_mount_point_);
 
     // Add a crostini mount point for the primary profile.
     crostini_mount_point_ = GetCrostiniMountDirectory(primary_profile);

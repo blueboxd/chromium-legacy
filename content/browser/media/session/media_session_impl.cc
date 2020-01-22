@@ -831,6 +831,9 @@ MediaSessionImpl::MediaSessionImpl(WebContents* web_contents)
 void MediaSessionImpl::Initialize() {
   delegate_ = AudioFocusDelegate::Create(this);
   delegate_->MediaSessionInfoChanged(GetMediaSessionInfoSync());
+
+  DCHECK(web_contents());
+  DidUpdateFaviconURL(web_contents()->GetFaviconURLs());
 }
 
 AudioFocusDelegate::AudioFocusResult MediaSessionImpl::RequestSystemAudioFocus(

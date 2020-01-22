@@ -682,7 +682,7 @@ bool V4L2SliceVideoDecodeAccelerator::CreateOutputBuffers() {
   if (image_processor_device_) {
     // Try to get an image size as close as possible to the final one (i.e.
     // coded_size_ may include padding required by the decoder).
-    gl_image_size_ = pic_size;
+    gl_image_size_ = decoder_->GetVisibleRect().size();
     size_t planes_count;
     if (!V4L2ImageProcessorBackend::TryOutputFormat(
             output_format_fourcc_->ToV4L2PixFmt(),
@@ -1484,36 +1484,37 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
     return;
   }
 
-  // TODO(crbug.com/982172): This must be done in AssignPictureBuffers().
-  // However the size of PictureBuffer might not be adjusted by ARC++. So we
-  // keep this until ARC++ side is fixed.
+  // TODO(crbug.com/982172): ARC++ may adjust the size of the buffer due to
+  // allocator constraints, but the VDA API does not provide a way for it to
+  // communicate the actual buffer size. If we are importing, make sure that the
+  // actual buffer size is coherent with what we expect, and adjust our size if
+  // needed.
   if (output_mode_ == Config::OutputMode::IMPORT) {
-    const int32_t stride = handle.planes[0].stride;
-    const int plane_horiz_bits_per_pixel =
-        VideoFrame::PlaneHorizontalBitsPerPixel(
-            gl_image_format_fourcc_->ToVideoPixelFormat(), 0);
-    if (plane_horiz_bits_per_pixel == 0 ||
-        (stride * 8) % plane_horiz_bits_per_pixel != 0) {
-      VLOGF(1) << "Invalid format " << gl_image_format_fourcc_->ToString()
-               << " or stride " << stride;
-      NOTIFY_ERROR(INVALID_ARGUMENT);
-      return;
+    DCHECK_GT(handle.planes.size(), 0u);
+    const gfx::Size handle_size = v4l2_vda_helpers::NativePixmapSizeFromHandle(
+        handle, *gl_image_format_fourcc_, gl_image_size_);
+
+    // If this is the first picture, then adjust the EGL width.
+    // Otherwise just check that it remains the same.
+    if (state_ == kAwaitingPictureBuffers) {
+      DCHECK_GE(handle_size.width(), gl_image_size_.width());
+      DVLOGF(3) << "Original gl_image_size=" << gl_image_size_.ToString()
+                << ", adjusted buffer size=" << handle_size.ToString();
+      gl_image_size_ = handle_size;
     }
-    int adjusted_coded_width = stride * 8 / plane_horiz_bits_per_pixel;
+    DCHECK_EQ(gl_image_size_, handle_size);
+
+    // For allocate mode, the IP will already have been created in
+    // AssignPictureBuffersTask.
     if (image_processor_device_ && !image_processor_) {
       DCHECK_EQ(kAwaitingPictureBuffers, state_);
       // This is the first buffer import. Create the image processor and change
       // the decoder state. The client may adjust the coded width. We don't have
       // the final coded size in AssignPictureBuffers yet. Use the adjusted
       // coded width to create the image processor.
-      DVLOGF(3) << "Original gl_image_size=" << gl_image_size_.ToString()
-                << ", adjusted coded width=" << adjusted_coded_width;
-      DCHECK_GE(adjusted_coded_width, gl_image_size_.width());
-      gl_image_size_.set_width(adjusted_coded_width);
       if (!CreateImageProcessor())
         return;
     }
-    DCHECK_EQ(gl_image_size_.width(), adjusted_coded_width);
   }
 
   // Put us in kIdle to allow further event processing.
@@ -2160,7 +2161,7 @@ bool V4L2SliceVideoDecodeAccelerator::ProcessFrame(
     // imported frame into another one that we can destruct.
     scoped_refptr<VideoFrame> wrapped_frame = VideoFrame::WrapVideoFrame(
         output_frame, output_frame->format(), output_frame->visible_rect(),
-        output_frame->coded_size());
+        output_frame->visible_rect().size());
     DCHECK(wrapped_frame);
 
     image_processor_->Process(

@@ -43,13 +43,11 @@ namespace blink {
 
 class ComputedStyle;
 class Element;
-class FileList;
-class Font;
+class File;
 class FontDescription;
 class HTMLInputElement;
 class IntRect;
 class LengthSize;
-class Locale;
 class LocalFrame;
 class Node;
 class ThemePainter;
@@ -244,10 +242,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   virtual bool PopsMenuByReturnKey() const { return false; }
   virtual bool PopsMenuByAltDownUpOrF4Key() const { return false; }
 
-  virtual String FileListNameForWidth(Locale&,
-                                      const FileList*,
-                                      const Font&,
-                                      int width) const;
+  virtual String DisplayNameForFile(const File& file) const;
 
   virtual bool ShouldOpenPickerWithF4Key() const;
 

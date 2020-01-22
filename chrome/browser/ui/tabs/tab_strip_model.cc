@@ -1088,6 +1088,41 @@ void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
   }
 }
 
+void TabStripModel::CreateTabGroup(const tab_groups::TabGroupId& group) {
+  TabGroupChange change(group, TabGroupChange::kCreated);
+  for (auto& observer : observers_)
+    observer.OnTabGroupChanged(change);
+}
+
+void TabStripModel::ChangeTabGroupContents(
+    const tab_groups::TabGroupId& group) {
+  TabGroupChange change(group, TabGroupChange::kContentsChanged);
+  for (auto& observer : observers_)
+    observer.OnTabGroupChanged(change);
+}
+
+void TabStripModel::ChangeTabGroupVisuals(const tab_groups::TabGroupId& group) {
+  TabGroupChange change(group, TabGroupChange::kVisualsChanged);
+  for (auto& observer : observers_)
+    observer.OnTabGroupChanged(change);
+}
+
+void TabStripModel::MoveTabGroup(const tab_groups::TabGroupId& group) {
+  TabGroupChange change(group, TabGroupChange::kMoved);
+  for (auto& observer : observers_)
+    observer.OnTabGroupChanged(change);
+}
+
+void TabStripModel::CloseTabGroup(const tab_groups::TabGroupId& group) {
+  TabGroupChange change(group, TabGroupChange::kClosed);
+  for (auto& observer : observers_)
+    observer.OnTabGroupChanged(change);
+}
+
+int TabStripModel::GetTabCount() const {
+  return static_cast<int>(contents_data_.size());
+}
+
 // Context menu functions.
 bool TabStripModel::IsContextMenuCommandEnabled(
     int context_index,
@@ -1904,35 +1939,6 @@ void TabStripModel::GroupTab(int index, const tab_groups::TabGroupId& group) {
     observer.TabGroupedStateChanged(group, index);
 
   group_model_->GetTabGroup(group)->AddTab();
-}
-
-void TabStripModel::CreateTabGroup(const tab_groups::TabGroupId& group) {
-  TabGroupChange change(group, TabGroupChange::kCreated);
-  for (auto& observer : observers_)
-    observer.OnTabGroupChanged(change);
-}
-
-void TabStripModel::ChangeTabGroupContents(
-    const tab_groups::TabGroupId& group) {
-  TabGroupChange change(group, TabGroupChange::kContentsChanged);
-  for (auto& observer : observers_)
-    observer.OnTabGroupChanged(change);
-}
-
-void TabStripModel::ChangeTabGroupVisuals(const tab_groups::TabGroupId& group) {
-  TabGroupChange change(group, TabGroupChange::kVisualsChanged);
-  for (auto& observer : observers_)
-    observer.OnTabGroupChanged(change);
-}
-
-void TabStripModel::CloseTabGroup(const tab_groups::TabGroupId& group) {
-  TabGroupChange change(group, TabGroupChange::kClosed);
-  for (auto& observer : observers_)
-    observer.OnTabGroupChanged(change);
-}
-
-int TabStripModel::GetTabCount() const {
-  return static_cast<int>(contents_data_.size());
 }
 
 void TabStripModel::SetTabPinnedImpl(int index, bool pinned) {

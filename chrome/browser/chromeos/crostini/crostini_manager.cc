@@ -292,25 +292,25 @@ class CrostiniManager::CrostiniRestarter
     }
 
     // Allow concierge to choose an appropriate disk image size.
-    int64_t disk_size_available = options_.disk_size.value_or(0);
+    int64_t disk_size_bytes = options_.disk_size_bytes.value_or(0);
     // If we have an already existing disk, CreateDiskImage will just return its
     // path so we can pass it to StartTerminaVm.
     StartStage(mojom::InstallerState::kCreateDiskImage);
     crostini_manager_->CreateDiskImage(
         base::FilePath(vm_name_),
         vm_tools::concierge::StorageLocation::STORAGE_CRYPTOHOME_ROOT,
-        disk_size_available,
+        disk_size_bytes,
         base::BindOnce(&CrostiniRestarter::CreateDiskImageFinished, this,
-                       disk_size_available));
+                       disk_size_bytes));
   }
 
-  void CreateDiskImageFinished(int64_t disk_size_available,
+  void CreateDiskImageFinished(int64_t disk_size_bytes,
                                bool success,
                                vm_tools::concierge::DiskImageStatus status,
                                const base::FilePath& result_path) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     for (auto& observer : observer_list_) {
-      observer.OnDiskImageCreated(success, status, disk_size_available);
+      observer.OnDiskImageCreated(success, status, disk_size_bytes);
     }
     if (ReturnEarlyIfAborted()) {
       return;
@@ -645,11 +645,35 @@ void CrostiniManager::SetContainerSshfsMounted(std::string vm_name,
   }
 }
 
+namespace {
+
+ContainerOsVersion VersionFromOsRelease(
+    const vm_tools::cicerone::OsRelease& os_release) {
+  if (os_release.id() == "debian") {
+    if (os_release.version_id() == "9") {
+      return ContainerOsVersion::kDebianStretch;
+    } else if (os_release.version_id() == "10") {
+      return ContainerOsVersion::kDebianBuster;
+    } else {
+      return ContainerOsVersion::kDebianOther;
+    }
+  }
+  return ContainerOsVersion::kOtherOs;
+}
+
+}  // namespace
+
 void CrostiniManager::SetContainerOsRelease(
     std::string vm_name,
     std::string container_name,
     const vm_tools::cicerone::OsRelease& os_release) {
   ContainerId container_id(vm_name, container_name);
+  ContainerOsVersion version = VersionFromOsRelease(os_release);
+  // Store the os release version in prefs. We can use this value to decide if
+  // an upgrade can be offered.
+  UpdateContainerPref(profile_, container_id, prefs::kContainerOsVersionKey,
+                      base::Value(static_cast<int>(version)));
+
   VLOG(1) << container_id;
   VLOG(1) << "os_release.pretty_name " << os_release.pretty_name();
   VLOG(1) << "os_release.name " << os_release.name();
@@ -657,23 +681,7 @@ void CrostiniManager::SetContainerOsRelease(
   VLOG(1) << "os_release.version_id " << os_release.version_id();
   VLOG(1) << "os_release.id " << os_release.id();
   container_os_releases_.emplace(std::move(container_id), os_release);
-  EmitContainerVersionMetric(os_release);
-}
 
-void CrostiniManager::EmitContainerVersionMetric(
-    const vm_tools::cicerone::OsRelease& os_release) {
-  ContainerOsVersion version;
-  if (os_release.id() == "debian") {
-    if (os_release.version_id() == "9") {
-      version = ContainerOsVersion::kDebianStretch;
-    } else if (os_release.version_id() == "10") {
-      version = ContainerOsVersion::kDebianBuster;
-    } else {
-      version = ContainerOsVersion::kDebianOther;
-    }
-  } else {
-    version = ContainerOsVersion::kOtherOs;
-  }
   base::UmaHistogramEnumeration("Crostini.ContainerOsVersion", version);
 }
 

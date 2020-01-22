@@ -17,17 +17,13 @@ component("url_ipc") {
     "//ipc",
     "//url",
   ]
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 # IPC unit tests aren't build on iOS.
 if (!is_ios) {
   test("url_ipc_unittests") {
-    sources = [
-      "url_param_traits_unittest.cc",
-    ]
+    sources = [ "url_param_traits_unittest.cc" ]
 
     deps = [
       ":url_ipc",

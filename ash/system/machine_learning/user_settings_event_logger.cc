@@ -62,11 +62,29 @@ void UserSettingsEventLogger::LogNetworkUkmEvent(
     // We are not interested in other types of networks.
     return;
   }
-
   event->set_setting_type(UserSettingsEvent::Event::QUICK_SETTINGS);
-  // Convert the setting state to an int. Some settings have multiple states, so
-  // all setting states are stored as ints.
-  event->set_current_value(1);
+
+  PopulateSharedFeatures(&settings_event);
+  SendToUkm(settings_event);
+}
+
+void UserSettingsEventLogger::LogBluetoothUkmEvent(
+    const BluetoothAddress& device_address) {
+  UserSettingsEvent settings_event;
+  auto* const event = settings_event.mutable_event();
+
+  event->set_setting_id(UserSettingsEvent::Event::BLUETOOTH);
+  event->set_setting_type(UserSettingsEvent::Event::QUICK_SETTINGS);
+
+  const auto& devices =
+      Shell::Get()->tray_bluetooth_helper()->GetAvailableBluetoothDevices();
+  for (const auto& device : devices) {
+    if (device->address == device_address) {
+      settings_event.mutable_features()->set_is_paired_bluetooth_device(
+          device->is_paired);
+      break;
+    }
+  }
 
   PopulateSharedFeatures(&settings_event);
   SendToUkm(settings_event);

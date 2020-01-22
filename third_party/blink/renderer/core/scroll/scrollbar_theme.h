@@ -54,7 +54,9 @@ class CORE_EXPORT ScrollbarTheme {
   virtual void UpdateEnabledState(const Scrollbar&) {}
 
   // |context|'s current space is the space of the scrollbar's FrameRect().
-  void Paint(const Scrollbar&, GraphicsContext& context);
+  void Paint(const Scrollbar&,
+             GraphicsContext& context,
+             const IntPoint& paint_offset);
 
   ScrollbarPart HitTestRootFramePosition(const Scrollbar&, const IntPoint&);
 

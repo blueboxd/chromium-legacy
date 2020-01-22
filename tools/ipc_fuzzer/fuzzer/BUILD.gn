@@ -22,9 +22,7 @@ executable("ipc_fuzzer") {
     "//base/util/type_safety",
     "//tools/ipc_fuzzer/message_lib:ipc_message_lib",
   ]
-  public_deps = [
-    "//ipc",
-  ]
+  public_deps = [ "//ipc" ]
   if (is_asan && is_chromeos) {
     # Compiling fuzzer.cc with ASan takes too long, see
     # http://crbug.com/360158.

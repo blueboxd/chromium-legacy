@@ -1081,6 +1081,7 @@ test("content_browsertests") {
     "//components/discardable_memory/client",
     "//components/discardable_memory/common",
     "//components/discardable_memory/service",
+    "//components/favicon/content",
     "//components/network_session_configurator/common",
     "//components/payments/mojom",
     "//components/services/quarantine:test_support",

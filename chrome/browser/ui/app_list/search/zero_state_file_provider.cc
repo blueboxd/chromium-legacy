@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -15,6 +16,7 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/search/file_chip_result.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/browser/ui/app_list/search/zero_state_file_result.h"
 
@@ -104,7 +106,13 @@ void ZeroStateFileProvider::SetSearchResults(
   for (const auto& filepath_score : results.first) {
     new_results.emplace_back(std::make_unique<ZeroStateFileResult>(
         filepath_score.first, filepath_score.second, profile_));
+    // Add suggestion chip file results
+    if (app_list_features::IsSuggestedFilesEnabled()) {
+      new_results.emplace_back(std::make_unique<FileChipResult>(
+          filepath_score.first, filepath_score.second, profile_));
+    }
   }
+
   UMA_HISTOGRAM_TIMES("Apps.AppList.ZeroStateFileProvider.Latency",
                       base::TimeTicks::Now() - query_start_time_);
   SwapResults(&new_results);

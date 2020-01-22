@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/smb_client/discovery/host_locator.h"
+#include "net/base/ip_address.h"
 
 namespace chromeos {
 namespace smb_client {
@@ -53,8 +54,8 @@ class NetworkScanner : public base::SupportsWeakPtr<NetworkScanner> {
 
   // Resolves |host| to an address using the cached results of
   // FindHostsInNetwork(). FindHostsInNetwork() has to be called beforehand. If
-  // no address is found, this returns an empty string.
-  std::string ResolveHost(const std::string& host) const;
+  // no address is found, this returns an invalid IPAddress.
+  net::IPAddress ResolveHost(const std::string& host) const;
 
  private:
   // Callback handler for HostLocator::FindHosts().

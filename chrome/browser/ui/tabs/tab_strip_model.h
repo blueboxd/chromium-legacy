@@ -448,6 +448,15 @@ class TabStripModel : public TabGroupController {
 
   TabGroupModel* group_model() const { return group_model_.get(); }
 
+  // TabGroupController:
+  void CreateTabGroup(const tab_groups::TabGroupId& group) override;
+  void ChangeTabGroupContents(const tab_groups::TabGroupId& group) override;
+  void ChangeTabGroupVisuals(const tab_groups::TabGroupId& group) override;
+  void MoveTabGroup(const tab_groups::TabGroupId& group) override;
+  void CloseTabGroup(const tab_groups::TabGroupId& group) override;
+  // The same as count(), but overridden for TabGroup to access.
+  int GetTabCount() const override;
+
   // View API //////////////////////////////////////////////////////////////////
 
   // Context menu functions. Tab groups uses command ids following CommandLast
@@ -677,14 +686,6 @@ class TabStripModel : public TabGroupController {
 
   // Helper function for MoveAndSetGroup. Adds the tab at |index| to |group|.
   void GroupTab(int index, const tab_groups::TabGroupId& group);
-
-  // TabGroupController:
-  void CreateTabGroup(const tab_groups::TabGroupId& group) override;
-  void ChangeTabGroupContents(const tab_groups::TabGroupId& group) override;
-  void ChangeTabGroupVisuals(const tab_groups::TabGroupId& group) override;
-  void CloseTabGroup(const tab_groups::TabGroupId& group) override;
-  // The same as count(), but overridden for TabGroup to access.
-  int GetTabCount() const override;
 
   // Changes the pinned state of the tab at |index|.
   void SetTabPinnedImpl(int index, bool pinned);

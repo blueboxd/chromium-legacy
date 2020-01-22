@@ -688,7 +688,8 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
         (buffer_allocation_mode_ == BufferAllocationMode::kNone)
             ? vaapi_wrapper_
             : vpp_vaapi_wrapper_,
-        make_context_current_cb_, bind_image_cb_, buffer);
+        make_context_current_cb_, bind_image_cb_, buffer,
+        decoder_->GetVisibleRect().size());
     RETURN_AND_NOTIFY_ON_FAILURE(picture, "Failed creating a VaapiPicture",
                                  PLATFORM_FAILURE, );
 

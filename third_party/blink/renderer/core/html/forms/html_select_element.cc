@@ -2238,12 +2238,52 @@ void HTMLSelectElement::ChangeRendering() {
 }
 
 void HTMLSelectElement::UpdateFromElement() {
+  if (!UsesMenuList())
+    return;
   auto* layout_object = GetLayoutObject();
   if (!layout_object)
     return;
+
+  HTMLOptionElement* option = OptionToBeShown();
+  String text = g_empty_string;
+  option_style_ = nullptr;
+
+  if (IsMultiple()) {
+    unsigned selected_count = 0;
+    HTMLOptionElement* selected_option_element = nullptr;
+    for (auto* const option : GetOptionList()) {
+      if (option->Selected()) {
+        if (++selected_count == 1)
+          selected_option_element = option;
+      }
+    }
+
+    if (selected_count == 1) {
+      text = selected_option_element->TextIndentedToRespectGroupLabel();
+      option_style_ = selected_option_element->GetComputedStyle();
+    } else {
+      Locale& locale = GetLocale();
+      String localized_number_string =
+          locale.ConvertToLocalizedNumber(String::Number(selected_count));
+      text = locale.QueryString(IDS_FORM_SELECT_MENU_LIST_TEXT,
+                                localized_number_string);
+      DCHECK(!option_style_);
+    }
+  } else {
+    if (option) {
+      text = option->TextIndentedToRespectGroupLabel();
+      option_style_ = option->GetComputedStyle();
+    }
+  }
+
+  ToLayoutMenuList(layout_object)->SetText(text.StripWhiteSpace());
   layout_object->UpdateFromElement();
-  if (UsesMenuList())
-    DidUpdateMenuListActiveOption(OptionToBeShown());
+  DidUpdateMenuListActiveOption(option);
+}
+
+const ComputedStyle* HTMLSelectElement::OptionStyle() const {
+  DCHECK(UsesMenuList());
+  return option_style_.get();
 }
 
 }  // namespace blink

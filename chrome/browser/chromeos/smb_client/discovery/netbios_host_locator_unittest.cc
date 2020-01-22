@@ -249,9 +249,9 @@ TEST_F(NetBiosHostLocatorTest, OneInterfaceWithResults) {
 
   // Build the map of expected results.
   HostMap expected_results;
-  expected_results[hostnames_1[0]] = source_ip_1.ToStringWithoutPort();
-  expected_results[hostnames_1[1]] = source_ip_1.ToStringWithoutPort();
-  expected_results[hostnames_2[0]] = source_ip_2.ToStringWithoutPort();
+  expected_results[hostnames_1[0]] = source_ip_1.address();
+  expected_results[hostnames_1[1]] = source_ip_1.address();
+  expected_results[hostnames_2[0]] = source_ip_2.address();
 
   // Add the entry for a NetBios Client that returns packets.
   AddNetBiosClient(netbios_client_1);
@@ -293,11 +293,11 @@ TEST_F(NetBiosHostLocatorTest, MultipleInterfacesWithResults) {
 
   // Build the map of expected results.
   HostMap expected_results;
-  expected_results[hostnames_1[0]] = source_ip_1.ToStringWithoutPort();
-  expected_results[hostnames_1[1]] = source_ip_1.ToStringWithoutPort();
-  expected_results[hostnames_2[0]] = source_ip_2.ToStringWithoutPort();
-  expected_results[hostnames_3[0]] = source_ip_3.ToStringWithoutPort();
-  expected_results[hostnames_4[0]] = source_ip_4.ToStringWithoutPort();
+  expected_results[hostnames_1[0]] = source_ip_1.address();
+  expected_results[hostnames_1[1]] = source_ip_1.address();
+  expected_results[hostnames_2[0]] = source_ip_2.address();
+  expected_results[hostnames_3[0]] = source_ip_3.address();
+  expected_results[hostnames_4[0]] = source_ip_4.address();
 
   // Add the entry for a NetBios Clients that return packets.
   AddNetBiosClient(netbios_client_1);
@@ -338,10 +338,10 @@ TEST_F(NetBiosHostLocatorTest, MultipleInterfacesWithDuplicateResults) {
 
   // Build the map of expected results.
   HostMap expected_results;
-  expected_results[hostnames_1[0]] = source_ip_1.ToStringWithoutPort();
-  expected_results[hostnames_1[1]] = source_ip_1.ToStringWithoutPort();
-  expected_results[hostnames_2[0]] = source_ip_2.ToStringWithoutPort();
-  expected_results[hostnames_4[0]] = source_ip_4.ToStringWithoutPort();
+  expected_results[hostnames_1[0]] = source_ip_1.address();
+  expected_results[hostnames_1[1]] = source_ip_1.address();
+  expected_results[hostnames_2[0]] = source_ip_2.address();
+  expected_results[hostnames_4[0]] = source_ip_4.address();
 
   // Add the entry for a NetBios Clients that return packets.
   AddNetBiosClient(netbios_client_1);
@@ -371,9 +371,9 @@ TEST_F(NetBiosHostLocatorTest, ResultsNotReturnedUntilTimer) {
 
   // Build the map of expected results.
   HostMap expected_results;
-  expected_results[hostnames_1[0]] = source_ip_1.ToStringWithoutPort();
-  expected_results[hostnames_1[1]] = source_ip_1.ToStringWithoutPort();
-  expected_results[hostnames_2[0]] = source_ip_2.ToStringWithoutPort();
+  expected_results[hostnames_1[0]] = source_ip_1.address();
+  expected_results[hostnames_1[1]] = source_ip_1.address();
+  expected_results[hostnames_2[0]] = source_ip_2.address();
 
   // Add the entry for a NetBios Client that returns packets.
   AddNetBiosClient(netbios_client_1);
@@ -422,7 +422,7 @@ TEST_F(NetBiosHostLocatorTest, SecondIPUsedForResults) {
 
   // Build the map of expected results.
   HostMap expected_results;
-  expected_results[duplicate_hostname] = source_ip_2.ToStringWithoutPort();
+  expected_results[duplicate_hostname] = source_ip_2.address();
 
   // Add the entry for a NetBios Clients that return packets.
   AddNetBiosClient(netbios_client_1);

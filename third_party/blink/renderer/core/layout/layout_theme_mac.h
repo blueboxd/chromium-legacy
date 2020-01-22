@@ -273,10 +273,7 @@ class LayoutThemeMac final : public LayoutTheme {
  private:
   const int* ProgressBarHeights() const;
   const int* ProgressBarMargins(NSControlSize) const;
-  String FileListNameForWidth(Locale&,
-                              const FileList*,
-                              const Font&,
-                              int width) const override;
+  String DisplayNameForFile(const File& file) const override;
   String ExtraDefaultStyleSheet() override;
   bool ThemeDrawsFocusRing(const ComputedStyle&) const override;
 

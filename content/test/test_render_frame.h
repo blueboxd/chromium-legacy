@@ -82,6 +82,8 @@ class TestRenderFrame : public RenderFrameImpl {
   mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
   TakeLastBrowserInterfaceBrokerReceiver();
 
+  void SimulateBeforeUnload(bool is_reload);
+
  private:
   explicit TestRenderFrame(RenderFrameImpl::CreateParams params);
 

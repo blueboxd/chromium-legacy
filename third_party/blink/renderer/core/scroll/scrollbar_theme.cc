@@ -49,12 +49,15 @@
 namespace blink {
 
 void ScrollbarTheme::Paint(const Scrollbar& scrollbar,
-                           GraphicsContext& graphics_context) {
-  PaintTrackButtonsTickmarks(graphics_context, scrollbar, IntPoint());
+                           GraphicsContext& graphics_context,
+                           const IntPoint& paint_offset) {
+  PaintTrackButtonsTickmarks(graphics_context, scrollbar, paint_offset);
 
-  IntRect thumb_rect = ThumbRect(scrollbar);
-  if (HasThumb(scrollbar))
+  if (HasThumb(scrollbar)) {
+    IntRect thumb_rect = ThumbRect(scrollbar);
+    thumb_rect.MoveBy(paint_offset);
     PaintThumbWithOpacity(graphics_context, scrollbar, thumb_rect);
+  }
 }
 
 ScrollbarPart ScrollbarTheme::HitTestRootFramePosition(

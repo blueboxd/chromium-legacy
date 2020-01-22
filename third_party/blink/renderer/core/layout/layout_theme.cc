@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
-#include "third_party/blink/renderer/core/fileapi/file_list.h"
+#include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
@@ -55,10 +55,8 @@
 #include "third_party/blink/renderer/core/style/computed_style_initial_values.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
-#include "third_party/blink/renderer/platform/fonts/string_truncator.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "ui/base/ui_base_features.h"
@@ -856,27 +854,8 @@ Color LayoutTheme::FocusRingColor() const {
                                       : GetTheme().PlatformFocusRingColor();
 }
 
-String LayoutTheme::FileListNameForWidth(Locale& locale,
-                                         const FileList* file_list,
-                                         const Font& font,
-                                         int width) const {
-  if (width <= 0)
-    return String();
-
-  String string;
-  if (file_list->IsEmpty()) {
-    string = locale.QueryString(IDS_FORM_FILE_NO_FILE_LABEL);
-  } else if (file_list->length() == 1) {
-    string = file_list->item(0)->name();
-  } else {
-    return StringTruncator::RightTruncate(
-        locale.QueryString(IDS_FORM_FILE_MULTIPLE_UPLOAD,
-                           locale.ConvertToLocalizedNumber(
-                               String::Number(file_list->length()))),
-        width, font);
-  }
-
-  return StringTruncator::CenterTruncate(string, width, font);
+String LayoutTheme::DisplayNameForFile(const File& file) const {
+  return file.name();
 }
 
 bool LayoutTheme::ShouldOpenPickerWithF4Key() const {

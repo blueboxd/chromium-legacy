@@ -113,9 +113,10 @@ void LayoutMenuList::CreateInnerBlock() {
 
 bool LayoutMenuList::HasOptionStyleChanged(
     const ComputedStyle& inner_style) const {
-  return option_style_ &&
-         ((option_style_->Direction() != inner_style.Direction() ||
-           option_style_->GetUnicodeBidi() != inner_style.GetUnicodeBidi()));
+  const ComputedStyle* option_style = SelectElement()->OptionStyle();
+  return option_style &&
+         ((option_style->Direction() != inner_style.Direction() ||
+           option_style->GetUnicodeBidi() != inner_style.GetUnicodeBidi()));
 }
 
 void LayoutMenuList::AdjustInnerStyle(ComputedStyle& inner_style) const {
@@ -155,8 +156,9 @@ void LayoutMenuList::AdjustInnerStyle(ComputedStyle& inner_style) const {
   if (HasOptionStyleChanged(inner_style)) {
     inner_block_->SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kStyleChange);
-    inner_style.SetDirection(option_style_->Direction());
-    inner_style.SetUnicodeBidi(option_style_->GetUnicodeBidi());
+    const ComputedStyle* option_style = SelectElement()->OptionStyle();
+    inner_style.SetDirection(option_style->Direction());
+    inner_style.SetUnicodeBidi(option_style->GetUnicodeBidi());
   }
 }
 
@@ -229,41 +231,6 @@ void LayoutMenuList::UpdateOptionsWidth() const {
 }
 
 void LayoutMenuList::UpdateFromElement() {
-  HTMLSelectElement* select = SelectElement();
-  HTMLOptionElement* option = select->OptionToBeShown();
-  String text = g_empty_string;
-  option_style_ = nullptr;
-
-  if (select->IsMultiple()) {
-    unsigned selected_count = 0;
-    HTMLOptionElement* selected_option_element = nullptr;
-    for (auto* const option : select->GetOptionList()) {
-      if (option->Selected()) {
-        if (++selected_count == 1)
-          selected_option_element = option;
-      }
-    }
-
-    if (selected_count == 1) {
-      text = selected_option_element->TextIndentedToRespectGroupLabel();
-      option_style_ = selected_option_element->GetComputedStyle();
-    } else {
-      Locale& locale = select->GetLocale();
-      String localized_number_string =
-          locale.ConvertToLocalizedNumber(String::Number(selected_count));
-      text = locale.QueryString(IDS_FORM_SELECT_MENU_LIST_TEXT,
-                                localized_number_string);
-      DCHECK(!option_style_);
-    }
-  } else {
-    if (option) {
-      text = option->TextIndentedToRespectGroupLabel();
-      option_style_ = option->GetComputedStyle();
-    }
-  }
-
-  SetText(text.StripWhiteSpace());
-
   DCHECK(inner_block_);
   if (HasOptionStyleChanged(inner_block_->StyleRef()))
     UpdateInnerStyle();

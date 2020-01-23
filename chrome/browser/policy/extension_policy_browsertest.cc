@@ -39,6 +39,7 @@
 #include "extensions/browser/updater/extension_cache_fake.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/features/feature_channel.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/value_builder.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -187,6 +188,20 @@ class ExtensionPolicyTest : public PolicyTest {
     extension_service()->DisableExtension(
         id, extensions::disable_reason::DISABLE_USER_ACTION);
     observer.WaitForExtensionUnloaded();
+  }
+
+  void AddExtensionToForceList(PolicyMap* policies,
+                               const std::string& id,
+                               const GURL& update_url) {
+    // Setting the forcelist extension should install extension with ExtensionId
+    // equal to id.
+    base::ListValue forcelist;
+    forcelist.AppendString(
+        base::StringPrintf(update_url.is_empty() ? "%s" : "%s;%s", id.c_str(),
+                           update_url.spec().c_str()));
+    policies->Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
+                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                  forcelist.CreateDeepCopy(), nullptr);
   }
 
   std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
@@ -505,16 +520,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   // should be automatically installed too.
   base::ListValue blacklist;
   blacklist.AppendString("*");
-  base::ListValue forcelist;
-  forcelist.AppendString(
-      base::StringPrintf("%s;%s", kImporterId, update_xml_url.spec().c_str()));
   PolicyMap policies;
+  AddExtensionToForceList(&policies, kImporterId, update_xml_url);
   policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                blacklist.CreateDeepCopy(), nullptr);
-  policies.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               forcelist.CreateDeepCopy(), nullptr);
 
   extensions::TestExtensionRegistryObserver observe_importer(registry,
                                                              kImporterId);
@@ -665,6 +675,63 @@ class MockedInstallationReporterObserver
 
 }  // namespace
 
+// Verifies that if extension is installed manually by user and then added to
+// force-installed policy, it can't be uninstalled. And then if it removed
+// from the force installed list, it should be uninstalled.
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       ExtensionAddedAndRemovedFromForceInstalledList) {
+  ExtensionRequestInterceptor interceptor;
+
+  ASSERT_FALSE(extension_registry()->GetExtensionById(
+      kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING));
+
+  ASSERT_TRUE(InstallExtension(kGoodCrxName));
+  EXPECT_TRUE(extension_registry()->enabled_extensions().GetByID(kGoodCrxId));
+
+  EXPECT_EQ(extension_registry()
+                ->enabled_extensions()
+                .GetByID(kGoodCrxId)
+                ->location(),
+            extensions::Manifest::INTERNAL);
+
+  // The user is allowed to disable the added extension.
+  EXPECT_TRUE(extension_service()->IsExtensionEnabled(kGoodCrxId));
+  DisableExtension(kGoodCrxId);
+  EXPECT_FALSE(extension_service()->IsExtensionEnabled(kGoodCrxId));
+
+  // Explicitly re-enable the extension.
+  extension_service()->EnableExtension(kGoodCrxId);
+
+  // Extensions that are force-installed come from an update URL, which defaults
+  // to the webstore. Use a test URL for this test with an update manifest
+  // that includes "good_v1.crx".
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url =
+      embedded_test_server()->GetURL("/extensions/good_v1_update_manifest.xml");
+
+  PolicyMap policies;
+  AddExtensionToForceList(&policies, kGoodCrxId, url);
+  UpdateProviderPolicy(policies);
+  const extensions::Extension* extension =
+      extension_registry()->enabled_extensions().GetByID(kGoodCrxId);
+  EXPECT_TRUE(extension);
+
+  // The user is not allowed to uninstall force-installed extensions.
+  UninstallExtension(kGoodCrxId, /*expect_success=*/false);
+  EXPECT_EQ(extension->location(),
+            extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD);
+
+  // Remove the force installed policy.
+  policies.Erase(policy::key::kExtensionInstallForcelist);
+  UpdateProviderPolicy(policies);
+
+  // TODO(crbug.com/1042187)
+  // Extension should be uninstalled now. It would be better to keep it, but it
+  // doesn't happen for now.
+  ASSERT_FALSE(extension_registry()->GetExtensionById(
+      kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING));
+}
+
 IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelist) {
   // Verifies that extensions that are force-installed by policies are
   // installed and can't be uninstalled.
@@ -683,14 +750,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelist) {
   GURL url =
       embedded_test_server()->GetURL("/extensions/good_v1_update_manifest.xml");
 
-  // Setting the forcelist extension should install "good_v1.crx".
-  base::ListValue forcelist;
-  forcelist.AppendString(
-      base::StringPrintf("%s;%s", kGoodCrxId, url.spec().c_str()));
   PolicyMap policies;
-  policies.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               forcelist.CreateDeepCopy(), nullptr);
+  AddExtensionToForceList(&policies, kGoodCrxId, url);
+
   extensions::TestExtensionRegistryObserver observer(extension_registry());
   MockedInstallationReporterObserver reporter_observer(browser()->profile());
   // CREATED is the default stage in MockedInstallationReporterObserver, so it
@@ -841,13 +903,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   ASSERT_FALSE(registry->GetExtensionById(
       kGoodCrxId, extensions::ExtensionRegistry::EVERYTHING));
 
-  // Setting the forcelist extension should install "good_v1.crx".
-  base::ListValue forcelist;
-  forcelist.AppendString(kGoodCrxId);
   PolicyMap policies;
-  policies.Set(key::kExtensionInstallForcelist, POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               forcelist.CreateDeepCopy(), nullptr);
+  AddExtensionToForceList(&policies, kGoodCrxId, GURL());
   extensions::TestExtensionRegistryObserver observer(registry);
   UpdateProviderPolicy(policies);
   observer.WaitForExtensionWillBeInstalled();

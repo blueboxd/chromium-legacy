@@ -68,9 +68,30 @@ void PageHandler::GetInstallabilityErrors(
 // static
 void PageHandler::GotInstallabilityErrors(
     std::unique_ptr<GetInstallabilityErrorsCallback> callback,
-    std::vector<std::string> errors) {
+    std::vector<std::string> errors,
+    std::vector<content::InstallabilityError> installability_errors) {
+  auto result_installability_errors =
+      std::make_unique<protocol::Array<protocol::Page::InstallabilityError>>();
+  for (const auto& installability_error : installability_errors) {
+    auto installability_error_arguments = std::make_unique<
+        protocol::Array<protocol::Page::InstallabilityErrorArgument>>();
+    for (const auto& error_argument :
+         installability_error.installability_error_arguments) {
+      installability_error_arguments->emplace_back(
+          protocol::Page::InstallabilityErrorArgument::Create()
+              .SetName(error_argument.name)
+              .SetValue(error_argument.value)
+              .Build());
+    }
+    result_installability_errors->emplace_back(
+        protocol::Page::InstallabilityError::Create()
+            .SetErrorId(installability_error.error_id)
+            .SetErrorArguments(std::move(installability_error_arguments))
+            .Build());
+  }
   callback->sendSuccess(
-      std::make_unique<protocol::Array<std::string>>(std::move(errors)));
+      std::make_unique<protocol::Array<std::string>>(std::move(errors)),
+      std::move(result_installability_errors));
 }
 
 void PageHandler::GetManifestIcons(

@@ -33,6 +33,8 @@ class BlinkGCPluginAction : public PluginASTAction {
     for (const auto& arg : args) {
       if (arg == "dump-graph") {
         options_.dump_graph = true;
+      } else if (arg == "no-members-in-stack-allocated") {
+        options_.no_members_in_stack_allocated = true;
       } else if (arg == "enable-weak-members-in-unmanaged-classes") {
         options_.enable_weak_members_in_unmanaged_classes = true;
       } else if (arg == "no-gc-finalized" || arg == "warn-unneeded-finalizer") {

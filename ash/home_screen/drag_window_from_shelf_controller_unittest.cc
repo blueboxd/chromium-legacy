@@ -9,7 +9,6 @@
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/overview_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "ash/public/cpp/window_backdrop.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -540,8 +539,8 @@ TEST_F(DragWindowFromShelfControllerTest, NoBackdropDuringWindowScaleDown) {
       Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
   auto window = CreateTestWindow();
   EXPECT_TRUE(window->layer()->GetTargetTransform().IsIdentity());
-  WindowBackdrop* window_backdrop = WindowBackdrop::Get(window.get());
-  EXPECT_NE(window_backdrop->mode(), WindowBackdrop::BackdropMode::kDisabled);
+  EXPECT_NE(window->GetProperty(kBackdropWindowMode),
+            BackdropWindowMode::kDisabled);
 
   StartDrag(window.get(), shelf_bounds.left_center(), HotseatState::kExtended);
   Drag(gfx::Point(0, 200), 0.f, 10.f);
@@ -549,8 +548,8 @@ TEST_F(DragWindowFromShelfControllerTest, NoBackdropDuringWindowScaleDown) {
           base::make_optional(
               -DragWindowFromShelfController::kVelocityToHomeScreenThreshold));
   EXPECT_FALSE(window->layer()->GetTargetTransform().IsIdentity());
-  EXPECT_NE(window_backdrop->mode(), WindowBackdrop::BackdropMode::kDisabled);
-  EXPECT_TRUE(window_backdrop->temporarily_disabled());
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
+            BackdropWindowMode::kDisabled);
 }
 
 // Test that if drag is cancelled, overview should be dismissed and other
@@ -788,13 +787,14 @@ TEST_F(DragWindowFromShelfControllerTest, RestoreBackdropAfterDragEnds) {
   const gfx::Rect shelf_bounds =
       Shelf::ForWindow(Shell::GetPrimaryRootWindow())->GetIdealBounds();
   auto window = CreateTestWindow();
-  WindowBackdrop* window_backdrop = WindowBackdrop::Get(window.get());
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
+  BackdropWindowMode original_backdrop_mode =
+      window->GetProperty(kBackdropWindowMode);
+  EXPECT_NE(original_backdrop_mode, BackdropWindowMode::kDisabled);
 
   // For window that ends in overview:
   StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
-  EXPECT_TRUE(window_backdrop->temporarily_disabled());
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
+            BackdropWindowMode::kDisabled);
   Drag(gfx::Point(200, 200), 0.f, 1.f);
   DragWindowFromShelfControllerTestApi().WaitUntilOverviewIsShown(
       window_drag_controller());
@@ -803,14 +803,13 @@ TEST_F(DragWindowFromShelfControllerTest, RestoreBackdropAfterDragEnds) {
   EXPECT_TRUE(overview_controller->InOverviewSession());
   EXPECT_TRUE(overview_controller->overview_session()->IsWindowInOverview(
       window.get()));
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
-  EXPECT_FALSE(window_backdrop->temporarily_disabled());
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode), original_backdrop_mode);
 
   // For window that ends in homescreen:
   wm::ActivateWindow(window.get());
   StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
-  EXPECT_TRUE(window_backdrop->temporarily_disabled());
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
+            BackdropWindowMode::kDisabled);
   Drag(gfx::Point(200, 200), 0.f, 1.f);
   DragWindowFromShelfControllerTestApi().WaitUntilOverviewIsShown(
       window_drag_controller());
@@ -818,42 +817,38 @@ TEST_F(DragWindowFromShelfControllerTest, RestoreBackdropAfterDragEnds) {
           base::make_optional(
               -DragWindowFromShelfController::kVelocityToHomeScreenThreshold));
   EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
-  EXPECT_FALSE(window_backdrop->temporarily_disabled());
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode), original_backdrop_mode);
 
   // For window that restores to its original bounds:
   wm::ActivateWindow(window.get());
   StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
-  EXPECT_TRUE(window_backdrop->temporarily_disabled());
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
+            BackdropWindowMode::kDisabled);
   Drag(gfx::Point(200, 200), 0.f, 1.f);
   EndDrag(shelf_bounds.CenterPoint(), base::nullopt);
-  EXPECT_FALSE(window_backdrop->temporarily_disabled());
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode), original_backdrop_mode);
 
   // For window that ends in homescreen because overview did not start during
   // the gesture:
   wm::ActivateWindow(window.get());
   StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
-  EXPECT_TRUE(window_backdrop->temporarily_disabled());
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
+            BackdropWindowMode::kDisabled);
   EndDrag(gfx::Point(0, 200), base::nullopt);
   EXPECT_TRUE(WindowState::Get(window.get())->IsMinimized());
-  EXPECT_FALSE(window_backdrop->temporarily_disabled());
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode), original_backdrop_mode);
 
   // For window that ends in splitscreen:
   wm::ActivateWindow(window.get());
   StartDrag(window.get(), shelf_bounds.CenterPoint(), HotseatState::kExtended);
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
-  EXPECT_TRUE(window_backdrop->temporarily_disabled());
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
+            BackdropWindowMode::kDisabled);
   Drag(gfx::Point(200, 200), 0.f, 1.f);
   DragWindowFromShelfControllerTestApi().WaitUntilOverviewIsShown(
       window_drag_controller());
   EndDrag(gfx::Point(0, 200), base::nullopt);
   EXPECT_TRUE(split_view_controller()->IsWindowInSplitView(window.get()));
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
-  EXPECT_FALSE(window_backdrop->temporarily_disabled());
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode), original_backdrop_mode);
 }
 
 TEST_F(DragWindowFromShelfControllerTest,

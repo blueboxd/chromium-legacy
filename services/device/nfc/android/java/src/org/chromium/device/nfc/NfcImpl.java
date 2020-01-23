@@ -490,6 +490,15 @@ public class NfcImpl implements Nfc {
 
         try {
             mTagHandler.connect();
+
+            if (!mPendingPushOperation.ndefWriteOptions.overwrite
+                    && !mTagHandler.canAlwaysOverwrite()) {
+                Log.w(TAG, "Cannot overwrite the NFC tag due to existing data on it.");
+                pendingPushOperationCompleted(createError(NdefErrorType.NOT_ALLOWED,
+                        "NDEFWriteOptions#overwrite does not allow overwrite."));
+                return;
+            }
+
             mTagHandler.write(NdefMessageUtils.toNdefMessage(mPendingPushOperation.ndefMessage));
             pendingPushOperationCompleted(null);
         } catch (InvalidNdefMessageException e) {
@@ -523,11 +532,9 @@ public class NfcImpl implements Nfc {
             return;
         }
 
-        android.nfc.NdefMessage message = null;
-
         try {
             mTagHandler.connect();
-            message = mTagHandler.read();
+            android.nfc.NdefMessage message = mTagHandler.read();
             if (message == null) {
                 // Tag is formatted to support NDEF but does not contain a message yet.
                 // Let's create one with no records so that watchers can be notified.

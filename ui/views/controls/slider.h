@@ -114,8 +114,8 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
 
   void NotifyPendingAccessibilityValueChanged();
 
-  SkColor GetThumbColor() const;
-  SkColor GetTroughColor() const;
+  virtual SkColor GetThumbColor() const;
+  virtual SkColor GetTroughColor() const;
   int GetSliderExtraPadding() const;
 
   SliderListener* listener_;

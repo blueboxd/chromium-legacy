@@ -1388,6 +1388,11 @@ const char kPrintingSendUsernameAndFilenameEnabled[] =
 // Indicates how long print jobs metadata is stored on the device, in days.
 const char kPrintJobHistoryExpirationPeriod[] =
     "printing.print_job_history_expiration_period";
+
+// The list of extensions allowed to skip print job confirmation dialog when
+// they use the chrome.printing.submitJob() function.
+const char kPrintingAPIExtensionsWhitelist[] =
+    "printing.printing_api_extensions_whitelist";
 #endif  // OS_CHROMEOS
 
 // An integer pref specifying the fallback behavior for sites outside of content

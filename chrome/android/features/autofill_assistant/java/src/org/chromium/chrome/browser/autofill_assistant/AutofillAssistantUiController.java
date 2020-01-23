@@ -193,8 +193,18 @@ class AutofillAssistantUiController {
     }
 
     @CalledByNative
+    private void showContentAndExpandBottomSheet() {
+        mCoordinator.getBottomBarCoordinator().showContentAndExpand();
+    }
+
+    @CalledByNative
     private void expandBottomSheet() {
-        mCoordinator.getBottomBarCoordinator().showAndExpand();
+        mCoordinator.getBottomBarCoordinator().expand();
+    }
+
+    @CalledByNative
+    private void collapseBottomSheet() {
+        mCoordinator.getBottomBarCoordinator().collapse();
     }
 
     @CalledByNative

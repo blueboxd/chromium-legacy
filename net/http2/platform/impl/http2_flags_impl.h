@@ -5,9 +5,9 @@
 #ifndef NET_HTTP2_PLATFORM_IMPL_HTTP2_FLAGS_IMPL_H_
 #define NET_HTTP2_PLATFORM_IMPL_HTTP2_FLAGS_IMPL_H_
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
+#include "net/third_party/quiche/src/http2/platform/api/http2_export.h"
 
-QUICHE_EXPORT_PRIVATE extern bool FLAGS_http2_varint_decode_64_bits;
+HTTP2_EXPORT_PRIVATE extern bool FLAGS_http2_varint_decode_64_bits;
 
 namespace http2 {
 

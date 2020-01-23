@@ -1682,6 +1682,24 @@ bool LayoutBlock::HasLineIfEmpty() const {
   return false;
 }
 
+LayoutUnit LayoutBlock::EmptyLineBaseline(
+    LineDirectionMode line_direction) const {
+  if (!HasLineIfEmpty())
+    return LayoutUnit(-1);
+  const SimpleFontData* font_data = FirstLineStyle()->GetFont().PrimaryFont();
+  if (!font_data)
+    return LayoutUnit(-1);
+  const auto& font_metrics = font_data->GetFontMetrics();
+  const LayoutUnit line_height =
+      LineHeight(true, line_direction, kPositionOfInteriorLineBoxes);
+  const LayoutUnit border_padding = line_direction == kHorizontalLine
+                                        ? BorderTop() + PaddingTop()
+                                        : BorderRight() + PaddingRight();
+  return LayoutUnit((font_metrics.Ascent() +
+                     (line_height - font_metrics.Height()) / 2 + border_padding)
+                        .ToInt());
+}
+
 LayoutUnit LayoutBlock::LineHeight(bool first_line,
                                    LineDirectionMode direction,
                                    LinePositionMode line_position_mode) const {
@@ -1849,18 +1867,8 @@ LayoutUnit LayoutBlock::InlineBlockBaseline(
       }
     }
   }
-  const SimpleFontData* font_data = FirstLineStyle()->GetFont().PrimaryFont();
-  if (font_data && !have_normal_flow_child && HasLineIfEmpty()) {
-    const FontMetrics& font_metrics = font_data->GetFontMetrics();
-    return LayoutUnit(
-        (font_metrics.Ascent() +
-         (LineHeight(true, line_direction, kPositionOfInteriorLineBoxes) -
-          font_metrics.Height()) /
-             2 +
-         (line_direction == kHorizontalLine ? BorderTop() + PaddingTop()
-                                            : BorderRight() + PaddingRight()))
-            .ToInt());
-  }
+  if (!have_normal_flow_child)
+    return EmptyLineBaseline(line_direction);
   return LayoutUnit(-1);
 }
 

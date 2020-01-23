@@ -284,9 +284,9 @@ void ImageDataCache::Add(ImageData* image_data) {
   // Schedule a timer to invalidate this entry.
   PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostDelayedTask(
       FROM_HERE,
-      RunWhileLocked(base::Bind(&ImageDataCache::OnTimer,
-                                weak_factory_.GetWeakPtr(),
-                                image_data->pp_instance())),
+      RunWhileLocked(base::BindOnce(&ImageDataCache::OnTimer,
+                                    weak_factory_.GetWeakPtr(),
+                                    image_data->pp_instance())),
       base::TimeDelta::FromSeconds(kMaxAgeSeconds));
 }
 

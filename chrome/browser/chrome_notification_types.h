@@ -197,15 +197,6 @@ enum NotificationType {
   NOTIFICATION_TAB_DRAG_LOOP_DONE,
 #endif
 
-  // DEPRECATED: Instead of listening this notification, use
-  // CaptivePortalService::RegisterCallback().
-  // TODO(blundell): Delete this notification as part of
-  // https://crbug.com/1030692.
-  // Sent when the CaptivePortalService checks if we're behind a captive portal.
-  // The Source is the Profile the CaptivePortalService belongs to, and the
-  // Details are a Details<CaptivePortalService::CheckResults>.
-  NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-
   // Sent when the applications in the NTP app launcher have been reordered.
   // The details, if not NoDetails, is the std::string ID of the extension that
   // was moved.

@@ -44,7 +44,7 @@ class PPAPI_SHARED_EXPORT MessageLoopShared
   //       This only makes sense for user code and completely thread-safe
   //       proxy operations (e.g., MessageLoop::QuitClosure).
   virtual void PostClosure(const base::Location& from_here,
-                           const base::Closure& closure,
+                           base::OnceClosure closure,
                            int64_t delay_ms) = 0;
 
   virtual base::SingleThreadTaskRunner* GetTaskRunner() = 0;

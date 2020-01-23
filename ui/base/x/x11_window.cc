@@ -13,6 +13,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/base/hit_test_x11.h"
+#include "ui/base/wm_role_names_linux.h"
 #include "ui/base/x/x11_pointer_grab.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
@@ -205,8 +206,17 @@ void XWindow::Init(const Configuration& config) {
       enable_transparent_visuals = config.type == WindowType::kDrag;
   }
 
+  int visual_id;
+  if (config.wm_role_name == kStatusIconWmRoleName) {
+    std::string atom_name =
+        "_NET_SYSTEM_TRAY_S" + base::NumberToString(DefaultScreen(xdisplay_));
+    XID manager =
+        XGetSelectionOwner(xdisplay_, gfx::GetAtom(atom_name.c_str()));
+    if (ui::GetIntProperty(manager, "_NET_SYSTEM_TRAY_VISUAL", &visual_id))
+      visual_id_ = visual_id;
+  }
+
   Visual* visual = CopyFromParent;
-  SetVisualId(config.visual_id);
   int depth = CopyFromParent;
   Colormap colormap = CopyFromParent;
   ui::XVisualManager* visual_manager = ui::XVisualManager::GetInstance();
@@ -1601,14 +1611,6 @@ void XWindow::UnconfineCursor() {
   pointer_barriers_.fill(x11::None);
 
   has_pointer_barriers_ = false;
-}
-
-void XWindow::SetVisualId(base::Optional<int> visual_id) {
-  if (!visual_id.has_value())
-    return;
-
-  DCHECK_GE(visual_id.value(), 0);
-  visual_id_ = visual_id.value();
 }
 
 void XWindow::UpdateWindowRegion(XRegion* xregion) {

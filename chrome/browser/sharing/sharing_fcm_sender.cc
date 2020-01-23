@@ -101,10 +101,17 @@ bool SharingFCMSender::SetMessageSenderInfo(SharingMessage* message) {
     return false;
 
   auto* fcm_configuration = message->mutable_fcm_channel_configuration();
-  fcm_configuration->set_fcm_token(sharing_info->vapid_target_info.fcm_token);
-  fcm_configuration->set_p256dh(sharing_info->vapid_target_info.p256dh);
-  fcm_configuration->set_auth_secret(
+  fcm_configuration->set_vapid_fcm_token(
+      sharing_info->vapid_target_info.fcm_token);
+  fcm_configuration->set_vapid_p256dh(sharing_info->vapid_target_info.p256dh);
+  fcm_configuration->set_vapid_auth_secret(
       sharing_info->vapid_target_info.auth_secret);
+  fcm_configuration->set_sender_id_fcm_token(
+      sharing_info->sender_id_target_info.fcm_token);
+  fcm_configuration->set_sender_id_p256dh(
+      sharing_info->sender_id_target_info.p256dh);
+  fcm_configuration->set_sender_id_auth_secret(
+      sharing_info->sender_id_target_info.auth_secret);
   return true;
 }
 

@@ -52,7 +52,7 @@ static_library("security_interstitial_page") {
     ":proto",
     "//base",
     "//build:branding_buildflags",
-    "//components/captive_portal",
+    "//components/captive_portal/core",
     "//components/network_time",
     "//components/prefs:prefs",
     "//components/resources",

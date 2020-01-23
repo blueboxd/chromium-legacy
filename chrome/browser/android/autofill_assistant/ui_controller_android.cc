@@ -326,6 +326,9 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     OnViewportModeChanged(ui_delegate->GetViewportMode());
     OnPeekModeChanged(ui_delegate->GetPeekMode());
     OnFormChanged(ui_delegate->GetForm());
+    // TODO(b/145204744): Store the collapsed or expanded state from the bottom
+    // sheet when detaching the UI so that it can be restored appropriately
+    // here.
 
     UiDelegate::OverlayColors colors;
     ui_delegate->GetOverlayColors(&colors);
@@ -369,6 +372,8 @@ void UiControllerAndroid::OnStateChanged(AutofillAssistantState new_state) {
 void UiControllerAndroid::SetupForState() {
   UpdateActions(ui_delegate_->GetUserActions());
   AutofillAssistantState state = ui_delegate_->GetState();
+  bool should_prompt_action_expand_sheet =
+      ui_delegate_->ShouldPromptActionExpandSheet();
   switch (state) {
     case AutofillAssistantState::STARTING:
       SetOverlayState(OverlayState::FULL);
@@ -387,8 +392,8 @@ void UiControllerAndroid::SetupForState() {
       AllowShowingSoftKeyboard(true);
       SetSpinPoodle(false);
 
-      // user interaction is needed.
-      ExpandBottomSheet();
+      if (should_prompt_action_expand_sheet)
+        ShowContentAndExpandBottomSheet();
       return;
 
     case AutofillAssistantState::PROMPT:
@@ -396,8 +401,8 @@ void UiControllerAndroid::SetupForState() {
       AllowShowingSoftKeyboard(true);
       SetSpinPoodle(false);
 
-      // user interaction is needed.
-      ExpandBottomSheet();
+      if (should_prompt_action_expand_sheet)
+        ShowContentAndExpandBottomSheet();
       return;
 
     case AutofillAssistantState::MODAL_DIALOG:
@@ -412,7 +417,7 @@ void UiControllerAndroid::SetupForState() {
       SetSpinPoodle(false);
 
       // Make sure the user sees the error message.
-      ExpandBottomSheet();
+      ShowContentAndExpandBottomSheet();
       Detach();
       return;
 
@@ -469,6 +474,16 @@ void UiControllerAndroid::OnPeekModeChanged(
                                                  java_object_, peek_mode);
 }
 
+void UiControllerAndroid::OnExpandBottomSheet() {
+  Java_AutofillAssistantUiController_expandBottomSheet(AttachCurrentThread(),
+                                                       java_object_);
+}
+
+void UiControllerAndroid::OnCollapseBottomSheet() {
+  Java_AutofillAssistantUiController_collapseBottomSheet(AttachCurrentThread(),
+                                                         java_object_);
+}
+
 void UiControllerAndroid::OnOverlayColorsChanged(
     const UiDelegate::OverlayColors& colors) {
   JNIEnv* env = AttachCurrentThread();
@@ -486,9 +501,9 @@ void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {
                                            enabled);
 }
 
-void UiControllerAndroid::ExpandBottomSheet() {
-  Java_AutofillAssistantUiController_expandBottomSheet(AttachCurrentThread(),
-                                                       java_object_);
+void UiControllerAndroid::ShowContentAndExpandBottomSheet() {
+  Java_AutofillAssistantUiController_showContentAndExpandBottomSheet(
+      AttachCurrentThread(), java_object_);
 }
 
 void UiControllerAndroid::SetSpinPoodle(bool enabled) {

@@ -474,6 +474,13 @@
     ]
   },
 
+  "PrintingAPIExtensionsWhitelist": {
+    "os": ["chromeos"],
+    "pref_mappings": [
+      { "pref": "printing.printing_api_extensions_whitelist" }
+    ]
+  },
+
   "CloudPrintSubmitEnabled": {
     "os": ["win", "mac", "linux"],
     "policy_pref_mapping_test": [

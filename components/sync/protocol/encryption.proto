@@ -31,4 +31,4 @@ package sync_pb;
 message EncryptedData {
   optional string key_name = 1;
   optional string blob = 2;
-};
+}

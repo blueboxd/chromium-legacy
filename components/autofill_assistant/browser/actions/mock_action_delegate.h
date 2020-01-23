@@ -67,8 +67,9 @@ class MockActionDelegate : public ActionDelegate {
                     ClickAction::ClickType click_type,
                     base::OnceCallback<void(const ClientStatus&)> callback));
 
-  MOCK_METHOD1(Prompt,
-               void(std::unique_ptr<std::vector<UserAction>> user_actions));
+  MOCK_METHOD2(Prompt,
+               void(std::unique_ptr<std::vector<UserAction>> user_actions,
+                    bool disable_force_expand_sheet));
   MOCK_METHOD0(CleanUpAfterPrompt, void());
 
   void FillAddressForm(
@@ -225,6 +226,8 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(SetPeekMode,
                void(ConfigureBottomSheetProto::PeekMode peek_mode));
   MOCK_METHOD0(GetPeekMode, ConfigureBottomSheetProto::PeekMode());
+  MOCK_METHOD0(ExpandBottomSheet, void());
+  MOCK_METHOD0(CollapseBottomSheet, void());
   MOCK_METHOD3(
       SetForm,
       bool(std::unique_ptr<FormProto> form,
@@ -269,6 +272,7 @@ class MockActionDelegate : public ActionDelegate {
   }
 
   MOCK_METHOD0(RequireUI, void());
+  MOCK_METHOD0(SetExpandSheetForPromptAction, bool());
 
   const ClientSettings& GetSettings() override { return client_settings_; }
 

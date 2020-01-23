@@ -253,6 +253,14 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       light_color = gfx::kGoogleBlue600;
       dark_color = gfx::kGoogleBlue300;
       break;
+    case ContentLayerType::kIconSystemMenu:
+      light_color = gfx::kGoogleGrey700;
+      dark_color = gfx::kGoogleGrey200;
+      break;
+    case ContentLayerType::kIconSystemMenuToggled:
+      light_color = gfx::kGoogleGrey200;
+      dark_color = gfx::kGoogleGrey900;
+      break;
   }
   return color_mode == AshColorMode::kLight ? light_color : dark_color;
 }

@@ -131,6 +131,9 @@ class PermissionRequest {
   // It is safe for the request to be deleted at this point -- it will receive
   // no further message from the permission request system. This method will
   // eventually be called on every request which is not unregistered.
+  // It is ok to call this method without actually resolving the request via
+  // PermissionGranted(), PermissionDenied() or Canceled(). However, it will not
+  // resolve the javascript promise from the requesting origin.
   virtual void RequestFinished() = 0;
 
   // Used to record UMA metrics for permission requests.

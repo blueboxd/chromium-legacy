@@ -1195,6 +1195,17 @@ if (is_win) {
   }
 }
 
+if (is_linux) {
+  # This source set defines linux wm role names and must not have any external
+  # dependencies and be kept as minimal as possible.
+  source_set("wm_role_names") {
+    sources = [
+      "wm_role_names_linux.cc",
+      "wm_role_names_linux.h",
+    ]
+  }
+}
+
 # This target is added as a dependency of browser interactive_ui_tests. It must
 # be source_set, otherwise the linker will drop the tests as dead code.
 source_set("base_interactive_ui_tests") {

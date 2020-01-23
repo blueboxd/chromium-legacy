@@ -57,6 +57,8 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   ViewportMode GetViewportMode() override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
+  void ExpandBottomSheet() override;
+  void CollapseBottomSheet() override;
   bool SetForm(
       std::unique_ptr<FormProto> form,
       base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
@@ -68,6 +70,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void RequireUI() override;
   void AddListener(Listener* listener) override;
   void RemoveListener(Listener* listener) override;
+  void SetExpandSheetForPromptAction(bool expand) override;
 
   ClientSettings* GetMutableSettings() { return &client_settings_; }
 
@@ -132,6 +135,10 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   ViewportMode viewport_mode_ = ViewportMode::NO_RESIZE;
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;
+  bool expand_or_collapse_updated_ = false;
+  bool expand_or_collapse_value_ = false;
+  bool expand_sheet_for_prompt_ = true;
+
   bool require_ui_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeScriptExecutorDelegate);

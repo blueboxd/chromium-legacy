@@ -139,6 +139,7 @@ class DiagnosticsReporter {
   unsigned diag_manual_dispatch_method_note_;
   unsigned diag_iterator_to_gc_managed_collection_note_;
   unsigned diag_trace_method_of_stack_allocated_parent_;
+  unsigned diag_member_in_stack_allocated_class_;
 
   unsigned diag_unique_ptr_used_with_gc_;
   unsigned diag_optional_used_with_gc_;

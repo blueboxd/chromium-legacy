@@ -21,13 +21,12 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/captive_portal_helper.h"
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/ssl_error_assistant.h"
-#include "chrome/common/pref_names.h"
-#include "components/captive_portal/buildflags.h"
+#include "components/captive_portal/core/buildflags.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
@@ -54,16 +53,8 @@
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-#include "chrome/browser/captive_portal/captive_portal_service.h"
-#include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #endif
-
-#if defined(OS_WIN)
-#include "base/enterprise_util.h"
-#elif defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#endif  // #if defined(OS_WIN)
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -551,24 +542,19 @@ void SSLErrorHandler::HandleSSLError(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    network_time::NetworkTimeTracker* network_time_tracker,
     base::OnceCallback<
         void(std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
-        blocking_page_ready_callback) {
+        blocking_page_ready_callback,
+    network_time::NetworkTimeTracker* network_time_tracker,
+    bool user_can_proceed_past_interstitial /*=true*/) {
   DCHECK(!FromWebContents(web_contents));
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  DCHECK(profile);
 
-  // This can happen if GetBrowserContext no longer exist by the time this gets
-  // called (e.g. the SSL error was in a webview that has since been destroyed),
-  // if that's the case we don't need to handle the error (and will crash if we
-  // attempt to).
-  if (!profile)
-    return;
+  bool hard_override_disabled = !user_can_proceed_past_interstitial;
 
-  bool hard_override_disabled =
-      !profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed);
   int options_mask = security_interstitials::CalculateSSLErrorOptionsMask(
       cert_error, hard_override_disabled, ssl_info.is_fatal_cert_error);
 
@@ -579,8 +565,7 @@ void SSLErrorHandler::HandleSSLError(
               request_url, std::move(ssl_cert_reporter),
               g_config.Pointer()->on_blocking_page_shown_callback(),
               std::move(blocking_page_ready_callback))),
-      web_contents, profile, cert_error, ssl_info, network_time_tracker,
-      request_url);
+      web_contents, cert_error, ssl_info, network_time_tracker, request_url);
   web_contents->SetUserData(UserDataKey(), base::WrapUnique(error_handler));
   error_handler->StartHandlingError();
 }
@@ -650,7 +635,6 @@ void SSLErrorHandler::SetClientCallbackOnInterstitialsShown(
 SSLErrorHandler::SSLErrorHandler(
     std::unique_ptr<Delegate> delegate,
     content::WebContents* web_contents,
-    Profile* profile,
     int cert_error,
     const net::SSLInfo& ssl_info,
     network_time::NetworkTimeTracker* network_time_tracker,
@@ -658,7 +642,6 @@ SSLErrorHandler::SSLErrorHandler(
     : content::WebContentsObserver(web_contents),
       delegate_(std::move(delegate)),
       web_contents_(web_contents),
-      profile_(profile),
       cert_error_(cert_error),
       ssl_info_(ssl_info),
       request_url_(request_url),
@@ -770,13 +753,13 @@ void SSLErrorHandler::StartHandlingError() {
     }
   }
 
-  // Always listen to captive portal notifications, otherwise build fails
-  // because profile_ isn't used. This is a no-op on platforms where
-  // captive portal detection is disabled.
-  registrar_.Add(this, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-                 content::Source<content::BrowserContext>(profile_));
-
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  subscription_ =
+      CaptivePortalServiceFactory::GetForProfile(profile)->RegisterCallback(
+          base::Bind(&SSLErrorHandler::Observe, base::Unretained(this)));
+
   CaptivePortalTabHelper* captive_portal_tab_helper =
       CaptivePortalTabHelper::FromWebContents(web_contents_);
   if (captive_portal_tab_helper) {
@@ -886,18 +869,11 @@ void SSLErrorHandler::CommonNameMismatchHandlerCallback(
   }
 }
 
-void SSLErrorHandler::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void SSLErrorHandler::Observe(const CaptivePortalService::Results& results) {
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
-  DCHECK_EQ(chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT, type);
-
   timer_.Stop();
-  CaptivePortalService::Results* results =
-      content::Details<CaptivePortalService::Results>(details).ptr();
-  if (results->result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL)
-    ShowCaptivePortalInterstitial(results->landing_url);
+  if (results.result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL)
+    ShowCaptivePortalInterstitial(results.landing_url);
   else
     ShowSSLInterstitial();
 #else

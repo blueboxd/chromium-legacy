@@ -91,6 +91,8 @@ Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
                               : Widget::InitParams::WindowOpacity::kOpaque;
   bubble_params.accept_events = bubble->accept_events();
   bubble_params.remove_standard_frame = true;
+  bubble_params.layer_type = bubble->GetLayerType();
+
   // Use a window default shadow if the bubble doesn't provides its own.
   if (bubble->GetShadow() == BubbleBorder::NO_ASSETS)
     bubble_params.shadow_type = Widget::InitParams::ShadowType::kDefault;
@@ -339,6 +341,10 @@ gfx::Rect BubbleDialogDelegateView::GetAnchorRect() const {
 void BubbleDialogDelegateView::OnBeforeBubbleWidgetInit(
     Widget::InitParams* params,
     Widget* widget) const {}
+
+ui::LayerType BubbleDialogDelegateView::GetLayerType() const {
+  return ui::LAYER_TEXTURED;
+}
 
 void BubbleDialogDelegateView::UseCompactMargins() {
   set_margins(gfx::Insets(6));

@@ -2272,10 +2272,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Previews status as the top-level frame.
   PreviewsState last_navigation_previews_state_;
 
-  // This boolean indicates whether this RenderFrameHostImpl has committed
-  // *any* navigation or not. Starts off false and is set to true for the
-  // lifetime of the object when the first CommitNavigation message is sent to
-  // the RenderFrame.
+  // This boolean indicates whether the RenderFrame has committed *any*
+  // navigation or not. Starts off false and is set to true for the lifetime of
+  // the RenderFrame when the first CommitNavigation message is sent to the
+  // RenderFrame. It is reset after a renderer process crash.
   bool has_committed_any_navigation_ = false;
 
   mojo::AssociatedReceiver<mojom::FrameHost> frame_host_associated_receiver_{

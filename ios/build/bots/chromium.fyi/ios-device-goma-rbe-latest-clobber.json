@@ -1,7 +1,7 @@
 {
   "comments": [
     "Goma RBE latest builder for iOS.",
-    "It is chromium.mac/ios-device.json + use_goma_canary, clobber."
+    "It is chromium.mac/ios-device.json + use_goma_latest, clobber."
   ],
   "xcode build version": "11a1027",
   "gn_args": [
@@ -12,7 +12,8 @@
     "symbol_level=0",
     "target_cpu=\"arm64\"",
     "target_os=\"ios\"",
-    "use_goma=true"
+    "use_goma=true",
+    "ios_use_goma_rbe=true"
   ],
   "additional_compile_targets": [
     "all"

@@ -177,5 +177,35 @@ IN_PROC_BROWSER_TEST_F(QuicTransportTest, MAYBE_Echo) {
   ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
 }
 
+IN_PROC_BROWSER_TEST_F(QuicTransportTest, ClientIndicationFailure) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+
+  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
+
+  ASSERT_TRUE(ExecuteScript(
+      shell(), base::StringPrintf(R"JS(
+    async function run() {
+      // The client indication fails because there is no resource /X
+      // on the server.
+      const transport = new QuicTransport('quic-transport:localhost:%d/X');
+
+      try {
+        await transport.closed;
+      } catch (e) {
+        return;
+      }
+      throw Error('closed should be rejected');
+    }
+
+    run().then(() => { document.title = 'PASS'; },
+               (e) => { console.log(e); document.title = 'FAIL'; });
+)JS",
+                                  server_.server_address().port())));
+
+  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
+}
+
 }  // namespace
 }  // namespace content

@@ -7,9 +7,12 @@
 
 #include <vector>
 
+#include "base/location.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffering_state.h"
+#include "media/base/media_error.h"
+#include "media/base/media_error_codes.h"
 #include "media/base/media_serializers_base.h"
 #include "media/base/video_decoder_config.h"
 #include "ui/gfx/geometry/size.h"
@@ -340,6 +343,42 @@ struct MediaSerializer<media::SerializableBufferingState<T>> {
     if (T == SerializableBufferingStateType::kPipeline)
       result.SetBoolKey("for_suspended_start", value.suspended_start);
 
+    return result;
+  }
+};
+
+// enum (simple)
+template <>
+struct MediaSerializer<media::ErrorCode> {
+  static inline base::Value Serialize(media::ErrorCode code) {
+    return base::Value(static_cast<int>(code));
+  }
+};
+
+// Class (complex)
+template <>
+struct MediaSerializer<media::MediaError> {
+  static base::Value Serialize(const media::MediaError& err) {
+    if (err.IsOk())
+      return base::Value("Ok");
+
+    base::Value result(base::Value::Type::DICTIONARY);
+    FIELD_SERIALIZE("error_code", err.GetErrorCode());
+    FIELD_SERIALIZE("error_message", err.GetErrorMessage());
+    FIELD_SERIALIZE("stack", err.data_->frames);
+    FIELD_SERIALIZE("data", err.data_->data);
+    FIELD_SERIALIZE("causes", err.data_->causes);
+    return result;
+  }
+};
+
+// Class (complex)
+template <>
+struct MediaSerializer<base::Location> {
+  static base::Value Serialize(const base::Location& value) {
+    base::Value result(base::Value::Type::DICTIONARY);
+    FIELD_SERIALIZE("file", value.file_name());
+    FIELD_SERIALIZE("line", value.line_number());
     return result;
   }
 };

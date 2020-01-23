@@ -984,6 +984,7 @@
         'PrintingSizeDefault',
         'PrintingSendUsernameAndFilenameEnabled',
         'PrintJobHistoryExpirationPeriod',
+        'PrintingAPIExtensionsWhitelist',
         'CloudPrintSubmitEnabled',
         'DisablePrintPreview',
         'PrintHeaderFooter',
@@ -2522,6 +2523,27 @@
       If not set, the default period of 90 days is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices.
 
       The policy value should be specified in days.''',
+    },
+    {
+      'name': 'PrintingAPIExtensionsWhitelist',
+      'owners': ['nikitapodguzov@chromium.org'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:81-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True
+      },
+      'example_value': ['abcdefghabcdefghabcdefghabcdefgh'],
+      'id': 664,
+      'caption': '''Extensions allowed to skip confirmation dialog when sending print jobs via chrome.printing API''',
+      'tags': [],
+      'desc': '''This policy specifies the allowed extensions to skip print job confirmation dialog when they use the <ph name="PRINTING_API">Printing API</ph> function <ph name="SUBMIT_JOB_FUNCTION">chrome.printing.submitJob()</ph> for sending a print job.
+
+      If an extension is not in the list, or the list is not set, the print job confirmation dialog will be shown to the user for every <ph name="SUBMIT_JOB_FUNCTION">chrome.printing.submitJob()</ph> function call.'''
     },
     {
       'name': 'ForceSafeSearch',
@@ -20383,6 +20405,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 663,
+  'highest_id_currently_used': 664,
   'highest_atomic_group_id_currently_used': 38
 }

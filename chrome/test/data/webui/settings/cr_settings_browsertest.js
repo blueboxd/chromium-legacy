@@ -877,6 +877,10 @@ TEST_F('CrSettingsPersonalizationOptionsTest', 'OfficialBuild', function() {
 });
 GEN('#endif');
 
+TEST_F('CrSettingsPersonalizationOptionsTest', 'AllBuildsOld', function() {
+  mocha.grep('PersonalizationOptionsTests_AllBuilds_Old').run();
+});
+
 /**
  * Test fixture for
  * chrome/browser/resources/settings/privacy_page/privacy_page.html.

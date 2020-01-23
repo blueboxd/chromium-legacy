@@ -58,7 +58,7 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/captive_portal/buildflags.h"
+#include "components/captive_portal/core/buildflags.h"
 #include "components/google/core/common/google_util.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "content/public/browser/devtools_agent_host.h"

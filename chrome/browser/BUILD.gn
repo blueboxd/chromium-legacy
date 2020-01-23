@@ -13,7 +13,7 @@ import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/ui.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/common/features.gni")
-import("//components/captive_portal/features.gni")
+import("//components/captive_portal/core/features.gni")
 import("//components/feature_engagement/features.gni")
 import("//components/feed/features.gni")
 import("//components/nacl/features.gni")
@@ -1593,6 +1593,8 @@ jumbo_static_library("browser") {
     "sharing/sharing_handler_registry_impl.cc",
     "sharing/sharing_handler_registry_impl.h",
     "sharing/sharing_message_bridge.h",
+    "sharing/sharing_message_bridge_factory.cc",
+    "sharing/sharing_message_bridge_factory.h",
     "sharing/sharing_message_bridge_impl.cc",
     "sharing/sharing_message_bridge_impl.h",
     "sharing/sharing_message_handler.h",
@@ -1987,8 +1989,8 @@ jumbo_static_library("browser") {
     "//components/browser_sync",
     "//components/browsing_data/content",
     "//components/browsing_data/core",
-    "//components/captive_portal",
-    "//components/captive_portal:buildflags",
+    "//components/captive_portal/core",
+    "//components/captive_portal/core:buildflags",
     "//components/certificate_matching",
     "//components/certificate_transparency",
     "//components/cloud_devices/common",
@@ -3559,6 +3561,8 @@ jumbo_static_library("browser") {
       "sharing/sharing_notification_handler.h",
       "sharing/sharing_ui_controller.cc",
       "sharing/sharing_ui_controller.h",
+      "sharing/webrtc/ice_config_fetcher.cc",
+      "sharing/webrtc/ice_config_fetcher.h",
       "signin/signin_promo.cc",
       "signin/signin_promo.h",
       "signin/signin_ui_util.cc",
@@ -3713,6 +3717,7 @@ jumbo_static_library("browser") {
       "//chrome/services/app_service/public/cpp:icon_loader",
       "//chrome/services/app_service/public/cpp:intents",
       "//chrome/services/app_service/public/cpp:preferred_apps",
+      "//chrome/services/sharing/public/mojom",
       "//components/feedback",
       "//components/image_fetcher/core",
       "//components/keep_alive_registry",

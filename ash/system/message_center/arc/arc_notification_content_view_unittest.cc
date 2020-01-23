@@ -44,6 +44,7 @@
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/message_center/views/padded_button.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/widget/native_widget_delegate.h"
 
 using message_center::MessageCenter;
 using message_center::Notification;
@@ -376,6 +377,15 @@ TEST_F(ArcNotificationContentViewTest, CloseButtonInMessageCenterView) {
   MessageCenter::Get()->AddNotification(
       std::make_unique<Notification>(notification));
   ASSERT_TRUE(notification_view);
+
+  // Make sure that the native host can process the located event.
+  auto* widget = notification_view->GetWidget();
+  auto* root_layer = widget->GetNativeWindow()->layer();
+  auto* child_window = notification_view->GetNativeContainerWindowForTest();
+  views::internal::NativeWidgetDelegate* native_widget_delegate = widget;
+  EXPECT_TRUE(native_widget_delegate->ShouldDescendIntoChildForEventHandling(
+      root_layer, child_window, child_window->layer(),
+      gfx::Rect(root_layer->bounds().size()).CenterPoint()));
 
   // Cache notification id because |notification_item| will be gone when the
   // close button is pressed.

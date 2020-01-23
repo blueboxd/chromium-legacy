@@ -1859,6 +1859,8 @@ void RenderFrameHostImpl::RenderProcessExited(
   SetLastCommittedUrl(GURL());
   web_bundle_handle_.reset();
 
+  has_committed_any_navigation_ = false;
+
   // Execute any pending AX tree snapshot callbacks with an empty response,
   // since we're never going to get a response from this renderer.
   for (auto& iter : ax_tree_snapshot_callbacks_)

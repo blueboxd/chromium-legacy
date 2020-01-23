@@ -148,7 +148,8 @@ class AuthErrorLearnMoreButton : public views::Button,
   }
 
   void ButtonPressed(Button* sender, const ui::Event& event) override {
-    Shell::Get()->login_screen_controller()->ShowAccountAccessHelpApp();
+    Shell::Get()->login_screen_controller()->ShowAccountAccessHelpApp(
+        GetWidget()->GetNativeWindow());
     parent_bubble_->Hide();
   }
 

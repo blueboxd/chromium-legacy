@@ -17,6 +17,9 @@ option optimize_for = LITE_RUNTIME;
 package sync_pb;
 
 message SharingMessageSpecifics {
+  // Unique identifier of message.
+  optional string message_id = 1;
+
   message ChannelConfiguration {
     message ServerChannelConfiguration {
       // Where to send the message to.
@@ -47,13 +50,13 @@ message SharingMessageSpecifics {
     }
   }
 
-  optional ChannelConfiguration channel_configuration = 1;
+  optional ChannelConfiguration channel_configuration = 2;
 
   // Payload encrypted using the target user keys according to WebPush
   // encryption scheme. The payload has to be a valid
   // chrome/browser/sharing/proto/sharing_message.proto serialized using
   // SerializeToString.
-  optional bytes payload = 2;
+  optional bytes payload = 3;
 }
 
 // Used for the server to return fine grained commit errors back to the client.

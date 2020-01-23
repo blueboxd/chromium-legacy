@@ -272,8 +272,11 @@ void ScriptExecutor::OnGetFullCard(GetFullCardCallback callback,
 }
 
 void ScriptExecutor::Prompt(
-    std::unique_ptr<std::vector<UserAction>> user_actions) {
-
+    std::unique_ptr<std::vector<UserAction>> user_actions,
+    bool disable_force_expand_sheet) {
+  // First communicate to the delegate that prompt actions should or should not
+  // expand the sheet intitially.
+  delegate_->SetExpandSheetForPromptAction(!disable_force_expand_sheet);
   if (delegate_->EnterState(AutofillAssistantState::PROMPT) &&
       touchable_element_area_) {
     // Prompt() reproduces the end-of-script appearance and behavior during
@@ -305,6 +308,7 @@ void ScriptExecutor::CleanUpAfterPrompt() {
   touchable_element_area_.reset();
 
   delegate_->ClearTouchableElementArea();
+  delegate_->SetExpandSheetForPromptAction(true);
   delegate_->EnterState(AutofillAssistantState::RUNNING);
 }
 
@@ -543,6 +547,14 @@ void ScriptExecutor::SetPeekMode(
 
 ConfigureBottomSheetProto::PeekMode ScriptExecutor::GetPeekMode() {
   return delegate_->GetPeekMode();
+}
+
+void ScriptExecutor::ExpandBottomSheet() {
+  return delegate_->ExpandBottomSheet();
+}
+
+void ScriptExecutor::CollapseBottomSheet() {
+  return delegate_->CollapseBottomSheet();
 }
 
 void ScriptExecutor::WaitForWindowHeightChange(

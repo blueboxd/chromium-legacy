@@ -174,6 +174,7 @@ class UiDelegate {
   // Returns whether the viewport should be resized.
   virtual ViewportMode GetViewportMode() = 0;
 
+  // Peek mode state and whether it was changed automatically last time.
   virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
 
   // Fills in the overlay colors.
@@ -211,6 +212,9 @@ class UiDelegate {
 
   // Returns the event handler.
   virtual EventHandler* GetEventHandler() = 0;
+
+  // Whether the sheet should be auto expanded when entering the prompt state.
+  virtual bool ShouldPromptActionExpandSheet() const = 0;
 
  protected:
  protected:

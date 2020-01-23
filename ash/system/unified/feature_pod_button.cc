@@ -55,7 +55,7 @@ void ConfigureFeaturePodLabel(views::Label* label,
 
 FeaturePodIconButton::FeaturePodIconButton(views::ButtonListener* listener,
                                            bool is_togglable)
-    : views::ImageButton(listener), is_togglable_(is_togglable) {
+    : views::ToggleImageButton(listener), is_togglable_(is_togglable) {
   SetPreferredSize(kUnifiedFeaturePodIconSize);
   SetBorder(views::CreateEmptyBorder(kUnifiedFeaturePodIconPadding));
   SetImageHorizontalAlignment(ALIGN_CENTER);
@@ -73,7 +73,7 @@ void FeaturePodIconButton::SetToggled(bool toggled) {
     return;
 
   toggled_ = toggled;
-  SchedulePaint();
+  views::ToggleImageButton::SetToggled(toggled);
 }
 
 void FeaturePodIconButton::PaintButtonContents(gfx::Canvas* canvas) {
@@ -82,14 +82,14 @@ void FeaturePodIconButton::PaintButtonContents(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
 
   const AshColorProvider* color_provider = AshColorProvider::Get();
-  SkColor color = color_provider->DeprecatedGetControlsLayerColor(
+  SkColor color = color_provider->GetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kInactiveControlBackground,
-      kUnifiedMenuButtonColor);
+      AshColorMode::kDark);
   if (GetEnabled()) {
     if (toggled_) {
-      color = color_provider->DeprecatedGetControlsLayerColor(
+      color = color_provider->GetControlsLayerColor(
           AshColorProvider::ControlsLayerType::kActiveControlBackground,
-          kUnifiedMenuButtonColorActive);
+          AshColorMode::kDark);
     }
   } else {
     color = AshColorProvider::GetDisabledColor(color);
@@ -326,11 +326,19 @@ double FeaturePodButton::GetOpacityForExpandedAmount(double expanded_amount) {
 
 void FeaturePodButton::SetVectorIcon(const gfx::VectorIcon& icon) {
   const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-      ContentLayerType::kIconPrimary, AshColorMode::kDark);
+      ContentLayerType::kIconSystemMenu, AshColorMode::kDark);
+  const SkColor toggled_color = AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kIconSystemMenuToggled, AshColorMode::kDark);
+
   icon_button_->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(icon, kUnifiedFeaturePodVectorIconSize,
                             icon_color));
+  icon_button_->SetToggledImage(
+      views::Button::STATE_NORMAL,
+      new gfx::ImageSkia(gfx::CreateVectorIcon(
+          icon, kUnifiedFeaturePodVectorIconSize, toggled_color)));
+
   icon_button_->SetImage(
       views::Button::STATE_DISABLED,
       gfx::CreateVectorIcon(icon, kUnifiedFeaturePodVectorIconSize,

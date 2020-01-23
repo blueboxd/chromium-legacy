@@ -13,7 +13,6 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
@@ -38,6 +37,18 @@
 namespace ash {
 
 namespace {
+
+constexpr SkColor kSemiOpaqueBackdropColor =
+    SkColorSetARGB(0x99, 0x20, 0x21, 0x24);
+
+SkColor GetBackdropColorByMode(BackdropWindowMode mode) {
+  if (mode == BackdropWindowMode::kAutoSemiOpaque)
+    return kSemiOpaqueBackdropColor;
+
+  DCHECK(mode == BackdropWindowMode::kAutoOpaque ||
+         mode == BackdropWindowMode::kEnabled);
+  return SK_ColorBLACK;
+}
 
 // -----------------------------------------------------------------------------
 // BackdropEventHandler:
@@ -228,20 +239,22 @@ BackdropController::~BackdropController() {
 }
 
 void BackdropController::OnWindowAddedToLayout(aura::Window* window) {
-  window_backdrop_observer_.Add(WindowBackdrop::Get(window));
-
   if (DoesWindowCauseBackdropUpdates(window))
     UpdateBackdrop();
 }
 
 void BackdropController::OnWindowRemovedFromLayout(aura::Window* window) {
-  window_backdrop_observer_.Remove(WindowBackdrop::Get(window));
-
   if (DoesWindowCauseBackdropUpdates(window))
     UpdateBackdrop();
 }
 
 void BackdropController::OnChildWindowVisibilityChanged(aura::Window* window) {
+  if (DoesWindowCauseBackdropUpdates(window))
+    UpdateBackdrop();
+}
+
+void BackdropController::OnBackdropWindowModePropertyChanged(
+    aura::Window* window) {
   if (DoesWindowCauseBackdropUpdates(window))
     UpdateBackdrop();
 }
@@ -358,9 +371,10 @@ void BackdropController::OnSplitViewDividerPositionChanged() {
 void BackdropController::OnWallpaperPreviewStarted() {
   aura::Window* active_window = window_util::GetActiveWindow();
   if (active_window) {
-    WindowBackdrop::Get(active_window)
-        ->SetBackdropMode(WindowBackdrop::BackdropMode::kDisabled);
+    active_window->SetProperty(kBackdropWindowMode,
+                               BackdropWindowMode::kDisabled);
   }
+  UpdateBackdrop();
 }
 
 void BackdropController::OnTabletModeStarted() {
@@ -369,11 +383,6 @@ void BackdropController::OnTabletModeStarted() {
 
 void BackdropController::OnTabletModeEnded() {
   UpdateBackdrop();
-}
-
-void BackdropController::OnWindowBackdropPropertyChanged(aura::Window* window) {
-  if (DoesWindowCauseBackdropUpdates(window))
-    UpdateBackdrop();
 }
 
 void BackdropController::RestoreUpdates() {
@@ -415,8 +424,9 @@ void BackdropController::UpdateBackdropInternal() {
 void BackdropController::EnsureBackdropWidget() {
   DCHECK(window_having_backdrop_);
 
-  const SkColor backdrop_color =
-      WindowBackdrop::Get(window_having_backdrop_)->GetBackdropColor();
+  const BackdropWindowMode mode =
+      window_having_backdrop_->GetProperty(kBackdropWindowMode);
+  const SkColor backdrop_color = GetBackdropColorByMode(mode);
 
   if (backdrop_) {
     if (backdrop_window_->layer()->GetTargetColor() != backdrop_color)
@@ -469,15 +479,13 @@ void BackdropController::UpdateAccessibilityMode() {
 }
 
 bool BackdropController::WindowShouldHaveBackdrop(aura::Window* window) {
-  WindowBackdrop* window_backdrop = WindowBackdrop::Get(window);
-  if (window_backdrop->temporarily_disabled())
-    return false;
-
-  WindowBackdrop::BackdropMode backdrop_mode = window_backdrop->mode();
-  if (backdrop_mode == WindowBackdrop::BackdropMode::kEnabled)
-    return true;
-  if (backdrop_mode == WindowBackdrop::BackdropMode::kDisabled)
-    return false;
+  if (window->GetAllPropertyKeys().count(kBackdropWindowMode)) {
+    BackdropWindowMode backdrop_mode = window->GetProperty(kBackdropWindowMode);
+    if (backdrop_mode == BackdropWindowMode::kEnabled)
+      return true;
+    if (backdrop_mode == BackdropWindowMode::kDisabled)
+      return false;
+  }
 
   // If |window| is the current active window and is an ARC app window, |window|
   // should have a backdrop when spoken feedback is enabled.

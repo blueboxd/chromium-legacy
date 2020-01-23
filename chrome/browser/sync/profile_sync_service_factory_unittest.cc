@@ -130,6 +130,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::USER_EVENTS);
     datatypes.push_back(syncer::USER_CONSENTS);
     datatypes.push_back(syncer::SEND_TAB_TO_SELF);
+    datatypes.push_back(syncer::SHARING_MESSAGE);
     return datatypes;
   }
 

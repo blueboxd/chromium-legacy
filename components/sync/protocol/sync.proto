@@ -402,7 +402,7 @@ message SyncEntity {
   // and the code has been removed as of M66.
   reserved 26;
   reserved "attachment_id";
-};
+}
 
 // This message contains diagnostic information used to correlate
 // commit-related traffic with extensions-related mutations to the
@@ -416,7 +416,7 @@ message ChromiumExtensionsActivity {
   // How many times the extension successfully invoked a write
   // operation through the bookmarks API since the last CommitMessage.
   optional uint32 bookmark_writes_since_last_commit = 2;
-};
+}
 
 // Client specific configuration information.
 message ClientConfigParams {
@@ -432,7 +432,7 @@ message ClientConfigParams {
   // chrome account. If multiple accounts are present in the cookie jar, a
   // mismatch implies all of them are different from the chrome account.
   optional bool cookie_jar_mismatch = 3;
-};
+}
 
 message CommitMessage {
   repeated SyncEntity entries = 1;
@@ -459,7 +459,7 @@ message CommitMessage {
   // compression, this field should not be set. The server can ignore the
   // padding.
   optional string padding = 6;
-};
+}
 
 // This message communicates additional per-type information related to
 // requests with origin GU_TRIGGER.  This message is not relevant when any
@@ -687,19 +687,19 @@ message GetUpdatesMessage {
 
   reserved 4;
   reserved "requested_types";
-};
+}
 
 // Message from a client asking the server to clear its data.
 message ClearServerDataMessage {
   // No arguments needed as the store birthday and user identifier are part of
   // an enclosing message.
-};
+}
 
 // Response to a ClearServerData request.
 message ClearServerDataResponse {
   // No result fields necessary. Success/failure is indicated in
   // ClientToServerResponse.
-};
+}
 
 // The client must preserve, store, and resend the chip bag with
 // every request.  The server depends on the chip bag in order
@@ -803,7 +803,7 @@ message ClientToServerMessage {
   // Identifies this ClientToServerMessage as a clear server data request. This
   // field is present when message_contents is CLEAR_SERVER_DATA.
   optional ClearServerDataMessage clear_server_data = 15;
-};
+}
 
 // This request allows the client to convert a specific crash identifier
 // into more general information (e.g. hash of the crashing call stack)
@@ -873,7 +873,7 @@ message CommitResponse {
       SharingMessageCommitError sharing_message_error = 11;
     }
   }
-};
+}
 
 message GetUpdatesResponse {
   // New sync entries that the client should apply.
@@ -917,7 +917,7 @@ message GetUpdatesResponse {
 
   // Set of optional datatype contexts server mutations.
   repeated DataTypeContext context_mutations = 7;
-};
+}
 
 message ClientToServerResponse {
   optional CommitResponse commit = 1;
@@ -975,15 +975,15 @@ message ClientToServerResponse {
   // Present if this ClientToServerResponse is in response to a ClearServerData
   // request.
   optional ClearServerDataResponse clear_server_data = 15;
-};
+}
 
 // A message to notify the server of certain sync events. Idempotent. Send these
 // to the /event endpoint.
 message EventRequest {
   optional SyncDisabledEvent sync_disabled = 1;
-};
+}
 
-message EventResponse {};
+message EventResponse {}
 
 // A message indicating that the sync engine has been disabled on a client.
 message SyncDisabledEvent {
@@ -992,4 +992,4 @@ message SyncDisabledEvent {
 
   // The store birthday that the client was using before disabling sync.
   optional string store_birthday = 2;
-};
+}

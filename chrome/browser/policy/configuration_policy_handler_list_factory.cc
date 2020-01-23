@@ -1699,6 +1699,11 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<IntRangePolicyHandler>(
       key::kPrintJobHistoryExpirationPeriod,
       prefs::kPrintJobHistoryExpirationPeriod, -1, INT_MAX, true));
+#if defined(USE_CUPS)
+  handlers->AddHandler(std::make_unique<extensions::ExtensionListPolicyHandler>(
+      key::kPrintingAPIExtensionsWhitelist,
+      prefs::kPrintingAPIExtensionsWhitelist, /*allow_wildcards=*/false));
+#endif
   handlers->AddHandler(std::make_unique<SimpleSchemaValidatingPolicyHandler>(
       key::kNetworkFileSharesPreconfiguredShares,
       prefs::kNetworkFileSharesPreconfiguredShares, chrome_schema,

@@ -16,7 +16,7 @@ import("//chrome/browser/buildflags.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//chromeos/assistant/assistant.gni")
-import("//components/captive_portal/features.gni")
+import("//components/captive_portal/core/features.gni")
 import("//components/feature_engagement/features.gni")
 import("//components/feed/features.gni")
 import("//components/gwp_asan/buildflags/buildflags.gni")
@@ -176,7 +176,7 @@ static_library("test_support") {
     "//chrome/utility",
     "//components/autofill/core/browser:test_support",
     "//components/bookmarks/test",
-    "//components/captive_portal:test_support",
+    "//components/captive_portal/core:test_support",
     "//components/consent_auditor:test_support",
     "//components/gcm_driver:test_support",
     "//components/gcm_driver/crypto:test_support",
@@ -539,6 +539,7 @@ if (is_android) {
       "../browser/payments/payment_request_can_make_payment_event_browsertest.cc",
       "../browser/payments/personal_data_manager_test_util.cc",
       "../browser/payments/personal_data_manager_test_util.h",
+      "../browser/profiles/profile_browsertest_android.cc",
       "../browser/ssl/crlset_browsertest.cc",
       "android/browsertests_apk/android_browsertests_jni_onload.cc",
       "base/android/android_browser_test_browsertest_android.cc",
@@ -685,7 +686,7 @@ if (!is_android) {
       "//components/autofill/content/browser:risk_proto",
       "//components/autofill/content/common/mojom",
       "//components/autofill/content/renderer:test_support",
-      "//components/captive_portal:test_support",
+      "//components/captive_portal/core:test_support",
       "//components/cbor",
       "//components/data_reduction_proxy/core/browser:test_support",
       "//components/dom_distiller/content/browser",
@@ -2107,9 +2108,6 @@ if (!is_android) {
         "../browser/chromeos/child_accounts/parent_access_code/parent_access_test_utils.h",
         "../browser/chromeos/child_accounts/screen_time_controller_browsertest.cc",
         "../browser/chromeos/child_accounts/time_limit_test_utils.cc",
-        "../browser/chromeos/child_accounts/time_limits/app_time_browsertest.cc",
-        "../browser/chromeos/child_accounts/time_limits/app_time_limits_policy_builder.cc",
-        "../browser/chromeos/child_accounts/time_limits/app_time_limits_policy_builder.h",
         "../browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.cc",
         "../browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.h",
         "../browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer_browsertest.cc",
@@ -3614,7 +3612,7 @@ test("unit_tests") {
     "//components/account_id",
     "//components/autofill/content/renderer:test_support",
     "//components/browser_sync:test_support",
-    "//components/captive_portal:buildflags",
+    "//components/captive_portal/core:buildflags",
     "//components/component_updater:test_support",
     "//components/content_settings/core/test:test_support",
     "//components/data_reduction_proxy/core/browser:test_support",
@@ -4198,6 +4196,7 @@ test("unit_tests") {
       "../browser/sharing/shared_clipboard/shared_clipboard_utils_unittest.cc",
       "../browser/sharing/sms/sms_fetch_request_handler_unittest.cc",
       "../browser/sharing/sms/sms_remote_fetcher_unittest.cc",
+      "../browser/sharing/webrtc/ice_config_fetcher_unittest.cc",
       "../browser/ui/autofill/payments/local_card_migration_bubble_controller_impl_unittest.cc",
       "../browser/ui/autofill/payments/save_card_bubble_controller_impl_unittest.cc",
       "../browser/ui/bluetooth/bluetooth_chooser_controller_unittest.cc",
@@ -5448,7 +5447,7 @@ if (!is_android) {
     ]
     deps = [
       "//chrome/common/profiler",
-      "//components/captive_portal:buildflags",
+      "//components/captive_portal/core:buildflags",
       "//components/metrics:test_support",
       "//components/nacl/common:buildflags",
       "//components/os_crypt:test_support",

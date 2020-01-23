@@ -88,7 +88,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
     std::string wm_class_name;
     std::string wm_class_class;
     std::string wm_role_name;
-    base::Optional<int> visual_id;
   };
 
   XWindow();
@@ -220,8 +219,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
       const base::flat_set<XAtom>& new_window_properties);
 
   void UnconfineCursor();
-
-  void SetVisualId(base::Optional<int> visual_id);
 
   void UpdateWindowRegion(XRegion* xregion);
 

@@ -89,9 +89,9 @@ ProxyLock::LockingDisablerForTest::~LockingDisablerForTest() {
   g_disable_locking_for_thread.Get().Set(false);
 }
 
-void CallWhileUnlocked(const base::Closure& closure) {
+void CallWhileUnlocked(base::OnceClosure closure) {
   ProxyAutoUnlock lock;
-  closure.Run();
+  std::move(closure).Run();
 }
 
 }  // namespace ppapi

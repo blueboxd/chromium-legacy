@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_HINTS_MANAGER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -217,8 +218,10 @@ class OptimizationGuideHintsManager
 
   // Called when the hints for a navigation have been fetched from the remote
   // Optimization Guide Service and are ready for parsing. This is used when
-  // fetching hints in real-time.
+  // fetching hints in real-time. |page_navigation_hosts_requested| contains the
+  // hosts that were requested to be fetched.
   void OnPageNavigationHintsFetched(
+      const base::flat_set<std::string>& page_navigation_hosts_requested,
       base::Optional<
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
           get_hints_response);
@@ -229,7 +232,10 @@ class OptimizationGuideHintsManager
 
   // Called when the fetched hints have been stored in |hint_cache| and are
   // ready to be used. This is used when hints were fetched in real-time.
-  void OnFetchedPageNavigationHintsStored();
+  // |page_navigation_hosts_requested| contains the hosts whose hints should be
+  // loaded into memory when invoked.
+  void OnFetchedPageNavigationHintsStored(
+      const base::flat_set<std::string>& page_navigation_hosts_requested);
 
   // Returns the time when a hints fetch request was last attempted.
   base::Time GetLastHintsFetchAttemptTime() const;
@@ -266,10 +272,6 @@ class OptimizationGuideHintsManager
   void OnPredictionUpdated(
       const base::Optional<NavigationPredictorKeyedService::Prediction>&
           prediction) override;
-
-  // Returns whether a hint for |host| is currently being fetched from the
-  // remote Optimization Guide Service.
-  bool IsHintBeingFetched(const std::string& host) const;
 
   // Creates a hints fetch for |navigation_handle| if it is allowed. The
   // fetch will include the host and URL of the |navigation_handle| if the
@@ -344,11 +346,6 @@ class OptimizationGuideHintsManager
 
   // Used in testing to subscribe to an update event in this class.
   base::OnceClosure next_update_closure_;
-
-  // Hosts for which hints are currently being fetched with the PAGE_NAVIGATION
-  // request context.
-  // This will be cleared at request completion.
-  std::vector<std::string> page_navigation_hosts_being_fetched_;
 
   // Used to get |weak_ptr_| to self on the UI thread.
   base::WeakPtrFactory<OptimizationGuideHintsManager> ui_weak_ptr_factory_{

@@ -430,7 +430,7 @@ class CrostiniManager::CrostiniRestarter
       return;
     }
     if (!success) {
-      FinishRestart(CrostiniResult::CONTAINER_START_FAILED);
+      FinishRestart(CrostiniResult::CONTAINER_SETUP_FAILED);
       return;
     }
 
@@ -2474,7 +2474,7 @@ void CrostiniManager::OnCreateLxdContainer(
     base::Optional<vm_tools::cicerone::CreateLxdContainerResponse> response) {
   if (!response) {
     LOG(ERROR) << "Failed to create lxd container in vm. Empty response.";
-    std::move(callback).Run(CrostiniResult::CONTAINER_START_FAILED);
+    std::move(callback).Run(CrostiniResult::CONTAINER_CREATE_FAILED);
     return;
   }
 
@@ -2492,7 +2492,7 @@ void CrostiniManager::OnCreateLxdContainer(
   if (response->status() !=
       vm_tools::cicerone::CreateLxdContainerResponse::EXISTS) {
     LOG(ERROR) << "Failed to start container: " << response->failure_reason();
-    std::move(callback).Run(CrostiniResult::CONTAINER_START_FAILED);
+    std::move(callback).Run(CrostiniResult::CONTAINER_CREATE_FAILED);
     return;
   }
   std::move(callback).Run(CrostiniResult::SUCCESS);

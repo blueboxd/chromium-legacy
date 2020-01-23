@@ -29,7 +29,7 @@
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "components/account_id/account_id.h"
-#include "components/captive_portal/captive_portal_testing_utils.h"
+#include "components/captive_portal/core/captive_portal_testing_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/test/test_utils.h"

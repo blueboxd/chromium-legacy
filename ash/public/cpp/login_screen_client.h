@@ -10,6 +10,7 @@
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
 #include "base/time/time.h"
+#include "ui/gfx/native_widget_types.h"
 
 class AccountId;
 
@@ -148,10 +149,10 @@ class ASH_PUBLIC_EXPORT LoginScreenClient {
   virtual void ShowResetScreen() = 0;
 
   // Show the help app for when users have trouble signing in to their account.
-  virtual void ShowAccountAccessHelpApp() = 0;
+  virtual void ShowAccountAccessHelpApp(gfx::NativeWindow parent_window) = 0;
 
   // Shows help app for users that have trouble using parent access code.
-  virtual void ShowParentAccessHelpApp() = 0;
+  virtual void ShowParentAccessHelpApp(gfx::NativeWindow parent_window) = 0;
 
   // Show the lockscreen notification settings page.
   virtual void ShowLockScreenNotificationSettings() = 0;

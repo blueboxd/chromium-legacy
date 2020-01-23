@@ -995,9 +995,7 @@ TEST_F(PermissionRequestManagerTest, TestWebKioskModeDifferentOrigin) {
   WaitForBubbleToBeShown();
   // It should not be granted by default.
   EXPECT_FALSE(request->granted());
-  // But you should be able to accept it.
-  Accept();
-  EXPECT_TRUE(request->granted());
+  EXPECT_TRUE(request->finished());
 }
 #endif  // defined(OS_CHROMEOS)
 

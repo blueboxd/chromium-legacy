@@ -184,7 +184,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
-#include "components/captive_portal/buildflags.h"
+#include "components/captive_portal/core/buildflags.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/certificate_matching/certificate_principal_pattern.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
@@ -665,6 +665,32 @@ const base::Feature kRendererCodeIntegrity{"RendererCodeIntegrity",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) && !defined(COMPONENT_BUILD) &&
         // !defined(ADDRESS_SANITIZER)
+
+// Wrapper for SSLErrorHandler::HandleSSLError() that supplies //chrome-level
+// parameters.
+void HandleSSLErrorWrapper(
+    content::WebContents* web_contents,
+    int cert_error,
+    const net::SSLInfo& ssl_info,
+    const GURL& request_url,
+    std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+    SSLErrorHandler::BlockingPageReadyCallback blocking_page_ready_callback) {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  // This can happen if GetBrowserContext no longer exists by the time this
+  // gets called (e.g. the SSL error was in a webview that has since been
+  // destroyed); if that's the case we don't need to handle the error (and will
+  // crash if we attempt to).
+  if (!profile)
+    return;
+
+  SSLErrorHandler::HandleSSLError(
+      web_contents, cert_error, ssl_info, request_url,
+      std::move(ssl_cert_reporter), std::move(blocking_page_ready_callback),
+      g_browser_process->network_time_tracker(),
+      profile->GetPrefs()->GetBoolean(prefs::kSSLErrorOverrideAllowed));
+}
 
 enum AppLoadedInTabSource {
   // A platform app page tried to load one of its own URLs in a tab.
@@ -3933,9 +3959,7 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
   throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
       handle,
       std::make_unique<CertificateReportingServiceCertReporter>(web_contents),
-      g_browser_process->network_time_tracker(),
-      base::BindOnce(&SSLErrorHandler::HandleSSLError),
-      base::BindOnce(&IsInHostedApp)));
+      base::BindOnce(&HandleSSLErrorWrapper), base::BindOnce(&IsInHostedApp)));
 
   throttles.push_back(std::make_unique<LoginNavigationThrottle>(handle));
 

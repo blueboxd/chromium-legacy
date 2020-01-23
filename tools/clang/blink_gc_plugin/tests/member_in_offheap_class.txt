@@ -11,10 +11,10 @@ class OffHeapObject {
 ./member_in_offheap_class.h:23:1: warning: [blink-gc] Class 'StackObject' contains invalid fields.
 class StackObject {
 ^
-./member_in_offheap_class.h:27:5: note: [blink-gc] Member field 'm_memberOff' to non-GC managed class declared here:
-    Member<OffHeapObject> m_memberOff; // NOT OK
+./member_in_offheap_class.h:26:5: note: [blink-gc] Raw pointer field 'm_obj' to a GC managed class declared here:
+    HeapObject* m_obj; // OK
     ^
-./member_in_offheap_class.h:28:5: note: [blink-gc] Member field 'm_heapVectorMemberOff' to non-GC managed class declared here:
+./member_in_offheap_class.h:27:5: note: [blink-gc] Member field 'm_heapVectorMemberOff' to non-GC managed class declared here:
     HeapVector<Member<OffHeapObject>> m_heapVectorMemberOff; // NOT OK
     ^
 2 warnings generated.

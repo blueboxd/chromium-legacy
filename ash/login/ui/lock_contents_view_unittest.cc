@@ -991,6 +991,7 @@ TEST_F(LockContentsViewUnitTest, AuthErrorButtonClickable) {
       DataDispatcher(),
       std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
   SetUserCount(1);
+
   SetWidget(CreateWidgetWithContent(contents));
 
   LockContentsView::TestApi test_api(contents);
@@ -1018,7 +1019,8 @@ TEST_F(LockContentsViewUnitTest, AuthErrorButtonClickable) {
   ASSERT_TRUE(button);
 
   // Expect ShowAccountAccessHelp() to be called due to button click.
-  EXPECT_CALL(*client, ShowAccountAccessHelpApp()).Times(1);
+  EXPECT_CALL(*client, ShowAccountAccessHelpApp(widget()->GetNativeWindow()))
+      .Times(1);
 
   // Move mouse to AuthError's ShowAccountAccessHelp button and click it.
   // Should result in ShowAccountAccessHelpApp().

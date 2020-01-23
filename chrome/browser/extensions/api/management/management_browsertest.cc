@@ -767,6 +767,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
 #define MAYBE_PolicyOverridesUserInstall PolicyOverridesUserInstall
 #endif
 
+// Tests the behavior of force-installing extensions that the user has already
+// installed.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
                        MAYBE_PolicyOverridesUserInstall) {
   extensions::ExtensionService* service =
@@ -829,7 +831,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
                nullptr);
   extensions::TestExtensionRegistryObserver install_observer(registry);
   UpdateProviderPolicy(policies);
-  install_observer.WaitForExtensionWillBeInstalled();
 
   ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   extension = registry->enabled_extensions().GetByID(kExtensionId);
@@ -872,7 +873,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
 
   extensions::TestExtensionRegistryObserver extension_observer(registry);
   UpdateProviderPolicy(policies);
-  extension_observer.WaitForExtensionWillBeInstalled();
 
   ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
   extension = registry->enabled_extensions().GetByID(kExtensionId);

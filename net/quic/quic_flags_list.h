@@ -406,7 +406,3 @@ QUIC_FLAG(double, FLAGS_quic_bbr2_default_probe_bw_full_loss_count, 2)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ack_delay_alarm_granularity,
           false)
-
-// If true, enable the 1ACK connection option to only send 1 immediate ACK after
-// reordering.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_immediate_ack, false)

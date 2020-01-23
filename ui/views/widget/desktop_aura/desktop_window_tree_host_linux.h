@@ -55,10 +55,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   // internal list of open windows.
   static void CleanUpWindowList(void (*func)(aura::Window* window));
 
-  // This must be called before the window is created, because the visual cannot
-  // be changed after. Useful for X11. Not in use for Wayland.
-  void SetPendingXVisualId(int x_visual_id);
-
   // Returns the current bounds in terms of the X11 Root Window including the
   // borders provided by the window manager (if any). Not in use for Wayland.
   gfx::Rect GetXRootWindowOuterBounds() const;
@@ -128,11 +124,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   // A posthandler for events intended for non client area. Handles events if no
   // other consumer handled them.
   std::unique_ptr<WindowEventFilterLinux> non_client_window_event_filter_;
-
-  // X11 may set set a visual id for the system tray icon before the host is
-  // initialized. This value will be passed down to PlatformWindow during
-  // initialization of the host.
-  base::Optional<int> pending_x_visual_id_;
 
   std::unique_ptr<CompositorObserver> compositor_observer_;
 

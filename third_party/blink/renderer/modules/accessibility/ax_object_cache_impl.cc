@@ -57,8 +57,6 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
-#include "third_party/blink/renderer/core/layout/layout_list_box.h"
-#include "third_party/blink/renderer/core/layout/layout_menu_list.h"
 #include "third_party/blink/renderer/core/layout/layout_progress.h"
 #include "third_party/blink/renderer/core/layout/layout_slider.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
@@ -424,10 +422,11 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
 
   if (layout_object->IsBoxModelObject()) {
     LayoutBoxModelObject* css_box = ToLayoutBoxModelObject(layout_object);
-    if (css_box->IsListBox())
-      return MakeGarbageCollected<AXListBox>(ToLayoutListBox(css_box), *this);
-    if (css_box->IsMenuList())
-      return MakeGarbageCollected<AXMenuList>(ToLayoutMenuList(css_box), *this);
+    if (auto* select_element = DynamicTo<HTMLSelectElement>(node)) {
+      if (select_element->UsesMenuList())
+        return MakeGarbageCollected<AXMenuList>(css_box, *this);
+      return MakeGarbageCollected<AXListBox>(css_box, *this);
+    }
 
     // progress bar
     if (css_box->IsProgress()) {
@@ -1712,7 +1711,7 @@ void AXObjectCacheImpl::HandleValueChanged(Node* node) {
   PostNotification(node, ax::mojom::Event::kValueChanged);
 }
 
-void AXObjectCacheImpl::HandleUpdateActiveMenuOption(LayoutMenuList* menu_list,
+void AXObjectCacheImpl::HandleUpdateActiveMenuOption(LayoutObject* menu_list,
                                                      int option_index) {
   AXObject* obj = Get(menu_list);
   if (!obj || !obj->IsMenuList())
@@ -1721,7 +1720,7 @@ void AXObjectCacheImpl::HandleUpdateActiveMenuOption(LayoutMenuList* menu_list,
   ToAXMenuList(obj)->DidUpdateActiveOption(option_index);
 }
 
-void AXObjectCacheImpl::DidShowMenuListPopup(LayoutMenuList* menu_list) {
+void AXObjectCacheImpl::DidShowMenuListPopup(LayoutObject* menu_list) {
   AXObject* obj = Get(menu_list);
   if (!obj || !obj->IsMenuList())
     return;
@@ -1729,7 +1728,7 @@ void AXObjectCacheImpl::DidShowMenuListPopup(LayoutMenuList* menu_list) {
   ToAXMenuList(obj)->DidShowPopup();
 }
 
-void AXObjectCacheImpl::DidHideMenuListPopup(LayoutMenuList* menu_list) {
+void AXObjectCacheImpl::DidHideMenuListPopup(LayoutObject* menu_list) {
   AXObject* obj = Get(menu_list);
   if (!obj || !obj->IsMenuList())
     return;

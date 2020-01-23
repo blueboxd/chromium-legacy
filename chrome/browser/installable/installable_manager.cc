@@ -180,16 +180,25 @@ bool IsParamsForPwaCheck(const InstallableParams& params) {
 }
 
 void OnDidCompleteGetAllErrors(
-    base::OnceCallback<void(std::vector<std::string> errors)> callback,
+    base::OnceCallback<void(std::vector<std::string> errors,
+                            std::vector<content::InstallabilityError>
+                                installability_errors)> callback,
     const InstallableData& data) {
   std::vector<std::string> error_messages;
+  std::vector<content::InstallabilityError> installability_errors;
   for (auto error : data.errors) {
     std::string message = GetErrorMessage(error);
     if (!message.empty())
       error_messages.push_back(std::move(message));
+
+    content::InstallabilityError installability_error =
+        GetInstallabilityError(error);
+    if (!installability_error.error_id.empty())
+      installability_errors.push_back(installability_error);
   }
 
-  std::move(callback).Run(std::move(error_messages));
+  std::move(callback).Run(std::move(error_messages),
+                          std::move(installability_errors));
 }
 
 void OnDidCompleteGetPrimaryIcon(
@@ -292,7 +301,9 @@ void InstallableManager::GetData(const InstallableParams& params,
 }
 
 void InstallableManager::GetAllErrors(
-    base::OnceCallback<void(std::vector<std::string> errors)> callback) {
+    base::OnceCallback<void(std::vector<std::string> errors,
+                            std::vector<content::InstallabilityError>
+                                installability_errors)> callback) {
   InstallableParams params;
   params.check_eligibility = true;
   params.valid_manifest = true;

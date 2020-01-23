@@ -60,6 +60,10 @@
       interfaceName: "MathMLElement",
     },
     {
+      name: "mspace",
+      interfaceName: "MathMLSpaceElement",
+    },
+    {
       name: "mstyle",
       interfaceName: "MathMLRowElement",
     },

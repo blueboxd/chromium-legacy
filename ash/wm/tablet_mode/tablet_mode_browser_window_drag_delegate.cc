@@ -9,7 +9,6 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/wallpaper_types.h"
-#include "ash/public/cpp/window_backdrop.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
@@ -126,7 +125,9 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     DCHECK(source_window);
 
     // Disable the backdrop for |source_window| during dragging.
-    WindowBackdrop::Get(source_window)->DisableBackdrop();
+    source_window_backdrop_ = source_window->GetProperty(kBackdropWindowMode);
+    source_window->SetProperty(kBackdropWindowMode,
+                               BackdropWindowMode::kDisabled);
 
     DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
 
@@ -161,7 +162,7 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
     aura::Window* source_window =
         dragged_window_->GetProperty(kTabDraggingSourceWindowKey);
     if (source_window)
-      WindowBackdrop::Get(source_window)->RestoreBackdrop();
+      source_window->SetProperty(kBackdropWindowMode, source_window_backdrop_);
 
     for (auto iter = window_visibility_map_.begin();
          iter != window_visibility_map_.end(); ++iter) {
@@ -211,6 +212,10 @@ class TabletModeBrowserWindowDragDelegate::WindowsHider
   // except the dragged window and the source window should stay hidden during
   // dragging.
   std::map<aura::Window*, bool> window_visibility_map_;
+
+  // The original backdrop mode of the source window. Should be disabled during
+  // dragging.
+  BackdropWindowMode source_window_backdrop_ = BackdropWindowMode::kAutoOpaque;
 
   DISALLOW_COPY_AND_ASSIGN(WindowsHider);
 };

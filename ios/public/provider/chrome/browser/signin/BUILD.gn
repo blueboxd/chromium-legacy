@@ -20,6 +20,7 @@ source_set("signin") {
   deps = [
     "//base",
     "//google_apis",
+    "//ios/chrome/browser/browser_state:forward",
   ]
 }
 

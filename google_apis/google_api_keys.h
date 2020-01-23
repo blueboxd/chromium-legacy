@@ -76,6 +76,9 @@ std::string GetNonStableAPIKey();
 // Retrieves the Chrome Remote Desktop API key.
 std::string GetRemotingAPIKey();
 
+// Retrieves the Sharing API Key.
+std::string GetSharingAPIKey();
+
 #if defined(OS_IOS)
 // Sets the API key. This should be called as early as possible before this
 // API key is even accessed.

@@ -136,6 +136,7 @@ Refer to README.md for content description and update process.
  <item id="history_ui_favicon_request_handler_get_favicon" hash_code="17562717" type="0" content_hash_code="64054629" os_list="linux,windows" file_path="components/favicon/core/history_ui_favicon_request_handler_impl.cc"/>
  <item id="http_server_error_response" hash_code="32197336" type="0" content_hash_code="61082230" os_list="linux,windows" file_path="net/server/http_server.cc"/>
  <item id="https_server_previews_navigation" hash_code="35725390" type="0" content_hash_code="84423109" os_list="linux,windows" file_path="chrome/browser/previews/previews_lite_page_redirect_serving_url_loader.cc"/>
+ <item id="ice_config_fetcher" hash_code="137093034" type="0" content_hash_code="60051202" os_list="linux,windows" file_path="chrome/browser/sharing/webrtc/ice_config_fetcher.cc"/>
  <item id="icon_cacher" hash_code="103133150" type="0" content_hash_code="116368348" os_list="linux,windows" file_path="components/ntp_tiles/icon_cacher_impl.cc"/>
  <item id="icon_catcher_get_large_icon" hash_code="44494884" type="0" content_hash_code="98262037" os_list="linux,windows" file_path="components/ntp_tiles/icon_cacher_impl.cc"/>
  <item id="image_annotation" hash_code="107881858" type="0" content_hash_code="96203979" os_list="linux,windows" file_path="services/image_annotation/annotator.cc"/>

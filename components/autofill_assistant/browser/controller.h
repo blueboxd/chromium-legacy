@@ -123,6 +123,8 @@ class Controller : public ScriptExecutorDelegate,
       std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void SetViewportMode(ViewportMode mode) override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
+  void ExpandBottomSheet() override;
+  void CollapseBottomSheet() override;
   bool SetForm(
       std::unique_ptr<FormProto> form,
       base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
@@ -136,6 +138,8 @@ class Controller : public ScriptExecutorDelegate,
 
   void AddListener(ScriptExecutorDelegate::Listener* listener) override;
   void RemoveListener(ScriptExecutorDelegate::Listener* listener) override;
+
+  void SetExpandSheetForPromptAction(bool expand) override;
 
   bool EnterState(AutofillAssistantState state) override;
   void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
@@ -207,6 +211,7 @@ class Controller : public ScriptExecutorDelegate,
                      const ValueProto& value) override;
   UserModel* GetUserModel() override;
   EventHandler* GetEventHandler() override;
+  bool ShouldPromptActionExpandSheet() const override;
 
  private:
   friend ControllerTest;
@@ -375,6 +380,7 @@ class Controller : public ScriptExecutorDelegate,
   // Current peek mode.
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;
+  bool auto_change_peek_mode_ = false;
 
   std::unique_ptr<OverlayColors> overlay_colors_;
 
@@ -437,6 +443,8 @@ class Controller : public ScriptExecutorDelegate,
 
   EventHandler event_handler_;
   UserModel user_model_;
+
+  bool expand_sheet_for_prompt_action_ = true;
 
   base::WeakPtrFactory<Controller> weak_ptr_factory_{this};
 

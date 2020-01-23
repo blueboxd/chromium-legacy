@@ -9,8 +9,7 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
+#include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "net/cert/x509_certificate.h"
 #include "url/gurl.h"
 
@@ -22,11 +21,11 @@ class WebContents;
 // metrics. It should only be used on the UI thread because its implementation
 // uses captive_portal::CaptivePortalService which can only be accessed on the
 // UI thread.
-class CaptivePortalMetricsRecorder : public content::NotificationObserver {
+class CaptivePortalMetricsRecorder {
  public:
   CaptivePortalMetricsRecorder(content::WebContents* web_contents,
                                bool overridable);
-  ~CaptivePortalMetricsRecorder() override;
+  ~CaptivePortalMetricsRecorder();
 
   // Should be called when the interstitial is closing.
   void RecordCaptivePortalUMAStatistics() const;
@@ -34,10 +33,7 @@ class CaptivePortalMetricsRecorder : public content::NotificationObserver {
  private:
   typedef std::vector<std::string> Tokens;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  void Observe(const CaptivePortalService::Results& results);
 
   bool overridable_;
   bool captive_portal_detection_enabled_;
@@ -47,7 +43,7 @@ class CaptivePortalMetricsRecorder : public content::NotificationObserver {
   bool captive_portal_no_response_;
   bool captive_portal_detected_;
 
-  content::NotificationRegistrar registrar_;
+  std::unique_ptr<CaptivePortalService::Subscription> subscription_;
 };
 
 #endif  // CHROME_BROWSER_SSL_CAPTIVE_PORTAL_METRICS_RECORDER_H_

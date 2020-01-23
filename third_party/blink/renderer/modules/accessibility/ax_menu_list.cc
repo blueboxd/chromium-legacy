@@ -26,15 +26,17 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list.h"
 
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
-#include "third_party/blink/renderer/core/layout/layout_menu_list.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_menu_list_popup.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 
 namespace blink {
 
-AXMenuList::AXMenuList(LayoutMenuList* layout_object,
+AXMenuList::AXMenuList(LayoutObject* layout_object,
                        AXObjectCacheImpl& ax_object_cache)
-    : AXLayoutObject(layout_object, ax_object_cache) {}
+    : AXLayoutObject(layout_object, ax_object_cache) {
+  DCHECK(IsA<HTMLSelectElement>(layout_object->GetNode()));
+}
 
 ax::mojom::Role AXMenuList::DetermineAccessibilityRole() {
   if ((aria_role_ = DetermineAriaRoleAttribute()) != ax::mojom::Role::kUnknown)
@@ -47,7 +49,7 @@ bool AXMenuList::OnNativeClickAction() {
   if (!layout_object_)
     return false;
 
-  HTMLSelectElement* select = ToLayoutMenuList(layout_object_)->SelectElement();
+  HTMLSelectElement* select = To<HTMLSelectElement>(GetNode());
   if (select->PopupIsVisible())
     select->HidePopup();
   else
@@ -94,7 +96,7 @@ bool AXMenuList::IsCollapsed() const {
   if (!layout_object_)
     return true;
 
-  return !ToLayoutMenuList(layout_object_)->SelectElement()->PopupIsVisible();
+  return !To<HTMLSelectElement>(GetNode())->PopupIsVisible();
 }
 
 AccessibilityExpanded AXMenuList::IsExpanded() const {

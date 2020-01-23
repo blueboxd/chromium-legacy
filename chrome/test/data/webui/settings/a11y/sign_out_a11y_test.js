@@ -63,47 +63,36 @@ AccessibilityTest.define('SettingsA11ySignOut', {
                           .$$('settings-people-page');
     assert(!!this.peoplePage);
 
-    if (this.peoplePage.diceEnabled_) {
-      sync_test_util.simulateSyncStatus({
-        signedIn: false,
-        signinAllowed: true,
-        syncSystemEnabled: true,
-        disabled: false,
-      });
-    }
+    sync_test_util.simulateSyncStatus({
+      signedIn: false,
+      signinAllowed: true,
+      syncSystemEnabled: true,
+      disabled: false,
+    });
   },
   /** @override */
   tests: {
     'Accessible Dialog': function() {
       let parent = null;
-      let disconnectButtonSelector = null;
 
       return this.browserProxy.getSyncStatus()
           .then(syncStatus => {
             // Navigate to the sign out dialog.
             Polymer.dom.flush();
 
-            if (this.peoplePage.diceEnabled_) {
-              const syncAccountControl =
-                  this.peoplePage.$$('settings-sync-account-control');
-              syncAccountControl.syncStatus = {
-                firstSetupInProgress: false,
-                signedIn: true,
-                signedInUsername: 'bar@bar.com',
-                statusAction: settings.StatusAction.NO_ACTION,
-                hasError: false,
-                disabled: false,
-              };
-              parent = syncAccountControl;
-              disconnectButtonSelector = '#turn-off';
-            } else {
-              parent = this.peoplePage;
-              disconnectButtonSelector = '#disconnectButton';
-            }
+            parent = this.peoplePage.$$('settings-sync-account-control');
+            parent.syncStatus = {
+              firstSetupInProgress: false,
+              signedIn: true,
+              signedInUsername: 'bar@bar.com',
+              statusAction: settings.StatusAction.NO_ACTION,
+              hasError: false,
+              disabled: false,
+            };
             return test_util.waitBeforeNextRender(parent);
           })
           .then(() => {
-            disconnectButton = parent.$$(disconnectButtonSelector);
+            disconnectButton = parent.$$('#turn-off');
             assert(!!disconnectButton);
             disconnectButton.click();
             Polymer.dom.flush();

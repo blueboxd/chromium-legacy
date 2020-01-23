@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/captive_portal/captive_portal_testing_utils.h"
+#include "components/captive_portal/core/captive_portal_testing_utils.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"

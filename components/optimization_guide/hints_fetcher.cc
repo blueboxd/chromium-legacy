@@ -250,6 +250,13 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   return true;
 }
 
+bool HintsFetcher::IsHintForHostBeingFetched(const std::string& host) const {
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  return std::find(hosts_fetched_.begin(), hosts_fetched_.end(), host) !=
+         hosts_fetched_.end();
+}
+
 void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
                                   int net_status,
                                   int response_code) {
@@ -286,6 +293,7 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
                                  HintsFetcherRequestStatus::kSuccess);
     std::move(hints_fetched_callback_).Run(std::move(get_hints_response));
   } else {
+    hosts_fetched_.clear();
     RecordRequestStatusHistogram(request_context_,
                                  HintsFetcherRequestStatus::kResponseError);
     std::move(hints_fetched_callback_).Run(base::nullopt);

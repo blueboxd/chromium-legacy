@@ -83,6 +83,11 @@
 #define GOOGLE_API_KEY_REMOTING DUMMY_API_TOKEN
 #endif
 
+// API key for SharingService.
+#if !defined(GOOGLE_API_KEY_SHARING)
+#define GOOGLE_API_KEY_SHARING DUMMY_API_TOKEN
+#endif
+
 // These are used as shortcuts for developers and users providing
 // OAuth credentials via preprocessor defines or environment
 // variables.  If set, they will be used to replace any of the client
@@ -125,6 +130,10 @@ class APIKeyCache {
         GOOGLE_API_KEY_REMOTING,
         STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_REMOTING), nullptr, std::string(),
         environment.get(), command_line);
+
+    api_key_sharing_ = CalculateKeyValue(
+        GOOGLE_API_KEY_SHARING, STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_SHARING),
+        nullptr, std::string(), environment.get(), command_line);
 
     metrics_key_ = CalculateKeyValue(
         GOOGLE_METRICS_SIGNING_KEY,
@@ -195,6 +204,7 @@ class APIKeyCache {
 #endif
   std::string api_key_non_stable() const { return api_key_non_stable_; }
   std::string api_key_remoting() const { return api_key_remoting_; }
+  std::string api_key_sharing() const { return api_key_sharing_; }
 
   std::string metrics_key() const { return metrics_key_; }
 
@@ -293,6 +303,7 @@ class APIKeyCache {
   std::string api_key_;
   std::string api_key_non_stable_;
   std::string api_key_remoting_;
+  std::string api_key_sharing_;
   std::string metrics_key_;
   std::string client_ids_[CLIENT_NUM_ITEMS];
   std::string client_secrets_[CLIENT_NUM_ITEMS];
@@ -315,6 +326,10 @@ std::string GetNonStableAPIKey() {
 
 std::string GetRemotingAPIKey() {
   return g_api_key_cache.Get().api_key_remoting();
+}
+
+std::string GetSharingAPIKey() {
+  return g_api_key_cache.Get().api_key_sharing();
 }
 
 #if defined(OS_IOS)

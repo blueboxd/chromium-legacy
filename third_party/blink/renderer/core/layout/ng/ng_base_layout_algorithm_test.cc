@@ -49,8 +49,8 @@ std::pair<scoped_refptr<const NGPhysicalBoxFragment>, NGConstraintSpace>
 NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithmForElement(Element* element) {
   auto* block_flow = To<LayoutBlockFlow>(element->GetLayoutObject());
   NGBlockNode node(block_flow);
-  NGConstraintSpace space = NGConstraintSpace::CreateFromLayoutObject(
-      *block_flow, false /* is_layout_root */);
+  NGConstraintSpace space =
+      NGConstraintSpace::CreateFromLayoutObject(*block_flow);
   NGFragmentGeometry fragment_geometry =
       CalculateInitialFragmentGeometry(space, node);
 

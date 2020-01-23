@@ -10,8 +10,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/resource_type.h"
@@ -54,7 +52,6 @@ class CaptivePortalTabReloader;
 // https://docs.google.com/document/d/1k-gP2sswzYNvryu9NcgN7q5XrsMlUdlUdoW9WRaEmfM/edit
 class CaptivePortalTabHelper
     : public content::WebContentsObserver,
-      public content::NotificationObserver,
       public content::WebContentsUserData<CaptivePortalTabHelper> {
  public:
   ~CaptivePortalTabHelper() override;
@@ -67,11 +64,6 @@ class CaptivePortalTabHelper
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidStopLoading() override;
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // Called when a certificate interstitial error page is about to be shown.
   void OnSSLCertError(const net::SSLInfo& ssl_info);
@@ -93,6 +85,8 @@ class CaptivePortalTabHelper
 
   friend class content::WebContentsUserData<CaptivePortalTabHelper>;
   explicit CaptivePortalTabHelper(content::WebContents* web_contents);
+
+  void Observe(const CaptivePortalService::Results& results);
 
   // Called by Observe in response to the corresponding event.
   void OnCaptivePortalResults(
@@ -123,7 +117,7 @@ class CaptivePortalTabHelper
   // portal resolution.
   bool is_captive_portal_window_;
 
-  content::NotificationRegistrar registrar_;
+  std::unique_ptr<CaptivePortalService::Subscription> subscription_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

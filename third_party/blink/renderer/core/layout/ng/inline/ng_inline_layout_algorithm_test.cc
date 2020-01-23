@@ -257,8 +257,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, ContainerBorderPadding) {
   auto* block_flow =
       To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
   NGBlockNode block_node(block_flow);
-  NGConstraintSpace space = NGConstraintSpace::CreateFromLayoutObject(
-      *block_flow, false /* is_layout_root */);
+  NGConstraintSpace space =
+      NGConstraintSpace::CreateFromLayoutObject(*block_flow);
   scoped_refptr<const NGLayoutResult> layout_result = block_node.Layout(space);
 
   EXPECT_TRUE(layout_result->BfcBlockOffset().has_value());
@@ -291,8 +291,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, MAYBE_VerticalAlignBottomReplaced) {
       To<LayoutBlockFlow>(GetLayoutObjectByElementId("container"));
   NGInlineNode inline_node(block_flow);
   NGInlineChildLayoutContext context;
-  NGConstraintSpace space = NGConstraintSpace::CreateFromLayoutObject(
-      *block_flow, false /* is_layout_root */);
+  NGConstraintSpace space =
+      NGConstraintSpace::CreateFromLayoutObject(*block_flow);
   scoped_refptr<const NGLayoutResult> layout_result =
       inline_node.Layout(space, nullptr, &context);
 

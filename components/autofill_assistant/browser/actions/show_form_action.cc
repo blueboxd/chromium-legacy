@@ -58,7 +58,8 @@ void ShowFormAction::OnFormValuesChanged(const FormProto::Result* form_result) {
 
   auto user_actions = std::make_unique<std::vector<UserAction>>();
   user_actions->emplace_back(std::move(user_action));
-  delegate_->Prompt(std::move(user_actions));
+  delegate_->Prompt(std::move(user_actions),
+                    /* disable_force_expand_sheet = */ false);
 }
 
 void ShowFormAction::OnCancelForm(const ClientStatus& status) {

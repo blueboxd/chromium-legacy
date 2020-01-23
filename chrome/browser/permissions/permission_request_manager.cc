@@ -138,9 +138,9 @@ void PermissionRequestManager::AddRequest(PermissionRequest* request) {
     if (url::Origin::Create(request->GetOrigin()) ==
         url::Origin::Create(app_data->install_url())) {
       request->PermissionGranted();
-      request->RequestFinished();
-      return;
     }
+    request->RequestFinished();
+    return;
   }
 #endif
 

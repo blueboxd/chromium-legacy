@@ -12,10 +12,6 @@
 #include "chrome/browser/captive_portal/captive_portal_tab_reloader.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -152,12 +148,10 @@ class CaptivePortalTabHelperTest : public ChromeRenderViewHostTestHarness {
     CaptivePortalService::Results results;
     results.previous_result = previous_result;
     results.result = result;
-    content::Details<CaptivePortalService::Results> details_results(&results);
 
     EXPECT_CALL(mock_reloader(), OnCaptivePortalResults(previous_result,
                                                         result)).Times(1);
-    tab_helper()->Observe(chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-                          source_profile, details_results);
+    tab_helper()->Observe(results);
   }
 
   MockCaptivePortalTabReloader& mock_reloader() { return *mock_reloader_; }

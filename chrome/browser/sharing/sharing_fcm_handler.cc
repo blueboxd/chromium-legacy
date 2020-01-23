@@ -141,8 +141,8 @@ SharingFCMHandler::GetTargetInfo(
   if (original_message.has_fcm_channel_configuration()) {
     auto& fcm_configuration = original_message.fcm_channel_configuration();
     return syncer::DeviceInfo::SharingTargetInfo{
-        fcm_configuration.fcm_token(), fcm_configuration.p256dh(),
-        fcm_configuration.auth_secret()};
+        fcm_configuration.vapid_fcm_token(), fcm_configuration.vapid_p256dh(),
+        fcm_configuration.vapid_auth_secret()};
   }
 
   return sync_preference_->GetTargetInfo(original_message.sender_guid());

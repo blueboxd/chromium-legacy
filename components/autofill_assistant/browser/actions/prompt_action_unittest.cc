@@ -45,9 +45,10 @@ class PromptActionTest : public testing::Test {
 
     EXPECT_CALL(mock_action_delegate_, OnWaitForDom(_, _, _, _))
         .WillRepeatedly(Invoke(this, &PromptActionTest::FakeWaitForDom));
-    ON_CALL(mock_action_delegate_, Prompt(_))
-        .WillByDefault(Invoke(
-            [this](std::unique_ptr<std::vector<UserAction>> user_actions) {
+    ON_CALL(mock_action_delegate_, Prompt(_, _))
+        .WillByDefault(
+            Invoke([this](std::unique_ptr<std::vector<UserAction>> user_actions,
+                          bool disable_force_expand_sheet) {
               user_actions_ = std::move(user_actions);
             }));
     prompt_proto_ = proto_.mutable_prompt();

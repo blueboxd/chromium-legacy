@@ -15,6 +15,7 @@
 #include "chrome/browser/shell_integration_linux.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/wm_role_names_linux.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/canvas.h"
@@ -88,10 +89,6 @@ void StatusIconLinuxX11::OnSetDelegate() {
   // We outlive the host, so no need to remove ourselves as an observer.
   host->AddObserver(this);
 
-  int visual_id;
-  if (ui::GetIntProperty(manager, "_NET_SYSTEM_TRAY_VISUAL", &visual_id))
-    host->SetPendingXVisualId(visual_id);
-
   const int width = std::max(1, delegate_->GetImage().width());
   const int height = std::max(1, delegate_->GetImage().height());
 
@@ -105,6 +102,7 @@ void StatusIconLinuxX11::OnSetDelegate() {
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.native_widget = native_widget.release();
   params.desktop_window_tree_host = host.release();
+  params.wm_role_name = ui::kStatusIconWmRoleName;
   params.wm_class_name = shell_integration_linux::GetProgramClassName();
   params.wm_class_class = shell_integration_linux::GetProgramClassClass();
   // The status icon is a tiny window that doesn't update very often, so

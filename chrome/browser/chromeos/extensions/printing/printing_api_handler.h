@@ -25,6 +25,8 @@
 #include "extensions/browser/event_router_factory.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
+class PrefRegistrySimple;
+
 namespace chromeos {
 class CupsWrapper;
 class Printer;
@@ -77,6 +79,9 @@ class PrintingAPIHandler : public BrowserContextKeyedAPI,
 
   // Returns the current instance for |browser_context|.
   static PrintingAPIHandler* Get(content::BrowserContext* browser_context);
+
+  // Register the printing API preference with the |registry|.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   void SubmitJob(const std::string& extension_id,
                  std::unique_ptr<api::printing::SubmitJob::Params> params,

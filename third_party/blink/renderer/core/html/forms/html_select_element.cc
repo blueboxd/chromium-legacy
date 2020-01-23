@@ -2017,7 +2017,7 @@ void HTMLSelectElement::PopupDidHide() {
   UnobserveTreeMutation();
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
     if (GetLayoutObject() && GetLayoutObject()->IsMenuList())
-      cache->DidHideMenuListPopup(ToLayoutMenuList(GetLayoutObject()));
+      cache->DidHideMenuListPopup(GetLayoutObject());
   }
 }
 
@@ -2090,10 +2090,9 @@ void HTMLSelectElement::ShowPopup() {
   popup_is_visible_ = true;
   ObserveTreeMutation();
 
-  LayoutMenuList* menu_list = ToLayoutMenuList(GetLayoutObject());
   popup_->Show();
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-    cache->DidShowMenuListPopup(menu_list);
+    cache->DidShowMenuListPopup(GetLayoutObject());
 }
 
 void HTMLSelectElement::HidePopup() {

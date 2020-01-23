@@ -427,7 +427,7 @@ jumbo_static_library("ui") {
     "//components/browsing_data/content",
     "//components/browsing_data/core",
     "//components/bubble",
-    "//components/captive_portal:buildflags",
+    "//components/captive_portal/core:buildflags",
     "//components/consent_auditor/",
     "//components/content_settings/core/browser",
     "//components/crx_file",
@@ -2036,7 +2036,7 @@ jumbo_static_library("ui") {
       "//chromeos/strings",
       "//chromeos/system",
       "//components/arc",
-      "//components/captive_portal",
+      "//components/captive_portal/core",
       "//components/consent_auditor:consent_auditor",
       "//components/exo",
       "//components/login",
@@ -2577,6 +2577,7 @@ jumbo_static_library("ui") {
       configs += [ "//build/config/linux:x11" ]
       deps += [
         "//components/dbus/menu",
+        "//ui/base:wm_role_names",
         "//ui/events/devices",
         "//ui/events/devices/x11",
         "//ui/events/platform/x11",

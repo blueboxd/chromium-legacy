@@ -42,7 +42,6 @@ class HTMLCanvasElement;
 class HTMLOptionElement;
 class HTMLSelectElement;
 class IntPoint;
-class LayoutMenuList;
 class LayoutRect;
 class LineLayoutItem;
 class LocalFrameView;
@@ -102,10 +101,10 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache>,
   virtual void HandleTextMarkerDataAdded(Node* start, Node* end) = 0;
   virtual void HandleTextFormControlChanged(Node*) = 0;
   virtual void HandleValueChanged(Node*) = 0;
-  virtual void HandleUpdateActiveMenuOption(LayoutMenuList*,
+  virtual void HandleUpdateActiveMenuOption(LayoutObject*,
                                             int option_index) = 0;
-  virtual void DidShowMenuListPopup(LayoutMenuList*) = 0;
-  virtual void DidHideMenuListPopup(LayoutMenuList*) = 0;
+  virtual void DidShowMenuListPopup(LayoutObject*) = 0;
+  virtual void DidHideMenuListPopup(LayoutObject*) = 0;
   virtual void HandleLoadComplete(Document*) = 0;
   virtual void HandleLayoutComplete(Document*) = 0;
   virtual void HandleClicked(Node*) = 0;

@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "ui/gfx/native_widget_types.h"
 
 class PrefRegistrySimple;
 
@@ -91,8 +92,8 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
                                            const std::string& locale);
   void ShowFeedback();
   void ShowResetScreen();
-  void ShowAccountAccessHelpApp();
-  void ShowParentAccessHelpApp();
+  void ShowAccountAccessHelpApp(gfx::NativeWindow parent_window);
+  void ShowParentAccessHelpApp(gfx::NativeWindow parent_window);
   void ShowLockScreenNotificationSettings();
   void FocusOobeDialog();
   void NotifyUserActivity();

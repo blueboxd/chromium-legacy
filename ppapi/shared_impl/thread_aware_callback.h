@@ -24,7 +24,7 @@ class PPAPI_SHARED_EXPORT ThreadAwareCallbackBase {
 
   static bool HasTargetLoop();
 
-  void InternalRunOnTargetThread(const base::Closure& closure);
+  void InternalRunOnTargetThread(base::OnceClosure closure);
 
  private:
   class Core;

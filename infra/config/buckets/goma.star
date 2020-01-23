@@ -455,6 +455,7 @@ goma_builder(
 goma_builder(
     name = 'Chromium Android ARM 32-bit Goma RBE ToT',
     goma_backend = goma.backend.RBE_TOT,
+    goma_enable_ats = False,
 )
 
 goma_builder(
@@ -510,6 +511,7 @@ goma_builder(
 goma_builder(
     name = 'Chromium Linux Goma RBE ToT',
     goma_backend = goma.backend.RBE_TOT,
+    goma_enable_ats = False,
 )
 
 goma_builder(

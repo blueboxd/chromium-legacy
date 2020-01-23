@@ -10,13 +10,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/tick_clock.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "components/captive_portal/captive_portal_types.h"
+#include "components/captive_portal/core/captive_portal_types.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -362,11 +360,6 @@ void CaptivePortalService::OnResult(CaptivePortalResult result,
   results.result = result;
   results.landing_url = landing_url;
   last_detection_result_ = result;
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-      content::Source<content::BrowserContext>(browser_context_),
-      content::Details<Results>(&results));
 
   callback_list_.Notify(results);
 }

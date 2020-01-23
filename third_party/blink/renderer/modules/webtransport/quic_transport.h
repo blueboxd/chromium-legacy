@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/mojom/quic_transport.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -26,6 +27,7 @@ class ExceptionState;
 class ExecutionContext;
 class ReadableStream;
 class ReadableStreamDefaultControllerWithScriptScope;
+class ScriptPromiseResolver;
 class ScriptState;
 class WebTransportCloseInfo;
 class WritableStream;
@@ -52,10 +54,9 @@ class MODULES_EXPORT QuicTransport final
 
   // QuicTransport IDL implementation.
   WritableStream* sendDatagrams() { return outgoing_datagrams_; }
-
   ReadableStream* receiveDatagrams() { return received_datagrams_; }
-
   void close(const WebTransportCloseInfo*);
+  ScriptPromise closed() { return closed_; }
 
   // QuicTransportHandshakeClient implementation
   void OnConnectionEstablished(
@@ -101,6 +102,8 @@ class MODULES_EXPORT QuicTransport final
       handshake_client_receiver_{this};
   mojo::Receiver<network::mojom::blink::QuicTransportClient> client_receiver_{
       this};
+  Member<ScriptPromiseResolver> closed_resolver_;
+  ScriptPromise closed_;
 };
 
 }  // namespace blink

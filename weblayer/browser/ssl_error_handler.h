@@ -18,10 +18,6 @@
 
 class SSLCertReporter;
 
-namespace network_time {
-class NetworkTimeTracker;
-}
-
 namespace weblayer {
 
 using BlockingPageReadyCallback = base::OnceCallback<void(
@@ -44,7 +40,6 @@ void HandleSSLError(content::WebContents* web_contents,
                     const net::SSLInfo& ssl_info,
                     const GURL& request_url,
                     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-                    network_time::NetworkTimeTracker* network_time_tracker,
                     BlockingPageReadyCallback blocking_page_ready_callback);
 
 // Pass true to simulate the OS reporting that SSL errors are due to captive

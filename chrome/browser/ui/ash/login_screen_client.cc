@@ -227,15 +227,17 @@ void LoginScreenClient::ShowResetScreen() {
   chromeos::LoginDisplayHost::default_host()->ShowResetScreen();
 }
 
-void LoginScreenClient::ShowAccountAccessHelpApp() {
+void LoginScreenClient::ShowAccountAccessHelpApp(
+    gfx::NativeWindow parent_window) {
   scoped_refptr<chromeos::HelpAppLauncher>(
-      new chromeos::HelpAppLauncher(nullptr))
+      new chromeos::HelpAppLauncher(parent_window))
       ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 }
 
-void LoginScreenClient::ShowParentAccessHelpApp() {
+void LoginScreenClient::ShowParentAccessHelpApp(
+    gfx::NativeWindow parent_window) {
   scoped_refptr<chromeos::HelpAppLauncher>(
-      new chromeos::HelpAppLauncher(nullptr))
+      new chromeos::HelpAppLauncher(parent_window))
       ->ShowHelpTopic(chromeos::HelpAppLauncher::HELP_PARENT_ACCESS_CODE);
 }
 

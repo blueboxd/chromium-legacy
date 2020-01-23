@@ -6202,6 +6202,7 @@ interface PushSubscriptionOptions
     method constructor
 interface QuicTransport
     attribute @@toStringTag
+    getter closed
     method close
     method constructor
     method receiveDatagrams

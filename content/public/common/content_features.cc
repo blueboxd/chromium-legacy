@@ -487,6 +487,12 @@ const base::Feature kServiceWorkerPaymentApps{"ServiceWorkerPaymentApps",
 const base::Feature kServiceWorkerPrefersUnusedProcess{
     "ServiceWorkerPrefersUnusedProcess", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Use this feature to experiment terminating a service worker when it doesn't
+// control any clients: https://crbug.com/1043845.
+const base::Feature kServiceWorkerTerminationOnNoControllee{
+    "ServiceWorkerTerminationOnNoControllee",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // http://tc39.github.io/ecmascript_sharedmem/shmem.html
 const base::Feature kSharedArrayBuffer {
   "SharedArrayBuffer",

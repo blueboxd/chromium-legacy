@@ -18,6 +18,7 @@
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/installable/installable_params.h"
 #include "chrome/browser/installable/installable_task_queue.h"
+#include "content/public/browser/installability_error.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -64,7 +65,9 @@ class InstallableManager
   // passing a list of human-readable strings describing the errors encountered
   // during the run. The list is empty if no errors were encountered.
   void GetAllErrors(
-      base::OnceCallback<void(std::vector<std::string> errors)> callback);
+      base::OnceCallback<void(std::vector<std::string> errors,
+                              std::vector<content::InstallabilityError>
+                                  installability_errors)> callback);
 
   void GetPrimaryIcon(
       base::OnceCallback<void(const SkBitmap* primaryIcon)> callback);

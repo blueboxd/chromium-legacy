@@ -9,7 +9,6 @@
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/home_screen/window_scale_animation.h"
 #include "ash/public/cpp/shelf_config.h"
-#include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_animation_disabler.h"
@@ -260,7 +259,7 @@ DragWindowFromShelfController::EndDrag(const gfx::PointF& location_in_screen,
       window_drag_result = ShelfWindowDragResult::kGoToSplitviewMode;
     // For window that may drop in overview or snap in split screen, restore its
     // original backdrop mode.
-    WindowBackdrop::Get(window_)->RestoreBackdrop();
+    window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
   }
 
   OnDragEnded(location_in_screen, drop_window_in_overview, snap_position);
@@ -274,7 +273,7 @@ void DragWindowFromShelfController::CancelDrag() {
   drag_started_ = false;
   // Reset the window's transform to identity transform.
   window_->SetTransform(gfx::Transform());
-  WindowBackdrop::Get(window_)->RestoreBackdrop();
+  window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
 
   // End overview if it was opened during dragging.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
@@ -320,7 +319,8 @@ void DragWindowFromShelfController::OnDragStarted(
       initial_location_in_screen_, HTCLIENT, ::wm::WINDOW_MOVE_SOURCE_TOUCH);
 
   // Disable the backdrop on the dragged window during dragging.
-  WindowBackdrop::Get(window_)->DisableBackdrop();
+  original_backdrop_mode_ = window_->GetProperty(kBackdropWindowMode);
+  window_->SetProperty(kBackdropWindowMode, BackdropWindowMode::kDisabled);
 
   // Hide all visible windows behind the dragged window during dragging.
   windows_hider_ = std::make_unique<WindowsHider>(window_);
@@ -632,6 +632,8 @@ void DragWindowFromShelfController::ScaleDownWindowAfterDrag() {
     // self-destructed when window transform animation is done.
     new WindowScaleAnimation(
         window, WindowScaleAnimation::WindowScaleType::kScaleDownToShelf,
+        window == window_ ? base::make_optional(original_backdrop_mode_)
+                          : base::nullopt,
         window == window_
             ? base::BindOnce(
                   &DragWindowFromShelfController::OnWindowScaledDownAfterDrag,
@@ -659,6 +661,8 @@ void DragWindowFromShelfController::ScaleUpToRestoreWindowAfterDrag() {
   for (auto* window : GetTransientTreeIterator(window_)) {
     new WindowScaleAnimation(
         window, WindowScaleAnimation::WindowScaleType::kScaleUpToRestore,
+        window == window_ ? base::make_optional(original_backdrop_mode_)
+                          : base::nullopt,
         base::BindOnce(
             &DragWindowFromShelfController::OnWindowRestoredToOrignalBounds,
             weak_ptr_factory_.GetWeakPtr(), should_end_overview));

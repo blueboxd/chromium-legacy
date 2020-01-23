@@ -4,6 +4,8 @@
 
 #include "chrome/browser/installable/installable_logging.h"
 
+#include <vector>
+
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/installable/installable_manager.h"
@@ -57,6 +59,35 @@ static const char kNoUrlForServiceWorker[] =
     "manifest";
 static const char kPreferRelatedApplications[] =
     "Manifest specifies prefer_related_applications: true";
+
+static const char kNotInMainFrameId[] = "not-in-main-frame";
+static const char kNotFromSecureOriginId[] = "not-from-secure-origin";
+static const char kNoManifestId[] = "no-manifest";
+static const char kManifestEmptyId[] = "manifest-empty";
+static const char kStartUrlNotValidId[] = "start-url-not-valid";
+static const char kManifestMissingNameOrShortNameId[] =
+    "manifest-missing-name-or-short-name";
+static const char kManifestDisplayNotSupportedId[] =
+    "manifest-display-not-supported";
+static const char kManifestMissingSuitableIconId[] =
+    "manifest-missing-suitable-icon";
+static const char kMinimumIconSizeInPixelsId[] = "minimum-icon-size-in-pixels";
+static const char kNoMatchingServiceWorkerId[] = "no-matching-service-worker";
+static const char kNoAcceptableIconId[] = "no-acceptable-icon";
+static const char kCannotDownloadIconId[] = "cannot-download-icon";
+static const char kNoIconAvailableId[] = "no-icon-available";
+static const char kPlatformNotSupportedOnAndroidId[] =
+    "platform-not-supported-on-android";
+static const char kNoIdSpecifiedId[] = "no-id-specified";
+static const char kIdsDoNotMatchId[] = "ids-do-not-match";
+static const char kAlreadyInstalledId[] = "already-installed";
+static const char kUrlNotSupportedForWebApkId[] =
+    "url-not-supported-for-webapk";
+static const char kInIncognitoId[] = "in-incognito";
+static const char kNotOfflineCapableId[] = "not-offline-capable";
+static const char kNoUrlForServiceWorkerId[] = "no-url-for-service-worker";
+static const char kPreferRelatedApplicationsId[] =
+    "prefer-related-applications";
 
 const std::string& GetMessagePrefix() {
   static base::NoDestructor<std::string> message_prefix(
@@ -158,6 +189,106 @@ std::string GetErrorMessage(InstallableStatusCode code) {
   }
 
   return message;
+}
+
+content::InstallabilityError GetInstallabilityError(
+    InstallableStatusCode code) {
+  content::InstallabilityError error;
+  std::string error_id;
+  std::vector<content::InstallabilityErrorArgument> error_arguments;
+  switch (code) {
+    case NO_ERROR_DETECTED:
+    // These codes are solely used for UMA reporting.
+    case RENDERER_EXITING:
+    case RENDERER_CANCELLED:
+    case USER_NAVIGATED:
+    case INSUFFICIENT_ENGAGEMENT:
+    case PACKAGE_NAME_OR_START_URL_EMPTY:
+    case PREVIOUSLY_BLOCKED:
+    case PREVIOUSLY_IGNORED:
+    case SHOWING_NATIVE_APP_BANNER:
+    case SHOWING_WEB_APP_BANNER:
+    case FAILED_TO_CREATE_BANNER:
+    case WAITING_FOR_MANIFEST:
+    case WAITING_FOR_INSTALLABLE_CHECK:
+    case NO_GESTURE:
+    case WAITING_FOR_NATIVE_DATA:
+    case SHOWING_APP_INSTALLATION_DIALOG:
+    case MAX_ERROR_CODE:
+      break;
+    case NOT_IN_MAIN_FRAME:
+      error_id = kNotInMainFrameId;
+      break;
+    case NOT_FROM_SECURE_ORIGIN:
+      error_id = kNotFromSecureOriginId;
+      break;
+    case NO_MANIFEST:
+      error_id = kNoManifestId;
+      break;
+    case MANIFEST_EMPTY:
+      error_id = kManifestEmptyId;
+      break;
+    case START_URL_NOT_VALID:
+      error_id = kStartUrlNotValidId;
+      break;
+    case MANIFEST_MISSING_NAME_OR_SHORT_NAME:
+      error_id = kManifestMissingNameOrShortNameId;
+      break;
+    case MANIFEST_DISPLAY_NOT_SUPPORTED:
+      error_id = kManifestDisplayNotSupportedId;
+      break;
+    case MANIFEST_MISSING_SUITABLE_ICON:
+      error_id = kManifestMissingSuitableIconId;
+      error_arguments.push_back(content::InstallabilityErrorArgument(
+          kMinimumIconSizeInPixelsId,
+          base::NumberToString(InstallableManager::GetMinimumIconSizeInPx())));
+      break;
+    case NO_MATCHING_SERVICE_WORKER:
+      error_id = kNoMatchingServiceWorkerId;
+      break;
+    case NO_ACCEPTABLE_ICON:
+      error_id = kNoAcceptableIconId;
+      error_arguments.push_back(content::InstallabilityErrorArgument(
+          kMinimumIconSizeInPixelsId,
+          base::NumberToString(InstallableManager::GetMinimumIconSizeInPx())));
+      break;
+    case CANNOT_DOWNLOAD_ICON:
+      error_id = kCannotDownloadIconId;
+      break;
+    case NO_ICON_AVAILABLE:
+      error_id = kNoIconAvailableId;
+      break;
+    case PLATFORM_NOT_SUPPORTED_ON_ANDROID:
+      error_id = kPlatformNotSupportedOnAndroidId;
+      break;
+    case NO_ID_SPECIFIED:
+      error_id = kNoIdSpecifiedId;
+      break;
+    case IDS_DO_NOT_MATCH:
+      error_id = kIdsDoNotMatchId;
+      break;
+    case ALREADY_INSTALLED:
+      error_id = kAlreadyInstalledId;
+      break;
+    case URL_NOT_SUPPORTED_FOR_WEBAPK:
+      error_id = kUrlNotSupportedForWebApkId;
+      break;
+    case IN_INCOGNITO:
+      error_id = kInIncognitoId;
+      break;
+    case NOT_OFFLINE_CAPABLE:
+      error_id = kNotOfflineCapableId;
+      break;
+    case NO_URL_FOR_SERVICE_WORKER:
+      error_id = kNoUrlForServiceWorkerId;
+      break;
+    case PREFER_RELATED_APPLICATIONS:
+      error_id = kPreferRelatedApplicationsId;
+      break;
+  }
+  error.error_id = error_id;
+  error.installability_error_arguments = error_arguments;
+  return error;
 }
 
 void LogErrorToConsole(content::WebContents* web_contents,

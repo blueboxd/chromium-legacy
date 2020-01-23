@@ -223,7 +223,7 @@ bool LayoutNGBlockFlowMixin<Base>::NodeAtPoint(
     const PhysicalOffset& accumulated_offset,
     HitTestAction action) {
   if (const NGPaintFragment* paint_fragment = PaintFragment()) {
-    if (!this->IsEffectiveRootScroller()) {
+    if (!Base::IsEffectiveRootScroller()) {
       // Check if we need to do anything at all.
       // If we have clipping, then we can't have any spillout.
       PhysicalRect overflow_box = Base::HasOverflowClip()
@@ -311,26 +311,16 @@ void LayoutNGBlockFlowMixin<Base>::UpdateNGBlockLayout() {
   LayoutAnalyzer::BlockScope analyzer(*this);
 
   if (Base::IsOutOfFlowPositioned()) {
-    this->UpdateOutOfFlowBlockLayout();
+    LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout();
     return;
   }
 
-  NGConstraintSpace constraint_space =
-      NGConstraintSpace::CreateFromLayoutObject(
-          *this, !Base::View()->GetLayoutState()->Next() /* is_layout_root */);
-
-  scoped_refptr<const NGLayoutResult> result =
-      NGBlockNode(this).Layout(constraint_space);
-
-  for (const auto& descendant :
-       result->PhysicalFragment().OutOfFlowPositionedDescendants())
-    descendant.node.UseLegacyOutOfFlowPositioning();
-  this->UpdateMargins(constraint_space);
+  LayoutNGMixin<Base>::UpdateInFlowBlockLayout();
+  UpdateMargins();
 }
 
 template <typename Base>
-void LayoutNGBlockFlowMixin<Base>::UpdateMargins(
-    const NGConstraintSpace& space) {
+void LayoutNGBlockFlowMixin<Base>::UpdateMargins() {
   const LayoutBlock* containing_block = Base::ContainingBlock();
   if (!containing_block || !containing_block->IsLayoutBlockFlow())
     return;
@@ -343,13 +333,13 @@ void LayoutNGBlockFlowMixin<Base>::UpdateMargins(
   const ComputedStyle& cb_style = containing_block->StyleRef();
   const auto writing_mode = cb_style.GetWritingMode();
   const auto direction = cb_style.Direction();
-  LayoutUnit percentage_resolution_size =
-      space.PercentageResolutionInlineSizeForParentWritingMode();
-  NGBoxStrut margins = ComputePhysicalMargins(style, percentage_resolution_size)
+  LayoutUnit available_logical_width =
+      LayoutBoxUtils::AvailableLogicalWidth(*this, containing_block);
+  NGBoxStrut margins = ComputePhysicalMargins(style, available_logical_width)
                            .ConvertToLogical(writing_mode, direction);
-  ResolveInlineMargins(style, cb_style, space.AvailableSize().inline_size,
+  ResolveInlineMargins(style, cb_style, available_logical_width,
                        Base::LogicalWidth(), &margins);
-  this->SetMargin(margins.ConvertToPhysical(writing_mode, direction));
+  Base::SetMargin(margins.ConvertToPhysical(writing_mode, direction));
 }
 
 template class CORE_TEMPLATE_EXPORT LayoutNGBlockFlowMixin<LayoutBlockFlow>;

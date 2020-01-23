@@ -6162,23 +6162,22 @@ TEST_F(ExtensionServiceTest, InstallPriorityExternalUpdateUrl) {
   EXPECT_FALSE(service()->OnExternalExtensionUpdateUrlFound(info, true));
   EXPECT_FALSE(pending->IsIdPending(kGoodId));
 
-  // Install when the location has higher priority.
+  // Update the download location when install is requested from higher priority
+  // location.
   info.download_location = Manifest::EXTERNAL_POLICY_DOWNLOAD;
-  EXPECT_TRUE(service()->OnExternalExtensionUpdateUrlFound(info, true));
-  EXPECT_TRUE(pending->IsIdPending(kGoodId));
+  EXPECT_FALSE(service()->OnExternalExtensionUpdateUrlFound(info, true));
+  EXPECT_FALSE(pending->IsIdPending(kGoodId));
 
   // Try the low priority again.  Should be rejected.
   info.download_location = Manifest::EXTERNAL_PREF_DOWNLOAD;
   EXPECT_FALSE(service()->OnExternalExtensionUpdateUrlFound(info, true));
   // The existing record should still be present in the pending extension
   // manager.
-  EXPECT_TRUE(pending->IsIdPending(kGoodId));
-
-  pending->Remove(kGoodId);
+  EXPECT_FALSE(pending->IsIdPending(kGoodId));
 
   // Skip install when the location has the same priority as the installed
   // location.
-  info.download_location = Manifest::INTERNAL;
+  info.download_location = Manifest::EXTERNAL_POLICY_DOWNLOAD;
   EXPECT_FALSE(service()->OnExternalExtensionUpdateUrlFound(info, true));
 
   EXPECT_FALSE(pending->IsIdPending(kGoodId));
@@ -7509,6 +7508,71 @@ TEST_F(ExtensionServiceTest, UserInstalledExtensionThenRequiredByPolicy) {
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   EXPECT_EQ(disable_reason::DISABLE_NONE, prefs->GetDisableReasons(good_crx));
   EXPECT_FALSE(prefs->IsExtensionDisabled(good_crx));
+}
+
+// If the extension is first manually installed by the user, and then added to
+// the force installed list, on restarting, the extension should behave as a
+// force installed extension.
+TEST_F(ExtensionServiceTest,
+       UserInstalledExtensionThenRequiredByPolicyOnRestart) {
+  InitializeEmptyExtensionServiceWithTestingPrefs();
+
+  // Install an extension as if the user did it.
+  base::FilePath path = data_dir().AppendASCII("good.crx");
+  const Extension* extension = InstallCRX(path, INSTALL_NEW);
+  ASSERT_TRUE(extension);
+  EXPECT_EQ(good_crx, extension->id());
+  EXPECT_EQ(Manifest::INTERNAL, extension->location());
+
+  std::string kVersionStr = "1.0.0.0";
+  EXPECT_EQ(kVersionStr, extension->VersionString());
+
+  {
+    ManagementPrefUpdater pref(profile_->GetTestingPrefService());
+    // Mark good.crx for force-installation.
+    pref.SetIndividualExtensionAutoInstalled(
+        good_crx, "http://example.com/update_url", true);
+  }
+
+  ExtensionManagement* management =
+      ExtensionManagementFactory::GetForBrowserContext(profile());
+  ExtensionManagement::InstallationMode installation_mode =
+      management->GetInstallationMode(extension);
+  EXPECT_EQ(ExtensionManagement::INSTALLATION_FORCED, installation_mode);
+
+  GURL good_update_url(kGoodUpdateURL);
+  ExternalInstallInfoUpdateUrl info(
+      good_crx, std::string(), std::move(good_update_url),
+      Manifest::EXTERNAL_POLICY_DOWNLOAD, Extension::NO_FLAGS, false);
+  service()->OnExternalExtensionUpdateUrlFound(info, true);
+  base::RunLoop().RunUntilIdle();
+
+  extension = registry()->GetInstalledExtension(good_crx);
+  ASSERT_TRUE(extension);
+  ManagementPolicy* policy =
+      ExtensionSystem::Get(browser_context())->management_policy();
+
+  // The extension should still be installed, and should be required to
+  // remain installed.
+  EXPECT_TRUE(policy->MustRemainInstalled(extension, nullptr));
+  EXPECT_FALSE(policy->UserMayModifySettings(extension, nullptr));
+  EXPECT_EQ(extension->location(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
+
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+  EXPECT_EQ(disable_reason::DISABLE_NONE, prefs->GetDisableReasons(good_crx));
+  EXPECT_FALSE(prefs->IsExtensionDisabled(good_crx));
+
+  // Simulate a chrome process restart.
+  service()->ReloadExtensionsForTest();
+  policy = ExtensionSystem::Get(browser_context())->management_policy();
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(good_crx));
+  extension = registry()->GetInstalledExtension(good_crx);
+  // The location should remain same on restart.
+  EXPECT_EQ(extension->location(), Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  // Extension should behave similar to force installed on restart.
+  EXPECT_TRUE(policy->MustRemainInstalled(extension, nullptr));
+  EXPECT_FALSE(policy->UserMayModifySettings(extension, nullptr));
 }
 
 // Regression test for crbug.com/460699. Ensure PluginManager doesn't crash even

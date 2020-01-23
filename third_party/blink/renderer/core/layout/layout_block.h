@@ -486,6 +486,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
            hit_test_action == kHitTestChildBlockBackground;
   }
 
+  LayoutUnit EmptyLineBaseline(LineDirectionMode line_direction) const;
+
  private:
   LayoutObjectChildList* VirtualChildren() final { return Children(); }
   const LayoutObjectChildList* VirtualChildren() const final {

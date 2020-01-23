@@ -305,9 +305,9 @@ TEST_F(SharingFCMHandlerTest, PingMessageHandlerWithFCMChannelConfiguration) {
   sharing_message.mutable_ping_message();
   chrome_browser_sharing::FCMChannelConfiguration* fcm_configuration =
       sharing_message.mutable_fcm_channel_configuration();
-  fcm_configuration->set_fcm_token(kFCMToken);
-  fcm_configuration->set_p256dh(kP256dh);
-  fcm_configuration->set_auth_secret(kAuthSecret);
+  fcm_configuration->set_vapid_fcm_token(kFCMToken);
+  fcm_configuration->set_vapid_p256dh(kP256dh);
+  fcm_configuration->set_vapid_auth_secret(kAuthSecret);
   gcm::IncomingMessage incoming_message =
       CreateGCMIncomingMessage(kTestMessageId, sharing_message);
 

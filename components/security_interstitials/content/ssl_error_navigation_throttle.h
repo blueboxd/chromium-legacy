@@ -20,10 +20,6 @@ class NavigationHandle;
 class WebContents;
 }  // namespace content
 
-namespace network_time {
-class NetworkTimeTracker;
-}
-
 namespace security_interstitials {
 class SecurityInterstitialPage;
 }  // namespace security_interstitials
@@ -42,7 +38,6 @@ class SSLErrorNavigationThrottle : public content::NavigationThrottle {
       const net::SSLInfo& ssl_info,
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-      network_time::NetworkTimeTracker* network_time_tracker,
       base::OnceCallback<void(
           std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
           blocking_page_ready_callback)>
@@ -60,7 +55,6 @@ class SSLErrorNavigationThrottle : public content::NavigationThrottle {
   explicit SSLErrorNavigationThrottle(
       content::NavigationHandle* handle,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-      network_time::NetworkTimeTracker* network_time_tracker,
       HandleSSLErrorCallback handle_ssl_error_callback,
       IsInHostedAppCallback is_in_hosted_app_callback);
   ~SSLErrorNavigationThrottle() override;
@@ -85,7 +79,6 @@ class SSLErrorNavigationThrottle : public content::NavigationThrottle {
           blocking_page);
 
   std::unique_ptr<SSLCertReporter> ssl_cert_reporter_;
-  network_time::NetworkTimeTracker* network_time_tracker_;
   HandleSSLErrorCallback handle_ssl_error_callback_;
   IsInHostedAppCallback is_in_hosted_app_callback_;
   base::WeakPtrFactory<SSLErrorNavigationThrottle> weak_ptr_factory_{this};

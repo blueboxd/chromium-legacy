@@ -37,6 +37,7 @@ class LayoutNGMixin : public Base {
       LayoutUnit& max_logical_width) const override;
 
   void UpdateOutOfFlowBlockLayout();
+  scoped_refptr<const NGLayoutResult> UpdateInFlowBlockLayout();
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT LayoutNGMixin<LayoutBlock>;

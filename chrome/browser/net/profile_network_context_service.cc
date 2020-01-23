@@ -298,8 +298,11 @@ ProfileNetworkContextService::CreateNetworkContext(
   if ((!in_memory && !profile_->IsOffTheRecord())) {
     // TODO(jam): delete this code 1 year after Network Service shipped to all
     // stable users, which would be after M83 branches.
-    base::FilePath media_cache_path = GetPartitionPath(relative_partition_path)
-                                          .Append(chrome::kMediaCacheDirname);
+    base::FilePath base_cache_path;
+    chrome::GetUserCacheDirectory(GetPartitionPath(relative_partition_path),
+                                  &base_cache_path);
+    base::FilePath media_cache_path =
+        base_cache_path.Append(chrome::kMediaCacheDirname);
     base::PostTask(
         FROM_HERE,
         {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),

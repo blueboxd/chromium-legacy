@@ -137,6 +137,9 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   virtual void OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                         Widget* widget) const;
 
+  // The layer type of the bubble widget.
+  virtual ui::LayerType GetLayerType() const;
+
   // Sets the content margins to a default picked for smaller bubbles.
   void UseCompactMargins();
 

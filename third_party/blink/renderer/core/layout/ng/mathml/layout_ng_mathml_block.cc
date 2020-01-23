@@ -27,16 +27,7 @@ void LayoutNGMathMLBlock::UpdateBlockLayout(bool relayout_children) {
     return;
   }
 
-  NGConstraintSpace constraint_space =
-      NGConstraintSpace::CreateFromLayoutObject(
-          *this, !View()->GetLayoutState()->Next() /* is_layout_root */);
-
-  scoped_refptr<const NGLayoutResult> result =
-      NGBlockNode(this).Layout(constraint_space);
-
-  for (const auto& descendant :
-       result->PhysicalFragment().OutOfFlowPositionedDescendants())
-    descendant.node.UseLegacyOutOfFlowPositioning();
+  UpdateInFlowBlockLayout();
 }
 
 bool LayoutNGMathMLBlock::IsOfType(LayoutObjectType type) const {
@@ -49,6 +40,12 @@ bool LayoutNGMathMLBlock::IsOfType(LayoutObjectType type) const {
 bool LayoutNGMathMLBlock::IsChildAllowed(LayoutObject* child,
                                          const ComputedStyle&) const {
   return child->GetNode() && child->GetNode()->IsMathMLElement();
+}
+
+bool LayoutNGMathMLBlock::CanHaveChildren() const {
+  if (GetNode() && GetNode()->HasTagName(mathml_names::kMspaceTag))
+    return false;
+  return LayoutNGMixin<LayoutBlock>::CanHaveChildren();
 }
 
 }  // namespace blink

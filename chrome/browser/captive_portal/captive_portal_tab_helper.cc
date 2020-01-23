@@ -9,7 +9,6 @@
 #include "chrome/browser/captive_portal/captive_portal_login_detector.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
 #include "chrome/browser/captive_portal/captive_portal_tab_reloader.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -17,10 +16,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -42,10 +37,12 @@ CaptivePortalTabHelper::CaptivePortalTabHelper(
                      web_contents,
                      false))),
       login_detector_(new CaptivePortalLoginDetector(profile_)),
-      is_captive_portal_window_(false) {
+      is_captive_portal_window_(false),
+      subscription_(
+          CaptivePortalServiceFactory::GetForProfile(profile_)
+              ->RegisterCallback(base::Bind(&CaptivePortalTabHelper::Observe,
+                                            base::Unretained(this)))) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  registrar_.Add(this, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-                 content::Source<content::BrowserContext>(profile_));
 }
 
 CaptivePortalTabHelper::~CaptivePortalTabHelper() {
@@ -130,17 +127,10 @@ void CaptivePortalTabHelper::DidStopLoading() {
 }
 
 void CaptivePortalTabHelper::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+    const CaptivePortalService::Results& results) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_EQ(chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT, type);
-  DCHECK_EQ(profile_, content::Source<content::BrowserContext>(source).ptr());
 
-  const CaptivePortalService::Results* results =
-      content::Details<CaptivePortalService::Results>(details).ptr();
-
-  OnCaptivePortalResults(results->previous_result, results->result);
+  OnCaptivePortalResults(results.previous_result, results.result);
 }
 
 void CaptivePortalTabHelper::OnSSLCertError(const net::SSLInfo& ssl_info) {

@@ -125,9 +125,6 @@ class LayoutTextControlInnerContainer final : public LayoutFlexibleBox {
   LayoutUnit InlineBlockBaseline(LineDirectionMode direction) const override {
     return LayoutBlock::InlineBlockBaseline(direction);
   }
-  bool ShouldIgnoreOverflowPropertyForInlineBlockBaseline() const override {
-    return true;
-  }
 };
 
 }  // namespace blink

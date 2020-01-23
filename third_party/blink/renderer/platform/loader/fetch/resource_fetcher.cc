@@ -778,6 +778,20 @@ void ResourceFetcher::UpdateMemoryCacheStats(Resource* resource,
   if (resource && !resource->IsAlive() && !ContainsAsPreload(resource)) {
     DEFINE_RESOURCE_HISTOGRAM("Dead.");
   }
+
+  // Async (and defer) scripts may have more cache misses, track them
+  // separately. See https://crbug.com/1043679 for context.
+  if (params.Defer() != FetchParameters::DeferOption::kNoDefer) {
+    // This slightly awkward way avoids generating code which is never reached
+    // (and relying on the compiler to eliminate it, which is not guaranteed).
+    // The DEFINE_RESOURCE_HISTOGRAM() macro generates cases for all resources.
+    switch (factory.GetType()) {
+      DEFINE_SINGLE_RESOURCE_HISTOGRAM("Async", Script);
+
+      default:
+        break;
+    }
+  }
 }
 
 bool ResourceFetcher::ContainsAsPreload(Resource* resource) const {

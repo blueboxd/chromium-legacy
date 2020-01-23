@@ -108,8 +108,7 @@ void LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout() {
                                                 : Base::ContainingBlock();
   const ComputedStyle* container_style = container->Style();
   NGConstraintSpace constraint_space =
-      NGConstraintSpace::CreateFromLayoutObject(*this,
-                                                false /* is_layout_root */);
+      NGConstraintSpace::CreateFromLayoutObject(*this);
 
   // As this is part of the Legacy->NG bridge, the container_builder is used
   // for indicating the resolved size of the OOF-positioned containing-block
@@ -217,6 +216,29 @@ void LayoutNGMixin<Base>::UpdateOutOfFlowBlockLayout() {
   }
   DCHECK_EQ(fragment.Children()[0]->GetLayoutObject(), this);
   Base::SetIsLegacyInitiatedOutOfFlowLayout(true);
+}
+
+template <typename Base>
+scoped_refptr<const NGLayoutResult>
+LayoutNGMixin<Base>::UpdateInFlowBlockLayout() {
+  const auto* previous_result = Base::GetCachedLayoutResult();
+  bool is_layout_root = !Base::View()->GetLayoutState()->Next();
+
+  // If we are a layout root, use the previous space if available. This will
+  // include any stretched sizes if applicable.
+  NGConstraintSpace constraint_space =
+      is_layout_root && previous_result
+          ? previous_result->GetConstraintSpaceForCaching()
+          : NGConstraintSpace::CreateFromLayoutObject(*this);
+
+  scoped_refptr<const NGLayoutResult> result =
+      NGBlockNode(this).Layout(constraint_space);
+
+  for (const auto& descendant :
+       result->PhysicalFragment().OutOfFlowPositionedDescendants())
+    descendant.node.UseLegacyOutOfFlowPositioning();
+
+  return result;
 }
 
 template class CORE_TEMPLATE_EXPORT LayoutNGMixin<LayoutBlock>;

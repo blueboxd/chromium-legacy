@@ -35,8 +35,7 @@ static_assert(sizeof(NGConstraintSpace) == sizeof(SameSizeAsNGConstraintSpace),
 }  // namespace
 
 NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
-    const LayoutBlock& block,
-    bool is_layout_root) {
+    const LayoutBlock& block) {
   // We should only ever create a constraint space from legacy layout if the
   // object is a new formatting context.
   DCHECK(block.CreatesNewFormattingContext());
@@ -77,20 +76,7 @@ NGConstraintSpace NGConstraintSpace::CreateFromLayoutObject(
                                    /* is_new_fc */ true,
                                    !parallel_containing_block);
 
-  auto* previous_result = block.GetCachedLayoutResult();
-  if (is_layout_root && previous_result) {
-    // Due to layout-roots (starting layout at an arbirary node, instead of the
-    // |LayoutView|), we can end up with a situation where we'll miss our cache
-    // due to baseline-requests not matching.
-    //
-    // For the case where we start at a layout-root, the baselines don't
-    // particularly matter, so we just request exactly the same as the previous
-    // layout.
-    const NGConstraintSpace& previous_space =
-        previous_result->GetConstraintSpaceForCaching();
-    builder.SetNeedsBaseline(previous_space.NeedsBaseline());
-    builder.SetBaselineAlgorithmType(previous_space.BaselineAlgorithmType());
-  } else if (!block.IsWritingModeRoot() || block.IsGridItem()) {
+  if (!block.IsWritingModeRoot() || block.IsGridItem()) {
     // We don't know if the parent layout will require our baseline, so always
     // request it.
     builder.SetNeedsBaseline(true);

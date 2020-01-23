@@ -12,7 +12,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/captive_portal/captive_portal_detector.h"
+#include "components/captive_portal/core/captive_portal_detector.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
 #include "net/base/backoff_entry.h"

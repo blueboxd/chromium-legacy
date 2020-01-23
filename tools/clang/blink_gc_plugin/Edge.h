@@ -63,6 +63,9 @@ class RecursiveEdgeVisitor : public EdgeVisitor {
   typedef std::deque<Edge*> Context;
   Context& context() { return context_; }
   Edge* Parent() { return context_.empty() ? 0 : context_.front(); }
+  Edge* GrandParent() {
+    return Parent() ? (context_.size() > 1 ? context_[1] : nullptr) : nullptr;
+  }
   void Enter(Edge* e) { return context_.push_front(e); }
   void Leave() { context_.pop_front(); }
 

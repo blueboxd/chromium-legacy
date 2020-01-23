@@ -106,6 +106,9 @@ void ThreadCPUThrottler::ThrottlingThread::InstallSignalHandler() {
   struct sigaction sa;
   sa.sa_handler = &HandleSignal;
   sigemptyset(&sa.sa_mask);
+  // Block SIGPROF while our handler is running so that the V8 CPU profiler
+  // doesn't try to sample the stack while our signal handler is active.
+  sigaddset(&sa.sa_mask, SIGPROF);
   sa.sa_flags = SA_RESTART;
   signal_handler_installed_ =
       (sigaction(SIGUSR2, &sa, &old_signal_handler_) == 0);

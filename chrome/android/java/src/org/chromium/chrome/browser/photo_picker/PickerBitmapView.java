@@ -68,7 +68,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
     // The image view containing the bitmap.
     private ImageView mIconView;
 
-    // The aspect ratio of the image (>1.0=portrait, <1.0=landscape).
+    // The aspect ratio of the image (>1.0=portrait, <1.0=landscape, invalid if -1).
     private float mRatio = -1;
 
     // The container for the small version of the video UI (duration and small play button).
@@ -411,10 +411,16 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
      */
     public boolean setThumbnailBitmap(List<Bitmap> thumbnails, String videoDuration, float ratio) {
         assert thumbnails == null || thumbnails.size() > 0;
-        if (videoDuration == null) {
+
+        // There are four cases to consider:
+        // 1) When placeholders are assigned, thumbnails=null and videoDuration=null.
+        // 2) When images are shown, videoDuration is null and thumbnail size is 1.
+        // 3) Videos: one thumbnail is shown first (videoDuration non-null, thumbnail.size() = 1).
+        // 4) Then, as more video frames are decoded (thumbnail.size() > 1).
+        // Only the last case needs to branch into the AnimationDrawable part.
+        if (videoDuration == null || thumbnails.size() == 1) {
             mIconView.setImageBitmap(thumbnails == null ? null : thumbnails.get(0));
         } else {
-            mVideoDuration.setText(videoDuration);
             final AnimationDrawable animationDrawable = new AnimationDrawable();
             for (int i = 0; i < thumbnails.size(); ++i) {
                 animationDrawable.addFrame(
@@ -425,6 +431,7 @@ public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
             mIconView.setImageDrawable(animationDrawable);
             animationDrawable.start();
         }
+        mVideoDuration.setText(videoDuration);
 
         if (thumbnails != null && thumbnails.size() > 0) {
             mRatio = ratio;

@@ -280,7 +280,8 @@ TEST_F(ParentAccessViewTest, HelpButton) {
   ParentAccessView::TestApi test_api(view_);
   EXPECT_TRUE(test_api.help_button()->GetEnabled());
 
-  EXPECT_CALL(*client, ShowParentAccessHelpApp()).Times(1);
+  EXPECT_CALL(*client, ShowParentAccessHelpApp(widget()->GetNativeWindow()))
+      .Times(1);
   SimulateButtonPress(test_api.help_button());
   base::RunLoop().RunUntilIdle();
 

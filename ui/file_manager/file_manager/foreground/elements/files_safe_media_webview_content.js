@@ -36,15 +36,20 @@ window.onload = () => {
         break;
       case 'image':
         content.remove();
-        content.onload = (e) => contentChanged(e.target.src);
-        content.src = event.data.src;
-        content.decode()
-            .then(() => {
-              document.body.appendChild(content);
-            })
-            .catch(() => {
-              contentDecodeFailed();
-            });
+        content.src = '';
+
+        const image = new Image();
+        image.onload = (e) => {
+          contentChanged(e.target.src);
+          document.body.appendChild(content);
+          content.src = e.target.src;
+        };
+
+        image.onerror = (e) => {
+          contentDecodeFailed();
+        };
+
+        image.src = event.data.src;
         break;
       default:
         content.onload = (e) => contentChanged(e.target.src);

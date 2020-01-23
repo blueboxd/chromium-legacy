@@ -27,6 +27,8 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/security_events/security_event_recorder.h"
 #include "chrome/browser/security_events/security_event_recorder_factory.h"
+#include "chrome/browser/sharing/sharing_message_bridge.h"
+#include "chrome/browser/sharing/sharing_message_bridge_factory.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
@@ -611,6 +613,9 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       return WifiConfigurationSyncServiceFactory::GetForProfile(profile_)
           ->GetControllerDelegate();
 #endif  // defined(OS_CHROMEOS)
+    case syncer::SHARING_MESSAGE:
+      return SharingMessageBridgeFactory::GetForBrowserContext(profile_)
+          ->GetControllerDelegate();
     case syncer::USER_CONSENTS:
       return ConsentAuditorFactory::GetForProfile(profile_)
           ->GetControllerDelegate();

@@ -581,18 +581,17 @@ void OptimizationGuideHintsManager::OnTopHostsHintsFetched(
 }
 
 void OptimizationGuideHintsManager::OnPageNavigationHintsFetched(
+    const base::flat_set<std::string>& page_navigation_hosts_requested,
     base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
         get_hints_response) {
-  if (!get_hints_response.has_value() || !get_hints_response.value()) {
-    page_navigation_hosts_being_fetched_.clear();
+  if (!get_hints_response.has_value() || !get_hints_response.value())
     return;
-  }
 
   hint_cache_->UpdateFetchedHints(
       std::move(*get_hints_response), clock_->Now() + kUpdateFetchedHintsDelay,
       base::BindOnce(
           &OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored,
-          ui_weak_ptr_factory_.GetWeakPtr()));
+          ui_weak_ptr_factory_.GetWeakPtr(), page_navigation_hosts_requested));
 }
 
 void OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored() {
@@ -607,12 +606,11 @@ void OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored() {
       &OptimizationGuideHintsManager::ScheduleTopHostsHintsFetch);
 }
 
-void OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored() {
+void OptimizationGuideHintsManager::OnFetchedPageNavigationHintsStored(
+    const base::flat_set<std::string>& page_navigation_hosts_requested) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  for (const auto& host : page_navigation_hosts_being_fetched_)
+  for (const auto& host : page_navigation_hosts_requested)
     LoadHintForHost(host, base::DoNothing());
-
-  page_navigation_hosts_being_fetched_.clear();
 }
 
 base::Time OptimizationGuideHintsManager::GetLastHintsFetchAttemptTime() const {
@@ -688,6 +686,7 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
 
   // Extract the target hosts. Use a flat set to remove duplicates.
   // |target_hosts_serialized| is the ordered list of non-duplicate hosts.
+  // TODO(sophiechang): See if we can make this logic simpler.
   base::flat_set<std::string> target_hosts;
   std::vector<std::string> target_hosts_serialized;
   for (const auto& url : prediction->sorted_predicted_urls()) {
@@ -709,10 +708,6 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
   if (target_hosts.empty())
     return;
 
-  page_navigation_hosts_being_fetched_.clear();
-  for (const auto& host : target_hosts)
-    page_navigation_hosts_being_fetched_.push_back(host);
-
   if (!hints_fetcher_) {
     hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
         url_loader_factory_,
@@ -728,7 +723,7 @@ void OptimizationGuideHintsManager::OnPredictionUpdated(
       optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
       base::BindOnce(
           &OptimizationGuideHintsManager::OnPageNavigationHintsFetched,
-          ui_weak_ptr_factory_.GetWeakPtr()));
+          ui_weak_ptr_factory_.GetWeakPtr(), target_hosts));
 
   for (const auto& host : target_hosts)
     LoadHintForHost(host, base::DoNothing());
@@ -896,7 +891,7 @@ OptimizationGuideHintsManager::CanApplyOptimization(
   const optimization_guide::proto::Hint* url_keyed_hint =
       hint_cache_->GetURLKeyedHint(url);
   if (url_keyed_hint) {
-    DCHECK(url_keyed_hint->page_hints_size() == 1);
+    DCHECK_EQ(url_keyed_hint->page_hints_size(), 1);
     if (url_keyed_hint->page_hints_size() > 0 &&
         IsOptimizationTypeSupportedByPageHint(&url_keyed_hint->page_hints(0),
                                               optimization_type,
@@ -906,10 +901,6 @@ OptimizationGuideHintsManager::CanApplyOptimization(
   }
 
   if (!loaded_hint) {
-    if (IsHintBeingFetched(url.host())) {
-      return optimization_guide::OptimizationTypeDecision::
-          kHintFetchStartedButNotAvailableInTime;
-    }
     // If we do not have a hint already loaded and we do not have one in the
     // cache, we do not know what to do with the URL so just return.
     // Otherwise, we do have information, but we just do not know it yet.
@@ -917,6 +908,13 @@ OptimizationGuideHintsManager::CanApplyOptimization(
       return optimization_guide::OptimizationTypeDecision::
           kHadHintButNotLoadedInTime;
     }
+
+    if (hints_fetcher_ &&
+        hints_fetcher_->IsHintForHostBeingFetched(url.host())) {
+      return optimization_guide::OptimizationTypeDecision::
+          kHintFetchStartedButNotAvailableInTime;
+    }
+
     return optimization_guide::OptimizationTypeDecision::kNoHintAvailable;
   }
 
@@ -1012,10 +1010,6 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
     return;
   }
 
-  page_navigation_hosts_being_fetched_.clear();
-  page_navigation_hosts_being_fetched_.push_back(
-      navigation_handle->GetURL().host());
-
   if (!hints_fetcher_) {
     hints_fetcher_ = std::make_unique<optimization_guide::HintsFetcher>(
         url_loader_factory_,
@@ -1028,7 +1022,8 @@ void OptimizationGuideHintsManager::MaybeFetchHintsForNavigation(
       optimization_guide::proto::CONTEXT_PAGE_NAVIGATION,
       base::BindOnce(
           &OptimizationGuideHintsManager::OnPageNavigationHintsFetched,
-          ui_weak_ptr_factory_.GetWeakPtr()));
+          ui_weak_ptr_factory_.GetWeakPtr(),
+          base::flat_set<std::string>({navigation_handle->GetURL().host()})));
 
   if (!hosts.empty() && !urls.empty()) {
     race_navigation_recorder.set_race_attempt_status(
@@ -1041,11 +1036,4 @@ void OptimizationGuideHintsManager::ClearFetchedHints() {
   hint_cache_->ClearFetchedHints();
   optimization_guide::HintsFetcher::ClearHostsSuccessfullyFetched(
       pref_service_);
-}
-
-bool OptimizationGuideHintsManager::IsHintBeingFetched(
-    const std::string& host) const {
-  return std::find(page_navigation_hosts_being_fetched_.begin(),
-                   page_navigation_hosts_being_fetched_.end(),
-                   host) != page_navigation_hosts_being_fetched_.end();
 }

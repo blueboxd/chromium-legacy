@@ -46,6 +46,7 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
       line_({&line, item_count}),
       rect_({PhysicalOffset(), line.Size()}),
       type_(kLine),
+      sub_type_(static_cast<unsigned>(line.LineBoxType())),
       style_variant_(static_cast<unsigned>(line.StyleVariant())),
       is_hidden_for_paint_(false),
       text_direction_(static_cast<unsigned>(line.BaseDirection())),
@@ -121,8 +122,7 @@ bool NGFragmentItem::IsAtomicInline() const {
 }
 
 bool NGFragmentItem::IsEmptyLineBox() const {
-  // TODO(yosin): Implement |NGFragmentItem::IsEmptyLineBox()|.
-  return false;
+  return LineBoxType() == NGLineBoxType::kEmptyLineBox;
 }
 
 bool NGFragmentItem::IsGeneratedText() const {

@@ -178,7 +178,10 @@ def _CheckForForbiddenChromiumCode(input_api, output_api):
                         path, error.line, error.identifier)
                     if error.advice:
                         msg += ". Advice: %s" % "\n".join(error.advice)
-                    results.append(output_api.PresubmitError(msg))
+                    if error.warning:
+                        results.append(output_api.PresubmitPromptWarning(msg))
+                    else:
+                        results.append(output_api.PresubmitError(msg))
     return results
 
 

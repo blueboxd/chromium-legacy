@@ -257,6 +257,9 @@
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/extensions/echo_private_api.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login/login_api.h"
+#if defined(USE_CUPS)
+#include "chrome/browser/chromeos/extensions/printing/printing_api_handler.h"
+#endif
 #include "chrome/browser/chromeos/file_system_provider/registry.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
@@ -984,6 +987,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   crostini::prefs::RegisterProfilePrefs(registry);
   chromeos::attestation::TpmChallengeKey::RegisterProfilePrefs(registry);
   extensions::EPKPChallengeKey::RegisterProfilePrefs(registry);
+#if defined(USE_CUPS)
+  extensions::PrintingAPIHandler::RegisterProfilePrefs(registry);
+#endif
   flags_ui::PrefServiceFlagsStorage::RegisterProfilePrefs(registry);
   guest_os::prefs::RegisterProfilePrefs(registry);
   lock_screen_apps::StateController::RegisterProfilePrefs(registry);

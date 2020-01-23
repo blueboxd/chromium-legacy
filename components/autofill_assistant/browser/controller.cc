@@ -314,6 +314,10 @@ void Controller::RemoveListener(ScriptExecutorDelegate::Listener* listener) {
     listeners_.erase(found);
 }
 
+void Controller::SetExpandSheetForPromptAction(bool expand) {
+  expand_sheet_for_prompt_action_ = expand;
+}
+
 bool Controller::PerformUserActionWithContext(
     int index,
     std::unique_ptr<TriggerContext> context) {
@@ -351,6 +355,24 @@ void Controller::SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) {
   peek_mode_ = peek_mode;
   for (ControllerObserver& observer : observers_) {
     observer.OnPeekModeChanged(peek_mode);
+  }
+}
+
+void Controller::ExpandBottomSheet() {
+  for (ControllerObserver& observer : observers_) {
+    // TODO(crbug/806868): The interface here and in some of the other On*
+    // events should be coming from the UI layer, not the controller. Or at
+    // least be renamed to something like On*Requested.
+    observer.OnExpandBottomSheet();
+  }
+}
+
+void Controller::CollapseBottomSheet() {
+  for (ControllerObserver& observer : observers_) {
+    // TODO(crbug/806868): The interface here and in some of the other On*
+    // events should be coming from the UI layer, not the controller. Or at
+    // least be renamed to something like On*Requested.
+    observer.OnCollapseBottomSheet();
   }
 }
 
@@ -475,6 +497,10 @@ UserModel* Controller::GetUserModel() {
 
 EventHandler* Controller::GetEventHandler() {
   return &event_handler_;
+}
+
+bool Controller::ShouldPromptActionExpandSheet() const {
+  return expand_sheet_for_prompt_action_;
 }
 
 void Controller::AddObserver(ControllerObserver* observer) {

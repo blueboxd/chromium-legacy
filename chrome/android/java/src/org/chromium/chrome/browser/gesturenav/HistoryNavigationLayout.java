@@ -157,5 +157,7 @@ public class HistoryNavigationLayout
             mNavigationHandler.setDelegate(mDelegate);
             mNavigationHandler = null;
         }
+        mDetector = null;
+        mWebContents = null;
     }
 }

@@ -192,11 +192,13 @@ class TestHintsFetcher : public optimization_guide::HintsFetcher {
         std::move(hints_fetched_callback).Run(base::nullopt);
         return false;
       case HintsFetcherEndState::kFetchSuccessWithHostHints:
+        hosts_fetched_ = hosts;
         hints_fetched_ = true;
         std::move(hints_fetched_callback)
             .Run(BuildHintsResponse({"host.com"}, {}));
         return true;
       case HintsFetcherEndState::kFetchSuccessWithURLHints:
+        hosts_fetched_ = hosts;
         hints_fetched_ = true;
         std::move(hints_fetched_callback)
             .Run(BuildHintsResponse({},
@@ -210,9 +212,15 @@ class TestHintsFetcher : public optimization_guide::HintsFetcher {
     return true;
   }
 
+  bool IsHintForHostBeingFetched(const std::string& host) const override {
+    return std::find(hosts_fetched_.begin(), hosts_fetched_.end(), host) !=
+           hosts_fetched_.end();
+  }
+
   bool hints_fetched() { return hints_fetched_; }
 
  private:
+  std::vector<std::string> hosts_fetched_;
   bool hints_fetched_ = false;
   HintsFetcherEndState fetch_state_;
 };
@@ -2543,7 +2551,7 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
           url_without_hints());
   hints_manager()->SetHintsFetcherForTesting(
-      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithNoHints));
+      BuildTestHintsFetcher(HintsFetcherEndState::kFetchSuccessWithHostHints));
   hints_manager()->OnNavigationStartOrRedirect(navigation_handle.get(),
                                                base::DoNothing());
   optimization_guide::OptimizationMetadata optimization_metadata;

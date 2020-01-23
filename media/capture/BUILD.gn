@@ -406,6 +406,7 @@ test("capture_unittests") {
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
   }
 
+  # TODO(https://crbug.com/1043007): use is_linux.
   if (is_chromeos) {
     deps += [ "//media/gpu/test:local_gpu_memory_buffer_manager" ]
   }

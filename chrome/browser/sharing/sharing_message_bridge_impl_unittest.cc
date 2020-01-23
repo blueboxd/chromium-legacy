@@ -67,15 +67,21 @@ TEST_F(SharingMessageBridgeTest, ShouldWriteMessagesToProcessor) {
   EXPECT_TRUE(entity_data.specifics.has_sharing_message());
   EXPECT_EQ(entity_data.specifics.sharing_message().payload(),
             "another_payload");
+  EXPECT_FALSE(bridge()->GetStorageKey(entity_data).empty());
 }
 
-TEST_F(SharingMessageBridgeTest, ShouldNotGenerateStorageKey) {
-  std::string storage_key;
-  EXPECT_CALL(*processor(), Put(_, _, _)).WillOnce(SaveArg<0>(&storage_key));
-  bridge()->SendSharingMessage(
-      std::make_unique<sync_pb::SharingMessageSpecifics>());
+TEST_F(SharingMessageBridgeTest, ShouldGenerateUniqueStorageKey) {
+  std::string first_storage_key;
+  std::string second_storage_key;
+  EXPECT_CALL(*processor(), Put(_, _, _))
+      .WillOnce(SaveArg<0>(&first_storage_key))
+      .WillOnce(SaveArg<0>(&second_storage_key));
+  bridge()->SendSharingMessage(CreateSpecifics("payload"));
+  bridge()->SendSharingMessage(CreateSpecifics("another_payload"));
 
-  EXPECT_TRUE(storage_key.empty());
+  EXPECT_FALSE(first_storage_key.empty());
+  EXPECT_FALSE(second_storage_key.empty());
+  EXPECT_NE(first_storage_key, second_storage_key);
 }
 
 }  // namespace

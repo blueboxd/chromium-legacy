@@ -49,7 +49,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
     private StatusIndicatorCoordinator mStatusIndicatorCoordinator;
     private StatusIndicatorCoordinator.StatusIndicatorObserver mStatusIndicatorObserver;
     private @Nullable ToolbarButtonInProductHelpController mToolbarButtonInProductHelpController;
-    private HistoryNavigationCoordinator mHistoryNavigationCoordinator;
     private boolean mIntentWithEffect;
 
     /**
@@ -97,10 +96,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         if (mImmersiveModeManager != null) {
             getToolbarManager().setImmersiveModeManager(mImmersiveModeManager);
         }
-        mHistoryNavigationCoordinator = new HistoryNavigationCoordinator();
-        mHistoryNavigationCoordinator.init(mActivity.getLifecycleDispatcher(),
-                mActivity.getCompositorViewHolder(), mActivity.getActivityTabProvider(),
-                mActivity.getInsetObserverView());
     }
 
     /**
@@ -134,6 +129,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         super.onLayoutManagerAvailable(layoutManager);
 
         initStatusIndicatorCoordinator(layoutManager);
+        HistoryNavigationCoordinator.create(mActivity.getLifecycleDispatcher(),
+                mActivity.getCompositorViewHolder(), mActivity.getActivityTabProvider(),
+                mActivity.getInsetObserverView());
     }
 
     @Override

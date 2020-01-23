@@ -8,11 +8,8 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -50,8 +47,10 @@ CaptivePortalMetricsRecorder::CaptivePortalMetricsRecorder(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   captive_portal_detection_enabled_ =
       CaptivePortalServiceFactory::GetForProfile(profile)->enabled();
-  registrar_.Add(this, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-                 content::Source<content::BrowserContext>(profile));
+  subscription_ =
+      CaptivePortalServiceFactory::GetForProfile(profile)->RegisterCallback(
+          base::Bind(&CaptivePortalMetricsRecorder::Observe,
+                     base::Unretained(this)));
 }
 
 CaptivePortalMetricsRecorder::~CaptivePortalMetricsRecorder() = default;
@@ -78,19 +77,13 @@ void CaptivePortalMetricsRecorder::RecordCaptivePortalUMAStatistics() const {
 }
 
 void CaptivePortalMetricsRecorder::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT, type);
-
+    const CaptivePortalService::Results& results) {
   // When detection is disabled, captive portal service always sends
   // RESULT_INTERNET_CONNECTED. Ignore any probe results in that case.
   if (!captive_portal_detection_enabled_)
     return;
 
   captive_portal_probe_completed_ = true;
-  CaptivePortalService::Results* results =
-      content::Details<CaptivePortalService::Results>(details).ptr();
   // If a captive portal was detected at any point when the interstitial was
   // displayed, assume that the interstitial was caused by a captive portal.
   // Example scenario:
@@ -102,9 +95,9 @@ void CaptivePortalMetricsRecorder::Observe(
   // potentially caused by the captive portal.
   captive_portal_detected_ =
       captive_portal_detected_ ||
-      (results->result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
+      (results.result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
   // Also keep track of non-HTTP portals and error cases.
   captive_portal_no_response_ =
       captive_portal_no_response_ ||
-      (results->result == captive_portal::RESULT_NO_RESPONSE);
+      (results.result == captive_portal::RESULT_NO_RESPONSE);
 }

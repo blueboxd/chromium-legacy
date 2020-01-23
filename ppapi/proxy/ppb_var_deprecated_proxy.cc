@@ -380,9 +380,8 @@ void PPB_Var_Deprecated_Proxy::OnMsgReleaseObject(int64_t object_id) {
   // then remove this.
   PpapiGlobals::Get()->GetMainThreadMessageLoop()->PostNonNestableTask(
       FROM_HERE,
-      RunWhileLocked(base::Bind(&PPB_Var_Deprecated_Proxy::DoReleaseObject,
-                                task_factory_.GetWeakPtr(),
-                                object_id)));
+      RunWhileLocked(base::BindOnce(&PPB_Var_Deprecated_Proxy::DoReleaseObject,
+                                    task_factory_.GetWeakPtr(), object_id)));
 }
 
 void PPB_Var_Deprecated_Proxy::OnMsgHasProperty(

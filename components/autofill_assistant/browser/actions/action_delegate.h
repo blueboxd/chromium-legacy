@@ -107,8 +107,8 @@ class ActionDelegate {
   // scripts, even though we're in the middle of a script. This includes
   // allowing access to the touchable elements set previously, in the same
   // script.
-  virtual void Prompt(
-      std::unique_ptr<std::vector<UserAction>> user_actions) = 0;
+  virtual void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions,
+                      bool disable_force_expand_sheet) = 0;
 
   // Have the UI leave the prompt state and go back to its previous state.
   virtual void CleanUpAfterPrompt() = 0;
@@ -313,6 +313,13 @@ class ActionDelegate {
 
   // Checks the current peek mode.
   virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
+
+  // Expands the bottom sheet. This is the same as the user swiping up.
+  virtual void ExpandBottomSheet() = 0;
+
+  // Collapses the bottom sheet to the current peek state as set by
+  // |SetPeekMode|. This is the same as the user swiping down.
+  virtual void CollapseBottomSheet() = 0;
 
   // Calls the callback once the main document window has been resized.
   virtual void WaitForWindowHeightChange(

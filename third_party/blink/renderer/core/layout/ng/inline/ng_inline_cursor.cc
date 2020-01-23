@@ -111,11 +111,11 @@ const LayoutBlockFlow* NGInlineCursor::GetLayoutBlockFlow() const {
     return layout_object->RootInlineFormattingContext();
   }
   if (IsItemCursor()) {
-    for (const auto& item : items_) {
-      const LayoutObject* layout_object = item->GetLayoutObject();
-      if (layout_object && layout_object->IsInline())
-        return layout_object->RootInlineFormattingContext();
-    }
+    const NGFragmentItem& item = *fragment_items_->Items().front();
+    const LayoutObject* layout_object = item.GetLayoutObject();
+    if (item.Type() == NGFragmentItem::kLine)
+      return To<LayoutBlockFlow>(layout_object);
+    return layout_object->RootInlineFormattingContext();
   }
   NOTREACHED();
   return nullptr;

@@ -201,39 +201,42 @@ source_set("vaapi_image_decoder_test_common") {
   ]
 }
 
-source_set("jpeg_decoder_unit_test") {
-  testonly = true
-  sources = [ "vaapi_jpeg_decoder_unittest.cc" ]
-  deps = [
-    ":vaapi",
-    ":vaapi_image_decoder_test_common",
-    ":vaapi_test_utils",
-    "//base",
-    "//media/gpu/test:local_gpu_memory_buffer_manager",
-    "//media/parsers",
-    "//testing/gtest",
-    "//third_party/libyuv:libyuv",
-    "//ui/gfx:memory_buffer",
-    "//ui/gfx/codec",
-    "//ui/gfx/geometry",
-  ]
-}
+# TODO(https://crbug.com/1043007): remove is_chromeos.
+if (is_chromeos) {
+  source_set("jpeg_decoder_unit_test") {
+    testonly = true
+    sources = [ "vaapi_jpeg_decoder_unittest.cc" ]
+    deps = [
+      ":vaapi",
+      ":vaapi_image_decoder_test_common",
+      ":vaapi_test_utils",
+      "//base",
+      "//media/gpu/test:local_gpu_memory_buffer_manager",
+      "//media/parsers",
+      "//testing/gtest",
+      "//third_party/libyuv:libyuv",
+      "//ui/gfx:memory_buffer",
+      "//ui/gfx/codec",
+      "//ui/gfx/geometry",
+    ]
+  }
 
-source_set("webp_decoder_unit_test") {
-  testonly = true
-  sources = [ "vaapi_webp_decoder_unittest.cc" ]
-  deps = [
-    ":vaapi",
-    ":vaapi_image_decoder_test_common",
-    ":vaapi_test_utils",
-    "//base",
-    "//media/gpu/test:local_gpu_memory_buffer_manager",
-    "//media/parsers",
-    "//testing/gtest",
-    "//third_party/libwebp",
-    "//ui/gfx:memory_buffer",
-    "//ui/gfx/geometry",
-  ]
+  source_set("webp_decoder_unit_test") {
+    testonly = true
+    sources = [ "vaapi_webp_decoder_unittest.cc" ]
+    deps = [
+      ":vaapi",
+      ":vaapi_image_decoder_test_common",
+      ":vaapi_test_utils",
+      "//base",
+      "//media/gpu/test:local_gpu_memory_buffer_manager",
+      "//media/parsers",
+      "//testing/gtest",
+      "//third_party/libwebp",
+      "//ui/gfx:memory_buffer",
+      "//ui/gfx/geometry",
+    ]
+  }
 }
 
 source_set("vaapi_utils_unittest") {
@@ -251,12 +254,18 @@ source_set("vaapi_utils_unittest") {
 test("vaapi_unittest") {
   sources = [ "vaapi_unittest.cc" ]
   deps = [
-    ":jpeg_decoder_unit_test",
     ":vaapi",
     ":vaapi_utils_unittest",
-    ":webp_decoder_unit_test",
     "//base",
     "//media/gpu/test:helpers",
     "//testing/gtest",
   ]
+
+  # TODO(https://crbug.com/1043007): remove is_chromeos.
+  if (is_chromeos) {
+    deps += [
+      ":jpeg_decoder_unit_test",
+      ":webp_decoder_unit_test",
+    ]
+  }
 }

@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/containers/id_map.h"
 #include "base/debug/stack_trace.h"
 #include "base/gtest_prod_util.h"
@@ -1050,6 +1051,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // TODO(crbug.com/951571): Remove once the bug is debugged.
   // This is set when this service worker becomes redundant.
   base::debug::StackTrace redundant_state_callstack_;
+
+  // Callback to stop service worker small seconds after all controllees are
+  // gone. This callback can be canceled when the service worker starts to
+  // control another client and we know the worker needs to be used more.
+  // Used only when ServiceWorkerTerminationOnNoControllee is on.
+  base::CancelableOnceClosure stop_on_no_controllee_callback_;
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_{this};
 

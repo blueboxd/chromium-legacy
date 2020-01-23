@@ -10,6 +10,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
+struct InstallabilityError;
 class WebContents;
 }
 
@@ -37,7 +38,8 @@ class PageHandler : public protocol::Page::Backend,
  private:
   static void GotInstallabilityErrors(
       std::unique_ptr<GetInstallabilityErrorsCallback> callback,
-      std::vector<std::string> errors);
+      std::vector<std::string> errors,
+      std::vector<content::InstallabilityError> installability_errors);
 
   static void GotManifestIcons(
       std::unique_ptr<GetManifestIconsCallback> callback,

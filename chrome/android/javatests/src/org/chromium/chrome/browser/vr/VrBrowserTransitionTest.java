@@ -31,6 +31,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.test.BundleTestRule;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -465,6 +466,7 @@ public class VrBrowserTransitionTest {
     @Test
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @MediumTest
+    @FlakyTest(message = "crbug.com/1032769")
     public void testIncognitoLearnMoreTriggersDoff() {
         mTestRule.newIncognitoTabFromMenu();
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);

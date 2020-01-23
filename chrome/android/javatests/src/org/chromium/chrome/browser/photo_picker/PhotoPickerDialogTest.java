@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.photo_picker;
 
 import android.net.Uri;
 import android.os.Build;
+import android.os.StrictMode;
 import android.support.test.filters.LargeTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -329,39 +330,49 @@ public class PhotoPickerDialogTest implements PhotoPickerListener, SelectionObse
     @LargeTest
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.N) // Video is only supported on N+.
     public void testVideoPlayerPlayAndRestart() throws Throwable {
-        createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
-        Assert.assertTrue(mDialog.isShowing());
-        waitForDecoder();
+        // Requesting to play a video is not a case of an accidental disk read on the UI thread.
+        StrictMode.ThreadPolicy oldPolicy = TestThreadUtils.runOnUiThreadBlocking(
+                () -> { return StrictMode.allowThreadDiskReads(); });
 
-        PickerCategoryView categoryView = mDialog.getCategoryViewForTesting();
+        try {
+            createDialog(true, Arrays.asList("image/*")); // Multi-select = true.
+            Assert.assertTrue(mDialog.isShowing());
+            waitForDecoder();
 
-        View container = categoryView.findViewById(R.id.playback_container);
-        Assert.assertTrue(container.getVisibility() == View.GONE);
+            PickerCategoryView categoryView = mDialog.getCategoryViewForTesting();
 
-        // This test video takes less than a second to play.
-        String fileName = "chrome/test/data/android/photo_picker/noogler.mp4";
-        File file = new File(UrlUtils.getIsolatedTestFilePath(fileName));
+            View container = categoryView.findViewById(R.id.playback_container);
+            Assert.assertTrue(container.getVisibility() == View.GONE);
 
-        int callCount = onVideoEndedCallback.getCallCount();
+            // This test video takes less than a second to play.
+            String fileName = "chrome/test/data/android/photo_picker/noogler.mp4";
+            File file = new File(UrlUtils.getIsolatedTestFilePath(fileName));
 
-        playVideo(Uri.fromFile(file));
-        Assert.assertTrue(container.getVisibility() == View.VISIBLE);
+            int callCount = onVideoEndedCallback.getCallCount();
 
-        onVideoEndedCallback.waitForCallback(callCount, 1);
+            playVideo(Uri.fromFile(file));
+            Assert.assertTrue(container.getVisibility() == View.VISIBLE);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            View mute = categoryView.findViewById(R.id.mute);
-            categoryView.onClick(mute);
-        });
+            onVideoEndedCallback.waitForCallback(callCount, 1);
 
-        // Clicking the play button should restart playback.
-        callCount = onVideoEndedCallback.getCallCount();
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                View mute = categoryView.findViewById(R.id.mute);
+                categoryView.onClick(mute);
+            });
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            View playbutton = categoryView.findViewById(R.id.video_player_play_button);
-            categoryView.onClick(playbutton);
-        });
+            // Clicking the play button should restart playback.
+            callCount = onVideoEndedCallback.getCallCount();
 
-        onVideoEndedCallback.waitForCallback(callCount, 1);
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                View playbutton = categoryView.findViewById(R.id.video_player_play_button);
+                categoryView.onClick(playbutton);
+            });
+
+            onVideoEndedCallback.waitForCallback(callCount, 1);
+
+            dismissDialog();
+        } finally {
+            TestThreadUtils.runOnUiThreadBlocking(() -> { StrictMode.setThreadPolicy(oldPolicy); });
+        }
     }
 }

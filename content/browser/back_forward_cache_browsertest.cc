@@ -7,6 +7,7 @@
 
 #include "base/command_line.h"
 #include "base/hash/hash.h"
+#include "base/location.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
@@ -262,17 +263,20 @@ class BackForwardCacheBrowserTest : public ContentBrowserTest {
         let result = event_name;
         window.addEventListener(event_name, event => {
           if (event.persisted)
-            result +='.persisted';
-          window.testObservedEvents.push(result);
+            result += '.persisted';
+          window.testObservedEvents.push('window.' + result);
         });
         document.addEventListener(event_name,
-            () => window.testObservedEvents.push(result));
+            () => window.testObservedEvents.push('document.' + result));
       }
     )"));
   }
 
-  void MatchEventList(RenderFrameHostImpl* rfh, base::ListValue list) {
-    EXPECT_EQ(list, EvalJs(rfh, "window.testObservedEvents"));
+  void MatchEventList(RenderFrameHostImpl* rfh,
+                      base::ListValue list,
+                      base::Location location = base::Location::Current()) {
+    EXPECT_EQ(list, EvalJs(rfh, "window.testObservedEvents"))
+        << location.ToString();
   }
 
   // Creates a minimal HTTPS server, accessible through https_server().
@@ -2144,10 +2148,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, Events) {
   EXPECT_EQ(rfh_a, current_frame_host());
   // visibilitychange events are added twice per each because it is fired for
   // both window and document.
-  MatchEventList(rfh_a, ListValueOf("visibilitychange", "visibilitychange",
-                                    "pagehide.persisted", "freeze", "resume",
-                                    "pageshow.persisted", "visibilitychange",
-                                    "visibilitychange"));
+  MatchEventList(
+      rfh_a,
+      ListValueOf("document.visibilitychange", "window.visibilitychange",
+                  "window.pagehide.persisted", "document.freeze",
+                  "document.resume", "window.pageshow.persisted",
+                  "document.visibilitychange", "window.visibilitychange"));
 }
 
 // Tests the events are fired for subframes when going back from the cache.
@@ -2191,14 +2197,18 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, EventsForSubframes) {
   EXPECT_TRUE(rfh_c->is_in_back_forward_cache());
   // visibilitychange events are added twice per each because it is fired for
   // both window and document.
-  MatchEventList(rfh_a, ListValueOf("visibilitychange", "visibilitychange",
-                                    "pagehide.persisted", "freeze", "resume",
-                                    "pageshow.persisted", "visibilitychange",
-                                    "visibilitychange"));
-  MatchEventList(rfh_b, ListValueOf("visibilitychange", "visibilitychange",
-                                    "pagehide.persisted", "freeze", "resume",
-                                    "pageshow.persisted", "visibilitychange",
-                                    "visibilitychange"));
+  MatchEventList(
+      rfh_a,
+      ListValueOf("document.visibilitychange", "window.visibilitychange",
+                  "window.pagehide.persisted", "document.freeze",
+                  "document.resume", "window.pageshow.persisted",
+                  "document.visibilitychange", "window.visibilitychange"));
+  MatchEventList(
+      rfh_b,
+      ListValueOf("document.visibilitychange", "window.visibilitychange",
+                  "window.pagehide.persisted", "document.freeze",
+                  "document.resume", "window.pageshow.persisted",
+                  "document.visibilitychange", "window.visibilitychange"));
 }
 
 // Tests the events are fired when going back from the cache.
@@ -2237,10 +2247,12 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   EXPECT_EQ(rfh_a, current_frame_host());
   // visibilitychange events are added twice per each because it is fired for
   // both window and document.
-  MatchEventList(rfh_a, ListValueOf("visibilitychange", "visibilitychange",
-                                    "pagehide.persisted", "freeze", "resume",
-                                    "pageshow.persisted", "visibilitychange",
-                                    "visibilitychange"));
+  MatchEventList(
+      rfh_a,
+      ListValueOf("document.visibilitychange", "window.visibilitychange",
+                  "window.pagehide.persisted", "document.freeze",
+                  "document.resume", "window.pageshow.persisted",
+                  "document.visibilitychange", "window.visibilitychange"));
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,

@@ -7,13 +7,22 @@
 
 #include <string>
 #include <vector>
-
 #include "base/values.h"
+
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 
 namespace chromeos {
 namespace app_time {
 
 class AppId;
+
+extern const char kUrlList[];
+extern const char kAppList[];
+extern const char kAppId[];
+extern const char kAppType[];
+
+std::string AppTypeToString(apps::mojom::AppType app_type);
+apps::mojom::AppType StringToAppType(const std::string& app_type);
 
 class AppTimeLimitsWhitelistPolicyWrapper {
  public:

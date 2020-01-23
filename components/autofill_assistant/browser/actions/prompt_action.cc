@@ -147,7 +147,8 @@ void PromptAction::UpdateUserActions() {
                                            weak_ptr_factory_.GetWeakPtr(), i));
     user_actions->emplace_back(std::move(user_action));
   }
-  delegate_->Prompt(std::move(user_actions));
+  delegate_->Prompt(std::move(user_actions),
+                    proto_.prompt().disable_force_expand_sheet());
   precondition_changed_ = false;
 }
 

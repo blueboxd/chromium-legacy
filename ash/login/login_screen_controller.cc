@@ -446,12 +446,14 @@ void LoginScreenController::ShowResetScreen() {
   client_->ShowResetScreen();
 }
 
-void LoginScreenController::ShowAccountAccessHelpApp() {
-  client_->ShowAccountAccessHelpApp();
+void LoginScreenController::ShowAccountAccessHelpApp(
+    gfx::NativeWindow parent_window) {
+  client_->ShowAccountAccessHelpApp(parent_window);
 }
 
-void LoginScreenController::ShowParentAccessHelpApp() {
-  client_->ShowParentAccessHelpApp();
+void LoginScreenController::ShowParentAccessHelpApp(
+    gfx::NativeWindow parent_window) {
+  client_->ShowParentAccessHelpApp(parent_window);
 }
 
 void LoginScreenController::ShowLockScreenNotificationSettings() {

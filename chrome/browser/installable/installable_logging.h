@@ -8,6 +8,7 @@
 #include <string>
 
 namespace content {
+struct InstallabilityError;
 class WebContents;
 }
 
@@ -60,6 +61,7 @@ enum InstallableStatusCode {
 // Returns a user-readable description for |code|, or an empty string if |code|
 // should not be exposed.
 std::string GetErrorMessage(InstallableStatusCode code);
+content::InstallabilityError GetInstallabilityError(InstallableStatusCode code);
 
 // Logs a message associated with |code| to the devtools console attached to
 // |web_contents|. Does nothing if |web_contents| is nullptr.

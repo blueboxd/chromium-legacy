@@ -795,7 +795,7 @@ template <typename T>
 struct NativeValueTraits<
     T,
     typename std::enable_if_t<std::is_base_of<bindings::UnionBase, T>::value>>
-    : public NativeValueTraitsBase<T*> {
+    : public NativeValueTraitsBase<T> {
   static T NativeValue(v8::Isolate* isolate,
                        v8::Local<v8::Value> value,
                        ExceptionState& exception_state) {

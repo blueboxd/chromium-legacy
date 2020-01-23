@@ -35,7 +35,7 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "components/captive_portal/captive_portal_detector.h"
+#include "components/captive_portal/core/captive_portal_detector.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"

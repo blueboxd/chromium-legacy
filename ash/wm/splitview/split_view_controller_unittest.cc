@@ -19,7 +19,6 @@
 #include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
-#include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -2897,26 +2896,22 @@ TEST_P(SplitViewTabDraggingTest, NoBackDropDuringDragging) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window(
       CreateWindowWithType(bounds, AppType::BROWSER));
-  WindowBackdrop* window_backdrop = WindowBackdrop::Get(window.get());
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
-  EXPECT_EQ(window_backdrop->type(), WindowBackdrop::BackdropType::kOpaque);
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
+            BackdropWindowMode::kAutoOpaque);
 
   std::unique_ptr<WindowResizer> resizer =
       StartDrag(window.get(), window.get());
   ASSERT_TRUE(resizer.get());
-  EXPECT_TRUE(window_backdrop->temporarily_disabled());
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
-  EXPECT_EQ(window_backdrop->type(), WindowBackdrop::BackdropType::kOpaque);
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
+            BackdropWindowMode::kDisabled);
 
   resizer->Drag(gfx::PointF(), 0);
-  EXPECT_TRUE(window_backdrop->temporarily_disabled());
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
-  EXPECT_EQ(window_backdrop->type(), WindowBackdrop::BackdropType::kOpaque);
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
+            BackdropWindowMode::kDisabled);
 
   resizer->CompleteDrag();
-  EXPECT_FALSE(window_backdrop->temporarily_disabled());
-  EXPECT_EQ(window_backdrop->mode(), WindowBackdrop::BackdropMode::kAuto);
-  EXPECT_EQ(window_backdrop->type(), WindowBackdrop::BackdropType::kOpaque);
+  EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
+            BackdropWindowMode::kAutoOpaque);
 }
 
 // Test that in tablet mode, the window that is in tab-dragging process should

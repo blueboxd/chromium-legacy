@@ -12544,6 +12544,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="47" label="CONTAINER_CONFIGURATION_FAILED"/>
   <int value="48" label="LOAD_COMPONENT_UPDATE_IN_PROGRESS"/>
   <int value="49" label="NEVER_FINISHED"/>
+  <int value="50" label="CONTAINER_SETUP_FAILED"/>
 </enum>
 
 <enum name="CrostiniSettingsEvent">
@@ -19212,6 +19213,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="661" label="DeviceLoginScreenAccessibilityShortcutsEnabled"/>
   <int value="662" label="LocalDiscoveryEnabled"/>
   <int value="663" label="ChromeVariations"/>
+  <int value="664" label="PrintingAPIExtensionsWhitelist"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -63839,6 +63841,10 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="UnifiedConsentSyncAndGoogleServicesSettings">
+  <obsolete>
+    Deprecated 01/2020 because only make searches and browsing better is
+    recorded as a Boolean.
+  </obsolete>
   <int value="0" label="None of the services are enabled"/>
   <int value="1" label="(Obsolete) 'Sync and all Google services' is enabled"/>
   <int value="2" label="(Obsolete) 'Activity and interactions' is enabled"/>

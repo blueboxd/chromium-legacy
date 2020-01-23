@@ -7,12 +7,10 @@
 
 #import <Foundation/Foundation.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
 class GURL;
 @class HandoffManager;
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 // This manager maintains all state related to sharing the active URL to other
 // devices. It has the role of a dispatcher that shares the active URL to

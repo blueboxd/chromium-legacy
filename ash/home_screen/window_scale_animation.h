@@ -36,6 +36,7 @@ class WindowScaleAnimation : public ui::ImplicitAnimationObserver,
   WindowScaleAnimation(
       aura::Window* window,
       WindowScaleType scale_type,
+      base::Optional<BackdropWindowMode> original_backdrop_mode,
       base::OnceClosure opt_callback);
   ~WindowScaleAnimation() override;
 
@@ -51,9 +52,14 @@ class WindowScaleAnimation : public ui::ImplicitAnimationObserver,
   gfx::Transform GetWindowTransformToShelf();
 
   aura::Window* window_;
+  base::Optional<BackdropWindowMode> original_backdrop_mode_;
   base::OnceClosure opt_callback_;
 
   const WindowScaleType scale_type_;
+
+  // When the window scale animation is in progress, we should pause the
+  // backdrop update.
+  base::ScopedClosureRunner scoped_backdrop_update_pause_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
 

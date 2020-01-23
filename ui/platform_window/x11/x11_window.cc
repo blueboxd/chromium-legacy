@@ -33,45 +33,46 @@ namespace ui {
 
 namespace {
 
-ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
-    const PlatformWindowInitProperties& properties) {
-  using WindowType = ui::XWindow::WindowType;
-  using WindowOpacity = ui::XWindow::WindowOpacity;
-  ui::XWindow::Configuration config;
+XWindow::WindowOpacity GetXWindowOpacity(PlatformWindowOpacity opacity) {
+  using WindowOpacity = XWindow::WindowOpacity;
+  switch (opacity) {
+    case PlatformWindowOpacity::kInferOpacity:
+      return WindowOpacity::kInferOpacity;
+    case PlatformWindowOpacity::kOpaqueWindow:
+      return WindowOpacity::kOpaqueWindow;
+    case PlatformWindowOpacity::kTranslucentWindow:
+      return WindowOpacity::kTranslucentWindow;
+  }
+  NOTREACHED() << "Uknown window opacity.";
+  return WindowOpacity::kInferOpacity;
+}
 
-  switch (properties.type) {
+XWindow::WindowType GetXWindowType(PlatformWindowType window_type) {
+  using WindowType = XWindow::WindowType;
+  switch (window_type) {
     case PlatformWindowType::kWindow:
-      config.type = WindowType::kWindow;
-      break;
+      return WindowType::kWindow;
     case PlatformWindowType::kMenu:
-      config.type = WindowType::kMenu;
-      break;
+      return WindowType::kMenu;
     case PlatformWindowType::kTooltip:
-      config.type = WindowType::kTooltip;
-      break;
+      return WindowType::kTooltip;
     case PlatformWindowType::kPopup:
-      config.type = WindowType::kPopup;
-      break;
+      return WindowType::kPopup;
     case PlatformWindowType::kDrag:
-      config.type = WindowType::kDrag;
+      return WindowType::kDrag;
       break;
     case PlatformWindowType::kBubble:
-      config.type = WindowType::kBubble;
-      break;
+      return WindowType::kBubble;
   }
+  NOTREACHED() << "Uknown window type.";
+  return WindowType::kWindow;
+}
 
-  switch (properties.opacity) {
-    case PlatformWindowOpacity::kInferOpacity:
-      config.opacity = WindowOpacity::kInferOpacity;
-      break;
-    case PlatformWindowOpacity::kOpaqueWindow:
-      config.opacity = WindowOpacity::kOpaqueWindow;
-      break;
-    case PlatformWindowOpacity::kTranslucentWindow:
-      config.opacity = WindowOpacity::kTranslucentWindow;
-      break;
-  }
-
+ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
+    const PlatformWindowInitProperties& properties) {
+  ui::XWindow::Configuration config;
+  config.type = GetXWindowType(properties.type);
+  config.opacity = GetXWindowOpacity(properties.opacity);
   config.bounds = properties.bounds;
   config.icon = properties.icon;
   config.force_show_in_taskbar = properties.force_show_in_taskbar;
@@ -83,7 +84,6 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
   config.wm_class_class = properties.wm_class_class;
   config.wm_role_name = properties.wm_role_name;
   config.activatable = properties.activatable;
-  config.visual_id = properties.x_visual_id;
   config.prefer_dark_theme = properties.prefer_dark_theme;
   config.background_color = properties.background_color;
   return config;

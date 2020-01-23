@@ -20,8 +20,8 @@ namespace ash {
 
 class FeaturePodControllerBase;
 
-// ImageButon internally used in FeaturePodButton. Should not be used directly.
-class FeaturePodIconButton : public views::ImageButton {
+// ImageButton internally used in FeaturePodButton. Should not be used directly.
+class FeaturePodIconButton : public views::ToggleImageButton {
  public:
   FeaturePodIconButton(views::ButtonListener* listener, bool is_togglable);
   ~FeaturePodIconButton() override;

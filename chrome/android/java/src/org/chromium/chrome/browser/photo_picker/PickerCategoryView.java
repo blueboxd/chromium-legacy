@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.photo_picker;
 
-import android.Manifest;
 import android.animation.Animator;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -35,6 +34,7 @@ import android.widget.VideoView;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.DiscardableReferencePool.DiscardableReference;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
@@ -83,13 +83,13 @@ public class PickerCategoryView extends RelativeLayout
         // The calculated ratio of the originals for the bitmaps above, were they to be shown
         // un-cropped. NOTE: The |bitmaps| above may already have been cropped and as such might
         // have a different ratio.
-        public float ratio;
+        public float ratioOriginal;
 
         Thumbnail(List<Bitmap> bitmaps, String videoDuration, Boolean fullWidth, float ratio) {
             this.bitmaps = bitmaps;
             this.videoDuration = videoDuration;
             this.fullWidth = fullWidth;
-            this.ratio = ratio;
+            this.ratioOriginal = ratio;
         }
     }
 
@@ -319,6 +319,13 @@ public class PickerCategoryView extends RelativeLayout
             mPickerAdapter.notifyDataSetChanged();
             mRecyclerView.requestLayout();
         }
+
+        if (mVideoControls.getVisibility() != View.GONE) {
+            // When configuration changes, the video overlay controls need to be synced to the new
+            // video size. Post a task, so that size adjustments happen after layout of the video
+            // controls has completed.
+            ThreadUtils.postOnUiThread(() -> { syncOverlayControlsSize(); });
+        }
     }
 
     /**
@@ -352,11 +359,7 @@ public class PickerCategoryView extends RelativeLayout
             startVideoPlayback();
 
             mMediaPlayer.setOnVideoSizeChangedListener(
-                    (MediaPlayer player, int width, int height) -> {
-                        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                                mVideoView.getMeasuredWidth(), mVideoView.getMeasuredHeight());
-                        mVideoControls.setLayoutParams(params);
-                    });
+                    (MediaPlayer player, int width, int height) -> { syncOverlayControlsSize(); });
 
             if (sProgressCallback != null) {
                 mMediaPlayer.setOnInfoListener((MediaPlayer player, int what, int extra) -> {
@@ -603,10 +606,6 @@ public class PickerCategoryView extends RelativeLayout
         return mImageWidth;
     }
 
-    public int getImageHeight() {
-        return mImageHeight;
-    }
-
     public int getSpecialTileHeight() {
         return mSpecialTileHeight;
     }
@@ -710,12 +709,6 @@ public class PickerCategoryView extends RelativeLayout
 
         if (mWorkerTask != null) {
             mWorkerTask.cancel(true);
-        }
-
-        // TODO(finnur): Remove once we figure out the cause of crbug.com/950024.
-        if (!mActivity.getWindowAndroid().hasPermission(
-                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            throw new RuntimeException("Bitmap enumeration without storage read permission");
         }
 
         mEnumStartTime = SystemClock.elapsedRealtime();
@@ -908,6 +901,12 @@ public class PickerCategoryView extends RelativeLayout
         } else {
             startVideoPlayback();
         }
+    }
+
+    private void syncOverlayControlsSize() {
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                mVideoView.getMeasuredWidth(), mVideoView.getMeasuredHeight());
+        mVideoControls.setLayoutParams(params);
     }
 
     private void toggleMute() {

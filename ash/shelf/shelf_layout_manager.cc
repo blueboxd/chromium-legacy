@@ -427,11 +427,6 @@ void ShelfLayoutManager::InitObservers() {
 }
 
 void ShelfLayoutManager::PrepareForShutdown() {
-  // This might get called twice during shell shutdown - once at the beginning,
-  // and once as part of root window controller shutdown.
-  if (in_shutdown_)
-    return;
-
   in_shutdown_ = true;
 
   // Stop observing changes to avoid updating a partially destructed shelf.
@@ -917,13 +912,6 @@ void ShelfLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
   // Shelf needs to be hidden on entering to pinned mode, or restored
   // on exiting from pinned mode.
   UpdateVisibilityState();
-}
-
-void ShelfLayoutManager::OnShellDestroying() {
-  // Prepare for shutdown early, to prevent window stacking changes that may
-  // happen during shutdown (e.g. during overview controller, or tablet mode
-  // controller destruction) from causing visibility and state updates.
-  PrepareForShutdown();
 }
 
 void ShelfLayoutManager::OnSplitViewStateChanged(

@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -27,23 +28,39 @@ import org.chromium.content_public.browser.WebContents;
 /**
  * Coordinator object for gesture navigation.
  */
-public class HistoryNavigationCoordinator
-        implements InsetObserverView.WindowInsetObserver, Destroyable {
+public class HistoryNavigationCoordinator implements InsetObserverView.WindowInsetObserver,
+                                                     Destroyable, PauseResumeWithNativeObserver {
     private CompositorViewHolder mCompositorViewHolder;
     private HistoryNavigationLayout mNavigationLayout;
     private InsetObserverView mInsetObserverView;
     private ActivityTabTabObserver mActivityTabObserver;
     private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private Tab mTab;
+    private boolean mEnabled;
 
     /**
-     * Initializes the navigation layout and internal objects.
+     * Creates the coordinator for gesture navigation and initializes internal objects.
+     * @param lifecycleDispatcher Lifecycle dispatcher for the associated activity.
      * @param compositorViewHolder Parent view for navigation layout.
      * @param tabProvider Activity tab provider.
      * @param insetObserverView View that provides information about the inset and inset
      *        capabilities of the device.
+     * @return HistoryNavigationCoordinator object or null if not enabled via feature flag.
      */
-    public void init(ActivityLifecycleDispatcher lifecycleDispatcher,
+    public static HistoryNavigationCoordinator create(
+            ActivityLifecycleDispatcher lifecycleDispatcher,
+            CompositorViewHolder compositorViewHolder, ActivityTabProvider tabProvider,
+            InsetObserverView insetObserverView) {
+        if (!isFeatureFlagEnabled()) return null;
+        HistoryNavigationCoordinator coordinator = new HistoryNavigationCoordinator();
+        coordinator.init(lifecycleDispatcher, compositorViewHolder, tabProvider, insetObserverView);
+        return coordinator;
+    }
+
+    /**
+     * Initializes the navigation layout and internal objects.
+     */
+    private void init(ActivityLifecycleDispatcher lifecycleDispatcher,
             CompositorViewHolder compositorViewHolder, ActivityTabProvider tabProvider,
             InsetObserverView insetObserverView) {
         mNavigationLayout = new HistoryNavigationLayout(compositorViewHolder.getContext());
@@ -56,14 +73,16 @@ public class HistoryNavigationCoordinator
         mActivityTabObserver = new ActivityTabProvider.ActivityTabTabObserver(tabProvider) {
             @Override
             protected void onObservingDifferentTab(Tab tab) {
-                if (mTab == tab) return;
-                onTabSwitched(tab);
+                if (mTab != null && mTab.isInitialized()) {
+                    SwipeRefreshHandler.from(mTab).setNavigationHandler(null);
+                }
+                mTab = tab;
+                updateNavigationHandler();
             }
 
             @Override
             public void onContentChanged(Tab tab) {
-                initNavigationHandler(
-                        tab, createDelegate(tab), tab.getWebContents(), tab.isNativePage());
+                updateNavigationHandler();
             }
 
             @Override
@@ -74,7 +93,10 @@ public class HistoryNavigationCoordinator
 
         // We wouldn't hear about the first tab until the content changed or we switched tabs
         // if tabProvider.get() != null. Do here what we do when tab switching happens.
-        if (tabProvider.get() != null) onTabSwitched(tabProvider.get());
+        if (tabProvider.get() != null) {
+            mTab = tabProvider.get();
+            onNavigationStateChanged();
+        }
 
         mNavigationLayout.setVisibility(View.INVISIBLE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -87,9 +109,7 @@ public class HistoryNavigationCoordinator
      * Creates {@link HistoryNavigationDelegate} for native/rendered pages on Tab.
      */
     private static HistoryNavigationDelegate createDelegate(Tab tab) {
-        if (!isFeatureFlagEnabled() || ((TabImpl) tab).getActivity() == null) {
-            return HistoryNavigationDelegate.DEFAULT;
-        }
+        if (((TabImpl) tab).getActivity() == null) return HistoryNavigationDelegate.DEFAULT;
 
         return new HistoryNavigationDelegate() {
             // TODO(jinsukkim): Avoid getting activity from tab.
@@ -121,54 +141,70 @@ public class HistoryNavigationCoordinator
         return ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION);
     }
 
-    @Override
-    public void onInsetChanged(int left, int top, int right, int bottom) {
-        // Resets navigation handler when the feature becomes disabled.
-        if (!isNavigationEnabled(mCompositorViewHolder)) {
-            initNavigationHandler(mTab, HistoryNavigationDelegate.DEFAULT, null, false);
+    /**
+     * @return {@code} true if the feature is enabled.
+     */
+    private boolean isFeatureEnabled() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            return true;
+        } else {
+            assert mCompositorViewHolder.isAttachedToWindow();
+            Insets insets = mCompositorViewHolder.getRootWindowInsets().getSystemGestureInsets();
+            return insets.left == 0 && insets.right == 0;
         }
     }
 
-    private void onTabSwitched(Tab tab) {
-        WebContents webContents = tab != null ? tab.getWebContents() : null;
-        HistoryNavigationDelegate delegate =
-                webContents != null && isNavigationEnabled(mCompositorViewHolder)
-                ? createDelegate(tab)
-                : HistoryNavigationDelegate.DEFAULT;
-
-        // Also resets NavigationHandler when there's no tab (going into TabSwitcher).
-        if (tab == null || webContents != null) {
-            initNavigationHandler(
-                    tab, delegate, webContents, tab != null ? tab.isNativePage() : false);
-        }
+    @Override
+    public void onInsetChanged(int left, int top, int right, int bottom) {
+        onNavigationStateChanged();
     }
 
     /**
-     * @param view {@link View} object to obtain the navigation setting from.
-     * @return {@code true} if overscroll navigation is allowed to run on this page.
+     * Called when an event that can change the state of navigation feature. Update enabled status
+     * and (re)initialize NavigationHandler if necessary.
      */
-    private static boolean isNavigationEnabled(View view) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return true;
-        Insets insets = view.getRootWindowInsets().getSystemGestureInsets();
-        return insets.left == 0 && insets.right == 0;
+    private void onNavigationStateChanged() {
+        boolean oldEnabled = mEnabled;
+        mEnabled = isFeatureEnabled();
+        if (mEnabled != oldEnabled) updateNavigationHandler();
     }
 
-    private void initNavigationHandler(Tab tab, HistoryNavigationDelegate delegate,
-            WebContents webContents, boolean isNativePage) {
-        assert mNavigationLayout != null;
-        mNavigationLayout.initNavigationHandler(delegate, webContents, isNativePage);
-        if (mTab != tab) {
-            if (mTab != null) SwipeRefreshHandler.from(mTab).setNavigationHandler(null);
-            if (tab != null) {
-                SwipeRefreshHandler.from(tab).setNavigationHandler(
-                        mNavigationLayout.getNavigationHandler());
+    /**
+     * Initialize or reset {@link NavigationHandler} using the enabled state.
+     */
+    private void updateNavigationHandler() {
+        if (mEnabled) {
+            WebContents webContents = mTab != null ? mTab.getWebContents() : null;
+
+            // Also updates NavigationHandler when tab == null (going into TabSwitcher).
+            if (mTab == null || webContents != null) {
+                HistoryNavigationDelegate delegate = webContents != null
+                        ? createDelegate(mTab)
+                        : HistoryNavigationDelegate.DEFAULT;
+                boolean isNativePage = mTab != null ? mTab.isNativePage() : false;
+                mNavigationLayout.initNavigationHandler(delegate, webContents, isNativePage);
             }
-            mTab = tab;
+        } else {
+            mNavigationLayout.destroy();
+        }
+        if (mTab != null) {
+            SwipeRefreshHandler.from(mTab).setNavigationHandler(
+                    mNavigationLayout.getNavigationHandler());
         }
     }
 
     @Override
     public void onSafeAreaChanged(Rect area) {}
+
+    @Override
+    public void onResumeWithNative() {
+        // Check the enabled status again since the system gesture settings might have changed.
+        // Post the task to work around wrong gesture insets returned from the framework.
+        mNavigationLayout.post(this::onNavigationStateChanged);
+    }
+
+    @Override
+    public void onPauseWithNative() {}
 
     @Override
     public void destroy() {

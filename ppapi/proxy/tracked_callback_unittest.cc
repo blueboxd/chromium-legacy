@@ -245,7 +245,7 @@ class CallbackMockResource : public Resource {
     // |thread_checker_| will bind to the background thread.
     thread_checker_.DetachFromThread();
     loop_resource->task_runner()->PostTask(
-        FROM_HERE, RunWhileLocked(base::Bind(
+        FROM_HERE, RunWhileLocked(base::BindOnce(
                        &CallbackMockResource::CreateCallbacks, this)));
   }
 

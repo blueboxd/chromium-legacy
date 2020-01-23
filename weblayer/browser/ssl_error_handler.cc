@@ -191,7 +191,6 @@ void HandleSSLError(
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-    network_time::NetworkTimeTracker* network_time_tracker,
     base::OnceCallback<
         void(std::unique_ptr<security_interstitials::SecurityInterstitialPage>)>
         blocking_page_ready_callback) {
@@ -209,8 +208,8 @@ void HandleSSLError(
 
     const base::Time now = base::Time::NowFromSystemTime();
 
-    ssl_errors::ClockState clock_state =
-        ssl_errors::GetClockState(now, network_time_tracker);
+    ssl_errors::ClockState clock_state = ssl_errors::GetClockState(
+        now, BrowserProcess::GetInstance()->GetNetworkTimeTracker());
 
     if (clock_state == ssl_errors::CLOCK_STATE_FUTURE ||
         clock_state == ssl_errors::CLOCK_STATE_PAST) {

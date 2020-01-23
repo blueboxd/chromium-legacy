@@ -8,7 +8,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
@@ -43,8 +42,6 @@ import org.chromium.policy.CombinedPolicyProvider;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileLock;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -57,15 +54,12 @@ public final class AwBrowserProcess {
     private static final String TAG = "AwBrowserProcess";
 
     private static final String WEBVIEW_DIR_BASENAME = "webview";
-    private static final String EXCLUSIVE_LOCK_FILE = "webview_data.lock";
 
     // To avoid any potential synchronization issues we post all minidump-copying actions to
     // the same sequence to be run serially.
     private static final TaskRunner sSequencedTaskRunner =
             PostTask.createSequencedTaskRunner(TaskTraits.BEST_EFFORT_MAY_BLOCK);
 
-    private static RandomAccessFile sLockFile;
-    private static FileLock sExclusiveFileLock;
     private static String sWebViewPackageName;
 
     /**
@@ -118,7 +112,7 @@ public final class AwBrowserProcess {
     public static void start() {
         try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped("AwBrowserProcess.start")) {
             final Context appContext = ContextUtils.getApplicationContext();
-            tryObtainingDataDirLock(appContext);
+            AwDataDirLock.lock(appContext);
             // We must post to the UI thread to cover the case that the user
             // has invoked Chromium startup by using the (thread-safe)
             // CookieManager rather than creating a WebView.
@@ -145,43 +139,6 @@ public final class AwBrowserProcess {
                             .startBrowserProcessesSync(!multiProcess);
                 }
             });
-        }
-    }
-
-    private static void tryObtainingDataDirLock(final Context appContext) {
-        try (ScopedSysTraceEvent e1 =
-                        ScopedSysTraceEvent.scoped("AwBrowserProcess.tryObtainingDataDirLock")) {
-            // Many existing apps rely on this even though it's known to be unsafe.
-            // Make it fatal when on P for apps that target P or higher
-            boolean dieOnFailure = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
-                    && appContext.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.P;
-
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-            try {
-                String dataPath = PathUtils.getDataDirectory();
-                File lockFile = new File(dataPath, EXCLUSIVE_LOCK_FILE);
-                boolean success = false;
-                try {
-                    // Note that the file is kept open intentionally.
-                    sLockFile = new RandomAccessFile(lockFile, "rw");
-                    sExclusiveFileLock = sLockFile.getChannel().tryLock();
-                    success = sExclusiveFileLock != null;
-                } catch (IOException e) {
-                    Log.w(TAG, "Failed to create lock file " + lockFile, e);
-                }
-                if (!success) {
-                    final String error =
-                            "Using WebView from more than one process at once with the "
-                            + "same data directory is not supported. https://crbug.com/558377";
-                    if (dieOnFailure) {
-                        throw new RuntimeException(error);
-                    } else {
-                        Log.w(TAG, error);
-                    }
-                }
-            } finally {
-                StrictMode.setThreadPolicy(oldPolicy);
-            }
         }
     }
 

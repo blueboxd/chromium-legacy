@@ -2541,23 +2541,7 @@ LayoutUnit LayoutBlockFlow::InlineBlockBaseline(
     return LastLineBox()->LogicalTop() +
            font_data->GetFontMetrics().Ascent(LastRootBox()->BaselineType());
   }
-  if (!HasLineIfEmpty())
-    return LayoutUnit(-1);
-
-  const SimpleFontData* font_data = FirstLineStyle()->GetFont().PrimaryFont();
-  DCHECK(font_data);
-  if (!font_data)
-    return LayoutUnit(-1);
-
-  const FontMetrics& font_metrics = font_data->GetFontMetrics();
-  return LayoutUnit(
-      (font_metrics.Ascent() +
-       (LineHeight(true, line_direction, kPositionOfInteriorLineBoxes) -
-        font_metrics.Height()) /
-           2 +
-       (line_direction == kHorizontalLine ? BorderTop() + PaddingTop()
-                                          : BorderRight() + PaddingRight()))
-          .ToInt());
+  return EmptyLineBaseline(line_direction);
 }
 
 void LayoutBlockFlow::RemoveFloatingObjectsFromDescendants() {

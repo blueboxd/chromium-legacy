@@ -32,11 +32,10 @@
 namespace blink {
 
 class AXObjectCacheImpl;
-class LayoutMenuList;
 
 class AXMenuList final : public AXLayoutObject {
  public:
-  AXMenuList(LayoutMenuList*, AXObjectCacheImpl&);
+  AXMenuList(LayoutObject*, AXObjectCacheImpl&);
 
   AccessibilityExpanded IsExpanded() const final;
   bool OnNativeClickAction() override;

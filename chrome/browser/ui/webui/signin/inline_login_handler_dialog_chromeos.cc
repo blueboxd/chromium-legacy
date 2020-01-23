@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -71,8 +70,8 @@ void InlineLoginHandlerDialogChromeOS::Show(const std::string& email) {
 
   // TODO(crbug.com/1016828): Remove/update this after the dialog behavior on
   // Chrome OS is defined.
-  ash::WindowBackdrop::Get(dialog->dialog_window())
-      ->SetBackdropType(ash::WindowBackdrop::BackdropType::kSemiOpaque);
+  dialog->dialog_window()->SetProperty(
+      ash::kBackdropWindowMode, ash::BackdropWindowMode::kAutoSemiOpaque);
 }
 
 void InlineLoginHandlerDialogChromeOS::AdjustWidgetInitParams(

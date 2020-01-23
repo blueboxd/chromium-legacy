@@ -1229,6 +1229,10 @@ message PromptProto {
   // If true, run scripts flagged with 'interrupt=true' as soon as their
   // preconditions match, then go back to the prompt.
   optional bool allow_interrupt = 5;
+
+  // If this is true, then we do not force expand the sheet when entering the
+  // prompt state. When false or not set, this keeps the default behavior.
+  optional bool disable_force_expand_sheet = 6;
 }
 
 message ContactDetailsProto {
@@ -1673,6 +1677,10 @@ message ConfigureBottomSheetProto {
 
     // Show swipe handle, header, progress bar, suggestions and actions.
     HANDLE_HEADER_CAROUSELS = 3;
+
+    // Entirely hide the bottom sheet when collapsed.
+    // TBD:
+    HIDDEN = 4;
   }
 
   // Whether the viewport should be resized. Resizing the viewport is an
@@ -1680,15 +1688,25 @@ message ConfigureBottomSheetProto {
   // cautiously.
   optional ViewportResizing viewport_resizing = 1;
 
-  // Set the peek mode. This will change the peek height of the sheet. If
-  // viewport_resizing is set to RESIZE_LAYOUT_VIEWPORT or was set by a previous
-  // ConfigureBottomSheet action, the viewport will be resized to match the new
-  // peek height.
+  // Set the peek mode. This will change the peek mode of the sheet without
+  // actually updating the sheet to that setting. If viewport_resizing is set
+  // to RESIZE_LAYOUT_VIEWPORT or was set by a previous ConfigureBottomSheet
+  // action, the viewport will be resized to match the new peek height.
   optional PeekMode peek_mode = 2;
 
   // Maximum time to wait for the window to resize before continuing with the
   // script. If 0 or unset, the action doesn't wait.
   optional int32 resize_timeout_ms = 3;
+
+  // Option to automatically expand or collapse the sheet or leave as is.
+  oneof apply_state {
+    // Go to the expanded state (same as if the user swiped the bottom sheet
+    // up).
+    bool expand = 4;
+    // Go to the peek state (same as if the user swiped the bottom
+    // sheet down).
+    bool collapse = 5;
+  }
 }
 
 // Allow scripts to display a form with multiple inputs.

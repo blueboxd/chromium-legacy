@@ -10,7 +10,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
-#include "components/captive_portal/captive_portal_detector.h"
+#include "components/captive_portal/core/captive_portal_detector.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"

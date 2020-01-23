@@ -1146,6 +1146,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker] interface QuicTransport
 [Worker]     attribute @@toStringTag
+[Worker]     getter closed
 [Worker]     method close
 [Worker]     method constructor
 [Worker]     method receiveDatagrams

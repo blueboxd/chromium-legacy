@@ -164,6 +164,14 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
     return nullptr;
   }
 
+  using NGLineBoxType = NGPhysicalLineBoxFragment::NGLineBoxType;
+  NGLineBoxType LineBoxType() const {
+    if (Type() == kLine)
+      return static_cast<NGLineBoxType>(sub_type_);
+    NOTREACHED() << this;
+    return NGLineBoxType::kNormalLineBox;
+  }
+
   // DisplayItemClient overrides
   String DebugName() const override;
   IntRect VisualRect() const override;
@@ -374,7 +382,7 @@ class CORE_EXPORT NGFragmentItem : public DisplayItemClient {
 
   // Note: We should not add |bidi_level_| because it is used only for layout.
   unsigned type_ : 2;           // ItemType
-  unsigned sub_type_ : 3;       // NGTextType
+  unsigned sub_type_ : 3;       // NGTextType or NGLineBoxType
   unsigned style_variant_ : 2;  // NGStyleVariant
   // TODO(yosin): We'll remove |is_generated_text_| field when we construct
   // |NGFragmentItem| without |NGPhysicalTextFragment| because usage of this

@@ -23,6 +23,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/printing/common/cloud_print_cdd_conversion.h"
 #include "content/public/browser/browser_context.h"
@@ -102,6 +103,11 @@ PrintingAPIHandler* PrintingAPIHandler::Get(
     content::BrowserContext* browser_context) {
   return BrowserContextKeyedAPIFactory<PrintingAPIHandler>::Get(
       browser_context);
+}
+
+// static
+void PrintingAPIHandler::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  registry->RegisterListPref(prefs::kPrintingAPIExtensionsWhitelist);
 }
 
 void PrintingAPIHandler::SubmitJob(

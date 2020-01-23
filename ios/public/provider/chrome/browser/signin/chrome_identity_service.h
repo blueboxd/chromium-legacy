@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 @class ChromeIdentity;
 @protocol ChromeIdentityBrowserOpener;
@@ -29,7 +30,6 @@
 
 namespace ios {
 
-class ChromeBrowserState;
 class ChromeIdentityService;
 
 // Callback passed to method |GetAccessTokenForScopes()| that returns the

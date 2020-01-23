@@ -5,7 +5,6 @@
 #include "ash/home_screen/window_scale_animation.h"
 
 #include "ash/public/cpp/shelf_config.h"
-#include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
@@ -13,6 +12,9 @@
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "ash/wm/workspace/backdrop_controller.h"
+#include "ash/wm/workspace/workspace_layout_manager.h"
+#include "ash/wm/workspace_controller.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -39,14 +41,20 @@ constexpr float kWindowScaleDownFactor = 0.001f;
 
 }  // namespace
 
-WindowScaleAnimation::WindowScaleAnimation(aura::Window* window,
-                                           WindowScaleType scale_type,
-                                           base::OnceClosure opt_callback)
+WindowScaleAnimation::WindowScaleAnimation(
+    aura::Window* window,
+    WindowScaleType scale_type,
+    base::Optional<BackdropWindowMode> original_backdrop_mode,
+    base::OnceClosure opt_callback)
     : window_(window),
+      original_backdrop_mode_(original_backdrop_mode),
       opt_callback_(std::move(opt_callback)),
-      scale_type_(scale_type) {
+      scale_type_(scale_type),
+      scoped_backdrop_update_pause_(GetWorkspaceControllerForContext(window)
+                                        ->layout_manager()
+                                        ->backdrop_controller()
+                                        ->PauseUpdates()) {
   window_observer_.Add(window);
-  WindowBackdrop::Get(window)->DisableBackdrop();
 
   ui::ScopedLayerAnimationSettings settings(window_->layer()->GetAnimator());
   settings.SetTransitionDuration(kWindowScaleUpOrDownTime);
@@ -78,7 +86,8 @@ void WindowScaleAnimation::OnImplicitAnimationsCompleted() {
     window_->layer()->SetTransform(gfx::Transform());
     window_->layer()->SetOpacity(1.f);
   }
-  WindowBackdrop::Get(window_)->RestoreBackdrop();
+  if (original_backdrop_mode_.has_value())
+    window_->SetProperty(kBackdropWindowMode, *original_backdrop_mode_);
 
   delete this;
 }

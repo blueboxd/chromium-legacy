@@ -93,6 +93,10 @@ class HintsFetcher {
       optimization_guide::proto::RequestContext request_context,
       HintsFetchedCallback hints_fetched_callback);
 
+  // Returns whether a hint for the host is currently being fetched from the
+  // remote Optimization Guide Service. Virtualized for testing.
+  virtual bool IsHintForHostBeingFetched(const std::string& host) const;
+
   // Set |time_clock_| for testing.
   void SetTimeClockForTesting(const base::Clock* time_clock);
 

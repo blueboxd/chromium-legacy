@@ -795,6 +795,7 @@ VISIT_PROTO_FIELDS(const sync_pb::SessionWindow& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SharingMessageSpecifics& proto) {
+  VISIT(message_id);
   VISIT(channel_configuration);
   VISIT_BYTES(payload);
 }

@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "base/time/time.h"
-
 class Profile;
 class PrefRegistrySimple;
 class PrefChangeRegistrar;
@@ -25,18 +23,6 @@ class WebTimeLimitEnforcer;
 // Coordinates per-app time limit for child user.
 class AppTimeController {
  public:
-  // Used for tests to get internal implementation details.
-  class TestApi {
-   public:
-    explicit TestApi(AppTimeController* controller);
-    ~TestApi();
-
-    AppActivityRegistry* app_registry();
-
-   private:
-    AppTimeController* const controller_;
-  };
-
   static bool ArePerAppTimeLimitsEnabled();
   static bool IsAppActivityReportingEnabled();
 
@@ -66,10 +52,6 @@ class AppTimeController {
   void RegisterProfilePrefObservers(PrefService* pref_service);
   void TimeLimitsPolicyUpdated(const std::string& pref_name);
   void TimeLimitsWhitelistPolicyUpdated(const std::string& pref_name);
-
-  // The time of the day when app time limits should be reset.
-  // Defaults to 6am.
-  base::TimeDelta limits_reset_time_ = base::TimeDelta::FromHours(6);
 
   std::unique_ptr<AppServiceWrapper> app_service_wrapper_;
   std::unique_ptr<AppActivityRegistry> app_registry_;

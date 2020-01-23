@@ -86,6 +86,8 @@ class ScriptExecutorDelegate {
   virtual void SetViewportMode(ViewportMode mode) = 0;
   virtual void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) = 0;
   virtual ConfigureBottomSheetProto::PeekMode GetPeekMode() = 0;
+  virtual void ExpandBottomSheet() = 0;
+  virtual void CollapseBottomSheet() = 0;
   virtual bool SetForm(
       std::unique_ptr<FormProto> form,
       base::RepeatingCallback<void(const FormProto::Result*)> changed_callback,
@@ -133,6 +135,9 @@ class ScriptExecutorDelegate {
   // Removes a previously registered listener. Does nothing if no such listeners
   // exists.
   virtual void RemoveListener(Listener* listener) = 0;
+
+  // Set how the sheet should behave when entering a prompt state.
+  virtual void SetExpandSheetForPromptAction(bool expand) = 0;
 
  protected:
   virtual ~ScriptExecutorDelegate() {}

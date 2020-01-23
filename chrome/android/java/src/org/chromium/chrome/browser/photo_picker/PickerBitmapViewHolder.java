@@ -110,7 +110,7 @@ public class PickerBitmapViewHolder
                 : mCategoryView.getHighResThumbnails().get(filePath);
         if (original != null) {
             mItemView.initialize(mBitmapDetails, original.bitmaps, original.videoDuration, false,
-                    original.ratio);
+                    original.ratioOriginal);
             return PickerAdapter.DecodeActions.FROM_CACHE;
         }
 
@@ -135,7 +135,7 @@ public class PickerBitmapViewHolder
             bitmaps.add(placeholder);
 
             mItemView.initialize(
-                    mBitmapDetails, bitmaps, payload.videoDuration, true, payload.ratio);
+                    mBitmapDetails, bitmaps, payload.videoDuration, true, payload.ratioOriginal);
         } else {
             mItemView.initialize(mBitmapDetails, null, null, true, -1);
         }

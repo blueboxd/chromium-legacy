@@ -156,12 +156,14 @@ def _goma_property(*, goma_backend, goma_debug, goma_enable_ats, goma_jobs, os):
     goma_properties['debug'] = True
 
   goma_enable_ats = _default('goma_enable_ats', goma_enable_ats)
-  if goma_enable_ats:  # TODO(crbug.com/1040754): Remove this flag.
-    goma_properties['enable_ats'] = True
-  elif (goma_backend in (goma.backend.RBE_TOT, goma.backend.RBE_STAGING,
-                         goma.backend.RBE_PROD) and
-        (os and os.category in (os_category.LINUX, os_category.WINDOWS))):
-    goma_properties['enable_ats'] = True
+  # TODO(crbug.com/1040754): Remove this flag.
+  if (goma_backend in (goma.backend.RBE_TOT, goma.backend.RBE_STAGING,
+                       goma.backend.RBE_PROD) and
+      os and os.category in (os_category.LINUX, os_category.WINDOWS)):
+    if goma_enable_ats != None:
+      goma_properties['enable_ats'] = goma_enable_ats
+    else:
+      goma_properties['enable_ats'] = True
 
   goma_jobs = _default('goma_jobs', goma_jobs)
   if goma_jobs != None:
@@ -199,7 +201,7 @@ defaults = struct(
     cpu = lucicfg.var(),
     goma_backend = lucicfg.var(),
     goma_debug = lucicfg.var(default = False),
-    goma_enable_ats = lucicfg.var(default = False),
+    goma_enable_ats = lucicfg.var(),
     goma_jobs = lucicfg.var(),
     mastername = lucicfg.var(),
     os = lucicfg.var(),

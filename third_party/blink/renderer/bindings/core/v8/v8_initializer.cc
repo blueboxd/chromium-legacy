@@ -525,7 +525,7 @@ static bool WasmInstanceOverride(
   if (!WTF::IsMainThread() || args.Length() < 1)
     return false;
   v8::Local<v8::Value> source = args[0];
-  if (!source->IsWebAssemblyCompiledModule())
+  if (!source->IsWasmModuleObject())
     return false;
 
   v8::CompiledWasmModule compiled_module =

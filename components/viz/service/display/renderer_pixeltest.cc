@@ -2098,7 +2098,13 @@ TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
       FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
+// Crashes on Linux only. http://crbug.com/1044841
+#if defined(OS_LINUX)
+#define MAYBE_FastPassSaturateFilter DISABLED_FastPassSaturateFilter
+#else
+#define MAYBE_FastPassSaturateFilter FastPassSaturateFilter
+#endif
+TYPED_TEST(RendererPixelTest, MAYBE_FastPassSaturateFilter) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -2220,7 +2226,15 @@ TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
       FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
+// Crashes on Linux only. http://crbug.com/1044841
+#if defined(OS_LINUX)
+#define MAYBE_FastPassColorFilterAlphaTranslation \
+  DISABLED_FastPassColorFilterAlphaTranslation
+#else
+#define MAYBE_FastPassColorFilterAlphaTranslation \
+  FastPassColorFilterAlphaTranslation
+#endif
+TYPED_TEST(RendererPixelTest, MAYBE_FastPassColorFilterAlphaTranslation) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -4538,7 +4552,13 @@ TYPED_TEST(GPURendererPixelTest, RoundedCornerSimpleTextureDrawQuad) {
 
 // This draws a render pass with 2 solid color quads one of which has a rounded
 // corner. The render pass itself also has a rounded corner.
-TYPED_TEST(RendererPixelTest, RoundedCornerOnRenderPass) {
+// Crashes on Linux only. http://crbug.com/1044841
+#if defined(OS_LINUX)
+#define MAYBE_RoundedCornerOnRenderPass DISABLED_RoundedCornerOnRenderPass
+#else
+#define MAYBE_RoundedCornerOnRenderPass RoundedCornerOnRenderPass
+#endif
+TYPED_TEST(RendererPixelTest, MAYBE_RoundedCornerOnRenderPass) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
   constexpr int kInset = 20;
   constexpr int kCornerRadius = 20;

@@ -1312,6 +1312,12 @@ void ExtensionPrefs::UpdateManifest(const Extension* extension) {
   }
 }
 
+void ExtensionPrefs::SetInstallLocation(const std::string& extension_id,
+                                        Manifest::Location location) {
+  UpdateExtensionPref(extension_id, kPrefLocation,
+                      std::make_unique<base::Value>(location));
+}
+
 std::unique_ptr<ExtensionInfo> ExtensionPrefs::GetInstalledInfoHelper(
     const std::string& extension_id,
     const base::DictionaryValue* extension,

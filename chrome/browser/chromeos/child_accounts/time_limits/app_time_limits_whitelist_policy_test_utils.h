@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_CHILD_ACCOUNTS_TIME_LIMITS_APP_TIME_LIMITS_WHITELIST_POLICY_TEST_UTILS_H_
 
 #include <string>
-
 #include "base/values.h"
 
 namespace chromeos {

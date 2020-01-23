@@ -143,6 +143,16 @@ ConfigureBottomSheetProto::PeekMode FakeScriptExecutorDelegate::GetPeekMode() {
   return peek_mode_;
 }
 
+void FakeScriptExecutorDelegate::ExpandBottomSheet() {
+  expand_or_collapse_updated_ = true;
+  expand_or_collapse_value_ = true;
+}
+
+void FakeScriptExecutorDelegate::CollapseBottomSheet() {
+  expand_or_collapse_updated_ = true;
+  expand_or_collapse_value_ = false;
+}
+
 bool FakeScriptExecutorDelegate::HasNavigationError() {
   return navigation_error_;
 }
@@ -161,6 +171,10 @@ void FakeScriptExecutorDelegate::AddListener(Listener* listener) {
 
 void FakeScriptExecutorDelegate::RemoveListener(Listener* listener) {
   listeners_.erase(listener);
+}
+
+void FakeScriptExecutorDelegate::SetExpandSheetForPromptAction(bool expand) {
+  expand_sheet_for_prompt_ = expand;
 }
 
 bool FakeScriptExecutorDelegate::SetForm(

@@ -433,7 +433,9 @@ _CONFIG = [
              'Use WTF containers like WTF::Deque, WTF::HashMap, WTF::HashSet or WTF::Vector instead of the banned std containers. '
              'However, it is fine to use std containers at the boundary layer between Blink and Chromium. '
              'If you are in this case, you can use --bypass-hooks option to avoid the presubmit check when uploading your CL.'),
-            '(blink::)?mojom::(?!blink).+',
+            ('([a-zA-Z]*::)?mojom::(?!blink).+',
+             'Using non-blink mojom types, consider using "::mojom::blink::Foo" instead of "::mojom::Foo" unless you have clear reasons not to do so',
+             'Warning'),
         ],
     },
     {
@@ -989,13 +991,15 @@ def _precompile_config():
     """Turns the raw config into a config of compiled regex."""
     match_nothing_re = re.compile('.^')
 
-    def compile_regexp(match_list):
+    def compile_regexp(match_list, is_list=True):
         """Turns a match list into a compiled regexp.
 
         If match_list is None, a regexp that matches nothing is returned.
         """
+        if (match_list and is_list):
+            match_list = '(?:%s)$' % '|'.join(match_list)
         if match_list:
-            return re.compile('(?:%s)$' % '|'.join(match_list))
+            return re.compile(match_list)
         return match_nothing_re
 
     def compile_disallowed(disallowed_list):
@@ -1006,9 +1010,13 @@ def _precompile_config():
         advice_list = []
         for entry in disallowed_list:
             if isinstance(entry, tuple):
-                match, advice = entry
+                warning = ''
+                if len(entry) == 2:
+                    match, advice = entry
+                else:
+                    match, advice, warning = entry
                 match_list.append(match)
-                advice_list.append((compile_regexp(match), advice))
+                advice_list.append((compile_regexp(match, False), advice, warning == 'Warning'))
             else:
                 # Just a string
                 match_list.append(entry)
@@ -1075,18 +1083,19 @@ def _check_entries_for_identifier(entries, identifier):
 def _find_advice_for_identifier(entries, identifier):
     advice_list = []
     for entry in entries:
-        for matcher, advice in entry.get('advice', []):
+        for matcher, advice, warning in entry.get('advice', []):
             if matcher.match(identifier):
                 advice_list.append(advice)
-    return advice_list
+    return advice_list, warning
 
 
 class BadIdentifier(object):
     """Represents a single instance of a bad identifier."""
-    def __init__(self, identifier, line, advice=None):
+    def __init__(self, identifier, line, advice=None, warning=False):
         self.identifier = identifier
         self.line = line
         self.advice = advice
+        self.warning = warning
 
 
 def check(path, contents):
@@ -1125,9 +1134,9 @@ def check(path, contents):
         if match:
             identifier = match.group(0)
             if not _check_entries_for_identifier(entries, identifier):
-                advice = _find_advice_for_identifier(entries, identifier)
+                advice, warning = _find_advice_for_identifier(entries, identifier)
                 results.append(
-                    BadIdentifier(identifier, line_number, advice))
+                    BadIdentifier(identifier, line_number, advice, warning))
     return results
 
 

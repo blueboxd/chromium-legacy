@@ -310,9 +310,8 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(aura::Window* window,
       if (window->parent() != container)
         container->AddChild(window);
     }
-  } else if (key == kWindowBackdropKey) {
-    // kWindowBackdropKey is not supposed to be cleared.
-    DCHECK(window->GetProperty(kWindowBackdropKey));
+  } else if (key == kBackdropWindowMode) {
+    backdrop_controller_->OnBackdropWindowModePropertyChanged(window);
   }
 }
 
@@ -337,7 +336,8 @@ void WorkspaceLayoutManager::OnWindowBoundsChanged(
     aura::Window* window,
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
-    ui::PropertyChangeReason reason) {}
+    ui::PropertyChangeReason reason) {
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // WorkspaceLayoutManager, wm::ActivationChangeObserver implementation:

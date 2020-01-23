@@ -56,8 +56,6 @@ jumbo_component("controller") {
     sources += [
       "crash_memory_metrics_reporter_impl.cc",
       "crash_memory_metrics_reporter_impl.h",
-      "highest_pmf_reporter.cc",
-      "highest_pmf_reporter.h",
       "memory_usage_monitor_posix.cc",
       "memory_usage_monitor_posix.h",
       "oom_intervention_impl.cc",
@@ -80,6 +78,14 @@ jumbo_component("controller") {
     libs = [
       "AppKit.framework",
       "Foundation.framework",
+    ]
+  }
+  # HighestPmfReporter depends on MemoryUsageMonitor and MemoryUsageMonitor
+  # depends on platform specific code. Explicitly specify supported platforms.
+  if (is_linux || is_win || is_android || is_mac) {
+    sources += [
+      "highest_pmf_reporter.cc",
+      "highest_pmf_reporter.h",
     ]
   }
 
@@ -173,16 +179,15 @@ jumbo_source_set("blink_unittests_sources") {
   }
   if (is_android) {
     sources += [
-      "highest_pmf_reporter_test.cc",
       "memory_usage_monitor_posix_test.cc",
-      "memory_usage_monitor_test.cc",
       "oom_intervention_impl_test.cc",
       "user_level_memory_pressure_signal_generator_test.cc",
     ]
   }
 
-  if (is_mac) {
+  if (is_linux || is_android || is_mac || is_win) {
     sources += [
+      "highest_pmf_reporter_test.cc",
       "memory_usage_monitor_test.cc",
     ]
   }

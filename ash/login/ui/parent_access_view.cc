@@ -805,9 +805,13 @@ void ParentAccessView::ButtonPressed(views::Button* sender,
     // TODO(https://crbug.com/999387): Remove this when handling touch
     // cancellation is fixed for system modal windows.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce([]() {
-          Shell::Get()->login_screen_controller()->ShowParentAccessHelpApp();
-        }));
+        FROM_HERE,
+        base::BindOnce(
+            [](gfx::NativeWindow parent_window) {
+              Shell::Get()->login_screen_controller()->ShowParentAccessHelpApp(
+                  parent_window);
+            },
+            GetWidget()->GetNativeWindow()));
   } else if (sender == submit_button_) {
     SubmitCode();
   }

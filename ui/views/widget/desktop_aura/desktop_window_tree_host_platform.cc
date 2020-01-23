@@ -42,36 +42,43 @@ bool DetermineInactivity(ui::WindowShowState show_state) {
   return show_state == ui::SHOW_STATE_INACTIVE;
 }
 
+ui::PlatformWindowOpacity GetPlatformWindowOpacity(
+    Widget::InitParams::WindowOpacity opacity) {
+  switch (opacity) {
+    case Widget::InitParams::WindowOpacity::kInferred:
+      return ui::PlatformWindowOpacity::kInferOpacity;
+    case Widget::InitParams::WindowOpacity::kOpaque:
+      return ui::PlatformWindowOpacity::kOpaqueWindow;
+    case Widget::InitParams::WindowOpacity::kTranslucent:
+      return ui::PlatformWindowOpacity::kTranslucentWindow;
+  }
+  return ui::PlatformWindowOpacity::kOpaqueWindow;
+}
+
+ui::PlatformWindowType GetPlatformWindowType(
+    Widget::InitParams::Type window_type) {
+  switch (window_type) {
+    case Widget::InitParams::TYPE_WINDOW:
+      return ui::PlatformWindowType::kWindow;
+    case Widget::InitParams::TYPE_MENU:
+      return ui::PlatformWindowType::kMenu;
+    case Widget::InitParams::TYPE_TOOLTIP:
+      return ui::PlatformWindowType::kTooltip;
+    case Widget::InitParams::TYPE_DRAG:
+      return ui::PlatformWindowType::kDrag;
+    case Widget::InitParams::TYPE_BUBBLE:
+      return ui::PlatformWindowType::kBubble;
+    default:
+      return ui::PlatformWindowType::kPopup;
+  }
+  NOTREACHED();
+  return ui::PlatformWindowType::kPopup;
+}
+
 ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
     const Widget::InitParams& params) {
   ui::PlatformWindowInitProperties properties;
-
-  switch (params.type) {
-    case Widget::InitParams::TYPE_WINDOW:
-      properties.type = ui::PlatformWindowType::kWindow;
-      break;
-
-    case Widget::InitParams::TYPE_MENU:
-      properties.type = ui::PlatformWindowType::kMenu;
-      break;
-
-    case Widget::InitParams::TYPE_TOOLTIP:
-      properties.type = ui::PlatformWindowType::kTooltip;
-      break;
-
-    case Widget::InitParams::TYPE_DRAG:
-      properties.type = ui::PlatformWindowType::kDrag;
-      break;
-
-    case Widget::InitParams::TYPE_BUBBLE:
-      properties.type = ui::PlatformWindowType::kBubble;
-      break;
-
-    default:
-      properties.type = ui::PlatformWindowType::kPopup;
-      break;
-  }
-
+  properties.type = GetPlatformWindowType(params.type);
   properties.activatable =
       params.activatable == Widget::InitParams::ACTIVATABLE_YES;
   properties.force_show_in_taskbar = params.force_show_in_taskbar;
@@ -80,21 +87,10 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
   properties.visible_on_all_workspaces = params.visible_on_all_workspaces;
   properties.remove_standard_frame = params.remove_standard_frame;
   properties.workspace = params.workspace;
+  properties.opacity = GetPlatformWindowOpacity(params.opacity);
 
   if (params.parent && params.parent->GetHost())
     properties.parent_widget = params.parent->GetHost()->GetAcceleratedWidget();
-
-  switch (params.opacity) {
-    case Widget::InitParams::WindowOpacity::kInferred:
-      properties.opacity = ui::PlatformWindowOpacity::kInferOpacity;
-      break;
-    case Widget::InitParams::WindowOpacity::kOpaque:
-      properties.opacity = ui::PlatformWindowOpacity::kOpaqueWindow;
-      break;
-    case Widget::InitParams::WindowOpacity::kTranslucent:
-      properties.opacity = ui::PlatformWindowOpacity::kTranslucentWindow;
-      break;
-  }
 
   return properties;
 }

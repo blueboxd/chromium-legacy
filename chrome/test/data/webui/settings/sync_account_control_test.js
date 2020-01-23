@@ -28,13 +28,6 @@ cr.define('settings_sync_account_control', function() {
       testElement.syncStatus = {signedIn: signedIn};
     }
 
-    suiteSetup(function() {
-      // Force UIs to think DICE is enabled for this profile.
-      loadTimeData.overrideValues({
-        diceEnabled: true,
-      });
-    });
-
     setup(function() {
       sync_test_util.setupRouterWithSyncRoutes();
       browserProxy = new TestSyncBrowserProxy();

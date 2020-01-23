@@ -323,6 +323,8 @@ TEST_F(QuicTransportTest, FailedConnect) {
   auto* quic_transport = QuicTransport::Create(
       scope.GetScriptState(), String("quic-transport://example.com/"),
       ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester closed_tester(scope.GetScriptState(),
+                                    quic_transport->closed());
 
   test::RunPendingTasks();
 
@@ -336,6 +338,7 @@ TEST_F(QuicTransportTest, FailedConnect) {
 
   test::RunPendingTasks();
   EXPECT_FALSE(quic_transport->HasPendingActivity());
+  EXPECT_TRUE(closed_tester.IsRejected());
 }
 
 TEST_F(QuicTransportTest, CloseDuringConnect) {
@@ -344,6 +347,8 @@ TEST_F(QuicTransportTest, CloseDuringConnect) {
   auto* quic_transport = QuicTransport::Create(
       scope.GetScriptState(), String("quic-transport://example.com/"),
       ASSERT_NO_EXCEPTION);
+  ScriptPromiseTester closed_tester(scope.GetScriptState(),
+                                    quic_transport->closed());
 
   test::RunPendingTasks();
 
@@ -355,12 +360,15 @@ TEST_F(QuicTransportTest, CloseDuringConnect) {
   test::RunPendingTasks();
 
   EXPECT_FALSE(quic_transport->HasPendingActivity());
+  EXPECT_TRUE(closed_tester.IsFulfilled());
 }
 
 TEST_F(QuicTransportTest, CloseAfterConnection) {
   V8TestingScope scope;
   auto* quic_transport =
       CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
+  ScriptPromiseTester closed_tester(scope.GetScriptState(),
+                                    quic_transport->closed());
 
   WebTransportCloseInfo close_info;
   close_info.setErrorCode(42);
@@ -373,6 +381,7 @@ TEST_F(QuicTransportTest, CloseAfterConnection) {
   // start sending it.
 
   EXPECT_FALSE(quic_transport->HasPendingActivity());
+  EXPECT_TRUE(closed_tester.IsFulfilled());
 
   // Calling close again does nothing.
   quic_transport->close(nullptr);
@@ -422,6 +431,9 @@ TEST_F(QuicTransportTest, GarbageCollectMojoConnectionError) {
         CreateAndConnectSuccessfully(scope, "quic-transport://example.com");
   }
 
+  ScriptPromiseTester closed_tester(scope.GetScriptState(),
+                                    quic_transport->closed());
+
   // Closing the server-side of the pipe causes a mojo connection error.
   client_remote_.reset();
 
@@ -431,6 +443,7 @@ TEST_F(QuicTransportTest, GarbageCollectMojoConnectionError) {
       scope.GetIsolate(), v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
 
   EXPECT_FALSE(quic_transport);
+  EXPECT_TRUE(closed_tester.IsRejected());
 }
 
 TEST_F(QuicTransportTest, SendDatagram) {

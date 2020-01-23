@@ -22,7 +22,7 @@
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/url_constants.h"
-#include "components/captive_portal/buildflags.h"
+#include "components/captive_portal/core/buildflags.h"
 #include "components/grit/dev_ui_components_resources.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"

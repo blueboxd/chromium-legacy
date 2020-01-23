@@ -41,6 +41,7 @@
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/service_worker_external_request_result.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/result_codes.h"
 #include "net/base/net_errors.h"
@@ -63,6 +64,13 @@ constexpr base::TimeDelta kRequestTimeout = base::TimeDelta::FromMinutes(5);
 
 const base::FeatureParam<int> kUpdateDelayParam{
     &blink::features::kServiceWorkerUpdateDelay, "update_delay_in_ms", 1000};
+
+// The default value is set to max since it's not used when the feature is
+// disabled. In that case, the service worker will be terminated by the idle
+// timeout.
+const base::FeatureParam<int> kTerminationDelayParam{
+    &features::kServiceWorkerTerminationOnNoControllee,
+    "termination_delay_in_ms", std::numeric_limits<int>::max()};
 
 const char kClaimClientsStateErrorMesage[] =
     "Only the active worker can claim clients.";
@@ -723,6 +731,15 @@ void ServiceWorkerVersion::AddControllee(
   // invalid controller status.
   CHECK(status_ == ACTIVATING || status_ == ACTIVATED);
 
+  if (base::FeatureList::IsEnabled(
+          features::kServiceWorkerTerminationOnNoControllee) &&
+      !stop_on_no_controllee_callback_.IsCancelled()) {
+    DCHECK(!HasControllee());
+
+    // Cancel to stop the worker since the worker is going to have a controllee.
+    stop_on_no_controllee_callback_.Cancel();
+  }
+
   controllee_map_[uuid] = container_host;
   embedded_worker_->UpdateForegroundPriority();
   ClearTick(&no_controllees_time_);
@@ -750,12 +767,33 @@ void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
   controllee_map_.erase(client_uuid);
 
   embedded_worker_->UpdateForegroundPriority();
+
   // Notify observers asynchronously since this gets called during
   // ServiceWorkerProviderHost's destructor, and we don't want observers to do
   // work during that.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&ServiceWorkerVersion::NotifyControlleeRemoved,
                                 weak_factory_.GetWeakPtr(), client_uuid));
+
+  if (base::FeatureList::IsEnabled(
+          features::kServiceWorkerTerminationOnNoControllee) &&
+      !HasControllee()) {
+    // Terminate the worker |delay_ms| ms after all controllees are gone.
+    auto delay_ms =
+        base::TimeDelta::FromMilliseconds(kTerminationDelayParam.Get());
+    stop_on_no_controllee_callback_.Reset(base::BindOnce(
+        [](base::WeakPtr<ServiceWorkerVersion> version) {
+          if (!version)
+            return;
+          // The worker should not have controllee because the callback is
+          // cancelled when a new controllee appears.
+          DCHECK(!version->HasControllee());
+          version->StopWorker(base::DoNothing());
+        },
+        weak_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, stop_on_no_controllee_callback_.callback(), delay_ms);
+  }
 }
 
 void ServiceWorkerVersion::MoveControlleeToBackForwardCacheMap(

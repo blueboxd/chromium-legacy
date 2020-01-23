@@ -25,7 +25,7 @@ source_set("ssl") {
     "//base",
     "//base:i18n",
     "//components/autofill/ios/form_util",
-    "//components/captive_portal",
+    "//components/captive_portal/core",
     "//components/security_interstitials/core",
     "//components/security_state/core",
     "//components/security_state/ios",

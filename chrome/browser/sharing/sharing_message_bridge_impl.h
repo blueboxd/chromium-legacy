@@ -26,6 +26,8 @@ class SharingMessageBridgeImpl : public SharingMessageBridge,
   // SharingMessageBridge implementation.
   void SendSharingMessage(
       std::unique_ptr<sync_pb::SharingMessageSpecifics> specifics) override;
+  base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate()
+      override;
 
   // ModelTypeSyncBridge implementation.
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
@@ -40,8 +42,6 @@ class SharingMessageBridgeImpl : public SharingMessageBridge,
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
-  bool SupportsGetClientTag() const override;
-  bool SupportsGetStorageKey() const override;
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_MESSAGE_BRIDGE_IMPL_H_

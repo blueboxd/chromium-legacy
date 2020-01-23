@@ -194,7 +194,7 @@ class AssistantBottomBarCoordinator
         model.addObserver((source, propertyKey) -> {
             if (AssistantModel.VISIBLE == propertyKey) {
                 if (model.get(AssistantModel.VISIBLE)) {
-                    showAndExpand();
+                    showContentAndExpand();
                 } else {
                     hide();
                 }
@@ -277,7 +277,7 @@ class AssistantBottomBarCoordinator
     }
 
     /** Request showing the Assistant bottom bar view and expand the sheet. */
-    public void showAndExpand() {
+    public void showContentAndExpand() {
         BottomSheetUtils.showContentAndExpand(
                 mBottomSheetController, mContent, /* animate= */ true);
     }
@@ -299,6 +299,16 @@ class AssistantBottomBarCoordinator
     void setPeekMode(@AssistantPeekHeightCoordinator.PeekMode int peekMode) {
         mPeekHeightCoordinator.setPeekMode(peekMode);
         maybeShowHeaderChip();
+    }
+
+    /** Expand the bottom sheet. */
+    void expand() {
+        mBottomSheetController.expandSheet();
+    }
+
+    /** Collapse the bottom sheet to the peek mode. */
+    void collapse() {
+        mBottomSheetController.collapseSheet(/* animate = */ true);
     }
 
     @Override

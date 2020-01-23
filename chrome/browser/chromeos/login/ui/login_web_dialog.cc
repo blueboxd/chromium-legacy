@@ -60,6 +60,8 @@ LoginWebDialog::LoginWebDialog(content::BrowserContext* browser_context,
     parent_window_ =
         chromeos::LoginDisplayHost::default_host()->GetNativeWindow();
   }
+  LOG_IF(WARNING, !parent_window)
+      << "No parent window. Dialog sizes could be wrong";
 }
 
 LoginWebDialog::~LoginWebDialog() {}

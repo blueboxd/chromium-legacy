@@ -109,9 +109,9 @@ bool MessageHandler::LoopIsValid() const {
 
 void MessageHandler::HandleMessage(ScopedPPVar var) {
   message_loop_->task_runner()->PostTask(
-      FROM_HERE, RunWhileLocked(base::Bind(&HandleMessageWrapper,
-                                           handler_if_->HandleMessage,
-                                           instance_, user_data_, var)));
+      FROM_HERE, RunWhileLocked(base::BindOnce(&HandleMessageWrapper,
+                                               handler_if_->HandleMessage,
+                                               instance_, user_data_, var)));
 }
 
 void MessageHandler::HandleBlockingMessage(
@@ -119,7 +119,7 @@ void MessageHandler::HandleBlockingMessage(
     std::unique_ptr<IPC::Message> reply_msg) {
   message_loop_->task_runner()->PostTask(
       FROM_HERE,
-      RunWhileLocked(base::Bind(
+      RunWhileLocked(base::BindOnce(
           &HandleBlockingMessageWrapper, handler_if_->HandleBlockingMessage,
           instance_, user_data_, var, base::Passed(std::move(reply_msg)))));
 }

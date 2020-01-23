@@ -126,7 +126,8 @@ class ScriptExecutor : public ActionDelegate,
   void WriteUserData(
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
   void GetFullCard(GetFullCardCallback callback) override;
-  void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions) override;
+  void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions,
+              bool disable_force_expand_sheet) override;
   void CleanUpAfterPrompt() override;
   void FillAddressForm(
       const autofill::AutofillProfile* profile,
@@ -210,6 +211,8 @@ class ScriptExecutor : public ActionDelegate,
   ViewportMode GetViewportMode() override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;
   ConfigureBottomSheetProto::PeekMode GetPeekMode() override;
+  void ExpandBottomSheet() override;
+  void CollapseBottomSheet() override;
   void WaitForWindowHeightChange(
       base::OnceCallback<void(const ClientStatus&)> callback) override;
   const ClientSettings& GetSettings() override;

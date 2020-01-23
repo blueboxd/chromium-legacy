@@ -23,9 +23,19 @@ class UnifiedSliderListener : public views::ButtonListener,
   ~UnifiedSliderListener() override = default;
 };
 
+// Custom slider for the system menu to use different color scheme.
+class SystemSlider : public views::Slider {
+ public:
+  explicit SystemSlider(views::SliderListener* listener);
+
+ private:
+  SkColor GetThumbColor() const override;
+  SkColor GetTroughColor() const override;
+};
+
 // A slider that ignores inputs.
 // TODO(tetsui): Move to anonymous namespace.
-class ReadOnlySlider : public views::Slider {
+class ReadOnlySlider : public SystemSlider {
  public:
   ReadOnlySlider();
 
@@ -44,7 +54,7 @@ class ReadOnlySlider : public views::Slider {
 };
 
 // A button used in a slider row of UnifiedSystemTray. The button is togglable.
-class UnifiedSliderButton : public TopShortcutButton {
+class UnifiedSliderButton : public views::ToggleImageButton {
  public:
   UnifiedSliderButton(views::ButtonListener* listener,
                       const gfx::VectorIcon& icon,
@@ -63,16 +73,22 @@ class UnifiedSliderButton : public TopShortcutButton {
   // views::Button:
   const char* GetClassName() const override;
 
-  // views::ImageButton:
+  // views::ToggleImageButton:
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override;
 
-  // TopShortcutButton:
   void PaintButtonContents(gfx::Canvas* canvas) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
-  // Ture if the button is currently toggled.
+  // True if the button is currently toggled.
   bool toggled_ = false;
+
+  // Icon used when the button is toggled.
+  gfx::ImageSkia toggled_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSliderButton);
 };

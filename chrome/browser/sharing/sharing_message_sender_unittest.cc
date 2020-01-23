@@ -29,8 +29,11 @@ const char kAuthSecret[] = "auth_secret";
 const char kFCMToken[] = "vapid_fcm_token";
 const char kAuthorizedEntity[] = "authorized_entity";
 const char kSenderVapidFcmToken[] = "sender_vapid_fcm_token";
-const char kSenderP256dh[] = "sender_p256dh";
-const char kSenderAuthSecret[] = "sender_auth_secret";
+const char kSenderVapidP256dh[] = "sender_vapid_p256dh";
+const char kSenderVapidAuthSecret[] = "sender_vapid_auth_secret";
+const char kSenderSenderIdFcmToken[] = "sender_sender_id_fcm_token";
+const char kSenderSenderIdP256dh[] = "sender_sender_id_p256dh";
+const char kSenderSenderIdAuthSecret[] = "sender_sender_id_auth_secret";
 const char kSenderMessageID[] = "sender_message_id";
 constexpr base::TimeDelta kTimeToLive = base::TimeDelta::FromSeconds(10);
 
@@ -75,8 +78,9 @@ class MockSendMessageDelegate
 // static
 syncer::DeviceInfo::SharingInfo CreateLocalSharingInfo() {
   return syncer::DeviceInfo::SharingInfo(
-      {kSenderVapidFcmToken, kSenderP256dh, kSenderAuthSecret},
-      {"sender_id_fcm_token", "sender_id_p256dh", "sender_id_auth_secret"},
+      {kSenderVapidFcmToken, kSenderVapidP256dh, kSenderVapidAuthSecret},
+      {kSenderSenderIdFcmToken, kSenderSenderIdP256dh,
+       kSenderSenderIdAuthSecret},
       std::set<sync_pb::SharingSpecificFields::EnabledFeatures>());
 }
 
@@ -244,9 +248,15 @@ TEST_F(SharingMessageSenderTest, MessageSent_AckReceived) {
             message.sender_device_name());
         ASSERT_TRUE(local_device->sharing_info().has_value());
         auto& fcm_configuration = message.fcm_channel_configuration();
-        ASSERT_EQ(kSenderVapidFcmToken, fcm_configuration.fcm_token());
-        ASSERT_EQ(kSenderP256dh, fcm_configuration.p256dh());
-        ASSERT_EQ(kSenderAuthSecret, fcm_configuration.auth_secret());
+        ASSERT_EQ(kSenderVapidFcmToken, fcm_configuration.vapid_fcm_token());
+        ASSERT_EQ(kSenderVapidP256dh, fcm_configuration.vapid_p256dh());
+        ASSERT_EQ(kSenderVapidAuthSecret,
+                  fcm_configuration.vapid_auth_secret());
+        ASSERT_EQ(kSenderSenderIdFcmToken,
+                  fcm_configuration.sender_id_fcm_token());
+        ASSERT_EQ(kSenderSenderIdP256dh, fcm_configuration.sender_id_p256dh());
+        ASSERT_EQ(kSenderSenderIdAuthSecret,
+                  fcm_configuration.sender_id_auth_secret());
 
         // Simulate ack message received.
         std::unique_ptr<chrome_browser_sharing::ResponseMessage>

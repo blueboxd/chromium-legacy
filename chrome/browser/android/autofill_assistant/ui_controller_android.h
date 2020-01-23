@@ -103,6 +103,8 @@ class UiControllerAndroid : public ControllerObserver {
   void OnViewportModeChanged(ViewportMode mode) override;
   void OnPeekModeChanged(
       ConfigureBottomSheetProto::PeekMode peek_mode) override;
+  void OnExpandBottomSheet() override;
+  void OnCollapseBottomSheet() override;
   void OnOverlayColorsChanged(const UiDelegate::OverlayColors& colors) override;
   void OnFormChanged(const FormProto* form) override;
   void OnClientSettingsChanged(const ClientSettings& settings) override;
@@ -203,7 +205,7 @@ class UiControllerAndroid : public ControllerObserver {
 
   void SetOverlayState(OverlayState state);
   void AllowShowingSoftKeyboard(bool enabled);
-  void ExpandBottomSheet();
+  void ShowContentAndExpandBottomSheet();
   void SetSpinPoodle(bool enabled);
   std::string GetDebugContext();
   void DestroySelf();

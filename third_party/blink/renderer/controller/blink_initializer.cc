@@ -62,13 +62,17 @@
 
 #if defined(OS_ANDROID)
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
-#include "third_party/blink/renderer/controller/highest_pmf_reporter.h"
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
 #include "third_party/blink/renderer/controller/user_level_memory_pressure_signal_generator.h"
 #endif
 
 #if defined(OS_LINUX)
 #include "third_party/blink/renderer/controller/memory_usage_monitor_posix.h"
+#endif
+
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_MACOSX) || \
+    defined(OS_WIN)
+#include "third_party/blink/renderer/controller/highest_pmf_reporter.h"
 #endif
 
 namespace blink {
@@ -143,7 +147,10 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
   // Initialize CrashMemoryMetricsReporterImpl in order to assure that memory
   // allocation does not happen in OnOOMCallback.
   CrashMemoryMetricsReporterImpl::Instance();
+#endif
 
+#if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_MACOSX) || \
+    defined(OS_WIN)
   // Start reporting the highest private memory footprint after the first
   // navigation.
   HighestPmfReporter::Instance();

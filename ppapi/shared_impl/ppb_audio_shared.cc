@@ -181,8 +181,9 @@ void PPB_Audio_Shared::StopThread() {
   } else {
     if (audio_thread_.get()) {
       auto local_audio_thread(std::move(audio_thread_));
-      CallWhileUnlocked(base::Bind(&base::DelegateSimpleThread::Join,
-                                   base::Unretained(local_audio_thread.get())));
+      CallWhileUnlocked(
+          base::BindOnce(&base::DelegateSimpleThread::Join,
+                         base::Unretained(local_audio_thread.get())));
     }
   }
 }

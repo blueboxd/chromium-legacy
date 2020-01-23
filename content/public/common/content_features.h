@@ -108,6 +108,8 @@ CONTENT_EXPORT extern const base::Feature
 CONTENT_EXPORT extern const base::Feature kServiceWorkerOnUI;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerPaymentApps;
 CONTENT_EXPORT extern const base::Feature kServiceWorkerPrefersUnusedProcess;
+CONTENT_EXPORT extern const base::Feature
+    kServiceWorkerTerminationOnNoControllee;
 CONTENT_EXPORT extern const base::Feature kSharedArrayBuffer;
 CONTENT_EXPORT extern const base::Feature
     kSignedExchangePrefetchCacheForNavigations;

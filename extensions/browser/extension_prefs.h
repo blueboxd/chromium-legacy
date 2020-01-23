@@ -310,6 +310,11 @@ class ExtensionPrefs : public KeyedService {
   // Returns base extensions install directory.
   const base::FilePath& install_directory() const { return install_directory_; }
 
+  // For updating the prefs when the install location is changed for the
+  // extension.
+  void SetInstallLocation(const std::string& extension_id,
+                          Manifest::Location location);
+
   // Returns whether the extension with |id| has its blacklist bit set.
   //
   // WARNING: this only checks the extension's entry in prefs, so by definition

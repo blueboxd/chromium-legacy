@@ -435,7 +435,8 @@ void CollectUserDataAction::OnShowToUser(UserData* user_data,
   if (collect_user_data.has_prompt()) {
     delegate_->SetStatusMessage(collect_user_data.prompt());
   }
-  delegate_->Prompt(nullptr);
+  delegate_->Prompt(/* user_actions = */ nullptr,
+                    /* disable_force_expand_sheet = */ false);
   delegate_->CollectUserData(collect_user_data_options_.get());
 }
 

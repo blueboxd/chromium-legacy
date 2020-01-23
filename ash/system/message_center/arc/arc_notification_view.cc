@@ -245,4 +245,8 @@ void ArcNotificationView::OnItemDestroying() {
   item_ = nullptr;
 }
 
+aura::Window* ArcNotificationView::GetNativeContainerWindowForTest() const {
+  return content_view_->GetNativeViewContainer();
+}
+
 }  // namespace ash

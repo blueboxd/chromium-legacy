@@ -88,6 +88,11 @@ class ASH_EXPORT AshColorProvider {
     // Color for prominent icon button, e.g, "Add connection" icon button inside
     // VPN detailed view.
     kProminentIconButton,
+
+    // Color for system menu icon buttons with inverted dark mode colors, e.g,
+    // FeaturePodIconButton
+    kIconSystemMenu,
+    kIconSystemMenuToggled,
   };
 
   // Attributes of ripple, includes the base color, opacity of inkdrop and

@@ -5,7 +5,7 @@
 #include "chrome/browser/captive_portal/captive_portal_login_detector.h"
 
 #include "chrome/browser/captive_portal/captive_portal_service_factory.h"
-#include "components/captive_portal/captive_portal_types.h"
+#include "components/captive_portal/core/captive_portal_types.h"
 
 using captive_portal::CaptivePortalResult;
 

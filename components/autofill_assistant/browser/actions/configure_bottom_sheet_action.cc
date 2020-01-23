@@ -71,6 +71,11 @@ void ConfigureBottomSheetAction::InternalProcessAction(
     delegate_->SetPeekMode(proto.peek_mode());
   }
 
+  if (proto.has_expand() && proto.expand())
+    delegate_->ExpandBottomSheet();
+  if (proto.has_collapse() && proto.collapse())
+    delegate_->CollapseBottomSheet();
+
   if (callback) {
     UpdateProcessedAction(OkClientStatus());
     std::move(callback).Run(std::move(processed_action_proto_));

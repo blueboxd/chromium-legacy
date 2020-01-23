@@ -10,5 +10,7 @@ blink_core_sources("mathml") {
     "mathml_element.h",
     "mathml_row_element.cc",
     "mathml_row_element.h",
+    "mathml_space_element.cc",
+    "mathml_space_element.h",
   ]
 }

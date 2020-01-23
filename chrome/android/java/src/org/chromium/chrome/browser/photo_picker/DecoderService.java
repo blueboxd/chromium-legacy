@@ -114,7 +114,7 @@ public class DecoderService extends Service {
                     Log.e(TAG, "Closing failed " + filePath + " (width: " + width + ") " + e);
                 }
 
-                Bitmap bitmap = decodedBitmap.first;
+                Bitmap bitmap = decodedBitmap != null ? decodedBitmap.first : null;
                 if (bitmap == null) {
                     Log.e(TAG, "Decode failed " + filePath + " (width: " + width + ")");
                     sendReply(callback, bundle); // Sends SUCCESS == false;

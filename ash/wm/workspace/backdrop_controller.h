@@ -11,7 +11,6 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
-#include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -19,7 +18,6 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {
@@ -49,8 +47,7 @@ class ASH_EXPORT BackdropController : public AccessibilityObserver,
                                       public OverviewObserver,
                                       public SplitViewObserver,
                                       public WallpaperControllerObserver,
-                                      public TabletModeObserver,
-                                      public WindowBackdrop::Observer {
+                                      public TabletModeObserver {
  public:
   explicit BackdropController(aura::Window* container);
   ~BackdropController() override;
@@ -58,6 +55,7 @@ class ASH_EXPORT BackdropController : public AccessibilityObserver,
   void OnWindowAddedToLayout(aura::Window* window);
   void OnWindowRemovedFromLayout(aura::Window* window);
   void OnChildWindowVisibilityChanged(aura::Window* window);
+  void OnBackdropWindowModePropertyChanged(aura::Window* window);
   void OnWindowStackingChanged(aura::Window* window);
   void OnPostWindowStateTypeChange(aura::Window* window);
   void OnDisplayMetricsChanged();
@@ -97,9 +95,6 @@ class ASH_EXPORT BackdropController : public AccessibilityObserver,
   // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
-
-  // WindowBackdrop::Observer:
-  void OnWindowBackdropPropertyChanged(aura::Window* window) override;
 
  private:
   class WindowAnimationWaiter;
@@ -177,9 +172,6 @@ class ASH_EXPORT BackdropController : public AccessibilityObserver,
   // when updating the window stack, or delay hiding the backdrop
   // in overview mode.
   bool pause_update_ = false;
-
-  ScopedObserver<WindowBackdrop, WindowBackdrop::Observer>
-      window_backdrop_observer_{this};
 
   base::WeakPtrFactory<BackdropController> weak_ptr_factory_{this};
 

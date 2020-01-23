@@ -46,7 +46,7 @@ math[display="block"] {
     outline: auto 1px -webkit-focus-ring-color;
 }
 
-maction, merror, mphantom, mrow, mstyle
+maction, merror, mphantom, mrow, mspace, mstyle
 {
     display: math;
 }
@@ -58,4 +58,8 @@ mphantom {
 merror {
     color: red;
     background-color: lightYellow;
+}
+
+mspace {
+    overflow: hidden !important;
 }

@@ -19,14 +19,13 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_assistant.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/captive_portal/buildflags.h"
-#include "components/captive_portal/captive_portal_testing_utils.h"
+#include "components/captive_portal/core/buildflags.h"
+#include "components/captive_portal/core/captive_portal_testing_utils.h"
 #include "components/network_time/network_time_test_utils.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/prefs/testing_pref_service.h"
@@ -36,7 +35,6 @@
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
@@ -135,14 +133,12 @@ class TestSSLErrorHandler : public SSLErrorHandler {
  public:
   TestSSLErrorHandler(std::unique_ptr<Delegate> delegate,
                       content::WebContents* web_contents,
-                      Profile* profile,
                       int cert_error,
                       const net::SSLInfo& ssl_info,
                       network_time::NetworkTimeTracker* network_time_tracker,
                       const GURL& request_url)
       : SSLErrorHandler(std::move(delegate),
                         web_contents,
-                        profile,
                         cert_error,
                         ssl_info,
                         network_time_tracker,
@@ -153,11 +149,9 @@ class TestSSLErrorHandler : public SSLErrorHandler {
 
 class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
  public:
-  TestSSLErrorHandlerDelegate(Profile* profile,
-                              content::WebContents* web_contents,
+  TestSSLErrorHandlerDelegate(content::WebContents* web_contents,
                               const net::SSLInfo& ssl_info)
-      : profile_(profile),
-        captive_portal_checked_(false),
+      : captive_portal_checked_(false),
         os_reports_captive_portal_(false),
         suggested_url_exists_(false),
         suggested_url_checked_(false),
@@ -169,17 +163,6 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
         redirected_to_suggested_url_(false),
         is_overridable_error_(true),
         has_blocked_interception_(false) {}
-
-  void SendCaptivePortalNotification(
-      captive_portal::CaptivePortalResult result) {
-    CaptivePortalService::Results results;
-    results.previous_result = captive_portal::RESULT_INTERNET_CONNECTED;
-    results.result = result;
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-        content::Source<content::BrowserContext>(profile_),
-        content::Details<CaptivePortalService::Results>(&results));
-  }
 
   void SendSuggestedUrlCheckResult(
       const CommonNameMismatchHandler::SuggestedUrlCheckResult& result,
@@ -283,7 +266,6 @@ class TestSSLErrorHandlerDelegate : public SSLErrorHandler::Delegate {
     return has_blocked_interception_;
   }
 
-  Profile* profile_;
   bool captive_portal_checked_;
   bool os_reports_captive_portal_;
   bool suggested_url_exists_;
@@ -319,12 +301,11 @@ class SSLErrorHandlerNameMismatchTest : public ChromeRenderViewHostTestHarness {
     ssl_info_.public_key_hashes.push_back(
         net::HashValue(kCertPublicKeyHashValue));
 
-    delegate_ =
-        new TestSSLErrorHandlerDelegate(profile(), web_contents(), ssl_info_);
+    delegate_ = new TestSSLErrorHandlerDelegate(web_contents(), ssl_info_);
     error_handler_.reset(new TestSSLErrorHandler(
         std::unique_ptr<SSLErrorHandler::Delegate>(delegate_), web_contents(),
-        profile(), net::MapCertStatusToNetError(ssl_info_.cert_status),
-        ssl_info_, /*network_time_tracker=*/nullptr, GURL() /*request_url*/));
+        net::MapCertStatusToNetError(ssl_info_.cert_status), ssl_info_,
+        /*network_time_tracker=*/nullptr, GURL() /*request_url*/));
   }
 
   void TearDown() override {
@@ -581,12 +562,11 @@ class SSLErrorAssistantProtoTest : public ChromeRenderViewHostTestHarness {
     ssl_info_.public_key_hashes.push_back(
         net::HashValue(kCertPublicKeyHashValue));
 
-    delegate_ =
-        new TestSSLErrorHandlerDelegate(profile(), web_contents(), ssl_info_);
+    delegate_ = new TestSSLErrorHandlerDelegate(web_contents(), ssl_info_);
     error_handler_.reset(new TestSSLErrorHandler(
         std::unique_ptr<SSLErrorHandler::Delegate>(delegate_), web_contents(),
-        profile(), net::MapCertStatusToNetError(ssl_info_.cert_status),
-        ssl_info_, /*network_time_tracker=*/nullptr, GURL() /*request_url*/));
+        net::MapCertStatusToNetError(ssl_info_.cert_status), ssl_info_,
+        /*network_time_tracker=*/nullptr, GURL() /*request_url*/));
   }
 
   net::SSLInfo ssl_info_;
@@ -642,12 +622,11 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
     ssl_info_.cert_status = net::CERT_STATUS_DATE_INVALID;
 
-    delegate_ =
-        new TestSSLErrorHandlerDelegate(profile(), web_contents(), ssl_info_);
+    delegate_ = new TestSSLErrorHandlerDelegate(web_contents(), ssl_info_);
     error_handler_.reset(new TestSSLErrorHandler(
         std::unique_ptr<SSLErrorHandler::Delegate>(delegate_), web_contents(),
-        profile(), net::MapCertStatusToNetError(ssl_info_.cert_status),
-        ssl_info_, tracker_.get(), GURL() /*request_url*/));
+        net::MapCertStatusToNetError(ssl_info_.cert_status), ssl_info_,
+        tracker_.get(), GURL() /*request_url*/));
 
     // Fix flakiness in case system time is off and triggers a bad clock
     // interstitial. https://crbug.com/666821#c50
@@ -753,8 +732,12 @@ TEST_F(SSLErrorHandlerNameMismatchTest,
   EXPECT_FALSE(delegate()->captive_portal_interstitial_shown());
   // Fake a captive portal result.
   delegate()->ClearSeenOperations();
-  delegate()->SendCaptivePortalNotification(
-      captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL);
+
+  CaptivePortalService::Results results;
+  results.previous_result = captive_portal::RESULT_INTERNET_CONNECTED;
+  results.result = captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL;
+
+  error_handler()->Observe(results);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
@@ -784,8 +767,12 @@ TEST_F(SSLErrorHandlerNameMismatchTest,
   // This should immediately trigger an SSL interstitial without waiting for
   // the timer to expire.
   delegate()->ClearSeenOperations();
-  delegate()->SendCaptivePortalNotification(
-      captive_portal::RESULT_INTERNET_CONNECTED);
+
+  CaptivePortalService::Results results;
+  results.previous_result = captive_portal::RESULT_INTERNET_CONNECTED;
+  results.result = captive_portal::RESULT_INTERNET_CONNECTED;
+
+  error_handler()->Observe(results);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(error_handler()->IsTimerRunningForTesting());
@@ -1507,11 +1494,11 @@ TEST_F(SSLErrorHandlerTest, BlockedInterceptionInterstitial) {
   ssl_info.public_key_hashes.push_back(net::HashValue(kCertPublicKeyHashValue));
 
   std::unique_ptr<TestSSLErrorHandlerDelegate> delegate(
-      new TestSSLErrorHandlerDelegate(profile(), web_contents(), ssl_info));
+      new TestSSLErrorHandlerDelegate(web_contents(), ssl_info));
 
   TestSSLErrorHandlerDelegate* delegate_ptr = delegate.get();
   TestSSLErrorHandler error_handler(
-      std::move(delegate), web_contents(), profile(),
+      std::move(delegate), web_contents(),
       net::MapCertStatusToNetError(ssl_info.cert_status), ssl_info,
       /*network_time_tracker=*/nullptr, GURL() /*request_url*/);
 

@@ -13,7 +13,6 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer_view.h"
@@ -187,6 +186,7 @@ void QuicTransport::close(const WebTransportCloseInfo* close_info) {
     auto promise = WritableStream::Close(script_state_, outgoing_datagrams_);
     promise->MarkAsHandled();
   }
+  closed_resolver_->Resolve(close_info);
   Dispose();
 }
 
@@ -214,6 +214,12 @@ QuicTransport::~QuicTransport() = default;
 
 void QuicTransport::OnHandshakeFailed() {
   DVLOG(1) << "QuicTransport::OnHandshakeFailed() this=" << this;
+  {
+    ScriptState::Scope scope(script_state_);
+    v8::Local<v8::Value> reason = V8ThrowException::CreateTypeError(
+        script_state_->GetIsolate(), "Connection lost.");
+    closed_resolver_->Reject(reason);
+  }
   Dispose();
 }
 
@@ -260,6 +266,8 @@ void QuicTransport::Trace(Visitor* visitor) {
   visitor->Trace(received_datagrams_controller_);
   visitor->Trace(outgoing_datagrams_);
   visitor->Trace(script_state_);
+  visitor->Trace(closed_resolver_);
+  visitor->Trace(closed_);
   ContextLifecycleObserver::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
@@ -288,6 +296,9 @@ void QuicTransport::Init(const String& url, ExceptionState& exception_state) {
             "'). Fragment identifiers are not allowed in QuicTransport URLs.");
     return;
   }
+
+  closed_resolver_ = MakeGarbageCollected<ScriptPromiseResolver>(script_state_);
+  closed_ = closed_resolver_->Promise();
 
   auto* execution_context = GetExecutionContext();
 
@@ -350,6 +361,7 @@ void QuicTransport::OnConnectionError() {
     received_datagrams_controller_->Error(reason);
     WritableStreamDefaultController::Error(
         script_state_, outgoing_datagrams_->Controller(), reason);
+    closed_resolver_->Reject(reason);
   }
 
   Dispose();

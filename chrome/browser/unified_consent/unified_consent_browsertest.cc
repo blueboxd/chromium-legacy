@@ -56,6 +56,8 @@ class UnifiedConsentBrowserTest : public SyncTest {
 
  protected:
   base::HistogramTester histogram_tester_;
+  const std::string histogram_name_ =
+      "UnifiedConsent.MakeSearchesAndBrowsingBetter.OnStartup";
 
  private:
   void InitializeSyncClientsIfNeeded() {
@@ -71,9 +73,7 @@ class UnifiedConsentBrowserTest : public SyncTest {
 // Tests that the settings histogram is recorded if unified consent is enabled.
 // The histogram is recorded during profile initialization.
 IN_PROC_BROWSER_TEST_F(UnifiedConsentBrowserTest, SettingsHistogram_None) {
-  histogram_tester_.ExpectUniqueSample(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kNone, 1);
+  histogram_tester_.ExpectUniqueSample(histogram_name_, false, 1);
 }
 
 // Tests that all service entries in the settings histogram are recorded after
@@ -88,14 +88,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     UnifiedConsentBrowserTest,
     SettingsHistogram_UrlKeyedAnonymizedDataCollectionEnabled) {
-  histogram_tester_.ExpectBucketCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kNone, 0);
-  histogram_tester_.ExpectBucketCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings",
-      metrics::SettingsHistogramValue::kUrlKeyedAnonymizedDataCollection, 1);
-  histogram_tester_.ExpectTotalCount(
-      "UnifiedConsent.SyncAndGoogleServicesSettings", 1);
+  histogram_tester_.ExpectUniqueSample(histogram_name_, true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(UnifiedConsentBrowserTest,

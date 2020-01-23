@@ -9,7 +9,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
-#include "components/captive_portal/captive_portal_detector.h"
+#include "components/captive_portal/core/captive_portal_detector.h"
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
 #include "components/security_interstitials/core/ssl_error_ui.h"
 #include "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"

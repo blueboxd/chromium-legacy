@@ -1169,9 +1169,11 @@ Response PageHandler::SetWebLifecycleState(const std::string& state) {
 void PageHandler::GetInstallabilityErrors(
     std::unique_ptr<GetInstallabilityErrorsCallback> callback) {
   auto errors = std::make_unique<protocol::Array<std::string>>();
+  auto installability_errors =
+      std::make_unique<protocol::Array<Page::InstallabilityError>>();
   // TODO: Use InstallableManager once it moves into content/.
   // Until then, this code is only used to return empty array in the tests.
-  callback->sendSuccess(std::move(errors));
+  callback->sendSuccess(std::move(errors), std::move(installability_errors));
 }
 
 void PageHandler::GetManifestIcons(

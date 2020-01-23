@@ -25,12 +25,14 @@ class CORE_EXPORT MathMLElement : public Element {
     return HasLocalName(name.LocalName());
   }
 
- private:
-  bool IsPresentationAttribute(const QualifiedName&) const final;
-  void CollectStyleForPresentationAttribute(const QualifiedName&,
-                                            const AtomicString&,
-                                            MutableCSSPropertyValueSet*) final;
+ protected:
+  bool IsPresentationAttribute(const QualifiedName&) const override;
+  void CollectStyleForPresentationAttribute(
+      const QualifiedName&,
+      const AtomicString&,
+      MutableCSSPropertyValueSet*) override;
 
+ private:
   void ParseAttribute(const AttributeModificationParams&) final;
 
   bool IsMathMLElement() const =

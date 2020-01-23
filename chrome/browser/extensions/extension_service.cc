@@ -227,6 +227,47 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
           InstallationReporter::FailureReason::ALREADY_INSTALLED);
       return false;
     }
+    // If the installation is requested from a higher priority source, update
+    // its install location.
+    if (current !=
+        Manifest::GetHigherPriorityLocation(current, info.download_location)) {
+      UnloadExtension(info.extension_id, UnloadedExtensionReason::UPDATE);
+
+      // Fetch the installation info from the prefs, and reload the extension
+      // with a modified install location.
+      std::unique_ptr<ExtensionInfo> installed_extension(
+          extension_prefs_->GetInstalledExtensionInfo(info.extension_id));
+      installed_extension->extension_location = info.download_location;
+
+      // Load the extension with the new install location
+      InstalledLoader(this).Load(*installed_extension, false);
+      // Update the install location in the prefs.
+      extension_prefs_->SetInstallLocation(info.extension_id,
+                                           info.download_location);
+
+      // If the extension was disabled by user or was disabled due to
+      // a permissions increase, and it must remain enabled, remove those
+      // disable reasons.
+      if (registry_->disabled_extensions().GetByID(info.extension_id) &&
+          system_->management_policy()->MustRemainEnabled(
+              registry_->GetExtensionById(info.extension_id,
+                                          ExtensionRegistry::EVERYTHING),
+              nullptr)) {
+        int disable_reasons =
+            extension_prefs_->GetDisableReasons(extension->id());
+        disable_reasons &= (~(disable_reason::DISABLE_USER_ACTION |
+                              disable_reason::DISABLE_PERMISSIONS_INCREASE));
+        extension_prefs_->ReplaceDisableReasons(info.extension_id,
+                                                disable_reasons);
+
+        // Only re-enable the extension if there are no other disable reasons.
+        if (extension_prefs_->GetDisableReasons(info.extension_id) ==
+            disable_reason::DISABLE_NONE) {
+          EnableExtension(info.extension_id);
+        }
+      }
+      return false;
+    }
     // Otherwise, overwrite the current installation.
   }
 

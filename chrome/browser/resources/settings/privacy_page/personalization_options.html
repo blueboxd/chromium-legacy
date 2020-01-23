@@ -50,10 +50,13 @@
         label="$i18n{searchSuggestPref}"
         sub-label="$i18n{searchSuggestPrefDesc}">
     </settings-toggle-button>
-    <settings-toggle-button pref="{{prefs.alternate_error_pages.enabled}}"
+  <template is="dom-if" if="[[!privacySettingsRedesignEnabled_]]">
+    <settings-toggle-button id="linkDoctor"
+        pref="{{prefs.alternate_error_pages.enabled}}"
         label="$i18n{linkDoctorPref}"
         sub-label="$i18n{linkDoctorPrefDesc}">
     </settings-toggle-button>
+  </template>
 <if expr="_google_chrome">
 <if expr="chromeos">
     <settings-toggle-button pref="{{prefs.cros.metrics.reportingEnabled}}"

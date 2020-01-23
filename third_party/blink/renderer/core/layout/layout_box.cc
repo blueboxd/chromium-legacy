@@ -2418,9 +2418,6 @@ scoped_refptr<const NGLayoutResult> LayoutBox::CachedLayoutResult(
     NGLayoutCacheStatus* out_cache_status) {
   *out_cache_status = NGLayoutCacheStatus::kNeedsLayout;
 
-  if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
-    return nullptr;
-
   const NGLayoutResult* cached_layout_result = GetCachedLayoutResult();
   if (!cached_layout_result)
     return nullptr;

@@ -97,8 +97,6 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
 }
 
 TEST_F(NGBlockLayoutAlgorithmTest, Caching) {
-  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
-
   SetBodyInnerHTML(R"HTML(
     <div id="box" style="width:30px; height:40%;"></div>
   )HTML");
@@ -146,8 +144,6 @@ TEST_F(NGBlockLayoutAlgorithmTest, Caching) {
 }
 
 TEST_F(NGBlockLayoutAlgorithmTest, MinInlineSizeCaching) {
-  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
-
   SetBodyInnerHTML(R"HTML(
     <div id="box" style="min-width:30%; width: 10px; height:40px;"></div>
   )HTML");
@@ -190,8 +186,6 @@ TEST_F(NGBlockLayoutAlgorithmTest, MinInlineSizeCaching) {
 }
 
 TEST_F(NGBlockLayoutAlgorithmTest, PercentageBlockSizeQuirkDescendantsCaching) {
-  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
-
   // Quirks mode triggers the interesting parent-child %-resolution behaviour.
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
 
@@ -296,8 +290,6 @@ TEST_F(NGBlockLayoutAlgorithmTest, PercentageBlockSizeQuirkDescendantsCaching) {
 }
 
 TEST_F(NGBlockLayoutAlgorithmTest, LineOffsetCaching) {
-  ScopedLayoutNGFragmentCachingForTest layout_ng_fragment_caching(true);
-
   SetBodyInnerHTML(R"HTML(
     <div id="container" style="display: flow-root; width: 300px; height: 100px;">
       <div id="box1" style="width: 100px; margin: 0 auto 0 auto;"></div>

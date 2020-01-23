@@ -901,10 +901,6 @@
       name: "LayoutNGFlexBox",
     },
     {
-      name: "LayoutNGFragmentCaching",
-      implied_by: ["LayoutNG"],
-    },
-    {
       name: "LayoutNGFragmentItem",
     },
     {

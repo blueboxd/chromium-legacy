@@ -4,7 +4,7 @@
 <translation id="1008557486741366299">Teď ne</translation>
 <translation id="1010200102790553230">Načíst stránku později</translation>
 <translation id="1015730422737071372">Zadejte další podrobnosti</translation>
-<translation id="1019413721762100891">Vyp</translation>
+<translation id="1019413721762100891">Vypnuto</translation>
 <translation id="1021110881106174305">Přijímané karty</translation>
 <translation id="1021753677514347426">K tomuto problému dochází kvůli certifikátu, který jste vy nebo někdo jiný nainstalovali do zařízení. O certifikátu je známo, že se používá ke sledování a zachytávání provozu v sítích, a Chromium mu nedůvěřuje. Ačkoliv sledování v některých případech (například ve školní nebo firemní síti) může být legitimní a nemůžete mu zabránit, Chromium se chce ujistit, že o něm víte. Ke sledování může docházet v kterémkoliv prohlížeči nebo aplikaci, které přistupují k webu.</translation>
 <translation id="1032854598605920125">Otočit ve směru hodinových ručiček</translation>
@@ -498,7 +498,7 @@
 <translation id="3209034400446768650">Stránka může účtovat poplatky</translation>
 <translation id="3212581601480735796">Vaše aktivita na webu <ph name="HOSTNAME" /> je sledována</translation>
 <translation id="3215092763954878852">Ověření WebAuthn nebylo možné použít</translation>
-<translation id="3218181027817787318">Reltivní</translation>
+<translation id="3218181027817787318">Relativní</translation>
 <translation id="3225919329040284222">Server se prokázal certifikátem, který neodpovídá integrovaným očekáváním. Tato očekávaní jsou zahrnuta u určitých webových stránek s vysokou úrovní zabezpečení kvůli vaší ochraně.</translation>
 <translation id="3226128629678568754">Klikněte na tlačítko Načíst znovu. Tím znovu odešlete údaje potřebné k načtení stránky.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
@@ -678,7 +678,7 @@
 <translation id="4082393374666368382">Nastavení – správa</translation>
 <translation id="4088981014127559358">Posun obrázku strany 1 na ose Y</translation>
 <translation id="4098354747657067197">Chystáte se navštívit podvodné webové stránky</translation>
-<translation id="4101413244023615925">Text a grafika</translation>
+<translation id="4101413244023615925">Text a obrázek</translation>
 <translation id="4103249731201008433">Sériové číslo zařízení je neplatné</translation>
 <translation id="4103763322291513355">Na stránce &lt;strong&gt;chrome://policy&lt;/strong&gt; naleznete seznam zakázaných adres URL a další zásady vynucené vaším správcem systému.</translation>
 <translation id="4108231218301530806">Příště tuto kartu ověřit otiskem prstu.</translation>
@@ -1098,7 +1098,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synchronizováno)</translation>
 <translation id="59174027418879706">Povoleno</translation>
 <translation id="5919090499915321845">B10</translation>
-<translation id="5921185718311485855">Zap</translation>
+<translation id="5921185718311485855">Zapnuto</translation>
 <translation id="5921639886840618607">Uložit kartu do účtu Google?</translation>
 <translation id="5922853866070715753">Téměř dokončeno</translation>
 <translation id="5932224571077948991">Web zobrazuje rušivé nebo zavádějící reklamy</translation>

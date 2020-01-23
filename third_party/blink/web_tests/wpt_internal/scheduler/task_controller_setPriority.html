@@ -10,7 +10,7 @@
 
 async_test(t => {
   let result = '';
-  let tc = new TaskController("default");
+  let tc = new TaskController("user-visible");
 
   for (let i = 0; i < 5; i++) {
     let task = scheduler.postTask(() => {
@@ -18,15 +18,14 @@ async_test(t => {
     }, { signal: tc.signal });
   }
 
-  scheduler.postTask(() => { result += "5"; }, { priority : "high" });
-  scheduler.postTask(() => { result += "6"; }, { priority : "default" });
-  scheduler.postTask(() => { result += "7"; }, { priority : "low" });
+  scheduler.postTask(() => { result += "5"; }, { priority : "user-blocking" });
+  scheduler.postTask(() => { result += "6"; }, { priority : "user-visible" });
 
-  tc.setPriority("idle");
+  tc.setPriority("background");
 
   scheduler.postTask(t.step_func_done(() => {
-    assert_equals(result, '56701234');
-  }), { priority: "idle" });
+    assert_equals(result, '5601234');
+  }), { priority: "background" });
 
 }, 'Test that TaskController.setPriority() changes the priority of all associated tasks');
 

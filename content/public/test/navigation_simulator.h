@@ -329,9 +329,7 @@ class NavigationSimulator {
   virtual void StopLoading() = 0;
 
   // Simulates the ongoing load stopping due to |error_code|.
-  virtual void FailLoading(const GURL& url,
-                           int error_code,
-                           const base::string16& error_description) = 0;
+  virtual void FailLoading(const GURL& url, int error_code) = 0;
 
  private:
   // This interface should only be implemented inside content.

@@ -553,8 +553,9 @@ crbug.com/957807 [ chromeos ] conformance/rendering/line-rendering-quality.html 
 crbug.com/957807 [ chromeos ] conformance/uniforms/uniform-samplers-test.html [ Skip ]
 crbug.com/957807 [ chromeos ] deqp/data/gles2/shaders/conversions.html [ Skip ]
 crbug.com/957807 [ chromeos ] deqp/data/gles2/shaders/swizzles.html [ Skip ]
-# There is a crash, likely in this test, causing all following tests in the shard to fail.
-crbug.com/1043953 [ chromeos ] conformance/textures/misc/texture-size-limit.html [ Skip ]
+# There is a crash, likely in this test, causing the root partition to become
+# read-only.
+crbug.com/1043953 [ chromeos ] conformance/textures/misc/texture-size-limit.html [ RetryOnFailure ]
 
 # ChromeOS: AMD
 crbug.com/995652 [ chromeos amd ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Skip ]

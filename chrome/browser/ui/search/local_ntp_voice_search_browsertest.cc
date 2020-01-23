@@ -20,26 +20,19 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
-#include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-class LocalNTPVoiceSearchSmokeTest : public InProcessBrowserTest {
- public:
-  LocalNTPVoiceSearchSmokeTest() {}
+namespace {
 
-  std::string searchbox_microphone() {
-    return ntp_features::IsRealboxEnabled() ? "realbox-microphone"
-                                            : "fakebox-microphone";
-  }
+std::string searchbox_microphone() {
+  return ntp_features::IsRealboxEnabled() ? "realbox-microphone"
+                                          : "fakebox-microphone";
+}
 
- private:
-  void SetUpCommandLine(base::CommandLine* cmdline) override {
-    // Requesting microphone permission doesn't work unless there's a device
-    // available.
-    cmdline->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
-  }
-};
+}  // namespace
+
+using LocalNTPVoiceSearchSmokeTest = InProcessBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
                        GoogleNTPWithVoiceLoadsWithoutError) {

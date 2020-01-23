@@ -341,7 +341,7 @@
 <translation id="2465655957518002998">Sélectionner un mode d'expédition</translation>
 <translation id="2465688316154986572">Agrafer</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Exécuter les diagnostics du réseau<ph name="END_LINK" /></translation>
-<translation id="2469153820345007638">Ordre 1 sur N</translation>
+<translation id="2469153820345007638">Ordre 1 à N</translation>
 <translation id="2473195200299095979">Traduire cette page</translation>
 <translation id="2479410451996844060">URL de recherche incorrecte</translation>
 <translation id="2482878487686419369">Notifications</translation>
@@ -469,7 +469,7 @@
 <translation id="3060227939791841287">C9 (enveloppe)</translation>
 <translation id="3061707000357573562">Service d'application de correctifs</translation>
 <translation id="3064966200440839136">En payant via une application externe, vous allez quitter le mode navigation privée. Voulez-vous continuer ?</translation>
-<translation id="3080254622891793721">Éléments graphiques</translation>
+<translation id="3080254622891793721">Image</translation>
 <translation id="3086579638707268289">Votre activité sur le Web est surveillée</translation>
 <translation id="3087734570205094154">En bas</translation>
 <translation id="3095940652251934233">Statement</translation>
@@ -536,7 +536,7 @@
 <translation id="3399952811970034796">Adresse de livraison</translation>
 <translation id="3422248202833853650">Essayez de fermer les autres programmes pour libérer de la mémoire.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> est actuellement inaccessible.</translation>
-<translation id="3423742043356668186">Système spécifié</translation>
+<translation id="3423742043356668186">Spécifiée par le système</translation>
 <translation id="3427092606871434483">Autoriser (par défaut)</translation>
 <translation id="3427342743765426898">&amp;Rétablir la modification</translation>
 <translation id="342781501876943858">L'équipe Chromium vous recommande de réinitialiser votre mot de passe si vous l'avez réutilisé sur d'autres sites.</translation>
@@ -682,7 +682,7 @@
 <translation id="4082393374666368382">Paramètres - Gestion</translation>
 <translation id="4088981014127559358">Décalage Y de l'image côté 1</translation>
 <translation id="4098354747657067197">Le site Web que vous allez ouvrir est trompeur</translation>
-<translation id="4101413244023615925">Texte et graphismes</translation>
+<translation id="4101413244023615925">Texte et image</translation>
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
 <translation id="4103763322291513355">Accédez à &lt;strong&gt;chrome://policy&lt;/strong&gt; pour consulter une liste des URL ajoutées à la liste noire et des autres règles définies par votre administrateur système.</translation>
 <translation id="4108231218301530806">Utiliser votre empreinte digitale pour valider cette carte la prochaine fois.</translation>
@@ -1119,7 +1119,7 @@
 <translation id="5990559369517809815">Les requêtes vers le serveur ont été bloquées par une extension.</translation>
 <translation id="5992691462791905444">Technique de pli en Z</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> résultats pour "<ph name="SEARCH_TEXT" />"</translation>
-<translation id="6008122969617370890">Ordre N sur 1</translation>
+<translation id="6008122969617370890">Ordre N à 1</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Vérifier vos mots de passe</translation>
 <translation id="6015796118275082299">Année</translation>
@@ -1550,7 +1550,7 @@ Informations supplémentaires :
 <translation id="7956713633345437162">Favoris sur mobile</translation>
 <translation id="7961015016161918242">Jamais</translation>
 <translation id="7966803981046576691">Type de compte de travail</translation>
-<translation id="7977538094055660992">Module de sortie</translation>
+<translation id="7977538094055660992">Périphérique de sortie</translation>
 <translation id="7977894662897852582">Edp</translation>
 <translation id="799149739215780103">Reliure</translation>
 <translation id="7995512525968007366">Non spécifié</translation>

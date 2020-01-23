@@ -19,37 +19,34 @@ class Agent;
 class ContentSecurityPolicy;
 class Document;
 class DocumentInit;
+class Frame;
+class LocalFrame;
 class OriginTrialContext;
-class SecurityOrigin;
 class SecurityOrigin;
 enum class WebSandboxFlags;
 class WindowAgentFactory;
 
-using DocumentClassFlags = unsigned char;
-
-class SecurityContextInit : public FeaturePolicyParserDelegate {
+class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   STACK_ALLOCATED();
 
  public:
-  explicit SecurityContextInit(const DocumentInit&, DocumentClassFlags);
+  SecurityContextInit() = default;
+  SecurityContextInit(scoped_refptr<SecurityOrigin>,
+                      OriginTrialContext*,
+                      Agent*);
+  explicit SecurityContextInit(const DocumentInit&);
 
   const scoped_refptr<SecurityOrigin>& GetSecurityOrigin() const {
     return security_origin_;
   }
 
-  WebSandboxFlags GetSandboxFlags() { return sandbox_flags_; }
+  WebSandboxFlags GetSandboxFlags() const { return sandbox_flags_; }
 
   ContentSecurityPolicy* GetCSP() const { return csp_; }
 
-  std::unique_ptr<FeaturePolicy> TakeFeaturePolicy() {
-    DCHECK(feature_policy_);
-    return std::move(feature_policy_);
-  }
+  std::unique_ptr<FeaturePolicy> CreateFeaturePolicy() const;
 
-  std::unique_ptr<DocumentPolicy> TakeDocumentPolicy() {
-    DCHECK(document_policy_);
-    return std::move(document_policy_);
-  }
+  std::unique_ptr<DocumentPolicy> CreateDocumentPolicy() const;
 
   const Vector<String>& FeaturePolicyParseMessages() const {
     return feature_policy_parse_messages_;
@@ -58,11 +55,13 @@ class SecurityContextInit : public FeaturePolicyParserDelegate {
     return feature_policy_header_;
   }
 
-  OriginTrialContext* GetOriginTrialContext() { return origin_trials_; }
+  OriginTrialContext* GetOriginTrialContext() const { return origin_trials_; }
 
-  WindowAgentFactory* GetWindowAgentFactory() { return window_agent_factory_; }
-  Agent* GetAgent() { return agent_; }
-  SecureContextMode GetSecureContextMode() {
+  WindowAgentFactory* GetWindowAgentFactory() const {
+    return window_agent_factory_;
+  }
+  Agent* GetAgent() const { return agent_; }
+  SecureContextMode GetSecureContextMode() const {
     return secure_context_mode_.value();
   }
 
@@ -70,33 +69,37 @@ class SecurityContextInit : public FeaturePolicyParserDelegate {
     feature_count_.insert(feature);
   }
 
-  bool FeaturePolicyFeatureObserved(mojom::FeaturePolicyFeature) override;
+  bool FeaturePolicyFeatureObserved(
+      mojom::blink::FeaturePolicyFeature) override;
   bool FeatureEnabled(OriginTrialFeature feature) const override;
 
-  void ApplyPendingDataToDocument(Document&);
+  void ApplyPendingDataToDocument(Document&) const;
 
   bool BindCSPImmediately() const { return bind_csp_immediately_; }
 
  private:
-  void InitializeContentSecurityPolicy(const DocumentInit&, DocumentClassFlags);
+  void InitializeContentSecurityPolicy(const DocumentInit&);
   void InitializeOrigin(const DocumentInit&);
   void InitializeSandboxFlags(const DocumentInit&);
-  void InitializeFeaturePolicy(const DocumentInit&, DocumentClassFlags);
+  void InitializeFeaturePolicy(const DocumentInit&);
   void InitializeSecureContextMode(const DocumentInit&);
   void InitializeOriginTrials(const DocumentInit&);
   void InitializeAgent(const DocumentInit&);
 
   scoped_refptr<SecurityOrigin> security_origin_;
   WebSandboxFlags sandbox_flags_ = WebSandboxFlags::kNone;
-  std::unique_ptr<FeaturePolicy> feature_policy_;
-  std::unique_ptr<DocumentPolicy> document_policy_;
+  base::Optional<DocumentPolicy::FeatureState> document_policy_;
+  bool initialized_feature_policy_state_ = false;
   Vector<String> feature_policy_parse_messages_;
   ParsedFeaturePolicy feature_policy_header_;
+  Member<LocalFrame> frame_for_opener_feature_state_;
+  Member<Frame> parent_frame_;
+  ParsedFeaturePolicy container_policy_;
   Member<ContentSecurityPolicy> csp_;
   Member<OriginTrialContext> origin_trials_;
   Member<Agent> agent_;
   Member<WindowAgentFactory> window_agent_factory_;
-  HashSet<mojom::FeaturePolicyFeature> parsed_feature_policies_;
+  HashSet<mojom::blink::FeaturePolicyFeature> parsed_feature_policies_;
   HashSet<mojom::WebFeature> feature_count_;
   bool bind_csp_immediately_ = false;
   base::Optional<SecureContextMode> secure_context_mode_;

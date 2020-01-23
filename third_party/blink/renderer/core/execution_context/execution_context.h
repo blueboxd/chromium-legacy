@@ -74,13 +74,13 @@ class CoreProbeSink;
 class DOMTimerCoordinator;
 class ErrorEvent;
 class EventTarget;
-class FeaturePolicy;
 class FrameOrWorkerScheduler;
 class KURL;
 class LocalDOMWindow;
 class OriginTrialContext;
 class PublicURLManager;
 class ResourceFetcher;
+class SecurityContextInit;
 class SecurityOrigin;
 class ScriptState;
 class TrustedTypePolicyFactory;
@@ -308,7 +308,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   bool FeatureEnabled(OriginTrialFeature) const override;
   void CountFeaturePolicyUsage(mojom::WebFeature feature) override;
   bool FeaturePolicyFeatureObserved(
-      mojom::FeaturePolicyFeature feature) override;
+      mojom::blink::FeaturePolicyFeature feature) override;
 
   // Tests whether the policy-controlled feature is enabled in this frame.
   // Optionally sends a report to any registered reporting observers or
@@ -316,20 +316,20 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   // disabled. The optional ConsoleMessage will be sent to the console if
   // present, or else a default message will be used instead.
   bool IsFeatureEnabled(
-      mojom::FeaturePolicyFeature,
+      mojom::blink::FeaturePolicyFeature,
       ReportOptions report_on_failure = ReportOptions::kDoNotReport,
       const String& message = g_empty_string,
       const String& source_file = g_empty_string) const;
   bool IsFeatureEnabled(
-      mojom::FeaturePolicyFeature,
+      mojom::blink::FeaturePolicyFeature,
       PolicyValue threshold_value,
       ReportOptions report_on_failure = ReportOptions::kDoNotReport,
       const String& message = g_empty_string,
       const String& source_file = g_empty_string) const;
   virtual void CountPotentialFeaturePolicyViolation(
-      mojom::FeaturePolicyFeature) const {}
+      mojom::blink::FeaturePolicyFeature) const {}
   virtual void ReportFeaturePolicyViolation(
-      mojom::FeaturePolicyFeature,
+      mojom::blink::FeaturePolicyFeature,
       mojom::FeaturePolicyDisposition,
       const String& message = g_empty_string,
       const String& source_file = g_empty_string) const {}
@@ -337,14 +337,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   String addressSpaceForBindings() const;
 
  protected:
-  ExecutionContext(v8::Isolate* isolate,
-                   Agent* agent,
-                   OriginTrialContext* origin_trial_context,
-                   scoped_refptr<SecurityOrigin> origin,
-                   WebSandboxFlags sandbox_flags,
-                   std::unique_ptr<FeaturePolicy> feature_policy,
-                   std::unique_ptr<DocumentPolicy> document_policy,
-                   SecureContextMode secure_context_mode);
+  ExecutionContext(v8::Isolate* isolate, const SecurityContextInit&);
   ~ExecutionContext() override;
 
  private:

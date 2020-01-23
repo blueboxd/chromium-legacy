@@ -1371,7 +1371,7 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2875698561019555027">(Pàgines d'error de Chrome)</translation>
 <translation id="2876336351874743617">Dit 2</translation>
 <translation id="2876369937070532032">Envia a Google els URL d'algunes de les pàgines que visites quan la teva seguretat està en risc</translation>
-<translation id="2877030408509021795">S'ha completat l'anàlisi; la pujada compleix les polítiques de l'empresa.</translation>
+<translation id="2877030408509021795">S'ha completat l'anàlisi; tot està bé.</translation>
 <translation id="2878782256107578644">S'està analitzant el fitxer. Vols obrir-lo ara?</translation>
 <translation id="288042212351694283">Accés als dispositius Universal 2nd Factor</translation>
 <translation id="2881076733170862447">Quan facis clic a l'extensió</translation>
@@ -1701,7 +1701,7 @@ Descripció: <ph name="LINUX_DESCRIPTION" /></translation>
 <translation id="3382073616108123819">El sistema no ha pogut determinar els identificadors d'aquest dispositiu.</translation>
 <translation id="3382086682569279540">El compte que gestiones se suprimirà aviat</translation>
 <translation id="3382200254148930874">S'està aturant la supervisió...</translation>
-<translation id="3383210070657133526"><ph name="URL" /> vol fer sessions de realitat virtual</translation>
+<translation id="3383210070657133526"><ph name="URL" /> vol poder iniciar sessions de realitat virtual</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separador</translation>
 <translation id="338691029516748599">Xarxa <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="SIGNAL_STRENGTH" />% d'intensitat del senyal, gestionada per l'administrador, connecta</translation>
@@ -5022,7 +5022,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8101987792947961127">Es requereix Powerwash la propera vegada que es reiniciï</translation>
 <translation id="8102159139658438129">Ves a <ph name="LINK_BEGIN" />Configuració<ph name="LINK_END" /> per veure les opcions per al telèfon connectat</translation>
 <translation id="8104696615244072556">Feu un Powerwash al dispositiu <ph name="IDS_SHORT_PRODUCT_NAME" /> i torneu a la versió anterior.</translation>
-<translation id="8106661353233173262">S'ha produït un error. S'ha esgotat el temps d'espera del fitxer escanejat.</translation>
 <translation id="8107015733319732394">S'està instal·lant Google Play Store al teu dispositiu <ph name="DEVICE_TYPE" />. Aquest procés pot tardar uns quants minuts.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{No hi ha cap galeta de tercers}=1{Hi ha 1 galeta de tercers bloquejada}other{Hi ha # galetes de tercers bloquejades}}</translation>
 <translation id="810875025413331850">No s'ha trobat cap dispositiu a prop.</translation>

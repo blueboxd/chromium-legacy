@@ -26,6 +26,7 @@ struct TabStripUILayout {
   int tab_title_height;
   int viewport_width;
   gfx::Size tab_thumbnail_size;
+  double tab_thumbnail_aspect_ratio;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_TAB_STRIP_TAB_STRIP_UI_LAYOUT_H_

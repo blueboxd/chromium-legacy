@@ -13,7 +13,7 @@
       <div slot="footer">
         <div class="container">
           <img id="logo" src="assistant_logo.png"
-              i18n-values="aria-label:assistantLogo">
+              aria-label$="[[i18nDynamic(locale, 'assistantLogo')]]">
           <div class="title" id="title-text"></div>
           <div class="line"></div>
           <div id="insertion-point"></div>
@@ -34,7 +34,9 @@
         <div id="webview-container" class="layout horizontal">
           <webview id="overlay-webview" class="flex"></webview>
           <div id="overlay-webview-loading" class="flex">
-            <p i18n-content="assistantOobePopupOverlayLoading"></p>
+            <p>
+              [[i18nDynamic(locale, 'assistantOobePopupOverlayLoading')]]
+            </p>
           </div>
         </div>
       </div>

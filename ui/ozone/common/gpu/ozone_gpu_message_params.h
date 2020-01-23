@@ -39,7 +39,8 @@ struct DisplaySnapshot_Params {
   display::DisplayConnectionType type = display::DISPLAY_CONNECTION_TYPE_NONE;
   bool is_aspect_preserving_scaling = false;
   bool has_overscan = false;
-  bool has_privacy_screen = false;
+  display::PrivacyScreenState privacy_screen_state =
+      display::PrivacyScreenState::kNotSupported;
   bool has_color_correction_matrix = false;
   bool color_correction_in_linear_space = false;
   gfx::ColorSpace color_space;

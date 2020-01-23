@@ -35,18 +35,22 @@ using content::BrowserThread;
 
 namespace {
 
-// We'll use these three distinct origins for testing, both as strings and as
-// GURLs in appropriate contexts.
-const char kTestOrigin1[] = "http://host1:1/";
-const char kTestOrigin2[] = "http://host2:2/";
-const char kTestOrigin3[] = "http://host3:1/";
-
-const GURL kOrigin1(kTestOrigin1);
-const GURL kOrigin2(kTestOrigin2);
-const GURL kOrigin3(kTestOrigin3);
-
 const char kWidevineCdmPluginId[] = "application_x-ppapi-widevine-cdm";
 const char kClearKeyCdmPluginId[] = "application_x-ppapi-clearkey-cdm";
+
+// We'll use these three distinct origins for testing, both as strings and as
+// GURLs in appropriate contexts.
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL Origin1() {
+  return GURL("http://host1:1");
+}
+GURL Origin2() {
+  return GURL("http://host2:2");
+}
+GURL Origin3() {
+  return GURL("http://host3:1");
+}
 
 class AwaitCompletionHelper {
  public:
@@ -133,9 +137,9 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
   }
 
   // Add some files to the PluginPrivateFileSystem. They are created as follows:
-  //   kOrigin1 - ClearKey - 1 file - timestamp 10 days ago
-  //   kOrigin2 - Widevine - 2 files - timestamps now and 60 days ago
-  //   kOrigin3 - Widevine - 2 files - timestamps 20 and 30 days ago
+  //   Origin1() - ClearKey - 1 file - timestamp 10 days ago
+  //   Origin2() - Widevine - 2 files - timestamps now and 60 days ago
+  //   Origin3() - Widevine - 2 files - timestamps 20 and 30 days ago
   virtual void PopulateTestMediaLicenseData() {
     const base::Time ten_days_ago = now_ - base::TimeDelta::FromDays(10);
     const base::Time twenty_days_ago = now_ - base::TimeDelta::FromDays(20);
@@ -143,26 +147,26 @@ class BrowsingDataMediaLicenseHelperTest : public testing::Test {
     const base::Time sixty_days_ago = now_ - base::TimeDelta::FromDays(60);
 
     std::string clearkey_fsid =
-        CreateFileSystem(kClearKeyCdmPluginId, kOrigin1);
+        CreateFileSystem(kClearKeyCdmPluginId, Origin1());
     storage::FileSystemURL clearkey_file =
-        CreateFile(kOrigin1, clearkey_fsid, "foo");
+        CreateFile(Origin1(), clearkey_fsid, "foo");
     SetFileTimestamp(clearkey_file, ten_days_ago);
 
     std::string widevine_fsid =
-        CreateFileSystem(kWidevineCdmPluginId, kOrigin2);
+        CreateFileSystem(kWidevineCdmPluginId, Origin2());
     storage::FileSystemURL widevine_file1 =
-        CreateFile(kOrigin2, widevine_fsid, "bar1");
+        CreateFile(Origin2(), widevine_fsid, "bar1");
     storage::FileSystemURL widevine_file2 =
-        CreateFile(kOrigin2, widevine_fsid, "bar2");
+        CreateFile(Origin2(), widevine_fsid, "bar2");
     SetFileTimestamp(widevine_file1, now_);
     SetFileTimestamp(widevine_file2, sixty_days_ago);
 
     std::string widevine_fsid2 =
-        CreateFileSystem(kWidevineCdmPluginId, kOrigin3);
+        CreateFileSystem(kWidevineCdmPluginId, Origin3());
     storage::FileSystemURL widevine_file3 =
-        CreateFile(kOrigin3, widevine_fsid2, "test1");
+        CreateFile(Origin3(), widevine_fsid2, "test1");
     storage::FileSystemURL widevine_file4 =
-        CreateFile(kOrigin3, widevine_fsid2, "test2");
+        CreateFile(Origin3(), widevine_fsid2, "test2");
     SetFileTimestamp(widevine_file3, twenty_days_ago);
     SetFileTimestamp(widevine_file4, thirty_days_ago);
   }
@@ -297,19 +301,19 @@ TEST_F(BrowsingDataMediaLicenseHelperTest, FetchData) {
   // Order is arbitrary, verify both origins.
   bool test_hosts_found[] = {false, false, false};
   for (const auto& info : *ReturnedMediaLicenseInfo()) {
-    if (info.origin == kOrigin1) {
+    if (info.origin == Origin1()) {
       EXPECT_FALSE(test_hosts_found[0]);
       test_hosts_found[0] = true;
       EXPECT_EQ(0u, info.size);
       // Single file for origin1 should be 10 days ago.
       EXPECT_EQ(10, (Now() - info.last_modified_time).InDays());
-    } else if (info.origin == kOrigin2) {
+    } else if (info.origin == Origin2()) {
       EXPECT_FALSE(test_hosts_found[1]);
       test_hosts_found[1] = true;
       EXPECT_EQ(0u, info.size);
       // Files for origin2 are now and 60 days ago, so it should report now.
       EXPECT_EQ(0, (Now() - info.last_modified_time).InDays());
-    } else if (info.origin == kOrigin3) {
+    } else if (info.origin == Origin3()) {
       EXPECT_FALSE(test_hosts_found[2]);
       test_hosts_found[2] = true;
       EXPECT_EQ(0u, info.size);
@@ -329,15 +333,15 @@ TEST_F(BrowsingDataMediaLicenseHelperTest, FetchData) {
 TEST_F(BrowsingDataMediaLicenseHelperTest, DeleteData) {
   PopulateTestMediaLicenseData();
 
-  DeleteMediaLicenseOrigin(kOrigin1);
-  DeleteMediaLicenseOrigin(kOrigin2);
+  DeleteMediaLicenseOrigin(Origin1());
+  DeleteMediaLicenseOrigin(Origin2());
 
   FetchMediaLicenses();
   EXPECT_EQ(1u, ReturnedMediaLicenseInfo()->size());
 
   BrowsingDataMediaLicenseHelper::MediaLicenseInfo info =
       *(ReturnedMediaLicenseInfo()->begin());
-  EXPECT_EQ(kOrigin3, info.origin);
+  EXPECT_EQ(Origin3(), info.origin);
   EXPECT_EQ(0u, info.size);
   EXPECT_EQ(20, (Now() - info.last_modified_time).InDays());
 }

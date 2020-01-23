@@ -768,6 +768,7 @@
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> krijgt voorrang op dit beleid. Dat wil zeggen, een extensie op de zwarte lijst wordt niet geïnstalleerd, zelfs niet als de installatie wordt gestart vanaf een site in deze lijst.</translation>
 <translation id="214901426630414675">Afdrukken in duplexmodus beperken</translation>
 <translation id="2149330464730004005">Afdrukken in kleur inschakelen</translation>
+<translation id="2151831603578119302">Snelkoppelingen voor toegankelijkheidsfuncties inschakelen</translation>
 <translation id="2156132677421487971">Stel beleid voor <ph name="PRODUCT_NAME" /> in, een functie waarmee gebruikers de content van tabbladen, sites of hun bureaublad vanuit de browser naar externe schermen en geluidssystemen kunnen sturen.</translation>
 <translation id="2156755242840687300">Ingeschakelde externe afdrukservers</translation>
 <translation id="2160336427036785721">Hiermee configureer je de hoeveelheid geheugen die één instantie van <ph name="PRODUCT_NAME" /> kan gebruiken voordat tabbladen worden verwijderd om geheugen te besparen (dit houdt in dat het geheugen dat voor het tabblad wordt gebruikt, wordt vrijgemaakt en dat het tabblad opnieuw moet worden geladen als de gebruiker naar dit tabblad schakelt).
@@ -878,6 +879,7 @@
 <translation id="2294382669900758280">Er wordt geen rekening gehouden met het afspelen van video in Android-apps, zelfs niet wanneer dit beleid is ingesteld op <ph name="TRUE" /> (Waar).</translation>
 <translation id="2299220924812062390">Een lijst met ingeschakelde plug-ins specificeren</translation>
 <translation id="2303795211377219696">Automatisch aanvullen inschakelen voor creditcards</translation>
+<translation id="2307496301287881990">Statussen van scherm en graphics rapporteren</translation>
 <translation id="2309390639296060546">Standaardinstelling voor geolocatie</translation>
 <translation id="2327252517317514801">Domeinen definiëren voor toegang tot G Suite</translation>
 <translation id="2328573323851533589">Dit beleid kan worden gebruikt om controle op gegevenslekken gedwongen in of uit te schakelen in <ph name="PRODUCT_NAME" />.
@@ -1137,6 +1139,7 @@
       Als het beleid niet is geconfigureerd of is uitgeschakeld, worden de standaardisolatie-instellingen voor sites van het platform gebruikt voor het inlogscherm.
       </translation>
 <translation id="2587719089023392205"><ph name="PRODUCT_NAME" /> instellen als standaardbrowser</translation>
+<translation id="2588071938417715443">Dit beleid beheert de toegang tot bedienbare functies in de UI voor lokale vindbaarheid (<ph name="CHROME_DEVICES_LINK" />) waarin vindbare apparaten in de buurt van de gebruiker en door de gebruiker geregistreerde cloudapparaten worden weergegeven. Op alle besturingssystemen (met uitzondering van <ph name="PRODUCT_OS_NAME" />) kunnen gebruikers via de UI voor lokale vindbaarheid ook klassieke printers die aan hun computers zijn gekoppeld, toevoegen aan <ph name="CLOUD_PRINT_NAME" />.</translation>
 <translation id="2592091433672667839">Duur van inactiviteit voordat de schermbeveiliging wordt weergegeven in het inlogvenster in de winkelmodus</translation>
 <translation id="2592162121850992309">Als dit beleid is ingesteld op 'true' of niet is ingesteld, wordt hardwareversnelling ingeschakeld, tenzij een specifieke GPU-functie op de blacklist wordt gezet.
 
@@ -1384,19 +1387,6 @@
 <translation id="2960691910306063964">Verificatie zonder pincode in- of uitschakelen voor hosts voor externe toegang</translation>
 <translation id="2987155890997901449">ARC inschakelen</translation>
 <translation id="2987227569419001736">Gebruik van de Web Bluetooth API beheren</translation>
-<translation id="3011301228198307065">Hiermee stel je de standaard-URL voor de homepage in <ph name="PRODUCT_NAME" /> in en voorkom je dat gebruikers deze kunnen wijzigen.
-
-          De homepage is de pagina die wordt geopend met de startknop. Het beleid RestoreOnStartup bepaalt welke pagina's worden geopend wanneer de browser wordt opgestart.
-
-          Het type homepage kan worden ingesteld op een URL die je hier opgeeft of op de pagina 'Nieuw tabblad'. Als je de pagina 'Nieuw tabblad' selecteert, wordt dit beleid niet toegepast.
-
-          Als je deze instelling inschakelt, kunnen gebruikers hun homepage-URL in <ph name="PRODUCT_NAME" /> niet wijzigen, maar kunnen ze wel gewoon de pagina 'Nieuw tabblad' als homepage kiezen.
-
-          Als dit beleid niet wordt ingesteld, kunnen gebruikers zelf hun homepage kiezen als HomepageIsNewTabPage ook niet is ingesteld.
-
-          De URL moet een standaardschema hebben zoals 'http://example.com' of 'https://example.com'.
-
-          Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="3016255526521614822">Notitie-apps die zijn toegestaan op het <ph name="PRODUCT_OS_NAME" />-vergrendelingsscherm toevoegen aan de witte lijst</translation>
 <translation id="3020064401262077616">Hiermee bepaal je de beleidsregels voor ouderlijk toezicht, die alleen op kinderaccounts worden toegepast.</translation>
 <translation id="3021562480854470924">Aantal mijlpalen dat rollback kan terugzetten</translation>
@@ -2921,6 +2911,7 @@
       Als de VPN-verbinding via een VPN-app wordt gemaakt, heeft dit beleid geen gevolgen voor de gebruikersinterface binnen de app. Daarom kan de gebruiker nog steeds de app gebruiken om de VPN-verbinding te bewerken.
 
       Dit beleid is bedoeld voor gebruik in combinatie met de functie 'Always-on VPN', waarmee de beheerder kan bepalen of er tijdens het opstarten een VPN-verbinding tot stand moet worden gebracht.</translation>
+<translation id="5401696449591951427"><ph name="CHROME_DEVICES_LINK" /> inschakelen</translation>
 <translation id="5405289061476885481">Hiermee configureer je welke toetsenbordindelingen zijn toegestaan voor het inlogscherm van <ph name="PRODUCT_OS_NAME" />.
 
       Als dit beleid is ingesteld op een lijst met invoermethode-ID's, zijn de opgegeven invoermethoden beschikbaar in het inlogscherm. De eerste opgegeven invoermethode wordt vooraf geselecteerd. Hoewel een gebruikerspod is gericht op het inlogscherm, is de laatst gebruikte invoermethode van de gebruiker beschikbaar naast de invoermethoden die door dit beleid worden aangegeven. Als dit beleid niet is ingesteld, worden de invoermethoden op het inlogscherm afgeleid van de taal waarin het inlogscherm wordt weergegeven. Waarden die geen geldige invoermethode-ID's zijn, worden genegeerd.</translation>
@@ -3190,6 +3181,7 @@
           Als dit beleid niet is ingesteld, wordt de standaardactie uitgevoerd. De standaardactie is opschorten.
 
           Als de actie opschorten is, kan <ph name="PRODUCT_OS_NAME" /> afzonderlijk worden geconfigureerd om het scherm al dan niet te vergrendelen voordat de opschorting wordt geactiveerd.</translation>
+<translation id="574983287620584622">Snelkoppelingen voor toegankelijkheidsfuncties inschakelen op het inlogscherm</translation>
 <translation id="5755002458331714762"> De Web Components v0 API's (Shadow DOM v0, Custom Elements v0 en HTML Imports) zijn beëindigd in 2018 en zijn vanaf M80 standaard uitgeschakeld. Met dit beleid kunnen deze functies selectief opnieuw worden ingeschakeld tot M84.
 
       Als dit beleid is ingesteld op True, worden de functies van Web Components v0 ingeschakeld voor alle sites.
@@ -4338,6 +4330,15 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als dit beleid is ingesteld op False, worden er geen gegevens over Safe Browsing verzameld.
 
       Dit beleid is alleen effectief als <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="777734450201217641">Schakel snelkoppelingen voor toegankelijkheidsfuncties in op het inlogscherm.
+
+          Als dit beleid is ingesteld op True, zijn snelkoppelingen voor toegankelijkheidsfuncties altijd ingeschakeld op het inlogscherm.
+
+          Als dit beleid is ingesteld op False, zijn snelkoppelingen voor toegankelijkheidsfuncties altijd uitgeschakeld op het inlogscherm.
+
+          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
+
+          Als dit beleid niet is ingesteld, zijn snelkoppelingen voor toegankelijkheidsfuncties standaard ingeschakeld op het inlogscherm.</translation>
 <translation id="7777535871204167559">Externe opslagapparaten behandelen als alleen-lezen</translation>
 <translation id="7788511847830146438">Per profiel</translation>
 <translation id="7792973482799545782">Niet toestaan dat sites blokkeerbare gecombineerde content laden</translation>
@@ -4743,6 +4744,15 @@ Dit beleid wordt verwijderd in M75.</translation>
 
       Waarschuwing: Het wordt niet aanbevolen versiebeperkingen te configureren, omdat gebruikers hierdoor mogelijk geen software-updates en essentiële beveiligingsoplossingen ontvangen. Als je updates beperkt tot een specifiek versievoorvoegsel, kunnen gebruikers gevaar lopen.</translation>
 <translation id="8519264904050090490">URL's van handmatige uitzonderingen voor beheerde gebruikers</translation>
+<translation id="8519516251436131647">Schakel snelkoppelingen voor toegankelijkheidsfuncties in.
+
+          Als dit beleid is ingesteld op True, zijn snelkoppelingen voor toegankelijkheidsfuncties altijd ingeschakeld.
+
+          Als dit beleid is ingesteld op False, zijn snelkoppelingen voor toegankelijkheidsfuncties altijd uitgeschakeld.
+
+          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
+
+          Als dit beleid niet is ingesteld, zijn snelkoppelingen voor toegankelijkheidsfuncties standaard ingeschakeld.</translation>
 <translation id="8525526490824335042">Linux-container</translation>
 <translation id="8538235451413605457">Hiermee wordt de vereiste van de minimaal toegestane versie van <ph name="PRODUCT_NAME" /> geconfigureerd. Eerdere versies worden behandeld als verouderd en gebruikers kunnen pas op het apparaat inloggen nadat het besturingssysteem is geüpdatet.
 
@@ -4980,6 +4990,9 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 
           Als dit beleid niet is ingesteld, wordt 'PromptOnAccess' gebruikt en kan de gebruiker dit wijzigen.</translation>
 <translation id="8911348623012274122">Geheugenlimiet instellen voor Chrome-instanties</translation>
+<translation id="8911736066340032670">Rapporteer informatie over het scherm, zoals de vernieuwingssnelheid, en informatie over graphics, zoals de stuurprogrammaversie.
+
+      Als het beleid is ingesteld op False of niet is ingesteld, worden de statussen van het scherm en de graphics niet gerapporteerd. Als het beleid is ingesteld op True, worden de statussen van het scherm en de graphics gerapporteerd.</translation>
 <translation id="891435090623616439">gecodeerd als een JSON-tekenreeks. Ga voor meer informatie naar <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Gebruikers toestaan geïnstalleerde CA-certificaten te beheren.</translation>
 <translation id="8926275581598789324">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" /> versie 82. Gebruik in plaats daarvan <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.

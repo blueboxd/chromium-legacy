@@ -294,9 +294,12 @@ Polymer({
    * @private
    */
   updateImages_() {
-    this.resizeAndCenterIcon_(this.$.scanningAnimation);
-    this.resizeAndCenterIcon_(this.$.enrollmentDone);
-    this.resizeCheckMark_(this.$.checkmarkAnimation);
+    this.resizeAndCenterIcon_(
+        /** @type {!HTMLElement} */ (this.$.scanningAnimation));
+    this.resizeAndCenterIcon_(
+        /** @type {!HTMLElement} */ (this.$.enrollmentDone));
+    this.resizeCheckMark_(
+        /** @type {!HTMLElement} */ (this.$.checkmarkAnimation));
   },
 
   /**

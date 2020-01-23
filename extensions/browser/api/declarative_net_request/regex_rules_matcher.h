@@ -56,8 +56,6 @@ class RegexRulesMatcher final : public RulesetMatcherBase {
 
   // RulesetMatcherBase override:
   ~RegexRulesMatcher() override;
-  base::Optional<RequestAction> GetBeforeRequestAction(
-      const RequestParams& params) const override;
   uint8_t GetRemoveHeadersMask(
       const RequestParams& params,
       uint8_t excluded_remove_headers_mask,
@@ -67,6 +65,12 @@ class RegexRulesMatcher final : public RulesetMatcherBase {
   }
 
  private:
+  // RulesetMatcherBase override:
+  base::Optional<RequestAction> GetAllowAllRequestsAction(
+      const RequestParams& params) const override;
+  base::Optional<RequestAction> GetBeforeRequestActionIgnoringAncestors(
+      const RequestParams& params) const override;
+
   // Helper to build the necessary data structures for matching.
   void InitializeMatcher();
 

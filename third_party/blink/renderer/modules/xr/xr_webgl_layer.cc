@@ -296,10 +296,9 @@ void XRWebGLLayer::OnResize() {
   viewports_dirty_ = true;
 }
 
-scoped_refptr<StaticBitmapImage> XRWebGLLayer::TransferToStaticBitmapImage(
-    std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
+scoped_refptr<StaticBitmapImage> XRWebGLLayer::TransferToStaticBitmapImage() {
   if (drawing_buffer_) {
-    return drawing_buffer_->TransferToStaticBitmapImage(out_release_callback);
+    return drawing_buffer_->TransferToStaticBitmapImage();
   }
   return nullptr;
 }

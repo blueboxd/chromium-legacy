@@ -4058,7 +4058,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="677965093459947883">Muito pequeno</translation>
 <translation id="6781284683813954823">Link do doodle</translation>
 <translation id="6781978626986383437">Cópia de segurança do Linux cancelada</translation>
-<translation id="6785915470941880363">Deslocamento invertido <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
+<translation id="6785915470941880363">Deslocamento invertido <ph name="LINK_BEGIN" />Saber mais<ph name="LINK_END" /></translation>
 <translation id="6786747875388722282">Extensões</translation>
 <translation id="6787839852456839824">Atalhos de teclado</translation>
 <translation id="6788210894632713004">Extensão expandida</translation>
@@ -5024,7 +5024,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8101987792947961127">Powerwash necessário no próximo reinício</translation>
 <translation id="8102159139658438129">Aceda a <ph name="LINK_BEGIN" />Definições<ph name="LINK_END" /> para ver as opções para o telemóvel associado.</translation>
 <translation id="8104696615244072556">Efetue um Powerwash ao dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> e regresse à versão anterior.</translation>
-<translation id="8106661353233173262">Ocorreu um erro. A análise do ficheiro excedeu o tempo limite.</translation>
 <translation id="8107015733319732394">A instalar a Google Play Store no <ph name="DEVICE_TYPE" />… Esta ação pode demorar alguns minutos.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Sem cookies de terceiros}=1{1 cookie de terceiros está bloqueado}other{# cookies de terceiros estão bloqueados}}</translation>
 <translation id="810875025413331850">Não foram encontrados dispositivos nas proximidades.</translation>

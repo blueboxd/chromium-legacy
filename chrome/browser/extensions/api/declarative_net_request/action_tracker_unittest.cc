@@ -6,6 +6,9 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/test/simple_test_clock.h"
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "content/public/common/resource_type.h"
@@ -149,30 +152,161 @@ TEST_P(ActionTrackerTest, GetMatchedRulesNoPermission) {
                                     request_2);
   }
 
+  // No need to trim non-active rules because all requests are from active tabs.
+  const bool trim_non_active_rules = false;
+
   // For |extension_1|, one rule match should be recorded for |rules_tracked_|
   // and one for |pending_navigation_actions_|.
-  EXPECT_EQ(1, action_tracker()->GetMatchedRuleCountForTest(extension_1->id(),
-                                                            tab_id));
+  EXPECT_EQ(1, action_tracker()->GetMatchedRuleCountForTest(
+                   extension_1->id(), tab_id, trim_non_active_rules));
   EXPECT_EQ(1, action_tracker()->GetPendingRuleCountForTest(extension_1->id(),
                                                             kNavigationId));
 
   // Since |extension_2| does not have the feedback permission, no rule matches
   // should be recorded.
-  EXPECT_EQ(0, action_tracker()->GetMatchedRuleCountForTest(extension_2->id(),
-                                                            tab_id));
+  EXPECT_EQ(0, action_tracker()->GetMatchedRuleCountForTest(
+                   extension_2->id(), tab_id, trim_non_active_rules));
   EXPECT_EQ(0, action_tracker()->GetPendingRuleCountForTest(extension_2->id(),
                                                             kNavigationId));
 
   // While |extension_3| does not have the feedback permission, it does have the
   // activeTab permission and therefore rule matches should be recorded.
-  EXPECT_EQ(1, action_tracker()->GetMatchedRuleCountForTest(extension_3->id(),
-                                                            tab_id));
+  EXPECT_EQ(1, action_tracker()->GetMatchedRuleCountForTest(
+                   extension_3->id(), tab_id, trim_non_active_rules));
   EXPECT_EQ(1, action_tracker()->GetPendingRuleCountForTest(extension_3->id(),
                                                             kNavigationId));
 
   // Clean up the internal state of |action_tracker_|.
   action_tracker()->ClearPendingNavigation(kNavigationId);
   action_tracker()->ClearTabData(tab_id);
+}
+
+// Test that rules associated with a non-active tab past their lifetime will be
+// removed, and not returned by getMatchedRules
+TEST_P(ActionTrackerTest, GetMatchedRulesLifespan) {
+  base::SimpleTestClock clock_;
+  clock_.SetNow(base::Time::Now());
+  action_tracker()->SetClockForTests(&clock_);
+
+  // Load an extension with the declarativeNetRequestFeedback permission.
+  ASSERT_NO_FATAL_FAILURE(LoadExtension("test_extension",
+                                        true /* has_feedback_permission */,
+                                        false /* has_active_tab_permission */));
+  const Extension* extension_1 = last_loaded_extension();
+
+  const int tab_id = 1;
+
+  // Record a rule match for a non-navigation request.
+  WebRequestInfo request_1(GetRequestParamsForURL(
+      "http://one.com", content::ResourceType::kSubResource, tab_id));
+  action_tracker()->OnRuleMatched(CreateRequestAction(extension_1->id()),
+                                  request_1);
+
+  // Half life of a matched rule associated with a non-active tab, with 50ms
+  // added.
+  base::TimeDelta half_life = (ActionTracker::kNonActiveTabRuleLifespan / 2) +
+                              base::TimeDelta::FromMilliseconds(50);
+
+  // Advance the clock by half of the lifespan of a matched rule for the unknown
+  // tab ID.
+  clock_.Advance(half_life);
+
+  // Record another rule match.
+  action_tracker()->OnRuleMatched(CreateRequestAction(extension_1->id()),
+                                  request_1);
+
+  // Close the tab with |tab_id|.
+  action_tracker()->ClearTabData(tab_id);
+
+  // Since some requests are not from an active tab, and the rule count for the
+  // unknown tab will be queried, we should emulate the getMatchedRules API call
+  // and trim non-active rules.
+  const bool trim_non_active_rules = true;
+
+  // Both rules should now be attributed to the unknown tab ID since the tab in
+  // which they were matched is no longer active.
+  EXPECT_EQ(2, action_tracker()->GetMatchedRuleCountForTest(
+                   extension_1->id(), extension_misc::kUnknownTabId,
+                   trim_non_active_rules));
+
+  // Advance the clock so one of the matched rules will be older than the
+  // lifespan for rules not associated with an active tab.
+  clock_.Advance(half_life);
+
+  // Rules not attributed to an active tab have a fixed lifespan,
+  // so only one rule should be returned.
+  EXPECT_EQ(1, action_tracker()->GetMatchedRuleCountForTest(
+                   extension_1->id(), extension_misc::kUnknownTabId,
+                   trim_non_active_rules));
+
+  // Advance the clock so both rules will be older than the matched rule
+  // lifespan.
+  clock_.Advance(ActionTracker::kNonActiveTabRuleLifespan);
+
+  // Since both rules are older than the lifespan, they should be cleared and no
+  // rules are returned.
+  EXPECT_EQ(0, action_tracker()->GetMatchedRuleCountForTest(
+                   extension_1->id(), extension_misc::kUnknownTabId,
+                   trim_non_active_rules));
+
+  action_tracker()->SetClockForTests(nullptr);
+}
+
+// Test that matched rules not associated with an active tab will be
+// automatically cleaned up by a recurring task.
+TEST_P(ActionTrackerTest, RulesClearedOnTimer) {
+  scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner =
+      base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+          base::Time::Now(), base::TimeTicks::Now());
+  // Mock the clock and the timer. Clock is used to check whether the rule
+  // should be removed and the timer is used to set up a recurrent task to clean
+  // up old rules.
+  action_tracker()->SetClockForTests(mock_time_task_runner->GetMockClock());
+
+  auto mock_trim_timer = std::make_unique<base::RetainingOneShotTimer>(
+      mock_time_task_runner->GetMockTickClock());
+
+  mock_trim_timer->SetTaskRunner(mock_time_task_runner);
+  action_tracker()->SetTimerForTest(std::move(mock_trim_timer));
+
+  // Load an extension with the declarativeNetRequestFeedback permission.
+  ASSERT_NO_FATAL_FAILURE(LoadExtension("test_extension",
+                                        true /* has_feedback_permission */,
+                                        false /* has_active_tab_permission */));
+  const Extension* extension_1 = last_loaded_extension();
+
+  // Record a rule match for |extension_1| for the unknown tab.
+  WebRequestInfo request_1(GetRequestParamsForURL(
+      "http://one.com", content::ResourceType::kSubResource,
+      extension_misc::kUnknownTabId));
+  action_tracker()->OnRuleMatched(CreateRequestAction(extension_1->id()),
+                                  request_1);
+
+  // Since this test explicitly tests that the recurring task will remove
+  // non-active rules, ensure that calls to GetmatchedRuleCountForTest will not
+  // remove non-active rules.
+  const bool trim_non_active_rules = false;
+
+  // Verify that the rule has been matched.
+  EXPECT_EQ(1, action_tracker()->GetMatchedRuleCountForTest(
+                   extension_1->id(), extension_misc::kUnknownTabId,
+                   trim_non_active_rules));
+
+  // Advance the clock by more than the lifespan of a rule through
+  // |mock_time_task_runner|.
+  mock_time_task_runner->FastForwardBy(
+      ActionTracker::kNonActiveTabRuleLifespan +
+      base::TimeDelta::FromSeconds(1));
+
+  // Verify that the rule has been cleared by the recurring task.
+  EXPECT_EQ(0, action_tracker()->GetMatchedRuleCountForTest(
+                   extension_1->id(), extension_misc::kUnknownTabId,
+                   trim_non_active_rules));
+
+  // Reset the ActionTracker's state.
+  action_tracker()->SetClockForTests(nullptr);
+  action_tracker()->SetTimerForTest(
+      std::make_unique<base::RetainingOneShotTimer>());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

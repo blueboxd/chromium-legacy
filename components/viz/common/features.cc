@@ -42,6 +42,11 @@ const base::Feature kDisableDeJelly{"DisableDeJelly",
 const base::Feature kVizForWebView{"VizForWebView",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Submit CompositorFrame from SynchronousLayerTreeFrameSink directly to viz in
+// WebView.
+const base::Feature kVizFrameSubmissionForWebView{
+    "VizFrameSubmissionForWebView", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Whether we should use the real buffers corresponding to overlay candidates in
 // order to do a pageflip test rather than allocating test buffers.
 const base::Feature kUseRealBuffersForPageFlipTest{
@@ -79,6 +84,15 @@ bool IsRecordingSkPicture() {
 
 bool IsUsingVizForWebView() {
   return base::FeatureList::IsEnabled(kVizForWebView);
+}
+
+bool IsUsingVizFrameSubmissionForWebView() {
+  if (base::FeatureList::IsEnabled(kVizFrameSubmissionForWebView)) {
+    DCHECK(IsUsingVizForWebView())
+        << "kVizFrameSubmissionForWebView requires kVizForWebView";
+    return true;
+  }
+  return false;
 }
 
 bool IsUsingPreferredIntervalForVideo() {

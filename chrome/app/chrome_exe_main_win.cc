@@ -85,8 +85,7 @@ bool AttemptFastNotify(const base::CommandLine& command_line) {
   HWND chrome = chrome::FindRunningChromeWindow(user_data_dir);
   if (!chrome)
     return false;
-  return chrome::AttemptToNotifyRunningChrome(chrome, true) ==
-      chrome::NOTIFY_SUCCESS;
+  return chrome::AttemptToNotifyRunningChrome(chrome) == chrome::NOTIFY_SUCCESS;
 }
 
 // Returns true if |command_line| contains a /prefetch:# argument where # is in

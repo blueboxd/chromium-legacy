@@ -60,11 +60,11 @@ class TabController {
   // Closes the tab.
   virtual void CloseTab(Tab* tab, CloseTabSource source) = 0;
 
-  // Attempts to move the specified tab to the right.
-  virtual void MoveTabRight(Tab* tab) = 0;
+  // Attempts to shift the specified tab to the right by one index.
+  virtual void ShiftTabRight(Tab* tab) = 0;
 
-  // Attempts to move the specified tab to the left.
-  virtual void MoveTabLeft(Tab* tab) = 0;
+  // Attempts to shift the specified tab to the left by one index.
+  virtual void ShiftTabLeft(Tab* tab) = 0;
 
   // Attempts to move the specified tab to the beginning of the tabstrip (or the
   // beginning of the unpinned tab region if the tab is not pinned).

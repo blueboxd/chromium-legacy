@@ -11,7 +11,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/enterprise_reporting/prefs.h"
-#include "chrome/browser/enterprise_reporting/request_timer.h"
 #include "chrome/browser/policy/fake_browser_dm_token_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -37,45 +36,9 @@ constexpr char kDMToken[] = "dm_token";
 constexpr char kClientId[] = "client_id";
 constexpr char kStaleProfileCountMetricsName[] =
     "Enterprise.CloudReportingStaleProfileCount";
-const int kDefaultUploadInterval = 24;
+constexpr base::TimeDelta kDefaultUploadInterval =
+    base::TimeDelta::FromHours(24);
 }  // namespace
-class FakeRequestTimer : public RequestTimer {
- public:
-  FakeRequestTimer() = default;
-  ~FakeRequestTimer() override = default;
-  void Start(const base::Location& posted_from,
-             base::TimeDelta first_delay,
-             base::TimeDelta repeat_delay,
-             base::RepeatingClosure user_task) override {
-    first_delay_ = first_delay;
-    repeat_delay_ = repeat_delay;
-    user_task_ = user_task;
-    is_running_ = true;
-  }
-
-  void Stop() override { is_running_ = false; }
-
-  void Reset() override { is_running_ = true; }
-
-  void Fire() {
-    EXPECT_TRUE(is_running_);
-    user_task_.Run();
-    is_running_ = false;
-  }
-
-  bool is_running() { return is_running_; }
-
-  base::TimeDelta first_delay() { return first_delay_; }
-
-  base::TimeDelta repeat_delay() { return repeat_delay_; }
-
- private:
-  base::TimeDelta first_delay_;
-  base::TimeDelta repeat_delay_;
-  base::RepeatingClosure user_task_;
-  bool is_running_ = false;
-  DISALLOW_COPY_AND_ASSIGN(FakeRequestTimer);
-};
 
 ACTION_P(ScheduleGeneratorCallback, request_number) {
   ReportGenerator::ReportRequests requests;
@@ -119,8 +82,6 @@ class ReportSchedulerTest : public ::testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp());
     client_ptr_ = std::make_unique<policy::MockCloudPolicyClient>();
     client_ = client_ptr_.get();
-    timer_ptr_ = std::make_unique<FakeRequestTimer>();
-    timer_ = timer_ptr_.get();
     generator_ptr_ = std::make_unique<MockReportGenerator>();
     generator_ = generator_ptr_.get();
     uploader_ptr_ = std::make_unique<MockReportUploader>();
@@ -137,14 +98,13 @@ class ReportSchedulerTest : public ::testing::Test {
   }
 
   void CreateScheduler() {
-    scheduler_ = std::make_unique<ReportScheduler>(
-        client_, std::move(timer_ptr_), std::move(generator_ptr_));
+    scheduler_ =
+        std::make_unique<ReportScheduler>(client_, std::move(generator_ptr_));
     scheduler_->SetReportUploaderForTesting(std::move(uploader_ptr_));
   }
 
-  void SetLastUploadInHour(int gap) {
-    previous_set_last_upload_timestamp_ =
-        base::Time::Now() - base::TimeDelta::FromHours(gap);
+  void SetLastUploadInHour(base::TimeDelta gap) {
+    previous_set_last_upload_timestamp_ = base::Time::Now() - gap;
     local_state_.Get()->SetTime(kLastUploadTimestamp,
                                 previous_set_last_upload_timestamp_);
   }
@@ -200,7 +160,6 @@ class ReportSchedulerTest : public ::testing::Test {
 
   std::unique_ptr<ReportScheduler> scheduler_;
   policy::MockCloudPolicyClient* client_;
-  FakeRequestTimer* timer_;
   MockReportGenerator* generator_;
   MockReportUploader* uploader_;
   policy::FakeBrowserDMTokenStorage storage_;
@@ -209,7 +168,6 @@ class ReportSchedulerTest : public ::testing::Test {
 
  private:
   std::unique_ptr<policy::MockCloudPolicyClient> client_ptr_;
-  std::unique_ptr<FakeRequestTimer> timer_ptr_;
   std::unique_ptr<MockReportGenerator> generator_ptr_;
   std::unique_ptr<MockReportUploader> uploader_ptr_;
   DISALLOW_COPY_AND_ASSIGN(ReportSchedulerTest);
@@ -218,7 +176,7 @@ class ReportSchedulerTest : public ::testing::Test {
 TEST_F(ReportSchedulerTest, NoReportWithoutPolicy) {
   Init(false, kDMToken, kClientId);
   CreateScheduler();
-  EXPECT_FALSE(timer_->is_running());
+  EXPECT_FALSE(scheduler_->IsNextReportScheduledForTesting());
 }
 
 // Chrome OS needn't set dm token and client id in the report scheduler.
@@ -226,13 +184,13 @@ TEST_F(ReportSchedulerTest, NoReportWithoutPolicy) {
 TEST_F(ReportSchedulerTest, NoReportWithoutDMToken) {
   Init(true, "", kClientId);
   CreateScheduler();
-  EXPECT_FALSE(timer_->is_running());
+  EXPECT_FALSE(scheduler_->IsNextReportScheduledForTesting());
 }
 
 TEST_F(ReportSchedulerTest, NoReportWithoutClientId) {
   Init(true, kDMToken, "");
   CreateScheduler();
-  EXPECT_FALSE(timer_->is_running());
+  EXPECT_FALSE(scheduler_->IsNextReportScheduledForTesting());
 }
 #endif
 
@@ -244,18 +202,13 @@ TEST_F(ReportSchedulerTest, UploadReportSucceeded) {
       .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
 
   CreateScheduler();
-  EXPECT_TRUE(timer_->is_running());
-
-  timer_->Fire();
-
-  // timer is paused until the report is finished.
-  EXPECT_FALSE(timer_->is_running());
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
 
   // Run pending task.
   task_environment_.FastForwardBy(base::TimeDelta());
 
   // Next report is scheduled.
-  EXPECT_TRUE(timer_->is_running());
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
   ExpectLastUploadTimestampUpdated(true);
 
   ::testing::Mock::VerifyAndClearExpectations(client_);
@@ -270,18 +223,13 @@ TEST_F(ReportSchedulerTest, UploadReportTransientError) {
       .WillOnce(RunOnceCallback<1>(ReportUploader::kTransientError));
 
   CreateScheduler();
-  EXPECT_TRUE(timer_->is_running());
-
-  timer_->Fire();
-
-  // timer is paused until the report is finished.
-  EXPECT_FALSE(timer_->is_running());
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
 
   // Run pending task.
   task_environment_.FastForwardBy(base::TimeDelta());
 
   // Next report is scheduled.
-  EXPECT_TRUE(timer_->is_running());
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
   ExpectLastUploadTimestampUpdated(true);
 
   ::testing::Mock::VerifyAndClearExpectations(client_);
@@ -296,24 +244,19 @@ TEST_F(ReportSchedulerTest, UploadReportPersistentError) {
       .WillOnce(RunOnceCallback<1>(ReportUploader::kPersistentError));
 
   CreateScheduler();
-  EXPECT_TRUE(timer_->is_running());
-
-  timer_->Fire();
-
-  // timer is paused until the report is finished.
-  EXPECT_FALSE(timer_->is_running());
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
 
   // Run pending task.
   task_environment_.FastForwardBy(base::TimeDelta());
 
   // Next report is not scheduled.
-  EXPECT_FALSE(timer_->is_running());
+  EXPECT_FALSE(scheduler_->IsNextReportScheduledForTesting());
   ExpectLastUploadTimestampUpdated(false);
 
   // Turn off and on reporting to resume.
   ToggleCloudReport(false);
   ToggleCloudReport(true);
-  EXPECT_TRUE(timer_->is_running());
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
 
   ::testing::Mock::VerifyAndClearExpectations(client_);
   ::testing::Mock::VerifyAndClearExpectations(generator_);
@@ -326,42 +269,43 @@ TEST_F(ReportSchedulerTest, NoReportGenerate) {
   EXPECT_CALL(*uploader_, OnSetRequestAndUpload(_, _)).Times(0);
 
   CreateScheduler();
-  EXPECT_TRUE(timer_->is_running());
-
-  timer_->Fire();
-
-  // timer is paused until the report is finished.
-  EXPECT_FALSE(timer_->is_running());
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
 
   // Run pending task.
   task_environment_.FastForwardBy(base::TimeDelta());
 
   // Next report is not scheduled.
-  EXPECT_FALSE(timer_->is_running());
+  EXPECT_FALSE(scheduler_->IsNextReportScheduledForTesting());
   ExpectLastUploadTimestampUpdated(false);
 
   // Turn off and on reporting to resume.
   ToggleCloudReport(false);
   ToggleCloudReport(true);
-  EXPECT_TRUE(timer_->is_running());
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
 
   ::testing::Mock::VerifyAndClearExpectations(client_);
   ::testing::Mock::VerifyAndClearExpectations(generator_);
 }
 
 TEST_F(ReportSchedulerTest, TimerDelayWithLastUploadTimestamp) {
-  int gap = 10;
+  const base::TimeDelta gap = base::TimeDelta::FromHours(10);
   SetLastUploadInHour(gap);
 
   EXPECT_CALL_SetupRegistration();
+  EXPECT_CALL(*generator_, OnGenerate(_))
+      .WillOnce(WithArgs<0>(ScheduleGeneratorCallback(1)));
+  EXPECT_CALL(*uploader_, OnSetRequestAndUpload(_, _))
+      .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
 
   CreateScheduler();
-  EXPECT_TRUE(timer_->is_running());
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
 
-  EXPECT_EQ(base::TimeDelta::FromHours(kDefaultUploadInterval - gap),
-            timer_->first_delay());
-  EXPECT_EQ(base::TimeDelta::FromHours(kDefaultUploadInterval),
-            timer_->repeat_delay());
+  base::TimeDelta next_report_delay = kDefaultUploadInterval - gap;
+  task_environment_.FastForwardBy(next_report_delay -
+                                  base::TimeDelta::FromSeconds(1));
+  ExpectLastUploadTimestampUpdated(false);
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  ExpectLastUploadTimestampUpdated(true);
 
   ::testing::Mock::VerifyAndClearExpectations(client_);
   ::testing::Mock::VerifyAndClearExpectations(generator_);
@@ -369,13 +313,17 @@ TEST_F(ReportSchedulerTest, TimerDelayWithLastUploadTimestamp) {
 
 TEST_F(ReportSchedulerTest, TimerDelayWithoutLastUploadTimestamp) {
   EXPECT_CALL_SetupRegistration();
+  EXPECT_CALL(*generator_, OnGenerate(_))
+      .WillOnce(WithArgs<0>(ScheduleGeneratorCallback(1)));
+  EXPECT_CALL(*uploader_, OnSetRequestAndUpload(_, _))
+      .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
 
   CreateScheduler();
-  EXPECT_TRUE(timer_->is_running());
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
 
-  EXPECT_GT(base::TimeDelta(), timer_->first_delay());
-  EXPECT_EQ(base::TimeDelta::FromHours(kDefaultUploadInterval),
-            timer_->repeat_delay());
+  ExpectLastUploadTimestampUpdated(false);
+  task_environment_.FastForwardBy(base::TimeDelta());
+  ExpectLastUploadTimestampUpdated(true);
 
   ::testing::Mock::VerifyAndClearExpectations(client_);
 }
@@ -385,12 +333,15 @@ TEST_F(ReportSchedulerTest,
   EXPECT_CALL_SetupRegistration();
 
   CreateScheduler();
-  EXPECT_TRUE(timer_->is_running());
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
+
+  // Run pending task.
+  task_environment_.FastForwardBy(base::TimeDelta());
 
   ToggleCloudReport(false);
 
   // Next report is not scheduled.
-  EXPECT_FALSE(timer_->is_running());
+  EXPECT_FALSE(scheduler_->IsNextReportScheduledForTesting());
   ExpectLastUploadTimestampUpdated(false);
 
   ::testing::Mock::VerifyAndClearExpectations(client_);
@@ -405,18 +356,19 @@ TEST_F(ReportSchedulerTest, ReportingIsDisabledWhileNewReportIsPosted) {
       .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
 
   CreateScheduler();
-  EXPECT_TRUE(timer_->is_running());
+  EXPECT_TRUE(scheduler_->IsNextReportScheduledForTesting());
 
-  timer_->Fire();
+  // Run pending task.
+  task_environment_.FastForwardBy(base::TimeDelta());
+
   ToggleCloudReport(false);
-  EXPECT_FALSE(timer_->is_running());
 
   // Run pending task.
   task_environment_.FastForwardBy(base::TimeDelta());
 
   ExpectLastUploadTimestampUpdated(true);
   // Next report is not scheduled.
-  EXPECT_FALSE(timer_->is_running());
+  EXPECT_FALSE(scheduler_->IsNextReportScheduledForTesting());
 
   ::testing::Mock::VerifyAndClearExpectations(client_);
   ::testing::Mock::VerifyAndClearExpectations(generator_);
@@ -448,7 +400,6 @@ TEST_F(ReportSchedulerTest, StaleProfileMetricsForProfileAdded) {
       .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
 
   CreateScheduler();
-  timer_->Fire();
   task_environment_.FastForwardBy(base::TimeDelta());
 
   profile_manager_.CreateTestingProfile("profile1");
@@ -468,7 +419,6 @@ TEST_F(ReportSchedulerTest, StaleProfileMetricsForProfileRemoved) {
   // profile deleting.
   profile_manager_.CreateTestingProfile("profile0");
   CreateScheduler();
-  timer_->Fire();
   task_environment_.FastForwardBy(base::TimeDelta());
 
   TestingProfile* profile = profile_manager_.CreateTestingProfile("profile1");
@@ -488,7 +438,6 @@ TEST_F(ReportSchedulerTest, StaleProfileMetricsResetAfterNewUpload) {
       .WillOnce(RunOnceCallback<1>(ReportUploader::kSuccess));
 
   CreateScheduler();
-  timer_->Fire();
   task_environment_.FastForwardBy(base::TimeDelta());
 
   // Re-assign uploader for the second upload
@@ -500,8 +449,7 @@ TEST_F(ReportSchedulerTest, StaleProfileMetricsResetAfterNewUpload) {
 
   profile_manager_.CreateTestingProfile("profile1");
 
-  timer_->Fire();
-  task_environment_.FastForwardBy(base::TimeDelta());
+  task_environment_.FastForwardBy(kDefaultUploadInterval);
 
   scheduler_.reset();
   histogram_tester_.ExpectUniqueSample(kStaleProfileCountMetricsName, 0, 1);

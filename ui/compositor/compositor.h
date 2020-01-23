@@ -33,7 +33,7 @@
 #include "ui/compositor/compositor_lock.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/compositor/layer_animator_collection.h"
-#include "ui/gfx/color_space.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -125,9 +125,9 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
                                      const SkMatrix44& matrix) = 0;
 
   // Set the output color profile into which this compositor should render.
-  virtual void SetDisplayColorSpace(ui::Compositor* compositor,
-                                    const gfx::ColorSpace& output_color_space,
-                                    float sdr_white_level) = 0;
+  virtual void SetDisplayColorSpaces(
+      ui::Compositor* compositor,
+      const gfx::DisplayColorSpaces& display_color_spaces) = 0;
 
   // Mac path for transporting vsync parameters to the display.  Other platforms
   // update it via the BrowserCompositorLayerTreeFrameSink directly.
@@ -239,11 +239,6 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // compositing layers on.
   float device_scale_factor() const { return device_scale_factor_; }
 
-  // The color space of the device that this compositor is being displayed on.
-  const gfx::ColorSpace& output_color_space() const {
-    return output_color_space_;
-  }
-
   // Gets and sets the color matrix used to transform the output colors of what
   // this compositor renders.
   const SkMatrix44& display_color_matrix() const {
@@ -273,9 +268,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 
   // Set the output color profile into which this compositor should render. Also
   // sets the SDR white level (in nits) used to scale HDR color space primaries.
-  void SetDisplayColorSpace(
-      const gfx::ColorSpace& color_space,
-      float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
+  void SetDisplayColorSpaces(
+      const gfx::DisplayColorSpaces& display_color_spaces);
 
   // Set the transform/rotation info for the display output surface.
   void SetDisplayTransformHint(gfx::OverlayTransform hint);
@@ -489,10 +483,7 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   std::unique_ptr<ScopedAnimationDurationScaleMode> slow_animations_;
 
   SkMatrix44 display_color_matrix_;
-
-  gfx::ColorSpace output_color_space_;
-
-  float sdr_white_level_ = gfx::ColorSpace::kDefaultSDRWhiteLevel;
+  gfx::DisplayColorSpaces display_color_spaces_;
 
   // If true, all paint commands are recorded at pixel size instead of DIP.
   const bool is_pixel_canvas_;

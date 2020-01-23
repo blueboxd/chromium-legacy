@@ -11,7 +11,6 @@
 
 #include "base/containers/queue.h"
 #include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/strings/string_piece.h"
 #include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
 #include "url/gurl.h"
@@ -19,7 +18,6 @@
 namespace network {
 
 struct ResourceRequest;
-class SharedURLLoaderFactory;
 class SimpleURLLoader;
 
 }  // namespace network
@@ -31,6 +29,8 @@ extern const int kWilcoDtcSupportdWebRequestQueueMaxSize;
 
 // Max size of web response body in bytes.
 extern const int kWilcoDtcSupportdWebResponseMaxSizeInBytes;
+
+class WilcoDtcSupportdNetworkContext;
 
 // This class manages and performs web requests initiated by
 // wilco_dtc_supportd_processor. This service performs only one request at a
@@ -45,7 +45,7 @@ class WilcoDtcSupportdWebRequestService final {
       mojo::ScopedHandle)>;
 
   explicit WilcoDtcSupportdWebRequestService(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      std::unique_ptr<WilcoDtcSupportdNetworkContext> network_context);
   ~WilcoDtcSupportdWebRequestService();
 
   // Performs web request. The response is returned by |callback| which is
@@ -61,6 +61,10 @@ class WilcoDtcSupportdWebRequestService final {
       PerformWebRequestCallback callback);
 
   int request_queue_size_for_testing() { return request_queue_.size(); }
+
+  void set_allow_local_requests_for_testing(bool allow) {
+    allow_local_requests_ = allow;
+  }
 
  private:
   struct WebRequest {
@@ -79,7 +83,11 @@ class WilcoDtcSupportdWebRequestService final {
   // Starts the next web request if there is any in the |request_queue_|.
   void OnRequestComplete(std::unique_ptr<std::string> response_body);
 
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  // Configures whether it's allowed to perform web requests to the local host
+  // URL. Change only for tests.
+  bool allow_local_requests_ = false;
+
+  std::unique_ptr<WilcoDtcSupportdNetworkContext> network_context_;
   // Should be reset for every web request.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
 

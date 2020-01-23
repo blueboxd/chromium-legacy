@@ -770,10 +770,10 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       }
     }
     const auto& vpd_info = probe_result->vpd_info;
-    if (!vpd_info.is_null()) {
+    if (!vpd_info.is_null() && vpd_info->sku_number.has_value()) {
       em::SystemStatus* const system_status_out =
           response_params_.device_status->mutable_system_status();
-      system_status_out->set_vpd_sku_number(vpd_info->sku_number);
+      system_status_out->set_vpd_sku_number(vpd_info->sku_number.value());
     }
     const auto& battery_info = probe_result->battery_info;
     if (!battery_info.is_null()) {

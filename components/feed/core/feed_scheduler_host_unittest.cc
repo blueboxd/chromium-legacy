@@ -92,7 +92,7 @@ class FeedSchedulerHostTest : public ::testing::Test {
     // into kRareNtpUser classification.
     test_clock()->Advance(TimeDelta::FromDays(7));
 
-    ASSERT_EQ(UserClassifier::UserClass::kRareSuggestionsViewer,
+    ASSERT_EQ(UserClass::kRareSuggestionsViewer,
               scheduler()->GetUserClassifierForDebugging()->GetUserClass());
   }
 
@@ -107,7 +107,7 @@ class FeedSchedulerHostTest : public ::testing::Test {
     // Depending on which events occurred over which period of time in the test
     // before this function was called, it may not necessarily be sufficient to
     // push the user into the active consumer class.
-    ASSERT_EQ(UserClassifier::UserClass::kActiveSuggestionsConsumer,
+    ASSERT_EQ(UserClass::kActiveSuggestionsConsumer,
               scheduler()->GetUserClassifierForDebugging()->GetUserClass());
   }
 
@@ -177,23 +177,22 @@ class FeedSchedulerHostTest : public ::testing::Test {
 TEST_F(FeedSchedulerHostTest, GetTriggerThreshold) {
   // Make sure that there is no missing configuration in the Cartesian product
   // of states between TriggerType and UserClass.
-  std::vector<FeedSchedulerHost::TriggerType> triggers = {
-      FeedSchedulerHost::TriggerType::kNtpShown,
-      FeedSchedulerHost::TriggerType::kForegrounded,
-      FeedSchedulerHost::TriggerType::kFixedTimer};
+  std::vector<TriggerType> triggers = {TriggerType::kNtpShown,
+                                       TriggerType::kForegrounded,
+                                       TriggerType::kFixedTimer};
 
   // Classification starts out as an active NTP user.
-  for (FeedSchedulerHost::TriggerType trigger : triggers) {
+  for (TriggerType trigger : triggers) {
     EXPECT_FALSE(scheduler()->GetTriggerThreshold(trigger).is_zero());
   }
 
   ClassifyAsActiveSuggestionsConsumer();
-  for (FeedSchedulerHost::TriggerType trigger : triggers) {
+  for (TriggerType trigger : triggers) {
     EXPECT_FALSE(scheduler()->GetTriggerThreshold(trigger).is_zero());
   }
 
   ClassifyAsRareNtpUser();
-  for (FeedSchedulerHost::TriggerType trigger : triggers) {
+  for (TriggerType trigger : triggers) {
     EXPECT_FALSE(scheduler()->GetTriggerThreshold(trigger).is_zero());
   }
 }
@@ -1034,14 +1033,14 @@ TEST_F(FeedSchedulerHostTest, RefreshThrottler) {
 TEST_F(FeedSchedulerHostTest, GetUserClassifierForDebuggingRareUser) {
   ClassifyAsRareNtpUser();
 
-  EXPECT_EQ(UserClassifier::UserClass::kRareSuggestionsViewer,
+  EXPECT_EQ(UserClass::kRareSuggestionsViewer,
             scheduler()->GetUserClassifierForDebugging()->GetUserClass());
 }
 
 TEST_F(FeedSchedulerHostTest, GetUserClassifierForDebuggingActiveConsumer) {
   ClassifyAsActiveSuggestionsConsumer();
 
-  EXPECT_EQ(UserClassifier::UserClass::kActiveSuggestionsConsumer,
+  EXPECT_EQ(UserClass::kActiveSuggestionsConsumer,
             scheduler()->GetUserClassifierForDebugging()->GetUserClass());
 }
 
@@ -1069,19 +1068,19 @@ TEST_F(FeedSchedulerHostTest, GetLastFetchStatusForDebugging) {
 TEST_F(FeedSchedulerHostTest, GetLastFetchTriggerTypeForDebugging) {
   scheduler()->OnForegrounded();
 
-  EXPECT_EQ(FeedSchedulerHost::TriggerType::kForegrounded,
+  EXPECT_EQ(TriggerType::kForegrounded,
             *scheduler()->GetLastFetchTriggerTypeForDebugging());
 
   scheduler()->OnArticlesCleared(/*suppress_refreshes*/ false);
 
-  EXPECT_EQ(FeedSchedulerHost::TriggerType::kNtpShown,
+  EXPECT_EQ(TriggerType::kNtpShown,
             *scheduler()->GetLastFetchTriggerTypeForDebugging());
 
   ClassifyAsActiveSuggestionsConsumer();  // Fixed timer at 48 hours.
   test_clock()->Advance(TimeDelta::FromHours(49));
   scheduler()->OnFixedTimer(base::OnceClosure());
 
-  EXPECT_EQ(FeedSchedulerHost::TriggerType::kFixedTimer,
+  EXPECT_EQ(TriggerType::kFixedTimer,
             *scheduler()->GetLastFetchTriggerTypeForDebugging());
 }
 

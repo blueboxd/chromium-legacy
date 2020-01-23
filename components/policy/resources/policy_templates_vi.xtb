@@ -1392,19 +1392,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="2960691910306063964">Bật hoặc tắt xác thực không có mã PIN cho các máy chủ truy cập từ xa</translation>
 <translation id="2987155890997901449">Bật ARC</translation>
 <translation id="2987227569419001736">Kiểm soát việc sử dụng API Web Bluetooth</translation>
-<translation id="3011301228198307065">Định cấu hình URL trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn không cho người dùng thay đổi URL đó.
-
-          Trang chủ là trang mở ra khi người dùng nhấn nút Trang chủ. Các trang mở ra khi khởi động chịu sự kiểm soát của chính sách RestoreOnStartup.
-
-          Bạn có thể đặt loại trang chủ thành một URL mà bạn chỉ định tại đây hoặc đặt thành Trang tab mới. Nếu bạn chọn Trang tab mới, thì chính sách này không có hiệu lực.
-
-          Nếu bạn bật tùy chọn cài đặt này, thì người dùng không thể thay đổi URL trang chủ trong <ph name="PRODUCT_NAME" /> nhưng vẫn có thể chọn Trang tab mới làm trang chủ.
-
-          Nếu bạn không đặt chính sách này và cũng không đặt chính sách HomepageIsNewTabPage, thì người dùng sẽ được phép tự chọn trang chủ.
-
-          URL phải chứa tên giao thức chuẩn, chẳng hạn như: "http://example.com" hoặc "https://example.com".
-
-          Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký tính năng quản lý thiết bị.</translation>
 <translation id="3016255526521614822">Đưa các ứng dụng ghi chú được phép trên màn hình khóa của <ph name="PRODUCT_OS_NAME" /> vào danh sách cho phép</translation>
 <translation id="3020064401262077616">Kiểm soát các chính sách về sự giám sát của cha mẹ (chỉ áp dụng cho tài khoản người dùng là trẻ em).</translation>
 <translation id="3021562480854470924">Số mốc cho phép khôi phục</translation>

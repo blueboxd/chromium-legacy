@@ -4751,11 +4751,7 @@ int AXPlatformNodeWin::MSAARole() {
       return ROLE_SYSTEM_DOCUMENT;
 
     case ax::mojom::Role::kEmbeddedObject:
-      if (GetDelegate()->GetChildCount()) {
-        return ROLE_SYSTEM_GROUPING;
-      } else {
-        return ROLE_SYSTEM_CLIENT;
-      }
+      return ROLE_SYSTEM_CLIENT;
 
     case ax::mojom::Role::kFigcaption:
       return ROLE_SYSTEM_GROUPING;
@@ -4908,6 +4904,12 @@ int AXPlatformNodeWin::MSAARole() {
 
     case ax::mojom::Role::kParagraph:
       return ROLE_SYSTEM_GROUPING;
+
+    case ax::mojom::Role::kPluginObject:
+      if (GetDelegate()->GetChildCount())
+        return ROLE_SYSTEM_GROUPING;
+      else
+        return ROLE_SYSTEM_CLIENT;
 
     case ax::mojom::Role::kPopUpButton: {
       std::string html_tag =
@@ -5295,9 +5297,7 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       ia2_role = IA2_ROLE_FOOTNOTE;
       break;
     case ax::mojom::Role::kEmbeddedObject:
-      if (!GetDelegate()->GetChildCount()) {
-        ia2_role = IA2_ROLE_EMBEDDED_OBJECT;
-      }
+      ia2_role = IA2_ROLE_EMBEDDED_OBJECT;
       break;
     case ax::mojom::Role::kFigcaption:
       ia2_role = IA2_ROLE_CAPTION;
@@ -5351,6 +5351,10 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       break;
     case ax::mojom::Role::kParagraph:
       ia2_role = IA2_ROLE_PARAGRAPH;
+      break;
+    case ax::mojom::Role::kPluginObject:
+      if (!GetDelegate()->GetChildCount())
+        ia2_role = IA2_ROLE_EMBEDDED_OBJECT;
       break;
     case ax::mojom::Role::kPre:
       ia2_role = IA2_ROLE_PARAGRAPH;
@@ -5579,11 +5583,7 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"document";
 
     case ax::mojom::Role::kEmbeddedObject:
-      if (GetDelegate()->GetChildCount()) {
-        return L"group";
-      } else {
-        return L"document";
-      }
+      return L"region";
 
     case ax::mojom::Role::kEmphasis:
       return L"emphasis";
@@ -5742,6 +5742,12 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
 
     case ax::mojom::Role::kParagraph:
       return L"group";
+
+    case ax::mojom::Role::kPluginObject:
+      if (GetDelegate()->GetChildCount())
+        return L"group";
+      else
+        return L"document";
 
     case ax::mojom::Role::kPopUpButton: {
       std::string html_tag =
@@ -6245,11 +6251,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_DocumentControlTypeId;
 
     case ax::mojom::Role::kEmbeddedObject:
-      if (GetDelegate()->GetChildCount()) {
-        return UIA_GroupControlTypeId;
-      } else {
-        return UIA_DocumentControlTypeId;
-      }
+      return UIA_PaneControlTypeId;
 
     case ax::mojom::Role::kEmphasis:
       return UIA_TextControlTypeId;
@@ -6405,6 +6407,12 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
 
     case ax::mojom::Role::kParagraph:
       return UIA_GroupControlTypeId;
+
+    case ax::mojom::Role::kPluginObject:
+      if (GetDelegate()->GetChildCount())
+        return UIA_GroupControlTypeId;
+      else
+        return UIA_DocumentControlTypeId;
 
     case ax::mojom::Role::kPopUpButton: {
       std::string html_tag =
@@ -6686,7 +6694,19 @@ base::Optional<LONG> AXPlatformNodeWin::ComputeUIALandmarkType() const {
       return UIA_CustomLandmarkTypeId;
 
     case ax::mojom::Role::kForm:
-      return UIA_FormLandmarkTypeId;
+      // https://www.w3.org/TR/html-aam-1.0/#html-element-role-mappings
+      // https://w3c.github.io/core-aam/#mapping_role_table
+      // While the HTML-AAM spec states that <form> without an accessible name
+      // should have no corresponding role, removing the role breaks both
+      // aria-setsize and aria-posinset.
+      // The only other difference for UIA is that it should not be a landmark.
+      // If the author provided an accessible name, or the role was explicit,
+      // then allow the form landmark.
+      if (data.HasStringAttribute(ax::mojom::StringAttribute::kName) ||
+          data.HasStringAttribute(ax::mojom::StringAttribute::kRole)) {
+        return UIA_FormLandmarkTypeId;
+      }
+      return {};
 
     case ax::mojom::Role::kMain:
       return UIA_MainLandmarkTypeId;

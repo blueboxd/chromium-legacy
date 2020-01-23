@@ -135,6 +135,20 @@ bool FakePermissionBrokerClient::HasUdpHole(uint16_t port,
   return udp_hole_set_.find(rule) != udp_hole_set_.end();
 }
 
+bool FakePermissionBrokerClient::HasTcpPortForward(
+    uint16_t port,
+    const std::string& interface) {
+  auto rule = std::make_pair(port, interface);
+  return tcp_forwarding_set_.find(rule) != tcp_forwarding_set_.end();
+}
+
+bool FakePermissionBrokerClient::HasUdpPortForward(
+    uint16_t port,
+    const std::string& interface) {
+  auto rule = std::make_pair(port, interface);
+  return udp_forwarding_set_.find(rule) != udp_forwarding_set_.end();
+}
+
 void FakePermissionBrokerClient::RequestTcpPortForward(
     uint16_t in_port,
     const std::string& in_interface,
@@ -142,7 +156,10 @@ void FakePermissionBrokerClient::RequestTcpPortForward(
     uint16_t dst_port,
     int lifeline_fd,
     ResultCallback callback) {
-  std::move(callback).Run(false);
+  // TODO(matterchen): Increase logic for adding duplicate ports.
+  auto rule = std::make_pair(in_port, in_interface);
+  tcp_forwarding_set_.insert(rule);
+  std::move(callback).Run(true);
 }
 
 void FakePermissionBrokerClient::RequestUdpPortForward(
@@ -152,7 +169,9 @@ void FakePermissionBrokerClient::RequestUdpPortForward(
     uint16_t dst_port,
     int lifeline_fd,
     ResultCallback callback) {
-  std::move(callback).Run(false);
+  auto rule = std::make_pair(in_port, in_interface);
+  udp_forwarding_set_.insert(rule);
+  std::move(callback).Run(true);
 }
 
 void FakePermissionBrokerClient::ReleaseTcpPortForward(

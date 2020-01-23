@@ -28,18 +28,28 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-const GURL kTestPageUrl("http://mystery.site/foo.html");
-const GURL kTestFileUrl("file://foo");
 const base::Time kTestMhtmlCreationTime =
     base::Time::FromJsTime(1522339419011L);
 const char kLoadResultUmaNameAsync[] =
     "OfflinePages.MhtmlLoadResult.async_loading";
 
+const char kTestHeader[] = "reason=download";
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL TestPageUrl() {
+  return GURL("http://mystery.site/foo.html");
+}
+GURL TestFileUrl() {
+  return GURL("file://foo");
+}
+
 #if defined(OS_ANDROID)
-const GURL kTestContentUrl("content://foo");
+GURL TestContentUrl() {
+  return GURL("content://foo");
+}
 #endif
 
-const char kTestHeader[] = "reason=download";
 }  // namespace
 
 namespace offline_pages {
@@ -150,7 +160,7 @@ void OfflinePageTabHelperTest::SimulateOfflinePageLoad(
   tab_helper()->SetCurrentTargetFrameForTest(web_contents()->GetMainFrame());
 
   // Simulate navigation
-  CreateNavigationSimulator(kTestFileUrl);
+  CreateNavigationSimulator(TestFileUrl());
   navigation_simulator()->Start();
 
   OfflinePageItem offlinePage(mhtml_url, 0, ClientId("async_loading", "1234"),
@@ -169,7 +179,7 @@ void OfflinePageTabHelperTest::SimulateOfflinePageLoad(
 
 // Checks the test setup.
 TEST_F(OfflinePageTabHelperTest, InitialSetup) {
-  CreateNavigationSimulator(kTestPageUrl);
+  CreateNavigationSimulator(TestPageUrl());
   EXPECT_NE(nullptr, tab_helper());
   EXPECT_NE(nullptr, prefetch_service());
   EXPECT_NE(nullptr, prefetch_service()->GetOfflineMetricsCollector());
@@ -181,7 +191,7 @@ TEST_F(OfflinePageTabHelperTest, InitialSetup) {
 }
 
 TEST_F(OfflinePageTabHelperTest, MetricsStartNavigation) {
-  CreateNavigationSimulator(kTestPageUrl);
+  CreateNavigationSimulator(TestPageUrl());
   // This causes WCO::DidStartNavigation()
   navigation_simulator()->Start();
 
@@ -192,7 +202,7 @@ TEST_F(OfflinePageTabHelperTest, MetricsStartNavigation) {
 }
 
 TEST_F(OfflinePageTabHelperTest, MetricsOnlineNavigation) {
-  CreateNavigationSimulator(kTestPageUrl);
+  CreateNavigationSimulator(TestPageUrl());
   navigation_simulator()->Start();
   navigation_simulator()->Commit();
 
@@ -204,11 +214,12 @@ TEST_F(OfflinePageTabHelperTest, MetricsOnlineNavigation) {
 }
 
 TEST_F(OfflinePageTabHelperTest, MetricsOfflineNavigation) {
-  CreateNavigationSimulator(kTestPageUrl);
+  CreateNavigationSimulator(TestPageUrl());
   navigation_simulator()->Start();
 
   // Simulate offline interceptor loading an offline page instead.
-  OfflinePageItem offlinePage(kTestPageUrl, 0, ClientId(), base::FilePath(), 0);
+  OfflinePageItem offlinePage(TestPageUrl(), 0, ClientId(), base::FilePath(),
+                              0);
   OfflinePageHeader offlineHeader;
   tab_helper()->SetOfflinePage(
       offlinePage, offlineHeader,
@@ -225,10 +236,11 @@ TEST_F(OfflinePageTabHelperTest, MetricsOfflineNavigation) {
 }
 
 TEST_F(OfflinePageTabHelperTest, TrustedInternalOfflinePage) {
-  CreateNavigationSimulator(kTestPageUrl);
+  CreateNavigationSimulator(TestPageUrl());
   navigation_simulator()->Start();
 
-  OfflinePageItem offlinePage(kTestPageUrl, 0, ClientId(), base::FilePath(), 0);
+  OfflinePageItem offlinePage(TestPageUrl(), 0, ClientId(), base::FilePath(),
+                              0);
   OfflinePageHeader offlineHeader(kTestHeader);
   tab_helper()->SetOfflinePage(
       offlinePage, offlineHeader,
@@ -237,7 +249,7 @@ TEST_F(OfflinePageTabHelperTest, TrustedInternalOfflinePage) {
   navigation_simulator()->Commit();
 
   ASSERT_NE(nullptr, tab_helper()->offline_page());
-  EXPECT_EQ(kTestPageUrl, tab_helper()->offline_page()->url);
+  EXPECT_EQ(TestPageUrl(), tab_helper()->offline_page()->url);
   EXPECT_EQ(OfflinePageTrustedState::TRUSTED_AS_IN_INTERNAL_DIR,
             tab_helper()->trusted_state());
   EXPECT_TRUE(tab_helper()->IsShowingTrustedOfflinePage());
@@ -246,10 +258,11 @@ TEST_F(OfflinePageTabHelperTest, TrustedInternalOfflinePage) {
 }
 
 TEST_F(OfflinePageTabHelperTest, TrustedPublicOfflinePage) {
-  CreateNavigationSimulator(kTestPageUrl);
+  CreateNavigationSimulator(TestPageUrl());
   navigation_simulator()->Start();
 
-  OfflinePageItem offlinePage(kTestPageUrl, 0, ClientId(), base::FilePath(), 0);
+  OfflinePageItem offlinePage(TestPageUrl(), 0, ClientId(), base::FilePath(),
+                              0);
   OfflinePageHeader offlineHeader(kTestHeader);
   tab_helper()->SetOfflinePage(
       offlinePage, offlineHeader,
@@ -258,7 +271,7 @@ TEST_F(OfflinePageTabHelperTest, TrustedPublicOfflinePage) {
   navigation_simulator()->Commit();
 
   ASSERT_NE(nullptr, tab_helper()->offline_page());
-  EXPECT_EQ(kTestPageUrl, tab_helper()->offline_page()->url);
+  EXPECT_EQ(TestPageUrl(), tab_helper()->offline_page()->url);
   EXPECT_EQ(OfflinePageTrustedState::TRUSTED_AS_UNMODIFIED_AND_IN_PUBLIC_DIR,
             tab_helper()->trusted_state());
   EXPECT_TRUE(tab_helper()->IsShowingTrustedOfflinePage());
@@ -267,7 +280,7 @@ TEST_F(OfflinePageTabHelperTest, TrustedPublicOfflinePage) {
 }
 
 TEST_F(OfflinePageTabHelperTest, UntrustedOfflinePageForFileUrl) {
-  CreateNavigationSimulator(kTestFileUrl);
+  CreateNavigationSimulator(TestFileUrl());
   navigation_simulator()->Start();
   navigation_simulator()->SetContentsMimeType("multipart/related");
   navigation_simulator()->Commit();
@@ -282,7 +295,7 @@ TEST_F(OfflinePageTabHelperTest, UntrustedOfflinePageForFileUrl) {
 #if defined(OS_ANDROID)
 TEST_F(OfflinePageTabHelperTest,
        UntrustedOfflinePageForContentUrlWithMultipartRelatedType) {
-  CreateNavigationSimulator(kTestContentUrl);
+  CreateNavigationSimulator(TestContentUrl());
   navigation_simulator()->Start();
   navigation_simulator()->SetContentsMimeType("multipart/related");
   navigation_simulator()->Commit();
@@ -296,7 +309,7 @@ TEST_F(OfflinePageTabHelperTest,
 
 TEST_F(OfflinePageTabHelperTest,
        UntrustedOfflinePageForContentUrlWithMessageRfc822Type) {
-  CreateNavigationSimulator(kTestContentUrl);
+  CreateNavigationSimulator(TestContentUrl());
   navigation_simulator()->Start();
   navigation_simulator()->SetContentsMimeType("message/rfc822");
   navigation_simulator()->Commit();
@@ -395,7 +408,7 @@ TEST_F(OfflinePageTabHelperTest, TestNotifyMhtmlPageLoadAttempted_Untrusted) {
   tab_helper()->SetCurrentTargetFrameForTest(web_contents()->GetMainFrame());
 
   // Simulate navigation
-  CreateNavigationSimulator(kTestFileUrl);
+  CreateNavigationSimulator(TestFileUrl());
   navigation_simulator()->Start();
 
   // We force use of the untrusted page histogram by using an empty namespace.
@@ -421,7 +434,7 @@ TEST_F(OfflinePageTabHelperTest, AbortedNavigationDoesNotResetOfflineInfo) {
   SimulateOfflinePageLoad(mhtml_url, kTestMhtmlCreationTime,
                           MHTMLLoadResult::kUrlSchemeNotAllowed);
   auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
-      kTestPageUrl, web_contents());
+      TestPageUrl(), web_contents());
   navigation->Start();
   navigation->AbortCommit();
   EXPECT_TRUE(tab_helper()->offline_page());
@@ -430,10 +443,10 @@ TEST_F(OfflinePageTabHelperTest, AbortedNavigationDoesNotResetOfflineInfo) {
 TEST_F(OfflinePageTabHelperTest, OfflinePageIsNotStoredInBackForwardCache) {
   content::BackForwardCacheDisabledTester back_forward_cache_tester;
 
-  CreateNavigationSimulator(kTestPageUrl);
+  CreateNavigationSimulator(TestPageUrl());
   navigation_simulator()->Start();
 
-  SimulateOfflinePageLoad(kTestPageUrl, kTestMhtmlCreationTime,
+  SimulateOfflinePageLoad(TestPageUrl(), kTestMhtmlCreationTime,
                           MHTMLLoadResult::kSuccess);
 
   int process_id = web_contents()->GetMainFrame()->GetProcess()->GetID();
@@ -441,7 +454,7 @@ TEST_F(OfflinePageTabHelperTest, OfflinePageIsNotStoredInBackForwardCache) {
 
   // Navigate away.
   content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
-                                                             kTestPageUrl);
+                                                             TestPageUrl());
   EXPECT_TRUE(back_forward_cache_tester.IsDisabledForFrameWithReason(
       process_id, main_frame_id, "OfflinePage"));
 }

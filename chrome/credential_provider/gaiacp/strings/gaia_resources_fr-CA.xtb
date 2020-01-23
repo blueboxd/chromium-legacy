@@ -31,7 +31,7 @@
 <translation id="7536769223115622137">Ajouter un compte professionnel</translation>
 <translation id="7811865856574012727">Votre administrateur a restreint la connexion d'appareil aux domaines suivants : <ph name="EMAIL_DOMAINS" />. Réessayez en utilisant un compte professionnel valide.</translation>
 <translation id="7856245195110636219">Pour continuer, vous devez entrer le mot de passe Windows actuel. Veuillez communiquer avec un administrateur système.</translation>
-<translation id="8109730953933509335">Un utilisateur incorrect a tenté de modifier le mot de passe. Veuillez communiquer avec votre administrateur.</translation>
+<translation id="8109730953933509335">La tentative de modification du mot de passe a été effectuée pour un utilisateur incorrect. Veuillez communiquer avec votre administrateur.</translation>
 <translation id="8639729688781680518">Mot de passe Windows oublié</translation>
 <translation id="866458870819756755">Impossible de créer l'utilisateur.</translation>
 <translation id="8875753657315897487">Connectez-vous à l'aide de votre compte professionnel</translation>

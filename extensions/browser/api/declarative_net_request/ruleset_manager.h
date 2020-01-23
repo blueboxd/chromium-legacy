@@ -21,6 +21,7 @@
 
 namespace content {
 class BrowserContext;
+class RenderFrameHost;
 }
 
 namespace extensions {
@@ -87,6 +88,9 @@ class RulesetManager {
   // given |request|.
   bool HasExtraHeadersMatcherForRequest(const WebRequestInfo& request,
                                         bool is_incognito_context) const;
+
+  void OnRenderFrameDeleted(content::RenderFrameHost* host);
+  void OnDidFinishNavigation(content::RenderFrameHost* host);
 
   // Returns the number of CompositeMatchers currently being managed.
   size_t GetMatcherCountForTest() const { return rulesets_.size(); }

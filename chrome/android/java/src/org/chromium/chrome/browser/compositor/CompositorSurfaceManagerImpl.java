@@ -55,8 +55,7 @@ class CompositorSurfaceManagerImpl implements SurfaceHolder.Callback2, Composito
         // Parent ViewGroup, or null.
         private ViewGroup mParent;
 
-        public SurfaceState(Context context, int format, boolean supportMediaOverlay,
-                SurfaceHolder.Callback2 callback) {
+        public SurfaceState(Context context, int format, SurfaceHolder.Callback2 callback) {
             surfaceView = new SurfaceView(context);
 
             // Media overlays require a translucent surface for the compositor which should be
@@ -66,9 +65,7 @@ class CompositorSurfaceManagerImpl implements SurfaceHolder.Callback2, Composito
             // stacked on top of the translucent one, the framework doesn't draw any content
             // underneath it and shows its background instead when it has no content during the
             // transition.
-            if (format == PixelFormat.TRANSLUCENT && supportMediaOverlay) {
-                surfaceView.setZOrderMediaOverlay(true);
-            }
+            if (format == PixelFormat.TRANSLUCENT) surfaceView.setZOrderMediaOverlay(true);
             surfaceView.setVisibility(View.INVISIBLE);
             surfaceHolder().setFormat(format);
             surfaceHolder().addCallback(callback);
@@ -110,7 +107,7 @@ class CompositorSurfaceManagerImpl implements SurfaceHolder.Callback2, Composito
     private static final String TAG = "CompositorSurfaceMgr";
 
     // SurfaceView with a translucent PixelFormat.
-    private SurfaceState mTranslucent;
+    private final SurfaceState mTranslucent;
 
     // SurfaceView with an opaque PixelFormat.
     private final SurfaceState mOpaque;
@@ -130,15 +127,12 @@ class CompositorSurfaceManagerImpl implements SurfaceHolder.Callback2, Composito
     // View to which we'll attach the SurfaceView.
     private final ViewGroup mParentView;
 
-    public CompositorSurfaceManagerImpl(ViewGroup parentView, SurfaceManagerCallbackTarget client,
-            boolean supportMediaOverlay) {
+    public CompositorSurfaceManagerImpl(ViewGroup parentView, SurfaceManagerCallbackTarget client) {
         mParentView = parentView;
         mClient = client;
 
-        mTranslucent = new SurfaceState(
-                parentView.getContext(), PixelFormat.TRANSLUCENT, supportMediaOverlay, this);
-        mOpaque = new SurfaceState(
-                mParentView.getContext(), PixelFormat.OPAQUE, supportMediaOverlay, this);
+        mTranslucent = new SurfaceState(parentView.getContext(), PixelFormat.TRANSLUCENT, this);
+        mOpaque = new SurfaceState(mParentView.getContext(), PixelFormat.OPAQUE, this);
     }
 
     /**
@@ -243,18 +237,6 @@ class CompositorSurfaceManagerImpl implements SurfaceHolder.Callback2, Composito
                 detachSurfaceNow(owned);
             }
         });
-    }
-
-    @Override
-    public void recreateTranslucentSurfaceForSurfaceControl() {
-        // Recreate the translucent surface only if it hasn't been used or requested by client yet.
-        // This should be very early in the flow and until now the opaque one should be the one
-        // being used.
-        if (mTranslucent.isAttached() || mTranslucent == mRequestedByClient) return;
-
-        mTranslucent.surfaceHolder().removeCallback(this);
-        mTranslucent =
-                new SurfaceState(mParentView.getContext(), PixelFormat.TRANSLUCENT, false, this);
     }
 
     @Override

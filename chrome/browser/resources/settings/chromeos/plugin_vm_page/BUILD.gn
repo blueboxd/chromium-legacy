@@ -22,6 +22,7 @@ js_library("plugin_vm_page") {
   deps = [
     "..:os_route",
     "../..:router",
+    "../../prefs:prefs_behavior",
     "//ui/webui/resources/js:i18n_behavior",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]
@@ -38,6 +39,7 @@ js_library("plugin_vm_subpage") {
   deps = [
     "..:os_route",
     "../..:router",
+    "../../prefs:prefs_behavior",
   ]
 }
 

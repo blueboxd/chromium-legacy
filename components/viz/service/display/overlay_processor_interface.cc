@@ -163,6 +163,4 @@ OverlayProcessorInterface::ProcessOutputSurfaceAsOverlay(
 void OverlayProcessorInterface::ScheduleOverlays(
     DisplayResourceProvider* display_resource_provider) {}
 
-void OverlayProcessorInterface::OverlayPresentationComplete() {}
-
 }  // namespace viz

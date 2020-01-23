@@ -1680,6 +1680,7 @@ if (!is_android) {
         "../browser/extensions/api/history/history_apitest.cc",
         "../browser/extensions/api/i18n/i18n_apitest.cc",
         "../browser/extensions/api/identity/identity_apitest.cc",
+        "../browser/extensions/api/identity/identity_private_apitest.cc",
         "../browser/extensions/api/idle/idle_get_auto_lock_delay_apitest.cc",
         "../browser/extensions/api/idltest/idltest_apitest.cc",
         "../browser/extensions/api/image_writer_private/image_writer_private_apitest.cc",
@@ -2106,6 +2107,9 @@ if (!is_android) {
         "../browser/chromeos/child_accounts/parent_access_code/parent_access_test_utils.h",
         "../browser/chromeos/child_accounts/screen_time_controller_browsertest.cc",
         "../browser/chromeos/child_accounts/time_limit_test_utils.cc",
+        "../browser/chromeos/child_accounts/time_limits/app_time_browsertest.cc",
+        "../browser/chromeos/child_accounts/time_limits/app_time_limits_policy_builder.cc",
+        "../browser/chromeos/child_accounts/time_limits/app_time_limits_policy_builder.h",
         "../browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.cc",
         "../browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.h",
         "../browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer_browsertest.cc",
@@ -2368,6 +2372,7 @@ if (!is_android) {
         "../browser/chromeos/web_applications/media_app_integration_browsertest.cc",
         "../browser/chromeos/web_applications/system_web_app_integration_test.cc",
         "../browser/chromeos/web_applications/system_web_app_integration_test.h",
+        "../browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_web_request_service_browsertest.cc",
         "../browser/download/notification/download_notification_browsertest.cc",
         "../browser/drive/drive_notification_manager_factory_browsertest.cc",
         "../browser/extensions/api/certificate_provider/certificate_provider_apitest.cc",
@@ -3603,6 +3608,7 @@ test("unit_tests") {
     "//chrome:strings",
     "//chrome/browser/media/router:unittests",
     "//chrome/browser/notifications:unit_tests",
+    "//chrome/browser/updates/announcement_notification:unit_tests",
     "//chrome/common:test_support",
     "//chrome/common/media_router:test_support",
     "//components/account_id",
@@ -3843,7 +3849,6 @@ test("unit_tests") {
       "../browser/enterprise_reporting/report_request_queue_generator_unittest.cc",
       "../browser/enterprise_reporting/report_scheduler_unittest.cc",
       "../browser/enterprise_reporting/report_uploader_unittest.cc",
-      "../browser/enterprise_reporting/request_timer_unittest.cc",
       "../browser/first_run/first_run_unittest.cc",
       "../browser/font_family_cache_unittest.cc",
 
@@ -4797,8 +4802,7 @@ test("unit_tests") {
     ]
   }
   if (use_gtk) {
-    sources +=
-        [ "../browser/ui/libgtkui/select_file_dialog_impl_gtk_unittest.cc" ]
+    sources += [ "../browser/ui/gtk/select_file_dialog_impl_gtk_unittest.cc" ]
     deps += [ "//build/config/linux/gtk" ]
   }
 
@@ -4819,7 +4823,7 @@ test("unit_tests") {
     configs += [ "//build/linux:gio_config" ]
   }
   if (!is_chromeos && !use_ozone && is_linux) {
-    deps += [ "//chrome/browser/ui/libgtkui" ]
+    deps += [ "//chrome/browser/ui/gtk" ]
   }
 
   if (enable_service_discovery) {
@@ -5558,6 +5562,9 @@ if (!is_android) {
       "../browser/apps/platform_apps/app_window_interactive_uitest.cc",
       "../browser/apps/platform_apps/app_window_interactive_uitest_base.cc",
       "../browser/apps/platform_apps/app_window_interactive_uitest_base.h",
+      "../browser/autofill/autofill_interactive_uitest.cc",
+      "../browser/autofill/autofill_uitest.cc",
+      "../browser/autofill/autofill_uitest.h",
       "../browser/browser_keyevents_browsertest.cc",
       "../browser/devtools/devtools_sanity_interactive_browsertest.cc",
       "../browser/extensions/api/extension_action/browser_action_interactive_test.cc",
@@ -5642,16 +5649,6 @@ if (!is_android) {
       "base/window_contents_as_string_win.h",
       "ppapi/ppapi_interactive_browsertest.cc",
     ]
-
-    # TODO(https://crbug.com/967588): This suite of autofill tests flakily
-    # timeout on Windows 7.
-    if (!is_win) {
-      sources += [
-        "../browser/autofill/autofill_interactive_uitest.cc",
-        "../browser/autofill/autofill_uitest.cc",
-        "../browser/autofill/autofill_uitest.h",
-      ]
-    }
 
     if (is_win && use_aura) {
       sources += [ "../browser/ui/views/autofill/autofill_accessibility_win_browsertest.cc" ]
@@ -5739,6 +5736,7 @@ if (!is_android) {
     # Runtime dependencies
     data_deps = [
       "//ppapi:ppapi_tests",
+      "//testing/buildbot/filters:interactive_ui_tests_filters",
       "//third_party/mesa_headers",
       "//ui/resources:ui_test_pak_data",
     ]
@@ -5813,14 +5811,14 @@ if (!is_android) {
           "../browser/ui/views/keyboard_access_browsertest.cc",
         ]
         if (!use_ozone) {
-          sources += [
-            "../browser/ui/libgtkui/select_file_dialog_interactive_uitest.cc",
-          ]
+          sources +=
+              [ "../browser/ui/gtk/select_file_dialog_interactive_uitest.cc" ]
           deps += [ "//build/config/linux/gtk" ]
         }
       }
       if (!is_chromeos) {
         sources += [ "../browser/ui/views/global_media_controls/media_dialog_view_interactive_browsertest.cc" ]
+        deps += [ "../browser/media/router:test_support" ]
       }
       if (use_aura || is_mac) {
         deps += [ "//ui/touch_selection" ]

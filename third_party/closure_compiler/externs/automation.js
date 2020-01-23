@@ -223,6 +223,7 @@ chrome.automation.RoleType = {
   NOTE: 'note',
   PANE: 'pane',
   PARAGRAPH: 'paragraph',
+  PLUGIN_OBJECT: 'pluginObject',
   POP_UP_BUTTON: 'popUpButton',
   PRE: 'pre',
   PRESENTATIONAL: 'presentational',

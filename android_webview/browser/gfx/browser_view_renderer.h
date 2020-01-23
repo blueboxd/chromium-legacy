@@ -169,7 +169,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
 
   // RootFrameSinkProxy overrides
   void Invalidate() override;
-  void ProgressFling(base::TimeTicks frame_time) override;
 
   // Visible for testing.
   content::SynchronousCompositor* GetActiveCompositorForTesting() const {

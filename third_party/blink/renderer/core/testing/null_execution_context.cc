@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
+#include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/dom_timer.h"
 #include "third_party/blink/renderer/platform/scheduler/public/dummy_schedulers.h"
@@ -20,14 +21,11 @@ NullExecutionContext::NullExecutionContext(
     OriginTrialContext* origin_trial_context)
     : ExecutionContext(
           v8::Isolate::GetCurrent(),
-          MakeGarbageCollected<Agent>(v8::Isolate::GetCurrent(),
-                                      base::UnguessableToken::Null()),
-          origin_trial_context,
-          nullptr /* origin */,
-          WebSandboxFlags::kNone,
-          nullptr /* feature_policy */,
-          nullptr /* document_policy */,
-          SecureContextMode::kSecureContext),
+          SecurityContextInit(
+              nullptr,
+              origin_trial_context,
+              MakeGarbageCollected<Agent>(v8::Isolate::GetCurrent(),
+                                          base::UnguessableToken::Null()))),
       scheduler_(scheduler::CreateDummyFrameScheduler()) {}
 
 NullExecutionContext::~NullExecutionContext() {}

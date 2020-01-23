@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "gpu/ipc/client/client_shared_image_interface.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "ui/gfx/geometry/size.h"
@@ -147,7 +148,12 @@ unsigned StreamTextureFactory::CreateStreamTexture() {
 }
 
 gpu::SharedImageInterface* StreamTextureFactory::SharedImageInterface() {
-  return channel_->shared_image_interface();
+  if (shared_image_interface_)
+    return shared_image_interface_.get();
+
+  shared_image_interface_ = channel_->CreateClientSharedImageInterface();
+  DCHECK(shared_image_interface_);
+  return shared_image_interface_.get();
 }
 
 }  // namespace content

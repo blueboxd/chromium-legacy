@@ -36,8 +36,12 @@ const int kDefaultPort = 80;
 // has completed or mojo connection error has happened.
 class DnsLookupRequest : public network::ResolveHostClientBase {
  public:
-  DnsLookupRequest(int render_process_id, const std::string& hostname)
-      : render_process_id_(render_process_id), hostname_(hostname) {}
+  DnsLookupRequest(int render_process_id,
+                   int render_frame_id,
+                   const std::string& hostname)
+      : render_process_id_(render_process_id),
+        render_frame_id_(render_frame_id),
+        hostname_(hostname) {}
 
   // Return underlying network resolver status.
   // net::OK ==> Host was found synchronously.
@@ -46,9 +50,9 @@ class DnsLookupRequest : public network::ResolveHostClientBase {
   void Start(std::unique_ptr<DnsLookupRequest> request) {
     request_ = std::move(request);
 
-    content::RenderProcessHost* render_process_host =
-        content::RenderProcessHost::FromID(render_process_id_);
-    if (!render_process_host) {
+    content::RenderFrameHost* render_frame_host =
+        content::RenderFrameHost::FromID(render_process_id_, render_frame_id_);
+    if (!render_frame_host) {
       OnComplete(net::ERR_NAME_NOT_RESOLVED,
                  net::ResolveErrorInfo(net::ERR_FAILED), base::nullopt);
       return;
@@ -64,9 +68,11 @@ class DnsLookupRequest : public network::ResolveHostClientBase {
     // separating it from real navigations in the observer's callback.
     resolve_host_parameters->is_speculative = true;
     // TODO(https://crbug.com/997049): Pass in a non-empty NetworkIsolationKey.
-    render_process_host->GetStoragePartition()
+    render_frame_host->GetProcess()
+        ->GetStoragePartition()
         ->GetNetworkContext()
-        ->ResolveHost(host_port_pair, net::NetworkIsolationKey::Todo(),
+        ->ResolveHost(host_port_pair,
+                      render_frame_host->GetNetworkIsolationKey(),
                       std::move(resolve_host_parameters),
                       receiver_.BindNewPipeAndPassRemote());
     receiver_.set_disconnect_handler(
@@ -87,7 +93,8 @@ class DnsLookupRequest : public network::ResolveHostClientBase {
   }
 
   mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
-  int render_process_id_;
+  const int render_process_id_;
+  const int render_frame_id_;
   const std::string hostname_;
   std::unique_ptr<DnsLookupRequest> request_;
 
@@ -97,8 +104,10 @@ class DnsLookupRequest : public network::ResolveHostClientBase {
 }  // namespace
 
 SimpleNetworkHintsHandlerImpl::SimpleNetworkHintsHandlerImpl(
-    int render_process_id)
-    : render_process_id_(render_process_id) {}
+    int render_process_id,
+    int render_frame_id)
+    : render_process_id_(render_process_id),
+      render_frame_id_(render_frame_id) {}
 
 SimpleNetworkHintsHandlerImpl::~SimpleNetworkHintsHandlerImpl() = default;
 
@@ -107,8 +116,10 @@ void SimpleNetworkHintsHandlerImpl::Create(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<mojom::NetworkHintsHandler> receiver) {
   int render_process_id = frame_host->GetProcess()->GetID();
+  int render_frame_id = frame_host->GetRoutingID();
   mojo::MakeSelfOwnedReceiver(
-      base::WrapUnique(new SimpleNetworkHintsHandlerImpl(render_process_id)),
+      base::WrapUnique(new SimpleNetworkHintsHandlerImpl(render_process_id,
+                                                         render_frame_id)),
       std::move(receiver));
 }
 
@@ -116,7 +127,8 @@ void SimpleNetworkHintsHandlerImpl::PrefetchDNS(
     const std::vector<std::string>& names) {
   for (const std::string& hostname : names) {
     std::unique_ptr<DnsLookupRequest> request =
-        std::make_unique<DnsLookupRequest>(render_process_id_, hostname);
+        std::make_unique<DnsLookupRequest>(render_process_id_, render_frame_id_,
+                                           hostname);
     DnsLookupRequest* request_ptr = request.get();
     request_ptr->Start(std::move(request));
   }

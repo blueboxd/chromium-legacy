@@ -40,31 +40,40 @@ class IntersectionObserverController
   // communicates whether observer->trackVisibility() is true for any tracked
   // observer.
   bool ComputeIntersections(unsigned flags);
+
   // The second argument indicates whether the Element is a target of any
   // observers for which observer->trackVisibility() is true.
-  void AddTrackedElement(Element&, bool);
-  void RemoveTrackedElement(Element&);
+  void AddTrackedObserver(IntersectionObserver&, bool);
+  void AddTrackedObservation(IntersectionObservation&, bool);
+  void RemoveTrackedObserver(IntersectionObserver&);
+  void RemoveTrackedObservation(IntersectionObservation&);
+
   bool NeedsOcclusionTracking() const { return needs_occlusion_tracking_; }
 
   void Trace(blink::Visitor*) override;
   const char* NameInHeapSnapshot() const override {
     return "IntersectionObserverController";
   }
-  unsigned GetTrackedTargetCountForTesting() const {
-    return tracked_elements_.size();
+
+  unsigned GetTrackedObserverCountForTesting() const {
+    return explicit_root_observers_.size();
+  }
+  unsigned GetTrackedObservationCountForTesting() const {
+    return implicit_root_observations_.size();
   }
 
  private:
   void PostTaskToDeliverNotifications();
 
  private:
-  // Elements in this document which are the target of an IntersectionObserver
-  // with implicit root; or the explicit root of an IntersectionObserver.
-  HeapHashSet<WeakMember<Element>> tracked_elements_;
+  // IntersectionObserver's with an explicit root in this document.
+  HeapHashSet<WeakMember<IntersectionObserver>> explicit_root_observers_;
+  // IntersectionObservations with an implicit root and target in this document.
+  HeapHashSet<WeakMember<IntersectionObservation>> implicit_root_observations_;
   // IntersectionObservers for which this is the execution context of the
-  // callback.
+  // callback, and with unsent notifications.
   HeapHashSet<Member<IntersectionObserver>> pending_intersection_observers_;
-  // This is 'true' if any tracked element is the target of an observer for
+  // This is 'true' if any tracked node is the target of an observer for
   // which observer->trackVisibility() is true.
   bool needs_occlusion_tracking_;
 };

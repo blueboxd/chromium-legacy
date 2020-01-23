@@ -113,12 +113,13 @@ TEST_F(CompositorTestWithMessageLoop, ShouldUpdateDisplayProperties) {
   SkMatrix44 color_matrix(SkMatrix44::kIdentity_Constructor);
   color_matrix.set(1, 1, 0.7f);
   color_matrix.set(2, 2, 0.4f);
-  gfx::ColorSpace color_space(gfx::ColorSpace::CreateDisplayP3D65());
-  float sdr_white_level(1.0f);
+  gfx::DisplayColorSpaces display_color_spaces(
+      gfx::ColorSpace::CreateDisplayP3D65());
+  display_color_spaces.sdr_white_level = 1.f;
   base::TimeTicks vsync_timebase(base::TimeTicks::Now());
   base::TimeDelta vsync_interval(base::TimeDelta::FromMilliseconds(250));
   compositor()->SetDisplayColorMatrix(color_matrix);
-  compositor()->SetDisplayColorSpace(color_space, sdr_white_level);
+  compositor()->SetDisplayColorSpaces(display_color_spaces);
   compositor()->SetDisplayVSyncParameters(vsync_timebase, vsync_interval);
 
   InProcessContextFactory* context_factory_private =
@@ -128,9 +129,9 @@ TEST_F(CompositorTestWithMessageLoop, ShouldUpdateDisplayProperties) {
   DrawWaiterForTest::WaitForCompositingEnded(compositor());
   EXPECT_EQ(color_matrix,
             context_factory_private->GetOutputColorMatrix(compositor()));
-  EXPECT_EQ(color_space,
-            context_factory_private->GetDisplayColorSpace(compositor()));
-  EXPECT_EQ(sdr_white_level,
+  EXPECT_EQ(display_color_spaces,
+            context_factory_private->GetDisplayColorSpaces(compositor()));
+  EXPECT_EQ(display_color_spaces.sdr_white_level,
             context_factory_private->GetSDRWhiteLevel(compositor()));
   EXPECT_EQ(vsync_timebase,
             context_factory_private->GetDisplayVSyncTimeBase(compositor()));
@@ -151,9 +152,9 @@ TEST_F(CompositorTestWithMessageLoop, ShouldUpdateDisplayProperties) {
   DrawWaiterForTest::WaitForCompositingEnded(compositor());
   EXPECT_EQ(color_matrix,
             context_factory_private->GetOutputColorMatrix(compositor()));
-  EXPECT_EQ(color_space,
-            context_factory_private->GetDisplayColorSpace(compositor()));
-  EXPECT_EQ(sdr_white_level,
+  EXPECT_EQ(display_color_spaces,
+            context_factory_private->GetDisplayColorSpaces(compositor()));
+  EXPECT_EQ(display_color_spaces.sdr_white_level,
             context_factory_private->GetSDRWhiteLevel(compositor()));
   EXPECT_EQ(vsync_timebase,
             context_factory_private->GetDisplayVSyncTimeBase(compositor()));

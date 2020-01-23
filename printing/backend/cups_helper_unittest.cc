@@ -319,9 +319,8 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingBrotherPrinters) {
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingHpPrinters) {
-  {
-    constexpr char kTestPpdData[] =
-        R"(*PPD-Adobe: "4.3"
+  constexpr char kTestPpdData[] =
+      R"(*PPD-Adobe: "4.3"
 *ColorDevice: True
 *OpenUI *HPColorMode/Mode: PickOne
 *DefaultHPColorMode: ColorPrint
@@ -331,19 +330,39 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingHpPrinters) {
   << /ProcessColorModel /DeviceGray >> setpagedevice"
 *CloseUI: *HPColorMode)";
 
-    PrinterSemanticCapsAndDefaults caps;
-    EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
-    EXPECT_TRUE(caps.color_changeable);
-    EXPECT_TRUE(caps.color_default);
-    EXPECT_EQ(HP_COLOR_COLOR, caps.color_model);
-    EXPECT_EQ(HP_COLOR_BLACK, caps.bw_model);
-  }
+  PrinterSemanticCapsAndDefaults caps;
+  EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
+  EXPECT_TRUE(caps.color_changeable);
+  EXPECT_TRUE(caps.color_default);
+  EXPECT_EQ(HP_COLOR_COLOR, caps.color_model);
+  EXPECT_EQ(HP_COLOR_BLACK, caps.bw_model);
+}
+
+TEST(PrintBackendCupsHelperTest, TestPpdParsingEpsonPrinters) {
+  constexpr char kTestPpdData[] =
+      R"(*PPD-Adobe: "4.3"
+*ColorDevice: True
+*OpenUI *Ink/Ink: PickOne
+*DefaultInk: COLOR
+*Ink COLOR/Color: "
+  <</cupsBitsPerColor 8 /cupsColorOrder 0
+  /cupsColorSpace 1 /cupsCompression 1>> setpagedevice"
+*Ink MONO/Monochrome: "
+  <</cupsBitsPerColor 8 /cupsColorOrder 0
+  /cupsColorSpace 0 /cupsCompression 1>> setpagedevice"
+*CloseUI: *Ink)";
+
+  PrinterSemanticCapsAndDefaults caps;
+  EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
+  EXPECT_TRUE(caps.color_changeable);
+  EXPECT_TRUE(caps.color_default);
+  EXPECT_EQ(EPSON_INK_COLOR, caps.color_model);
+  EXPECT_EQ(EPSON_INK_MONO, caps.bw_model);
 }
 
 TEST(PrintBackendCupsHelperTest, TestPpdParsingSamsungPrinters) {
-  {
-    constexpr char kTestPpdData[] =
-        R"(*PPD-Adobe: "4.3"
+  constexpr char kTestPpdData[] =
+      R"(*PPD-Adobe: "4.3"
 *ColorDevice: True
 *OpenUI *ColorMode/Color Mode:  Boolean
 *DefaultColorMode: True
@@ -351,13 +370,12 @@ TEST(PrintBackendCupsHelperTest, TestPpdParsingSamsungPrinters) {
 *ColorMode True/Color: ""
 *CloseUI: *ColorMode)";
 
-    PrinterSemanticCapsAndDefaults caps;
-    EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
-    EXPECT_TRUE(caps.color_changeable);
-    EXPECT_TRUE(caps.color_default);
-    EXPECT_EQ(COLORMODE_COLOR, caps.color_model);
-    EXPECT_EQ(COLORMODE_MONOCHROME, caps.bw_model);
-  }
+  PrinterSemanticCapsAndDefaults caps;
+  EXPECT_TRUE(ParsePpdCapabilities("test", "", kTestPpdData, &caps));
+  EXPECT_TRUE(caps.color_changeable);
+  EXPECT_TRUE(caps.color_default);
+  EXPECT_EQ(COLORMODE_COLOR, caps.color_model);
+  EXPECT_EQ(COLORMODE_MONOCHROME, caps.bw_model);
 }
 
 }  // namespace printing

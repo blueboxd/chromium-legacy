@@ -153,7 +153,7 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         mToolbarButtonInProductHelpController =
                 new ToolbarButtonInProductHelpController(mActivity, mAppMenuCoordinator);
         if (!triggerPromo()) {
-            mToolbarButtonInProductHelpController.maybeShowColdStartIPH();
+            mToolbarButtonInProductHelpController.showColdStartIPH();
         }
     }
 

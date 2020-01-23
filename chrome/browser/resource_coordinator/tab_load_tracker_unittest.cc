@@ -133,8 +133,7 @@ class TestWebContentsObserver : public content::WebContentsObserver {
   }
   void DidFailLoad(content::RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
-                   int error_code,
-                   const base::string16& error_description) override {
+                   int error_code) override {
     tracker_->DidFailLoad(web_contents());
   }
   void RenderProcessGone(base::TerminationStatus status) override {
@@ -463,8 +462,7 @@ void TabLoadTrackerTest::StateTransitionsTest(bool use_non_ui_tabs,
   EXPECT_CALL(observer(),
               OnLoadingStateChange(contents1(), LoadingState::LOADING,
                                    LoadingState::LOADED));
-  navigation_tab_1->FailLoading(GURL("http://baz.com"), 500,
-                                base::UTF8ToUTF16("server error"));
+  navigation_tab_1->FailLoading(GURL("http://baz.com"), 500);
   testing::Mock::VerifyAndClearExpectations(&observer());
   --expected_loading;
   ++expected_loaded;

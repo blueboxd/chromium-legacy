@@ -217,8 +217,8 @@ bool AllowedToUseFullscreen(const Document& document,
 
   // 2. If Feature Policy is enabled, return the policy for "fullscreen"
   // feature.
-  return document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kFullscreen,
-                                   report_on_failure);
+  return document.IsFeatureEnabled(
+      mojom::blink::FeaturePolicyFeature::kFullscreen, report_on_failure);
 }
 
 bool AllowedToRequestFullscreen(Document& document) {

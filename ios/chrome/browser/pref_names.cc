@@ -144,4 +144,11 @@ const char kOmniboxGeolocationAuthorizationState[] =
 const char kOmniboxGeolocationLastAuthorizationAlertVersion[] =
     "ios.omnibox.geolocation_last_authorization_alert_version";
 
+// Dictionary which stores the zoom levels the user has changed. The zoom levels
+// are unique for a given (iOS Dynamic Type, website domain) pair. Thus, the
+// dictionary keys are the iOS Dynamic Type level, mapping to sub-dictionarys
+// keyed by domain. The final values are double values representing the user
+// zoom level (i.e. 1 means no change, 100%).
+const char kIosUserZoomMultipliers[] = "ios.user_zoom_multipliers";
+
 }  // namespace prefs

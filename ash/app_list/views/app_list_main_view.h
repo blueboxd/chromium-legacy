@@ -99,10 +99,10 @@ class APP_LIST_EXPORT AppListMainView
   SearchModel* search_model_;  // Unowned; ownership is handled by |delegate_|.
 
   // Created by AppListView. Owned by views hierarchy.
-  SearchBoxView* search_box_view_;
+  SearchBoxView* search_box_view_ = nullptr;
 
-  ContentsView* contents_view_;       // Owned by views hierarchy.
-  AppListView* const app_list_view_;  // Owned by views hierarchy.
+  ContentsView* contents_view_ = nullptr;  // Owned by views hierarchy.
+  AppListView* const app_list_view_;       // Owned by views hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(AppListMainView);
 };

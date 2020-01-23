@@ -1960,6 +1960,8 @@ jumbo_static_library("ui") {
       "webui/settings/chromeos/parental_controls_handler.h",
       "webui/settings/chromeos/plugin_vm_handler.cc",
       "webui/settings/chromeos/plugin_vm_handler.h",
+      "webui/settings/chromeos/pref_names.cc",
+      "webui/settings/chromeos/pref_names.h",
       "webui/settings/chromeos/wallpaper_handler.cc",
       "webui/settings/chromeos/wallpaper_handler.h",
       "webui/settings/tts_handler.cc",
@@ -2598,7 +2600,7 @@ jumbo_static_library("ui") {
     }
     if (use_gtk) {
       # This is the only component that can interact with gtk.
-      deps += [ "//chrome/browser/ui/libgtkui" ]
+      deps += [ "//chrome/browser/ui/gtk" ]
     }
   }
 
@@ -3453,7 +3455,7 @@ jumbo_static_library("ui") {
           sources += [ "views/linux_ui/linux_ui_factory_gtk.cc" ]
 
           # This is the only component that can interact with gtk.
-          deps += [ "//chrome/browser/ui/libgtkui" ]
+          deps += [ "//chrome/browser/ui/gtk" ]
         } else {
           sources += [ "views/linux_ui/linux_ui_factory.cc" ]
         }

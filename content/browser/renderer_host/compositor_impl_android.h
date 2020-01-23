@@ -223,7 +223,7 @@ class CONTENT_EXPORT CompositorImpl
   std::unique_ptr<cc::LayerTreeHost> host_;
   ui::ResourceManagerImpl resource_manager_;
 
-  gfx::ColorSpace display_color_space_;
+  gfx::DisplayColorSpaces display_color_spaces_;
   gfx::Size size_;
   bool requires_alpha_channel_ = false;
 

@@ -11,7 +11,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/browsing_data_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -361,15 +360,15 @@
 
 - (void)showActiveTabInPage:(TabGridPage)page focusOmnibox:(BOOL)focusOmnibox {
   DCHECK(self.regularBrowser && self.incognitoBrowser);
-  TabModel* activeTabModel;
+  Browser* activeBrowser = nullptr;
   switch (page) {
     case TabGridPageIncognitoTabs:
       DCHECK_GT(self.incognitoBrowser->GetWebStateList()->count(), 0);
-      activeTabModel = self.incognitoBrowser->GetTabModel();
+      activeBrowser = self.incognitoBrowser;
       break;
     case TabGridPageRegularTabs:
       DCHECK_GT(self.regularBrowser->GetWebStateList()->count(), 0);
-      activeTabModel = self.regularBrowser->GetTabModel();
+      activeBrowser = self.regularBrowser;
       break;
     case TabGridPageRemoteTabs:
       NOTREACHED() << "It is invalid to have an active tab in remote tabs.";
@@ -378,7 +377,7 @@
   // Trigger the transition through the TabSwitcher delegate. This will in turn
   // call back into this coordinator via the ViewControllerSwapping protocol.
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
-             shouldFinishWithActiveModel:activeTabModel
+                 shouldFinishWithBrowser:activeBrowser
                             focusOmnibox:focusOmnibox];
 }
 
@@ -407,7 +406,7 @@
 
 - (void)showActiveRegularTabFromRecentTabs {
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
-             shouldFinishWithActiveModel:self.regularBrowser->GetTabModel()
+                 shouldFinishWithBrowser:self.regularBrowser
                             focusOmnibox:NO];
 }
 
@@ -415,13 +414,13 @@
 
 - (void)showActiveRegularTabFromHistory {
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
-             shouldFinishWithActiveModel:self.regularBrowser->GetTabModel()
+                 shouldFinishWithBrowser:self.regularBrowser
                             focusOmnibox:NO];
 }
 
 - (void)showActiveIncognitoTabFromHistory {
   [self.tabSwitcher.delegate tabSwitcher:self.tabSwitcher
-             shouldFinishWithActiveModel:self.incognitoBrowser->GetTabModel()
+                 shouldFinishWithBrowser:self.incognitoBrowser
                             focusOmnibox:NO];
 }
 

@@ -16,6 +16,7 @@
 #include "chrome/browser/enterprise_reporting/report_generator.h"
 #include "chrome/browser/enterprise_reporting/report_uploader.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
+#include "chrome/browser/ui/views/relaunch_notification/wall_clock_timer.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace policy {
@@ -24,21 +25,21 @@ class CloudPolicyClient;
 
 namespace enterprise_reporting {
 
-class RequestTimer;
-
 // Schedules the next report and handles retry in case of error. It also cancels
 // all pending uploads if the report policy is turned off.
 class ReportScheduler : public ProfileManagerObserver {
  public:
   ReportScheduler(policy::CloudPolicyClient* client,
-                  std::unique_ptr<RequestTimer> request_timer,
                   std::unique_ptr<ReportGenerator> report_generator);
 
   ~ReportScheduler() override;
 
-  void SetReportUploaderForTesting(std::unique_ptr<ReportUploader> uploader);
+  // Returns true if next report has been scheduled. The report will be
+  // scheduled only if the previous report is uploaded successfully and the
+  // reporting policy is still enabled.
+  bool IsNextReportScheduledForTesting() const;
 
-  RequestTimer* GetRequestTimerForTesting() const;
+  void SetReportUploaderForTesting(std::unique_ptr<ReportUploader> uploader);
 
   void OnDMTokenUpdated();
 
@@ -81,7 +82,7 @@ class ReportScheduler : public ProfileManagerObserver {
 
   policy::CloudPolicyClient* cloud_policy_client_;
 
-  std::unique_ptr<RequestTimer> request_timer_;
+  WallClockTimer request_timer_;
 
   std::unique_ptr<ReportUploader> report_uploader_;
 

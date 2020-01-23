@@ -74,6 +74,7 @@ source_set("browser_prefs") {
     "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/bookmarks",
     "//ios/chrome/browser/voice:prefs",
+    "//ios/chrome/browser/web",
     "//ios/public/provider/chrome/browser",
     "//ui/base",
   ]

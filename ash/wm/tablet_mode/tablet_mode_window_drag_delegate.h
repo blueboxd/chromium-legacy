@@ -127,9 +127,6 @@ class TabletModeWindowDragDelegate {
 
   aura::Window* dragged_window_ = nullptr;  // not owned.
 
-  // The backdrop should be disabled during dragging and resumed after dragging.
-  BackdropWindowMode original_backdrop_mode_ = BackdropWindowMode::kAutoOpaque;
-
   // The dragged window should have the active window shadow elevation during
   // dragging.
   int original_shadow_elevation_ = ::wm::kShadowElevationDefault;

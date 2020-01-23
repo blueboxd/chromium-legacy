@@ -477,15 +477,17 @@ bool UserMediaRequest::IsSecureContextUse(String& error_message) {
 
     // Feature policy deprecation messages.
     if (Audio()) {
-      if (!document->IsFeatureEnabled(mojom::FeaturePolicyFeature::kMicrophone,
-                                      ReportOptions::kReportOnFailure)) {
+      if (!document->IsFeatureEnabled(
+              mojom::blink::FeaturePolicyFeature::kMicrophone,
+              ReportOptions::kReportOnFailure)) {
         UseCounter::Count(
             document, WebFeature::kMicrophoneDisabledByFeaturePolicyEstimate);
       }
     }
     if (Video()) {
-      if (!document->IsFeatureEnabled(mojom::FeaturePolicyFeature::kCamera,
-                                      ReportOptions::kReportOnFailure)) {
+      if (!document->IsFeatureEnabled(
+              mojom::blink::FeaturePolicyFeature::kCamera,
+              ReportOptions::kReportOnFailure)) {
         UseCounter::Count(document,
                           WebFeature::kCameraDisabledByFeaturePolicyEstimate);
       }

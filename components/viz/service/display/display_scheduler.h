@@ -39,7 +39,7 @@ class VIZ_SERVICE_EXPORT DisplayScheduler : public DisplaySchedulerBase {
   void OutputSurfaceLost() override;
 
   // DisplayDamageTrackerObserver implementation.
-  void OnDisplayDamaged() override;
+  void OnDisplayDamaged(SurfaceId surface_id) override;
   void OnRootFrameMissing(bool missing) override;
   void OnPendingSurfacesChanged() override;
 

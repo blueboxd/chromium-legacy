@@ -48,11 +48,8 @@ CrossProcessFrameConnector::CrossProcessFrameConnector(
     RenderFrameProxyHost* frame_proxy_in_parent_renderer)
     : FrameConnectorDelegate(IsUseZoomForDSFEnabled()),
       frame_proxy_in_parent_renderer_(frame_proxy_in_parent_renderer) {
-  frame_proxy_in_parent_renderer->frame_tree_node()
-      ->render_manager()
-      ->current_frame_host()
-      ->GetRenderWidgetHost()
-      ->GetScreenInfo(&screen_info_);
+  current_child_frame_host()->GetRenderWidgetHost()->GetScreenInfo(
+      &screen_info_);
 }
 
 CrossProcessFrameConnector::~CrossProcessFrameConnector() {
@@ -335,11 +332,7 @@ void CrossProcessFrameConnector::OnVisibilityChanged(
     return;
 
   // TODO(https://crbug.com/1014212) Remove this CHECK when the bug is fixed.
-  CHECK(
-      frame_proxy_in_parent_renderer_->frame_tree_node()->current_frame_host());
-  frame_proxy_in_parent_renderer_->frame_tree_node()
-      ->current_frame_host()
-      ->VisibilityChanged(visibility);
+  CHECK(current_child_frame_host());
 
   // If there is an inner WebContents, it should be notified of the change in
   // the visibility. The Show/Hide methods will not be called if an inner
@@ -378,17 +371,14 @@ CrossProcessFrameConnector::GetRootRenderWidgetHostView() {
   if (!frame_proxy_in_parent_renderer_)
     return nullptr;
 
-  RenderFrameHostImpl* current =
-      frame_proxy_in_parent_renderer_->frame_tree_node()->current_frame_host();
-  RenderFrameHostImpl* root = RootRenderFrameHost(current);
+  RenderFrameHostImpl* root = RootRenderFrameHost(current_child_frame_host());
   return static_cast<RenderWidgetHostViewBase*>(root->GetView());
 }
 
 RenderWidgetHostViewBase*
 CrossProcessFrameConnector::GetParentRenderWidgetHostView() {
-  RenderFrameHostImpl* current =
-      frame_proxy_in_parent_renderer_->frame_tree_node()->current_frame_host();
-  RenderFrameHostImpl* parent = current->ParentOrOuterDelegateFrame();
+  RenderFrameHostImpl* parent =
+      current_child_frame_host()->ParentOrOuterDelegateFrame();
   return parent ? static_cast<RenderWidgetHostViewBase*>(parent->GetView())
                 : nullptr;
 }
@@ -425,9 +415,7 @@ void CrossProcessFrameConnector::DidUpdateVisualProperties(
 
 void CrossProcessFrameConnector::SetVisibilityForChildViews(
     bool visible) const {
-  frame_proxy_in_parent_renderer_->frame_tree_node()
-      ->current_frame_host()
-      ->SetVisibilityForChildViews(visible);
+  current_child_frame_host()->SetVisibilityForChildViews(visible);
 }
 
 void CrossProcessFrameConnector::SetScreenSpaceRect(
@@ -539,14 +527,17 @@ bool CrossProcessFrameConnector::IsVisible() {
     return false;
 
   Visibility embedder_visibility =
-      frame_proxy_in_parent_renderer_->frame_tree_node()
-          ->current_frame_host()
-          ->delegate()
-          ->GetVisibility();
+      current_child_frame_host()->delegate()->GetVisibility();
   if (embedder_visibility != Visibility::VISIBLE)
     return false;
 
   return true;
+}
+
+RenderFrameHostImpl* CrossProcessFrameConnector::current_child_frame_host()
+    const {
+  return frame_proxy_in_parent_renderer_->frame_tree_node()
+      ->current_frame_host();
 }
 
 }  // namespace content

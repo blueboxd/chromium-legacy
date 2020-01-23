@@ -778,6 +778,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> reste prioritaire face à cette règle. Une extension figurant dans la liste noire ne sera pas installée, même si elle provient d'un site mentionné dans cette liste.</translation>
 <translation id="214901426630414675">Limiter l'impression en mode recto verso</translation>
 <translation id="2149330464730004005">Activer l'impression couleur</translation>
+<translation id="2151831603578119302">Activer les raccourcis des fonctionnalités d'accessibilité</translation>
 <translation id="2156132677421487971">Configurer les règles pour <ph name="PRODUCT_NAME" />, une fonctionnalité permettant aux utilisateurs de caster le contenu des onglets, des sites ou de leur bureau depuis leur navigateur sur des écrans ou systèmes audio distants.</translation>
 <translation id="2156755242840687300">Serveurs d'impression externes activés</translation>
 <translation id="2160336427036785721">Permet de configurer la quantité de mémoire qu'une instance de <ph name="PRODUCT_NAME" /> peut utiliser avant que des onglets ne commencent à être ignorés (c'est-à-dire que la mémoire utilisée par l'onglet sera libérée, et l'onglet devra être actualisé lorsque l'utilisateur le sélectionnera) afin d'économiser de la mémoire.
@@ -892,6 +893,7 @@ Si cette règle n'est pas configurée, le paramètre "BlockPopups" est utilisé 
 <translation id="2294382669900758280">La lecture vidéo dans les applications Android n'est pas prise en compte même si cette règle est définie sur "<ph name="TRUE" />".</translation>
 <translation id="2299220924812062390">Indiquer une liste de plug-ins activés</translation>
 <translation id="2303795211377219696">Activer la saisie automatique pour les cartes de crédit</translation>
+<translation id="2307496301287881990">Transmettre des états liés aux affichages et aux graphiques</translation>
 <translation id="2309390639296060546">Paramètre de géolocalisation par défaut</translation>
 <translation id="2327252517317514801">Définir les domaines autorisés à accéder à G Suite</translation>
 <translation id="2328573323851533589">Cette règle peut être utilisée pour forcer l'activation ou la désactivation de la vérification de fuite d'identifiants dans <ph name="PRODUCT_NAME" />.
@@ -918,7 +920,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est définie sur "True", lorsqu'une invite de confirmation de lancement d'un protocole externe s'affiche, l'utilisateur peut choisir de "toujours ouvrir" le protocole sans invite de confirmation par la suite.
 
       Si cette règle est définie sur "False" ou si elle n'est pas configurée, la case "Toujours ouvrir" n'est pas affichée, et l'utilisateur est invité à confirmer à chaque fois le lancement d'un protocole externe.</translation>
-<translation id="2411817661175306360">L'avertissement relatif à la protection par mot de passe est désactivé</translation>
+<translation id="2411817661175306360">L'avertissement de protection par mot de passe est désactivé</translation>
 <translation id="2411919772666155530">Bloquer les notifications sur ces sites</translation>
 <translation id="2418507228189425036">Désactive l'enregistrement de l'historique du navigateur dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier ce paramètre.
 
@@ -1151,6 +1153,7 @@ Cette règle n'est disponible que sur les instances Windows qui sont associées 
       Si cette règle n'est pas configurée ou si elle est désactivée, les paramètres par défaut d'isolation de sites de la plate-forme sont utilisés pour l'écran de connexion.
       </translation>
 <translation id="2587719089023392205">Définir <ph name="PRODUCT_NAME" /> comme navigateur par défaut</translation>
+<translation id="2588071938417715443">Cette règle contrôle l'accès aux fonctionnalités contrôlables dans l'interface utilisateur de détection en local (<ph name="CHROME_DEVICES_LINK" />), qui affiche les appareils visibles à proximité de l'utilisateur ainsi que les appareils cloud enregistrés auprès de ceux-ci. Sur tous les systèmes d'exploitation à l'exception de <ph name="PRODUCT_OS_NAME" />, l'interface utilisateur de détection en local permet également aux utilisateurs d'ajouter à <ph name="CLOUD_PRINT_NAME" /> des imprimantes standards connectées à leurs ordinateurs.</translation>
 <translation id="2592091433672667839">Durée d'inactivité préalable à l'affichage de l'économiseur d'écran sur l'écran de connexion en mode Point de vente</translation>
 <translation id="2592162121850992309">Si cette règle est définie sur "True" ou n'est pas configurée, l'accélération matérielle est activée, sauf si une certaine fonctionnalité GPU figure sur la liste noire.
 
@@ -1399,19 +1402,6 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
 <translation id="2960691910306063964">Activer ou désactiver l'authentification sans code d'accès pour les hôtes d'accès à distance</translation>
 <translation id="2987155890997901449">Activer ARC</translation>
 <translation id="2987227569419001736">Contrôler l'utilisation de l'API Web Bluetooth</translation>
-<translation id="3011301228198307065">Permet de configurer l'URL de la page d'accueil par défaut dans <ph name="PRODUCT_NAME" /> et d'empêcher les utilisateurs de la modifier.
-
-          La page d'accueil est la page qui s'ouvre lorsque l'utilisateur clique sur le bouton d'accueil. Les pages qui s'affichent au démarrage sont gérées par les règles RestoreOnStartup.
-
-          La page d'accueil peut être une URL que vous définissez ici ou une page Nouvel onglet. Dans ce dernier cas, cette règle ne s'applique pas.
-
-          Si vous activez ce paramètre, les utilisateurs ne peuvent pas modifier l'URL de leur page d'accueil dans <ph name="PRODUCT_NAME" />. Toutefois, ils peuvent définir la page Nouvel onglet comme page d'accueil.
-
-          Si cette règle n'est pas définie, l'utilisateur peut choisir lui-même sa page d'accueil, à condition que la règle HomepageIsNewTabPage ne soit pas également configurée.
-
-          L'URL doit posséder un schéma standard, comme "http://example.com" ou "https://example.com".
-
-          Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="3016255526521614822">Les applications de prise de note ajoutées à la liste blanche sont autorisées sur l'écran de verrouillage de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3020064401262077616">Contrôle les règles de supervision parentale s'appliquant uniquement aux comptes d'utilisateurs mineurs.</translation>
 <translation id="3021562480854470924">Nombre de versions intermédiaires autorisées pour le rollback</translation>
@@ -2941,6 +2931,7 @@ Si cette règle n'est pas configurée, le paramètre "AskNotifications" est util
       Si la connexion VPN est créée par le biais d'une application VPN, l'interface utilisateur de l'application n'est pas affectée par cette règle. De ce fait, il se peut que l'utilisateur puisse continuer à utiliser l'application pour modifier la connexion VPN.
 
       Cette règle doit être utilisée avec la fonctionnalité "VPN permanent", qui permet à l'administrateur d'établir une connexion VPN au démarrage.</translation>
+<translation id="5401696449591951427">Activer <ph name="CHROME_DEVICES_LINK" /></translation>
 <translation id="5405289061476885481">Détermine les dispositions de clavier autorisées sur l'écran de connexion <ph name="PRODUCT_OS_NAME" />.
 
       Si cette règle est définie sur une liste d'identifiants de modes de saisie, les modes de saisie indiqués sont disponibles sur l'écran de connexion. Le premier mode de saisie proposé est présélectionné. Lorsqu'un profil utilisateur est actif sur l'écran de connexion, le dernier mode de saisie utilisé par l'utilisateur est disponible en plus des modes de saisie fournis par cette règle. Si cette règle n'est pas définie, les modes de saisie sur l'écran de connexion sont dérivés des paramètres régionaux dans lesquels cet écran est affiché. Les valeurs qui ne constituent pas des identifiants de modes de saisie valides sont ignorées.</translation>
@@ -3206,6 +3197,7 @@ Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé c
           Si cette règle n'est pas définie, l'action par défaut est effectuée, à savoir l'arrêt.
 
           Dans ce cas, <ph name="PRODUCT_OS_NAME" /> peut être configuré séparément pour verrouiller ou non l'écran avant l'arrêt.</translation>
+<translation id="574983287620584622">Activer les raccourcis des fonctionnalités d'accessibilité sur l'écran de connexion</translation>
 <translation id="5755002458331714762"> Les API Web Components v0 (Shadow DOM v0, Custom Elements v0 et HTML Imports) sont obsolètes depuis 2018 et ont été désactivées par défaut à partir de la version M80. Cette règle offre la possibilité de réactiver ces fonctionnalités pour certains sites en particulier jusqu'à la version M84.
 
       Si elle est définie sur "True", les fonctionnalités de Web Components v0 seront activées pour tous les sites.
@@ -4368,6 +4360,15 @@ au maximum si un utilisateur se sert de l'appareil.
       Si cette règle est définie sur "False", les données de navigation sécurisée ne sont pas collectées.
 
       Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="777734450201217641">Activer les raccourcis des fonctionnalités d'accessibilité sur l'écran de connexion.
+
+          Si cette règle est définie sur "True", les raccourcis des fonctionnalités d'accessibilité sont toujours activés sur l'écran de connexion.
+
+          Si elle est définie sur "False", ils sont toujours désactivés sur cet écran.
+
+          Si vous configurez cette règle, les utilisateurs ne peuvent ni la modifier, ni l'ignorer.
+
+          Si elle n'est pas configurée, les raccourcis des fonctionnalités d'accessibilité sont activés par défaut sur l'écran de connexion.</translation>
 <translation id="7777535871204167559">Traiter les appareils de stockage externe en lecture seule</translation>
 <translation id="7788511847830146438">Par profil</translation>
 <translation id="7792973482799545782">Interdire à tous les sites de charger un contenu mixte blocable</translation>
@@ -4715,7 +4716,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
       Si la règle est définie sur "true" ou n'est pas définie, l'utilisateur a accès à la racine des conteneurs Crostini.
       Si la règle est définie sur "false", l'utilisateur n'a pas accès à la racine des conteneurs Crostini (existants ou nouveaux).</translation>
 <translation id="8417305981081876834">Définir le nombre maximal de caractères pour le code de l'écran de verrouillage</translation>
-<translation id="841977920223099909">Déclencheur de l'avertissement relatif à la protection par mot de passe</translation>
+<translation id="841977920223099909">Déclencheur d'avertissement de protection par mot de passe</translation>
 <translation id="8424255554404582727">Définir la rotation de l'écran par défaut (réappliquée à chaque redémarrage)</translation>
 <translation id="8426231401662877819">Faire pivoter l'écran vers la droite de 90 degrés</translation>
 <translation id="8433186206711564395">Paramètres réseau</translation>
@@ -4776,6 +4777,15 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
       Avertissement : Il est déconseillé de configurer des restrictions de version, car cela pourrait empêcher les utilisateurs de recevoir des mises à jour logicielles et des correctifs de sécurité essentiels. Limiter les mises à jour à un préfixe de version spécifique pourrait constituer un risque pour les utilisateurs.</translation>
 <translation id="8519264904050090490">URL d'exception manuelle des utilisateurs gérés</translation>
+<translation id="8519516251436131647">Activer les raccourcis des fonctionnalités d'accessibilité.
+
+          Si cette règle est définie sur "True", les raccourcis des fonctionnalités d'accessibilité sont toujours activés.
+
+          Si elle est définie sur "False", ils sont toujours désactivés.
+
+          Si vous configurez cette règle, les utilisateurs ne peuvent ni la modifier, ni l'ignorer.
+
+          Si elle n'est pas configurée, les raccourcis des fonctionnalités d'accessibilité sont activés par défaut.</translation>
 <translation id="8525526490824335042">Conteneur Linux</translation>
 <translation id="8538235451413605457">Définit la configuration requise de la version minimale autorisée pour <ph name="PRODUCT_NAME" />. Les versions antérieures sont traitées comme obsolètes et ne permettent pas à l'utilisateur de se connecter à l'appareil sans effectuer une mise à jour préalable du système d'exploitation.
       Si la version actuelle devient obsolète lors de la session utilisateur, une déconnexion forcée a lieu.
@@ -4867,7 +4877,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8661297125441579970">Interdire la migration de données et ARC.</translation>
 <translation id="8672321184841719703">Cibler une version pour les mises à jour automatiques</translation>
 <translation id="867410340948518937">U2F (Deuxième facteur universel)</translation>
-<translation id="8685024486845674965">L'avertissement relatif à la protection par mot de passe est déclenché par la réutilisation d'un mot de passe</translation>
+<translation id="8685024486845674965">L'avertissement de protection par mot de passe est déclenché en cas de réutilisation du mot de passe</translation>
 <translation id="8687958770985542440">Réactiver les API Web Components v0 jusqu'à la version M84.</translation>
 <translation id="8693243869659262736">Utiliser le client DNS intégré</translation>
 <translation id="8698286761337647563">Délai, en nombre de jours, pour informer à l'avance les utilisateurs SAML de l'expiration de leur mot de passe</translation>
@@ -4960,7 +4970,7 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
       Si cette règle n'est pas définie, ou si la valeur "false" lui est attribuée, l'emplacement n'est pas indiqué.</translation>
 <translation id="8818768076343557335">Prédire les actions réseau sur tous les réseaux, sauf les réseaux mobiles
           (Option abandonnée dans la version 50 et supprimée dans la version 52. Au-delà de la version 52, si la valeur 1 est définie, elle est traitée comme la valeur 0 : Prédire les actions réseau lors d'une connexion au réseau.)</translation>
-<translation id="8825782996899863372">L'avertissement relatif à la protection par mot de passe est déclenché par la réutilisation d'un mot de passe sur une page d'hameçonnage</translation>
+<translation id="8825782996899863372">L'avertissement de protection par mot de passe est déclenché en cas de réutilisation du mot de passe sur une page d'hameçonnage</translation>
 <translation id="8833109046074170275">Authentification via le flux GAIA par défaut</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> met en cache des applications et des extensions pour permettre leur installation par plusieurs utilisateurs sans avoir à répéter les téléchargements.
       Si cette règle n'est pas configurée ou si la valeur est inférieure à 1 Mo, <ph name="PRODUCT_OS_NAME" /> utilisera la taille de cache par défaut.</translation>
@@ -5016,6 +5026,9 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
 
           En cas de non-configuration de cette règle, PromptOnAccess prévaut. L'utilisateur peut la modifier.</translation>
 <translation id="8911348623012274122">Définir la limite de mémoire pour les instances de Chrome</translation>
+<translation id="8911736066340032670">Transmettre des informations liées à l'affichage (comme la fréquence d'actualisation) et aux graphiques (la version du pilote, par exemple).
+
+      Si la règle est définie sur "False" ou n'est pas définie, les états liés aux affichages et aux graphiques ne sont pas transmis. Si elle est définie sur "True", ils sont envoyés.</translation>
 <translation id="891435090623616439">codée comme une chaîne JSON, pour plus de détails voir <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Autoriser les utilisateurs à gérer les certificats CA installés.</translation>
 <translation id="8926275581598789324">Cette règle étant obsolète, elle sera supprimée dans la version 82 de <ph name="PRODUCT_OS_NAME" />. (Veuillez utiliser la règle <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.)

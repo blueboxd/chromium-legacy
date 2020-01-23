@@ -553,14 +553,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_DesiredTLD) {
       NavigateExpectUrl(GURL("http://www.bar.com/"), ui::EF_CONTROL_DOWN));
 }
 
-// TODO(https://crbug.com/1030551): This test flakily times out on ASAN and
-// TSAN.
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
-#define MAYBE_DesiredTLDWithTemporaryText DISABLED_DesiredTLDWithTemporaryText
-#else
-#define MAYBE_DesiredTLDWithTemporaryText DesiredTLDWithTemporaryText
-#endif
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_DesiredTLDWithTemporaryText) {
+// TODO(https://crbug.com/1030551): Test times out on Win and Linux.
+IN_PROC_BROWSER_TEST_F(OmniboxViewTest, DISABLED_DesiredTLDWithTemporaryText) {
   OmniboxView* omnibox_view = NULL;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();

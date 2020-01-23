@@ -9,11 +9,11 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include "base/containers/circular_deque.h"
 #include "base/containers/queue.h"
 #include "base/containers/small_map.h"
 #include "net/base/interval_set.h"
 #include "net/third_party/quiche/src/common/simple_linked_hash_map.h"
+#include "net/third_party/quiche/src/quic/core/quic_circular_deque.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 
 namespace quic {
@@ -69,7 +69,7 @@ using QuicQueueImpl = base::queue<T>;
 //
 // DOES NOT GUARANTEE POINTER OR ITERATOR STABILITY!
 template <typename T>
-using QuicDequeImpl = base::circular_deque<T>;
+using QuicDequeImpl = QuicCircularDeque<T>;
 
 // TODO(wub): Switch to absl::InlinedVector once it is allowed.
 template <typename T, size_t N, typename A = std::allocator<T>>

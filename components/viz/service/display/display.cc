@@ -355,12 +355,11 @@ void Display::SetColorMatrix(const SkMatrix44& matrix) {
   damage_tracker_->SetRootSurfaceDamaged();
 }
 
-void Display::SetColorSpace(const gfx::ColorSpace& device_color_space,
-                            float sdr_white_level) {
-  device_color_space_ = device_color_space;
-  sdr_white_level_ = sdr_white_level;
+void Display::SetDisplayColorSpaces(
+    const gfx::DisplayColorSpaces& display_color_spaces) {
+  display_color_spaces_ = display_color_spaces;
   if (aggregator_)
-    aggregator_->SetOutputColorSpace(device_color_space_);
+    aggregator_->SetDisplayColorSpaces(display_color_spaces_);
 }
 
 void Display::SetOutputIsSecure(bool secure) {
@@ -431,7 +430,7 @@ void Display::InitializeRenderer(bool enable_shared_images) {
     aggregator_->SetFrameAnnotator(std::make_unique<DamageFrameAnnotator>());
 
   aggregator_->set_output_is_secure(output_is_secure_);
-  aggregator_->SetOutputColorSpace(device_color_space_);
+  aggregator_->SetDisplayColorSpaces(display_color_spaces_);
   // Consider adding a softare limit as well.
   aggregator_->SetMaximumTextureSize(
       (output_surface_ && output_surface_->context_provider())
@@ -592,7 +591,8 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
     draw_timer.emplace();
     renderer_->DecideRenderPassAllocationsForFrame(frame.render_pass_list);
     renderer_->DrawFrame(&frame.render_pass_list, device_scale_factor_,
-                         current_surface_size, sdr_white_level_);
+                         current_surface_size,
+                         display_color_spaces_.sdr_white_level);
     switch (output_surface_->type()) {
       case OutputSurface::Type::kSoftware:
         UMA_HISTOGRAM_COUNTS_1M(
@@ -721,7 +721,6 @@ void Display::DidReceiveSwapBuffersAck(const gfx::SwapTimings& timings) {
   if (no_pending_swaps_callback_ && pending_swaps_ == 0)
     std::move(no_pending_swaps_callback_).Run();
 
-  overlay_processor_->OverlayPresentationComplete();
   if (renderer_)
     renderer_->SwapBuffersComplete();
 

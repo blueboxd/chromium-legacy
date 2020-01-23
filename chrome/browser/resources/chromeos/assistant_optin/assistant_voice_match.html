@@ -13,18 +13,20 @@
     <link rel="stylesheet" href="assistant_voice_match.css">
     <oobe-dialog id="voice-match-dialog" role="dialog" has-buttons hide-shadow
         no-footer-padding no-header class="intro"
-        i18n-values="aria-label:assistantVoiceMatchTitle">
+        aria-label$="[[i18nDynamic(locale, 'assistantVoiceMatchTitle')]]">
       <div slot="footer">
         <div class="container">
           <img id="logo" src="assistant_logo.png"
-              i18n-values="aria-label:assistantLogo">
+              aria-label$="[[i18nDynamic(locale, 'assistantLogo')]]">
           <div id="intro-container">
-            <div class="title" i18n-content="assistantVoiceMatchTitle"></div>
+            <div class="title">
+              [[i18nDynamic(locale, 'assistantVoiceMatchTitle')]]
+            </div>
             <div class="content"
                 i18n-values=".innerHTML:assistantVoiceMatchMessage">
             </div>
-            <div class="content" id="no-dsp-message"
-                i18n-content="assistantVoiceMatchNoDspMessage">
+            <div class="content" id="no-dsp-message">
+              [[i18nDynamic(locale, 'assistantVoiceMatchNoDspMessage')]]
             </div>
             <div id="voice-match-animation-container">
               <div id="voice-match-animation">
@@ -35,40 +37,49 @@
             </div>
           </div>
           <div id="recording-container">
-            <div class="title" id="title-recording"
-                i18n-content="assistantVoiceMatchRecording"></div>
-            <div class="title" id="title-completed"
-                i18n-content="assistantVoiceMatchCompleted"></div>
+            <div class="title" id="title-recording">
+              [[i18nDynamic(locale, 'assistantVoiceMatchRecording')]]
+            </div>
+            <div class="title" id="title-completed">
+              [[i18nDynamic(locale, 'assistantVoiceMatchCompleted')]]
+            </div>
             <div id="voice-match-entries">
               <voice-match-entry id="voice-entry-0">
-                <div class="entry-content"
-                    i18n-content="assistantVoiceMatchInstruction0"></div>
+                <div class="entry-content">
+                  [[i18nDynamic(locale, 'assistantVoiceMatchInstruction0')]]
+                </div>
               </voice-match-entry>
               <voice-match-entry id="voice-entry-1">
-                <div class="entry-content"
-                    i18n-content="assistantVoiceMatchInstruction1"></div>
+                <div class="entry-content">
+                  [[i18nDynamic(locale, 'assistantVoiceMatchInstruction1')]]
+                </div>
               </voice-match-entry>
               <voice-match-entry id="voice-entry-2">
-                <div class="entry-content"
-                    i18n-content="assistantVoiceMatchInstruction2"></div>
+                <div class="entry-content">
+                  [[i18nDynamic(locale, 'assistantVoiceMatchInstruction2')]]
+                </div>
               </voice-match-entry>
               <voice-match-entry id="voice-entry-3">
-                <div class="entry-content"
-                    i18n-content="assistantVoiceMatchInstruction3"></div>
+                <div class="entry-content">
+                  [[i18nDynamic(locale, 'assistantVoiceMatchInstruction3')]]
+                </div>
               </voice-match-entry>
             </div>
             <div id="loading-animation" hidden>
               <paper-spinner-lite id="loading-spinner" active>
               </paper-spinner-lite>
             </div>
-            <div class="content" id="footer-text"
-                i18n-content="assistantVoiceMatchFooter"></div>
+            <div class="content" id="footer-text">
+              [[i18nDynamic(locale, 'assistantVoiceMatchFooter')]]
+            </div>
           </div>
           <div id="already-setup-container">
-            <div class="title" id="title-already-setup"
-                i18n-content="assistantVoiceMatchAlreadySetupTitle"></div>
-            <div class="content"
-                i18n-content="assistantVoiceMatchAlreadySetupMessage"></div>
+            <div class="title" id="title-already-setup">
+              [[i18nDynamic(locale, 'assistantVoiceMatchAlreadySetupTitle')]]
+            </div>
+            <div class="content">
+              [[i18nDynamic(locale, 'assistantVoiceMatchAlreadySetupMessage')]]
+            </div>
             <div id="already-setup-animation-container">
               <div id="already-setup-animation">
                 <cr-lottie id="already-setup-lottie"

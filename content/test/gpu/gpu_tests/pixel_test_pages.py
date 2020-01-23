@@ -157,20 +157,20 @@ class PixelTestPages(object):
         expected_colors=[
           {
             'comment': 'inside original div, orange',
-            'location': [0, 0],
-            'size': [100, 99],
+            'location': [5, 5],
+            'size': [90, 90],
             'color': [255, 128, 0],
           },
           {
             'comment': 'outside both div and reflection, in between, white',
-            'location': [0, 101],
-            'size': [100, 98],
+            'location': [5, 105],
+            'size': [90, 90],
             'color': [255, 255, 255],
           },
           {
             'comment': 'inside reflection, orange',
-            'location': [0, 201],
-            'size': [100, 99],
+            'location': [5, 205],
+            'size': [90, 90],
             'color': [255, 128, 0],
           }
         ]),

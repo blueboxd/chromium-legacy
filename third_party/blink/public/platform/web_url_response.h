@@ -45,6 +45,7 @@
 namespace network {
 namespace mojom {
 enum class FetchResponseType : int32_t;
+class LoadTimingInfo;
 }
 }  // namespace network
 
@@ -54,7 +55,6 @@ class ResourceResponse;
 class WebHTTPHeaderVisitor;
 class WebHTTPLoadInfo;
 class WebURL;
-class WebURLLoadTiming;
 
 class WebURLResponse {
  public:
@@ -173,7 +173,8 @@ class WebURLResponse {
 
   BLINK_PLATFORM_EXPORT void SetConnectionReused(bool);
 
-  BLINK_PLATFORM_EXPORT void SetLoadTiming(const WebURLLoadTiming&);
+  BLINK_PLATFORM_EXPORT void SetLoadTiming(
+      const network::mojom::LoadTimingInfo&);
 
   BLINK_PLATFORM_EXPORT void SetHTTPLoadInfo(const WebHTTPLoadInfo&);
 

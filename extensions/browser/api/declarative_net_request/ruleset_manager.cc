@@ -340,6 +340,16 @@ bool RulesetManager::HasExtraHeadersMatcherForRequest(
   return false;
 }
 
+void RulesetManager::OnRenderFrameDeleted(content::RenderFrameHost* host) {
+  for (ExtensionRulesetData& ruleset : rulesets_)
+    ruleset.matcher->OnRenderFrameDeleted(host);
+}
+
+void RulesetManager::OnDidFinishNavigation(content::RenderFrameHost* host) {
+  for (ExtensionRulesetData& ruleset : rulesets_)
+    ruleset.matcher->OnDidFinishNavigation(host);
+}
+
 void RulesetManager::SetObserverForTest(TestObserver* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   test_observer_ = observer;
@@ -391,6 +401,7 @@ base::Optional<RequestAction> RulesetManager::GetBeforeRequestAction(
       case RequestAction::Type::UPGRADE:
         return 2;
       case RequestAction::Type::ALLOW:
+      case RequestAction::Type::ALLOW_ALL_REQUESTS:
         return 1;
       case RequestAction::Type::REMOVE_HEADERS:
         NOTREACHED();

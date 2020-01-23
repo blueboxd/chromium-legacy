@@ -85,10 +85,6 @@ void LayoutBoxModelObject::ContentChanged(ContentChangeType change_type) {
   Layer()->ContentChanged(change_type);
 }
 
-bool LayoutBoxModelObject::HasAcceleratedCompositing() const {
-  return View()->Compositor()->HasAcceleratedCompositing();
-}
-
 LayoutBoxModelObject::LayoutBoxModelObject(ContainerNode* node)
     : LayoutObject(node) {}
 

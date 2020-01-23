@@ -28,7 +28,7 @@ class ReaderModeIconView : public PageActionIconView,
   ReaderModeIconView(CommandUpdater* command_updater,
                      IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
                      PageActionIconView::Delegate* page_action_icon_delegate);
-  ~ReaderModeIconView() override = default;
+  ~ReaderModeIconView() override;
 
  protected:
   // Detect when navigation to the distilled page completes. This is required to

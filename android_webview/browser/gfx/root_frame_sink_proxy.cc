@@ -24,24 +24,25 @@ scoped_refptr<RootFrameSink> RootFrameSinkProxy::GetRootFrameSinkHelper(
 
 RootFrameSinkProxy::RootFrameSinkProxy(
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
-    RootFrameSinkProxyClient* client)
+    RootFrameSinkProxyClient* client,
+    viz::BeginFrameSource* begin_frame_source)
     : ui_task_runner_(ui_task_runner),
       viz_task_runner_(
           VizCompositorThreadRunnerWebView::GetInstance()->task_runner()),
-      client_(client) {
+      client_(client),
+      begin_frame_source_(begin_frame_source) {
   DETACH_FROM_THREAD(viz_thread_checker_);
   viz_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&RootFrameSinkProxy::InitializeOnViz,
                                 base::Unretained(this)));
-
-  begin_frame_source_ = std::make_unique<viz::ExternalBeginFrameSourceAndroid>(
-      viz::ExternalBeginFrameSourceAndroid::kNotRestartableId, 60);
 }
 
 void RootFrameSinkProxy::InitializeOnViz() {
   DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
   without_gpu_ = base::MakeRefCounted<RootFrameSink>(
       base::BindRepeating(&RootFrameSinkProxy::SetNeedsBeginFramesOnViz,
+                          weak_ptr_factory_on_viz_.GetWeakPtr()),
+      base::BindRepeating(&RootFrameSinkProxy::InvalidateOnViz,
                           weak_ptr_factory_on_viz_.GetWeakPtr()));
 }
 
@@ -73,6 +74,18 @@ void RootFrameSinkProxy::SetNeedsBeginFramesOnUI(bool needs_begin_frames) {
     begin_frame_source_->AddObserver(this);
   else
     begin_frame_source_->RemoveObserver(this);
+}
+
+void RootFrameSinkProxy::InvalidateOnViz() {
+  DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::BindOnce(&RootFrameSinkProxy::InvalidateOnUI,
+                                           weak_ptr_factory_.GetWeakPtr()));
+}
+
+void RootFrameSinkProxy::InvalidateOnUI() {
+  DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
+  client_->Invalidate();
 }
 
 void RootFrameSinkProxy::AddChildFrameSinkId(
@@ -128,9 +141,22 @@ void RootFrameSinkProxy::BeginFrameOnViz(const viz::BeginFrameArgs& args,
   *invalidate = without_gpu_->BeginFrame(args, had_input_event);
 }
 
+void RootFrameSinkProxy::SetBeginFrameSourcePausedOnViz(bool paused) {
+  DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
+  without_gpu_->SetBeginFrameSourcePaused(paused);
+}
+
 RootFrameSinkGetter RootFrameSinkProxy::GetRootFrameSinkCallback() {
   return base::BindRepeating(&RootFrameSinkProxy::GetRootFrameSinkHelper,
                              weak_ptr_factory_on_viz_.GetWeakPtr());
+}
+
+void RootFrameSinkProxy::OnBeginFrameSourcePausedChanged(bool paused) {
+  DCHECK_CALLED_ON_VALID_THREAD(ui_thread_checker_);
+  viz_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&RootFrameSinkProxy::SetBeginFrameSourcePausedOnViz,
+                     weak_ptr_factory_on_viz_.GetWeakPtr(), paused));
 }
 
 bool RootFrameSinkProxy::OnBeginFrameDerivedImpl(
@@ -138,8 +164,6 @@ bool RootFrameSinkProxy::OnBeginFrameDerivedImpl(
   DCHECK(client_);
   if (BeginFrame(args))
     client_->Invalidate();
-
-  client_->ProgressFling(args.frame_time);
 
   return true;
 }

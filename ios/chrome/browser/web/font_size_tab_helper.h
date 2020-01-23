@@ -9,6 +9,12 @@
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
 
+class PrefService;
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace web {
 class WebState;
 }  // namespace web
@@ -38,6 +44,9 @@ class FontSizeTabHelper : public web::WebStateObserver,
   // the min zoom level.).
   bool CanUserZoomOut() const;
 
+  static void RegisterBrowserStatePrefs(
+      user_prefs::PrefRegistrySyncable* registry);
+
  private:
   friend class web::WebStateUserData<FontSizeTabHelper>;
 
@@ -50,9 +59,16 @@ class FontSizeTabHelper : public web::WebStateObserver,
   // 150%) taking all sources into account (system level and user zoom).
   int GetFontSize() const;
 
+  PrefService* GetPrefService() const;
+
+  base::Optional<double> NewMultiplierAfterZoom(Zoom zoom) const;
   // Returns the current user zoom multiplier (i.e. not counting any additional
   // zoom due to the system accessibility settings).
   double GetCurrentUserZoomMultiplier() const;
+  void StoreCurrentUserZoomMultiplier(double multiplier);
+  std::string GetCurrentUserZoomMultiplierKey() const;
+
+  bool tab_helper_has_zoomed_ = false;
 
   // web::WebStateObserver overrides:
   void PageLoaded(

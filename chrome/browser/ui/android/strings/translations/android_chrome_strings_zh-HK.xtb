@@ -668,7 +668,7 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6064125863973209585">下載完成</translation>
 <translation id="6075798973483050474">編輯首頁</translation>
-<translation id="6092062101542170135">開啟 Android 設定中的 NFC 即可繼續</translation>
+<translation id="6092062101542170135">在 Android 設定中開啟 NFC 即可繼續</translation>
 <translation id="60923314841986378">尚餘 <ph name="HOURS" /> 小時</translation>
 <translation id="6108923351542677676">設定中…</translation>
 <translation id="6111020039983847643">數據用量</translation>
@@ -757,6 +757,7 @@
 <translation id="6659594942844771486">分頁</translation>
 <translation id="666731172850799929">在「<ph name="APP_NAME" />」中開啟</translation>
 <translation id="666981079809192359">Chrome 私隱聲明</translation>
+<translation id="6671495933530132209">複製圖片</translation>
 <translation id="6676840375528380067">要清除此裝置上的 Chrome 資料嗎？</translation>
 <translation id="6689172468748959065">個人檔案相片</translation>
 <translation id="6697492270171225480">找不到網頁時，顯示類似的網頁建議</translation>

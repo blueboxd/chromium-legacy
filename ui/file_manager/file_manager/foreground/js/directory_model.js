@@ -599,7 +599,7 @@ class DirectoryModel extends cr.EventTarget {
     // Clear metadata information for the old (no longer visible) items in the
     // file list.
     const fileList = this.getFileList();
-    let removedUrls = [];
+    const removedUrls = [];
     for (let i = 0; i < fileList.length; i++) {
       removedUrls.push(fileList.item(i).toURL());
     }
@@ -1212,7 +1212,7 @@ class DirectoryModel extends cr.EventTarget {
     // its contents.
     const currentDir = this.getCurrentDirEntry();
     const affectedVolumes = event.added.concat(event.removed);
-    for (let volume of affectedVolumes) {
+    for (const volume of affectedVolumes) {
       if (util.isSameEntry(currentDir, volume.prefixEntry)) {
         this.rescan(false);
         break;

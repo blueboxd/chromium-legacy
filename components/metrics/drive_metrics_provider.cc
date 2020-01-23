@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -69,18 +68,7 @@ void DriveMetricsProvider::QuerySeekPenalty(
   if (!base::PathService::Get(path_service_key, &path))
     return;
 
-  base::TimeTicks start = base::TimeTicks::Now();
-
   response->success = HasSeekPenalty(path, &response->has_seek_penalty);
-
-  UMA_HISTOGRAM_TIMES("Hardware.Drive.HasSeekPenalty_Time",
-                      base::TimeTicks::Now() - start);
-  UMA_HISTOGRAM_BOOLEAN("Hardware.Drive.HasSeekPenalty_Success",
-                        response->success);
-  if (response->success) {
-    UMA_HISTOGRAM_BOOLEAN("Hardware.Drive.HasSeekPenalty",
-                          response->has_seek_penalty);
-  }
 }
 
 void DriveMetricsProvider::GotDriveMetrics(

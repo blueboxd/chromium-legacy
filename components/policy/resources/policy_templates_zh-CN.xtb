@@ -716,6 +716,7 @@
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 的优先级高于此政策。也就是说，若某个扩展程序被列入了黑名单，虽然其所在的网站在此列表中，也不能安装该扩展程序。</translation>
 <translation id="214901426630414675">限制双面打印模式</translation>
 <translation id="2149330464730004005">启用彩色打印</translation>
+<translation id="2151831603578119302">启用无障碍功能快捷方式</translation>
 <translation id="2156132677421487971">为 <ph name="PRODUCT_NAME" /> 配置相关政策。借助这项功能，用户可从浏览器将标签页、网站或桌面中的内容发送到远程显示器和音响系统。</translation>
 <translation id="2156755242840687300">已启用的外部打印服务器</translation>
 <translation id="2160336427036785721">配置在单个 <ph name="PRODUCT_NAME" /> 实例使用的内存量达到多少后浏览器会为节省内存空间而开始舍弃标签页（即：标签页使用的内存将被释放，而且在用户切换到此标签页时它必须重新加载）。
@@ -824,6 +825,7 @@
 <translation id="2294382669900758280">即使此政策设为 <ph name="TRUE" />，系统也不会考虑在 Android 应用中播放视频。</translation>
 <translation id="2299220924812062390">指定已启用插件的列表</translation>
 <translation id="2303795211377219696">允许使用“自动填充”功能填写信用卡信息</translation>
+<translation id="2307496301287881990">报告显示状态和图形状态</translation>
 <translation id="2309390639296060546">默认地理位置设置</translation>
 <translation id="2327252517317514801">指定可访问 G Suite 的网域</translation>
 <translation id="2328573323851533589">此政策可用于在 <ph name="PRODUCT_NAME" /> 中强制启用/强制停用凭据泄露检查功能。
@@ -1076,6 +1078,7 @@
       如果未配置或停用了此政策，则系统将为登录屏幕使用平台默认的网站隔离设置。
       </translation>
 <translation id="2587719089023392205">将 <ph name="PRODUCT_NAME" /> 设为默认浏览器</translation>
+<translation id="2588071938417715443">此政策用于控制对本地设备发现界面 (<ph name="CHROME_DEVICES_LINK" />) 中的可控制功能的访问权限，该界面会显示可在用户附近发现的设备以及已注册到这些设备的云端设备。在除 <ph name="PRODUCT_OS_NAME" />之外的所有其他操作系统中，本地设备发现界面还允许用户将与其计算机相连的传统打印机添加到 <ph name="CLOUD_PRINT_NAME" />。</translation>
 <translation id="2592091433672667839">在零售模式登录屏幕上显示屏幕保护程序之前的闲置时间</translation>
 <translation id="2592162121850992309">如果不设置此政策或将其设为 true，系统将启用硬件加速模式，除非特定 GPU 功能已被列入黑名单。
 
@@ -1318,19 +1321,6 @@
 <translation id="2960691910306063964">针对远程访问主机启用或停用无 PIN 码身份验证</translation>
 <translation id="2987155890997901449">启用 ARC</translation>
 <translation id="2987227569419001736">控制对 Web Bluetooth API 的使用</translation>
-<translation id="3011301228198307065">配置 <ph name="PRODUCT_NAME" /> 中的默认主页网址，并禁止用户更改此配置。
-
-          主页是由“主页”按钮打开的网页。启动时打开的网页是由 RestoreOnStartup 政策控制的。
-
-          您既可将主页类型设为在此处指定的网址，也可将其设为“新标签页”。如果您选择“新标签页”，此政策将不会产生任何效力。
-
-          如果您启用了此设置，用户将无法更改 <ph name="PRODUCT_NAME" /> 中的主页网址，但仍可选择“新标签页”作为主页。
-
-          如果您未设置此政策，并且也未设置 HomepageIsNewTabPage，用户将能自行选择主页。
-
-          此网址必须是采用标准架构的网址，例如“http://example.com”或“https://example.com”。
-
-          此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="3016255526521614822">允许在 <ph name="PRODUCT_OS_NAME" />锁定屏幕启用加入白名单的备注应用</translation>
 <translation id="3020064401262077616">控制仅应用于未成年人帐号的家长监督政策。</translation>
 <translation id="3021562480854470924">指定允许回滚到的里程碑的数量</translation>
@@ -2806,6 +2796,7 @@
       如果 VPN 连接是通过 VPN 应用创建的，则相应应用内的界面不会受到此政策的影响。因此，用户或许仍能使用相应应用修改 VPN 连接。
 
       此政策旨在与“始终开启的 VPN”功能结合使用，以便管理员决定是否要在启动时建立 VPN 连接。</translation>
+<translation id="5401696449591951427">启用 <ph name="CHROME_DEVICES_LINK" /></translation>
 <translation id="5405289061476885481">配置允许在 <ph name="PRODUCT_OS_NAME" />登录屏幕上使用哪些键盘布局。
 
       如果此政策设为一个输入法标识符列表，登录屏幕上将会提供所有已指定的输入法以供选用。系统将会预先选择所指定的第一种输入法。当登录屏幕上显示已激活的用户操作大图标时，屏幕上除了会提供通过此政策指定的各种输入法外，还会提供相应用户最近一次用过的输入法。如果此政策未设置，系统则会根据显示登录屏幕时使用的语言区域提供登录屏幕上的输入法。系统将会忽略无效的输入法标识符。</translation>
@@ -3059,6 +3050,7 @@
           如果未设置此政策，系统会执行默认操作，即暂停。
 
           如果需要执行的操作是暂停，您还可单独配置 <ph name="PRODUCT_OS_NAME" />在暂停前是否锁定屏幕。</translation>
+<translation id="574983287620584622">在登录屏幕上启用无障碍功能快捷方式</translation>
 <translation id="5755002458331714762"> Web Components v0 API（Shadow DOM v0、Custom Elements v0 和 HTML Imports）已于 2018 年被弃用，并且从 M80 起就已默认处于停用状态。此政策允许有选择地重新启用这些功能直至 M84。
 
       如果此政策设为 True，系统会为所有网站启用 Web Components v0 功能。
@@ -4182,6 +4174,15 @@
       如果此政策设为 False，系统不会收集安全浏览数据。
 
       仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
+<translation id="777734450201217641">在登录屏幕上启用无障碍功能快捷方式。
+
+          如果此政策设为 true，无障碍功能快捷方式在登录屏幕上将始终处于启用状态。
+
+          如果此政策设为 false，无障碍功能快捷方式在登录屏幕上将始终处于停用状态。
+
+          如果您设置了此政策，用户便无法更改或覆盖它。
+
+          如果未设置此政策，默认情况下，无障碍功能快捷方式在登录屏幕上会处于启用状态。</translation>
 <translation id="7777535871204167559">以只读模式处理外部存储设备</translation>
 <translation id="7788511847830146438">根据个人资料</translation>
 <translation id="7792973482799545782">不允许任何网站加载可屏蔽的混合内容</translation>
@@ -4582,6 +4583,15 @@
 
       警告：建议您不要配置版本限制，因为这可能会阻止用户接收软件更新和关键的安全修补程序。限制更新到特定版本前缀可能会将用户置于风险之中。</translation>
 <translation id="8519264904050090490">托管用户手动管理的例外网址</translation>
+<translation id="8519516251436131647">启用无障碍功能快捷方式。
+
+          如果此政策设为 true，无障碍功能快捷方式将始终处于启用状态。
+
+          如果此政策设为 false，无障碍功能快捷方式将始终处于停用状态。
+
+          如果您设置了此政策，用户便无法更改或覆盖它。
+
+          如果未设置此政策，默认情况下，无障碍功能快捷方式会处于启用状态。</translation>
 <translation id="8525526490824335042">Linux 容器</translation>
 <translation id="8538235451413605457">配置对允许使用的最低 <ph name="PRODUCT_NAME" /> 版本的要求。低于指定值的版本将被视为过时；在这种情况下，如果用户不更新操作系统，相应设备就不会允许其登录。
       如果当前版本在用户会话期间变为过时版本，系统将会强制用户退出。
@@ -4808,6 +4818,9 @@
 
           如果未设置该策略，那么系统会使用“PromptOnAccess”，且用户可以更改此设置。</translation>
 <translation id="8911348623012274122">设置 Chrome 实例可以占用的内存上限</translation>
+<translation id="8911736066340032670">报告与显示相关的信息（例如刷新频率）以及与图形相关的信息（例如驱动程序版本）。
+
+      如果此政策设为 false 或未设置，系统将不会报告显示状态和图形状态。如果此政策设为 true，系统将会报告显示状态和图形状态。</translation>
 <translation id="891435090623616439">已编码为 JSON 字符串。有关详情，请访问 <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">允许用户管理已安装的 CA 证书。</translation>
 <translation id="8926275581598789324">请注意，此政策已被弃用，并将在 <ph name="PRODUCT_OS_NAME" />版本 82 中移除。请改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。

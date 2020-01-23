@@ -34,21 +34,20 @@ enum class RequestStatus {
 // When adding a new type here, extend also the "RequestThrottlerTypes"
 // <histogram_suffixes> in histograms.xml with the |name| string. First value in
 // the pair is the name, second is the default requests per day.
-std::pair<std::string, int> GetThrottlerParams(
-    UserClassifier::UserClass user_class) {
+std::pair<std::string, int> GetThrottlerParams(UserClass user_class) {
   switch (user_class) {
-    case UserClassifier::UserClass::kRareSuggestionsViewer:
+    case UserClass::kRareSuggestionsViewer:
       return {"SuggestionFetcherRareNTPUser", 5};
-    case UserClassifier::UserClass::kActiveSuggestionsViewer:
+    case UserClass::kActiveSuggestionsViewer:
       return {"SuggestionFetcherActiveNTPUser", 20};
-    case UserClassifier::UserClass::kActiveSuggestionsConsumer:
+    case UserClass::kActiveSuggestionsConsumer:
       return {"SuggestionFetcherActiveSuggestionsConsumer", 20};
   }
 }
 
 }  // namespace
 
-RefreshThrottler::RefreshThrottler(UserClassifier::UserClass user_class,
+RefreshThrottler::RefreshThrottler(UserClass user_class,
                                    PrefService* pref_service,
                                    base::Clock* clock)
     : pref_service_(pref_service), clock_(clock) {

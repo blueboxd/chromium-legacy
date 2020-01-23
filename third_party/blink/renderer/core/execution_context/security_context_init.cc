@@ -26,15 +26,28 @@ bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
   return frame && frame->GetPage()->GetChromeClient().IsPopup() &&
          WebTestSupport::IsRunningWebTest();
 }
+// This constructor is used for non-Document contexts (i.e., workers and tests).
+// This does a simpler check than Documents to set secure_context_mode_. This
+// is only sufficient until there are APIs that are available in workers or
+// worklets that require a privileged context test that checks ancestors.
+SecurityContextInit::SecurityContextInit(scoped_refptr<SecurityOrigin> origin,
+                                         OriginTrialContext* origin_trials,
+                                         Agent* agent)
+    : security_origin_(std::move(origin)),
+      origin_trials_(origin_trials),
+      agent_(agent),
+      secure_context_mode_(security_origin_ &&
+                                   security_origin_->IsPotentiallyTrustworthy()
+                               ? SecureContextMode::kSecureContext
+                               : SecureContextMode::kInsecureContext) {}
 
 // A helper class that allows the security context be initialized in the
 // process of constructing the document.
-SecurityContextInit::SecurityContextInit(const DocumentInit& initializer,
-                                         DocumentClassFlags document_classes) {
+SecurityContextInit::SecurityContextInit(const DocumentInit& initializer) {
   // Content Security Policy can provide sandbox flags. In CSP
   // 'self' will be determined when the policy is bound. That occurs
   // once the document is constructed.
-  InitializeContentSecurityPolicy(initializer, document_classes);
+  InitializeContentSecurityPolicy(initializer);
 
   // Sandbox flags can come from initializer, loader or CSP.
   InitializeSandboxFlags(initializer);
@@ -50,18 +63,17 @@ SecurityContextInit::SecurityContextInit(const DocumentInit& initializer,
   InitializeOriginTrials(initializer);
 
   // Initialize feature policy, depends on origin trials.
-  InitializeFeaturePolicy(initializer, document_classes);
+  InitializeFeaturePolicy(initializer);
 
   // Initialize document policy.
-  document_policy_ =
-      DocumentPolicy::CreateWithHeaderPolicy(initializer.GetDocumentPolicy());
+  document_policy_ = initializer.GetDocumentPolicy();
 
   // Initialize the agent. Depends on security origin.
   InitializeAgent(initializer);
 }
 
 bool SecurityContextInit::FeaturePolicyFeatureObserved(
-    mojom::FeaturePolicyFeature feature) {
+    mojom::blink::FeaturePolicyFeature feature) {
   if (parsed_feature_policies_.Contains(feature))
     return true;
   parsed_feature_policies_.insert(feature);
@@ -72,7 +84,7 @@ bool SecurityContextInit::FeatureEnabled(OriginTrialFeature feature) const {
   return origin_trials_->IsFeatureEnabled(feature);
 }
 
-void SecurityContextInit::ApplyPendingDataToDocument(Document& document) {
+void SecurityContextInit::ApplyPendingDataToDocument(Document& document) const {
   for (auto feature : feature_count_)
     UseCounter::Count(document, feature);
   for (auto feature : parsed_feature_policies_)
@@ -80,8 +92,7 @@ void SecurityContextInit::ApplyPendingDataToDocument(Document& document) {
 }
 
 void SecurityContextInit::InitializeContentSecurityPolicy(
-    const DocumentInit& initializer,
-    DocumentClassFlags document_classes) {
+    const DocumentInit& initializer) {
   auto* frame = initializer.GetFrame();
   ContentSecurityPolicy* last_origin_document_csp =
       frame ? frame->Loader().GetLastOriginDocumentCSP() : nullptr;
@@ -132,7 +143,7 @@ void SecurityContextInit::InitializeContentSecurityPolicy(
     csp_->CopyStateFrom(last_origin_document_csp);
   }
 
-  if (document_classes & kPluginDocumentClass) {
+  if (initializer.GetType() == DocumentInit::Type::kPlugin) {
     if (last_origin_document_csp) {
       csp_->CopyPluginTypesFrom(last_origin_document_csp);
       return;
@@ -242,14 +253,18 @@ void SecurityContextInit::InitializeOrigin(const DocumentInit& initializer) {
 }
 
 void SecurityContextInit::InitializeFeaturePolicy(
-    const DocumentInit& initializer,
-    DocumentClassFlags document_classes) {
+    const DocumentInit& initializer) {
+  initialized_feature_policy_state_ = true;
+  // If we are a HTMLViewSourceDocument we use container, header or
+  // inherited policies. https://crbug.com/898688. Don't set any from the
+  // initializer or frame below.
+  if (initializer.GetType() == DocumentInit::Type::kViewSource)
+    return;
+
   auto* frame = initializer.GetFrame();
   // For a main frame, get inherited feature policy from the opener if any.
-  const FeaturePolicy::FeatureState* opener_feature_state = nullptr;
-  if (frame && frame->IsMainFrame() && !frame->OpenerFeatureState().empty()) {
-    opener_feature_state = &frame->OpenerFeatureState();
-  }
+  if (frame && frame->IsMainFrame() && !frame->OpenerFeatureState().empty())
+    frame_for_opener_feature_state_ = frame;
 
   feature_policy_header_ = FeaturePolicyParser::ParseHeader(
       initializer.FeaturePolicyHeader(), security_origin_,
@@ -265,10 +280,8 @@ void SecurityContextInit::InitializeFeaturePolicy(
                                            feature_policy_header_);
   }
 
-  ParsedFeaturePolicy container_policy;
-
   if (frame && frame->Owner()) {
-    container_policy =
+    container_policy_ =
         initializer.GetFramePolicy().value_or(FramePolicy()).container_policy;
   }
 
@@ -281,40 +294,48 @@ void SecurityContextInit::InitializeFeaturePolicy(
     // Enforcing the policy for sandbox frames (for context see
     // https://crbug.com/954349).
     DisallowFeatureIfNotPresent(
-        mojom::FeaturePolicyFeature::kFocusWithoutUserActivation,
-        container_policy);
+        mojom::blink::FeaturePolicyFeature::kFocusWithoutUserActivation,
+        container_policy_);
   }
 
-  const FeaturePolicy* parent_feature_policy = nullptr;
-  if (frame && !frame->IsMainFrame()) {
-    parent_feature_policy =
-        frame->Tree().Parent()->GetSecurityContext()->GetFeaturePolicy();
-  }
+  if (frame && !frame->IsMainFrame())
+    parent_frame_ = frame->Tree().Parent();
+}
 
-  // If we are a HTMLViewSourceDocument we use container, header or
-  // inherited policies. https://crbug.com/898688
-  if (document_classes & kViewSourceDocumentClass) {
-    feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
-        nullptr, {}, security_origin_->ToUrlOrigin());
-    return;
-  }
+std::unique_ptr<FeaturePolicy> SecurityContextInit::CreateFeaturePolicy()
+    const {
+  if (!initialized_feature_policy_state_)
+    return nullptr;
 
   // Feature policy should either come from a parent in the case of an
   // embedded child frame, or from an opener if any when a new window is
   // created by an opener. A main frame without an opener would not have a
   // parent policy nor an opener feature state.
-  DCHECK(!parent_feature_policy || !opener_feature_state);
-  if (!opener_feature_state ||
+  DCHECK(!parent_frame_ || !frame_for_opener_feature_state_);
+  std::unique_ptr<FeaturePolicy> feature_policy;
+  if (!frame_for_opener_feature_state_ ||
       !RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
-    feature_policy_ = FeaturePolicy::CreateFromParentPolicy(
-        parent_feature_policy, container_policy,
+    auto* parent_feature_policy =
+        parent_frame_ ? parent_frame_->GetSecurityContext()->GetFeaturePolicy()
+                      : nullptr;
+    feature_policy = FeaturePolicy::CreateFromParentPolicy(
+        parent_feature_policy, container_policy_,
         security_origin_->ToUrlOrigin());
   } else {
-    DCHECK(!parent_feature_policy);
-    feature_policy_ = FeaturePolicy::CreateWithOpenerPolicy(
-        *opener_feature_state, security_origin_->ToUrlOrigin());
+    DCHECK(!parent_frame_);
+    feature_policy = FeaturePolicy::CreateWithOpenerPolicy(
+        frame_for_opener_feature_state_->OpenerFeatureState(),
+        security_origin_->ToUrlOrigin());
   }
-  feature_policy_->SetHeaderPolicy(feature_policy_header_);
+  feature_policy->SetHeaderPolicy(feature_policy_header_);
+  return feature_policy;
+}
+
+std::unique_ptr<DocumentPolicy> SecurityContextInit::CreateDocumentPolicy()
+    const {
+  if (!document_policy_)
+    return nullptr;
+  return DocumentPolicy::CreateWithHeaderPolicy(document_policy_.value());
 }
 
 void SecurityContextInit::InitializeSecureContextMode(

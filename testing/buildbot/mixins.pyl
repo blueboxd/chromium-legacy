@@ -713,10 +713,10 @@
       },
     },
   },
-  'xcode_11b53': {
+  'xcode_11c29': {
     'swarming': {
       'dimensions': {
-        'xcode_build_version': '11b53',
+        'xcode_build_version': '11c29',
       },
     },
   },

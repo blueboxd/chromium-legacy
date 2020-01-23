@@ -20,6 +20,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -178,11 +179,18 @@ std::unique_ptr<ShortcutInfo> ShortcutInfoForExtensionAndProfile(
   shortcut_info->profile_name =
       profile->GetPrefs()->GetString(prefs::kProfileName);
   shortcut_info->version_for_display = app->GetVersionForDisplay();
-  if (const auto* info = extensions::FileHandlers::GetFileHandlers(app)) {
-    shortcut_info->file_handler_extensions =
-        web_app::GetFileExtensionsFromFileHandlers(*info);
-    shortcut_info->file_handler_mime_types =
-        web_app::GetMimeTypesFromFileHandlers(*info);
+
+  // File Handlers should only be included in bookmark apps.
+  if (app->from_bookmark()) {
+    FileHandlerManager& file_handler_manager =
+        WebAppProviderBase::GetProviderBase(profile)->file_handler_manager();
+    if (const auto* file_handlers =
+            file_handler_manager.GetEnabledFileHandlers(app->id())) {
+      shortcut_info->file_handler_extensions =
+          web_app::GetFileExtensionsFromFileHandlers(*file_handlers);
+      shortcut_info->file_handler_mime_types =
+          web_app::GetMimeTypesFromFileHandlers(*file_handlers);
+    }
   }
 
   return shortcut_info;

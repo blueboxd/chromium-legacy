@@ -194,6 +194,7 @@ static_library("devtools") {
   if (!is_android) {
     deps += [
       ":protocol_generated_sources",
+      "//components/subresource_filter/content/browser:browser",
       "//third_party/inspector_protocol:crdtp",
     ]
     sources += [

@@ -643,8 +643,9 @@ bool AllowedToUsePaymentRequest(const ExecutionContext* execution_context) {
     return false;
 
   // 2. If Feature Policy is enabled, return the policy for "payment" feature.
-  return document->IsFeatureEnabled(mojom::FeaturePolicyFeature::kPayment,
-                                    ReportOptions::kReportOnFailure);
+  return document->IsFeatureEnabled(
+      mojom::blink::FeaturePolicyFeature::kPayment,
+      ReportOptions::kReportOnFailure);
 }
 
 void WarnIgnoringQueryQuotaForCanMakePayment(

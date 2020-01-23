@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.native_page.NativePageFactory.NativePageType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.util.UrlConstants;
 
 /**

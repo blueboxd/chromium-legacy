@@ -57,6 +57,7 @@
 #include "content/test/content_browser_sanity_checker.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_switches.h"
+#include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/dns/mock_host_resolver.h"
@@ -229,6 +230,9 @@ void BrowserTestBase::SetUp() {
   }
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  if (!command_line->HasSwitch(switches::kUseFakeDeviceForMediaStream))
+    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
 
   // Features that depend on external factors (e.g. memory pressure monitor) can
   // disable themselves based on the switch below (to ensure that browser tests

@@ -36,21 +36,9 @@ constexpr char kPrintServersPolicyJson1[] = R"json(
   }
 ])json";
 
-// Corresponding vector with PrintServers.
-const std::vector<PrintServer> kPrintServersPolicyData1 = {
-    {"id1", GURL("http://192.168.1.5:631"), "MyPrintServer"},
-    {"id2", GURL("https://print-server.intra.example.com:444/ipp/cl2k4"),
-     "Server API"},
-    {"id3", GURL("http://192.168.1.8/bleble/print"), "YaLP"}};
-
 // An example whitelist.
 const std::vector<std::string> kPrintServersPolicyWhitelist1 = {"id3", "idX",
                                                                 "id1"};
-
-// Corresponding vector filtered with the whitelist defined above.
-const std::vector<PrintServer> kPrintServersPolicyData1Whitelist1 = {
-    kPrintServersPolicyData1[0], kPrintServersPolicyData1[2]};
-
 // A different configuration file with print servers.
 constexpr char kPrintServersPolicyJson2[] = R"json(
 [
@@ -60,10 +48,6 @@ constexpr char kPrintServersPolicyJson2[] = R"json(
     "url": "ipp://192.168.1.15"
   }
 ])json";
-
-// Corresponding vector with PrintServers.
-const std::vector<PrintServer> kPrintServersPolicyData2 = {
-    {"id1", GURL("http://192.168.1.15:631"), "CUPS"}};
 
 // Another configuration file with print servers, this time with invalid URLs.
 constexpr char kPrintServersPolicyJson3[] = R"json(
@@ -102,6 +86,36 @@ constexpr char kPrintServersPolicyJson3[] = R"json(
   }
 ])json";
 
+PrintServer Server1() {
+  return PrintServer("id1", GURL("http://192.168.1.5:631"), "MyPrintServer");
+}
+
+PrintServer Server2() {
+  return PrintServer(
+      "id2", GURL("https://print-server.intra.example.com:444/ipp/cl2k4"),
+      "Server API");
+}
+
+PrintServer Server3() {
+  return PrintServer("id3", GURL("http://192.168.1.8/bleble/print"), "YaLP");
+}
+
+// Corresponding vector with PrintServers.
+std::vector<PrintServer> PrintServersPolicyData1() {
+  return std::vector<PrintServer>({Server1(), Server2(), Server3()});
+}
+
+// Corresponding vector filtered with the whitelist defined above.
+std::vector<PrintServer> PrintServersPolicyData1Whitelist1() {
+  return std::vector<PrintServer>({Server1(), Server3()});
+}
+
+// Corresponding vector with PrintServers.
+std::vector<PrintServer> PrintServersPolicyData2() {
+  return std::vector<PrintServer>(
+      {{"id1", GURL("http://192.168.1.15:631"), "CUPS"}});
+}
+
 // Corresponding vector with PrintServers. Only two records are included,
 // because other ones are invalid:
 // server_1 - OK
@@ -112,9 +126,11 @@ constexpr char kPrintServersPolicyJson3[] = R"json(
 // server_6 - invalid URL - forbidden character
 // server_7 - duplicate id
 // server_8 - missing id
-const std::vector<PrintServer> kPrintServersPolicyData3 = {
-    {"1", GURL("http://aaa.bbb.ccc:666/xx"), "server_1"},
-    {"5", GURL("https://aaa.bbb.ccc:666/yy"), "server_5"}};
+std::vector<PrintServer> PrintServersPolicyData3() {
+  return std::vector<PrintServer>(
+      {{"1", GURL("http://aaa.bbb.ccc:666/xx"), "server_1"},
+       {"5", GURL("https://aaa.bbb.ccc:666/yy"), "server_5"}});
+}
 
 // Observer that stores all its calls.
 class TestObserver : public PrintServersProvider::Observer {
@@ -213,7 +229,7 @@ TEST_F(PrintServersProviderTest, SetData) {
   // now the call from SetData(...) is there also
   ASSERT_EQ(obs.GetCalls().size(), 2u);
   EXPECT_EQ(obs.GetCalls().back().complete, true);
-  EXPECT_EQ(obs.GetCalls().back().servers, kPrintServersPolicyData1);
+  EXPECT_EQ(obs.GetCalls().back().servers, PrintServersPolicyData1());
   external_servers_->RemoveObserver(&obs);
 }
 
@@ -234,9 +250,9 @@ TEST_F(PrintServersProviderTest, SetData2) {
   // both calls from SetData(...) should be reported
   ASSERT_EQ(obs.GetCalls().size(), 3u);
   EXPECT_EQ(obs.GetCalls()[1].complete, false);
-  EXPECT_EQ(obs.GetCalls()[1].servers, kPrintServersPolicyData1);
+  EXPECT_EQ(obs.GetCalls()[1].servers, PrintServersPolicyData1());
   EXPECT_EQ(obs.GetCalls()[2].complete, true);
-  EXPECT_EQ(obs.GetCalls()[2].servers, kPrintServersPolicyData2);
+  EXPECT_EQ(obs.GetCalls()[2].servers, PrintServersPolicyData2());
   external_servers_->RemoveObserver(&obs);
 }
 
@@ -283,7 +299,7 @@ TEST_F(PrintServersProviderTest, ClearDataSetData) {
   // next call with results from processed SetData(...)
   ASSERT_EQ(obs.GetCalls().size(), 3u);
   EXPECT_EQ(obs.GetCalls().back().complete, true);
-  EXPECT_EQ(obs.GetCalls().back().servers, kPrintServersPolicyData1);
+  EXPECT_EQ(obs.GetCalls().back().servers, PrintServersPolicyData1());
   external_servers_->RemoveObserver(&obs);
 }
 
@@ -297,7 +313,7 @@ TEST_F(PrintServersProviderTest, InvalidURLs) {
   task_environment_.RunUntilIdle();
   ASSERT_EQ(obs.GetCalls().size(), 2u);
   EXPECT_EQ(obs.GetCalls().back().complete, true);
-  EXPECT_EQ(obs.GetCalls().back().servers, kPrintServersPolicyData3);
+  EXPECT_EQ(obs.GetCalls().back().servers, PrintServersPolicyData3());
   external_servers_->RemoveObserver(&obs);
 }
 
@@ -328,7 +344,7 @@ TEST_F(PrintServersProviderTest, Whitelist) {
   // Check the resultant list.
   task_environment_.RunUntilIdle();
   EXPECT_TRUE(obs.GetCalls().back().complete);
-  EXPECT_EQ(obs.GetCalls().back().servers, kPrintServersPolicyData1Whitelist1);
+  EXPECT_EQ(obs.GetCalls().back().servers, PrintServersPolicyData1Whitelist1());
   // The end.
   external_servers_->RemoveObserver(&obs);
 }

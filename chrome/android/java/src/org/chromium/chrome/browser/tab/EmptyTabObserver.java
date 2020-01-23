@@ -94,8 +94,7 @@ public class EmptyTabObserver implements TabObserver {
     public void onUpdateUrl(Tab tab, String url) { }
 
     @Override
-    public void onDidFailLoad(
-            Tab tab, boolean isMainFrame, int errorCode, String description, String failingUrl) {}
+    public void onDidFailLoad(Tab tab, boolean isMainFrame, int errorCode, String failingUrl) {}
 
     @Override
     public void onDidStartNavigation(Tab tab, NavigationHandle navigationHandle) {}

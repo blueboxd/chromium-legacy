@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/test/result_catcher.h"
-#include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -54,12 +53,6 @@ class WebRtcFromWebAccessibleResourceTest : public ExtensionApiTest {
   ~WebRtcFromWebAccessibleResourceTest() override {}
 
   // InProcessBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
-  }
-
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("a.com", "127.0.0.1");

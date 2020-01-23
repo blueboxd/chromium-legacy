@@ -7,6 +7,7 @@ package org.chromium.webapk.lib.client;
 import static org.chromium.webapk.lib.common.WebApkConstants.WEBAPK_PACKAGE_PREFIX;
 import static org.chromium.webapk.lib.common.WebApkMetaDataKeys.SCOPE;
 import static org.chromium.webapk.lib.common.WebApkMetaDataKeys.START_URL;
+import static org.chromium.webapk.lib.common.WebApkMetaDataKeys.WEB_MANIFEST_URL;
 
 import android.content.Context;
 import android.content.Intent;
@@ -354,6 +355,40 @@ public class WebApkValidator {
                 }
             }
         }
+    }
+
+    /**
+     * Determines if a bound WebAPK generated from |manifestUrl| is installed on the device.
+     * @param context The context to use to check whether WebAPK is valid.
+     * @param manifestUrl The URL of the manifest that was used to generate the WebAPK.
+     * @return The WebAPK's package name if installed, or null otherwise.
+     */
+    public static @Nullable String queryBoundWebApkForManifestUrl(
+            Context context, String manifestUrl) {
+        assert manifestUrl != null;
+
+        List<PackageInfo> packages = context.getPackageManager().getInstalledPackages(
+                PackageManager.GET_SIGNATURES | PackageManager.GET_META_DATA);
+
+        // Filter out unbound & invalid WebAPKs.
+        for (int i = 0; i < packages.size(); i++) {
+            PackageInfo info = packages.get(i);
+
+            if (!verifyV1WebApk(info, info.packageName)) {
+                continue;
+            }
+
+            // |info| belongs to a valid, bound, WebAPK. Check that the metadata contains
+            // |manifestUrl|.
+            String packageManifestUrl = info.applicationInfo.metaData.getString(WEB_MANIFEST_URL);
+            if (!TextUtils.equals(packageManifestUrl, manifestUrl)) {
+                continue;
+            }
+
+            return info.packageName;
+        }
+
+        return null;
     }
 
     /**

@@ -4,23 +4,27 @@
 
 package org.chromium.chrome.browser.toolbar.top;
 
-import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.matcher.ViewMatchers.withId;
-
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.BOTTOM_TOOLBAR;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.TAB_SWITCHER_TOOLBAR;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.TAB_SWITCHER_TOOLBAR_MENU;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.TAB_SWITCHER_TOOLBAR_NEW_TAB;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.TAB_SWITCHER_TOOLBAR_TAB_SWITCHER_BUTTON;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.TOP_TOOLBAR;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.TOP_TOOLBAR_HOME;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.TOP_TOOLBAR_MENU;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.TOP_TOOLBAR_TAB_SWITCHER;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.checkToolbarButtonVisibility;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.checkToolbarVisibility;
 
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.support.test.filters.MediumTest;
-import android.view.View;
 
 import org.junit.After;
 import org.junit.Before;
@@ -31,12 +35,12 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager.Variations;
 import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
@@ -98,18 +102,65 @@ public class AdaptiveToolbarTest {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         Layout layout = cta.getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
+
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_TAB_SWITCHER, false);
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_HOME, false);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, true);
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 1);
 
         // Both menu and new tab button should be visible in top tab switcher toolbar.
-        checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
+
+        checkToolbarVisibility(BOTTOM_TOOLBAR, false);
 
         rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
 
         // Both menu and new tab button should be visible in top tab switcher toolbar.
-        checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, false);
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @CommandLineFlags.Add({"enable-features=" + ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID +
+        "<Study", "force-fieldtrials=Study/Group", NO_NEW_TAB_VARIATION_PARAMS})
+    public void testTopToolbar_WithGTS_WithBottomToolbar_Home_Search_Tab_Switcher_IncognitoDisabled() {
+        // clang-format on
+        IncognitoUtils.setEnabledForTesting(false);
+        BottomToolbarVariationManager.setVariation(Variations.HOME_SEARCH_TAB_SWITCHER);
+        setupFlagsAndLaunchActivity(true, true);
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        Layout layout = cta.getLayoutManager().getOverviewLayout();
+        assertTrue(layout instanceof StartSurfaceLayout);
+
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_TAB_SWITCHER, false);
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_HOME, false);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, true);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Both menu and new tab button should be visible in top tab switcher toolbar.
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
+
+        // Show bottom toolbar when incognito is disabled.
+        checkToolbarVisibility(BOTTOM_TOOLBAR, true);
+
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+
+        // Both menu and new tab button should be visible in top tab switcher toolbar.
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, false);
+
+        // Reset incognito.
+        IncognitoUtils.setEnabledForTesting(null);
     }
 
     @Test
@@ -124,18 +175,25 @@ public class AdaptiveToolbarTest {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         Layout layout = cta.getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
+
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_TAB_SWITCHER, true);
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_HOME, false);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, true);
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 1);
 
         // Both menu and new tab button should be visible in top tab switcher toolbar.
-        checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, false);
 
         rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
 
         // Both menu and new tab button should be visible in top tab switcher toolbar.
-        checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, false);
     }
 
     @Test
@@ -150,19 +208,26 @@ public class AdaptiveToolbarTest {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         Layout layout = cta.getLayoutManager().getOverviewLayout();
         assertTrue(layout instanceof StartSurfaceLayout);
+
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_TAB_SWITCHER, true);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, true);
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 1);
 
         // Menu button should be visible and new tab button should be invisible
         // in top tab switcher toolbar.
-        checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(false, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, false);
+        // Bottom toolbar should be visible.
+        checkToolbarVisibility(BOTTOM_TOOLBAR, true);
 
         rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
 
         // Both menu and new tab button should be visible in top tab switcher toolbar.
-        checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, false);
     }
 
     @Test
@@ -179,13 +244,13 @@ public class AdaptiveToolbarTest {
         enterTabSwitcher(cta);
         verifyTabSwitcherCardCount(cta, 1);
 
-        checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
 
         rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
 
-        checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
     }
 
     @Test
@@ -196,15 +261,26 @@ public class AdaptiveToolbarTest {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         Layout layout = cta.getLayoutManager().getOverviewLayout();
         assertFalse(layout instanceof StartSurfaceLayout);
+
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_TAB_SWITCHER, false);
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_HOME, false);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, true);
         enterTabSwitcher(cta);
 
-        checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
+        checkToolbarButtonVisibility(
+                TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_TAB_SWITCHER_BUTTON, false);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, true);
 
         rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
 
-        checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
+        checkToolbarButtonVisibility(
+                TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_TAB_SWITCHER_BUTTON, true);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, false);
     }
 
     @Test
@@ -215,15 +291,26 @@ public class AdaptiveToolbarTest {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         Layout layout = cta.getLayoutManager().getOverviewLayout();
         assertFalse(layout instanceof StartSurfaceLayout);
+
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_TAB_SWITCHER, true);
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_HOME, false);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, true);
         enterTabSwitcher(cta);
 
-        checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
+        checkToolbarButtonVisibility(
+                TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_TAB_SWITCHER_BUTTON, true);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, false);
 
         rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
 
-        checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
+        checkToolbarButtonVisibility(
+                TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_TAB_SWITCHER_BUTTON, true);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, false);
     }
 
     @Test
@@ -234,42 +321,23 @@ public class AdaptiveToolbarTest {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         Layout layout = cta.getLayoutManager().getOverviewLayout();
         assertFalse(layout instanceof StartSurfaceLayout);
+
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TOP_TOOLBAR, TOP_TOOLBAR_TAB_SWITCHER, true);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, true);
         enterTabSwitcher(cta);
 
-        checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(false, true);
-
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, false);
+        checkToolbarButtonVisibility(
+                TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_TAB_SWITCHER_BUTTON, true);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, true);
         rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
 
-        checkTopToolbarButtonsExistence(true);
-        checkTopToolbarButtonsVisibility(true);
-    }
-
-    private void checkTopToolbarButtonsExistence(boolean isNotNull) {
-        onView(withId(R.id.tab_switcher_toolbar)).check((v, noMatchingViewException) -> {
-            View newTabButton = v.findViewById(R.id.new_tab_button);
-            View menuButton = v.findViewById(R.id.menu_button_wrapper);
-            if (isNotNull) {
-                assertNotNull(newTabButton);
-                assertNotNull(menuButton);
-            } else {
-                assertNull(newTabButton);
-                assertNull(menuButton);
-            }
-        });
-    }
-
-    private void checkTopToolbarButtonsVisibility(boolean isVisible) {
-        checkTopToolbarButtonsVisibility(isVisible, isVisible);
-    }
-
-    private void checkTopToolbarButtonsVisibility(
-            boolean isNewTabButtonVisible, boolean isMenuButtonVisible) {
-        onView(withId(R.id.tab_switcher_toolbar)).check((v, noMatchingViewException) -> {
-            View newTabButton = v.findViewById(R.id.new_tab_button);
-            View menuButton = v.findViewById(R.id.menu_button_wrapper);
-            assertEquals(isNewTabButtonVisible, newTabButton.getVisibility() == View.VISIBLE);
-            assertEquals(isMenuButtonVisible, menuButton.getVisibility() == View.VISIBLE);
-        });
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_MENU, true);
+        checkToolbarButtonVisibility(TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_NEW_TAB, true);
+        checkToolbarButtonVisibility(
+                TAB_SWITCHER_TOOLBAR, TAB_SWITCHER_TOOLBAR_TAB_SWITCHER_BUTTON, true);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, false);
     }
 }

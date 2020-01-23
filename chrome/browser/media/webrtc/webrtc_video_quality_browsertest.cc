@@ -115,7 +115,6 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
         .AddExtension(test::kY4mFileExtension);
     command_line->AppendSwitchPath(switches::kUseFileForFakeVideoCapture,
                                    webrtc_reference_video_y4m_);
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
 
     // The video playback will not work without a GPU, so force its use here.
     command_line->AppendSwitch(switches::kUseGpuInTests);

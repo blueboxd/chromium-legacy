@@ -77,7 +77,7 @@ FlexItem::FlexItem(const FlexLayoutAlgorithm* algorithm,
                    LayoutBox* box,
                    const ComputedStyle& style,
                    LayoutUnit flex_base_content_size,
-                   MinMaxSize min_max_sizes,
+                   MinMaxSize min_max_main_sizes,
                    base::Optional<MinMaxSize> min_max_cross_sizes,
                    LayoutUnit main_axis_border_padding,
                    LayoutUnit cross_axis_border_padding,
@@ -87,17 +87,17 @@ FlexItem::FlexItem(const FlexLayoutAlgorithm* algorithm,
       box(box),
       style(style),
       flex_base_content_size(flex_base_content_size),
-      min_max_sizes(min_max_sizes),
+      min_max_main_sizes(min_max_main_sizes),
       min_max_cross_sizes(min_max_cross_sizes),
       hypothetical_main_content_size(
-          min_max_sizes.ClampSizeToMinAndMax(flex_base_content_size)),
+          min_max_main_sizes.ClampSizeToMinAndMax(flex_base_content_size)),
       main_axis_border_padding(main_axis_border_padding),
       cross_axis_border_padding(cross_axis_border_padding),
       physical_margins(physical_margins),
       frozen(false),
       needs_relayout_for_stretch(false),
       ng_input_node(/* LayoutBox* */ nullptr) {
-  DCHECK_GE(min_max_sizes.max_size, LayoutUnit())
+  DCHECK_GE(min_max_main_sizes.max_size, LayoutUnit())
       << "Use LayoutUnit::Max() for no max size";
 }
 

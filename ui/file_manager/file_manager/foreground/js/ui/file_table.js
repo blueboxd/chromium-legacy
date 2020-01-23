@@ -128,7 +128,8 @@ class FileTableColumnModel extends cr.ui.table.TableColumnModel {
    *     hitPosition where the horizontal position is hit in the column.
    */
   getHitColumn(x) {
-    for (var i = 0; x >= this.columns_[i].width; i++) {
+    let i = 0;
+    for (; x >= this.columns_[i].width; i++) {
       x -= this.columns_[i].width;
     }
     if (i >= this.columns_.length) {
@@ -395,7 +396,7 @@ class FileTable extends cr.ui.Table {
     self.a11y = a11y;
 
     // Force the list's ending spacer to be tall enough to allow overscroll.
-    let endSpacer = self.querySelector('.spacer:last-child');
+    const endSpacer = self.querySelector('.spacer:last-child');
     if (endSpacer) {
       endSpacer.classList.add('signals-overscroll');
     }

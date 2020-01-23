@@ -115,11 +115,9 @@ bool TestRenderFrameHost::IsTestRenderFrameHost() const {
   return true;
 }
 
-void TestRenderFrameHost::DidFailLoadWithError(
-    const GURL& url,
-    int error_code,
-    const base::string16& error_description) {
-  RenderFrameHostImpl::DidFailLoadWithError(url, error_code, error_description);
+void TestRenderFrameHost::DidFailLoadWithError(const GURL& url,
+                                               int error_code) {
+  RenderFrameHostImpl::DidFailLoadWithError(url, error_code);
 }
 
 void TestRenderFrameHost::InitializeRenderFrameIfNeeded() {
@@ -644,7 +642,7 @@ void TestRenderFrameHost::SimulateLoadingCompleted(
             GetRenderViewHost()->GetRoutingID(),
             /* uses_temporary_zoom_level */ false));
 
-    OnMessageReceived(FrameHostMsg_DidFinishDocumentLoad(GetRoutingID()));
+    DidFinishDocumentLoad();
 
     DocumentOnLoadCompleted();
 

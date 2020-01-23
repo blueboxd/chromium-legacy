@@ -9,25 +9,24 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/mojo_utils.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/testing_wilco_dtc_supportd_network_context.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.h"
 #include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_web_request_service.h"
 
 namespace chromeos {
 
@@ -66,15 +65,23 @@ class WilcoDtcSupportdWebRequestServiceTest : public testing::Test {
     int http_status;
     std::string response_body;
   };
+
   WilcoDtcSupportdWebRequestServiceTest() {
+    auto testing_network_context =
+        std::make_unique<TestingWilcoDtcSupportdNetworkContext>();
+    testing_network_context_ = testing_network_context.get();
+
     web_request_service_ = std::make_unique<WilcoDtcSupportdWebRequestService>(
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            &test_url_loader_factory_));
+        std::move(testing_network_context));
   }
 
   ~WilcoDtcSupportdWebRequestServiceTest() override {}
 
-  void TearDown() override { test_url_loader_factory_.ClearResponses(); }
+  void TearDown() override {
+    if (testing_network_context_) {
+      testing_network_context_->test_url_loader_factory()->ClearResponses();
+    }
+  }
 
   // Start new web request with the next parameters:
   // * web request parameters:
@@ -109,12 +116,16 @@ class WilcoDtcSupportdWebRequestServiceTest : public testing::Test {
     auto response_head = response_status
                              ? network::CreateURLResponseHead(*response_status)
                              : network::mojom::URLResponseHead::New();
-    test_url_loader_factory_.AddResponse(
+    ASSERT_TRUE(testing_network_context_);
+    testing_network_context_->test_url_loader_factory()->AddResponse(
         GURL(url), std::move(response_head), response_body,
         network::URLLoaderCompletionStatus(net_error));
   }
 
-  void DestroyService() { web_request_service_.reset(); }
+  void DestroyService() {
+    testing_network_context_ = nullptr;
+    web_request_service_.reset();
+  }
 
   WilcoDtcSupportdWebRequestService* web_request_service() {
     return web_request_service_.get();
@@ -122,8 +133,10 @@ class WilcoDtcSupportdWebRequestServiceTest : public testing::Test {
 
   // Returns a Content-Type header value or empty string if none.
   std::string GetContentTypeFromPendingRequest(const std::string& url) {
+    DCHECK(testing_network_context_);
     const network::ResourceRequest* request;
-    if (!test_url_loader_factory_.IsPending(GURL(url).spec(), &request) ||
+    if (!testing_network_context_->test_url_loader_factory()->IsPending(
+            GURL(url).spec(), &request) ||
         !request) {
       return "";
     }
@@ -149,8 +162,10 @@ class WilcoDtcSupportdWebRequestServiceTest : public testing::Test {
   }
 
   std::unique_ptr<WilcoDtcSupportdWebRequestService> web_request_service_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
   base::test::SingleThreadTaskEnvironment task_environment_;
+
+  // Owned by |web_request_service_|.
+  TestingWilcoDtcSupportdNetworkContext* testing_network_context_ = nullptr;
 };
 
 }  // namespace

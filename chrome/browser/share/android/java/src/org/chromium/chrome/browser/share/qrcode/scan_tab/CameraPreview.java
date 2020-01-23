@@ -10,10 +10,10 @@ import android.hardware.Camera.CameraInfo;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.WindowManager;
+
+import org.chromium.ui.display.DisplayAndroid;
 
 /** CameraPreview class controls camera and camera previews. */
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
@@ -140,24 +140,8 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     /** Gets the display orientation degree as integer. */
     private int getDisplayOrientation() {
-        final int orientation;
-        WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-        switch (wm.getDefaultDisplay().getRotation()) {
-            case Surface.ROTATION_90:
-                orientation = 90;
-                break;
-            case Surface.ROTATION_180:
-                orientation = 180;
-                break;
-            case Surface.ROTATION_270:
-                orientation = 270;
-                break;
-            case Surface.ROTATION_0:
-            default:
-                orientation = 0;
-                break;
-        }
-        return orientation;
+        DisplayAndroid display = DisplayAndroid.getNonMultiDisplay(mContext);
+        return display.getRotationDegrees();
     }
 
     /** Returns whether given camera info corresponds to back camera. */

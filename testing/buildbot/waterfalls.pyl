@@ -643,6 +643,22 @@
         },
         'os_type': 'android',
       },
+      'android-lollipop-arm-rel': {
+        'mixins': [
+          # TODO(crbug.com/1032336): Pin to an exact L version.
+          'lollipop',
+          'hammerhead',
+        ],
+        'additional_compile_targets': [
+          'cronet_test_instrumentation_apk',
+          'monochrome_static_initializers',
+        ],
+        # TODO(crbug.com/1032336): Scale up these tests.
+        'test_suites': {
+          'gtest_tests': 'chromium_swarm_android_gtests',
+        },
+        'os_type': 'android',
+      },
       'android-marshmallow-arm64-rel': {
         'mixins': [
           'code-coverage',
@@ -1829,7 +1845,7 @@
         'mixins': [
           'chrome-swarming-pool',
           'host_mac_10.14',
-          'xcode_11b53',
+          'xcode_11c29',
           'xcode_parallelization',
         ],
         'test_suites': {
@@ -4561,6 +4577,22 @@
         ],
         'test_suites': {
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
+    },
+  },
+  {
+    'name': 'tryserver.chromium.mac',
+    'machines': {
+      'mac-rel': {
+        'mixins': [
+            'mac_10.13',
+            'no_gpu',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
+          'scripts': 'chromium_mac_scripts',
         },
       },
     },

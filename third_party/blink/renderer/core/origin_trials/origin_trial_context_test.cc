@@ -301,7 +301,7 @@ TEST_F(OriginTrialContextTest, FeaturePolicy) {
 
   // Make a mock feature name map with "frobulate".
   FeatureNameMap feature_map;
-  feature_map.Set("frobulate", mojom::FeaturePolicyFeature::kFrobulate);
+  feature_map.Set("frobulate", mojom::blink::FeaturePolicyFeature::kFrobulate);
 
   // Attempt to parse the "frobulate" feature policy. This will only work if the
   // feature policy is successfully enabled via the origin trial.
@@ -313,7 +313,7 @@ TEST_F(OriginTrialContextTest, FeaturePolicy) {
                                       &messages, feature_map, document);
   EXPECT_TRUE(messages.IsEmpty());
   ASSERT_EQ(1u, result.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFrobulate, result[0].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFrobulate, result[0].feature);
 }
 
 TEST_F(OriginTrialContextTest, GetEnabledNavigationFeatures) {

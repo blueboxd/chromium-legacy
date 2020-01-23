@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -50,10 +51,12 @@ const char* kTabMetricsEntryName = TabManager_TabMetrics::kEntryName;
 const int64_t kIdShift = 1 << 13;
 
 // Test URLs need to be from different origins to test site engagement score.
-const GURL kTestUrls[] = {
-    GURL("https://test1.example.com"), GURL("https://test3.example.com"),
-    GURL("https://test2.example.com"), GURL("https://test4.example.com"),
-};
+const std::vector<GURL>& TestUrls() {
+  static base::NoDestructor<std::vector<GURL>> test_urls{
+      {GURL("https://test1.example.com"), GURL("https://test3.example.com"),
+       GURL("https://test2.example.com"), GURL("https://test4.example.com")}};
+  return *test_urls;
+}
 
 // The default metric values for a tab.
 const UkmMetricMap kBasicMetricValues({
@@ -90,7 +93,7 @@ class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
   LifecycleUnit* AddNewTab(TabStripModel* tab_strip_model, int i) {
     LifecycleUnit* result = TabLifecycleUnitSource::GetTabLifecycleUnit(
         tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                          GURL(kTestUrls[i])));
+                                                          TestUrls()[i]));
     if (i == 0)
       tab_strip_model->ActivateTabAt(i);
     else
@@ -237,7 +240,7 @@ TEST_F(TabActivityWatcherTest,
   {
     SCOPED_TRACE("");
     ukm_entry_checker_.ExpectNewEntry(
-        kTabMetricsEntryName, kTestUrls[0],
+        kTabMetricsEntryName, TestUrls()[0],
         {
             {TabManager_TabMetrics::kQueryIdName, 1 * kIdShift},
             {TabManager_TabMetrics::kLabelIdName, 2 * kIdShift},
@@ -251,7 +254,7 @@ TEST_F(TabActivityWatcherTest,
   {
     SCOPED_TRACE("");
     ukm_entry_checker_.ExpectNewEntry(
-        kTabMetricsEntryName, kTestUrls[0],
+        kTabMetricsEntryName, TestUrls()[0],
         {
             {TabManager_TabMetrics::kQueryIdName, 3 * kIdShift},
             {TabManager_TabMetrics::kLabelIdName, 2 * kIdShift + 1},
@@ -280,14 +283,14 @@ TEST_F(TabActivityWatcherTest,
               2);
 
     ukm_entry_checker_.ExpectNewEntry(
-        kTabMetricsEntryName, kTestUrls[0],
+        kTabMetricsEntryName, TestUrls()[0],
         {
             {TabManager_TabMetrics::kQueryIdName, 5 * kIdShift},
             {TabManager_TabMetrics::kLabelIdName, 2 * kIdShift + 2},
         });
 
     ukm_entry_checker_.ExpectNewEntry(
-        kTabMetricsEntryName, kTestUrls[1],
+        kTabMetricsEntryName, TestUrls()[1],
         {
             {TabManager_TabMetrics::kQueryIdName, 5 * kIdShift},
             {TabManager_TabMetrics::kLabelIdName, 6 * kIdShift},
@@ -333,7 +336,7 @@ TEST_F(TabMetricsTest, Basic) {
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   content::WebContents* fg_contents =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                        GURL(kTestUrls[0]));
+                                                        TestUrls()[0]);
   tab_strip_model->ActivateTabAt(0);
   WebContentsTester::For(fg_contents)->TestSetIsLoading(false);
 
@@ -344,21 +347,21 @@ TEST_F(TabMetricsTest, Basic) {
   // when it stops loading.
   content::WebContents* bg_contents =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                        GURL(kTestUrls[1]));
+                                                        TestUrls()[1]);
   WebContentsTester::For(bg_contents)->TestSetIsLoading(false);
-  ExpectNewEntry(kTestUrls[1], kBasicMetricValues);
+  ExpectNewEntry(TestUrls()[1], kBasicMetricValues);
 
   // Activating a tab logs the deactivated tab.
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[0], kBasicMetricValues);
+    ExpectNewEntry(TestUrls()[0], kBasicMetricValues);
   }
 
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 0);
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[1], kBasicMetricValues);
+    ExpectNewEntry(TestUrls()[1], kBasicMetricValues);
   }
 
   // Closing the tabs destroys the WebContentses but should not trigger logging.
@@ -376,22 +379,22 @@ TEST_F(TabMetricsTest, TabEvents) {
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   content::WebContents* test_contents_1 =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                        GURL(kTestUrls[0]));
+                                                        TestUrls()[0]);
   tab_strip_model->ActivateTabAt(0);
 
   // Opening the background tab triggers logging once the page finishes loading.
   content::WebContents* test_contents_2 =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                        GURL(kTestUrls[1]));
+                                                        TestUrls()[1]);
   EXPECT_EQ(0, ukm_entry_checker_.NumNewEntriesRecorded(kEntryName));
   WebContentsTester::For(test_contents_2)->TestSetIsLoading(false);
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(GURL(kTestUrls[1]), kBasicMetricValues);
+    ExpectNewEntry(TestUrls()[1], kBasicMetricValues);
   }
 
   // Navigating the active tab doesn't trigger logging.
-  WebContentsTester::For(test_contents_1)->NavigateAndCommit(kTestUrls[2]);
+  WebContentsTester::For(test_contents_1)->NavigateAndCommit(TestUrls()[2]);
   EXPECT_EQ(0, ukm_entry_checker_.NumNewEntriesRecorded(kEntryName));
 
   // Pinning the active tab doesn't trigger logging.
@@ -404,26 +407,26 @@ TEST_F(TabMetricsTest, TabEvents) {
   expected_metrics[TabManager_TabMetrics::kIsPinnedName] = 1;
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(GURL(kTestUrls[1]), expected_metrics);
+    ExpectNewEntry(TestUrls()[1], expected_metrics);
   }
   tab_strip_model->SetTabPinned(1, false);
   expected_metrics[TabManager_TabMetrics::kIsPinnedName] = 0;
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(GURL(kTestUrls[1]), kBasicMetricValues);
+    ExpectNewEntry(TestUrls()[1], kBasicMetricValues);
   }
 
   // Navigating the background tab triggers logging once the page finishes
   // loading.
   auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
-      kTestUrls[0], test_contents_2);
+      TestUrls()[0], test_contents_2);
   navigation->SetKeepLoading(true);
   navigation->Commit();
   EXPECT_EQ(0, ukm_entry_checker_.NumNewEntriesRecorded(kEntryName));
   navigation->StopLoading();
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(GURL(kTestUrls[0]), kBasicMetricValues);
+    ExpectNewEntry(TestUrls()[0], kBasicMetricValues);
   }
 
   tab_strip_model->CloseAllTabs();
@@ -438,7 +441,7 @@ TEST_F(TabMetricsTest, TabMetrics) {
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   content::WebContents* test_contents_1 =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                        GURL(kTestUrls[0]));
+                                                        TestUrls()[0]);
   tab_strip_model->ActivateTabAt(0);
 
   // Expected metrics for tab event.
@@ -447,15 +450,16 @@ TEST_F(TabMetricsTest, TabMetrics) {
   // Load background contents and verify UKM entry.
   content::WebContents* test_contents_2 =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                        GURL(kTestUrls[1]));
+                                                        TestUrls()[1]);
   WebContentsTester::For(test_contents_2)->TestSetIsLoading(false);
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[1], expected_metrics);
+    ExpectNewEntry(TestUrls()[1], expected_metrics);
   }
 
   // Site engagement score should round down to the nearest 10.
-  SiteEngagementService::Get(profile())->ResetBaseScoreForURL(kTestUrls[1], 45);
+  SiteEngagementService::Get(profile())->ResetBaseScoreForURL(TestUrls()[1],
+                                                              45);
   expected_metrics[TabManager_TabMetrics::kSiteEngagementScoreName] = 40;
 
   auto* audible_helper_2 =
@@ -468,30 +472,30 @@ TEST_F(TabMetricsTest, TabMetrics) {
   expected_metrics[TabManager_TabMetrics::kIsPinnedName] = 1;
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[1], expected_metrics);
+    ExpectNewEntry(TestUrls()[1], expected_metrics);
   }
 
   // Unset WasRecentlyAudible and navigate the background tab to a new domain.
   // Site engagement score for the new domain is 0.
   audible_helper_2->SetNotRecentlyAudibleForTesting();
   expected_metrics[TabManager_TabMetrics::kWasRecentlyAudibleName] = 0;
-  WebContentsTester::For(test_contents_2)->NavigateAndCommit(kTestUrls[2]);
+  WebContentsTester::For(test_contents_2)->NavigateAndCommit(TestUrls()[2]);
   expected_metrics[TabManager_TabMetrics::kSiteEngagementScoreName] = 0;
 
   WebContentsTester::For(test_contents_2)->TestSetIsLoading(false);
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[2], expected_metrics);
+    ExpectNewEntry(TestUrls()[2], expected_metrics);
   }
 
   // Navigate the active tab and switch away from it. The entry should reflect
   // the new URL (even when the page hasn't finished loading).
-  WebContentsTester::For(test_contents_1)->NavigateAndCommit(kTestUrls[2]);
+  WebContentsTester::For(test_contents_1)->NavigateAndCommit(TestUrls()[2]);
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 0);
   {
     SCOPED_TRACE("");
     // This tab still has the default metrics.
-    ExpectNewEntry(kTestUrls[2], kBasicMetricValues);
+    ExpectNewEntry(TestUrls()[2], kBasicMetricValues);
   }
 
   tab_strip_model->CloseAllTabs();
@@ -507,10 +511,10 @@ TEST_F(TabMetricsTest, InputEvents) {
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   content::WebContents* test_contents_1 =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                        GURL(kTestUrls[0]));
+                                                        TestUrls()[0]);
   content::WebContents* test_contents_2 =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                        GURL(kTestUrls[1]));
+                                                        TestUrls()[1]);
 
   // RunUntilIdle is needed because the widget input handler is initialized
   // asynchronously via mojo (see SetupWidgetInputHandler).
@@ -532,7 +536,7 @@ TEST_F(TabMetricsTest, InputEvents) {
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[0], expected_metrics_1);
+    ExpectNewEntry(TestUrls()[0], expected_metrics_1);
   }
 
   // The second tab's counts are independent of the other's.
@@ -545,7 +549,7 @@ TEST_F(TabMetricsTest, InputEvents) {
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 0);
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[1], expected_metrics_2);
+    ExpectNewEntry(TestUrls()[1], expected_metrics_2);
   }
 
   // New events are added to the first tab's existing counts.
@@ -555,16 +559,16 @@ TEST_F(TabMetricsTest, InputEvents) {
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[0], expected_metrics_1);
+    ExpectNewEntry(TestUrls()[0], expected_metrics_1);
   }
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 0);
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[1], expected_metrics_2);
+    ExpectNewEntry(TestUrls()[1], expected_metrics_2);
   }
 
   // After a navigation, test that the counts are reset.
-  WebContentsTester::For(test_contents_1)->NavigateAndCommit(kTestUrls[2]);
+  WebContentsTester::For(test_contents_1)->NavigateAndCommit(TestUrls()[2]);
   // The widget may have been invalidated by the navigation.
   widget_1 = test_contents_1->GetRenderViewHost()->GetWidget();
   widget_1->ForwardMouseEvent(CreateMouseEvent(WebInputEvent::kMouseMove));
@@ -572,7 +576,7 @@ TEST_F(TabMetricsTest, InputEvents) {
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[2], expected_metrics_1);
+    ExpectNewEntry(TestUrls()[2], expected_metrics_1);
   }
 
   tab_strip_model->CloseAllTabs();
@@ -589,7 +593,7 @@ TEST_F(TabMetricsTest, DISABLED_HideWebContents) {
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   content::WebContents* test_contents =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                        GURL(kTestUrls[0]));
+                                                        TestUrls()[0]);
   tab_strip_model->ActivateTabAt(0);
 
   // Hiding the window doesn't trigger a log entry, unless the window was
@@ -612,7 +616,7 @@ TEST_F(TabMetricsTest, Navigations) {
 
   // Set up first tab.
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                    GURL(kTestUrls[0]));
+                                                    TestUrls()[0]);
   tab_strip_model->ActivateTabAt(0);
 
   // Expected metrics for tab event.
@@ -621,7 +625,7 @@ TEST_F(TabMetricsTest, Navigations) {
   // Load background contents and verify UKM entry.
   content::WebContents* test_contents =
       tab_activity_simulator_.AddWebContentsAndNavigate(
-          tab_strip_model, GURL(kTestUrls[1]),
+          tab_strip_model, TestUrls()[1],
           ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                     ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
   WebContentsTester::For(test_contents)->TestSetIsLoading(false);
@@ -634,12 +638,12 @@ TEST_F(TabMetricsTest, Navigations) {
   expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName] = 1;
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[1], expected_metrics);
+    ExpectNewEntry(TestUrls()[1], expected_metrics);
   }
 
   // Navigate background tab (not all transition types make sense in the
   // background, but this is simpler than juggling two tabs to trigger logging).
-  tab_activity_simulator_.Navigate(test_contents, kTestUrls[2],
+  tab_activity_simulator_.Navigate(test_contents, TestUrls()[2],
                                    ui::PAGE_TRANSITION_LINK);
   WebContentsTester::For(test_contents)->TestSetIsLoading(false);
   expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
@@ -651,11 +655,11 @@ TEST_F(TabMetricsTest, Navigations) {
   expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value()++;
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[2], expected_metrics);
+    ExpectNewEntry(TestUrls()[2], expected_metrics);
   }
 
   tab_activity_simulator_.Navigate(
-      test_contents, kTestUrls[0],
+      test_contents, TestUrls()[0],
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                 ui::PAGE_TRANSITION_SERVER_REDIRECT));
   WebContentsTester::For(test_contents)->TestSetIsLoading(false);
@@ -667,10 +671,10 @@ TEST_F(TabMetricsTest, Navigations) {
   expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value()++;
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[0], expected_metrics);
+    ExpectNewEntry(TestUrls()[0], expected_metrics);
   }
 
-  tab_activity_simulator_.Navigate(test_contents, kTestUrls[0],
+  tab_activity_simulator_.Navigate(test_contents, TestUrls()[0],
                                    ui::PAGE_TRANSITION_RELOAD);
   WebContentsTester::For(test_contents)->TestSetIsLoading(false);
   expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
@@ -682,10 +686,10 @@ TEST_F(TabMetricsTest, Navigations) {
       false;
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[0], expected_metrics);
+    ExpectNewEntry(TestUrls()[0], expected_metrics);
   }
 
-  tab_activity_simulator_.Navigate(test_contents, kTestUrls[1],
+  tab_activity_simulator_.Navigate(test_contents, TestUrls()[1],
                                    ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   WebContentsTester::For(test_contents)->TestSetIsLoading(false);
   expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
@@ -695,10 +699,10 @@ TEST_F(TabMetricsTest, Navigations) {
   expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value()++;
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[1], expected_metrics);
+    ExpectNewEntry(TestUrls()[1], expected_metrics);
   }
 
-  tab_activity_simulator_.Navigate(test_contents, kTestUrls[1],
+  tab_activity_simulator_.Navigate(test_contents, TestUrls()[1],
                                    ui::PAGE_TRANSITION_FORM_SUBMIT);
   WebContentsTester::For(test_contents)->TestSetIsLoading(false);
   expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
@@ -706,12 +710,12 @@ TEST_F(TabMetricsTest, Navigations) {
   expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value()++;
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[1], expected_metrics);
+    ExpectNewEntry(TestUrls()[1], expected_metrics);
   }
 
   // Test non-reportable core type.
   tab_activity_simulator_.Navigate(
-      test_contents, kTestUrls[0],
+      test_contents, TestUrls()[0],
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_KEYWORD |
                                 ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
   WebContentsTester::For(test_contents)->TestSetIsLoading(false);
@@ -722,7 +726,7 @@ TEST_F(TabMetricsTest, Navigations) {
   expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value()++;
   {
     SCOPED_TRACE("");
-    ExpectNewEntry(kTestUrls[0], expected_metrics);
+    ExpectNewEntry(TestUrls()[0], expected_metrics);
   }
 
   tab_strip_model->CloseAllTabs();
@@ -738,7 +742,7 @@ TEST_F(TabMetricsTest, ReplaceForegroundTab) {
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   content::WebContents* orig_contents =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                        GURL(kTestUrls[0]));
+                                                        TestUrls()[0]);
   tab_strip_model->ActivateTabAt(0);
   WebContentsTester::For(orig_contents)->TestSetIsLoading(false);
 
@@ -750,7 +754,7 @@ TEST_F(TabMetricsTest, ReplaceForegroundTab) {
   // Normally this happens when the browser or prerenderer attaches tab helpers.
   ukm::InitializeSourceUrlRecorderForWebContents(new_contents.get());
 
-  tab_activity_simulator_.Navigate(new_contents.get(), GURL(kTestUrls[1]));
+  tab_activity_simulator_.Navigate(new_contents.get(), TestUrls()[1]);
   WebContentsTester::For(new_contents.get())->TestSetIsLoading(false);
 
   // Replace and delete the old contents.
@@ -764,13 +768,13 @@ TEST_F(TabMetricsTest, ReplaceForegroundTab) {
 
   // Add a new tab so the first tab is backgrounded.
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                    GURL(kTestUrls[2]));
+                                                    TestUrls()[2]);
   tab_activity_simulator_.SwitchToTabAt(tab_strip_model, 1);
   {
     SCOPED_TRACE("");
     // Replaced tab uses the orig source_id; so the metrics is logged to
-    // kTestUrls[0].
-    ExpectNewEntry(kTestUrls[0], kBasicMetricValues);
+    // TestUrls()[0].
+    ExpectNewEntry(TestUrls()[0], kBasicMetricValues);
   }
 
   tab_strip_model->CloseAllTabs();
@@ -816,7 +820,7 @@ TEST_F(ForegroundedOrClosedTest, MAYBE_SingleTab) {
 
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                    GURL(kTestUrls[0]));
+                                                    TestUrls()[0]);
 
   // The tab is in the foreground, so it isn't logged as a background tab.
   tab_strip_model->CloseWebContentsAt(0, TabStripModel::CLOSE_USER_GESTURE);
@@ -831,13 +835,13 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
 
   TabStripModel* tab_strip_model = browser->tab_strip_model();
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                    GURL(kTestUrls[0]));
+                                                    TestUrls()[0]);
   tab_strip_model->ActivateTabAt(0);
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                    GURL(kTestUrls[1]));
+                                                    TestUrls()[1]);
   AdvanceClock();
   tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
-                                                    GURL(kTestUrls[2]));
+                                                    TestUrls()[2]);
   AdvanceClock();
   // MRU ordering by tab indices:
   // 0 (foreground), 2 (created last), 1 (created first),
@@ -847,7 +851,7 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
   {
     SCOPED_TRACE("");
     ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[2],
+        kEntryName, TestUrls()[2],
         {
             {ForegroundedOrClosed::kIsForegroundedName, 1},
         });
@@ -861,7 +865,7 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
   {
     SCOPED_TRACE("");
     ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[1],
+        kEntryName, TestUrls()[1],
         {
             {ForegroundedOrClosed::kIsForegroundedName, 1},
         });
@@ -876,14 +880,14 @@ TEST_F(ForegroundedOrClosedTest, MultipleTabs) {
     SCOPED_TRACE("");
     // The rightmost tab was in the background and was closed.
     ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[2],
+        kEntryName, TestUrls()[2],
         {
             {ForegroundedOrClosed::kIsForegroundedName, 0},
         });
 
     // The leftmost tab was in the background and was closed.
     ukm_entry_checker_.ExpectNewEntry(
-        kEntryName, kTestUrls[0],
+        kEntryName, TestUrls()[0],
         {
             {ForegroundedOrClosed::kIsForegroundedName, 0},
         });

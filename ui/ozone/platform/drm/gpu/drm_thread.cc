@@ -104,6 +104,7 @@ void DrmThread::RunTaskAfterWindowReady(gfx::AcceleratedWidget window,
 }
 
 void DrmThread::Init() {
+  TRACE_EVENT0("drm", "DrmThread::Init");
   device_manager_ =
       std::make_unique<DrmDeviceManager>(std::move(device_generator_));
   screen_manager_ = std::make_unique<ScreenManager>();
@@ -125,6 +126,7 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
                              uint32_t client_flags,
                              std::unique_ptr<GbmBuffer>* buffer,
                              scoped_refptr<DrmFramebuffer>* framebuffer) {
+  TRACE_EVENT0("drm", "DrmThread::CreateBuffer");
   scoped_refptr<ui::DrmDevice> drm = device_manager_->GetDrmDevice(widget);
   CHECK(drm) << "No devices available for buffer allocation.";
 
@@ -160,6 +162,7 @@ void DrmThread::CreateBufferAsync(gfx::AcceleratedWidget widget,
                                   gfx::BufferUsage usage,
                                   uint32_t client_flags,
                                   CreateBufferAsyncCallback callback) {
+  TRACE_EVENT0("drm", "DrmThread::CreateBufferAsync");
   std::unique_ptr<GbmBuffer> buffer;
   scoped_refptr<DrmFramebuffer> framebuffer;
   CreateBuffer(widget, size, format, usage, client_flags, &buffer,
@@ -174,6 +177,7 @@ void DrmThread::CreateBufferFromHandle(
     gfx::NativePixmapHandle handle,
     std::unique_ptr<GbmBuffer>* out_buffer,
     scoped_refptr<DrmFramebuffer>* out_framebuffer) {
+  TRACE_EVENT0("drm", "DrmThread::CreateBufferFromHandle");
   scoped_refptr<ui::DrmDevice> drm = device_manager_->GetDrmDevice(widget);
   DCHECK(drm);
 
@@ -202,6 +206,7 @@ void DrmThread::SchedulePageFlip(
     std::vector<DrmOverlayPlane> planes,
     SwapCompletionOnceCallback submission_callback,
     PresentationOnceCallback presentation_callback) {
+  TRACE_EVENT0("drm", "DrmThread::SchedulePageFlip");
   scoped_refptr<ui::DrmDevice> drm_device =
       device_manager_->GetDrmDevice(widget);
 
@@ -217,6 +222,7 @@ void DrmThread::OnPlanesReadyForPageFlip(
     SwapCompletionOnceCallback submission_callback,
     PresentationOnceCallback presentation_callback,
     std::vector<DrmOverlayPlane> planes) {
+  TRACE_EVENT0("drm", "DrmThread::OnPlanesReadyForPageFlip");
   DrmWindow* window = screen_manager_->GetWindow(widget);
   if (window) {
     window->SchedulePageFlip(std::move(planes), std::move(submission_callback),
@@ -228,6 +234,7 @@ void DrmThread::OnPlanesReadyForPageFlip(
 }
 
 void DrmThread::IsDeviceAtomic(gfx::AcceleratedWidget widget, bool* is_atomic) {
+  TRACE_EVENT0("drm", "DrmThread::IsDeviceAtomic");
   scoped_refptr<ui::DrmDevice> drm_device =
       device_manager_->GetDrmDevice(widget);
 
@@ -236,6 +243,7 @@ void DrmThread::IsDeviceAtomic(gfx::AcceleratedWidget widget, bool* is_atomic) {
 
 void DrmThread::CreateWindow(gfx::AcceleratedWidget widget,
                              const gfx::Rect& initial_bounds) {
+  TRACE_EVENT0("drm", "DrmThread::CreateWindow");
   DCHECK_GT(widget, last_created_window_);
   last_created_window_ = widget;
 
@@ -250,12 +258,14 @@ void DrmThread::CreateWindow(gfx::AcceleratedWidget widget,
 }
 
 void DrmThread::DestroyWindow(gfx::AcceleratedWidget widget) {
+  TRACE_EVENT0("drm", "DrmThread::DestroyWindow");
   std::unique_ptr<DrmWindow> window = screen_manager_->RemoveWindow(widget);
   window->Shutdown();
 }
 
 void DrmThread::SetWindowBounds(gfx::AcceleratedWidget widget,
                                 const gfx::Rect& bounds) {
+  TRACE_EVENT0("drm", "DrmThread::SetWindowBounds");
   screen_manager_->GetWindow(widget)->SetBounds(bounds);
 }
 
@@ -263,12 +273,14 @@ void DrmThread::SetCursor(gfx::AcceleratedWidget widget,
                           const std::vector<SkBitmap>& bitmaps,
                           const gfx::Point& location,
                           int32_t frame_delay_ms) {
+  TRACE_EVENT0("drm", "DrmThread::SetCursor");
   screen_manager_->GetWindow(widget)
       ->SetCursor(bitmaps, location, frame_delay_ms);
 }
 
 void DrmThread::MoveCursor(gfx::AcceleratedWidget widget,
                            const gfx::Point& location) {
+  TRACE_EVENT0("drm", "DrmThread::MoveCursor");
   screen_manager_->GetWindow(widget)->MoveCursor(location);
 }
 
@@ -290,6 +302,7 @@ void DrmThread::GetDeviceCursor(
 
 void DrmThread::RefreshNativeDisplays(
     base::OnceCallback<void(MovableDisplaySnapshots)> callback) {
+  TRACE_EVENT0("drm", "DrmThread::RefreshNativeDisplays");
   std::move(callback).Run(display_manager_->GetDisplays());
 }
 
@@ -298,6 +311,7 @@ void DrmThread::ConfigureNativeDisplay(
     std::unique_ptr<display::DisplayMode> mode,
     const gfx::Point& origin,
     base::OnceCallback<void(int64_t, bool)> callback) {
+  TRACE_EVENT0("drm", "DrmThread::ConfigureNativeDisplay");
   std::move(callback).Run(
       id, display_manager_->ConfigureDisplay(id, *mode, origin));
 }
@@ -305,20 +319,24 @@ void DrmThread::ConfigureNativeDisplay(
 void DrmThread::DisableNativeDisplay(
     int64_t id,
     base::OnceCallback<void(int64_t, bool)> callback) {
+  TRACE_EVENT0("drm", "DrmThread::DisableNativeDisplay");
   std::move(callback).Run(id, display_manager_->DisableDisplay(id));
 }
 
 void DrmThread::TakeDisplayControl(base::OnceCallback<void(bool)> callback) {
+  TRACE_EVENT0("drm", "DrmThread::TakeDisplayControl");
   std::move(callback).Run(display_manager_->TakeDisplayControl());
 }
 
 void DrmThread::RelinquishDisplayControl(
     base::OnceCallback<void(bool)> callback) {
+  TRACE_EVENT0("drm", "DrmThread::RelinquishDisplayControl");
   display_manager_->RelinquishDisplayControl();
   std::move(callback).Run(true);
 }
 
 void DrmThread::AddGraphicsDevice(const base::FilePath& path, base::File file) {
+  TRACE_EVENT0("drm", "DrmThread::AddGraphicsDevice");
   device_manager_->AddDrmDevice(path, std::move(file));
 
   // There might be tasks that were blocked on a DrmDevice becoming available.
@@ -326,12 +344,14 @@ void DrmThread::AddGraphicsDevice(const base::FilePath& path, base::File file) {
 }
 
 void DrmThread::RemoveGraphicsDevice(const base::FilePath& path) {
+  TRACE_EVENT0("drm", "DrmThread::RemoveGraphicsDevice");
   device_manager_->RemoveDrmDevice(path);
 }
 
 void DrmThread::GetHDCPState(
     int64_t display_id,
     base::OnceCallback<void(int64_t, bool, display::HDCPState)> callback) {
+  TRACE_EVENT0("drm", "DrmThread::GetHDCPState");
   display::HDCPState state = display::HDCP_STATE_UNDESIRED;
   bool success = display_manager_->GetHDCPState(display_id, &state);
   std::move(callback).Run(display_id, success, state);
@@ -340,12 +360,14 @@ void DrmThread::GetHDCPState(
 void DrmThread::SetHDCPState(int64_t display_id,
                              display::HDCPState state,
                              base::OnceCallback<void(int64_t, bool)> callback) {
+  TRACE_EVENT0("drm", "DrmThread::SetHDCPState");
   std::move(callback).Run(display_id,
                           display_manager_->SetHDCPState(display_id, state));
 }
 
 void DrmThread::SetColorMatrix(int64_t display_id,
                                const std::vector<float>& color_matrix) {
+  TRACE_EVENT0("drm", "DrmThread::SetColorMatrix");
   display_manager_->SetColorMatrix(display_id, color_matrix);
 }
 
@@ -353,6 +375,7 @@ void DrmThread::SetGammaCorrection(
     int64_t display_id,
     const std::vector<display::GammaRampRGBEntry>& degamma_lut,
     const std::vector<display::GammaRampRGBEntry>& gamma_lut) {
+  TRACE_EVENT0("drm", "DrmThread::SetGammaCorrection");
   display_manager_->SetGammaCorrection(display_id, degamma_lut, gamma_lut);
 }
 

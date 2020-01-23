@@ -13,6 +13,10 @@
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/browser/api/declarative_net_request/regex_rules_matcher.h"
 
+namespace content {
+class RenderFrameHost;
+}  // namespace content
+
 namespace extensions {
 
 namespace declarative_net_request {
@@ -75,6 +79,9 @@ class RulesetMatcher {
       std::vector<RequestAction>* remove_headers_actions) const;
   bool IsExtraHeadersMatcher() const;
 
+  void OnRenderFrameDeleted(content::RenderFrameHost* host);
+  void OnDidFinishNavigation(content::RenderFrameHost* host);
+
   // ID of the ruleset. Each extension can have multiple rulesets with
   // their own unique ids.
   size_t id() const { return id_; }
@@ -82,6 +89,11 @@ class RulesetMatcher {
   // Priority of the ruleset. Each extension can have multiple rulesets with
   // their own different priorities.
   size_t priority() const { return priority_; }
+
+  // Returns the tracked highest priority matching allowsAllRequests action, if
+  // any, for |host|.
+  base::Optional<RequestAction> GetAllowlistedFrameActionForTesting(
+      content::RenderFrameHost* host) const;
 
  private:
   explicit RulesetMatcher(std::string ruleset_data,
@@ -99,10 +111,10 @@ class RulesetMatcher {
 
   // Underlying matcher for filter-list style rules supported using the
   // |url_pattern_index| component.
-  const ExtensionUrlPatternIndexMatcher url_pattern_index_matcher_;
+  ExtensionUrlPatternIndexMatcher url_pattern_index_matcher_;
 
   // Underlying matcher for regex rules.
-  const RegexRulesMatcher regex_matcher_;
+  RegexRulesMatcher regex_matcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetMatcher);
 };

@@ -454,7 +454,7 @@ size_t GetQuicMaxPacketLength(const VariationParameters& quic_trial_params) {
 
 quic::ParsedQuicVersionVector GetQuicVersions(
     const VariationParameters& quic_trial_params) {
-  return network_session_configurator::ParseQuicVersions(
+  return net::ParseQuicVersions(
       GetVariationParam(quic_trial_params, "quic_version"));
 }
 
@@ -600,36 +600,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
 
 namespace network_session_configurator {
 
-quic::ParsedQuicVersionVector ParseQuicVersions(
-    const std::string& quic_versions) {
-  quic::ParsedQuicVersionVector supported_versions;
-  quic::QuicTransportVersionVector all_supported_versions =
-      quic::AllSupportedTransportVersions();
-
-  for (const base::StringPiece& version : base::SplitStringPiece(
-           quic_versions, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    auto it = all_supported_versions.begin();
-    while (it != all_supported_versions.end()) {
-      if (quic::QuicVersionToString(*it) == version) {
-        supported_versions.push_back(
-            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, *it));
-        // Remove the supported version to deduplicate versions extracted from
-        // |quic_versions|.
-        all_supported_versions.erase(it);
-        break;
-      }
-      it++;
-    }
-    for (const auto& supported_version : quic::AllSupportedVersions()) {
-      if (quic::AlpnForVersion(supported_version) == version) {
-        supported_versions.push_back(supported_version);
-        break;
-      }
-    }
-  }
-  return supported_versions;
-}
-
 void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
                                     bool is_quic_force_disabled,
                                     const std::string& quic_user_agent_id,
@@ -676,9 +646,8 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
     }
 
     if (command_line.HasSwitch(switches::kQuicVersion)) {
-      quic::ParsedQuicVersionVector supported_versions =
-          network_session_configurator::ParseQuicVersions(
-              command_line.GetSwitchValueASCII(switches::kQuicVersion));
+      quic::ParsedQuicVersionVector supported_versions = net::ParseQuicVersions(
+          command_line.GetSwitchValueASCII(switches::kQuicVersion));
       if (!supported_versions.empty())
         quic_params->supported_versions = supported_versions;
     }

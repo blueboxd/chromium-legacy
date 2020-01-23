@@ -181,9 +181,7 @@ class MockFrameHost : public mojom::FrameHost {
     }
   }
 
-  void DidFailLoadWithError(const GURL& url,
-                            int error_code,
-                            const base::string16& error_description) override {}
+  void DidFailLoadWithError(const GURL& url, int error_code) override {}
 
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override {}

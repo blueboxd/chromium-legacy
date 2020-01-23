@@ -88,8 +88,6 @@ void SnapshottingCommandStorageBackend::MoveCurrentSessionToLastSession() {
 }
 
 void SnapshottingCommandStorageBackend::DoInit() {
-  // Create the directory for session info.
-  base::CreateDirectory(last_file_path_.DirName());
   MoveCurrentSessionToLastSession();
 }
 

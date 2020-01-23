@@ -522,7 +522,6 @@ jumbo_component("platform") {
     "exported/web_network_state_notifier.cc",
     "exported/web_prerender.cc",
     "exported/web_prerendering_support.cc",
-    "exported/web_resource_timing_info.cc",
     "exported/web_runtime_features.cc",
     "exported/web_security_origin.cc",
     "exported/web_string.cc",
@@ -533,7 +532,6 @@ jumbo_component("platform") {
     "exported/web_time_range.cc",
     "exported/web_url.cc",
     "exported/web_url_error.cc",
-    "exported/web_url_load_timing.cc",
     "exported/web_url_loader_client.cc",
     "exported/web_url_loader_test_delegate.cc",
     "exported/web_url_request.cc",
@@ -1118,6 +1116,7 @@ jumbo_component("platform") {
     "graphics/subtree_paint_property_update_reason.h",
     "graphics/surface_layer_bridge.cc",
     "graphics/surface_layer_bridge.h",
+    "graphics/texture_holder.cc",
     "graphics/texture_holder.h",
     "graphics/touch_action.h",
     "graphics/unaccelerated_static_bitmap_image.cc",
@@ -2231,7 +2230,6 @@ jumbo_source_set("unit_tests") {
     "graphics/test/stub_image.h",
 
     # Tests migrated from the web/tests directory.
-    "exported/web_resource_timing_info_test.cc",
     "exported/web_url_request_test.cc",
     "exported/web_url_response_test.cc",
     "timer_perf_test.cc",

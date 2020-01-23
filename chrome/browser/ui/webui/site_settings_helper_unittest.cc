@@ -236,9 +236,17 @@ TEST_F(SiteSettingsHelperTest, ContentSettingSource) {
 namespace {
 
 // Test GURLs
-const GURL kGoogleUrl("https://google.com");
-const GURL kChromiumUrl("https://chromium.org");
-const GURL kAndroidUrl("https://android.com");
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL GoogleUrl() {
+  return GURL("https://google.com");
+}
+GURL ChromiumUrl() {
+  return GURL("https://chromium.org");
+}
+GURL AndroidUrl() {
+  return GURL("https://android.com");
+}
 
 void ExpectValidChooserExceptionObject(
     const base::Value& actual_exception_object,
@@ -331,8 +339,8 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
 
   // Add a user permission for a requesting origin of |kGoogleOrigin| and an
   // embedding origin of |kChromiumOrigin|.
-  exception_details[std::make_pair(kGoogleUrl.GetOrigin(), kPreferenceSource)]
-      .insert(std::make_pair(kChromiumUrl.GetOrigin(), /*incognito=*/false));
+  exception_details[std::make_pair(GoogleUrl().GetOrigin(), kPreferenceSource)]
+      .insert(std::make_pair(ChromiumUrl().GetOrigin(), /*incognito=*/false));
 
   {
     auto exception = CreateChooserExceptionObject(
@@ -346,16 +354,16 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
 
     const auto& sites_list = exception.FindKey(kSites)->GetList();
     ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[0],
-                                   /*origin=*/kGoogleUrl,
-                                   /*embedding_origin=*/kChromiumUrl,
+                                   /*origin=*/GoogleUrl(),
+                                   /*embedding_origin=*/ChromiumUrl(),
                                    /*source=*/kPreferenceSource,
                                    /*incognito=*/false);
   }
 
   // Add a user permissions for a requesting and embedding origin pair of
   // |kAndroidOrigin| granted in an off the record profile.
-  exception_details[std::make_pair(kAndroidUrl.GetOrigin(), kPreferenceSource)]
-      .insert(std::make_pair(kAndroidUrl.GetOrigin(), /*incognito=*/true));
+  exception_details[std::make_pair(AndroidUrl().GetOrigin(), kPreferenceSource)]
+      .insert(std::make_pair(AndroidUrl().GetOrigin(), /*incognito=*/true));
 
   {
     auto exception = CreateChooserExceptionObject(
@@ -372,20 +380,20 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
     // be first, followed by the origin pair (kGoogleOrigin, kChromiumOrigin).
     const auto& sites_list = exception.FindKey(kSites)->GetList();
     ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[0],
-                                   /*origin=*/kAndroidUrl,
-                                   /*embedding_origin=*/kAndroidUrl,
+                                   /*origin=*/AndroidUrl(),
+                                   /*embedding_origin=*/AndroidUrl(),
                                    /*source=*/kPreferenceSource,
                                    /*incognito=*/true);
     ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[1],
-                                   /*origin=*/kGoogleUrl,
-                                   /*embedding_origin=*/kChromiumUrl,
+                                   /*origin=*/GoogleUrl(),
+                                   /*embedding_origin=*/ChromiumUrl(),
                                    /*source=*/kPreferenceSource,
                                    /*incognito=*/false);
   }
 
   // Add a policy permission for a requesting origin of |kGoogleOrigin| with a
   // wildcard embedding origin.
-  exception_details[std::make_pair(kGoogleUrl.GetOrigin(), kPolicySource)]
+  exception_details[std::make_pair(GoogleUrl().GetOrigin(), kPolicySource)]
       .insert(std::make_pair(GURL::EmptyGURL(), /*incognito=*/false));
   {
     auto exception = CreateChooserExceptionObject(
@@ -404,18 +412,18 @@ TEST_F(SiteSettingsHelperTest, CreateChooserExceptionObject) {
     // sites.
     const auto& sites_list = exception.FindKey(kSites)->GetList();
     ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[0],
-                                   /*origin=*/kGoogleUrl,
+                                   /*origin=*/GoogleUrl(),
                                    /*embedding_origin=*/GURL::EmptyGURL(),
                                    /*source=*/kPolicySource,
                                    /*incognito=*/false);
     ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[1],
-                                   /*origin=*/kAndroidUrl,
-                                   /*embedding_origin=*/kAndroidUrl,
+                                   /*origin=*/AndroidUrl(),
+                                   /*embedding_origin=*/AndroidUrl(),
                                    /*source=*/kPreferenceSource,
                                    /*incognito=*/true);
     ExpectValidSiteExceptionObject(/*actual_site_object=*/sites_list[2],
-                                   /*origin=*/kGoogleUrl,
-                                   /*embedding_origin=*/kChromiumUrl,
+                                   /*origin=*/GoogleUrl(),
+                                   /*embedding_origin=*/ChromiumUrl(),
                                    /*source=*/kPreferenceSource,
                                    /*incognito=*/false);
   }
@@ -466,9 +474,9 @@ class SiteSettingsHelperChooserExceptionTest : public testing::Test {
         base::DoNothing::Once<std::vector<device::mojom::UsbDeviceInfoPtr>>());
     base::RunLoop().RunUntilIdle();
 
-    const auto kAndroidOrigin = url::Origin::Create(kAndroidUrl);
-    const auto kChromiumOrigin = url::Origin::Create(kChromiumUrl);
-    const auto kGoogleOrigin = url::Origin::Create(kGoogleUrl);
+    const auto kAndroidOrigin = url::Origin::Create(AndroidUrl());
+    const auto kChromiumOrigin = url::Origin::Create(ChromiumUrl());
+    const auto kGoogleOrigin = url::Origin::Create(GoogleUrl());
 
     // Add the user granted permissions for testing.
     // These two persistent device permissions should be lumped together with
@@ -540,8 +548,8 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
     const auto& sites_list = exception.FindKey(kSites)->GetList();
     ASSERT_EQ(sites_list.size(), 1u);
     ExpectValidSiteExceptionObject(sites_list[0],
-                                   /*origin=*/kGoogleUrl,
-                                   /*embedding_origin=*/kAndroidUrl,
+                                   /*origin=*/GoogleUrl(),
+                                   /*embedding_origin=*/AndroidUrl(),
                                    /*source=*/kPolicySource,
                                    /*incognito=*/false);
   }
@@ -558,8 +566,8 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
     const auto& sites_list = exception.FindKey(kSites)->GetList();
     ASSERT_EQ(sites_list.size(), 1u);
     ExpectValidSiteExceptionObject(sites_list[0],
-                                   /*origin=*/kGoogleUrl,
-                                   /*embedding_origin=*/kGoogleUrl,
+                                   /*origin=*/GoogleUrl(),
+                                   /*embedding_origin=*/GoogleUrl(),
                                    /*source=*/kPolicySource,
                                    /*incognito=*/false);
   }
@@ -577,7 +585,7 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
     const auto& sites_list = exception.FindKey(kSites)->GetList();
     ASSERT_EQ(sites_list.size(), 1u);
     ExpectValidSiteExceptionObject(sites_list[0],
-                                   /*origin=*/kAndroidUrl,
+                                   /*origin=*/AndroidUrl(),
                                    /*source=*/kPolicySource,
                                    /*incognito=*/false);
   }
@@ -602,12 +610,12 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
     const auto& sites_list = exception.FindKey(kSites)->GetList();
     ASSERT_EQ(sites_list.size(), 2u);
     ExpectValidSiteExceptionObject(sites_list[0],
-                                   /*origin=*/kChromiumUrl,
+                                   /*origin=*/ChromiumUrl(),
                                    /*source=*/kPolicySource,
                                    /*incognito=*/false);
     ExpectValidSiteExceptionObject(sites_list[1],
-                                   /*origin=*/kAndroidUrl,
-                                   /*embedding_origin=*/kChromiumUrl,
+                                   /*origin=*/AndroidUrl(),
+                                   /*embedding_origin=*/ChromiumUrl(),
                                    /*source=*/kPreferenceSource,
                                    /*incognito=*/false);
   }

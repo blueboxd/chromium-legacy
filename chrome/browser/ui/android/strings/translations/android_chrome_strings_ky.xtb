@@ -668,6 +668,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="605721222689873409">ЖЖ</translation>
 <translation id="6064125863973209585">Жүктөлүп алынгандар</translation>
 <translation id="6075798973483050474">Башкы бетти түзөтүү</translation>
+<translation id="6092062101542170135">Улантуу үчүн Android жөндөөлөрүнөн NFC'ни күйгүзүңүз</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> саат калды</translation>
 <translation id="6108923351542677676">Орнотулуп жатат…</translation>
 <translation id="6111020039983847643">колдонулган дайындар</translation>
@@ -756,6 +757,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6659594942844771486">Өтмөк</translation>
 <translation id="666731172850799929">Төмөнкүдө ачуу <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Chrome Купуялуулук эскертмеси</translation>
+<translation id="6671495933530132209">Сүрөттү көчүрүү</translation>
 <translation id="6676840375528380067">Chrome'догу дайын-даректериңиз бул түзмөктөн өчүрүлсүнбү?</translation>
 <translation id="6689172468748959065">Профилдин сүрөттөрү</translation>
 <translation id="6697492270171225480">Барак табылбай жатканда окшош барактар сунушталсын</translation>
@@ -1009,7 +1011,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="8569404424186215731"><ph name="DATE" /> бери</translation>
 <translation id="8571213806525832805">Акыркы 4 апта</translation>
 <translation id="857943718398505171">Уруксат берилген (сунушталат)</translation>
-<translation id="8583805026567836021">Каттоо эсебинин дайындары тазаланууда</translation>
+<translation id="8583805026567836021">Аккаунттун дайындары тазаланууда</translation>
 <translation id="860043288473659153">Карта ээсинин аты</translation>
 <translation id="8616006591992756292">Google аккаунтуңуздун серептөө таржымалынын башка түрлөрү <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> дарегинде болушу мүмкүн.</translation>
 <translation id="8617240290563765734">Жүктөлүп алынган мазмунда белгиленип сунушталган URL ачылсынбы?</translation>

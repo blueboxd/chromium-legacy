@@ -23,20 +23,16 @@ async_test(t => {
 
   // Post tasks in reverse priority order and expect they are run from highest
   // to lowest priority.
-  scheduleReportTask('E1', 'idle');
-  scheduleReportTask('E2', 'idle');
-  scheduleReportTask('L1', 'low');
-  scheduleReportTask('L2', 'low');
-  scheduleReportTask('D1', 'default');
-  scheduleReportTask('D2', 'default');
-  scheduleReportTask('H1', 'high');
-  scheduleReportTask('H2', 'high');
-  scheduleReportTask('I1', 'immediate');
-  scheduleReportTask('I2', 'immediate');
+  scheduleReportTask('B1', 'background');
+  scheduleReportTask('B2', 'background');
+  scheduleReportTask('UV1', 'user-visible');
+  scheduleReportTask('UV2', 'user-visible');
+  scheduleReportTask('UB1', 'user-blocking');
+  scheduleReportTask('UB2', 'user-blocking');
 
   scheduler.postTask(t.step_func_done(() => {
-    assert_equals(result, 'I1 I2 H1 H2 D1 D2 L1 L2 E1 E2');
-  }), { priority: 'idle' });
+    assert_equals(result, 'UB1 UB2 UV1 UV2 B1 B2');
+  }), { priority: 'background' });
 }, 'Test scheduler.postTask task run in priority order');
 
 </script>

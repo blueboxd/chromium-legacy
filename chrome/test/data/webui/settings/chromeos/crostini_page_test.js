@@ -300,12 +300,14 @@ suite('CrostiniPageTests', function() {
 
     test('Sanity', function() {
       assertEquals(
-          2, subpage.shadowRoot.querySelectorAll('.settings-box').length);
+          3, subpage.shadowRoot.querySelectorAll('.settings-box').length);
       assertEquals(2, subpage.shadowRoot.querySelectorAll('.list-item').length);
     });
 
     test('Remove', function() {
       assertFalse(subpage.$.crostiniInstructionsRemove.hidden);
+      assertFalse(subpage.$.crostiniList.hidden);
+      assertTrue(subpage.$.crostiniListEmpty.hidden);
       assertTrue(!!subpage.$$('.list-item cr-icon-button'));
       // Remove first shared path, still one left.
       subpage.$$('.list-item cr-icon-button').click();
@@ -337,8 +339,11 @@ suite('CrostiniPageTests', function() {
             Polymer.dom.flush();
             assertEquals(
                 0, subpage.shadowRoot.querySelectorAll('.list-item').length);
-            // Verify remove instructions are hidden.
+            // Verify remove instructions are hidden, and empty list message
+            // is shown.
             assertTrue(subpage.$.crostiniInstructionsRemove.hidden);
+            assertTrue(subpage.$.crostiniList.hidden);
+            assertFalse(subpage.$.crostiniListEmpty.hidden);
           });
     });
   });

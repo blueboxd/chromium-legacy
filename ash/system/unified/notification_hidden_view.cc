@@ -37,10 +37,9 @@ void ShowLockScreenNotificationSettings() {
 
 NotificationHiddenView::NotificationHiddenView() {
   auto* label = new views::Label;
-  label->SetEnabledColor(
-      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-          AshColorProvider::ContentLayerType::kTextPrimary,
-          kUnifiedMenuTextColor));
+  label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextPrimary,
+      AshColorProvider::AshColorMode::kDark));
   label->SetAutoColorReadabilityEnabled(false);
   label->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_UNIFIED));

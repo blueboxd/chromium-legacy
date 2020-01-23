@@ -651,7 +651,7 @@
 <translation id="1879000426787380528">Conectează-te ca</translation>
 <translation id="1880905663253319515">Șterge certificatul „<ph name="CERTIFICATE_NAME" />”?</translation>
 <translation id="1884013283844450420">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, conectează-te</translation>
-<translation id="1884930769492918228">Să urmărească poziția camerei video și să-ți mapeze camera</translation>
+<translation id="1884930769492918228">să urmărească poziția camerei video și să-ți mapeze camera</translation>
 <translation id="1886996562706621347">Permiteți site-urilor să solicite să devină handlere prestabilite pentru protocoale (recomandat)</translation>
 <translation id="1887442540531652736">Eroare de conectare</translation>
 <translation id="1887597546629269384">Rostește din nou „Hei Google"</translation>
@@ -5023,7 +5023,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8101987792947961127">Este necesară lansarea Powerwash la următoarea repornire</translation>
 <translation id="8102159139658438129">Accesează <ph name="LINK_BEGIN" />Setări<ph name="LINK_END" /> ca să vezi opțiunile pentru telefonul conectat</translation>
 <translation id="8104696615244072556">Folosește Powerwash pe dispozitivul <ph name="IDS_SHORT_PRODUCT_NAME" /> și revino la versiunea anterioară.</translation>
-<translation id="8106661353233173262">A apărut o eroare. Fișierul scanat a expirat.</translation>
 <translation id="8107015733319732394">Se instalează Magazinul Google Play pe dispozitivul <ph name="DEVICE_TYPE" />. Ar putea dura câteva minute.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Niciun cookie terță parte}=1{Un cookie terță parte este blocat}few{# cookie-uri terță parte sunt blocate}other{# de cookie-uri terță parte sunt blocate}}</translation>
 <translation id="810875025413331850">Nu a fost găsit niciun dispozitiv în apropiere.</translation>

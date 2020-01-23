@@ -17,7 +17,7 @@ String GetViolationMessage(const CSSProperty& property) {
       "Feature policy violation: CSS property '%s' violates feature policy "
       "'%s' which is disabled in this document",
       property.GetPropertyNameString().Utf8().c_str(),
-      GetNameForFeature(mojom::FeaturePolicyFeature::kLayoutAnimations)
+      GetNameForFeature(mojom::blink::FeaturePolicyFeature::kLayoutAnimations)
           .Utf8()
           .c_str());
 }
@@ -40,9 +40,9 @@ void LayoutAnimationsPolicy::ReportViolation(
     const CSSProperty& animated_property,
     const ExecutionContext& context) {
   DCHECK(AffectedCSSProperties().Contains(&animated_property));
-  context.IsFeatureEnabled(mojom::FeaturePolicyFeature::kLayoutAnimations,
-                           ReportOptions::kReportOnFailure,
-                           GetViolationMessage(animated_property));
+  context.IsFeatureEnabled(
+      mojom::blink::FeaturePolicyFeature::kLayoutAnimations,
+      ReportOptions::kReportOnFailure, GetViolationMessage(animated_property));
 }
 
 }  // namespace blink

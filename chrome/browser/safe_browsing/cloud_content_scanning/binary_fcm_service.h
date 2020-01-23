@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_BINARY_FCM_SERVICE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_BINARY_FCM_SERVICE_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
@@ -43,8 +44,11 @@ class BinaryFCMService : public gcm::GCMAppHandler {
       base::OnceCallback<void(const std::string& token)>;
   using OnMessageCallback =
       base::RepeatingCallback<void(DeepScanningClientResponse)>;
+  using UnregisterInstanceIDCallback = base::OnceCallback<void(bool)>;
 
   virtual void GetInstanceID(GetInstanceIDCallback callback);
+  virtual void UnregisterInstanceID(const std::string& token,
+                                    UnregisterInstanceIDCallback callback);
   void SetCallbackForToken(const std::string& token,
                            OnMessageCallback callback);
   void ClearCallbackForToken(const std::string& token);
@@ -72,6 +76,10 @@ class BinaryFCMService : public gcm::GCMAppHandler {
   void OnGetInstanceID(GetInstanceIDCallback callback,
                        const std::string& instance_id,
                        instance_id::InstanceID::Result result);
+
+  void OnInstanceIDUnregistered(const std::string& token,
+                                UnregisterInstanceIDCallback callback,
+                                instance_id::InstanceID::Result result);
 
   // References to the profile's GCMDriver and InstanceIDDriver. Both are
   // unowned.

@@ -760,6 +760,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
           "<ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />" hat Vorrang vor dieser Richtlinie. Eine Erweiterung auf der schwarzen Liste wird folglich nicht installiert, auch wenn sie von einer Website auf dieser Liste stammt.</translation>
 <translation id="214901426630414675">Duplexdruck einschränken</translation>
 <translation id="2149330464730004005">Farbdruck einschränken</translation>
+<translation id="2151831603578119302">Tastenkombinationen für Bedienungshilfen aktivieren</translation>
 <translation id="2156132677421487971">Konfigurieren von Richtlinien für <ph name="PRODUCT_NAME" />, ein Tool, mit dem Nutzer Inhalte von Tabs, Websites oder dem Desktop von einem Browser auf andere Bildschirme und Soundsysteme übertragen können.</translation>
 <translation id="2156755242840687300">Externe Druckserver aktiviert</translation>
 <translation id="2160336427036785721">Diese Richtlinie legt fest, wie viel Arbeitsspeicher eine einzelne Instanz von <ph name="PRODUCT_NAME" /> verbrauchen darf, bevor Tabs verworfen werden, um Arbeitsspeicher zu leeren. Der vom jeweiligen Tab verbrauchte Arbeitsspeicher wird freigegeben und der Tab muss neu geladen werden, wenn er wieder aufgerufen wird.
@@ -873,6 +874,7 @@ Diese Richtlinie gilt auch für Komponentenerweiterungen, zum Beispiel die Hango
 <translation id="2294382669900758280">Das Abspielen von Videos in Android-Apps wird nicht berücksichtigt, auch wenn diese Richtlinie auf <ph name="TRUE" /> gesetzt ist.</translation>
 <translation id="2299220924812062390">Liste der aktivierten Plug-ins angeben</translation>
 <translation id="2303795211377219696">AutoFill für Kreditkarten aktivieren</translation>
+<translation id="2307496301287881990">Status von Display und Grafikkarte melden</translation>
 <translation id="2309390639296060546">Standardeinstellung für "Standortbestimmung"</translation>
 <translation id="2327252517317514801">Domains definieren, die auf die G Suite zugreifen dürfen</translation>
 <translation id="2328573323851533589">Mit dieser Richtlinie kann die Aktivierung oder Deaktivierung der Datenleckprüfung für Anmeldedaten in <ph name="PRODUCT_NAME" /> erzwungen werden.
@@ -1126,6 +1128,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Wenn die Richtlinie deaktiviert oder nicht konfiguriert ist, werden für die Anmeldeseite die standardmäßigen Plattformeinstellungen für die Website-Isolierung verwendet.
       </translation>
 <translation id="2587719089023392205"><ph name="PRODUCT_NAME" /> als Standardbrowser festlegen</translation>
+<translation id="2588071938417715443">Diese Richtlinie definiert den Zugriff auf steuerbare Funktionen in der Benutzeroberfläche der lokalen Erkennung (<ph name="CHROME_DEVICES_LINK" />), die sichtbare Geräte in der Umgebung des Nutzers und dessen registrierte Cloud-Geräte zeigt. Unter allen Betriebssystemen (mit Ausnahme von <ph name="PRODUCT_OS_NAME" />) können Nutzer über die Benutzeroberfläche für die lokale Erkennung <ph name="CLOUD_PRINT_NAME" /> auch klassische Drucker hinzufügen, die ihren Computern zugeordnet sind.</translation>
 <translation id="2592091433672667839">Dauer der Inaktivität, bevor im Händlermodus der Bildschirmschoner auf der Anmeldeseite erscheint</translation>
 <translation id="2592162121850992309">Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, wird die Hardwarebeschleunigung aktiviert, sofern eine bestimmte GPU-Funktion nicht auf die schwarze Liste gesetzt wurde.
 
@@ -1368,19 +1371,6 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 <translation id="2960691910306063964">Authentifizierung ohne PIN für Hosts für den Remotezugriff aktivieren oder deaktivieren</translation>
 <translation id="2987155890997901449">ARC aktivieren</translation>
 <translation id="2987227569419001736">Verwendung der Web Bluetooth API steuern</translation>
-<translation id="3011301228198307065">Hiermit wird die Standard-URL für die Startseite in <ph name="PRODUCT_NAME" /> konfiguriert und verhindert, dass diese von Nutzern geändert werden kann.
-
-          Die Startseite wird über die Schaltfläche "Startseite" geöffnet. Die Seiten, die beim Hochfahren geöffnet werden, werden über die Richtlinien "RestoreOnStartup" kontrolliert.
-
-          Der Startseitentyp kann entweder auf eine URL, die Sie hier angeben, oder auf die "Neuer Tab"-Seite eingestellt werden. Wenn Sie sich für die "Neuer Tab"-Seite entscheiden, wird diese Richtlinie nicht angewendet.
-
-          Wenn Sie diese Einstellung aktivieren, können Nutzer ihre Startseiten-URL in <ph name="PRODUCT_NAME" /> nicht ändern, jedoch weiterhin ihre Startseite auf die "Neuer Tab"-Seite umstellen.
-
-          Ist diese Richtlinie nicht konfiguriert, können die Nutzer selbst eine Startseite wählen, sofern "HomepageIsNewTabPage" ebenfalls nicht konfiguriert ist.
-
-          Die URL muss ein Standardschema haben, z. B. "http://example.com" oder "https://example.com".
-
-          Diese Richtlinie steht nur bei Windows-Instanzen zur Verfügung, die Teil einer <ph name="MS_AD_NAME" />-Domain sind, oder bei Windows 10 Pro- oder Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
 <translation id="3016255526521614822">Auf dem <ph name="PRODUCT_OS_NAME" />-Sperrbildschirm zulässige Notizen-Apps auf die weiße Liste setzen</translation>
 <translation id="3020064401262077616">Legt die Richtlinien für die Elternaufsicht fest. Diese werden nur auf Kinderkonten angewendet.</translation>
 <translation id="3021562480854470924">Rollback bei erreichter Anzahl von Meilensteinen ist erlaubt</translation>
@@ -2866,6 +2856,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
       Wenn die VPN-Verbindung innerhalb einer VPN-App erstellt wird, hat diese Richtlinie keine Auswirkungen auf die Benutzeroberfläche der App. So könnte der Nutzer die App auch weiterhin zum Modifizieren der VPN-Verbindung verwenden.
 
       Diese Richtlinie soll gemeinsam mit der Funktion "Durchgehend aktives VPN" verwendet werden, mit der der Administrator festlegen kann, ob beim Start eine VPN-Verbindung hergestellt werden soll.</translation>
+<translation id="5401696449591951427"><ph name="CHROME_DEVICES_LINK" /> aktivieren</translation>
 <translation id="5405289061476885481">Konfiguriert, welche Tastaturlayouts auf der <ph name="PRODUCT_OS_NAME" />-Anmeldeseite erlaubt sind.
 
       Ist für diese Richtlinie eine Liste mit IDs für Eingabemethoden festgelegt, werden die entsprechenden Eingabemethoden auf der Anmeldeseite bereitgestellt. Das oberste Listenelement ist vorab ausgewählt. Während bestimmte Nutzerdaten auf der Anmeldeseite markiert sind, wird zusätzlich zu den von dieser Richtlinie bereitgestellten Eingabemethoden auch die vom Nutzer zuletzt verwendete angeboten. Ist diese Richtlinie nicht konfiguriert, werden die Eingabemethoden auf der Anmeldeseite von der Sprache der Anmeldeseite abgeleitet. Werte, die keine gültigen IDs für Eingabemethoden sind, werden ignoriert.</translation>
@@ -3124,6 +3115,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
           Wenn die Richtlinie nicht konfiguriert ist, wird das Gerät standardmäßig gesperrt.
 
           Falls das Gerät gesperrt werden soll, kann separat konfiguriert werden, ob <ph name="PRODUCT_OS_NAME" /> den Bildschirm vorher sperren soll oder nicht.</translation>
+<translation id="574983287620584622">Tastenkombinationen für Bedienungshilfen auf dem Anmeldebildschirm aktivieren</translation>
 <translation id="5755002458331714762"> Die Web Components v0 APIs (Shadow DOM v0, Custom Elements v0 und HTML Imports) wurden 2018 eingestellt und ab M80 standardmäßig deaktiviert. Mit dieser Richtlinie lassen sich die Funktionen selektiv bis M84 wieder aktivieren.
 
       Wenn die Richtlinie auf "True" gesetzt ist, sind die Funktionen von Web Components v0 für alle Websites aktiviert.
@@ -4250,6 +4242,15 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
       Ist die Richtlinie auf "false" gestellt, werden keine Safe Browsing-Daten erhoben.
 
       Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät bei <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
+<translation id="777734450201217641">Mit dieser Richtlinie aktivieren Sie auf dem Anmeldebildschirm die Tastenkombinationen für Bedienungshilfen.
+
+          Wenn diese Richtlinie auf "true" gesetzt ist, werden die Tastenkombinationen für Bedienungshilfen auf dem Anmeldebildschirm immer aktiviert.
+
+          Wenn diese Richtlinie auf "false" gesetzt ist, werden die Tastenkombinationen für Bedienungshilfen auf dem Anmeldebildschirm immer deaktiviert.
+
+          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+          Wird sie nicht konfiguriert, werden die Tastenkombinationen für Bedienungshilfen auf dem Anmeldebildschirm standardmäßig aktiviert.</translation>
 <translation id="7777535871204167559">Externe Speichergeräte nur schreibgeschützt verwenden</translation>
 <translation id="7788511847830146438">Nach Profil</translation>
 <translation id="7792973482799545782">Keiner Website das Laden von blockierbaren gemischten Inhalten erlauben</translation>
@@ -4652,6 +4653,15 @@ Die Richtlinie wird in M75 entfernt.</translation>
 
       Achtung: Die Konfiguration von Versionsbeschränkungen wird nicht empfohlen, da Nutzer dann unter Umständen Softwareupdates und wichtige Sicherheitspatches nicht erhalten. Bei Beschränkung von Updates auf ein bestimmtes Versionspräfix besteht eventuell ein Risiko für die Nutzer.</translation>
 <translation id="8519264904050090490">Manuell festgelegte Ausnahme-URLs für verwalteten Nutzer</translation>
+<translation id="8519516251436131647">Mit dieser Richtlinie aktivieren Sie die Tastenkombinationen für Bedienungshilfen.
+
+          Wenn diese Richtlinie auf "true" gesetzt ist, sind die Tastenkombinationen für Bedienungshilfen immer aktiviert.
+
+          Wenn diese Richtlinie auf "false" gesetzt ist, sind die Tastenkombinationen für Bedienungshilfen immer deaktiviert.
+
+          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
+
+          Wird sie nicht konfiguriert, sind die Tastenkombinationen für Bedienungshilfen standardmäßig aktiviert.</translation>
 <translation id="8525526490824335042">Linux-Container</translation>
 <translation id="8538235451413605457">Konfiguriert die Anforderung an die zulässige Mindestversion von <ph name="PRODUCT_NAME" />. Versionen unter dem angegebenen Wert werden als veraltet angesehen und der Nutzer kann sich erst anmelden, nachdem das Betriebssystem aktualisiert wurde.
       Wenn die aktuelle Version sich während einer Nutzersitzung als veraltet herausstellt, wird die Abmeldung des Nutzers erzwungen.
@@ -4880,6 +4890,12 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 
           Ist diese Richtlinie nicht konfiguriert, wird "PromptOnAccess" verwendet und der Nutzer kann diese Einstellung ändern.</translation>
 <translation id="8911348623012274122">Mit dieser Richtlinie können Sie ein Limit für die Arbeitsspeichernutzung von Chrome festlegen</translation>
+<translation id="8911736066340032670">Mit dieser Richtlinie melden Sie Informationen rund um das Display, wie etwa die Aktualisierungsrate, sowie
+      Informationen im Zusammenhang mit der Grafikkarte, wie beispielsweise die Treiberversion.
+
+      Wenn diese Richtlinie auf "false" gesetzt oder nicht konfiguriert ist, wird der
+      Status von Display und Grafikkarte nicht gemeldet. Ist die Richtlinie auf "true" gesetzt, wird der
+      Status von Display und Grafikkarte gemeldet.</translation>
 <translation id="891435090623616439">Als JSON-String codiert, weitere Informationen unter <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Nutzern erlauben, installierte CA-Zertifikate zu verwalten.</translation>
 <translation id="8926275581598789324">Diese Richtlinie ist veraltet und wird in Version 82 von <ph name="PRODUCT_OS_NAME" /> entfernt. Bitte verwenden Sie stattdessen die Richtlinie "<ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />".

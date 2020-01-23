@@ -47,6 +47,9 @@
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
 #include "chrome/renderer/extensions/file_manager_private_custom_bindings.h"
 #include "chrome/renderer/extensions/platform_keys_natives.h"
+#if defined(USE_CUPS)
+#include "chrome/renderer/extensions/printing_hooks_delegate.h"
+#endif
 #endif
 
 using extensions::NativeHandler;
@@ -271,4 +274,8 @@ void ChromeExtensionsDispatcherDelegate::InitializeBindingsSystem(
   bindings->GetHooksForAPI("accessibilityPrivate")
       ->SetDelegate(
           std::make_unique<extensions::AccessibilityPrivateHooksDelegate>());
+#if defined(OS_CHROMEOS) && defined(USE_CUPS)
+  bindings->GetHooksForAPI("printing")
+      ->SetDelegate(std::make_unique<extensions::PrintingHooksDelegate>());
+#endif
 }

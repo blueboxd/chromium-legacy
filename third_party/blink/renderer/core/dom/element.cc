@@ -2736,12 +2736,9 @@ Node::InsertionNotificationRequest Element::InsertedInto(
     if (ElementIntersectionObserverData* observer_data =
             rare_data->IntersectionObserverData()) {
       observer_data->InvalidateCachedRects();
-      if (observer_data->IsTargetOfImplicitRootObserver() ||
-          observer_data->IsRoot()) {
-        GetDocument().EnsureIntersectionObserverController().AddTrackedElement(
-            *this, observer_data->NeedsOcclusionTracking());
-      }
-      if (observer_data->IsTarget() || observer_data->IsRoot()) {
+      observer_data->TrackWithController(
+          GetDocument().EnsureIntersectionObserverController());
+      if (!observer_data->IsEmpty()) {
         if (LocalFrameView* frame_view = GetDocument().View()) {
           frame_view->SetIntersectionObservationState(
               LocalFrameView::kRequired);
@@ -2847,8 +2844,8 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
           IntersectionObservation::kExplicitRootObserversNeedUpdate |
           IntersectionObservation::kImplicitRootObserversNeedUpdate |
           IntersectionObservation::kIgnoreDelay);
-      GetDocument().EnsureIntersectionObserverController().RemoveTrackedElement(
-          *this);
+      data->IntersectionObserverData()->StopTrackingWithController(
+          GetDocument().EnsureIntersectionObserverController());
     }
 
     if (auto* context = data->GetDisplayLockContext())
@@ -4752,18 +4749,6 @@ ElementIntersectionObserverData* Element::IntersectionObserverData() const {
 
 ElementIntersectionObserverData& Element::EnsureIntersectionObserverData() {
   return EnsureElementRareData().EnsureIntersectionObserverData();
-}
-
-bool Element::ComputeIntersectionsForLifecycleUpdate(unsigned flags) {
-  if (ElementIntersectionObserverData* data = IntersectionObserverData())
-    return data->ComputeIntersectionsForLifecycleUpdate(flags);
-  return false;
-}
-
-bool Element::NeedsOcclusionTracking() const {
-  if (ElementIntersectionObserverData* data = IntersectionObserverData())
-    return data->NeedsOcclusionTracking();
-  return false;
 }
 
 HeapHashMap<Member<ResizeObserver>, Member<ResizeObservation>>*

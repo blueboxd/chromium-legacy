@@ -265,7 +265,6 @@ ToRtpParameters(const RTCRtpSendParameters* parameters) {
 
 webrtc::RtpEncodingParameters ToRtpEncodingParameters(
     const RTCRtpEncodingParameters* encoding) {
-  // TODO(orphis): Forward missing field: maxFramerate.
   webrtc::RtpEncodingParameters webrtc_encoding;
   if (encoding->hasRid()) {
     webrtc_encoding.rid = encoding->rid().Utf8();
@@ -280,6 +279,9 @@ webrtc::RtpEncodingParameters ToRtpEncodingParameters(
   if (encoding->hasScaleResolutionDownBy()) {
     webrtc_encoding.scale_resolution_down_by =
         encoding->scaleResolutionDownBy();
+  }
+  if (encoding->hasMaxFramerate()) {
+    webrtc_encoding.max_framerate = encoding->maxFramerate();
   }
   // https://w3c.github.io/webrtc-svc/
   if (encoding->hasScalabilityMode()) {
@@ -389,7 +391,6 @@ RTCRtpSendParameters* RTCRtpSender::getParameters() {
   encodings.ReserveCapacity(
       SafeCast<wtf_size_t>(webrtc_parameters->encodings.size()));
   for (const auto& webrtc_encoding : webrtc_parameters->encodings) {
-    // TODO(orphis): Forward missing field: maxFramerate.
     RTCRtpEncodingParameters* encoding = RTCRtpEncodingParameters::Create();
     if (!webrtc_encoding.rid.empty()) {
       encoding->setRid(String::FromUTF8(webrtc_encoding.rid));
@@ -401,6 +402,9 @@ RTCRtpSendParameters* RTCRtpSender::getParameters() {
     if (webrtc_encoding.scale_resolution_down_by) {
       encoding->setScaleResolutionDownBy(
           webrtc_encoding.scale_resolution_down_by.value());
+    }
+    if (webrtc_encoding.max_framerate) {
+      encoding->setMaxFramerate(webrtc_encoding.max_framerate.value());
     }
     encoding->setPriority(
         PriorityFromDouble(webrtc_encoding.bitrate_priority).c_str());

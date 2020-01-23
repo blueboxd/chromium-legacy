@@ -328,7 +328,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   // enable the feature for all origins.
   if (AllowFullscreen()) {
     bool policy_changed = AllowFeatureEverywhereIfNotPresent(
-        mojom::FeaturePolicyFeature::kFullscreen, container_policy);
+        mojom::blink::FeaturePolicyFeature::kFullscreen, container_policy);
     if (!policy_changed && messages) {
       messages->push_back(
           "Allow attribute will take precedence over 'allowfullscreen'.");
@@ -338,7 +338,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   // set, enable the feature for all origins.
   if (AllowPaymentRequest()) {
     bool policy_changed = AllowFeatureEverywhereIfNotPresent(
-        mojom::FeaturePolicyFeature::kPayment, container_policy);
+        mojom::blink::FeaturePolicyFeature::kPayment, container_policy);
     if (!policy_changed && messages) {
       messages->push_back(
           "Allow attribute will take precedence over 'allowpaymentrequest'.");

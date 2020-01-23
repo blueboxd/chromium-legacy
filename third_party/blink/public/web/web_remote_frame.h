@@ -31,7 +31,6 @@ class WebString;
 class WebView;
 struct WebIntrinsicSizingInfo;
 struct WebRect;
-struct WebResourceTimingInfo;
 struct WebScrollIntoViewParams;
 
 class WebRemoteFrame : public WebFrame {
@@ -123,9 +122,6 @@ class WebRemoteFrame : public WebFrame {
   virtual void SetReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy) = 0;
   virtual void SetReplicatedInsecureNavigationsSet(
       const WebVector<unsigned>&) = 0;
-
-  // Reports resource timing info for a navigation in this frame.
-  virtual void ForwardResourceTimingToParent(const WebResourceTimingInfo&) = 0;
 
   virtual void DidStartLoading() = 0;
   virtual void DidStopLoading() = 0;

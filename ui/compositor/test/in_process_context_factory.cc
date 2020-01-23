@@ -154,8 +154,7 @@ struct InProcessContextFactory::PerCompositorData {
   std::unique_ptr<viz::BeginFrameSource> begin_frame_source;
   std::unique_ptr<viz::Display> display;
   SkMatrix44 output_color_matrix;
-  gfx::ColorSpace color_space;
-  float sdr_white_level = 0.f;
+  gfx::DisplayColorSpaces display_color_spaces;
   base::TimeTicks vsync_timebase;
   base::TimeDelta vsync_interval;
 };
@@ -391,16 +390,14 @@ void InProcessContextFactory::SetDisplayColorMatrix(ui::Compositor* compositor,
   iter->second->display->SetColorMatrix(matrix);
 }
 
-void InProcessContextFactory::SetDisplayColorSpace(
+void InProcessContextFactory::SetDisplayColorSpaces(
     ui::Compositor* compositor,
-    const gfx::ColorSpace& output_color_space,
-    float sdr_white_level) {
+    const gfx::DisplayColorSpaces& display_color_spaces) {
   auto iter = per_compositor_data_.find(compositor);
   if (iter == per_compositor_data_.end())
     return;
 
-  iter->second->color_space = output_color_space;
-  iter->second->sdr_white_level = sdr_white_level;
+  iter->second->display_color_spaces = display_color_spaces;
 }
 
 void InProcessContextFactory::SetDisplayVSyncParameters(
@@ -431,19 +428,19 @@ SkMatrix44 InProcessContextFactory::GetOutputColorMatrix(
   return iter->second->output_color_matrix;
 }
 
-gfx::ColorSpace InProcessContextFactory::GetDisplayColorSpace(
+gfx::DisplayColorSpaces InProcessContextFactory::GetDisplayColorSpaces(
     Compositor* compositor) const {
   auto iter = per_compositor_data_.find(compositor);
   if (iter == per_compositor_data_.end())
-    return gfx::ColorSpace();
-  return iter->second->color_space;
+    return gfx::DisplayColorSpaces();
+  return iter->second->display_color_spaces;
 }
 
 float InProcessContextFactory::GetSDRWhiteLevel(Compositor* compositor) const {
   auto iter = per_compositor_data_.find(compositor);
   if (iter == per_compositor_data_.end())
     return 0;
-  return iter->second->sdr_white_level;
+  return iter->second->display_color_spaces.sdr_white_level;
 }
 
 base::TimeTicks InProcessContextFactory::GetDisplayVSyncTimeBase(
@@ -470,8 +467,7 @@ void InProcessContextFactory::ResetDisplayOutputParameters(
     return;
 
   iter->second->output_color_matrix.setIdentity();
-  iter->second->color_space = gfx::ColorSpace::CreateSRGB();
-  iter->second->sdr_white_level = 0;
+  iter->second->display_color_spaces = gfx::DisplayColorSpaces();
   iter->second->vsync_timebase = base::TimeTicks();
   iter->second->vsync_interval = base::TimeDelta();
 }

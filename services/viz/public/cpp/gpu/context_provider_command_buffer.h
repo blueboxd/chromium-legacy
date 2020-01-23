@@ -29,6 +29,7 @@
 namespace gpu {
 class CommandBufferHelper;
 class CommandBufferProxyImpl;
+class ClientSharedImageInterface;
 class GpuChannelHost;
 struct GpuFeatureInfo;
 class GpuMemoryBufferManager;
@@ -147,6 +148,11 @@ class ContextProviderCommandBuffer
   scoped_refptr<gpu::GpuChannelHost> channel_;
   gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
+
+  // |shared_image_interface_| must be torn down after |command_buffer_| to
+  // ensure any dependent commands in the command stream are flushed before the
+  // associated shared images are destroyed.
+  std::unique_ptr<gpu::ClientSharedImageInterface> shared_image_interface_;
 
   base::Lock context_lock_;  // Referenced by command_buffer_.
   std::unique_ptr<gpu::CommandBufferProxyImpl> command_buffer_;

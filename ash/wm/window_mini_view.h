@@ -55,6 +55,9 @@ class ASH_EXPORT WindowMiniView : public views::View,
 
   WmHighlightItemBorder* border_ptr() { return border_ptr_; }
 
+  // Returns the bounds where the backdrop and preview should go.
+  gfx::Rect GetContentAreaBounds() const;
+
   // Subclasses can override these functions to provide customization for
   // margins and layouts of certain elements.
   virtual int GetMargin() const;

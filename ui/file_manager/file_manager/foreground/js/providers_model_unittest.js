@@ -104,10 +104,10 @@ const NOT_MOUNTED_DEVICE_PROVIDING_EXTENSION = {
 };
 
 function addProvidedVolume(volumeManager, providerId, volumeId) {
-  let fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
+  const fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
   fileSystem.entries['/'] = MockDirectoryEntry.create(fileSystem, '');
 
-  let volumeInfo = new VolumeInfoImpl(
+  const volumeInfo = new VolumeInfoImpl(
       VolumeManagerCommon.VolumeType.PROVIDED, volumeId, fileSystem,
       '',                                          // error
       '',                                          // deviceType
@@ -133,7 +133,7 @@ function setUp() {
 
   // Create and install a mock fileManagerPrivate API for fetching the list of
   // providers. TODO(mtomasz): Add some native (non-extension) providers.
-  let mockChrome = {
+  const mockChrome = {
     fileManagerPrivate: {
       getProviders: function(callback) {
         callback([
@@ -152,7 +152,7 @@ function setUp() {
   new MockCommandLinePrivate();
 
   // Create and install a volume manager.
-  let volumeManager = new MockVolumeManager();
+  const volumeManager = new MockVolumeManager();
   MockVolumeManager.installMockSingleton(volumeManager);
 
   // Add provided test volumes.
@@ -166,7 +166,7 @@ function testGetInstalledProviders(callback) {
   reportPromise(
       volumeManagerFactory.getInstance()
           .then(volumeManager => {
-            let model = new ProvidersModel(volumeManager);
+            const model = new ProvidersModel(volumeManager);
             return model.getInstalledProviders();
           })
           .then(providers => {
@@ -224,7 +224,7 @@ function testGetMountableProviders(callback) {
   reportPromise(
       volumeManagerFactory.getInstance()
           .then(volumeManager => {
-            let model = new ProvidersModel(volumeManager);
+            const model = new ProvidersModel(volumeManager);
             return model.getMountableProviders();
           })
           .then(providers => {

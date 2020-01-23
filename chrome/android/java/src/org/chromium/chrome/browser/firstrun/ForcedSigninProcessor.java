@@ -8,12 +8,14 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
 import org.chromium.chrome.browser.settings.sync.AccountManagementFragment;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChildAccountStatus;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
@@ -66,6 +68,12 @@ public final class ForcedSigninProcessor {
      * This is used to enforce the environment for Android EDU and child accounts.
      */
     private static void processForcedSignIn(@Nullable final Runnable onComplete) {
+        if (FirstRunUtils.canAllowSync()
+                && IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) {
+            // TODO(https://crbug.com/1044206): Remove this.
+            ProfileSyncService.get().setFirstSetupComplete(SyncFirstSetupCompleteSource.BASIC_FLOW);
+        }
+
         final SigninManager signinManager = IdentityServicesProvider.get().getSigninManager();
         // By definition we have finished all the checks for first run.
         signinManager.onFirstRunCheckDone();
@@ -82,6 +90,9 @@ public final class ForcedSigninProcessor {
                     new SigninManager.SignInCallback() {
                         @Override
                         public void onSignInComplete() {
+                            // TODO(https://crbug.com/1044206): Remove this.
+                            ProfileSyncService.get().setFirstSetupComplete(
+                                    SyncFirstSetupCompleteSource.BASIC_FLOW);
                             if (onComplete != null) {
                                 onComplete.run();
                             }

@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.ntp;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.omnibox.LocationBar.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.LocationBarVoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
+import org.chromium.chrome.browser.ui.native_page.NativePage;
 
 /**
  * Handles user interaction with the fakebox (the URL bar in the NTP and tasks surface).

@@ -47,6 +47,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.components.autofill.AutofillManagerWrapper;
@@ -1827,6 +1828,7 @@ public class AwAutofillTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    @FlakyTest(message = "crbug.com/1033179")
     public void testPageScrollTriggerViewExitAndEnter() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
         final String data = "<html><head></head><body><form action='a.html' name='formname'>"

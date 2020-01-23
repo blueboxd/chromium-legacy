@@ -5,6 +5,7 @@
 'use strict';
 
 // All testing functions in namespace 'test'.
+// eslint-disable-next-line
 var test = test || {};
 
 // Update paths for testing.
@@ -31,7 +32,7 @@ test.DATA = {
 test.loadData = function() {
   return Promise.all(Object.keys(test.DATA).map(filename => {
     return new Promise(resolve => {
-      var req = new XMLHttpRequest();
+      const req = new XMLHttpRequest();
       req.responseType = 'blob';
       req.onload = () => {
         test.DATA[filename] = req.response;
@@ -342,10 +343,10 @@ test.REPEAT_UNTIL_LOG_INTERVAL = 3000;
  *     pending.
  */
 test.pending = function(message, var_args) {
-  var index = 1;
-  var args = arguments;
-  var formattedMessage = message.replace(/%[sdj]/g, function(pattern) {
-    var arg = args[index++];
+  let index = 1;
+  const args = arguments;
+  const formattedMessage = message.replace(/%[sdj]/g, function(pattern) {
+    const arg = args[index++];
     switch (pattern) {
       case '%s':
         return String(arg);
@@ -357,7 +358,7 @@ test.pending = function(message, var_args) {
         return pattern;
     }
   });
-  var pendingMarker = Object.create(test.pending.prototype);
+  const pendingMarker = Object.create(test.pending.prototype);
   pendingMarker.message = formattedMessage;
   return pendingMarker;
 };
@@ -371,9 +372,9 @@ test.pending = function(message, var_args) {
  *     marker.
  */
 test.repeatUntil = function(checkFunction) {
-  var logTime = Date.now() + test.REPEAT_UNTIL_LOG_INTERVAL;
-  var loopCount = 0;
-  var step = function() {
+  let logTime = Date.now() + test.REPEAT_UNTIL_LOG_INTERVAL;
+  let loopCount = 0;
+  const step = function() {
     loopCount++;
     return Promise.resolve(checkFunction()).then(function(result) {
       if (!(result instanceof test.pending)) {
@@ -384,7 +385,7 @@ test.repeatUntil = function(checkFunction) {
         logTime += test.REPEAT_UNTIL_LOG_INTERVAL;
       }
       // Repeat immediately for the first few, then wait between repeats.
-      var interval = loopCount <= test.REPEAT_UNTIL_IMMEDIATE_COUNT ?
+      const interval = loopCount <= test.REPEAT_UNTIL_IMMEDIATE_COUNT ?
           0 :
           test.REPEAT_UNTIL_INTERVAL;
       return new Promise(resolve => {
@@ -403,7 +404,7 @@ test.repeatUntil = function(checkFunction) {
  */
 test.waitForElement = function(query) {
   return test.repeatUntil(() => {
-    let element = document.querySelector(query);
+    const element = document.querySelector(query);
     if (element) {
       return element;
     }
@@ -418,7 +419,7 @@ test.waitForElement = function(query) {
  */
 test.waitForElementLost = function(query) {
   return test.repeatUntil(() => {
-    var element = document.querySelector(query);
+    const element = document.querySelector(query);
     if (element) {
       return test.pending('Elements %s still exists.', query);
     }
@@ -528,10 +529,10 @@ test.mountAndroidFiles = function() {
  *     given contents.
  */
 test.waitForFiles = function(expected, opt_options) {
-  var options = opt_options || {};
-  var nextLog = Date.now() + test.REPEAT_UNTIL_LOG_INTERVAL;
+  const options = opt_options || {};
+  let nextLog = Date.now() + test.REPEAT_UNTIL_LOG_INTERVAL;
   return test.repeatUntil(function() {
-    var files = test.getFileList();
+    const files = test.getFileList();
     if (Date.now() > nextLog) {
       console.debug('waitForFiles', expected, files);
       nextLog = Date.now() + test.REPEAT_UNTIL_LOG_INTERVAL;
@@ -545,7 +546,7 @@ test.waitForFiles = function(expected, opt_options) {
           if (a.length != b.length) {
             return false;
           }
-          for (var i = 0; i < files.length; i++) {
+          for (let i = 0; i < files.length; i++) {
             // Each row is [name, size, type, date].
             if ((!options.ignoreName && a[i][0] != b[i][0]) ||
                 (!options.ignoreSize && a[i][1] != b[i][1]) ||

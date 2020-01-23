@@ -4,6 +4,8 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.h"
 
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_wrapper.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_policy_helpers.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 
 namespace chromeos {
 namespace app_time {
@@ -16,8 +18,8 @@ AppTimeLimitsWhitelistPolicyBuilder::~AppTimeLimitsWhitelistPolicyBuilder() =
 
 void AppTimeLimitsWhitelistPolicyBuilder::SetUp() {
   value_ = base::Value(base::Value::Type::DICTIONARY);
-  value_.SetKey(kUrlList, base::Value(base::Value::Type::LIST));
-  value_.SetKey(kAppList, base::Value(base::Value::Type::LIST));
+  value_.SetKey(policy::kUrlList, base::Value(base::Value::Type::LIST));
+  value_.SetKey(policy::kAppList, base::Value(base::Value::Type::LIST));
 }
 
 void AppTimeLimitsWhitelistPolicyBuilder::Clear() {
@@ -28,16 +30,17 @@ void AppTimeLimitsWhitelistPolicyBuilder::Clear() {
 
 void AppTimeLimitsWhitelistPolicyBuilder::AppendToWhitelistUrlList(
     const std::string& scheme) {
-  AppendToList(kUrlList, base::Value(scheme));
+  AppendToList(policy::kUrlList, base::Value(scheme));
 }
 
 void AppTimeLimitsWhitelistPolicyBuilder::AppendToWhitelistAppList(
     const AppId& app_id) {
   base::Value value_to_append(base::Value::Type::DICTIONARY);
-  value_to_append.SetKey(kAppId, base::Value(app_id.app_id()));
-  value_to_append.SetKey(kAppType,
-                         base::Value(AppTypeToString(app_id.app_type())));
-  AppendToList(kAppList, std::move(value_to_append));
+  value_to_append.SetKey(policy::kAppId, base::Value(app_id.app_id()));
+  value_to_append.SetKey(
+      policy::kAppType,
+      base::Value(policy::AppTypeToPolicyString(app_id.app_type())));
+  AppendToList(policy::kAppList, std::move(value_to_append));
 }
 
 void AppTimeLimitsWhitelistPolicyBuilder::AppendToList(const std::string& key,

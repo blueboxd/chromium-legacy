@@ -85,8 +85,7 @@ void ResourceCoordinatorTabHelper::DidReceiveResponse() {
 void ResourceCoordinatorTabHelper::DidFailLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description) {
+    int error_code) {
   TabLoadTracker::Get()->DidFailLoad(web_contents());
 }
 

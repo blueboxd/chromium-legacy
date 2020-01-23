@@ -12,6 +12,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
+#include "components/gcm_driver/gcm_client.h"
+#include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -191,6 +193,54 @@ TEST_F(BinaryFCMServiceTest, EmitsMessageHasValidTokenHistogram) {
     histograms.ExpectUniqueSample(
         "SafeBrowsingFCMService.IncomingMessageHasValidToken", true, 1);
   }
+}
+
+TEST_F(BinaryFCMServiceTest, UnregisterToken) {
+  // Get an instance ID
+  std::string received_instance_id = BinaryFCMService::kInvalidId;
+  binary_fcm_service_->GetInstanceID(base::BindOnce(
+      [](std::string* target_id, const std::string& instance_id) {
+        *target_id = instance_id;
+      },
+      &received_instance_id));
+  content::RunAllTasksUntilIdle();
+  EXPECT_NE(received_instance_id, BinaryFCMService::kInvalidId);
+
+  // Delete it
+  bool unregistered = false;
+  binary_fcm_service_->UnregisterInstanceID(
+      received_instance_id,
+      base::BindOnce([](bool* target, bool value) { *target = value; },
+                     &unregistered));
+  content::RunAllTasksUntilIdle();
+  EXPECT_TRUE(unregistered);
+}
+
+TEST_F(BinaryFCMServiceTest, UnregisterTokenRetriesFailures) {
+  // Get an instance ID
+  std::string received_instance_id = BinaryFCMService::kInvalidId;
+  binary_fcm_service_->GetInstanceID(base::BindOnce(
+      [](std::string* target_id, const std::string& instance_id) {
+        *target_id = instance_id;
+      },
+      &received_instance_id));
+  content::RunAllTasksUntilIdle();
+  EXPECT_NE(received_instance_id, BinaryFCMService::kInvalidId);
+
+  // Queue one failure, then success
+  gcm::FakeGCMProfileService* gcm_service =
+      static_cast<gcm::FakeGCMProfileService*>(
+          gcm::GCMProfileServiceFactory::GetForProfile(&profile_));
+  gcm_service->AddExpectedUnregisterResponse(gcm::GCMClient::NETWORK_ERROR);
+
+  // Delete it
+  bool unregistered = false;
+  binary_fcm_service_->UnregisterInstanceID(
+      received_instance_id,
+      base::BindOnce([](bool* target, bool value) { *target = value; },
+                     &unregistered));
+  content::RunAllTasksUntilIdle();
+  EXPECT_TRUE(unregistered);
 }
 
 }  // namespace safe_browsing

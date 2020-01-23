@@ -605,6 +605,8 @@ gfx::Rect ScrollableShelfView::GetTargetScreenBoundsOfItemIcon(
   gfx::Rect icon_bounds = shelf_view_->view_model()->ideal_bounds(
       shelf_view_->model()->ItemIndexByID(id));
 
+  icon_bounds.Offset(edge_padding.left() - padding_insets_.left(), 0);
+
   // Transforms |icon_bounds| from shelf view's coordinates to scrollable shelf
   // view's coordinates manually.
   icon_bounds.Offset(
@@ -1262,7 +1264,7 @@ gfx::Insets ScrollableShelfView::CalculateEdgePadding(
     bool use_target_bounds) const {
   // Display centering alignment
   if (ShouldApplyDisplayCentering(use_target_bounds))
-    return CalculatePaddingForDisplayCentering();
+    return CalculatePaddingForDisplayCentering(use_target_bounds);
 
   const int icons_size = shelf_view_->GetSizeOfAppIcons(
                              shelf_view_->number_of_visible_apps(), false) +
@@ -1319,7 +1321,8 @@ gfx::Rect ScrollableShelfView::GetAvailableLocalBounds(
                            : GetLocalBounds();
 }
 
-gfx::Insets ScrollableShelfView::CalculatePaddingForDisplayCentering() const {
+gfx::Insets ScrollableShelfView::CalculatePaddingForDisplayCentering(
+    bool use_target_bounds) const {
   const int icons_size = shelf_view_->GetSizeOfAppIcons(
                              shelf_view_->number_of_visible_apps(), false) +
                          2 * ShelfConfig::Get()->GetAppIconEndPadding();
@@ -1330,7 +1333,9 @@ gfx::Insets ScrollableShelfView::CalculatePaddingForDisplayCentering() const {
   const int gap = (display_size_primary - icons_size) / 2;
 
   // Calculates paddings in view coordinates.
-  const gfx::Rect screen_bounds = GetBoundsInScreen();
+  const gfx::Rect screen_bounds =
+      use_target_bounds ? GetShelf()->shelf_layout_manager()->GetHotseatBounds()
+                        : GetBoundsInScreen();
   const int before_padding = gap - GetShelf()->PrimaryAxisValue(
                                        screen_bounds.x() - display_bounds.x(),
                                        screen_bounds.y() - display_bounds.y());

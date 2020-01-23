@@ -492,13 +492,6 @@ void SynchronousCompositorHost::OnComputeScroll(
   on_compute_scroll_called_ = true;
 }
 
-void SynchronousCompositorHost::ProgressFling(base::TimeTicks frame_time) {
-  // Progress fling if OnComputeScroll was called or we're scrolling inner frame
-  if (on_compute_scroll_called_ || !rwhva_->is_currently_scrolling_viewport()) {
-    rwhva_->host()->ProgressFlingIfNeeded(frame_time);
-  }
-}
-
 ui::ViewAndroid::CopyViewCallback
 SynchronousCompositorHost::GetCopyViewCallback() {
   // Unretained is safe since callback is helped by ViewAndroid which has same
@@ -699,6 +692,10 @@ void SynchronousCompositorHost::RequestOneBeginFrame() {
 void SynchronousCompositorHost::AddBeginFrameCompletionCallback(
     base::OnceClosure callback) {
   client_->AddBeginFrameCompletionCallback(std::move(callback));
+}
+
+void SynchronousCompositorHost::DidInvalidate() {
+  invalidate_needs_draw_ = true;
 }
 
 }  // namespace content

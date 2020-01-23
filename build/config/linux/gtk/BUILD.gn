@@ -36,7 +36,7 @@ group("gtk") {
     "//remoting/host:remoting_me2me_host_static",
     "//remoting/test:it2me_standalone_host_main",
     "//webrtc/examples:peerconnection_client",
-    "//chrome/browser/ui/libgtkui:*",
+    "//chrome/browser/ui/gtk:*",
   ]
 
   public_configs = [ ":gtk_internal_config" ]
@@ -48,6 +48,6 @@ pkg_config("gtkprint_internal_config") {
 }
 
 group("gtkprint") {
-  visibility = [ "//chrome/browser/ui/libgtkui:*" ]
+  visibility = [ "//chrome/browser/ui/gtk:*" ]
   public_configs = [ ":gtkprint_internal_config" ]
 }

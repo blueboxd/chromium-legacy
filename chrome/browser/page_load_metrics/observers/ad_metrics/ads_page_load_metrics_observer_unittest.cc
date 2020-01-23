@@ -80,6 +80,12 @@ struct ExpectedFrameBytes {
   }
 };
 
+struct CreativeOriginTest {
+  std::vector<std::string> urls;
+  size_t creative_index;
+  FrameData::OriginStatus expected_origin_status;
+};
+
 enum class ResourceCached { kNotCached = 0, kCachedHttp, kCachedMemory };
 enum class FrameType { AD = 0, NON_AD };
 
@@ -507,6 +513,69 @@ class AdsPageLoadMetricsObserverTest
         main_rfh()->GetFrameTreeNodeId();
     resources.push_back(std::move(resource));
     tester_->SimulateResourceDataUseUpdate(resources, render_frame_host);
+  }
+
+  void SimulateFirstContentfulPaint(base::TimeDelta first_contentful_paint,
+                                    RenderFrameHost* ad_frame) {
+    page_load_metrics::mojom::PageLoadTiming timing;
+    page_load_metrics::InitPageLoadTimingForTest(&timing);
+    timing.navigation_start = base::Time::Now();
+    timing.parse_timing->parse_start = base::TimeDelta::FromMilliseconds(3);
+    timing.paint_timing->first_contentful_paint = first_contentful_paint;
+    PopulateRequiredTimingFields(&timing);
+    tester()->SimulateTimingUpdate(timing, ad_frame);
+  }
+
+  // Given |creative_origin_test|, creates nested frames in the order given in
+  // |creative_origin_test.urls|, causes the frame with index
+  // |creative_origin_test.creative_index| to paint text first, and verifies
+  // that the creative's origin matches
+  // |creative_origin_test.expected_origin_status|.
+  void TestCreativeOriginStatus(
+      const CreativeOriginTest& creative_origin_test) {
+    const char kCreativeOriginStatusHistogramId[] =
+        "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
+        "CreativeOriginStatus";
+
+    base::HistogramTester histograms;
+
+    // Navigate main frame.
+    RenderFrameHost* main_frame =
+        NavigateMainFrame(creative_origin_test.urls.front());
+    std::vector<RenderFrameHost*> frames;
+    frames.push_back(main_frame);
+
+    // Create and navigate each subframe so that it has the origin given at
+    // the corresponding index of |frame_origins.origins|.
+    RenderFrameHost* current_frame = main_frame;
+    for (size_t i = 1; i < creative_origin_test.urls.size(); ++i) {
+      // Create subframe and page load timing.
+      current_frame = CreateAndNavigateSubFrame(creative_origin_test.urls[i],
+                                                current_frame);
+      frames.push_back(current_frame);
+
+      // Load bytes in frame.
+      ResourceDataUpdate(current_frame, ResourceCached::kNotCached, 10);
+    }
+
+    // In order to test that |creative_origin_status_| in FrameData is properly
+    // computed, we need to simulate first contentful paint for the ad creative.
+    SimulateFirstContentfulPaint(base::TimeDelta::FromMilliseconds(5),
+                                 frames[creative_origin_test.creative_index]);
+
+    // Simulate first contentful paint for other subframes.
+    for (size_t i = 0; i < frames.size(); ++i) {
+      if (i != creative_origin_test.creative_index) {
+        SimulateFirstContentfulPaint(base::TimeDelta::FromMilliseconds(10 + i),
+                                     frames[i]);
+      }
+    }
+
+    // Navigate again to trigger histograms, then test them.
+    NavigateFrame(kNonAdUrl, main_frame);
+    histograms.ExpectUniqueSample(kCreativeOriginStatusHistogramId,
+                                  creative_origin_test.expected_origin_status,
+                                  1);
   }
 
   void TimingUpdate(const page_load_metrics::mojom::PageLoadTiming& timing) {
@@ -1636,6 +1705,52 @@ TEST_F(AdsPageLoadMetricsObserverTest, AdFrameLoadTiming) {
       ukm::builders::AdFrameLoad::kTiming_FirstContentfulPaintName, 5);
   test_ukm_recorder().ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kTiming_InteractiveName, 20);
+}
+
+// Tests that creative origin status is computed as intended, i.e. as the origin
+// status of the frame in the ad frame tree that has its first contentful paint
+// occur first.
+TEST_F(AdsPageLoadMetricsObserverTest, CreativeOriginStatus) {
+  using OriginStatus = FrameData::OriginStatus;
+
+  // Each CreativeOriginTest struct lists the urls of the frames in the frame
+  // tree, from main frame to leaf ad frame, along with the index of the ad
+  // creative and the expected creative origin status.
+  std::vector<CreativeOriginTest> test_cases = {
+      {{"http://a.com", "http://a.com/disallowed.html"},
+       1,
+       OriginStatus::kSame},
+      {{"http://a.com", "http://b.com/disallowed.html"},
+       1,
+       OriginStatus::kCross},
+      {{"http://a.com", "http://a.com/disallowed.html", "http://b.com"},
+       1,
+       OriginStatus::kSame},
+      {{"http://a.com", "http://a.com/disallowed.html", "http://b.com"},
+       2,
+       OriginStatus::kCross},
+      {{"http://a.com", "http://b.com/disallowed.html", "http://a.com"},
+       1,
+       OriginStatus::kCross},
+      {{"http://a.com", "http://b.com/disallowed.html", "http://a.com"},
+       2,
+       OriginStatus::kSame},
+      {{"http://a.com", "http://b.com/disallowed.html", "http://a.com",
+        "http://b.com"},
+       1,
+       OriginStatus::kCross},
+      {{"http://a.com", "http://b.com/disallowed.html", "http://a.com",
+        "http://b.com"},
+       2,
+       OriginStatus::kSame},
+      {{"http://a.com", "http://b.com/disallowed.html", "http://a.com",
+        "http://b.com"},
+       3,
+       OriginStatus::kCross}};
+
+  for (const auto& creative_origin_test : test_cases) {
+    TestCreativeOriginStatus(creative_origin_test);
+  }
 }
 
 // Tests that even when the intervention is not enabled, we still record the

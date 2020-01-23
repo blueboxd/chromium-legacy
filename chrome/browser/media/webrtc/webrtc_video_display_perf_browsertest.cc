@@ -197,6 +197,7 @@ class WebRtcVideoDisplayPerfBrowserTest
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
+    command_line->RemoveSwitch(switches::kUseFakeDeviceForMediaStream);
     command_line->AppendSwitchASCII(
         switches::kUseFakeDeviceForMediaStream,
         base::StringPrintf("fps=%d", test_config_.fps));

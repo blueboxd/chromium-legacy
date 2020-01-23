@@ -370,7 +370,6 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase,
     // The output protection tests create a MediaRecorder on a MediaStream,
     // so this allows for a fake stream to be created.
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
 };
 

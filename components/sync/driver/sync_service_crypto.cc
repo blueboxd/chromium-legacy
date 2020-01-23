@@ -585,10 +585,12 @@ void SyncServiceCrypto::FetchTrustedVaultKeys() {
   trusted_vault_client_->FetchKeys(
       state_.account_info,
       base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysFetchedFromClient,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(),
+                     /*is_second_fetch_attempt=*/false));
 }
 
 void SyncServiceCrypto::TrustedVaultKeysFetchedFromClient(
+    bool is_second_fetch_attempt,
     const std::vector<std::vector<uint8_t>>& keys) {
   if (state_.required_user_action !=
           RequiredUserAction::kFetchingTrustedVaultKeys &&
@@ -608,11 +610,12 @@ void SyncServiceCrypto::TrustedVaultKeysFetchedFromClient(
   }
 
   state_.engine->AddTrustedVaultDecryptionKeys(
-      keys, base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysAdded,
-                           weak_factory_.GetWeakPtr()));
+      keys,
+      base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysAdded,
+                     weak_factory_.GetWeakPtr(), is_second_fetch_attempt));
 }
 
-void SyncServiceCrypto::TrustedVaultKeysAdded() {
+void SyncServiceCrypto::TrustedVaultKeysAdded(bool is_second_fetch_attempt) {
   if (state_.required_user_action !=
           RequiredUserAction::kFetchingTrustedVaultKeys &&
       state_.required_user_action !=
@@ -626,10 +629,12 @@ void SyncServiceCrypto::TrustedVaultKeysAdded() {
   trusted_vault_client_->MarkKeysAsStale(
       state_.account_info,
       base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysMarkedAsStale,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), is_second_fetch_attempt));
 }
 
-void SyncServiceCrypto::TrustedVaultKeysMarkedAsStale(bool result) {
+void SyncServiceCrypto::TrustedVaultKeysMarkedAsStale(
+    bool is_second_fetch_attempt,
+    bool result) {
   if (state_.required_user_action !=
           RequiredUserAction::kFetchingTrustedVaultKeys &&
       state_.required_user_action !=
@@ -637,10 +642,19 @@ void SyncServiceCrypto::TrustedVaultKeysMarkedAsStale(bool result) {
     return;
   }
 
-  // TODO(crbug.com/1012659): Based on |result|, start a second FetchKeys()
-  // pass.
+  // If nothing has changed (determined by |!result| since false negatives are
+  // disallowed by the API) or this is already a second attempt, the fetching
+  // procedure can be considered completed.
+  if (!result || is_second_fetch_attempt) {
+    FetchTrustedVaultKeysCompletedButInsufficient();
+    return;
+  }
 
-  FetchTrustedVaultKeysCompletedButInsufficient();
+  trusted_vault_client_->FetchKeys(
+      state_.account_info,
+      base::BindOnce(&SyncServiceCrypto::TrustedVaultKeysFetchedFromClient,
+                     weak_factory_.GetWeakPtr(),
+                     /*is_second_fetch_attempt=*/true));
 }
 
 void SyncServiceCrypto::FetchTrustedVaultKeysCompletedButInsufficient() {

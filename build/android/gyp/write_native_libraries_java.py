@@ -15,6 +15,14 @@ from native_libraries_template import NATIVE_LIBRARIES_TEMPLATE
 from util import build_utils
 
 
+def _FormatLibraryName(library_name):
+  filename = os.path.split(library_name)[1]
+  assert filename.startswith('lib')
+  assert filename.endswith('.so')
+  # Remove lib prefix and .so suffix.
+  return '"%s"' % filename[3:-3]
+
+
 def main():
   parser = argparse.ArgumentParser()
 
@@ -46,6 +54,10 @@ def main():
       required=True,
       default='CPU_FAMILY_UNKNOWN',
       help='CPU family.')
+  parser.add_argument(
+      '--main-component-library',
+      help='If used, the list of native libraries will only contain this '
+      'library. Dependencies are found in the library\'s "NEEDED" section.')
 
   parser.add_argument(
       '--output', required=True, help='Path to the generated srcjar file.')
@@ -57,15 +69,14 @@ def main():
               'Must set --enable-chromium-linker to load library from APK.')
 
   native_libraries_list = []
-  if options.native_libraries_list:
+  if options.main_component_library:
+    native_libraries_list.append(
+        _FormatLibraryName(options.main_component_library))
+  elif options.native_libraries_list:
     with open(options.native_libraries_list) as f:
       for path in f:
         path = path.strip()
-        filename = os.path.split(path)[1]
-        assert filename.startswith('lib')
-        assert filename.endswith('.so')
-        # Remove lib prefix and .so suffix.
-        native_libraries_list.append('"%s"' % filename[3:-3])
+        native_libraries_list.append(_FormatLibraryName(path))
 
   def bool_str(value):
     if value:

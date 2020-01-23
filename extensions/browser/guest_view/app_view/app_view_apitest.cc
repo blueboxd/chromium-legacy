@@ -143,14 +143,6 @@ class AppViewTest : public AppShellTest {
     ASSERT_TRUE(done_listener.WaitUntilSatisfied());
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    AppShellTest::SetUpCommandLine(command_line);
-    // This switch ensures that there will always be at least one media device,
-    // even on machines without physical devices. This is required by tests that
-    // request permission to use media devices.
-    command_line->AppendSwitch("use-fake-device-for-media-stream");
-  }
-
   content::WebContents* embedder_web_contents_;
   TestGuestViewManagerFactory factory_;
 };

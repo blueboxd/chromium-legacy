@@ -1,14 +1,65 @@
 <style>
 :host {
-  display: block;
+  --tabstrip-tab-group-title-height: 22px;
+  --tabstrip-tab-group-title-margin: var(--tabstrip-tab-spacing);
+
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px rgba(var(--tabstrip-tab-group-color-rgb), .24);
+  padding: var(--tabstrip-tab-spacing);
+}
+
+#chip {
+  display: inline-block;
+  height: var(--tabstrip-tab-group-title-height);
+  margin-bottom: var(--tabstrip-tab-group-title-margin);
+}
+
+#title {
+  background: rgba(var(--tabstrip-tab-group-color-rgb), 1);
+  border-radius: 4px;
+  box-sizing: border-box;
+  color: rgb(var(--tabstrip-tab-group-text-color-rgb));
+  display: inline-block;
+  height: var(--tabstrip-tab-group-title-height);
+  line-height: var(--tabstrip-tab-group-title-height);
+  padding: 0 6px;
+}
+
+#title:empty {
+  border-radius: 50%;
+  height: 16px;
+  margin-top: 4px;
+  width: 16px;
 }
 
 #tabs {
+  /* Cached CSS variable so the children could use them and override the
+   * original values. */
+  --ungrouped-tab-thumbnail-height: var(--tabstrip-tab-thumbnail-height);
+
   display: flex;
   min-width: fit-content;
 }
+
+:host ::slotted(tabstrip-tab) {
+  --tabstrip-tab-thumbnail-height: calc(
+      var(--ungrouped-tab-thumbnail-height) -
+      var(--tabstrip-tab-group-title-height) -
+      var(--tabstrip-tab-group-title-margin));
+  --tabstrip-tab-thumbnail-width: calc(
+      var(--tabstrip-tab-thumbnail-height) *
+      var(--tabstrip-tab-thumbnail-aspect-ratio));
+
+  /* Recalculate tab heights and widths off new thumbnail sizes. */
+  --tabstrip-tab-height: calc(var(--tabstrip-tab-title-height) +
+                              var(--tabstrip-tab-thumbnail-height));
+  --tabstrip-tab-width: var(--tabstrip-tab-thumbnail-width);
+}
 </style>
 
+<div id="chip">
+  <div id="title"></div>
+</div>
 <div id="tabs">
   <slot></slot>
 </div>

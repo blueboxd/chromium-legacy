@@ -45,8 +45,6 @@ namespace {
 
 static const char kRedirectLoopLearnMoreUrl[] =
     "https://support.google.com/chrome?p=rl_error";
-static const char kWeakDHKeyLearnMoreUrl[] =
-    "https://support.google.com/chrome?p=dh_error";
 static const int kGoogleCachedCopySuggestionType = 0;
 
 enum NAV_SUGGESTIONS {
@@ -259,12 +257,6 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_SUMMARY_CONNECTION_FAILED,
    SUGGEST_CHECK_CONNECTION | SUGGEST_FIREWALL_CONFIG | SUGGEST_PROXY_CONFIG,
    SHOW_BUTTON_RELOAD,
-  },
-  {net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY,
-   IDS_ERRORPAGES_HEADING_INSECURE_CONNECTION,
-   IDS_ERRORPAGES_SUMMARY_SSL_SECURITY_ERROR,
-   SUGGEST_LEARNMORE,
-   SHOW_NO_BUTTONS,
   },
   {net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN,
    IDS_ERRORPAGES_HEADING_INSECURE_CONNECTION,
@@ -592,9 +584,6 @@ void AddLinkedSuggestionToList(const int error_code,
       l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY);
 
   switch (error_code) {
-    case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
-      learn_more_url = GURL(kWeakDHKeyLearnMoreUrl);
-      break;
     case net::ERR_TOO_MANY_REDIRECTS:
       learn_more_url = GURL(kRedirectLoopLearnMoreUrl);
       suggestion_string = l10n_util::GetStringUTF16(

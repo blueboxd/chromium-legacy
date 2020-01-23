@@ -37,6 +37,8 @@ component("common") {
     "learning_task_controller.h",
     "media_learning_tasks.cc",
     "media_learning_tasks.h",
+    "target_histogram.cc",
+    "target_histogram.h",
     "value.cc",
     "value.h",
   ]
@@ -53,6 +55,7 @@ source_set("unit_tests") {
     "feature_dictionary_unittest.cc",
     "labelled_example_unittest.cc",
     "media_learning_tasks_unittest.cc",
+    "target_histogram_unittest.cc",
     "value_unittest.cc",
   ]
 

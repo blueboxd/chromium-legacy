@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -38,6 +39,8 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
       mojo::PendingAssociatedReceiver<mojom::blink::PortalClient>
           portal_client_receiver = {});
   ~HTMLPortalElement() override;
+
+  bool IsHTMLPortalElement() const final { return true; }
 
   // ScriptWrappable overrides.
   void Trace(Visitor* visitor) override;
@@ -77,6 +80,12 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   void PortalContentsWillBeDestroyed(PortalContents*);
 
  private:
+  // Checks whether the Portals feature is enabled for this document, and logs a
+  // warning to the developer if not. Doing basically anything with an
+  // HTMLPortalElement in a document which doesn't support portals is forbidden.
+  bool CheckPortalsEnabledOrWarn() const;
+  bool CheckPortalsEnabledOrThrow(ExceptionState&) const;
+
   enum class GuestContentsEligibility {
     // Can have a guest contents.
     kEligible,
@@ -124,6 +133,20 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
 
   // Temporarily set to keep this element alive after adoption.
   bool was_just_adopted_ = false;
+};
+
+// Type casting. Custom since adoption could lead to an HTMLPortalElement ending
+// up in a document that doesn't have Portals enabled.
+template <>
+struct DowncastTraits<HTMLPortalElement> {
+  static bool AllowFrom(const HTMLElement& element) {
+    return element.IsHTMLPortalElement();
+  }
+  static bool AllowFrom(const Node& node) {
+    if (const HTMLElement* html_element = DynamicTo<HTMLElement>(node))
+      return html_element->IsHTMLPortalElement();
+    return false;
+  }
 };
 
 }  // namespace blink

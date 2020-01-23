@@ -5041,24 +5041,6 @@
               "gpu": "none",
               "os": "Mac-10.13.6"
             }
-          ],
-          "shards": 10
-        },
-        "test": "browser_tests",
-        "test_target": "//chrome/test:browser_tests"
-      },
-      {
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "none",
-              "os": "Mac-10.13.6"
-            }
           ]
         },
         "test": "cacheinvalidation_unittests",

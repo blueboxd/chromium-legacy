@@ -59,11 +59,10 @@ TrayPopupItemStyle::~TrayPopupItemStyle() = default;
 
 SkColor TrayPopupItemStyle::GetTextColor() const {
   const SkColor kBaseTextColor =
-      use_unified_theme_
-          ? AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-                AshColorProvider::ContentLayerType::kTextPrimary,
-                kUnifiedMenuTextColor)
-          : SkColorSetA(SK_ColorBLACK, 0xDE);
+      use_unified_theme_ ? AshColorProvider::Get()->GetContentLayerColor(
+                               AshColorProvider::ContentLayerType::kTextPrimary,
+                               AshColorProvider::AshColorMode::kDark)
+                         : SkColorSetA(SK_ColorBLACK, 0xDE);
 
   switch (color_style_) {
     case ColorStyle::ACTIVE:

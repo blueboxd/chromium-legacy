@@ -26,6 +26,9 @@ class TestNavigationObserver : public NavigationObserver {
   TestNavigationObserver(const GURL& url,
                          NavigationEvent target_event,
                          Shell* shell);
+  TestNavigationObserver(const GURL& url,
+                         NavigationEvent target_event,
+                         Tab* tab);
   ~TestNavigationObserver() override;
 
   // Spins a RunLoop until the requested type of navigation event is observed.

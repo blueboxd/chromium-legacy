@@ -42,6 +42,16 @@ declare_args() {
   # example, don't omit the frame pointer and leave in symbols.
   enable_profiling = false
 
+  # Whether to use the binary binutils checked into third_party/binutils.
+  # These are not multi-arch so cannot be used except on x86 and x86-64 (the
+  # only two architectures that are currently checked in). Turn this off when
+  # you are using a custom toolchain and need to control -B in cflags.
+  linux_use_bundled_binutils =
+      linux_use_bundled_binutils_override && is_linux &&
+      (current_cpu == "x64" || current_cpu == "x86")
+  binutils_path = rebase_path("//third_party/binutils/Linux_x64/Release/bin",
+                              root_build_dir)
+
   # use_debug_fission: whether to use split DWARF debug info
   # files. This can reduce link time significantly, but is incompatible
   # with some utilities such as icecc and ccache. Requires gold and

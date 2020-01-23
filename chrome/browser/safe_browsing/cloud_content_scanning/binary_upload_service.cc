@@ -313,6 +313,11 @@ void BinaryUploadService::FinishRequest(Request* request,
   auto token_it = active_tokens_.find(request);
   if (token_it != active_tokens_.end()) {
     binary_fcm_service_->ClearCallbackForToken(token_it->second);
+
+    // The BinaryFCMService will handle all recoverable errors. In case of
+    // unrecoverable error, there's nothing we can do here.
+    binary_fcm_service_->UnregisterInstanceID(token_it->second,
+                                              base::DoNothing());
     active_tokens_.erase(token_it);
   }
 }

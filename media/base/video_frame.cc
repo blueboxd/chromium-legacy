@@ -1109,7 +1109,7 @@ gpu::SyncToken VideoFrame::UpdateReleaseSyncToken(SyncTokenClient* client) {
   return release_sync_token_;
 }
 
-std::string VideoFrame::AsHumanReadableString() {
+std::string VideoFrame::AsHumanReadableString() const {
   if (metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM))
     return "end of stream";
 

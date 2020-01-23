@@ -74,7 +74,7 @@ PictureInPictureControllerImpl::IsDocumentAllowed() const {
   // "picture-in-picture", return kDisabledByFeaturePolicy status.
   if (RuntimeEnabledFeatures::PictureInPictureAPIEnabled() &&
       !GetSupplementable()->IsFeatureEnabled(
-          blink::mojom::FeaturePolicyFeature::kPictureInPicture,
+          blink::mojom::blink::FeaturePolicyFeature::kPictureInPicture,
           ReportOptions::kReportOnFailure)) {
     return Status::kDisabledByFeaturePolicy;
   }

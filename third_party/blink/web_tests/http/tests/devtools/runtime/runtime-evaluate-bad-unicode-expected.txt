@@ -1,9 +1,88 @@
-Tests TestRunner.RuntimeAgent.evaluate can handle invalid Unicode characters.
+Tests TestRunner.RuntimeAgent.evaluate can handle invalid Unicode code points and non-characters.
 
-"'􏿿'==='\u{10FFFF}'" -> true
-"'￾' === '\uFFFE'" -> true
 "'���' === '\uD800'" -> true
-"'􏿿'.codePointAt(0).toString(16)" -> 10ffff
 "'���'.codePointAt(0).toString(16)" -> d800
-"String.fromCodePoint(0x10ffff)" -> 􏿿
+"'���' === '\uDBFF'" -> true
+"'���'.codePointAt(0).toString(16)" -> dbff
+"'���' === '\uDC00'" -> true
+"'���'.codePointAt(0).toString(16)" -> dc00
+"'���' === '\uDFFF'" -> true
+"'���'.codePointAt(0).toString(16)" -> dfff
+"'﷐' === '\uFDD0'" -> true
+"'﷐'.codePointAt(0).toString(16)" -> fdd0
+"'﷯' === '\uFDEF'" -> true
+"'﷯'.codePointAt(0).toString(16)" -> fdef
+"'￾' === '\uFFFE'" -> true
+"'￾'.codePointAt(0).toString(16)" -> fffe
+"'￿' === '\uFFFF'" -> true
+"'￿'.codePointAt(0).toString(16)" -> ffff
+"'🿾' === '\u{01FFFE}'" -> true
+"'🿾'.codePointAt(0).toString(16)" -> 1fffe
+"'🿿' === '\u{01FFFF}'" -> true
+"'🿿'.codePointAt(0).toString(16)" -> 1ffff
+"'𯿾' === '\u{02FFFE}'" -> true
+"'𯿾'.codePointAt(0).toString(16)" -> 2fffe
+"'𯿿' === '\u{02FFFF}'" -> true
+"'𯿿'.codePointAt(0).toString(16)" -> 2ffff
+"'𿿾' === '\u{03FFFE}'" -> true
+"'𿿾'.codePointAt(0).toString(16)" -> 3fffe
+"'𿿿' === '\u{03FFFF}'" -> true
+"'𿿿'.codePointAt(0).toString(16)" -> 3ffff
+"'񏿾' === '\u{04FFFE}'" -> true
+"'񏿾'.codePointAt(0).toString(16)" -> 4fffe
+"'񏿿' === '\u{04FFFF}'" -> true
+"'񏿿'.codePointAt(0).toString(16)" -> 4ffff
+"'񟿾' === '\u{05FFFE}'" -> true
+"'񟿾'.codePointAt(0).toString(16)" -> 5fffe
+"'񟿿' === '\u{05FFFF}'" -> true
+"'񟿿'.codePointAt(0).toString(16)" -> 5ffff
+"'񯿾' === '\u{06FFFE}'" -> true
+"'񯿾'.codePointAt(0).toString(16)" -> 6fffe
+"'񯿿' === '\u{06FFFF}'" -> true
+"'񯿿'.codePointAt(0).toString(16)" -> 6ffff
+"'񿿾' === '\u{07FFFE}'" -> true
+"'񿿾'.codePointAt(0).toString(16)" -> 7fffe
+"'񿿿' === '\u{07FFFF}'" -> true
+"'񿿿'.codePointAt(0).toString(16)" -> 7ffff
+"'򏿾' === '\u{08FFFE}'" -> true
+"'򏿾'.codePointAt(0).toString(16)" -> 8fffe
+"'򏿿' === '\u{08FFFF}'" -> true
+"'򏿿'.codePointAt(0).toString(16)" -> 8ffff
+"'򟿾' === '\u{09FFFE}'" -> true
+"'򟿾'.codePointAt(0).toString(16)" -> 9fffe
+"'򟿿' === '\u{09FFFF}'" -> true
+"'򟿿'.codePointAt(0).toString(16)" -> 9ffff
+"'򯿾' === '\u{0AFFFE}'" -> true
+"'򯿾'.codePointAt(0).toString(16)" -> afffe
+"'򯿿' === '\u{0AFFFF}'" -> true
+"'򯿿'.codePointAt(0).toString(16)" -> affff
+"'򿿾' === '\u{0BFFFE}'" -> true
+"'򿿾'.codePointAt(0).toString(16)" -> bfffe
+"'򿿿' === '\u{0BFFFF}'" -> true
+"'򿿿'.codePointAt(0).toString(16)" -> bffff
+"'򿿾' === '\u{0BFFFE}'" -> true
+"'򿿾'.codePointAt(0).toString(16)" -> bfffe
+"'򿿿' === '\u{0BFFFF}'" -> true
+"'򿿿'.codePointAt(0).toString(16)" -> bffff
+"'󏿾' === '\u{0CFFFE}'" -> true
+"'󏿾'.codePointAt(0).toString(16)" -> cfffe
+"'󏿿' === '\u{0CFFFF}'" -> true
+"'󏿿'.codePointAt(0).toString(16)" -> cffff
+"'󟿾' === '\u{0DFFFE}'" -> true
+"'󟿾'.codePointAt(0).toString(16)" -> dfffe
+"'󟿿' === '\u{0DFFFF}'" -> true
+"'󟿿'.codePointAt(0).toString(16)" -> dffff
+"'󯿾' === '\u{0EFFFE}'" -> true
+"'󯿾'.codePointAt(0).toString(16)" -> efffe
+"'󯿿' === '\u{0EFFFF}'" -> true
+"'󯿿'.codePointAt(0).toString(16)" -> effff
+"'󿿾' === '\u{0FFFFE}'" -> true
+"'󿿾'.codePointAt(0).toString(16)" -> ffffe
+"'󿿿' === '\u{0FFFFF}'" -> true
+"'󿿿'.codePointAt(0).toString(16)" -> fffff
+"'􏿾' === '\u{10FFFE}'" -> true
+"'􏿾'.codePointAt(0).toString(16)" -> 10fffe
+"'􏿿' === '\u{10FFFF}'" -> true
+"'􏿿'.codePointAt(0).toString(16)" -> 10ffff
+"String.fromCodePoint(0x10FFFF)" -> 􏿿
 

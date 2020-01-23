@@ -34,7 +34,10 @@ class MEDIA_BLINK_EXPORT SmoothnessHelper {
     virtual unsigned DroppedFrameCount() const = 0;
   };
 
-  virtual ~SmoothnessHelper() = default;
+  virtual ~SmoothnessHelper();
+
+  // Return the features that we were constructed with.
+  const learning::FeatureVector& features() const { return features_; }
 
   // |features| are the features that we'll use for any labelled examples that
   // we create.  They should be features that could be captured at the time a
@@ -48,6 +51,11 @@ class MEDIA_BLINK_EXPORT SmoothnessHelper {
   // dropped frame ratio over all segments of a playback.  A playback is not
   // recorded if it doesn't contain at least one full segment.
   static base::TimeDelta SegmentSizeForTesting();
+
+ protected:
+  SmoothnessHelper(const learning::FeatureVector& features);
+
+  learning::FeatureVector features_;
 };
 
 }  // namespace media

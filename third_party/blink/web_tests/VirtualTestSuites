@@ -94,6 +94,7 @@
               "http/tests/origin_trials/feature-policy-reporting",
               "http/tests/sendbeacon",
               "http/tests/serviceworker/webexposed",
+              "inspector-protocol/dom-snapshot",
               "media/stable",
               "webexposed"],
     "args": ["--stable-release-mode"]

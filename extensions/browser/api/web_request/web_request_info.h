@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/values.h"
+#include "content/public/browser/global_routing_id.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/web_request/web_request_resource_type.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
@@ -73,6 +74,7 @@ struct WebRequestInfoInitParams {
   ExtensionApiFrameIdMap::FrameData frame_data;
   bool is_service_worker_script = false;
   base::Optional<int64_t> navigation_id;
+  content::GlobalFrameRoutingId parent_routing_id;
 
  private:
   void InitializeWebViewAndFrameData(
@@ -176,6 +178,10 @@ struct WebRequestInfo {
 
   // Valid if this request corresponds to a navigation.
   const base::Optional<int64_t> navigation_id;
+
+  // ID of the RenderFrameHost corresponding to the parent frame. Only valid for
+  // document subresource and sub-frame requests.
+  const content::GlobalFrameRoutingId parent_routing_id;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRequestInfo);

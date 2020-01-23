@@ -72,6 +72,14 @@ enum PanelOrientation {
   kLast = kRightUp
 };
 
+// The existence, or lack thereof, and state of an ePrivacy screen.
+enum PrivacyScreenState {
+  kDisabled = 0,
+  kEnabled = 1,
+  kNotSupported = 2,
+  kPrivacyScreenStateLast = kNotSupported,
+};
+
 // Defines the float values closest to repeating decimal scale factors.
 constexpr float kDsf_1_777 = 1.77777779102325439453125f;
 constexpr float kDsf_2_252 = 2.2522523403167724609375f;

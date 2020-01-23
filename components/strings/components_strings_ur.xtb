@@ -163,7 +163,7 @@
 <translation id="1639239467298939599">لوڈ ہو رہی ہے</translation>
 <translation id="1640180200866533862">صارف کی پالیسیاں</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />سائٹ کا ہوم پیج ملاحظہ کرنے<ph name="END_LINK" /> کی کوشش کریں۔</translation>
-<translation id="1641976391427233992">تک آؤٹ پٹ میں تاخیر</translation>
+<translation id="1641976391427233992">اس وقت تک آؤٹ پٹ میں تاخیر کریں</translation>
 <translation id="1644574205037202324">سرگزشت</translation>
 <translation id="1645368109819982629">غیر تعاون یافتہ پروٹوکول</translation>
 <translation id="1652415888492971589">JIS B8</translation>
@@ -195,7 +195,7 @@
 <translation id="1743520634839655729">‏اگلی بار زیادہ تیزی سے ادائیگی کرنے کیلئے، اپنے کارڈ، نام اور بلنگ پتہ کو اپنے Google اکاؤنٹ اور اس آلہ میں محفوظ کریں۔</translation>
 <translation id="1743570585616704562">تسلیم شدہ نہیں ہے</translation>
 <translation id="1745880797583122200">آپ کا براؤزر زیر انتظام ہے</translation>
-<translation id="1746113442205726301">‏امیج Y شفٹ</translation>
+<translation id="1746113442205726301">‏تصویر Y شفٹ</translation>
 <translation id="17513872634828108">کھلے ٹیبز</translation>
 <translation id="1752021286346845558">میل باکس 8</translation>
 <translation id="1753706481035618306">صفحہ نمبر</translation>
@@ -207,7 +207,7 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1800473098294731951">B9</translation>
 <translation id="1803264062614276815">کارڈ کے حامل کا نام</translation>
-<translation id="1807528111851433570">شیٹ شروع کریں</translation>
+<translation id="1807528111851433570">ابتدائی شیٹ</translation>
 <translation id="1821930232296380041">غلط درخواست یا درخواست کے پیرامیٹرز</translation>
 <translation id="1822540298136254167">آپ کی ملاحظہ کردہ ویب سائٹس اور ان پر گزارا گیا وقت</translation>
 <translation id="1826516787628120939">چیک کیا جا رہا ہے</translation>
@@ -342,7 +342,7 @@
 <translation id="2465655957518002998">ڈیلیوری کا طریقہ منتخب کریں</translation>
 <translation id="2465688316154986572">سٹیپل</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />نیٹ ورک کی تشخیصات چلانے کی<ph name="END_LINK" /></translation>
-<translation id="2469153820345007638">‏1 سے N آرڈر تک</translation>
+<translation id="2469153820345007638">‏1 سے N ترتیب</translation>
 <translation id="2473195200299095979">اس صفحہ کا ترجمہ کریں</translation>
 <translation id="2479410451996844060">‏غلط تلاش URL۔</translation>
 <translation id="2482878487686419369">اطلاعات</translation>
@@ -543,7 +543,7 @@
 <translation id="3399952811970034796">ڈیلیوری کا پتہ</translation>
 <translation id="3422248202833853650">میموری خالی کرنے کیلئے دیگر پروگرامز سے باہر نکلنے کی کوشش کریں۔</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> فی الحال ناقابل رسائی ہے۔</translation>
-<translation id="3423742043356668186">سسٹم کا تعین کیا گیا</translation>
+<translation id="3423742043356668186">سسٹم کا متعین کردہ</translation>
 <translation id="3427092606871434483">اجازت دیں (ڈیفالٹ)</translation>
 <translation id="3427342743765426898">ترمیم کو &amp;واپس لائیں</translation>
 <translation id="342781501876943858">‏اگر آپ نے اپنا پاس ورڈ دیگر سائٹس پر دوبارہ استعمال کیا ہے تو Chromium آپ کو اپنا پاس ورڈ ری سیٹ کرنے کی تجویز کرتا ہے۔</translation>
@@ -638,7 +638,7 @@
 <translation id="3789155188480882154">سائز 16</translation>
 <translation id="3797522431967816232">Prc3 ‎(Envelope‎)‎</translation>
 <translation id="3799805948399000906">فونٹ کی درخواست کی گئی</translation>
-<translation id="3807366285948165054">‏امیج X شفٹ</translation>
+<translation id="3807366285948165054">‏تصویر X شفٹ</translation>
 <translation id="3807873520724684969">نقصان دہ مواد مسدود ہے۔</translation>
 <translation id="3808375843007691220">انتباہ: تجرباتی خصوصیات آگے ہیں!</translation>
 <translation id="3810973564298564668">نظم کریں</translation>
@@ -820,7 +820,7 @@
 <translation id="4628948037717959914">تصویر</translation>
 <translation id="4635654612248442824">اس سائٹ <ph name="ORIGIN" /> نے درخواست کی ہے کہ ایک اصل پالیسی اس کی سبھی درخواست پر لاگو ہوگی، لیکن فی الحال اس پالیسی کو لاگو نہیں کیا جا سکتا۔</translation>
 <translation id="464342062220857295">خصوصیات تلاش کریں</translation>
-<translation id="4644670975240021822">معکوس آرڈر کو نیچے رکھیں</translation>
+<translation id="4644670975240021822">اُلٹ ترتیب میں، صفحات کا رُخ نیچے کی جانب</translation>
 <translation id="4646534391647090355">اب مجھے وہاں لے چلیں</translation>
 <translation id="4658638640878098064">اوپر بائیں طرف سٹیپل</translation>
 <translation id="4668929960204016307">،</translation>
@@ -851,7 +851,7 @@
 <translation id="4780900888022378816">آپ کا آلہ <ph name="ENROLLMENT_DOMAIN" /> کے زیر انتظام ہے اور آپ کا اکاؤنٹ <ph name="ACCOUNT_DOMAIN" /> کے زیر انتظام ہے۔</translation>
 <translation id="4785689107224900852">اس ٹیب پر سوئچ کریں</translation>
 <translation id="4791134497475588553">‏Linux ایپس انسٹال کی گئیں اور کب آخری بار استعمال کی گئیں</translation>
-<translation id="4796594887379589189">‏جاب اکاؤنٹ کی ID</translation>
+<translation id="4796594887379589189">‏جاب اکاؤنٹ ID</translation>
 <translation id="4798078619018708837">‏اپنے کارڈ کی تفصیلات کو اپ ڈیٹ کرنے کے لیے <ph name="CREDIT_CARD" /> کی تاریخ اختتام اور CVC درج کریں۔ آپ کے توثیق کرنے کے بعد، آپ کے Google اکاؤنٹ سے کارڈ کی تفصیلات کا اس سائٹ کے ساتھ اشتراک کر دیا جائے گا۔</translation>
 <translation id="4800132727771399293">‏اپنی اختتامی تاریخ اور CVC چیک کریں اور دوبارہ کوشش کریں</translation>
 <translation id="480334179571489655">اصل پالیسی کی خرابی</translation>
@@ -1002,7 +1002,7 @@
 <translation id="5430298929874300616">بُک مارک کو ہٹائیں</translation>
 <translation id="5431657950005405462">آپ کی فائل نہیں ملی</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" پر سکیما کی توثیق میں خرابی: <ph name="ERROR" /></translation>
-<translation id="5443468954631487277">معکوس آرڈر کا اوپری حصہ</translation>
+<translation id="5443468954631487277">اُلٹ ترتیب میں، صفحات کا رُخ اوپر کی جانب</translation>
 <translation id="5452270690849572955">یہ <ph name="HOST_NAME" /> صفحہ تلاش نہیں کیا جا سکتا ہے</translation>
 <translation id="5455374756549232013">غلط پالیسی ٹائم اسٹامپ</translation>
 <translation id="5457113250005438886">غلط</translation>
@@ -1126,7 +1126,7 @@
 <translation id="5990559369517809815">سرور تک درخواستوں کو ایک ایکسٹینشن نے مسدود کر دیا ہے۔</translation>
 <translation id="5992691462791905444">‏انجینیئرنگ Z-فولڈ</translation>
 <translation id="6000758707621254961">'<ph name="SEARCH_TEXT" />' کے <ph name="RESULT_COUNT" /> نتائج</translation>
-<translation id="6008122969617370890">‏N سے 1 آرڈر تک</translation>
+<translation id="6008122969617370890">‏N سے 1 ترتیب</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">اپنے پاس ورڈز چیک کریں</translation>
 <translation id="6015796118275082299">سال</translation>
@@ -1179,7 +1179,7 @@
 <translation id="6234122620015464377">ہر دستاویز کے بعد تراشیں</translation>
 <translation id="6240447795304464094">‏Google pay کا لوگو</translation>
 <translation id="6241121617266208201">تجاویز چھپائیں</translation>
-<translation id="624499991300733384">کمپوزیٹر سروس پرنٹ کریں</translation>
+<translation id="624499991300733384">پرنٹ کمپوزیٹر سروس</translation>
 <translation id="6251924700383757765">رازداری کی پالیسی</translation>
 <translation id="6254436959401408446">اس صفحہ کو کھولنے کیلئے کافی میموری نہیں ہے</translation>
 <translation id="625755898061068298">آپ نے اس سائٹ کیلئے سیکیورٹی وارننگز کو غیر فعال کرنے کا انتخاب کیا ہے۔</translation>
@@ -1470,7 +1470,7 @@
 <translation id="7569983096843329377">سیاہ</translation>
 <translation id="7575207903026901870">‏تجویز کا بٹن ہٹائیں، اس تجویز کو ہٹانے کے لیے Enter دبائیں</translation>
 <translation id="7578104083680115302">‏Google کے ساتھ اپنے محفوظ کردہ کارڈز کا استعمال کر کے سبھی آلات پر موجود سائٹس اور ایپس پر جلدی سے ادائیگی کریں۔</translation>
-<translation id="7581199239021537589">‏سائیڈ 2 امیج Y شفٹ</translation>
+<translation id="7581199239021537589">‏سائیڈ 2 تصویر Y شفٹ</translation>
 <translation id="7592362899630581445">سرور سرٹیفیکیٹ نام کی پابندیوں کی خلاف ورزی کرتا ہے۔</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" /> سے کم</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> فی الحال اس درخواست کو نمٹانے سے قاصر ہے۔</translation>
@@ -1499,7 +1499,7 @@
 <translation id="7682287625158474539">ترسیل</translation>
 <translation id="7687186412095877299">آپ کے محفوظ کردہ ادائیگی کے طریقوں سے ادائیگی کے فارمز پُر کرتا ہے</translation>
 <translation id="7687305263118037187">دوبارہ کوشش ٹائم آؤٹ</translation>
-<translation id="7693583928066320343">صفحہ آرڈر موصول ہوا</translation>
+<translation id="7693583928066320343">صفحات کی ترتیب موصول ہوئی</translation>
 <translation id="7697066736081121494">Prc8 ‎(Envelope‎)‎</translation>
 <translation id="769721561045429135">ابھی، آپ کے پاس ایسے کارڈز ہیں جنہیں صرف اس آلہ پر استعمال کیا جا سکتا ہے کارڈز کا جائزہ لینے کیلئے 'جاری رکھیں' پر کلک کریں۔</translation>
 <translation id="7699293099605015246">مضامین ابھی دستیاب نہیں ہیں</translation>
@@ -1520,7 +1520,7 @@
 <translation id="7764225426217299476">پتہ شامل کریں</translation>
 <translation id="7766518757692125295">اسکرٹ</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
-<translation id="7773005668374414287">ہو بہو آرڈر کا اوپری حصہ</translation>
+<translation id="7773005668374414287">اسی ترتیب میں، صفحات کا رُخ اوپر کی جانب</translation>
 <translation id="777702478322588152">انتظامی حلقہ</translation>
 <translation id="7791196057686275387">گانٹھ باندھیں</translation>
 <translation id="7791543448312431591">شامل کریں</translation>
@@ -1542,7 +1542,7 @@
 <translation id="7878562273885520351">لگتا ہے کسی نے آپ کے پاسورڈ کے ساتھ چھیڑ چھاڑ کی ہے</translation>
 <translation id="7882421473871500483">بھورا</translation>
 <translation id="7887683347370398519">‏اپنا CVC چیک کریں اور دوبارہ کوشش کریں</translation>
-<translation id="7888575728750733395">رینڈرنگ انٹینٹ پرنٹ کریں</translation>
+<translation id="7888575728750733395">پرنٹ رینڈرنگ انٹینٹ</translation>
 <translation id="7904208859782148177">C3 ‎(Envelope‎)‎</translation>
 <translation id="7932579305932748336">کوٹ</translation>
 <translation id="79338296614623784">ایک درست فون نمبر درج کریں</translation>
@@ -1734,7 +1734,7 @@
 <translation id="8866928039507595380">فولڈ</translation>
 <translation id="886872106311861689">B3</translation>
 <translation id="8870413625673593573">حال ہی میں بند کردہ</translation>
-<translation id="8870494189203302833">ہو بہو آرڈر کا نچلا حصہ</translation>
+<translation id="8870494189203302833">اسی ترتیب میں، صفحات کا رُخ نیچے کی جانب</translation>
 <translation id="8874824191258364635">ایک درست کارڈ نمبر درج کریں</translation>
 <translation id="8891727572606052622">پراکسی کی غلط وضع۔</translation>
 <translation id="8894794286471754040">طویل کنارہ پہلے</translation>

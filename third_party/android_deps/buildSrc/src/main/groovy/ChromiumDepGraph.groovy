@@ -76,6 +76,8 @@ class ChromiumDepGraph {
             url: "https://github.com/google-ar/arcore-android-sdk",
             licenseUrl: "https://raw.githubusercontent.com/google-ar/arcore-android-sdk/master/LICENSE",
             licenseName: "Apache 2.0"),
+        'commons_cli_commons_cli': new PropertyOverride(
+            licenseName: "Apache 2.0"),
         'javax_annotation_javax_annotation_api': new PropertyOverride(
             isShipped: false,  // Annotations are stripped by R8.
             licenseName: "CDDLv1.1",

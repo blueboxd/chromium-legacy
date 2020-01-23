@@ -257,8 +257,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // view bounds or target view bounds.
   gfx::Rect GetAvailableLocalBounds(bool use_target_bounds) const;
 
-  // Calculates padding for display centering alignment.
-  gfx::Insets CalculatePaddingForDisplayCentering() const;
+  // Calculates padding for display centering alignment depending on which view
+  // bounds are used: actual view bounds or target view bounds.
+  gfx::Insets CalculatePaddingForDisplayCentering(bool use_target_bounds) const;
 
   // Returns whether the received gesture event should be handled here.
   bool ShouldHandleGestures(const ui::GestureEvent& event);

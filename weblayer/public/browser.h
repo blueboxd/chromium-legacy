@@ -18,7 +18,10 @@ class Tab;
 // the set of Tabs.
 class Browser {
  public:
-  static std::unique_ptr<Browser> Create(Profile* profile);
+  // Creates a new Browser. |persistence_id|, if non-empty, is used for saving
+  // and restoring the state of the browser.
+  static std::unique_ptr<Browser> Create(Profile* profile,
+                                         const std::string& persistence_id);
 
   virtual ~Browser() {}
 
@@ -27,6 +30,9 @@ class Browser {
   virtual void SetActiveTab(Tab* tab) = 0;
   virtual Tab* GetActiveTab() = 0;
   virtual const std::vector<Tab*>& GetTabs() = 0;
+
+  // Called early on in shutdown, before any tabs have been removed.
+  virtual void PrepareForShutdown() = 0;
 
   virtual void AddObserver(BrowserObserver* observer) = 0;
   virtual void RemoveObserver(BrowserObserver* observer) = 0;

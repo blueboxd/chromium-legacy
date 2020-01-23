@@ -163,7 +163,7 @@
 <translation id="1639239467298939599">লোড হচ্ছে</translation>
 <translation id="1640180200866533862">ব্যবহারকারীর নীতিসমূহ</translation>
 <translation id="1640244768702815859"><ph name="BEGIN_LINK" />এই সাইটের হোমপেজটি ঘুরে দেখুন<ph name="END_LINK" />।</translation>
-<translation id="1641976391427233992">এই পর্যন্ত আউটপুট দেরি করান</translation>
+<translation id="1641976391427233992">ডিলে আউটপুট</translation>
 <translation id="1644574205037202324">ইতিহাস</translation>
 <translation id="1645368109819982629">অসমর্থিত প্রোটোকল</translation>
 <translation id="1652415888492971589">JIS B8</translation>
@@ -557,7 +557,7 @@
 <translation id="3447661539832366887">এই ডিভাইসের মালিক ডাইনোসর গেমটি বন্ধ করেছেন৷</translation>
 <translation id="3447884698081792621">সার্টিফিকেট দেখান (<ph name="ISSUER" /> এর দ্বারা জারি করা)</translation>
 <translation id="3452404311384756672">বিরামকাল প্রাপ্ত করুন:</translation>
-<translation id="3453962258458347894">রিট্রাইয়ের সংখ্যা</translation>
+<translation id="3453962258458347894">কতবার চেষ্টা করা যাবে</translation>
 <translation id="3456231139987291353">Number-11 (Envelope)</translation>
 <translation id="3461824795358126837">হাইলাইটার</translation>
 <translation id="3462200631372590220">উন্নত করার বিশদ বিবরণ, লুকান</translation>
@@ -1130,7 +1130,7 @@
 <translation id="5975083100439434680">ছোট করুন</translation>
 <translation id="5979084224081478209">পাসওয়ার্ড চেক করুন</translation>
 <translation id="5980920751713728343">Index-3x5</translation>
-<translation id="5984570616552610254">চেম্বারের আদ্রতা</translation>
+<translation id="5984570616552610254">চেম্বারের আর্দ্রতা</translation>
 <translation id="598637245381783098">পেমেন্ট অ্যাপ খোলা যাচ্ছে না</translation>
 <translation id="5989320800837274978">কোনো নির্ধারিত প্রক্সি সার্ভার অথবা একটি.pac স্ক্রিপ্ট UR সুর্নিদিষ্টভাবে উল্লেখ করা হয়নি৷</translation>
 <translation id="5990559369517809815">সার্ভারে অনুরোধগুলি একটি এক্সটেনশন দিয়ে ব্লক করা আছে৷</translation>
@@ -1178,7 +1178,7 @@
 <translation id="6157877588268064908">শিপিং এর পদ্ধতি এবং প্রয়োজনীয়তা দেখতে একটি ঠিকানা বেছে নিন</translation>
 <translation id="6165508094623778733">আরও জানুন</translation>
 <translation id="6177128806592000436">এই সাইটে আপনার সংযোগ নিরাপদ নয়</translation>
-<translation id="6180316780098470077">রিট্রাই ইন্টার্ভ্যাল</translation>
+<translation id="6180316780098470077">কতক্ষণ পর আবার চেষ্টা করা যাবে</translation>
 <translation id="6196640612572343990">তৃতীয় পক্ষের কুকিজ অবরুদ্ধ করুন</translation>
 <translation id="6203231073485539293">আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন</translation>
 <translation id="6218753634732582820">Chromium থেকে ঠিকানা সরাবেন?</translation>
@@ -1506,7 +1506,7 @@
 <translation id="7681101578153515023">সার্চ ইঞ্জিন পরিবর্তন করুন</translation>
 <translation id="7682287625158474539">শিপিং</translation>
 <translation id="7687186412095877299">আপনার সেভ করা পেমেন্ট পদ্ধতি দিয়ে পেমেন্ট ফর্ম পূরণ করে</translation>
-<translation id="7687305263118037187">আর রিট্রাই করতে পারবেন না</translation>
+<translation id="7687305263118037187">আর চেষ্টা করতে পারবেন না</translation>
 <translation id="7693583928066320343">পৃষ্ঠার অর্ডার রিসিভ করা হয়েছে</translation>
 <translation id="7697066736081121494">Prc8 (Envelope)</translation>
 <translation id="769721561045429135">এই মুহূর্তে, আপনার কাছে থাকা কার্ডগুলি শুধুমাত্র এই ডিভাইসে ব্যবহার করা যেতে পারে। কার্ডগুলির পর্যালোচনা চালিয়ে যেতে ক্লিক করুন।</translation>

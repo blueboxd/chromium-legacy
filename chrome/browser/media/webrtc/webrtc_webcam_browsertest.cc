@@ -58,6 +58,7 @@ class WebRtcWebcamBrowserTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->RemoveSwitch(switches::kUseFakeDeviceForMediaStream);
     EXPECT_FALSE(command_line->HasSwitch(
         switches::kUseFakeDeviceForMediaStream));
     EXPECT_FALSE(command_line->HasSwitch(

@@ -119,14 +119,11 @@ NavigationController* NavigatorImpl::GetController() {
   return controller_;
 }
 
-void NavigatorImpl::DidFailLoadWithError(
-    RenderFrameHostImpl* render_frame_host,
-    const GURL& url,
-    int error_code,
-    const base::string16& error_description) {
+void NavigatorImpl::DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
+                                         const GURL& url,
+                                         int error_code) {
   if (delegate_) {
-    delegate_->DidFailLoadWithError(render_frame_host, url, error_code,
-                                    error_description);
+    delegate_->DidFailLoadWithError(render_frame_host, url, error_code);
   }
 }
 

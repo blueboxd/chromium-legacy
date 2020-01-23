@@ -5,15 +5,22 @@
 #ifndef EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULESET_MATCHER_BASE_H_
 #define EXTENSIONS_BROWSER_API_DECLARATIVE_NET_REQUEST_RULESET_MATCHER_BASE_H_
 
+#include <map>
 #include <vector>
 
 #include "base/optional.h"
+#include "content/public/browser/global_routing_id.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension_id.h"
 
 class GURL;
+
+namespace content {
+class RenderFrameHost;
+}  // namespace content
+
 namespace extensions {
 
 namespace declarative_net_request {
@@ -30,9 +37,10 @@ class RulesetMatcherBase {
 
   // Returns the ruleset's highest priority matching RequestAction for the
   // onBeforeRequest phase, or base::nullopt if the ruleset has no matching
-  // rule.
-  virtual base::Optional<RequestAction> GetBeforeRequestAction(
-      const RequestParams& params) const = 0;
+  // rule. Also takes into account any matching allowAllRequests rules for the
+  // ancestor frames.
+  base::Optional<RequestAction> GetBeforeRequestAction(
+      const RequestParams& params) const;
 
   // Returns the bitmask of headers to remove from the request. The bitmask
   // corresponds to flat::RemoveHeaderType. |excluded_remove_headers_mask|
@@ -54,6 +62,14 @@ class RulesetMatcherBase {
     return source_type_;
   }
 
+  void OnRenderFrameDeleted(content::RenderFrameHost* host);
+  void OnDidFinishNavigation(content::RenderFrameHost* host);
+
+  // Returns the tracked highest priority matching allowsAllRequests action, if
+  // any, for |host|.
+  base::Optional<RequestAction> GetAllowlistedFrameActionForTesting(
+      content::RenderFrameHost* host) const;
+
  protected:
   using ExtensionMetadataList =
       ::flatbuffers::Vector<flatbuffers::Offset<flat::UrlRuleMetadata>>;
@@ -65,6 +81,11 @@ class RulesetMatcherBase {
 
   // Helper to create a RequestAction of type |ALLOW|.
   RequestAction CreateAllowAction(
+      const RequestParams& params,
+      const url_pattern_index::flat::UrlRule& rule) const;
+
+  // Helper to create a RequestAction of type |ALLOW_ALL_REQUESTS|.
+  RequestAction CreateAllowAllRequestsAction(
       const RequestParams& params,
       const url_pattern_index::flat::UrlRule& rule) const;
 
@@ -93,12 +114,37 @@ class RulesetMatcherBase {
       uint8_t mask) const;
 
  private:
+  // Returns the ruleset's highest priority matching allowAllRequests action or
+  // base::nullopt if there is no corresponding matching rule. Only takes into
+  // account the request |params| passed in. This doesn't take any account any
+  // matching allowAllRequests rules for ancestor frames.
+  virtual base::Optional<RequestAction> GetAllowAllRequestsAction(
+      const RequestParams& params) const = 0;
+
+  // Returns the ruleset's highest priority matching RequestAction for the
+  // onBeforeRequest phase, or base::nullopt if the ruleset has no matching
+  // rule. This doesn't take any account any matching allowAllRequests rules for
+  // ancestor frames.
+  virtual base::Optional<RequestAction> GetBeforeRequestActionIgnoringAncestors(
+      const RequestParams& params) const = 0;
+
   RequestAction CreateRequestAction(
       RequestAction::Type type,
       const url_pattern_index::flat::UrlRule& rule) const;
 
+  // Returns the matching RequestAction from |allowlisted_frames_| or
+  // base::nullopt if none is found.
+  base::Optional<RequestAction> GetAllowlistedFrameAction(
+      content::GlobalFrameRoutingId frame_id) const;
+
   const ExtensionId extension_id_;
   const api::declarative_net_request::SourceType source_type_;
+
+  // Stores the IDs for the RenderFrameHosts which are allow-listed due to an
+  // allowAllRequests action and the corresponding highest priority
+  // RequestAction.
+  std::map<content::GlobalFrameRoutingId, const RequestAction>
+      allowlisted_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetMatcherBase);
 };

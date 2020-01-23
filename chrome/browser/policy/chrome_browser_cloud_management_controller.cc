@@ -19,7 +19,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise_reporting/report_generator.h"
 #include "chrome/browser/enterprise_reporting/report_scheduler.h"
-#include "chrome/browser/enterprise_reporting/request_timer.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
@@ -445,10 +444,9 @@ void ChromeBrowserCloudManagementController::CreateReportScheduler() {
           ->GetSharedURLLoaderFactory(),
       nullptr, CloudPolicyClient::DeviceDMTokenCallback());
   cloud_policy_client_->AddObserver(this);
-  auto timer = std::make_unique<enterprise_reporting::RequestTimer>();
   auto generator = std::make_unique<enterprise_reporting::ReportGenerator>();
   report_scheduler_ = std::make_unique<enterprise_reporting::ReportScheduler>(
-      cloud_policy_client_.get(), std::move(timer), std::move(generator));
+      cloud_policy_client_.get(), std::move(generator));
 }
 
 }  // namespace policy

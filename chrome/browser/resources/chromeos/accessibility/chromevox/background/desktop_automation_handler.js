@@ -333,7 +333,7 @@ DesktopAutomationHandler.prototype = {
 
     // Discard focus events on embeddedObject and webView.
     if (node.role == RoleType.EMBEDDED_OBJECT ||
-        node.role == RoleType.WEB_VIEW) {
+        node.role == RoleType.PLUGIN_OBJECT || node.role == RoleType.WEB_VIEW) {
       return;
     }
 

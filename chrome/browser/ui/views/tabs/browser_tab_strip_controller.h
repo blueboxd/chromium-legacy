@@ -66,7 +66,11 @@ class BrowserTabStripController : public TabStripController,
   void CloseTab(int model_index, CloseTabSource source) override;
   void UngroupAllTabsInGroup(const tab_groups::TabGroupId& group) override;
   void AddNewTabInGroup(const tab_groups::TabGroupId& group) override;
+  void AddTabToGroup(int model_index,
+                     const tab_groups::TabGroupId& group) override;
+  void RemoveTabFromGroup(int model_index) override;
   void MoveTab(int start_index, int final_index) override;
+  void MoveGroup(const tab_groups::TabGroupId& group, int final_index) override;
   void ShowContextMenuForTab(Tab* tab,
                              const gfx::Point& p,
                              ui::MenuSourceType source_type) override;

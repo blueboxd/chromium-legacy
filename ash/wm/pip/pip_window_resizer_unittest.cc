@@ -21,7 +21,6 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -80,10 +79,8 @@ class PipWindowResizerTest : public AshTestBase,
   ~PipWindowResizerTest() override = default;
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    SetTouchKeyboardEnabled(true);
+    SetVirtualKeyboardEnabled(true);
 
     const std::string& display_string = std::get<0>(GetParam());
     const std::size_t root_window_index = std::get<1>(GetParam());
@@ -96,7 +93,7 @@ class PipWindowResizerTest : public AshTestBase,
 
   void TearDown() override {
     scoped_root_.reset();
-    SetTouchKeyboardEnabled(false);
+    SetVirtualKeyboardEnabled(false);
     AshTestBase::TearDown();
   }
 

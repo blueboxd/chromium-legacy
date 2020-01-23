@@ -129,21 +129,10 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
   virtual void AdjustOutputSurfaceOverlay(
       base::Optional<OutputSurfaceOverlayPlane>* output_surface_plane) = 0;
 
-  // Before the overlay refactor to use OverlayProcessorOnGpu, overlay
-  // candidates are stored inside DirectRenderer. Those overlay candidates are
-  // later sent over to the GPU thread by GLRenderer or SkiaRenderer. This is a
-  // helper function to take these overlay candidates inside overlay processor
-  // to avoid sending over DirectRenderer implementation. This is overridden by
-  // each platform that is ready to send overlay candidates inside overlay
-  // processo. Must be called before ScheduleOverlays().
-  virtual void TakeOverlayCandidates(CandidateList* candidate_list) {}
-
   // TODO(weiliangc): Make it pure virtual after it is implemented by every
   // subclass.
   virtual void ScheduleOverlays(
       DisplayResourceProvider* display_resource_provider);
-  // This is a signal from Display::DidReceiveSwapBuffersAck.
-  virtual void OverlayPresentationComplete();
 
   // These two functions are used by Android SurfaceControl.
   virtual void SetDisplayTransformHint(gfx::OverlayTransform transform) {}

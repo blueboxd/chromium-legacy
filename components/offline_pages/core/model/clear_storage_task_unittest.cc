@@ -29,7 +29,6 @@ using StorageStats = ArchiveManager::StorageStats;
 
 namespace {
 
-const GURL kTestUrl("http://example.com");
 const int64_t kTestFileSize = 1 << 19;              // Make a page 512KB.
 const int64_t kFreeSpaceNormal = 1000 * (1 << 20);  // 1000MB free space.
 

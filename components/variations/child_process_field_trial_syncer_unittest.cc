@@ -26,7 +26,7 @@ class TestFieldTrialObserver : public base::FieldTrialList::Observer {
   TestFieldTrialObserver() {}
   ~TestFieldTrialObserver() override { ClearCrashKeysInstanceForTesting(); }
 
-  // base::FieldTrial::Observer:
+  // base::FieldTrialList::Observer:
   void OnFieldTrialGroupFinalized(const std::string& trial_name,
                                   const std::string& group_name) override {
     observed_entries_.push_back(std::make_pair(trial_name, group_name));

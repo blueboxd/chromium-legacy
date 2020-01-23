@@ -45,6 +45,15 @@ public class ViewRectProvider extends RectProvider
     }
 
     /**
+     * Specifies the inset values in pixels that determine how to shrink the {@link View} bounds
+     * when creating the {@link Rect}.
+     */
+    public void setInsetPx(Rect insetRect) {
+        mInsetRect.set(insetRect);
+        refreshRectBounds();
+    }
+
+    /**
      * Whether padding should be included in the {@link Rect} for the {@link View}.
      * @param includePadding Whether padding should be included. Defaults to false.
      */

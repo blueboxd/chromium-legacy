@@ -194,7 +194,7 @@
 <translation id="1743520634839655729">Untuk membayar dengan lebih cepat selepas ini, simpan kad, nama dan alamat pengebilan anda ke Akaun Google dan ke peranti ini.</translation>
 <translation id="1743570585616704562">Tidak dikenali</translation>
 <translation id="1745880797583122200">Penyemak imbas anda diurus</translation>
-<translation id="1746113442205726301">Imej Y shift</translation>
+<translation id="1746113442205726301">Anjakan Y imej</translation>
 <translation id="17513872634828108">Buka tab</translation>
 <translation id="1752021286346845558">Peti mel 8</translation>
 <translation id="1753706481035618306">Nombor halaman</translation>
@@ -418,14 +418,14 @@
 <translation id="2742870351467570537">Buang item yang dipilih</translation>
 <translation id="277133753123645258">Kaedah penghantaran</translation>
 <translation id="277499241957683684">Tiada rekod peranti</translation>
-<translation id="2775884851269838147">Halaman pertama dicetak</translation>
+<translation id="2775884851269838147">Cetakan halaman pertama</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2784949926578158345">Sambungan ditetapkan semula.</translation>
 <translation id="2792012897584536778">Pentadbir peranti ini telah menyediakan sijil keselamatan yang mungkin membolehkan mereka melihat kandungan tapak web yang anda lawati.</translation>
 <translation id="2799020568854403057">Tapak yang akan disemak imbas mengandungi apl yang memudaratkan</translation>
 <translation id="2799223571221894425">Lancarkan semula</translation>
 <translation id="2803306138276472711">Penyemakan Selamat Google <ph name="BEGIN_LINK" />mengesan perisian hasad<ph name="END_LINK" /> pada <ph name="SITE" /> baru-baru ini. Tapak web yang biasanya selamat kadangkala dijangkiti oleh perisian hasad.</translation>
-<translation id="2807052079800581569">Kedudukan imej Y</translation>
+<translation id="2807052079800581569">Kedudukan Y imej</translation>
 <translation id="2809804249696361569">Kedua-dua helaian</translation>
 <translation id="2824775600643448204">Bar alamat dan carian</translation>
 <translation id="2826760142808435982">Sambungan disulitkan dan disahkan menggunakan <ph name="CIPHER" /> dan menggunakan <ph name="KX" /> sebagai mekanisme pertukaran kunci.</translation>
@@ -647,7 +647,7 @@
 <translation id="3789155188480882154">Saiz 16</translation>
 <translation id="3797522431967816232">Prc3 (Sampul Surat)</translation>
 <translation id="3799805948399000906">Fon diminta</translation>
-<translation id="3807366285948165054">Imej X shift</translation>
+<translation id="3807366285948165054">Anjakan X imej</translation>
 <translation id="3807873520724684969">Kandungan berbahaya disekat.</translation>
 <translation id="3808375843007691220">Amaran: Ciri percubaan di hadapan!</translation>
 <translation id="3810973564298564668">Urus</translation>
@@ -696,7 +696,7 @@
 <translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">Konfigurasi proksi ditetapkan kepada penggunaaan URL skrip .pac, bukannya pelayan proksi tetap.</translation>
 <translation id="4082393374666368382">Tetapan - Pengurusan</translation>
-<translation id="4088981014127559358">Sisi 1 imej Y shift</translation>
+<translation id="4088981014127559358">Anjakan Y sisi 1 imej</translation>
 <translation id="4098354747657067197">Tapak menipu di hadapan</translation>
 <translation id="4101413244023615925">Teks dan grafik</translation>
 <translation id="4103249731201008433">Nombor siri peranti tidak sah</translation>
@@ -786,7 +786,7 @@
 <translation id="4372948949327679948">Nilai <ph name="VALUE_TYPE" /> yang dijangka.</translation>
 <translation id="4377125064752653719">Anda cuba untuk mencapai <ph name="DOMAIN" />, tetapi sijil yang diberi pelayan telah dibatalkan oleh pengeluarnya. Ini bermakna bahawa bukti kelayakan keselamatan yang diberi pelayan sememangnya tidak harus dipercayai. Anda mungkin berkomunikasi dengan penyerang.</translation>
 <translation id="4378154925671717803">Telefon</translation>
-<translation id="4390472908992056574">Penuh</translation>
+<translation id="4390472908992056574">Bertepi</translation>
 <translation id="4406896451731180161">hasil carian</translation>
 <translation id="4408413947728134509">Kuki <ph name="NUM_COOKIES" /></translation>
 <translation id="4415426530740016218">Alamat Pengambilan</translation>
@@ -1034,7 +1034,7 @@
 <translation id="552553974213252141">Adakah teks diekstrak dengan betul?</translation>
 <translation id="55293785478302737">Jahitan tepi</translation>
 <translation id="553484882784876924">Prc6 (Sampul Surat)</translation>
-<translation id="5539243836947087108">Sisa</translation>
+<translation id="5539243836947087108">Rakit</translation>
 <translation id="5540224163453853">Tidak menemui artikel yang diminta.</translation>
 <translation id="5541086400771735334">Peti mel 7</translation>
 <translation id="5541546772353173584">Tambahkan E-mel</translation>
@@ -1061,13 +1061,13 @@
 <translation id="5632627355679805402">Data anda disulitkan dengan <ph name="BEGIN_LINK" />kata laluan Google<ph name="END_LINK" /> anda pada <ph name="TIME" />. Masukkan kata laluan itu untuk memulakan penyegerakan.</translation>
 <translation id="5633066919399395251">Penyerang yang sedang berada di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mungkin cuba memasang atur cara berbahaya pada komputer anda. Atur cara tersebut boleh mencuri atau memadamkan maklumat anda (contohnya, foto, kata laluan, mesej dan kad kredit). <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Kandungan mengelirukan disekat.</translation>
-<translation id="5644090287519800334">Sisi 1 imej X shift</translation>
+<translation id="5644090287519800334">Anjakan X sisi 1 imej</translation>
 <translation id="5645854190134202180">Syif kedua</translation>
 <translation id="5659593005791499971">E-mel</translation>
 <translation id="5663614846592581799">9x11 (Sampul Surat)</translation>
 <translation id="5663955426505430495">Pentadbir peranti ini telah memasang sambungan bagi fungsi tambahan. Sambungan mempunyai akses kepada sesetengah data anda.</translation>
 <translation id="5675650730144413517">Halaman ini tidak berfungsi</translation>
-<translation id="568292603005599551">Kedudukan imej X</translation>
+<translation id="568292603005599551">Kedudukan X imej</translation>
 <translation id="5684874026226664614">Op. Halaman ini tidak dapat diterjemahkan.</translation>
 <translation id="5685654322157854305">Tambahkan Alamat Penghantaran</translation>
 <translation id="5689199277474810259">Eksport ke JSON</translation>
@@ -1372,7 +1372,7 @@
 <translation id="7135130955892390533">Tunjukkan status</translation>
 <translation id="7138472120740807366">Kaedah penghantaran</translation>
 <translation id="7139724024395191329">Amiriah</translation>
-<translation id="714064300541049402">Sisi 2 imej X shift</translation>
+<translation id="714064300541049402">Anjakan X sisi 2 imej</translation>
 <translation id="7152423860607593928">Number-14 (Sampul Surat)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lagi}other{<ph name="PAYMENT_METHOD_PREVIEW" /> dan <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> lagi}}</translation>
 <translation id="7153618581592392745">Gandaria</translation>
@@ -1391,7 +1391,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /> mengenai masalah ini.</translation>
 <translation id="7219179957768738017">Sambungan menggunakan <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Memproses</translation>
-<translation id="7233592378249864828">Helaian pengesahan cetakan</translation>
+<translation id="7233592378249864828">Cetak helaian pengesahan</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Tapak di hadapan mengandungi perisian hasad</translation>
 <translation id="724975217298816891">Masukkan tarikh tamat tempoh dan CVC untuk <ph name="CREDIT_CARD" /> bagi mengemas kini butiran kad anda. Setelah anda mengesahkan, butiran kad anda akan dikongsi dengan tapak ini.</translation>
@@ -1479,7 +1479,7 @@ Butiran tambahan:
 <translation id="7569983096843329377">Hitam</translation>
 <translation id="7575207903026901870">Alih keluar butang Cadangan, tekan Enter untuk mengalih keluar cadangan ini</translation>
 <translation id="7578104083680115302">Bayar dengan cepat di tapak dan apl merentas peranti menggunakan kad yang telah disimpan dengan Google.</translation>
-<translation id="7581199239021537589">Sisi 2 imej Y shift</translation>
+<translation id="7581199239021537589">Anjakan Y sisi 2 imej</translation>
 <translation id="7592362899630581445">Sijil pelayan melanggar kekangan nama.</translation>
 <translation id="7598391785903975535">Kurang daripada <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> tidak dapat mengendalikan permintaan ini pada masa ini.</translation>

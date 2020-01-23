@@ -68,6 +68,8 @@
     _webStateList->RemoveObserver(_webStateListObserver.get());
     _webStateListObserver = nullptr;
     _webStateList = nullptr;
+
+    _forwarder = nullptr;
   }
 }
 

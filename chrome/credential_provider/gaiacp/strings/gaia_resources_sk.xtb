@@ -31,7 +31,7 @@
 <translation id="7536769223115622137">Pridať pracovný účet</translation>
 <translation id="7811865856574012727">Správca obmedzil prihlásenie zariadenia v nasledujúcich doménach: <ph name="EMAIL_DOMAINS" />. Skúste to znova pomocou platného pracovného účtu.</translation>
 <translation id="7856245195110636219">Bez zadania aktuálneho hesla systému Windows nie je možné pokračovať. Kontaktujte správcu systému.</translation>
-<translation id="8109730953933509335">Prebehol pokus o zmenu hesla nesprávneho používateľa. Kontaktujte správcu.</translation>
+<translation id="8109730953933509335">Prebehol pokus o zmenu hesla neplatného používateľa. Kontaktujte správcu.</translation>
 <translation id="8639729688781680518">Nepamätám si heslo systému Windows</translation>
 <translation id="866458870819756755">Používateľa sa nepodarilo vytvoriť.</translation>
 <translation id="8875753657315897487">Prihláste sa pomocou pracovného účtu</translation>

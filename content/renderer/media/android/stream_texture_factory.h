@@ -20,6 +20,7 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace gpu {
+class ClientSharedImageInterface;
 class GpuChannelHost;
 class SharedImageInterface;
 struct SyncToken;
@@ -124,6 +125,7 @@ class CONTENT_EXPORT StreamTextureFactory
   unsigned CreateStreamTexture();
 
   scoped_refptr<gpu::GpuChannelHost> channel_;
+  std::unique_ptr<gpu::ClientSharedImageInterface> shared_image_interface_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureFactory);
 };

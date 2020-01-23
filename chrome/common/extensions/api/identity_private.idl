@@ -3,7 +3,14 @@
 // found in the LICENSE file.
 
 // identityPrivate.
+[implemented_in="chrome/browser/extensions/api/identity/identity_private_api.h"]
 namespace identityPrivate {
+
+  interface Functions {
+    // The Identity API application with specified window_id returns the consent
+    // result to the browser.
+    static void setConsentResult(DOMString result, DOMString window_id);
+  };
 
   interface Events {
     // Fired when a web flow dialog should be displayed.

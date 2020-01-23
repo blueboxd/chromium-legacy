@@ -61,6 +61,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/parental_controls_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
 #include "chrome/browser/ui/webui/settings/chromeos/wallpaper_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
 #include "chrome/browser/ui/webui/settings/extension_control_handler.h"
@@ -91,6 +92,7 @@
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -99,6 +101,12 @@
 
 namespace chromeos {
 namespace settings {
+
+// static
+void OSSettingsUI::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kSyncOsWallpaper, false);
+}
 
 OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui, /*enable_chrome_send=*/true),
@@ -288,7 +296,7 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::WallpaperHandler>(web_ui()));
 
-  if (plugin_vm::IsPluginVmEnabled(profile)) {
+  if (plugin_vm::IsPluginVmAllowedForProfile(profile)) {
     web_ui()->AddMessageHandler(
         std::make_unique<chromeos::settings::PluginVmHandler>(profile));
   }
@@ -379,7 +387,7 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
       "allowCrostini", crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
 
   html_source->AddBoolean("showPluginVm",
-                          plugin_vm::IsPluginVmEnabled(profile));
+                          plugin_vm::IsPluginVmAllowedForProfile(profile));
 
   html_source->AddBoolean("isDemoSession",
                           chromeos::DemoSession::IsDeviceInDemoMode());

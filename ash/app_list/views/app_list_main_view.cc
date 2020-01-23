@@ -49,8 +49,6 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
     : delegate_(delegate),
       model_(delegate->GetModel()),
       search_model_(delegate->GetSearchModel()),
-      search_box_view_(nullptr),
-      contents_view_(nullptr),
       app_list_view_(app_list_view) {
   // We need a layer to apply transform to in small display so that the apps
   // grid fits in the display.
@@ -77,11 +75,11 @@ void AppListMainView::Init(int initial_apps_page,
 
 void AppListMainView::AddContentsViews() {
   DCHECK(search_box_view_);
-  contents_view_ = new ContentsView(app_list_view_);
-  contents_view_->Init(model_);
-  contents_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
-  contents_view_->layer()->SetMasksToBounds(true);
-  AddChildView(contents_view_);
+  auto contents_view = std::make_unique<ContentsView>(app_list_view_);
+  contents_view->Init(model_);
+  contents_view->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
+  contents_view->layer()->SetMasksToBounds(true);
+  contents_view_ = AddChildView(std::move(contents_view));
 
   search_box_view_->set_contents_view(contents_view_);
 }

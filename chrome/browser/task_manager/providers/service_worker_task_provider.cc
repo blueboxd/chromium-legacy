@@ -6,17 +6,10 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/service_worker_running_info.h"
 #include "content/public/browser/storage_partition.h"
-#include "content/public/common/child_process_host.h"
-#include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 
 using content::BrowserThread;
 
@@ -30,18 +23,33 @@ Task* ServiceWorkerTaskProvider::GetTaskOfUrlRequest(int child_id,
   return nullptr;
 }
 
-void ServiceWorkerTaskProvider::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_PROFILE_CREATED: {
-      OnProfileCreated(content::Source<Profile>(source).ptr());
-      break;
-    }
-    default:
-      NOTREACHED() << type;
-  }
+void ServiceWorkerTaskProvider::OnProfileAdded(Profile* profile) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  observed_profiles_.Add(profile);
+
+  content::ServiceWorkerContext* context =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetServiceWorkerContext();
+  scoped_context_observer_.Add(context);
+}
+
+void ServiceWorkerTaskProvider::OnOffTheRecordProfileCreated(
+    Profile* off_the_record) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  OnProfileAdded(off_the_record);
+}
+
+void ServiceWorkerTaskProvider::OnProfileWillBeDestroyed(Profile* profile) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  observed_profiles_.Remove(profile);
+
+  content::ServiceWorkerContext* context =
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetServiceWorkerContext();
+  scoped_context_observer_.Remove(context);
 }
 
 void ServiceWorkerTaskProvider::OnVersionStartedRunning(
@@ -52,6 +60,7 @@ void ServiceWorkerTaskProvider::OnVersionStartedRunning(
 
   CreateTask(context, version_id, running_info);
 }
+
 void ServiceWorkerTaskProvider::OnVersionStoppedRunning(
     content::ServiceWorkerContext* context,
     int64_t version_id) {
@@ -60,26 +69,21 @@ void ServiceWorkerTaskProvider::OnVersionStoppedRunning(
   DeleteTask(context, version_id);
 }
 
-void ServiceWorkerTaskProvider::OnDestruct(
-    content::ServiceWorkerContext* context) {
-  scoped_context_observer_.Remove(context);
-}
-
 void ServiceWorkerTaskProvider::StartUpdating() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                 content::NotificationService::AllBrowserContextsAndSources());
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (profile_manager) {
+    scoped_profile_manager_observer_.Add(profile_manager);
+
     auto loaded_profiles = profile_manager->GetLoadedProfiles();
     for (auto* profile : loaded_profiles) {
-      CreateTasksForProfile(profile);
+      OnProfileAdded(profile);
 
       // If the incognito window is open, we have to check its profile and
       // create the tasks if there are any.
       if (profile->HasOffTheRecordProfile())
-        CreateTasksForProfile(profile->GetOffTheRecordProfile());
+        OnProfileAdded(profile->GetOffTheRecordProfile());
     }
   }
 }
@@ -87,8 +91,9 @@ void ServiceWorkerTaskProvider::StartUpdating() {
 void ServiceWorkerTaskProvider::StopUpdating() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Stop listening to NOTIFICATION_PROFILE_CREATED.
-  registrar_.RemoveAll();
+  // Stop observing profile creation and destruction.
+  scoped_profile_manager_observer_.RemoveAll();
+  observed_profiles_.RemoveAll();
 
   // Stop observing contexts.
   scoped_context_observer_.RemoveAll();
@@ -142,13 +147,6 @@ void ServiceWorkerTaskProvider::DeleteTask(
 
   NotifyObserverTaskRemoved(it->second.get());
   service_worker_task_map_.erase(it);
-}
-
-void ServiceWorkerTaskProvider::OnProfileCreated(Profile* profile) {
-  content::ServiceWorkerContext* context =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetServiceWorkerContext();
-  scoped_context_observer_.Add(context);
 }
 
 }  // namespace task_manager

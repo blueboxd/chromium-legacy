@@ -94,7 +94,7 @@ class CORE_EXPORT InspectorDOMAgent final
   };
 
   static protocol::Response ToResponse(ExceptionState&);
-  static bool GetPseudoElementType(PseudoId, String*);
+  static protocol::DOM::PseudoType ProtocolPseudoElementType(PseudoId);
   static protocol::DOM::ShadowRootType GetShadowRootType(ShadowRoot*);
   static ShadowRoot* UserAgentShadowRoot(Node*);
   static Color ParseColor(protocol::DOM::RGBA*);

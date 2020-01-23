@@ -161,7 +161,7 @@ std::unique_ptr<FakeDisplaySnapshot> Builder::Build() {
 
   return std::make_unique<FakeDisplaySnapshot>(
       id_, origin_, physical_size, type_, is_aspect_preserving_scaling_,
-      has_overscan_, has_privacy_screen_, has_color_correction_matrix_,
+      has_overscan_, privacy_screen_state_, has_color_correction_matrix_,
       color_correction_in_linear_space_, name_, std::move(modes_),
       current_mode_, native_mode_, product_code_, maximum_cursor_size_);
 }
@@ -285,28 +285,29 @@ const DisplayMode* Builder::AddOrFindDisplayMode(
   return modes_.back().get();
 }
 
-FakeDisplaySnapshot::FakeDisplaySnapshot(int64_t display_id,
-                                         const gfx::Point& origin,
-                                         const gfx::Size& physical_size,
-                                         DisplayConnectionType type,
-                                         bool is_aspect_preserving_scaling,
-                                         bool has_overscan,
-                                         bool has_privacy_screen,
-                                         bool has_color_correction_matrix,
-                                         bool color_correction_in_linear_space,
-                                         std::string display_name,
-                                         DisplayModeList modes,
-                                         const DisplayMode* current_mode,
-                                         const DisplayMode* native_mode,
-                                         int64_t product_code,
-                                         const gfx::Size& maximum_cursor_size)
+FakeDisplaySnapshot::FakeDisplaySnapshot(
+    int64_t display_id,
+    const gfx::Point& origin,
+    const gfx::Size& physical_size,
+    DisplayConnectionType type,
+    bool is_aspect_preserving_scaling,
+    bool has_overscan,
+    PrivacyScreenState privacy_screen_state,
+    bool has_color_correction_matrix,
+    bool color_correction_in_linear_space,
+    std::string display_name,
+    DisplayModeList modes,
+    const DisplayMode* current_mode,
+    const DisplayMode* native_mode,
+    int64_t product_code,
+    const gfx::Size& maximum_cursor_size)
     : DisplaySnapshot(display_id,
                       origin,
                       physical_size,
                       type,
                       is_aspect_preserving_scaling,
                       has_overscan,
-                      has_privacy_screen,
+                      privacy_screen_state,
                       has_color_correction_matrix,
                       color_correction_in_linear_space,
                       gfx::ColorSpace(),

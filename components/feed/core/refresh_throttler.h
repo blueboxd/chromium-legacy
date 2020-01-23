@@ -28,7 +28,7 @@ namespace feed {
 //  - "NewTabPage.RequestThrottler.PerDay_|name|" - the daily count of requests.
 class RefreshThrottler {
  public:
-  RefreshThrottler(UserClassifier::UserClass user_class,
+  RefreshThrottler(UserClass user_class,
                    PrefService* pref_service,
                    base::Clock* clock);
 

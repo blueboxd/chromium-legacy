@@ -449,11 +449,11 @@ bool Tab::OnKeyPressed(const ui::KeyEvent& event) {
       }
     } else {
       if (event.key_code() == ui::VKEY_RIGHT) {
-        controller()->MoveTabRight(this);
+        controller()->ShiftTabRight(this);
         return true;
       }
       if (event.key_code() == ui::VKEY_LEFT) {
-        controller()->MoveTabLeft(this);
+        controller()->ShiftTabLeft(this);
         return true;
       }
     }

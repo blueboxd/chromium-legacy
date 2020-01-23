@@ -5025,7 +5025,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8101987792947961127">Powerwash obrigatório na próxima reinicialização</translation>
 <translation id="8102159139658438129">Acesse <ph name="LINK_BEGIN" />Configurações<ph name="LINK_END" /> para ver as opções do smartphone conectado</translation>
 <translation id="8104696615244072556">Execute um powerwash no seu dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> e volte para a versão anterior.</translation>
-<translation id="8106661353233173262">Algo deu errado. O arquivo verificado expirou.</translation>
 <translation id="8107015733319732394">Instalando a Google Play Store no seu <ph name="DEVICE_TYPE" />. Isso pode demorar alguns minutos.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Sem cookies de terceiros}=1{1 cookie de terceiros foi bloqueado}one{# cookie de terceiros foi bloqueado}other{# cookies de terceiros foram bloqueados}}</translation>
 <translation id="810875025413331850">Nenhum dispositivo próximo encontrado.</translation>

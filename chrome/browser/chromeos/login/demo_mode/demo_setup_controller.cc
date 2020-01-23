@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_resources.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -462,7 +463,8 @@ std::string DemoSetupController::GetSubOrganizationEmail() {
   const std::string country =
       g_browser_process->local_state()->GetString(prefs::kDemoModeCountry);
   const base::flat_set<std::string> kCountriesWithCustomization(
-      {"de", "dk", "fi", "fr", "jp", "nl", "no", "se"});
+      {"be", "ca", "de", "dk", "es", "fi", "fr", "gb", "ie", "it", "jp", "lu",
+       "nl", "no", "se"});
   if (kCountriesWithCustomization.contains(country))
     return "admin-" + country + "@" + policy::kDemoModeDomain;
   return std::string();

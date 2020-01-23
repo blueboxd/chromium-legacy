@@ -44,9 +44,19 @@ public class VariationsSeedHolderTest {
             mUpdateFinished = new CallbackHelper();
         }
 
+        public TestHolder(CallbackHelper writeFinished) {
+            mWriteFinished = writeFinished;
+            mUpdateFinished = new CallbackHelper();
+        }
+
         // Don't schedule the seed download job.
         @Override
         public void scheduleFetchIfNeeded() {}
+
+        @Override
+        public void onWriteFinished() {
+            mWriteFinished.notifyCalled();
+        }
 
         public void writeSeedIfNewerBlocking(File destination, long date)
                 throws IOException, TimeoutException {
@@ -54,7 +64,7 @@ public class VariationsSeedHolderTest {
             try {
                 fd = ParcelFileDescriptor.open(destination, ParcelFileDescriptor.MODE_WRITE_ONLY);
                 int calls = mWriteFinished.getCallCount();
-                writeSeedIfNewer(fd, date, /*onFinished=*/mWriteFinished::notifyCalled);
+                writeSeedIfNewer(fd, date);
                 mWriteFinished.waitForCallback(calls);
             } finally {
                 if (fd != null) fd.close();
@@ -63,7 +73,7 @@ public class VariationsSeedHolderTest {
 
         public void updateSeedBlocking(SeedInfo newSeed) throws TimeoutException {
             int calls = mUpdateFinished.getCallCount();
-            updateSeed(newSeed, /*onFinished=*/mUpdateFinished::notifyCalled);
+            updateSeed(newSeed, /*onFinished=*/() -> mUpdateFinished.notifyCalled());
             mUpdateFinished.waitForCallback(calls);
         }
     }
@@ -182,11 +192,13 @@ public class VariationsSeedHolderTest {
                     Arrays.fill(mockSeeds[i].seedData, (byte) i);
                 }
 
-                TestHolder holder = new TestHolder();
-
                 // Used to track the completion of every updateSeed and writeSeedIfNewer call.
                 CallbackHelper callbackHelper = new CallbackHelper();
                 int callbacksExpected = 0;
+
+                // TestHolder will notify callbackHelper whenever a writeSeedIfNewer request
+                // completes.
+                TestHolder holder = new TestHolder(callbackHelper);
 
                 // "Download" each mock seed to the holder.
                 for (int i = 0; i < mockSeeds.length; i++) {
@@ -205,8 +217,7 @@ public class VariationsSeedHolderTest {
                         fds.add(fd);
 
                         callbacksExpected++;
-                        holder.writeSeedIfNewer(
-                                fd, Long.MIN_VALUE, /*onFinished=*/callbackHelper::notifyCalled);
+                        holder.writeSeedIfNewer(fd, Long.MIN_VALUE);
                     }
                 }
 

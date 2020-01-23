@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegateImpl;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -16,6 +15,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;

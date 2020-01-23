@@ -8,8 +8,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
 <dom-module id="throbber-notice">
-  <link rel="stylesheet" href="throbber_notice.css">
   <template>
+    <link rel="stylesheet" href="throbber_notice.css">
     <paper-spinner-lite dir="ltr" active></paper-spinner-lite>
     <div id="comment" aria-live="polite"
         aria-label$="[[i18nDynamic(locale, textKey)]]">

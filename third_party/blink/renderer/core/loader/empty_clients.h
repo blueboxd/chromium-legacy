@@ -309,8 +309,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void ProgressEstimateChanged(double) override {}
   void DidStopLoading() override {}
 
-  void ForwardResourceTimingToParent(const WebResourceTimingInfo&) override {}
-
   void DownloadURL(const ResourceRequest&,
                    network::mojom::RedirectMode) override {}
 

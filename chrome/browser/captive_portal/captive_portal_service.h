@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -28,9 +29,8 @@ class URLLoaderFactory;
 }
 }  // namespace network
 
-// Service that checks for captive portals when queried, and sends a
-// NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT with the BrowserContext as the
-// source and a CaptivePortalService::Results as the details.
+// Service that checks for captive portals when queried and sends updates to
+// its registered consumers when results are obtained.
 //
 // Captive portal checks are rate-limited.  The CaptivePortalService may only
 // be accessed on the UI thread.
@@ -47,7 +47,7 @@ class CaptivePortalService : public KeyedService {
                                  // implies SKIP_OS_CHECK_FOR_TESTING.
   };
 
-  // The details sent via a NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT.
+  // The details sent to consumers on a query completing.
   struct Results {
     // The result of the second most recent captive portal check.
     captive_portal::CaptivePortalResult previous_result;
@@ -57,6 +57,8 @@ class CaptivePortalService : public KeyedService {
     // this points to the login page.
     GURL landing_url;
   };
+
+  using Subscription = base::CallbackList<void(const Results&)>::Subscription;
 
   CaptivePortalService(
       content::BrowserContext* browser_context,
@@ -69,6 +71,11 @@ class CaptivePortalService : public KeyedService {
   // progress, does nothing.  Throttles the rate at which requests are sent.
   // Always sends the result notification asynchronously.
   void DetectCaptivePortal();
+
+  std::unique_ptr<Subscription> RegisterCallback(
+      const base::RepeatingCallback<void(const Results&)>& cb) {
+    return callback_list_.Add(cb);
+  }
 
   // Returns the URL used for captive portal testing.  When a captive portal is
   // detected, this URL will take us to the captive portal landing page.
@@ -179,6 +186,8 @@ class CaptivePortalService : public KeyedService {
 
   // The result of the most recent captive portal check.
   captive_portal::CaptivePortalResult last_detection_result_;
+
+  base::CallbackList<void(const Results&)> callback_list_;
 
   // Number of sequential checks with the same captive portal result.
   int num_checks_with_same_result_;

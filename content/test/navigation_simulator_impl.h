@@ -103,11 +103,9 @@ class NavigationSimulatorImpl : public NavigationSimulator,
 
   void SetKeepLoading(bool keep_loading) override;
   void StopLoading() override;
-  void FailLoading(const GURL& url,
-                   int error_code,
-                   const base::string16& error_description) override;
+  void FailLoading(const GURL& url, int error_code) override;
 
-  // Additional utilites usable only inside content/.
+  // Additional utilities usable only inside content/.
 
   // This will do the very beginning of a navigation but stop before the
   // beforeunload event response. Will leave the Simulator in a

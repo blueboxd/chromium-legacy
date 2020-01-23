@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.tab;
 
-import static org.chromium.chrome.browser.tab.Tab.INVALID_TAB_ID;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -32,8 +30,6 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.content.ContentUtils;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
-import org.chromium.chrome.browser.native_page.FrozenNativePage;
-import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageAssassin;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.night_mode.NightModeUtils;
@@ -43,6 +39,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.tab.TabState.WebContentsState;
 import org.chromium.chrome.browser.tab.TabUma.TabCreationState;
+import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
+import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;

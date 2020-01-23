@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -625,11 +626,22 @@ class CrostiniManagerRestartTest : public CrostiniManagerTest,
       Abort();
     }
     if (abort_then_stop_vm_) {
-      Abort();
+      auto barrier_closure = base::BarrierClosure(2, run_loop()->QuitClosure());
+
+      // Don't use the Abort() method because it terminates the run loop
+      // immediately, and we want to wait for the OnVmStopped task to complete.
+      crostini_manager()->AbortRestartCrostini(restart_id_, barrier_closure);
+
+      // Signal that the VM has stopped by posting a task to avoid deleting
+      // CrostiniRestarter inside a CrostiniRestarter call.
       vm_tools::concierge::VmStoppedSignal signal;
       signal.set_owner_id(CryptohomeIdForProfile(profile()));
       signal.set_name(kVmName);
-      crostini_manager()->OnVmStopped(signal);
+      base::ThreadTaskRunnerHandle::Get()->PostTaskAndReply(
+          FROM_HERE,
+          base::BindOnce(&CrostiniManager::OnVmStopped,
+                         base::Unretained(crostini_manager()), signal),
+          barrier_closure);
     }
   }
 
@@ -1303,6 +1315,16 @@ TEST_F(CrostiniManagerRestartTest, RestartDoesNotTriggerArcSideloadIfDisabled) {
   run_loop()->RunUntilIdle();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(fake_cicerone_client_->configure_for_arc_sideload_called());
+}
+
+TEST_F(CrostiniManagerRestartTest, RestartWhileShuttingDown) {
+  restart_id_ = crostini_manager()->RestartCrostini(
+      kVmName, kContainerName,
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  // crostini_manager() is destructed during test teardown, mimicking the effect
+  // of shutting down chrome while a restart is running.
 }
 
 class CrostiniManagerEnterpriseReportingTest

@@ -187,6 +187,7 @@ class ASH_EXPORT ShelfLayoutManager
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
   void OnUserWorkAreaInsetsChanged(aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
+  void OnShellDestroying() override;
 
   // SplitViewObserver:
   void OnSplitViewStateChanged(SplitViewController::State previous_state,

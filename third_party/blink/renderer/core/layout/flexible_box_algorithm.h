@@ -113,14 +113,14 @@ class FlexItem {
  public:
   // Parameters:
   // - |flex_base_content_size| includes scrollbar size but not border/padding.
-  // - |min_max_sizes| is the resolved min and max size properties in the
+  // - |min_max_main_sizes| is the resolved min and max size properties in the
   //   main axis direction (not intrinsic widths). It does not include
-  //   border/scrollbar/padding.
+  //   border/padding.
   FlexItem(const FlexLayoutAlgorithm*,
            LayoutBox*,
            const ComputedStyle& style,
            LayoutUnit flex_base_content_size,
-           MinMaxSize min_max_main_axis_sizes,
+           MinMaxSize min_max_main_sizes,
            // Ignored for legacy, required for NG:
            base::Optional<MinMaxSize> min_max_cross_sizes,
            LayoutUnit main_axis_border_padding,
@@ -147,7 +147,7 @@ class FlexItem {
   }
 
   LayoutUnit ClampSizeToMinAndMax(LayoutUnit size) const {
-    return min_max_sizes.ClampSizeToMinAndMax(size);
+    return min_max_main_sizes.ClampSizeToMinAndMax(size);
   }
 
   ItemPosition Alignment() const;
@@ -190,7 +190,7 @@ class FlexItem {
   LayoutBox* box;
   const ComputedStyle& style;
   const LayoutUnit flex_base_content_size;
-  const MinMaxSize min_max_sizes;
+  const MinMaxSize min_max_main_sizes;
   const base::Optional<MinMaxSize> min_max_cross_sizes;
   const LayoutUnit hypothetical_main_content_size;
   const LayoutUnit main_axis_border_padding;

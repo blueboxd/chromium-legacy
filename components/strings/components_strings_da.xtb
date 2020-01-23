@@ -244,7 +244,7 @@
 <translation id="2003775180883135320">Fire huller øverst</translation>
 <translation id="2025186561304664664">Proxyen konfigureres automatisk.</translation>
 <translation id="2030481566774242610">Mente du <ph name="LINK" />?</translation>
-<translation id="2032962459168915086"><ph name="BEGIN_LINK" />Kontrollere din proxy og din firewall<ph name="END_LINK" /></translation>
+<translation id="2032962459168915086"><ph name="BEGIN_LINK" />Tjekke din proxy og din firewall<ph name="END_LINK" /></translation>
 <translation id="2042213636306070719">Bakke 7</translation>
 <translation id="2053111141626950936">Sider på <ph name="LANGUAGE" /> oversættes ikke.</translation>
 <translation id="2053553514270667976">Postnummer</translation>
@@ -708,7 +708,7 @@
 <translation id="4117700440116928470">Politikkens omfang understøttes ikke.</translation>
 <translation id="4123572138124678573">Tre huller nederst</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 anden/andet}one{# anden/andet}other{# andre}}</translation>
-<translation id="4130226655945681476">Kontrollere netværkskabler, modem og router</translation>
+<translation id="4130226655945681476">Tjekke netværkskabler, modem og router</translation>
 <translation id="413544239732274901">Få flere oplysninger</translation>
 <translation id="4142935452406587478">Bakke 10</translation>
 <translation id="4148925816941278100">American Express</translation>
@@ -722,7 +722,7 @@
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4194250254487269611">Dit kort kan ikke gemmes lige nu</translation>
 <translation id="4196861286325780578">&amp;Annuller fortryd flytning</translation>
-<translation id="4203896806696719780"><ph name="BEGIN_LINK" />Kontrollere firewall- og antiviruskonfigurationer<ph name="END_LINK" /></translation>
+<translation id="4203896806696719780"><ph name="BEGIN_LINK" />Tjekke firewall- og antiviruskonfigurationer<ph name="END_LINK" /></translation>
 <translation id="4214357935346142455">profil på loginskærm</translation>
 <translation id="4215751373031079683">7x9 (Envelope)</translation>
 <translation id="4220128509585149162">Nedbrud</translation>
@@ -1052,7 +1052,7 @@
 <translation id="5605670050355397069">Ledger</translation>
 <translation id="5607240918979444548">Architecture-C</translation>
 <translation id="5608165884683734521">Dette website er muligvis falsk eller ondsindet. Chrome anbefaler, at du forlader websitet med det samme.</translation>
-<translation id="5610142619324316209">Kontrollere forbindelsen</translation>
+<translation id="5610142619324316209">Tjekke din forbindelse</translation>
 <translation id="5610807607761827392">Du kan administrere kort og adresser i <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" />.</translation>
 <translation id="5617949217645503996"><ph name="HOST_NAME" /> omdirigerede dig for mange gange.</translation>
 <translation id="5629630648637658800">Der kunne ikke indlæses indstillinger for politik</translation>
@@ -1486,7 +1486,7 @@ Yderligere oplysninger:
 <translation id="7610193165460212391">Værdien er uden for intervallet <ph name="VALUE" />.</translation>
 <translation id="7613889955535752492">Udløbsdato: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Du har allerede data, der er krypteret med en anden version af adgangskoden til din Google-konto. Angiv adgangskoden i feltet nedenfor.</translation>
-<translation id="7619838219691048931">Forsatspapir</translation>
+<translation id="7619838219691048931">Sidste ark</translation>
 <translation id="762844065391966283">Ét ad gangen</translation>
 <translation id="7633909222644580952">Effektivitetsdata og nedbrudsrapporter</translation>
 <translation id="7637571805876720304">Vil du fjerne kreditkortet fra Chromium?</translation>

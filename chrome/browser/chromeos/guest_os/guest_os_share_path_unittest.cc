@@ -502,6 +502,17 @@ TEST_F(GuestOsSharePathTest, FailRemovableRoot) {
   run_loop()->Run();
 }
 
+TEST_F(GuestOsSharePathTest, SuccessSystemFonts) {
+  SetUpVolume();
+  guest_os_share_path_->SharePath(
+      "vm-running", base::FilePath("/usr/share/fonts"), PERSIST_NO,
+      base::BindOnce(
+          &GuestOsSharePathTest::SharePathCallback, base::Unretained(this),
+          "vm-running", Persist::NO, SeneschalClientCalled::YES,
+          &vm_tools::seneschal::SharePathRequest::FONTS, "", Success::YES, ""));
+  run_loop()->Run();
+}
+
 TEST_F(GuestOsSharePathTest, SharePathErrorSeneschal) {
   features_.InitWithFeatures({features::kCrostini}, {});
   GetFakeUserManager()->LoginUser(account_id_);

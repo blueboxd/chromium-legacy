@@ -668,6 +668,24 @@ void TabStripModel::MoveSelectedTabsTo(int index) {
                          selected_count - selected_pinned_count);
 }
 
+void TabStripModel::MoveGroupTo(const tab_groups::TabGroupId& group,
+                                int to_index) {
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
+
+  DCHECK_NE(to_index, kNoTab);
+
+  std::vector<int> tabs_in_group = group_model_->GetTabGroup(group)->ListTabs();
+
+  int from_index = tabs_in_group.front();
+  if (to_index < from_index)
+    from_index = tabs_in_group.back();
+
+  for (size_t i = 0; i < tabs_in_group.size(); ++i)
+    MoveWebContentsAtImpl(from_index, to_index, false);
+
+  MoveTabGroup(group);
+}
+
 WebContents* TabStripModel::GetActiveWebContents() const {
   return GetWebContentsAt(active_index());
 }

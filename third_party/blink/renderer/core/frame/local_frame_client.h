@@ -108,7 +108,6 @@ class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerSource;
 class WebRemotePlaybackClient;
-struct WebResourceTimingInfo;
 class WebServiceWorkerProvider;
 class WebSpellCheckPanelHostClient;
 struct WebScrollIntoViewParams;
@@ -173,8 +172,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DidStartLoading() = 0;
   virtual void ProgressEstimateChanged(double progress_estimate) = 0;
   virtual void DidStopLoading() = 0;
-
-  virtual void ForwardResourceTimingToParent(const WebResourceTimingInfo&) = 0;
 
   virtual void DownloadURL(const ResourceRequest&,
                            network::mojom::RedirectMode) = 0;

@@ -109,6 +109,7 @@ class CORE_EXPORT HTMLElement : public Element {
 
   virtual bool IsHTMLUnknownElement() const { return false; }
   virtual bool IsPluginElement() const { return false; }
+  virtual bool IsHTMLPortalElement() const { return false; }
 
   // https://html.spec.whatwg.org/C/#category-label
   virtual bool IsLabelable() const;

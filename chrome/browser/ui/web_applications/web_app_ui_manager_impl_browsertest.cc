@@ -67,10 +67,16 @@ void CloseAndWait(Browser* browser) {
   waiter.Wait();
 }
 
-}  // namespace
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL FooUrl() {
+  return GURL("https://foo.example");
+}
+GURL BarUrl() {
+  return GURL("https://bar.example");
+}
 
-const GURL kFooUrl = GURL("https://foo.example");
-const GURL kBarUrl = GURL("https://bar.example");
+}  // namespace
 
 class WebAppUiManagerImplBrowserTest : public InProcessBrowserTest {
  protected:
@@ -97,7 +103,7 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
   // Zero apps on start:
   EXPECT_EQ(0u, ui_manager().GetNumWindowsForApp(AppId()));
 
-  AppId foo_app_id = InstallWebApp(kFooUrl);
+  AppId foo_app_id = InstallWebApp(FooUrl());
   LaunchWebApp(foo_app_id);
   EXPECT_EQ(1u, ui_manager().GetNumWindowsForApp(foo_app_id));
 
@@ -107,11 +113,11 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
                        GetNumWindowsForApp_AppWindowsRemoved) {
-  AppId foo_app_id = InstallWebApp(kFooUrl);
+  AppId foo_app_id = InstallWebApp(FooUrl());
   auto* foo_window1 = LaunchWebApp(foo_app_id);
   auto* foo_window2 = LaunchWebApp(foo_app_id);
 
-  AppId bar_app_id = InstallWebApp(kBarUrl);
+  AppId bar_app_id = InstallWebApp(BarUrl());
   LaunchWebApp(bar_app_id);
 
   EXPECT_EQ(2u, ui_manager().GetNumWindowsForApp(foo_app_id));
@@ -130,8 +136,8 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
                        NotifyOnAllAppWindowsClosed_NoOpenedWindows) {
-  AppId foo_app_id = InstallWebApp(kFooUrl);
-  AppId bar_app_id = InstallWebApp(kBarUrl);
+  AppId foo_app_id = InstallWebApp(FooUrl());
+  AppId bar_app_id = InstallWebApp(BarUrl());
   LaunchWebApp(bar_app_id);
 
   base::RunLoop run_loop;
@@ -144,8 +150,8 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
 // app window.
 IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
                        NotifyOnAllAppWindowsClosed_MultipleOpenedWindows) {
-  AppId foo_app_id = InstallWebApp(kFooUrl);
-  AppId bar_app_id = InstallWebApp(kBarUrl);
+  AppId foo_app_id = InstallWebApp(FooUrl());
+  AppId bar_app_id = InstallWebApp(BarUrl());
 
   // Test that NotifyOnAllAppWindowsClosed can be called more than once for
   // the same app.

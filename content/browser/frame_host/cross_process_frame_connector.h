@@ -21,6 +21,7 @@ class Message;
 }
 
 namespace content {
+class RenderFrameHostImpl;
 class RenderFrameProxyHost;
 
 // CrossProcessFrameConnector provides the platform view abstraction for
@@ -180,6 +181,12 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   void OnSetIsInert(bool);
   void OnUpdateRenderThrottlingStatus(bool is_throttled,
                                       bool subtree_throttled);
+
+  // Gets the current RenderFrameHost for the
+  // |frame_proxy_in_parent_renderer_|'s (i.e., the child frame's)
+  // FrameTreeNode. This corresponds to B2 in the class-level comment
+  // above for CrossProcessFrameConnector.
+  RenderFrameHostImpl* current_child_frame_host() const;
 
   // The RenderFrameProxyHost that routes messages to the parent frame's
   // renderer process.

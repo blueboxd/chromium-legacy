@@ -65,7 +65,7 @@ ScriptPromise Serial::getPorts(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  if (!context->IsFeatureEnabled(mojom::FeaturePolicyFeature::kSerial,
+  if (!context->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kSerial,
                                  ReportOptions::kReportOnFailure)) {
     exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
     return ScriptPromise();
@@ -92,7 +92,7 @@ ScriptPromise Serial::requestPort(ScriptState* script_state,
   }
 
   if (!frame->GetDocument()->IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kSerial,
+          mojom::blink::FeaturePolicyFeature::kSerial,
           ReportOptions::kReportOnFailure)) {
     exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
     return ScriptPromise();

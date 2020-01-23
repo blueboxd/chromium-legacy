@@ -58,8 +58,7 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
                      const GURL& validated_url) override;
   void DidFailLoad(RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
-                   int error_code,
-                   const base::string16& error_description) override;
+                   int error_code) override;
   void DidOpenRequestedURL(WebContents* new_contents,
                            RenderFrameHost* source_render_frame_host,
                            const GURL& url,

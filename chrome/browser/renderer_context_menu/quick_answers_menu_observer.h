@@ -41,6 +41,8 @@ class QuickAnswersMenuObserver
           quick_answers_client);
 
  private:
+  void SendAssistantQuery(const std::string& query);
+
   // The interface to add a context-menu item and update it.
   RenderViewContextMenuProxy* proxy_;
 
@@ -50,6 +52,9 @@ class QuickAnswersMenuObserver
   // Whether the feature is enabled and all eligibility criteria are met (
   // locale, consents, etc).
   bool is_eligible_ = false;
+
+  // Query used to retrieve quick answer.
+  std::string query_;
 };
 
 #endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_QUICK_ANSWERS_MENU_OBSERVER_H_

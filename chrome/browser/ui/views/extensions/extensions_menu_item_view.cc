@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
 
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
@@ -62,6 +63,9 @@ ExtensionsMenuItemView::ExtensionsMenuItemView(
 
   auto pin_button = CreateBubbleMenuItem(EXTENSION_PINNING, this);
   pin_button->set_ink_drop_base_color(icon_color);
+  // Extension pinning is not available in Incognito as it leaves a trace of
+  // user activity.
+  pin_button->SetEnabled(!browser->profile()->IsOffTheRecord());
 
   pin_button_ = pin_button.get();
   AddChildView(std::move(pin_button));

@@ -2609,6 +2609,8 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
       return ATK_ROLE_PANEL;
     case ax::mojom::Role::kParagraph:
       return ATK_ROLE_PARAGRAPH;
+    case ax::mojom::Role::kPluginObject:
+      return ATK_ROLE_EMBEDDED;
     case ax::mojom::Role::kPopUpButton: {
       std::string html_tag =
           GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);

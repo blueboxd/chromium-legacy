@@ -16,12 +16,18 @@
 namespace offline_pages {
 
 namespace {
-const GURL kTestUrl("http://example.com");
 const int64_t kTestOfflineId = 1234LL;
 const char kTestClientNamespace[] = "default";
 const ClientId kTestClientId(kTestClientNamespace, "1234");
 const base::FilePath kTestFilePath(FILE_PATH_LITERAL("/test/path/file"));
 const int64_t kTestFileSize = 876543LL;
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL TestUrl() {
+  return GURL("http://example.com");
+}
+
 }  // namespace
 
 class MarkPageAccessedTaskTest : public ModelTaskTestBase {
@@ -33,7 +39,7 @@ class MarkPageAccessedTaskTest : public ModelTaskTestBase {
 };
 
 TEST_F(MarkPageAccessedTaskTest, MarkPageAccessed) {
-  OfflinePageItem page(kTestUrl, kTestOfflineId, kTestClientId, kTestFilePath,
+  OfflinePageItem page(TestUrl(), kTestOfflineId, kTestClientId, kTestFilePath,
                        kTestFileSize);
   store_test_util()->InsertItem(page);
 
@@ -43,7 +49,7 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessed) {
   RunTask(std::move(task));
 
   auto offline_page = store_test_util()->GetPageByOfflineId(kTestOfflineId);
-  EXPECT_EQ(kTestUrl, offline_page->url);
+  EXPECT_EQ(TestUrl(), offline_page->url);
   EXPECT_EQ(kTestClientId, offline_page->client_id);
   EXPECT_EQ(kTestFileSize, offline_page->file_size);
   EXPECT_EQ(1, offline_page->access_count);
@@ -59,7 +65,7 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessed) {
 }
 
 TEST_F(MarkPageAccessedTaskTest, MarkPageAccessedTwice) {
-  OfflinePageItem page(kTestUrl, kTestOfflineId, kTestClientId, kTestFilePath,
+  OfflinePageItem page(TestUrl(), kTestOfflineId, kTestClientId, kTestFilePath,
                        kTestFileSize);
   store_test_util()->InsertItem(page);
 
@@ -70,7 +76,7 @@ TEST_F(MarkPageAccessedTaskTest, MarkPageAccessedTwice) {
 
   auto offline_page = store_test_util()->GetPageByOfflineId(kTestOfflineId);
   EXPECT_EQ(kTestOfflineId, offline_page->offline_id);
-  EXPECT_EQ(kTestUrl, offline_page->url);
+  EXPECT_EQ(TestUrl(), offline_page->url);
   EXPECT_EQ(kTestClientId, offline_page->client_id);
   EXPECT_EQ(kTestFileSize, offline_page->file_size);
   EXPECT_EQ(1, offline_page->access_count);

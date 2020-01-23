@@ -39,8 +39,7 @@ namespace blink {
 
 bool Editor::HandleEditingKeyboardEvent(KeyboardEvent* evt) {
   const WebKeyboardEvent* key_event = evt->KeyEvent();
-  // do not treat this as text input if it's a system key event
-  if (!key_event || key_event->is_system_key)
+  if (!key_event)
     return false;
 
   String command_name = Behavior().InterpretKeyEvent(*evt);

@@ -244,6 +244,9 @@ TEST(JSONReaderTest, UnicodeEscapes) {
   // The contents of a Unicode escape may only be four hex chars. Previously the
   // parser accepted things like "0x01" and "0X01".
   EXPECT_FALSE(JSONReader::Read("\"\\u0x12\""));
+
+  // Surrogate pairs are allowed in JSON.
+  EXPECT_TRUE(JSONReader::Read("\"\\uD834\\uDD1E\""));  // U+1D11E
 }
 
 TEST(JSONReaderTest, InvalidStrings) {
@@ -492,6 +495,50 @@ TEST(JSONReaderTest, UTF8Input) {
   const std::string* maybe_string = root->FindStringKey("path");
   ASSERT_TRUE(maybe_string);
   EXPECT_EQ("/tmp/\xC3\xA0\xC3\xA8\xC3\xB2.png", *maybe_string);
+
+  // JSON can encode non-characters.
+  const char* const noncharacters[] = {
+      "\"\xEF\xB7\x90\"",      // U+FDD0
+      "\"\xEF\xB7\x9F\"",      // U+FDDF
+      "\"\xEF\xB7\xAF\"",      // U+FDEF
+      "\"\xEF\xBF\xBE\"",      // U+FFFE
+      "\"\xEF\xBF\xBF\"",      // U+FFFF
+      "\"\xF0\x9F\xBF\xBE\"",  // U+01FFFE
+      "\"\xF0\x9F\xBF\xBF\"",  // U+01FFFF
+      "\"\xF0\xAF\xBF\xBE\"",  // U+02FFFE
+      "\"\xF0\xAF\xBF\xBF\"",  // U+02FFFF
+      "\"\xF0\xBF\xBF\xBE\"",  // U+03FFFE
+      "\"\xF0\xBF\xBF\xBF\"",  // U+03FFFF
+      "\"\xF1\x8F\xBF\xBE\"",  // U+04FFFE
+      "\"\xF1\x8F\xBF\xBF\"",  // U+04FFFF
+      "\"\xF1\x9F\xBF\xBE\"",  // U+05FFFE
+      "\"\xF1\x9F\xBF\xBF\"",  // U+05FFFF
+      "\"\xF1\xAF\xBF\xBE\"",  // U+06FFFE
+      "\"\xF1\xAF\xBF\xBF\"",  // U+06FFFF
+      "\"\xF1\xBF\xBF\xBE\"",  // U+07FFFE
+      "\"\xF1\xBF\xBF\xBF\"",  // U+07FFFF
+      "\"\xF2\x8F\xBF\xBE\"",  // U+08FFFE
+      "\"\xF2\x8F\xBF\xBF\"",  // U+08FFFF
+      "\"\xF2\x9F\xBF\xBE\"",  // U+09FFFE
+      "\"\xF2\x9F\xBF\xBF\"",  // U+09FFFF
+      "\"\xF2\xAF\xBF\xBE\"",  // U+0AFFFE
+      "\"\xF2\xAF\xBF\xBF\"",  // U+0AFFFF
+      "\"\xF2\xBF\xBF\xBE\"",  // U+0BFFFE
+      "\"\xF2\xBF\xBF\xBF\"",  // U+0BFFFF
+      "\"\xF3\x8F\xBF\xBE\"",  // U+0CFFFE
+      "\"\xF3\x8F\xBF\xBF\"",  // U+0CFFFF
+      "\"\xF3\x9F\xBF\xBE\"",  // U+0DFFFE
+      "\"\xF3\x9F\xBF\xBF\"",  // U+0DFFFF
+      "\"\xF3\xAF\xBF\xBE\"",  // U+0EFFFE
+      "\"\xF3\xAF\xBF\xBF\"",  // U+0EFFFF
+      "\"\xF3\xBF\xBF\xBE\"",  // U+0FFFFE
+      "\"\xF3\xBF\xBF\xBF\"",  // U+0FFFFF
+      "\"\xF4\x8F\xBF\xBE\"",  // U+10FFFE
+      "\"\xF4\x8F\xBF\xBF\"",  // U+10FFFF
+  };
+  for (auto* noncharacter : noncharacters) {
+    EXPECT_TRUE(JSONReader::Read(noncharacter));
+  }
 }
 
 TEST(JSONReaderTest, InvalidUTF8Input) {
@@ -527,12 +574,12 @@ TEST(JSONReaderTest, InvalidUTF16Escapes) {
       "\"\\uzz89\"",         // Invalid scalar.
       "\"\\ud83d\\udca\"",   // Invalid lower surrogate.
       "\"\\ud83d\\ud83d\"",  // Invalid lower surrogate.
-      "\"\\ud83d\\uaaaZ\""   // Invalid lower surrogate.
+      "\"\\ud83d\\uaaaZ\"",  // Invalid lower surrogate.
       "\"\\ud83foo\"",       // No lower surrogate.
-      "\"\\ud83d\\foo\""     // No lower surrogate.
-      "\"\\ud83\\foo\""      // Invalid upper surrogate.
-      "\"\\ud83d\\u1\""      // No lower surrogate.
-      "\"\\ud83\\u1\""       // Invalid upper surrogate.
+      "\"\\ud83d\\foo\"",    // No lower surrogate.
+      "\"\\ud83\\foo\"",     // Invalid upper surrogate.
+      "\"\\ud83d\\u1\"",     // No lower surrogate.
+      "\"\\ud83\\u1\"",      // Invalid upper surrogate.
   };
   Optional<Value> root;
   for (auto* i : cases) {

@@ -36,11 +36,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "services/network/public/mojom/load_timing_info.mojom.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
 #include "third_party/blink/public/platform/web_http_load_info.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/platform/web_url_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_info.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
@@ -99,10 +99,27 @@ void WebURLResponse::SetConnectionReused(bool connection_reused) {
   resource_response_->SetConnectionReused(connection_reused);
 }
 
-void WebURLResponse::SetLoadTiming(const WebURLLoadTiming& timing) {
-  scoped_refptr<ResourceLoadTiming> load_timing =
-      scoped_refptr<ResourceLoadTiming>(timing);
-  resource_response_->SetResourceLoadTiming(std::move(load_timing));
+void WebURLResponse::SetLoadTiming(
+    const network::mojom::LoadTimingInfo& mojo_timing) {
+  auto timing = ResourceLoadTiming::Create();
+  timing->SetRequestTime(mojo_timing.request_start);
+  timing->SetProxyStart(mojo_timing.proxy_resolve_start);
+  timing->SetProxyEnd(mojo_timing.proxy_resolve_end);
+  timing->SetDnsStart(mojo_timing.connect_timing.dns_start);
+  timing->SetDnsEnd(mojo_timing.connect_timing.dns_end);
+  timing->SetConnectStart(mojo_timing.connect_timing.connect_start);
+  timing->SetConnectEnd(mojo_timing.connect_timing.connect_end);
+  timing->SetWorkerStart(mojo_timing.service_worker_start_time);
+  timing->SetWorkerReady(mojo_timing.service_worker_ready_time);
+  timing->SetSendStart(mojo_timing.send_start);
+  timing->SetSendEnd(mojo_timing.send_end);
+  timing->SetReceiveHeadersStart(mojo_timing.receive_headers_start);
+  timing->SetReceiveHeadersEnd(mojo_timing.receive_headers_end);
+  timing->SetSslStart(mojo_timing.connect_timing.ssl_start);
+  timing->SetSslEnd(mojo_timing.connect_timing.ssl_end);
+  timing->SetPushStart(mojo_timing.push_start);
+  timing->SetPushEnd(mojo_timing.push_end);
+  resource_response_->SetResourceLoadTiming(std::move(timing));
 }
 
 void WebURLResponse::SetHTTPLoadInfo(const WebHTTPLoadInfo& value) {

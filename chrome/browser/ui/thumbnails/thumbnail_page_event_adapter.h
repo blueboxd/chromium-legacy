@@ -46,8 +46,7 @@ class ThumbnailPageEventAdapter : public content::WebContentsObserver {
                      const GURL& validated_url) override;
   void DidFailLoad(content::RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
-                   int error_code,
-                   const base::string16& error_description) override;
+                   int error_code) override;
   void NavigationStopped() override;
   void BeforeUnloadFired(bool proceed,
                          const base::TimeTicks& proceed_time) override;

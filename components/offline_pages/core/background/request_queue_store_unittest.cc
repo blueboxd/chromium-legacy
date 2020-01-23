@@ -30,8 +30,7 @@ namespace {
 const int64_t kRequestId = 42;
 const int64_t kRequestId2 = 44;
 const int64_t kRequestId3 = 47;
-const GURL kUrl("http://example.com");
-const GURL kUrl2("http://another-example.com");
+
 const ClientId kClientId("bookmark", "1234");
 const ClientId kClientId2("async", "5678");
 const bool kUserRequested = true;
@@ -42,8 +41,17 @@ enum class LastResult {
   RESULT_TRUE,
 };
 
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL Url1() {
+  return GURL("http://example.com");
+}
+GURL Url2() {
+  return GURL("http://another-example.com");
+}
+
 SavePageRequest GetTestRequest() {
-  SavePageRequest request(kRequestId, kUrl, kClientId,
+  SavePageRequest request(kRequestId, Url1(), kClientId,
                           base::Time::FromDeltaSinceWindowsEpoch(
                               base::TimeDelta::FromSeconds(1000)),
                           kUserRequested);
@@ -55,7 +63,7 @@ SavePageRequest GetTestRequest() {
       base::TimeDelta::FromSeconds(400)));
   request.set_request_origin("http://www.origin.com");
   // Note: pending_state is not stored.
-  request.set_original_url(kUrl2);
+  request.set_original_url(Url2());
   request.set_auto_fetch_notification_state(
       SavePageRequest::AutoFetchNotificationState::kShown);
   return request;
@@ -97,7 +105,7 @@ void BuildTestStoreWithSchemaFromM57(const base::FilePath& file) {
   statement.BindInt64(4, 0);
   statement.BindInt64(5, 0);
   statement.BindInt64(6, 0);
-  statement.BindString(7, kUrl.spec());
+  statement.BindString(7, Url1().spec());
   statement.BindString(8, kClientId.name_space);
   statement.BindString(9, kClientId.id);
   ASSERT_TRUE(statement.Run());
@@ -143,10 +151,10 @@ void BuildTestStoreWithSchemaFromM58(const base::FilePath& file) {
   statement.BindInt64(4, 0);
   statement.BindInt64(5, 0);
   statement.BindInt64(6, 0);
-  statement.BindString(7, kUrl.spec());
+  statement.BindString(7, Url1().spec());
   statement.BindString(8, kClientId.name_space);
   statement.BindString(9, kClientId.id);
-  statement.BindString(10, kUrl2.spec());
+  statement.BindString(10, Url2().spec());
   ASSERT_TRUE(statement.Run());
   ASSERT_TRUE(connection.DoesTableExist(REQUEST_QUEUE_TABLE_NAME));
   ASSERT_FALSE(
@@ -191,10 +199,10 @@ void BuildTestStoreWithSchemaFromM61(const base::FilePath& file) {
   statement.BindInt64(4, 0);
   statement.BindInt64(5, 0);
   statement.BindInt64(6, 0);
-  statement.BindString(7, kUrl.spec());
+  statement.BindString(7, Url1().spec());
   statement.BindString(8, kClientId.name_space);
   statement.BindString(9, kClientId.id);
-  statement.BindString(10, kUrl2.spec());
+  statement.BindString(10, Url2().spec());
   statement.BindString(11, kRequestOrigin);
   ASSERT_TRUE(statement.Run());
   ASSERT_TRUE(connection.DoesTableExist(REQUEST_QUEUE_TABLE_NAME));
@@ -242,10 +250,10 @@ void BuildTestStoreWithSchemaFromM72(const base::FilePath& file) {
   statement.BindInt64(4, 0);
   statement.BindInt64(5, 0);
   statement.BindInt64(6, 0);
-  statement.BindString(7, kUrl.spec());
+  statement.BindString(7, Url1().spec());
   statement.BindString(8, kClientId.name_space);
   statement.BindString(9, kClientId.id);
-  statement.BindString(10, kUrl2.spec());
+  statement.BindString(10, Url2().spec());
   statement.BindString(11, kRequestOrigin);
   statement.BindInt64(12, 1);
   ASSERT_TRUE(statement.Run());
@@ -412,7 +420,7 @@ class RequestQueueStoreTest : public RequestQueueStoreTestBase {
     }
 
     // Verify a request can be added and retrieved.
-    SavePageRequest request(kRequestId, kUrl, kClientId, OfflineTimeNow(),
+    SavePageRequest request(kRequestId, Url1(), kClientId, OfflineTimeNow(),
                             kUserRequested);
     store->AddRequest(request, RequestQueue::AddOptions(),
                       base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
@@ -443,7 +451,7 @@ TEST_F(RequestQueueStoreTest, UpgradeFromVersion57Store) {
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
   ASSERT_EQ(1u, this->last_requests().size());
   EXPECT_EQ(kRequestId, this->last_requests()[0]->request_id());
-  EXPECT_EQ(kUrl, this->last_requests()[0]->url());
+  EXPECT_EQ(Url1(), this->last_requests()[0]->url());
   EXPECT_EQ(GURL(), this->last_requests()[0]->original_url());
 
   PostUpgradeChecks(store.get());
@@ -459,8 +467,8 @@ TEST_F(RequestQueueStoreTest, UpgradeFromVersion58Store) {
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
   ASSERT_EQ(1u, this->last_requests().size());
   EXPECT_EQ(kRequestId, this->last_requests()[0]->request_id());
-  EXPECT_EQ(kUrl, this->last_requests()[0]->url());
-  EXPECT_EQ(kUrl2, this->last_requests()[0]->original_url());
+  EXPECT_EQ(Url1(), this->last_requests()[0]->url());
+  EXPECT_EQ(Url2(), this->last_requests()[0]->original_url());
   EXPECT_EQ("", this->last_requests()[0]->request_origin());
 
   PostUpgradeChecks(store.get());
@@ -476,8 +484,8 @@ TEST_F(RequestQueueStoreTest, UpgradeFromVersion61Store) {
   ASSERT_EQ(LastResult::RESULT_TRUE, this->last_result());
   ASSERT_EQ(1u, this->last_requests().size());
   EXPECT_EQ(kRequestId, this->last_requests()[0]->request_id());
-  EXPECT_EQ(kUrl, this->last_requests()[0]->url());
-  EXPECT_EQ(kUrl2, this->last_requests()[0]->original_url());
+  EXPECT_EQ(Url1(), this->last_requests()[0]->url());
+  EXPECT_EQ(Url2(), this->last_requests()[0]->original_url());
   EXPECT_EQ(kRequestOrigin, this->last_requests()[0]->request_origin());
   EXPECT_EQ(0, static_cast<int>(this->last_requests()[0]->fail_state()));
 
@@ -496,8 +504,8 @@ TEST_F(RequestQueueStoreTest, UpgradeFromVersion72Store) {
       this->last_requests();
   ASSERT_EQ(1u, requests.size());
   EXPECT_EQ(kRequestId, requests[0]->request_id());
-  EXPECT_EQ(kUrl, requests[0]->url());
-  EXPECT_EQ(kUrl2, requests[0]->original_url());
+  EXPECT_EQ(Url1(), requests[0]->url());
+  EXPECT_EQ(Url2(), requests[0]->original_url());
   EXPECT_EQ(kRequestOrigin, requests[0]->request_origin());
   EXPECT_EQ(1, static_cast<int>(requests[0]->fail_state()));
   EXPECT_EQ(0, static_cast<int>(requests[0]->auto_fetch_notification_state()));
@@ -522,12 +530,12 @@ TEST_F(RequestQueueStoreTest, GetRequestsByIds) {
   this->InitializeStore(store.get());
 
   base::Time creation_time = OfflineTimeNow();
-  SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time,
+  SavePageRequest request1(kRequestId, Url1(), kClientId, creation_time,
                            kUserRequested);
   store->AddRequest(request1, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
                                    base::Unretained(this)));
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+  SavePageRequest request2(kRequestId2, Url2(), kClientId2, creation_time,
                            kUserRequested);
   store->AddRequest(request2, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
@@ -583,9 +591,9 @@ TEST_F(RequestQueueStoreTest, AddRequest) {
   this->InitializeStore(store.get());
 
   base::Time creation_time = OfflineTimeNow();
-  SavePageRequest request(kRequestId, kUrl, kClientId, creation_time,
+  SavePageRequest request(kRequestId, Url1(), kClientId, creation_time,
                           kUserRequested);
-  request.set_original_url(kUrl2);
+  request.set_original_url(Url2());
 
   store->AddRequest(request, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
@@ -645,7 +653,7 @@ TEST_F(RequestQueueStoreTest, UpdateRequest) {
   this->InitializeStore(store.get());
 
   base::Time creation_time = OfflineTimeNow();
-  SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time,
+  SavePageRequest original_request(kRequestId, Url1(), kClientId, creation_time,
                                    kUserRequested);
   store->AddRequest(original_request, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
@@ -656,12 +664,12 @@ TEST_F(RequestQueueStoreTest, UpdateRequest) {
   base::Time new_creation_time =
       creation_time + base::TimeDelta::FromMinutes(1);
   // Try updating an existing request.
-  SavePageRequest updated_request(kRequestId, kUrl, kClientId,
+  SavePageRequest updated_request(kRequestId, Url1(), kClientId,
                                   new_creation_time, kUserRequested);
-  updated_request.set_original_url(kUrl2);
+  updated_request.set_original_url(Url2());
   updated_request.set_request_origin(kRequestOrigin);
   // Try to update a non-existing request.
-  SavePageRequest updated_request2(kRequestId2, kUrl, kClientId,
+  SavePageRequest updated_request2(kRequestId2, Url1(), kClientId,
                                    new_creation_time, kUserRequested);
   std::vector<SavePageRequest> requests_to_update{updated_request,
                                                   updated_request2};
@@ -701,12 +709,12 @@ TEST_F(RequestQueueStoreTest, RemoveRequests) {
   this->InitializeStore(store.get());
 
   base::Time creation_time = OfflineTimeNow();
-  SavePageRequest request1(kRequestId, kUrl, kClientId, creation_time,
+  SavePageRequest request1(kRequestId, Url1(), kClientId, creation_time,
                            kUserRequested);
   store->AddRequest(request1, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
                                    base::Unretained(this)));
-  SavePageRequest request2(kRequestId2, kUrl2, kClientId2, creation_time,
+  SavePageRequest request2(kRequestId2, Url2(), kClientId2, creation_time,
                            kUserRequested);
   store->AddRequest(request2, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
@@ -765,7 +773,7 @@ TEST_F(RequestQueueStoreTest, ResetStore) {
   this->InitializeStore(store.get());
 
   base::Time creation_time = OfflineTimeNow();
-  SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time,
+  SavePageRequest original_request(kRequestId, Url1(), kClientId, creation_time,
                                    kUserRequested);
   store->AddRequest(original_request, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,
@@ -795,7 +803,7 @@ TEST_F(RequestQueueStoreTest, SaveCloseReopenRead) {
   this->InitializeStore(store.get());
 
   base::Time creation_time = OfflineTimeNow();
-  SavePageRequest original_request(kRequestId, kUrl, kClientId, creation_time,
+  SavePageRequest original_request(kRequestId, Url1(), kClientId, creation_time,
                                    kUserRequested);
   store->AddRequest(original_request, RequestQueue::AddOptions(),
                     base::BindOnce(&RequestQueueStoreTestBase::AddRequestDone,

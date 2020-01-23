@@ -54,9 +54,9 @@ struct StructTraits<display::mojom::DisplaySnapshotDataView,
     return snapshot->has_overscan();
   }
 
-  static bool has_privacy_screen(
+  static display::PrivacyScreenState privacy_screen_state(
       const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
-    return snapshot->has_privacy_screen();
+    return snapshot->privacy_screen_state();
   }
 
   static bool has_color_correction_matrix(

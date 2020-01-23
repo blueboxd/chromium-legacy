@@ -341,7 +341,7 @@
 <translation id="2465655957518002998">Choisir un mode de livraison</translation>
 <translation id="2465688316154986572">Agrafe</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />d'exécuter Network Diagnostics<ph name="END_LINK" /></translation>
-<translation id="2469153820345007638">Ordre 1 sur N</translation>
+<translation id="2469153820345007638">Ordre 1 sur N</translation>
 <translation id="2473195200299095979">Traduire cette page</translation>
 <translation id="2479410451996844060">URL de recherche non valide</translation>
 <translation id="2482878487686419369">Notifications</translation>
@@ -415,7 +415,7 @@
 <translation id="2799020568854403057">Ce site contient des applications malveillantes</translation>
 <translation id="2799223571221894425">Redémarrer</translation>
 <translation id="2803306138276472711">La fonctionnalité de navigation sécurisée Google a récemment permis de <ph name="BEGIN_LINK" />détecter des logiciels malveillants<ph name="END_LINK" /> sur le site <ph name="SITE" />. Un site Web qui est normalement inoffensif peut parfois être infecté par des logiciels malveillants.</translation>
-<translation id="2807052079800581569">Position de l'image Y</translation>
+<translation id="2807052079800581569">Position Y de l'image</translation>
 <translation id="2809804249696361569">Les deux feuilles</translation>
 <translation id="2824775600643448204">Barre d'adresse et de recherche</translation>
 <translation id="2826760142808435982">La connexion est chiffrée et authentifiée avec la clé <ph name="CIPHER" />. La méthode d'échange de clés utilisée est <ph name="KX" />.</translation>
@@ -469,7 +469,7 @@
 <translation id="3060227939791841287">Enveloppe C9</translation>
 <translation id="3061707000357573562">Service de correctif</translation>
 <translation id="3064966200440839136">Vous devez quitter le mode de navigation privée pour effectuer un paiement par l'intermédiaire d'une application externe. Continuer?</translation>
-<translation id="3080254622891793721">Graphique</translation>
+<translation id="3080254622891793721">Images</translation>
 <translation id="3086579638707268289">Votre activité sur le Web est actuellement surveillée</translation>
 <translation id="3087734570205094154">Bas</translation>
 <translation id="3095940652251934233">Relevé</translation>
@@ -501,7 +501,7 @@
 <translation id="3209034400446768650">Cette page peut exiger des frais</translation>
 <translation id="3212581601480735796">Votre activité sur <ph name="HOSTNAME" /> est surveillée</translation>
 <translation id="3215092763954878852">Impossible d'utiliser WebAuthn</translation>
-<translation id="3218181027817787318">Relative</translation>
+<translation id="3218181027817787318">Relatif</translation>
 <translation id="3225919329040284222">Le serveur dispose d'un certificat qui ne répond pas aux exigences intégrées. Celles-ci sont incluses dans certains sites Web très sécurisés afin de vous protéger.</translation>
 <translation id="3226128629678568754">Appuyez sur le bouton d'actualisation pour soumettre de nouveau les données nécessaires pour charger la page.</translation>
 <translation id="3227137524299004712">Microphone</translation>
@@ -567,7 +567,7 @@
 <translation id="3533328374079021623">Boîte aux lettres 5</translation>
 <translation id="3539171420378717834">Conserver une copie de cette carte sur cet appareil</translation>
 <translation id="3553513561058684206">Pour vous</translation>
-<translation id="3558573058928565255">Heure du jour</translation>
+<translation id="3558573058928565255">Pendant la journée</translation>
 <translation id="3566021033012934673">Votre connexion n'est pas privée</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Une page intégrée à <ph name="SITE" /> indique</translation>
@@ -1050,7 +1050,7 @@
 <translation id="5663614846592581799">Enveloppe 9 po x 11 po</translation>
 <translation id="5663955426505430495">L'administrateur de cet appareil a installé des extensions offrant des fonctions supplémentaires. Les extensions ont accès à certaines de vos données.</translation>
 <translation id="5675650730144413517">Cette page ne fonctionne pas</translation>
-<translation id="568292603005599551">Position de l'image X</translation>
+<translation id="568292603005599551">Position X de l'image</translation>
 <translation id="5684874026226664614">Oups… Impossible de traduire cette page.</translation>
 <translation id="5685654322157854305">Ajouter une adresse d'expédition</translation>
 <translation id="5689199277474810259">Exporter au format JSON</translation>
@@ -1119,7 +1119,7 @@
 <translation id="5990559369517809815">Les requêtes vers le serveur ont été bloquées par une extension.</translation>
 <translation id="5992691462791905444">Technique de pli en Z</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> résultats trouvés pour « <ph name="SEARCH_TEXT" /> »</translation>
-<translation id="6008122969617370890">Ordre N sur 1</translation>
+<translation id="6008122969617370890">Ordre N sur 1</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Vérifier vos mots de passe</translation>
 <translation id="6015796118275082299">Année</translation>
@@ -1162,7 +1162,7 @@
 <translation id="6157877588268064908">Pour voir les exigences et les modes de livraison, sélectionnez une adresse</translation>
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6177128806592000436">Votre connexion à ce site n'est pas sécurisée</translation>
-<translation id="6180316780098470077">Intervalle de nouvel essai</translation>
+<translation id="6180316780098470077">Intervalle entre les nouveaux essais</translation>
 <translation id="6196640612572343990">Bloquer les témoins de tiers</translation>
 <translation id="6203231073485539293">Vérifiez votre connexion Internet</translation>
 <translation id="6218753634732582820">Supprimer l'adresse de Chromium?</translation>

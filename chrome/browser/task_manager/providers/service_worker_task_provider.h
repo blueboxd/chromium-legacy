@@ -10,10 +10,12 @@
 #include <utility>
 
 #include "base/scoped_observer.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile_manager_observer.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/task_manager/providers/service_worker_task.h"
 #include "chrome/browser/task_manager/providers/task_provider.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
 
@@ -24,7 +26,8 @@ namespace task_manager {
 // ServiceWorkerContext to listen to the running status changes of the service
 // workers for the creation and destruction of the tasks.
 class ServiceWorkerTaskProvider : public TaskProvider,
-                                  public content::NotificationObserver,
+                                  public ProfileManagerObserver,
+                                  public ProfileObserver,
                                   public content::ServiceWorkerContextObserver {
  public:
   ServiceWorkerTaskProvider();
@@ -33,10 +36,12 @@ class ServiceWorkerTaskProvider : public TaskProvider,
   // task_manager::TaskProvider:
   Task* GetTaskOfUrlRequest(int child_id, int route_id) override;
 
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  // ProfileManagerObserver:
+  void OnProfileAdded(Profile* profile) override;
+
+  // ProfileObserver:
+  void OnOffTheRecordProfileCreated(Profile* off_the_record) override;
+  void OnProfileWillBeDestroyed(Profile* profile) override;
 
   // content::ServiceWorkerContextObserver:
   void OnVersionStartedRunning(
@@ -45,7 +50,6 @@ class ServiceWorkerTaskProvider : public TaskProvider,
       const content::ServiceWorkerRunningInfo& running_info) override;
   void OnVersionStoppedRunning(content::ServiceWorkerContext* context,
                                int64_t version_id) override;
-  void OnDestruct(content::ServiceWorkerContext* context) override;
 
  private:
   // task_manager::TaskProvider:
@@ -66,16 +70,16 @@ class ServiceWorkerTaskProvider : public TaskProvider,
   // observer of its deletion.
   void DeleteTask(content::ServiceWorkerContext* context, int version_id);
 
-  // Called after a profile has been created.
-  void OnProfileCreated(Profile* profile);
+  ScopedObserver<ProfileManager, ProfileManagerObserver>
+      scoped_profile_manager_observer_{this};
+
+  ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
 
   using ServiceWorkerTaskKey =
       std::pair<content::ServiceWorkerContext*, int64_t /*version_id*/>;
   using ServiceWorkerTaskMap =
       std::map<ServiceWorkerTaskKey, std::unique_ptr<ServiceWorkerTask>>;
   ServiceWorkerTaskMap service_worker_task_map_;
-
-  content::NotificationRegistrar registrar_;
 
   ScopedObserver<content::ServiceWorkerContext,
                  content::ServiceWorkerContextObserver>

@@ -19,7 +19,7 @@
 <translation id="4300229033992784001">Le mot de passe de votre compte a été modifié. Veuillez saisir votre mot de passe Windows actuel afin de synchroniser votre compte Windows avec votre compte professionnel.</translation>
 <translation id="4669462973597624151">Échec de la tentative de modification du mot de passe. Veuillez contacter votre administrateur.</translation>
 <translation id="4706454071748629324">Échec de l'ajout d'un nouvel utilisateur. Ce ordinateur n'autorise que la création d'un utilisateur avec un compte professionnel.</translation>
-<translation id="5186761973554910131">Nom d'ordinateur non valide fourni lors du changement de mot de passe. Veuillez contacter votre administrateur.</translation>
+<translation id="5186761973554910131">Nom d'ordinateur non valide fourni lors de la tentative de changement de mot de passe. Veuillez contacter votre administrateur.</translation>
 <translation id="6033715878377252112">Outil d'aide du fournisseur d'informations d'identification Google pour Windows</translation>
 <translation id="6149399665202317746">Fournisseur d'informations d'identification Google pour Windows</translation>
 <translation id="6239180560789153226">Votre appareil présente des informations de récupération manquantes. Connectez-vous avec votre compte professionnel Google.</translation>

@@ -12,7 +12,7 @@ emulator_package {
 
 system_image_package {
   package_name: "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86"
-  version: "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
+  version: "Pum5ZEuBD0Xk8kVS2iM_UXCwIYqNs-d6i8cvNDN0ShIC"
   dest_path: ".emulator_sdk"
 }
 system_image_name: "system-images;android-23;google_apis;x86"

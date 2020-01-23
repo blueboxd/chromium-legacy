@@ -12,6 +12,7 @@
 #include "base/unguessable_token.h"
 #include "media/learning/common/labelled_example.h"
 #include "media/learning/common/learning_task.h"
+#include "media/learning/common/target_histogram.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace media {
@@ -24,20 +25,15 @@ namespace learning {
 struct ObservationCompletion {
   ObservationCompletion() = default;
   /* implicit */ ObservationCompletion(const TargetValue& target,
-                                       WeightType w = 1.,
-                                       ukm::SourceId id = ukm::kInvalidSourceId)
-      : target_value(target), weight(w), source_id(id) {}
+                                       WeightType w = 1.)
+      : target_value(target), weight(w) {}
 
   TargetValue target_value;
   WeightType weight;
 
-  // Optional, and ignored from the renderer.
-  ukm::SourceId source_id;
-
   // Mostly for gmock matchers.
   bool operator==(const ObservationCompletion& rhs) const {
-    return target_value == rhs.target_value && weight == rhs.weight &&
-           source_id == rhs.source_id;
+    return target_value == rhs.target_value && weight == rhs.weight;
   }
 };
 
@@ -49,6 +45,9 @@ struct ObservationCompletion {
 // observed to do that.
 class COMPONENT_EXPORT(LEARNING_COMMON) LearningTaskController {
  public:
+  using PredictionCB = base::OnceCallback<void(
+      const base::Optional<TargetHistogram>& predicted)>;
+
   LearningTaskController() = default;
   virtual ~LearningTaskController() = default;
 
@@ -69,8 +68,8 @@ class COMPONENT_EXPORT(LEARNING_COMMON) LearningTaskController {
   virtual void BeginObservation(
       base::UnguessableToken id,
       const FeatureVector& features,
-      const base::Optional<TargetValue>& default_target =
-          base::Optional<TargetValue>()) = 0;
+      const base::Optional<TargetValue>& default_target = base::nullopt,
+      const base::Optional<ukm::SourceId>& source_id = base::nullopt) = 0;
 
   // Complete an observation by sending a completion.
   virtual void CompleteObservation(base::UnguessableToken id,
@@ -90,6 +89,12 @@ class COMPONENT_EXPORT(LEARNING_COMMON) LearningTaskController {
 
   // Returns the LearningTask associated with |this|.
   virtual const LearningTask& GetLearningTask() = 0;
+
+  // Asynchronously predicts distribution for given |features|. |callback| will
+  // receive a base::nullopt prediction when model is not available. |callback|
+  // may be called immediately without posting.
+  virtual void PredictDistribution(const FeatureVector& features,
+                                   PredictionCB callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LearningTaskController);

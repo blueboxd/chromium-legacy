@@ -57,6 +57,13 @@ enum TestParam {
 
 const char kCorsErrorWhenFetching[] = "error: TypeError: Failed to fetch";
 
+// The manifest.json used below has a "key" entry that will result in the hash
+// of extension id that is captured in kExpectedHashedExtensionId.  Knowing
+// the hash constant helps with simulating distributing the hash via field trial
+// param.
+const char kExpectedHashedExtensionId[] =
+    "14B587526D9AC6ADCACAA8A4AAE3DB281CA2AB53";
+
 }  // namespace
 
 using CORBAction = network::CrossOriginReadBlocking::Action;
@@ -93,6 +100,7 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
     const char kManifestTemplate[] = R"(
         {
           "name": "CrossOriginReadBlockingTest - Extension",
+          "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjzv7dI7Ygyh67VHE1DdidudpYf8PFfv8iucWvzO+3xpF/Dm5xNo7aQhPNiEaNfHwJQ7lsp4gc+C+4bbaVewBFspTruoSJhZc5uEfqxwovJwN+v1/SUFXTXQmQBv6gs0qZB4gBbl4caNQBlqrFwAMNisnu1V6UROna8rOJQ90D7Nv7TCwoVPKBfVshpFjdDOTeBg4iLctO3S/06QYqaTDrwVceSyHkVkvzBY6tc6mnYX0RZu78J9iL8bdqwfllOhs69cqoHHgrLdI6JdOyiuh6pBP6vxMlzSKWJ3YTNjaQTPwfOYaLMuzdl0v+YdzafIzV9zwe4Xiskk+5JNGt8b2rQIDAQAB",
           "version": "1.0",
           "manifest_version": 2,
           "permissions": [
@@ -364,22 +372,33 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
 
   CrossOriginReadBlockingExtensionAllowlistingTest() {
     std::vector<base::Feature> disabled_features;
-    std::vector<base::Feature> enabled_features;
+    std::vector<base::test::ScopedFeatureList::FeatureAndParams>
+        enabled_features;
 
-    if (IsOutOfBlinkCorsEnabled())
-      enabled_features.push_back(network::features::kOutOfBlinkCors);
-    else
+    if (IsOutOfBlinkCorsEnabled()) {
+      enabled_features.emplace_back(network::features::kOutOfBlinkCors,
+                                    base::FieldTrialParams());
+    } else {
       disabled_features.push_back(network::features::kOutOfBlinkCors);
+    }
 
     if (ShouldAllowlistAlsoApplyToOorCors()) {
-      enabled_features.push_back(
-          extensions_features::kCorbAllowlistAlsoAppliesToOorCors);
+      base::FieldTrialParams field_trial_params;
+      if (IsExtensionAllowlisted()) {
+        field_trial_params.emplace(
+            extensions_features::kCorbAllowlistAlsoAppliesToOorCorsParamName,
+            kExpectedHashedExtensionId);
+      }
+      enabled_features.emplace_back(
+          extensions_features::kCorbAllowlistAlsoAppliesToOorCors,
+          field_trial_params);
     } else {
       disabled_features.push_back(
           extensions_features::kCorbAllowlistAlsoAppliesToOorCors);
     }
 
-    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+    scoped_feature_list_.InitWithFeaturesAndParameters(enabled_features,
+                                                       disabled_features);
   }
 
   bool IsExtensionAllowlisted() {
@@ -399,12 +418,24 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
     const Extension* extension = Base::InstallExtension(
         resource_to_fetch_from_declarative_content_script);
 
-    if (IsExtensionAllowlisted()) {
-      URLLoaderFactoryManager::AddExtensionToAllowlistForTesting(*extension);
-    } else {
-      URLLoaderFactoryManager::RemoveExtensionFromAllowlistForTesting(
-          *extension);
+    // The allowlist is populated via
+    // 1. Field trial param (only if ShouldAllowlistAlsoApplyToOorCors)
+    // 2. Hardcoded list (all cases).
+    // If path #1 is unavailable (i.e. if base::FieldTrialParams was not
+    // populated in the constructor of the test suite), then the test needs to
+    // modify the hardcoded list via Add/RemoveExtensionFromAllowlistForTesting.
+    if (!ShouldAllowlistAlsoApplyToOorCors()) {
+      if (IsExtensionAllowlisted()) {
+        URLLoaderFactoryManager::AddExtensionToAllowlistForTesting(*extension);
+      } else {
+        URLLoaderFactoryManager::RemoveExtensionFromAllowlistForTesting(
+            *extension);
+      }
     }
+
+    // Sanity check that the field trial param (which has to be registered via
+    // ScopedFeatureList early) uses the right extension id hash.
+    EXPECT_EQ(kExpectedHashedExtensionId, extension->hashed_id().value());
 
     return extension;
   }

@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
@@ -217,6 +218,18 @@ void RemoteFrame::RenderFallbackContent() {
   auto* owner = DeprecatedLocalOwner();
   DCHECK(IsA<HTMLObjectElement>(owner));
   owner->RenderFallbackContent(this);
+}
+
+void RemoteFrame::AddResourceTimingFromChild(
+    mojom::blink::ResourceTimingInfoPtr timing) {
+  HTMLFrameOwnerElement* owner_element = To<HTMLFrameOwnerElement>(Owner());
+  DCHECK(owner_element);
+
+  // TODO(https://crbug.com/900700): Take a Mojo pending receiver for
+  // WorkerTimingContainer for navigation from the calling function.
+  DOMWindowPerformance::performance(*owner_element->GetDocument().domWindow())
+      ->AddResourceTiming(std::move(timing), owner_element->localName(),
+                          /*worker_timing_receiver=*/mojo::NullReceiver());
 }
 
 void RemoteFrame::DidFocus() {

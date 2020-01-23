@@ -480,6 +480,7 @@ void WebContentsViewAndroid::OnDragExited() {
 void WebContentsViewAndroid::OnPerformDrop(DropData* drop_data,
                                            const gfx::PointF& location,
                                            const gfx::PointF& screen_location) {
+  web_contents_->Focus();
   web_contents_->GetRenderViewHost()->GetWidget()->FilterDropData(drop_data);
   web_contents_->GetRenderViewHost()->GetWidget()->DragTargetDrop(
       *drop_data, location, screen_location, 0);

@@ -17,7 +17,7 @@
 
 namespace content {
 class BrowserContext;
-class RenderFrameHost;
+class WebContents;
 }  // namespace content
 
 // Keyed service that can be used to receive notifications about the URLs for
@@ -27,7 +27,7 @@ class NavigationPredictorKeyedService : public KeyedService {
   // Stores the next set of URLs that the user is expected to navigate to.
   class Prediction {
    public:
-    Prediction(const content::RenderFrameHost* render_frame_host,
+    Prediction(const content::WebContents* web_contents,
                const GURL& source_document_url,
                const std::vector<GURL>& sorted_predicted_urls);
     Prediction(const Prediction& other);
@@ -35,11 +35,13 @@ class NavigationPredictorKeyedService : public KeyedService {
     ~Prediction();
     GURL source_document_url() const;
     std::vector<GURL> sorted_predicted_urls() const;
+    const content::WebContents* web_contents() const;
 
    private:
-    // |render_frame_host_| from where the navigation may happen. May be
-    // nullptr.
-    const content::RenderFrameHost* render_frame_host_;
+    // The WebContents from where the navigation may happen. Do not use this
+    // pointer outside the observer's call stack unless its destruction is also
+    // observed.
+    const content::WebContents* web_contents_;
 
     // Current URL of the document from where the navigtion may happen.
     GURL source_document_url_;
@@ -72,7 +74,7 @@ class NavigationPredictorKeyedService : public KeyedService {
   SearchEnginePreconnector* SearchEnginePreconnectorForTesting();
 
   // |document_url| may be invalid. Called by navigation predictor.
-  void OnPredictionUpdated(const content::RenderFrameHost* render_frame_host,
+  void OnPredictionUpdated(const content::WebContents* web_contents,
                            const GURL& document_url,
                            const std::vector<GURL>& sorted_predicted_urls);
 

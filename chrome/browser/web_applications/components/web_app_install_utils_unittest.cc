@@ -14,27 +14,42 @@
 namespace web_app {
 
 namespace {
-const GURL kAppIcon1("fav1.png");
-const GURL kAppIcon2("fav2.png");
-const GURL kAppIcon3("fav3.png");
+
 const char kAppShortName[] = "Test short name";
 const char kAppTitle[] = "Test title";
-const GURL kAppUrl("http://www.chromium.org/index.html");
-const GURL kAlternativeAppUrl("http://www.notchromium.org");
 const char kAlternativeAppTitle[] = "Different test title";
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL AppIcon1() {
+  return GURL("fav1.png");
+}
+GURL AppIcon2() {
+  return GURL("fav2.png");
+}
+GURL AppIcon3() {
+  return GURL("fav3.png");
+}
+GURL AppUrl() {
+  return GURL("http://www.chromium.org/index.html");
+}
+GURL AlternativeAppUrl() {
+  return GURL("http://www.notchromium.org");
+}
+
 }  // namespace
 
 TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   WebApplicationInfo web_app_info;
   web_app_info.title = base::UTF8ToUTF16(kAlternativeAppTitle);
-  web_app_info.app_url = kAlternativeAppUrl;
+  web_app_info.app_url = AlternativeAppUrl();
   WebApplicationIconInfo info;
-  info.url = kAppIcon1;
+  info.url = AppIcon1();
   web_app_info.icon_infos.push_back(info);
 
   blink::Manifest manifest;
-  manifest.start_url = kAppUrl;
-  manifest.scope = kAppUrl.GetWithoutFilename();
+  manifest.start_url = AppUrl();
+  manifest.scope = AppUrl().GetWithoutFilename();
   manifest.short_name =
       base::NullableString16(base::UTF8ToUTF16(kAppShortName), false);
 
@@ -49,14 +64,14 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
 
   UpdateWebAppInfoFromManifest(manifest, &web_app_info);
   EXPECT_EQ(base::UTF8ToUTF16(kAppShortName), web_app_info.title);
-  EXPECT_EQ(kAppUrl, web_app_info.app_url);
-  EXPECT_EQ(kAppUrl.GetWithoutFilename(), web_app_info.scope);
+  EXPECT_EQ(AppUrl(), web_app_info.app_url);
+  EXPECT_EQ(AppUrl().GetWithoutFilename(), web_app_info.scope);
   EXPECT_EQ(DisplayMode::kBrowser, web_app_info.display_mode);
 
   // The icon info from |web_app_info| should be left as is, since the manifest
   // doesn't have any icon information.
   EXPECT_EQ(1u, web_app_info.icon_infos.size());
-  EXPECT_EQ(kAppIcon1, web_app_info.icon_infos[0].url);
+  EXPECT_EQ(AppIcon1(), web_app_info.icon_infos[0].url);
 
   // Test that |manifest.name| takes priority over |manifest.short_name|, and
   // that icons provided by the manifest replace icons in |web_app_info|.
@@ -64,11 +79,11 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   manifest.display = DisplayMode::kMinimalUi;
 
   blink::Manifest::ImageResource icon;
-  icon.src = kAppIcon2;
+  icon.src = AppIcon2();
   icon.purpose = {blink::Manifest::ImageResource::Purpose::ANY,
                   blink::Manifest::ImageResource::Purpose::BADGE};
   manifest.icons.push_back(icon);
-  icon.src = kAppIcon3;
+  icon.src = AppIcon3();
   manifest.icons.push_back(icon);
   // Add an icon without purpose ANY (expect to be ignored).
   icon.purpose = {blink::Manifest::ImageResource::Purpose::BADGE};
@@ -79,8 +94,8 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   EXPECT_EQ(DisplayMode::kMinimalUi, web_app_info.display_mode);
 
   EXPECT_EQ(2u, web_app_info.icon_infos.size());
-  EXPECT_EQ(kAppIcon2, web_app_info.icon_infos[0].url);
-  EXPECT_EQ(kAppIcon3, web_app_info.icon_infos[1].url);
+  EXPECT_EQ(AppIcon2(), web_app_info.icon_infos[0].url);
+  EXPECT_EQ(AppIcon3(), web_app_info.icon_infos[1].url);
 
   // Check file handlers were updated
   EXPECT_EQ(1u, web_app_info.file_handlers.size());
@@ -97,7 +112,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestTooManyIcons) {
   blink::Manifest manifest;
   for (int i = 0; i < 50; ++i) {
     blink::Manifest::ImageResource icon;
-    icon.src = kAppIcon1;
+    icon.src = AppIcon1();
     icon.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
     icon.sizes.push_back(gfx::Size(i, i));
     manifest.icons.push_back(std::move(icon));
@@ -113,7 +128,7 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestIconsTooLarge) {
   blink::Manifest manifest;
   for (int i = 1; i <= 20; ++i) {
     blink::Manifest::ImageResource icon;
-    icon.src = kAppIcon1;
+    icon.src = AppIcon1();
     icon.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
     const int size = i * 100;
     icon.sizes.push_back(gfx::Size(size, size));

@@ -151,10 +151,13 @@ class SkiaOutputDeviceBufferQueue::Image {
     return texture->GetLevelImage(texture->target(), 0);
   }
 
+  base::WeakPtr<Image> GetWeakPtr() { return weak_ptr_factory_.GetWeakPtr(); }
+
   int present_count() const { return present_count_; }
   gpu::SharedImageRepresentationSkia* skia_representation() {
     return skia_representation_.get();
   }
+  const gfx::Size& size() const { return skia_representation_->size(); }
 
  private:
   gpu::SharedImageFactory* const factory_;
@@ -173,6 +176,7 @@ class SkiaOutputDeviceBufferQueue::Image {
       scoped_gl_read_access_;
   std::vector<GrBackendSemaphore> end_semaphores_;
   int present_count_ = 0;
+  base::WeakPtrFactory<Image> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Image);
 };
@@ -252,6 +256,9 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
 
 SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
   FreeAllSurfaces();
+  // Clear and cancel swap_completion_callbacks_ to free all resource bind to
+  // callbacks.
+  swap_completion_callbacks_.clear();
 }
 
 // static
@@ -312,9 +319,8 @@ SkiaOutputDeviceBufferQueue::GetNextImage() {
 }
 
 void SkiaOutputDeviceBufferQueue::PageFlipComplete(Image* image) {
-  DCHECK(image);
-
   if (displayed_image_) {
+    DCHECK_EQ(displayed_image_->size(), image_size_);
     DCHECK_EQ(displayed_image_->present_count() > 1, displayed_image_ == image);
     displayed_image_->EndPresent();
     if (!displayed_image_->present_count()) {
@@ -323,14 +329,10 @@ void SkiaOutputDeviceBufferQueue::PageFlipComplete(Image* image) {
   }
 
   displayed_image_ = image;
-
   swap_completion_callbacks_.pop_front();
 }
 
 void SkiaOutputDeviceBufferQueue::FreeAllSurfaces() {
-  // Clear and cancel swap buffer callbacks.
-  swap_completion_callbacks_.clear();
-
   images_.clear();
   current_image_ = nullptr;
   submitted_image_ = nullptr;
@@ -411,15 +413,18 @@ void SkiaOutputDeviceBufferQueue::SwapBuffers(
   if (supports_async_swap_) {
     // Cancelable callback uses weak ptr to drop this task upon destruction.
     // Thus it is safe to use |base::Unretained(this)|.
+    // Bind submitted_image_->GetWeakPtr(), since the |submitted_image_| could
+    // be released due to reshape() or destruction.
     swap_completion_callbacks_.emplace_back(
         std::make_unique<CancelableSwapCompletionCallback>(base::BindOnce(
             &SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
             base::Unretained(this), image_size_, std::move(latency_info),
-            submitted_image_, std::move(committed_overlays_))));
+            submitted_image_->GetWeakPtr(), std::move(committed_overlays_))));
     gl_surface_->SwapBuffersAsync(swap_completion_callbacks_.back()->callback(),
                                   std::move(feedback));
   } else {
-    DoFinishSwapBuffers(image_size_, std::move(latency_info), submitted_image_,
+    DoFinishSwapBuffers(image_size_, std::move(latency_info),
+                        submitted_image_->GetWeakPtr(),
                         std::move(committed_overlays_),
                         gl_surface_->SwapBuffers(std::move(feedback)), nullptr);
   }
@@ -440,18 +445,20 @@ void SkiaOutputDeviceBufferQueue::CommitOverlayPlanes(
   if (supports_async_swap_) {
     // Cancelable callback uses weak ptr to drop this task upon destruction.
     // Thus it is safe to use |base::Unretained(this)|.
+    // Bind submitted_image_->GetWeakPtr(), since the |submitted_image_| could
+    // be released due to reshape() or destruction.
     swap_completion_callbacks_.emplace_back(
         std::make_unique<CancelableSwapCompletionCallback>(base::BindOnce(
             &SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
             base::Unretained(this), image_size_, std::move(latency_info),
-            submitted_image_, std::move(committed_overlays_))));
+            submitted_image_->GetWeakPtr(), std::move(committed_overlays_))));
     gl_surface_->CommitOverlayPlanesAsync(
         swap_completion_callbacks_.back()->callback(), std::move(feedback));
   } else {
-    DoFinishSwapBuffers(image_size_, std::move(latency_info), submitted_image_,
-                        std::move(committed_overlays_),
-                        gl_surface_->CommitOverlayPlanes(std::move(feedback)),
-                        nullptr);
+    DoFinishSwapBuffers(
+        image_size_, std::move(latency_info), submitted_image_->GetWeakPtr(),
+        std::move(committed_overlays_),
+        gl_surface_->CommitOverlayPlanes(std::move(feedback)), nullptr);
   }
   committed_overlays_.clear();
   std::swap(committed_overlays_, pending_overlays_);
@@ -460,13 +467,13 @@ void SkiaOutputDeviceBufferQueue::CommitOverlayPlanes(
 void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
     const gfx::Size& size,
     std::vector<ui::LatencyInfo> latency_info,
-    Image* image,
+    const base::WeakPtr<Image>& image,
     std::vector<OverlayData> overlays,
     gfx::SwapResult result,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   DCHECK(!gpu_fence);
 
-  PageFlipComplete(image);
+  PageFlipComplete(image.get());
   FinishSwapBuffers(result, size, latency_info);
 }
 

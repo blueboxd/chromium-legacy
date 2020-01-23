@@ -73,9 +73,6 @@ import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitor;
-import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitorDelegate;
-import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
-import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
@@ -153,9 +150,6 @@ import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.features.start_surface.StartSurface;
-import org.chromium.components.feature_engagement.EventConstants;
-import org.chromium.components.feature_engagement.FeatureConstants;
-import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -175,7 +169,7 @@ import java.util.Locale;
  * This is the main activity for ChromeMobile when not running in document mode.  All the tabs
  * are accessible via a chrome specific tab switching UI.
  */
-public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMonitorDelegate {
+public class ChromeTabbedActivity extends ChromeActivity {
     private static final String TAG = "ChromeTabbedActivity";
 
     private static final String HELP_URL_PREFIX = "https://support.google.com/chrome/";
@@ -718,7 +712,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
 
             mOverviewModeController.hideOverview(false);
 
-            mScreenshotMonitor = new ScreenshotMonitor(ChromeTabbedActivity.this);
+            mScreenshotMonitor = new ScreenshotMonitor(getToolbarButtonInProductHelpController());
         }
     }
 
@@ -2351,22 +2345,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
         shortcutManager.reportShortcutUsed(
                 isIncognito ? "new-incognito-tab-shortcut" : "new-tab-shortcut");
-    }
-
-    @Override
-    public void onScreenshotTaken() {
-        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-        tracker.notifyEvent(EventConstants.SCREENSHOT_TAKEN_CHROME_IN_FOREGROUND);
-
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
-            @Override
-            public void run() {
-                getToolbarManager().showDownloadPageTextBubble(
-                        getActivityTab(), FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE);
-                ScreenshotTabObserver tabObserver = ScreenshotTabObserver.from(getActivityTab());
-                if (tabObserver != null) tabObserver.onScreenshotTaken();
-            }
-        });
     }
 
     @VisibleForTesting

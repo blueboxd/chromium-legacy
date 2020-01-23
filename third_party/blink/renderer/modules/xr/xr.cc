@@ -165,7 +165,7 @@ bool HasRequiredFeaturePolicy(const Document* doc,
     case device::mojom::XRSessionFeature::REF_SPACE_BOUNDED_FLOOR:
     case device::mojom::XRSessionFeature::REF_SPACE_UNBOUNDED:
     case device::mojom::XRSessionFeature::DOM_OVERLAY:
-      return doc->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebXr,
+      return doc->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebXr,
                                    ReportOptions::kReportOnFailure);
   }
 }
@@ -756,7 +756,7 @@ ScriptPromise XR::InternalIsSessionSupported(ScriptState* script_state,
     return promise;
   }
 
-  if (!doc->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebXr,
+  if (!doc->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebXr,
                              ReportOptions::kReportOnFailure)) {
     // Only allow the call to be made if the appropriate feature policy is in
     // place.
@@ -1053,7 +1053,8 @@ ScriptPromise XR::requestSession(ScriptState* script_state,
 void XR::OnDeviceChanged() {
   LocalFrame* frame = GetFrame();
   Document* doc = frame ? frame->GetDocument() : nullptr;
-  if (doc && doc->IsFeatureEnabled(mojom::FeaturePolicyFeature::kWebXr)) {
+  if (doc &&
+      doc->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kWebXr)) {
     DispatchEvent(*blink::Event::Create(event_type_names::kDevicechange));
   }
 }

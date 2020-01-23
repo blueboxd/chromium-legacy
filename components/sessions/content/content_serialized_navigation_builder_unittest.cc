@@ -68,26 +68,26 @@ std::unique_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
   std::unique_ptr<content::NavigationEntry> navigation_entry(
       content::NavigationEntry::Create());
   navigation_entry->SetReferrer(content::Referrer(
-      test_data::kReferrerURL,
+      test_data::ReferrerUrl(),
       static_cast<network::mojom::ReferrerPolicy>(test_data::kReferrerPolicy)));
-  navigation_entry->SetURL(test_data::kURL);
-  navigation_entry->SetVirtualURL(test_data::kVirtualURL);
+  navigation_entry->SetURL(test_data::Url());
+  navigation_entry->SetVirtualURL(test_data::VirtualUrl());
   navigation_entry->SetTitle(test_data::kTitle);
   navigation_entry->SetTransitionType(test_data::kTransitionType);
   navigation_entry->SetHasPostData(test_data::kHasPostData);
   navigation_entry->SetPostID(test_data::kPostID);
-  navigation_entry->SetOriginalRequestURL(test_data::kOriginalRequestURL);
+  navigation_entry->SetOriginalRequestURL(test_data::OriginalRequestUrl());
   navigation_entry->SetIsOverridingUserAgent(test_data::kIsOverridingUserAgent);
   navigation_entry->SetTimestamp(test_data::kTimestamp);
   SetPasswordStateInNavigation(test_data::kPasswordState,
                                navigation_entry.get());
   navigation_entry->GetFavicon().valid = true;
-  navigation_entry->GetFavicon().url = test_data::kFaviconURL;
+  navigation_entry->GetFavicon().url = test_data::FaviconUrl();
   navigation_entry->SetHttpStatusCode(test_data::kHttpStatusCode);
   std::vector<GURL> redirect_chain;
-  redirect_chain.push_back(test_data::kRedirectURL0);
-  redirect_chain.push_back(test_data::kRedirectURL1);
-  redirect_chain.push_back(test_data::kVirtualURL);
+  redirect_chain.push_back(test_data::RedirectUrl0());
+  redirect_chain.push_back(test_data::RedirectUrl1());
+  redirect_chain.push_back(test_data::VirtualUrl());
   navigation_entry->SetRedirectChain(redirect_chain);
   NavigationTaskId::Get(navigation_entry.get())->set_id(test_data::kTaskId);
   NavigationTaskId::Get(navigation_entry.get())
@@ -148,9 +148,9 @@ TEST_F(ContentSerializedNavigationBuilderTest, FromNavigationEntry) {
   EXPECT_EQ(test_data::kIndex, navigation.index());
 
   EXPECT_EQ(navigation_entry->GetUniqueID(), navigation.unique_id());
-  EXPECT_EQ(test_data::kReferrerURL, navigation.referrer_url());
+  EXPECT_EQ(test_data::ReferrerUrl(), navigation.referrer_url());
   EXPECT_EQ(test_data::kReferrerPolicy, navigation.referrer_policy());
-  EXPECT_EQ(test_data::kVirtualURL, navigation.virtual_url());
+  EXPECT_EQ(test_data::VirtualUrl(), navigation.virtual_url());
   EXPECT_EQ(test_data::kTitle, navigation.title());
   EXPECT_EQ(navigation_entry->GetPageState().ToEncodedData(),
             navigation.encoded_page_state());
@@ -158,16 +158,16 @@ TEST_F(ContentSerializedNavigationBuilderTest, FromNavigationEntry) {
       navigation.transition_type(), test_data::kTransitionType));
   EXPECT_EQ(test_data::kHasPostData, navigation.has_post_data());
   EXPECT_EQ(test_data::kPostID, navigation.post_id());
-  EXPECT_EQ(test_data::kOriginalRequestURL, navigation.original_request_url());
+  EXPECT_EQ(test_data::OriginalRequestUrl(), navigation.original_request_url());
   EXPECT_EQ(test_data::kIsOverridingUserAgent,
             navigation.is_overriding_user_agent());
   EXPECT_EQ(test_data::kTimestamp, navigation.timestamp());
-  EXPECT_EQ(test_data::kFaviconURL, navigation.favicon_url());
+  EXPECT_EQ(test_data::FaviconUrl(), navigation.favicon_url());
   EXPECT_EQ(test_data::kHttpStatusCode, navigation.http_status_code());
   ASSERT_EQ(3U, navigation.redirect_chain().size());
-  EXPECT_EQ(test_data::kRedirectURL0, navigation.redirect_chain()[0]);
-  EXPECT_EQ(test_data::kRedirectURL1, navigation.redirect_chain()[1]);
-  EXPECT_EQ(test_data::kVirtualURL, navigation.redirect_chain()[2]);
+  EXPECT_EQ(test_data::RedirectUrl0(), navigation.redirect_chain()[0]);
+  EXPECT_EQ(test_data::RedirectUrl1(), navigation.redirect_chain()[1]);
+  EXPECT_EQ(test_data::VirtualUrl(), navigation.redirect_chain()[2]);
   EXPECT_EQ(test_data::kPasswordState, navigation.password_state());
 
   ASSERT_EQ(2U, navigation.extended_info_map().size());
@@ -224,11 +224,11 @@ TEST_F(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
       ContentSerializedNavigationBuilder::ToNavigationEntry(&navigation,
                                                             &browser_context));
 
-  EXPECT_EQ(test_data::kReferrerURL, new_navigation_entry->GetReferrer().url);
+  EXPECT_EQ(test_data::ReferrerUrl(), new_navigation_entry->GetReferrer().url);
   EXPECT_EQ(test_data::kReferrerPolicy,
             static_cast<int>(new_navigation_entry->GetReferrer().policy));
-  EXPECT_EQ(test_data::kURL, new_navigation_entry->GetURL());
-  EXPECT_EQ(test_data::kVirtualURL, new_navigation_entry->GetVirtualURL());
+  EXPECT_EQ(test_data::Url(), new_navigation_entry->GetURL());
+  EXPECT_EQ(test_data::VirtualUrl(), new_navigation_entry->GetVirtualURL());
   EXPECT_EQ(test_data::kTitle, new_navigation_entry->GetTitle());
   EXPECT_EQ(old_navigation_entry->GetPageState().ToEncodedData(),
             new_navigation_entry->GetPageState().ToEncodedData());
@@ -236,18 +236,18 @@ TEST_F(ContentSerializedNavigationBuilderTest, ToNavigationEntry) {
       new_navigation_entry->GetTransitionType(), ui::PAGE_TRANSITION_RELOAD));
   EXPECT_EQ(test_data::kHasPostData, new_navigation_entry->GetHasPostData());
   EXPECT_EQ(test_data::kPostID, new_navigation_entry->GetPostID());
-  EXPECT_EQ(test_data::kOriginalRequestURL,
+  EXPECT_EQ(test_data::OriginalRequestUrl(),
             new_navigation_entry->GetOriginalRequestURL());
   EXPECT_EQ(test_data::kIsOverridingUserAgent,
             new_navigation_entry->GetIsOverridingUserAgent());
   EXPECT_EQ(test_data::kHttpStatusCode,
             new_navigation_entry->GetHttpStatusCode());
   ASSERT_EQ(3U, new_navigation_entry->GetRedirectChain().size());
-  EXPECT_EQ(test_data::kRedirectURL0,
+  EXPECT_EQ(test_data::RedirectUrl0(),
             new_navigation_entry->GetRedirectChain()[0]);
-  EXPECT_EQ(test_data::kRedirectURL1,
+  EXPECT_EQ(test_data::RedirectUrl1(),
             new_navigation_entry->GetRedirectChain()[1]);
-  EXPECT_EQ(test_data::kVirtualURL,
+  EXPECT_EQ(test_data::VirtualUrl(),
             new_navigation_entry->GetRedirectChain()[2]);
   sessions::NavigationTaskId* new_navigation_task_id =
       sessions::NavigationTaskId::Get(new_navigation_entry.get());

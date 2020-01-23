@@ -321,9 +321,8 @@ TEST_P(LayerTreeHostMaskPixelTestWithLayerList, ImageMaskWithEffect) {
   MaskContentLayerClient client(mask_bounds_);
   scoped_refptr<PictureImageLayer> mask_layer = PictureImageLayer::Create();
 
-  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(200, 200);
+  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(50, 50);
   SkCanvas* canvas = surface->getCanvas();
-  canvas->scale(SkIntToScalar(4), SkIntToScalar(4));
   scoped_refptr<DisplayItemList> mask_display_list =
       client.PaintContentsToDisplayList(
           ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
@@ -355,9 +354,8 @@ TEST_P(LayerTreeHostMasksPixelTest, ImageMaskOfLayer) {
   mask->SetIsDrawable(true);
   mask->SetBounds(mask_bounds);
 
-  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(200, 200);
+  sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(50, 50);
   SkCanvas* canvas = surface->getCanvas();
-  canvas->scale(SkIntToScalar(4), SkIntToScalar(4));
   MaskContentLayerClient client(mask_bounds);
   scoped_refptr<DisplayItemList> mask_display_list =
       client.PaintContentsToDisplayList(

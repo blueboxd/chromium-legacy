@@ -1577,7 +1577,7 @@ void XWindow::SetXWindowShape(std::unique_ptr<NativeShapeRects> native_shape,
       SkPath path_in_dip;
       if (native_region.getBoundaryPath(&path_in_dip)) {
         SkPath path_in_pixels;
-        path_in_dip.transform(transform.matrix(), &path_in_pixels);
+        path_in_dip.transform(SkMatrix(transform.matrix()), &path_in_pixels);
         xregion = gfx::CreateRegionFromSkPath(path_in_pixels);
       } else {
         xregion = XCreateRegion();

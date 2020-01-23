@@ -681,6 +681,10 @@ void AppCacheUpdateJob::HandleResourceFetchCompleted(URLFetcher* url_fetcher,
   std::unique_ptr<URLFetcher> entry_fetcher = std::move(it->second);
   pending_url_fetches_.erase(it);
 
+  // URLFetcher should only trigger this for resources, even if those entries
+  // happen to be manifest entries.
+  DCHECK_EQ(entry_fetcher->fetch_type(), URLFetcher::FetchType::kResource);
+
   NotifyAllProgress(url);
   ++url_fetches_completed_;
 
@@ -804,6 +808,11 @@ void AppCacheUpdateJob::HandleNewMasterEntryFetchCompleted(
   DCHECK_EQ(it->second.get(), url_fetcher);
   std::unique_ptr<URLFetcher> entry_fetcher = std::move(it->second);
   master_entry_fetches_.erase(it);
+
+  // URLFetcher triggers this function, so we verify here that the fetch type
+  // in URLFetcher is what we expect: kNewMasterEntry.
+  DCHECK_EQ(entry_fetcher->fetch_type(),
+            URLFetcher::FetchType::kNewMasterEntry);
 
   ++master_entries_completed_;
 

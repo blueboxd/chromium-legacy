@@ -28,7 +28,8 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
       use_in_process_zero_copy_software_draw_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kSingleProcess)),
-      using_viz_for_webview_(features::IsUsingVizForWebView()),
+      viz_frame_submission_enabled_(
+          features::IsUsingVizFrameSubmissionForWebView()),
       page_scale_factor_(0.f),
       min_page_scale_factor_(0.f),
       max_page_scale_factor_(0.f),
@@ -217,7 +218,7 @@ void SynchronousCompositorProxy::DoDemandDrawSw(
   }
   SkCanvas canvas(bitmap);
   canvas.clipRect(gfx::RectToSkRect(params.clip));
-  canvas.concat(params.transform.matrix());
+  canvas.concat(SkMatrix(params.transform.matrix()));
 
   layer_tree_frame_sink_->DemandDrawSw(&canvas);
 }
@@ -232,7 +233,7 @@ void SynchronousCompositorProxy::SubmitCompositorFrame(
 
   if (hardware_draw_reply_) {
     // For viz the CF was submitted directly via CompositorFrameSink
-    DCHECK(frame || using_viz_for_webview_);
+    DCHECK(frame || viz_frame_submission_enabled_);
     std::move(hardware_draw_reply_)
         .Run(common_renderer_params, layer_tree_frame_sink_id,
              NextMetadataVersion(), std::move(frame));
@@ -247,7 +248,6 @@ void SynchronousCompositorProxy::SubmitCompositorFrame(
 }
 
 void SynchronousCompositorProxy::SetNeedsBeginFrames(bool needs_begin_frames) {
-  DCHECK(!using_viz_for_webview_);
   if (needs_begin_frames_ == needs_begin_frames)
     return;
   needs_begin_frames_ = needs_begin_frames;
@@ -268,7 +268,6 @@ void SynchronousCompositorProxy::SetBeginFrameSourcePaused(bool paused) {
 void SynchronousCompositorProxy::BeginFrame(
     const viz::BeginFrameArgs& args,
     const viz::FrameTimingDetailsMap& timing_details) {
-  DCHECK(!using_viz_for_webview_);
 
   if (layer_tree_frame_sink_) {
     layer_tree_frame_sink_->DidPresentCompositorFrame(timing_details);
@@ -345,7 +344,6 @@ void SynchronousCompositorProxy::SendDemandDrawHwAsyncReply(
 
 void SynchronousCompositorProxy::SendBeginFrameResponse(
     const content::SyncCompositorCommonRendererParams& param) {
-  DCHECK(!using_viz_for_webview_);
   control_host_->BeginFrameResponse(param);
 }
 
@@ -388,8 +386,7 @@ void SynchronousCompositorProxy::HostDisconnected() {
   // blocking the renderer main thread forever on a commit. See
   // crbug.com/1010478 for when this happened. This is to prevent a similar
   // bug in the future.
-  if (!using_viz_for_webview_)
-    SetBeginFrameSourcePaused(true);
+  SetBeginFrameSourcePaused(true);
 }
 
 }  // namespace content

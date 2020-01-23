@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/media/router/presentation/web_contents_presentation_manager.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_provider.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_container_observer.h"
 #include "chrome/browser/ui/global_media_controls/overlay_media_notifications_manager.h"
@@ -122,8 +123,10 @@ class MediaNotificationService
     kMaxValue = kMediaSessionStopped,
   };
 
-  class Session : public content::WebContentsObserver,
-                  public media_session::mojom::MediaControllerObserver {
+  class Session
+      : public content::WebContentsObserver,
+        public media_session::mojom::MediaControllerObserver,
+        public media_router::WebContentsPresentationManager::Observer {
    public:
     Session(MediaNotificationService* owner,
             const std::string& id,
@@ -135,7 +138,7 @@ class MediaNotificationService
     Session& operator=(const Session&) = delete;
     ~Session() override;
 
-    // content::WebContentsObserver implementation.
+    // content::WebContentsObserver:
     void WebContentsDestroyed() override;
 
     // media_session::mojom::MediaControllerObserver:
@@ -151,6 +154,10 @@ class MediaNotificationService
         const base::Optional<base::UnguessableToken>& request_id) override {}
     void MediaSessionPositionChanged(
         const base::Optional<media_session::MediaPosition>& position) override;
+
+    // media_router::WebContentsPresentationManager::Observer:
+    void OnMediaRoutesChanged(
+        const std::vector<media_router::MediaRoute>& routes) override;
 
     media_message_center::MediaSessionNotificationItem* item() {
       return item_.get();
@@ -207,6 +214,9 @@ class MediaNotificationService
     // Used to receive updates to the Media Session playback state.
     mojo::Receiver<media_session::mojom::MediaControllerObserver>
         observer_receiver_{this};
+
+    base::WeakPtr<media_router::WebContentsPresentationManager>
+        presentation_manager_;
   };
 
   void OnReceivedAudioFocusRequests(

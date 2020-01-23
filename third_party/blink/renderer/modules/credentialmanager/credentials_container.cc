@@ -139,7 +139,7 @@ bool CheckSecurityRequirementsBeforeRequest(
       // which means the webauthn feature is allowed by default in same-origin
       // child browsing contexts.
       if (!resolver->GetFrame()->GetSecurityContext()->IsFeatureEnabled(
-              mojom::FeaturePolicyFeature::kPublicKeyCredentials)) {
+              mojom::blink::FeaturePolicyFeature::kPublicKeyCredentials)) {
         resolver->Reject(MakeGarbageCollected<DOMException>(
             DOMExceptionCode::kNotAllowedError,
             "The 'publickey-credentials' feature is not enabled in this "
@@ -177,7 +177,7 @@ void AssertSecurityRequirementsBeforeResponse(
     case RequiredOriginType::kSecureAndPermittedByFeaturePolicy:
       SECURITY_CHECK(
           resolver->GetFrame()->GetSecurityContext()->IsFeatureEnabled(
-              mojom::FeaturePolicyFeature::kPublicKeyCredentials));
+              mojom::blink::FeaturePolicyFeature::kPublicKeyCredentials));
       break;
   }
 }

@@ -10,7 +10,7 @@
 
 async_test(t => {
   (function() {
-    let tc = new TaskController("default");
+    let tc = new TaskController();
     let task_promise = scheduler.postTask(() => 1234, { signal: tc.signal });
     task_promise.then(t.step_func((res) => {
       assert_true(false, 'task promise should not be fulfilled when the task is canceled.');

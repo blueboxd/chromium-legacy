@@ -131,7 +131,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
 
   gfx::ColorSpace display_color_space =
       color_space.IsValid() ? color_space : gfx::ColorSpace::CreateSRGB();
-  display_->SetColorSpace(display_color_space);
+  display_->SetDisplayColorSpaces(gfx::DisplayColorSpaces(display_color_space));
 
   // Create a frame with a single SurfaceDrawQuad referencing the child
   // Surface and transformed using the given transform.

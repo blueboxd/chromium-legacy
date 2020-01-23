@@ -85,6 +85,7 @@ void DrmThreadProxy::CreateBuffer(gfx::AcceleratedWidget widget,
                                   uint32_t flags,
                                   std::unique_ptr<GbmBuffer>* buffer,
                                   scoped_refptr<DrmFramebuffer>* framebuffer) {
+  TRACE_EVENT0("drm", "DrmThreadProxy::CreateBuffer");
   DCHECK(drm_thread_.task_runner())
       << "no task runner! in DrmThreadProxy::CreateBuffer";
   base::OnceClosure task =
@@ -127,6 +128,7 @@ void DrmThreadProxy::CreateBufferFromHandle(
     gfx::NativePixmapHandle handle,
     std::unique_ptr<GbmBuffer>* buffer,
     scoped_refptr<DrmFramebuffer>* framebuffer) {
+  TRACE_EVENT0("drm", "DrmThreadProxy::CreateBufferFromHandle");
   base::OnceClosure task = base::BindOnce(
       &DrmThread::CreateBufferFromHandle, base::Unretained(&drm_thread_),
       widget, size, format, std::move(handle), buffer, framebuffer);

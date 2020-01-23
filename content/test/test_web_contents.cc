@@ -251,11 +251,9 @@ void TestWebContents::TestDidFinishLoad(const GURL& url) {
   frame_tree_.root()->current_frame_host()->OnMessageReceived(msg);
 }
 
-void TestWebContents::TestDidFailLoadWithError(
-    const GURL& url,
-    int error_code,
-    const base::string16& error_description) {
-  GetMainFrame()->DidFailLoadWithError(url, error_code, error_description);
+void TestWebContents::TestDidFailLoadWithError(const GURL& url,
+                                               int error_code) {
+  GetMainFrame()->DidFailLoadWithError(url, error_code);
 }
 
 bool TestWebContents::CrossProcessNavigationPending() {

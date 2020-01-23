@@ -27,48 +27,22 @@
 namespace blink {
 
 scoped_refptr<AcceleratedStaticBitmapImage>
-AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
-    const gpu::Mailbox& mailbox,
-    const gpu::SyncToken& sync_token,
-    unsigned texture_id,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
-        context_provider_wrapper,
-    IntSize mailbox_size,
-    bool is_origin_top_left) {
-  return base::AdoptRef(new AcceleratedStaticBitmapImage(
-      mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
-      mailbox_size, is_origin_top_left));
-}
-
-scoped_refptr<AcceleratedStaticBitmapImage>
 AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
     const gpu::Mailbox& mailbox,
     const gpu::SyncToken& sync_token,
     GLuint shared_image_texture_id,
     const SkImageInfo& sk_image_info,
     GLenum texture_target,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
-    PlatformThreadId context_thread_id,
     bool is_origin_top_left,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    base::PlatformThreadRef context_thread_ref,
+    scoped_refptr<base::SingleThreadTaskRunner> context_task_runner,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
       mailbox, sync_token, shared_image_texture_id, sk_image_info,
-      texture_target, std::move(context_provider_wrapper), context_thread_id,
-      is_origin_top_left, std::move(release_callback)));
-}
-
-AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
-    const gpu::Mailbox& mailbox,
-    const gpu::SyncToken& sync_token,
-    unsigned texture_id,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
-        context_provider_wrapper,
-    IntSize mailbox_size,
-    bool is_origin_top_left)
-    : paint_image_content_id_(cc::PaintImage::GetNextContentId()) {
-  mailbox_texture_holder_ = std::make_unique<MailboxTextureHolder>(
-      mailbox, sync_token, texture_id, std::move(context_provider_wrapper),
-      mailbox_size, is_origin_top_left);
+      texture_target, is_origin_top_left, std::move(context_provider_wrapper),
+      context_thread_ref, std::move(context_task_runner),
+      std::move(release_callback)));
 }
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
@@ -77,17 +51,20 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     GLuint shared_image_texture_id,
     const SkImageInfo& sk_image_info,
     GLenum texture_target,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
-        context_provider_wrapper,
-    PlatformThreadId context_thread_id,
     bool is_origin_top_left,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    base::PlatformThreadRef context_thread_ref,
+    scoped_refptr<base::SingleThreadTaskRunner> context_task_runner,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback)
     : mailbox_ref_(base::MakeRefCounted<TextureHolder::MailboxRef>(
+          sync_token,
+          context_thread_ref,
+          std::move(context_task_runner),
           std::move(release_callback))),
       paint_image_content_id_(cc::PaintImage::GetNextContentId()) {
   mailbox_texture_holder_ = std::make_unique<MailboxTextureHolder>(
-      mailbox, sync_token, std::move(context_provider_wrapper), mailbox_ref_,
-      context_thread_id, sk_image_info, texture_target, is_origin_top_left);
+      mailbox, context_provider_wrapper, mailbox_ref_, sk_image_info,
+      texture_target, is_origin_top_left);
   if (shared_image_texture_id) {
     skia_texture_holder_ = std::make_unique<SkiaTextureHolder>(
         mailbox_texture_holder_.get(), shared_image_texture_id);

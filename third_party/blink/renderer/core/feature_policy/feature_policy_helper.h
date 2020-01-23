@@ -7,12 +7,13 @@
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-using FeatureNameMap = HashMap<String, mojom::FeaturePolicyFeature>;
+using FeatureNameMap = HashMap<String, mojom::blink::FeaturePolicyFeature>;
 
 class FeatureContext;
 

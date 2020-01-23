@@ -33,9 +33,9 @@ class TestNavigationPredictor : public NavigationPredictor {
  public:
   TestNavigationPredictor(
       mojo::PendingReceiver<AnchorElementMetricsHost> receiver,
-      content::RenderFrameHost* render_frame_host,
+      content::WebContents* web_contents,
       bool init_feature_list)
-      : NavigationPredictor(render_frame_host),
+      : NavigationPredictor(web_contents),
         receiver_(this, std::move(receiver)) {
     if (init_feature_list) {
       const std::vector<base::Feature> features = {
@@ -83,10 +83,10 @@ class TestNavigationPredictorBasedOnScroll : public TestNavigationPredictor {
  public:
   TestNavigationPredictorBasedOnScroll(
       mojo::PendingReceiver<AnchorElementMetricsHost> receiver,
-      content::RenderFrameHost* render_frame_host,
+      content::WebContents* web_contents,
       bool init_feature_list)
       : TestNavigationPredictor(std::move(receiver),
-                                render_frame_host,
+                                web_contents,
                                 init_feature_list) {}
 
   ~TestNavigationPredictorBasedOnScroll() override {}
@@ -139,7 +139,7 @@ class NavigationPredictorTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
-        predictor_service_.BindNewPipeAndPassReceiver(), main_rfh(),
+        predictor_service_.BindNewPipeAndPassReceiver(), web_contents(),
         !field_trial_initiated_);
   }
 
@@ -509,7 +509,7 @@ class NavigationPredictorSendUkmMetricsEnabledTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
-        predictor_service_.BindNewPipeAndPassReceiver(), main_rfh(), false);
+        predictor_service_.BindNewPipeAndPassReceiver(), web_contents(), false);
   }
 
   struct TestMetrics {
@@ -744,7 +744,8 @@ class NavigationPredictorPrefetchAfterPreconnectEnabledTest
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ =
         std::make_unique<TestNavigationPredictorBasedOnScroll>(
-            predictor_service_.BindNewPipeAndPassReceiver(), main_rfh(), false);
+            predictor_service_.BindNewPipeAndPassReceiver(), web_contents(),
+            false);
   }
 
   blink::mojom::AnchorElementMetricsPtr CreateMetricsPtrWithRatioDistance(
@@ -803,7 +804,7 @@ class NavigationPredictorPrefetchDisabledTest : public NavigationPredictorTest {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
-        predictor_service_.BindNewPipeAndPassReceiver(), main_rfh(), false);
+        predictor_service_.BindNewPipeAndPassReceiver(), web_contents(), false);
   }
 };
 
@@ -886,7 +887,7 @@ class NavigationPredictorPreconnectPrefetchDisabledTest
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     predictor_service_helper_ = std::make_unique<TestNavigationPredictor>(
-        predictor_service_.BindNewPipeAndPassReceiver(), main_rfh(), false);
+        predictor_service_.BindNewPipeAndPassReceiver(), web_contents(), false);
   }
 };
 

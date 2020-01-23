@@ -650,7 +650,7 @@
 <translation id="3808375843007691220">သတိ− နောက်ဖွင့်မည့်အရာသည် စမ်းသပ်ဝန်ဆောင်မှုများဖြစ်သည်။</translation>
 <translation id="3810973564298564668">စီမံကွပ်ကဲရန်</translation>
 <translation id="382518646247711829">သင်သည် ပရောက်စီ ဆာဗာ သုံးနေလျှင်...</translation>
-<translation id="3827112369919217609">လုံးဝ</translation>
+<translation id="3827112369919217609">အပြည့်အဝ</translation>
 <translation id="3828924085048779000">စကားစုဝှက် ပလာ ဖြစ်မှု ခွင့်မပြုပါ။</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> က နောက်ထပ်ဝန်ဆောင်မှုများအတွက် နောက်ဆက်တွဲများကို စနစ်ထည့်သွင်းထားသည်။ နောက်ဆက်တွဲများက သင့်ဒေတာအချို့ကို ဝင်သုံးခွင့်ရှိပါသည်။</translation>
 <translation id="3832522519263485449">ဘယ်ဘက်တွင် အများအပြားဖောက်ရန်</translation>
@@ -694,7 +694,7 @@
 <translation id="4075941231477579656">ထိတွေ့မှု ID</translation>
 <translation id="4079302484614802869">ပရောက်စီ စီစဉ်ထားမှုမှာ .pac စာတန်း URL ကို သုံးရန် ဖြစ်ပြီး၊ သတ်မှတ် ပရောက်စီ ဆာဗာများ မဟုတ်ပါ။</translation>
 <translation id="4082393374666368382">ဆက်တင်များ − စီမံခန့်ခွဲမှု</translation>
-<translation id="4088981014127559358">အခြမ်း ၁ ပုံ ဒေါင်လိုက် အရွှေ့</translation>
+<translation id="4088981014127559358">ဘေး ၁ ပုံ ဒေါင်လိုက် အရွှေ့</translation>
 <translation id="4098354747657067197">ရှေ့တွင် လှည့်ဖြားတတ်သော ဆိုက်ရှိနေသည်</translation>
 <translation id="4101413244023615925">စာသားနှင့် ဂရပ်ဖစ်</translation>
 <translation id="4103249731201008433">စက်ပစ္စည်း၏ နံပါတ်စဉ် မမှန်ကန်ပါ။</translation>
@@ -829,7 +829,7 @@
 <translation id="4635654612248442824">ဝဘ်ဆိုက် <ph name="ORIGIN" /> က ၎င်း၏တောင်းဆိုချက် အားလုံးသို့
     ရင်းမြစ် မူဝါဒထည့်သွင်းရန် သတ်မှတ်ထားသော်လည်း လက်ရှိတွင် ဤမူဝါဒကို ထည့်သွင်း၍မရပါ။</translation>
 <translation id="464342062220857295">ရှာဖွေရေး ဝန်ဆောင်မှုများ</translation>
-<translation id="4644670975240021822">ပြောင်းပြန်အစီအစဉ်ဖြင့် မှောက်ထားရန်</translation>
+<translation id="4644670975240021822">ပြောင်းပြန်အစဉ်ဖြင့် မှောက်ထားရန်</translation>
 <translation id="4646534391647090355">ထိုနေရာသို့ ယခုသွားရန်</translation>
 <translation id="4658638640878098064">ညာဘက်ထိပ်တွင် ချုပ်စက်ဖြင့် ချုပ်ရန်</translation>
 <translation id="4668929960204016307">,</translation>
@@ -838,7 +838,7 @@
 <translation id="4690462567478992370">မမှန်ကန်သည့် လက်မှတ် သုံးမှုကို ရပ်လိုက်ပါ</translation>
 <translation id="4691835149146451662">Architecture-A (စာအိတ်)</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1" /> <ph name="SENTENCE2" /></translation>
-<translation id="4702504834785592287">အခြမ်း</translation>
+<translation id="4702504834785592287">ဘေး</translation>
 <translation id="4708268264240856090">သင့်ချိတ်ဆက်မှု ကြားဝင်စွတ်ဖက်ခြင်း ခံခဲ့ရပါသည်</translation>
 <translation id="4712404868219726379">Windows Hello</translation>
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />ဝင်းဒိုးကွန်ရက်ပြဿနာရှာဖွေမှု ပြုလုပ်ပါ<ph name="END_LINK" /></translation>
@@ -1011,7 +1011,7 @@
 <translation id="5430298929874300616">စာညှပ် ဖယ်ရှားရန်</translation>
 <translation id="5431657950005405462">သင့်ဖိုင်ကို မတွေ့ပါ</translation>
 <translation id="5439770059721715174">Schema မှန်ကန်ကြောင်းအတည်ပြုမှု မှားယွင်းခြင်း "<ph name="ERROR_PATH" />": <ph name="ERROR" /></translation>
-<translation id="5443468954631487277">ပြောင်းပြန်အစီအစဉ်ဖြင့် အပေါ်လှန်ထားရန်</translation>
+<translation id="5443468954631487277">ပြောင်းပြန်အစဉ်ဖြင့် အပေါ်လှန်ထားရန်</translation>
 <translation id="5452270690849572955">ဤ <ph name="HOST_NAME" /> စာမျက်နှာကို မတွေ့ပါ</translation>
 <translation id="5455374756549232013">မူဝါဒ အချိန်ထုမှု ညံ့ဖျင်း</translation>
 <translation id="5457113250005438886">မမှန်ပါ</translation>
@@ -1060,7 +1060,7 @@
 <translation id="5632627355679805402">သင့်ဒေတာများကို သင်၏ <ph name="BEGIN_LINK" />Google စကားဝှက်<ph name="END_LINK" />ဖြင့် <ph name="TIME" /> တွင် အသွင်ဝှက်ထားပါသည်။ စင့်ခ်စလုပ်ရန် ၎င်းကိုထည့်ပါ။</translation>
 <translation id="5633066919399395251"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ပေါ်ရှိ လက်ရှိတိုက်ခိုက်သူများသည် သင်၏ အချက်အလက်များ (ဥပမာ- ဓာတ်ပုံများ၊ စကားဝှက်များ၊ စာတိုများနှင့် ခရက်ဒစ်ကတ်အချက်အလက်များ) ကို ခိုးယူခြင်း သို့မဟုတ် ဖျက်ခြင်းတို့ ပြုလုပ်နိုင်သည့် အန္တရာယ်ရှိသောပရိုဂရမ်များကို သင့်ကွန်ပျူတာထဲတွင် ထည့်သွင်းရန် ကြိုးပမ်းနိုင်ပါသည်။ <ph name="BEGIN_LEARN_MORE_LINK" />ပိုမိုလေ့လာရန်<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">လှည့်ဖြားတတ်သည့် အကြောင်းအရာများကို ပိတ်ထားပါသည်။</translation>
-<translation id="5644090287519800334">အခြမ်း ၁ ပုံ အလျားလိုက် အရွှေ့</translation>
+<translation id="5644090287519800334">ဘေး ၁ ပုံ အလျားလိုက် အရွှေ့</translation>
 <translation id="5645854190134202180">ဒုတိယ အရွှေ့</translation>
 <translation id="5659593005791499971">အီးမေးလ်</translation>
 <translation id="5663614846592581799">၉x၁၁ (စာအိတ်)</translation>
@@ -1177,7 +1177,7 @@
 <translation id="6157877588268064908">ပစ္စည်းပို့ခြင်းနည်းလမ်းနှင့် သတ်မှတ်ချက်ချက်များကို ကြည့်ရန် လိပ်စာရွေးပါ</translation>
 <translation id="6165508094623778733">ပိုမိုလေ့လာရန်</translation>
 <translation id="6177128806592000436">ဤဝဘ်ဆိုက်သို့ သင်၏ချိတ်ဆက်ထားမှုသည် လုံခြုံမှုမရှိပါ</translation>
-<translation id="6180316780098470077">ပြန်စမ်းကြည့်ချိန်တစ်ခုနှင့်တစ်ခု ကြားကာလ</translation>
+<translation id="6180316780098470077">ပြန်စမ်းချိန် ကြားကာလ</translation>
 <translation id="6196640612572343990">ပြင်ပကုမ္ပဏီကွတ်ကီးများကို ပိတ်ဆို့မည်</translation>
 <translation id="6203231073485539293">သင့်အင်တာနက် ချိတ်ဆက်မှုကို စစ်ပါ</translation>
 <translation id="6218753634732582820">Chromium ထဲမှ လိပ်စာကို ဖယ်ရှားရမလား။</translation>
@@ -1336,7 +1336,7 @@
 <translation id="6964255747740675745">ကွန်ရက် စီစဉ်သတ်မှတ်မှု စိစစ်၍မရပါ (JSON မမှန်ကန်ပါ)။</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">စက်ပစ္စည်း</translation>
-<translation id="696703987787944103">သိရှိမှုအလိုက်</translation>
+<translation id="696703987787944103">လိုက်လျောညီထွေ</translation>
 <translation id="6970216967273061347">ဒေသ</translation>
 <translation id="6973656660372572881">တိကျသည့် ပရောက်စီဆာဗာနှင့် .pac script URL တို့နှစ်ခုလုံး သတ်မှတ်ပြီးပါပြီ။</translation>
 <translation id="6973932557599545801">ကျွန်ုပ် ကူညီ၍မရပါ၊ ကိုယ်တိုင် ဆက်လုပ်ပါ။</translation>
@@ -1370,7 +1370,7 @@
 <translation id="7135130955892390533">အခြေအနေ ပြရန်</translation>
 <translation id="7138472120740807366">ပို့ရန် နည်းလမ်း</translation>
 <translation id="7139724024395191329">ယေမီရိတ်</translation>
-<translation id="714064300541049402">အခြမ်း ၂ ပုံ အလျားလိုက် အရွှေ့</translation>
+<translation id="714064300541049402">ဘေး ၂ ပုံ အလျားလိုက် အရွှေ့</translation>
 <translation id="7152423860607593928">နံပါတ်-၁၄ (စာအိတ်)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> နှင့် နောက်ထပ် <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ခု}other{<ph name="PAYMENT_METHOD_PREVIEW" /> နှင့် နောက်ထပ် <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ခု}}</translation>
 <translation id="7153618581592392745">လာဗင်ဒါ</translation>
@@ -1478,7 +1478,7 @@
 <translation id="7569983096843329377">အနက်ရောင်</translation>
 <translation id="7575207903026901870">'အကြံပြုချက်' ခလုတ်ကို ဖယ်ရှားခြင်း၊ ဤအကြံပြုချက်ကို ဖယ်ရှားရန် Enter ကို နှိပ်ပါ</translation>
 <translation id="7578104083680115302">သင်က Google နှင့် သိမ်းဆည်းခဲ့သည့် ကဒ်များကို သုံးပြီး ကိရိယာများထဲတွင် ဆိုက်များ နှင့် အက်ပ်များ ပေါ်မှာ လျင်မြန်စွာ ငွေပေးချေပါ။</translation>
-<translation id="7581199239021537589">အခြမ်း ၂ ပုံ ဒေါင်လိုက် အရွှေ့</translation>
+<translation id="7581199239021537589">ဘေး ၂ ပုံ ဒေါင်လိုက် အရွှေ့</translation>
 <translation id="7592362899630581445">ဆာဗာ၏ အသိမှတ်ပြုလက်မှတ် သည် အမည်ကန့်သတ်ချက် ကျော်လွန်နေပါသည်။</translation>
 <translation id="7598391785903975535"><ph name="UPPER_ESTIMATE" />ထက် နည်းသည်</translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> သည်လောလောဆယ်တွင် ဤတောင်းဆိုမှုကို မကိုင်သွယ်နိုင်ပါ။</translation>
@@ -1507,7 +1507,7 @@
 <translation id="7682287625158474539">ပစ္စည်းပို့ရန်</translation>
 <translation id="7687186412095877299">သင်သိမ်းထားသော ငွေပေးချေနည်းလမ်းများဖြင့် ငွေပေးချေမှု ပုံစံများကို ဖြည့်သည်</translation>
 <translation id="7687305263118037187">ပြန်စမ်းကြည့်ချိန် ကုန်သွားသည်</translation>
-<translation id="7693583928066320343">စာမျက်နှာအစီအစဉ် ရရှိထားသည်</translation>
+<translation id="7693583928066320343">စာမျက်နှာအစဉ် ရရှိထားသည်</translation>
 <translation id="7697066736081121494">Prc8 (စာအိတ်)</translation>
 <translation id="769721561045429135">လက်ရှိတွင် ဤစက်ပစ္စည်းပေါ်၌ အသုံးပြုနိုင်သည့် ကတ်များသာရှိပါသည်။ ကတ်များ ပြန်စစ်ဆေးရန် 'ရှေ့ဆက်ရန်' ကိုနှိပ်ပါ။</translation>
 <translation id="7699293099605015246">သတင်းဆောင်းပါးများကို လောလောဆယ် မရနိုင်သေးပါ</translation>
@@ -1528,7 +1528,7 @@
 <translation id="7764225426217299476">လိပ်စာများ ထည့်သွင်းပါ</translation>
 <translation id="7766518757692125295">အနားသတ်</translation>
 <translation id="7770259615151589601">သတ်မှတ်ထားသော အရှည်</translation>
-<translation id="7773005668374414287">အစီအစဉ်တစ်ခုတည်းဖြင့် အပေါ်လှန်ထားရန်</translation>
+<translation id="7773005668374414287">တူညီသည့်အစဉ်ဖြင့် အပေါ်လှန်ထားရန်</translation>
 <translation id="777702478322588152">နယ်​မြေ</translation>
 <translation id="7791196057686275387">စည်းရန်</translation>
 <translation id="7791543448312431591">ထည့်ရန်</translation>
@@ -1742,7 +1742,7 @@
 <translation id="8866928039507595380">စာရွက်ခေါက်ရန်</translation>
 <translation id="886872106311861689">B3</translation>
 <translation id="8870413625673593573">မကြာမီက ပိတ်ခဲ့</translation>
-<translation id="8870494189203302833">အစီအစဉ်တစ်ခုတည်းဖြင့် မှောက်ထားရန်</translation>
+<translation id="8870494189203302833">တူညီသောအစဉ်ဖြင့် မှောက်ထားရန်</translation>
 <translation id="8874824191258364635">မှန်ကန်သည့် ကဒ်နံပါတ်ကို ထည့်ပါ</translation>
 <translation id="8891727572606052622">မမှန်ကန်သည့် ပရောက်စီမုဒ်။</translation>
 <translation id="8894794286471754040">ရှည်သည့်အနားနှင့် စတင်ရန်</translation>

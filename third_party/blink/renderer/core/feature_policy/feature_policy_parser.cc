@@ -67,7 +67,8 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
     return allowlists;
   }
 
-  std::bitset<static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
+  std::bitset<
+      static_cast<size_t>(mojom::blink::FeaturePolicyFeature::kMaxValue) + 1>
       features_specified;
   HashSet<FeaturePolicyAllowlistType> allowlist_types_used;
 
@@ -114,7 +115,8 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
         continue;
       }
 
-      mojom::FeaturePolicyFeature feature = feature_names.at(feature_name);
+      mojom::blink::FeaturePolicyFeature feature =
+          feature_names.at(feature_name);
       mojom::PolicyValueType feature_type =
           FeaturePolicy::GetDefaultFeatureList().at(feature).second;
       // If a policy has already been specified for the current feature, drop
@@ -144,11 +146,13 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
       bool allowlist_includes_origin = false;
 
       // Detect usage of UnoptimizedImagePolicies origin trial.
-      if (feature == mojom::FeaturePolicyFeature::kOversizedImages ||
-          feature == mojom::FeaturePolicyFeature::kUnoptimizedLossyImages ||
-          feature == mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages ||
+      if (feature == mojom::blink::FeaturePolicyFeature::kOversizedImages ||
           feature ==
-              mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict) {
+              mojom::blink::FeaturePolicyFeature::kUnoptimizedLossyImages ||
+          feature ==
+              mojom::blink::FeaturePolicyFeature::kUnoptimizedLosslessImages ||
+          feature == mojom::blink::FeaturePolicyFeature::
+                         kUnoptimizedLosslessImagesStrict) {
         if (delegate) {
           delegate->CountFeaturePolicyUsage(
               mojom::WebFeature::kUnoptimizedImagePolicies);
@@ -158,7 +162,7 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
       }
 
       // Detect usage of UnsizedMediaPolicy origin trial
-      if (feature == mojom::FeaturePolicyFeature::kUnsizedMedia) {
+      if (feature == mojom::blink::FeaturePolicyFeature::kUnsizedMedia) {
         if (delegate) {
           delegate->CountFeaturePolicyUsage(
               mojom::WebFeature::kUnsizedMediaPolicy);
@@ -359,17 +363,18 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
 // parse the policy value for each parameterized feature, and for non
 // parameterized feature (i.e. boolean-type policy value).
 PolicyValue FeaturePolicyParser::GetFallbackValueForFeature(
-    mojom::FeaturePolicyFeature feature) {
-  if (feature == mojom::FeaturePolicyFeature::kOversizedImages) {
+    mojom::blink::FeaturePolicyFeature feature) {
+  if (feature == mojom::blink::FeaturePolicyFeature::kOversizedImages) {
     return PolicyValue(2.0);
   }
-  if (feature == mojom::FeaturePolicyFeature::kUnoptimizedLossyImages) {
+  if (feature == mojom::blink::FeaturePolicyFeature::kUnoptimizedLossyImages) {
     // Lossy images default to at most 0.5 bytes per pixel.
     return PolicyValue(0.5);
   }
-  if (feature == mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages ||
-      feature ==
-          mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict) {
+  if (feature ==
+          mojom::blink::FeaturePolicyFeature::kUnoptimizedLosslessImages ||
+      feature == mojom::blink::FeaturePolicyFeature::
+                     kUnoptimizedLosslessImagesStrict) {
     // Lossless images default to at most 1 byte per pixel.
     return PolicyValue(1.0);
   }
@@ -423,7 +428,7 @@ void FeaturePolicyParser::ParseValueForFuzzer(
   ParseValueForType(feature_type, value_string, &ok);
 }
 
-bool IsFeatureDeclared(mojom::FeaturePolicyFeature feature,
+bool IsFeatureDeclared(mojom::blink::FeaturePolicyFeature feature,
                        const ParsedFeaturePolicy& policy) {
   return std::any_of(policy.begin(), policy.end(),
                      [feature](const auto& declaration) {
@@ -431,7 +436,7 @@ bool IsFeatureDeclared(mojom::FeaturePolicyFeature feature,
                      });
 }
 
-bool RemoveFeatureIfPresent(mojom::FeaturePolicyFeature feature,
+bool RemoveFeatureIfPresent(mojom::blink::FeaturePolicyFeature feature,
                             ParsedFeaturePolicy& policy) {
   auto new_end = std::remove_if(policy.begin(), policy.end(),
                                 [feature](const auto& declaration) {
@@ -443,7 +448,7 @@ bool RemoveFeatureIfPresent(mojom::FeaturePolicyFeature feature,
   return true;
 }
 
-bool DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature feature,
+bool DisallowFeatureIfNotPresent(mojom::blink::FeaturePolicyFeature feature,
                                  ParsedFeaturePolicy& policy) {
   if (IsFeatureDeclared(feature, policy))
     return false;
@@ -454,8 +459,9 @@ bool DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature feature,
   return true;
 }
 
-bool AllowFeatureEverywhereIfNotPresent(mojom::FeaturePolicyFeature feature,
-                                        ParsedFeaturePolicy& policy) {
+bool AllowFeatureEverywhereIfNotPresent(
+    mojom::blink::FeaturePolicyFeature feature,
+    ParsedFeaturePolicy& policy) {
   if (IsFeatureDeclared(feature, policy))
     return false;
   blink::mojom::PolicyValueType feature_type =
@@ -467,13 +473,13 @@ bool AllowFeatureEverywhereIfNotPresent(mojom::FeaturePolicyFeature feature,
   return true;
 }
 
-void DisallowFeature(mojom::FeaturePolicyFeature feature,
+void DisallowFeature(mojom::blink::FeaturePolicyFeature feature,
                      ParsedFeaturePolicy& policy) {
   RemoveFeatureIfPresent(feature, policy);
   DisallowFeatureIfNotPresent(feature, policy);
 }
 
-void AllowFeatureEverywhere(mojom::FeaturePolicyFeature feature,
+void AllowFeatureEverywhere(mojom::blink::FeaturePolicyFeature feature,
                             ParsedFeaturePolicy& policy) {
   RemoveFeatureIfPresent(feature, policy);
   AllowFeatureEverywhereIfNotPresent(feature, policy);
@@ -488,7 +494,7 @@ const Vector<String> GetAvailableFeatures(ExecutionContext* execution_context) {
   return available_features;
 }
 
-const String& GetNameForFeature(mojom::FeaturePolicyFeature feature) {
+const String& GetNameForFeature(mojom::blink::FeaturePolicyFeature feature) {
   for (const auto& entry : GetDefaultFeatureNameMap()) {
     if (entry.value == feature)
       return entry.key;

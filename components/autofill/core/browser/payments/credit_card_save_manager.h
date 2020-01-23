@@ -350,8 +350,6 @@ class CreditCardSaveManager {
   std::unique_ptr<LocalCardMigrationStrikeDatabase>
       local_card_migration_strike_database_;
 
-  std::unique_ptr<CreditCardSaveStrikeDatabase> strike_database_;
-
   // May be null.
   ObserverForTest* observer_for_testing_ = nullptr;
 

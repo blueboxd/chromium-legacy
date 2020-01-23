@@ -233,7 +233,7 @@ class ActionsController {
     }
 
     // If it's still initializing, return the cached promise.
-    let promise = this.initializingdModels_.get(key);
+    const promise = this.initializingdModels_.get(key);
     if (promise) {
       return promise;
     }

@@ -539,7 +539,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 #pragma mark - Properties
 
 - (BOOL)isAuthenticated {
-  return self.authService->IsAuthenticated();
+  return self.authService->IsAuthenticated() &&
+         self.authService->GetAuthenticatedIdentity();
 }
 
 - (BOOL)isSyncSettingsConfirmed {
@@ -821,7 +822,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
 - (void)onSyncStateChanged {
   [self updateSyncSection:YES];
-  if (self.accountItem) {
+  // It is possible for |onSyncStateChanged| to be called before
+  // |onPrimaryAccountCleared|, when the primary account is removed.
+  if (self.isAuthenticated && self.accountItem) {
     [self configureIdentityAccountItem];
     [self.consumer reloadItem:self.accountItem];
   }

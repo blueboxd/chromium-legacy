@@ -4,12 +4,18 @@
 
 #include "chrome/browser/chromeos/extensions/printing/printing_api_utils.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
 #include "base/json/json_reader.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "components/cloud_devices/common/cloud_device_description.h"
+#include "components/cloud_devices/common/printer_description.h"
+#include "printing/backend/print_backend.h"
+#include "printing/print_settings.h"
 #include "third_party/re2/src/re2/re2.h"
 
 namespace extensions {
@@ -22,6 +28,9 @@ constexpr char kLocal[] = "local";
 constexpr char kKind[] = "kind";
 constexpr char kIdPattern[] = "idPattern";
 constexpr char kNamePattern[] = "namePattern";
+
+constexpr int kMinCopies = 1;
+constexpr int kMaxCopies = 999;
 
 idl::PrinterSource PrinterSourceToIdl(chromeos::Printer::Source source) {
   switch (source) {
@@ -118,6 +127,138 @@ idl::PrinterStatus PrinterStatusToIdl(chromeos::PrinterErrorCode status) {
       return idl::PRINTER_STATUS_GENERIC_ISSUE;
   }
   return idl::PRINTER_STATUS_GENERIC_ISSUE;
+}
+
+std::unique_ptr<printing::PrintSettings> ParsePrintTicket(base::Value ticket) {
+  cloud_devices::CloudDeviceDescription description;
+  if (!description.InitFromValue(std::move(ticket)))
+    return nullptr;
+
+  auto settings = std::make_unique<printing::PrintSettings>();
+
+  cloud_devices::printer::ColorTicketItem color;
+  if (!color.LoadFrom(description))
+    return nullptr;
+  switch (color.value().type) {
+    case cloud_devices::printer::ColorType::STANDARD_MONOCHROME:
+    case cloud_devices::printer::ColorType::CUSTOM_MONOCHROME:
+      settings->set_color(printing::GRAY);
+      break;
+
+    case cloud_devices::printer::ColorType::STANDARD_COLOR:
+    case cloud_devices::printer::ColorType::CUSTOM_COLOR:
+    case cloud_devices::printer::ColorType::AUTO_COLOR:
+      settings->set_color(printing::COLOR);
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  cloud_devices::printer::DuplexTicketItem duplex;
+  if (!duplex.LoadFrom(description))
+    return nullptr;
+  switch (duplex.value()) {
+    case cloud_devices::printer::DuplexType::NO_DUPLEX:
+      settings->set_duplex_mode(printing::SIMPLEX);
+      break;
+    case cloud_devices::printer::DuplexType::LONG_EDGE:
+      settings->set_duplex_mode(printing::LONG_EDGE);
+      break;
+    case cloud_devices::printer::DuplexType::SHORT_EDGE:
+      settings->set_duplex_mode(printing::SHORT_EDGE);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  cloud_devices::printer::OrientationTicketItem orientation;
+  if (!orientation.LoadFrom(description))
+    return nullptr;
+  switch (orientation.value()) {
+    case cloud_devices::printer::OrientationType::LANDSCAPE:
+      settings->SetOrientation(/*landscape=*/true);
+      break;
+    case cloud_devices::printer::OrientationType::PORTRAIT:
+      settings->SetOrientation(/*landscape=*/false);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  cloud_devices::printer::CopiesTicketItem copies;
+  if (!copies.LoadFrom(description))
+    return nullptr;
+  if (copies.value() < kMinCopies || copies.value() > kMaxCopies)
+    return nullptr;
+  settings->set_copies(copies.value());
+
+  cloud_devices::printer::DpiTicketItem dpi;
+  if (!dpi.LoadFrom(description))
+    return nullptr;
+  settings->set_dpi_xy(dpi.value().horizontal, dpi.value().vertical);
+
+  cloud_devices::printer::MediaTicketItem media;
+  if (!media.LoadFrom(description))
+    return nullptr;
+  cloud_devices::printer::Media media_value = media.value();
+  printing::PrintSettings::RequestedMedia requested_media;
+  if (media_value.width_um <= 0 || media_value.height_um <= 0 ||
+      media_value.vendor_id.empty()) {
+    return nullptr;
+  }
+  requested_media.size_microns =
+      gfx::Size(media_value.width_um, media_value.height_um);
+  requested_media.vendor_id = media_value.vendor_id;
+  settings->set_requested_media(requested_media);
+
+  cloud_devices::printer::CollateTicketItem collate;
+  if (!collate.LoadFrom(description))
+    return nullptr;
+  settings->set_collate(collate.value());
+
+  return settings;
+}
+
+bool CheckSettingsAndCapabilitiesCompatibility(
+    const printing::PrintSettings& settings,
+    const printing::PrinterSemanticCapsAndDefaults& capabilities) {
+  if (settings.collate() && !capabilities.collate_capable)
+    return false;
+
+  if (settings.copies() != 1 && !capabilities.copies_capable)
+    return false;
+
+  if (!base::Contains(capabilities.duplex_modes, settings.duplex_mode()))
+    return false;
+
+  base::Optional<bool> is_color =
+      ::printing::IsColorModelSelected(settings.color());
+  bool color_mode_selected = is_color.has_value() && is_color.value();
+  if (!color_mode_selected &&
+      capabilities.bw_model == printing::UNKNOWN_COLOR_MODEL) {
+    return false;
+  }
+  if (color_mode_selected &&
+      capabilities.color_model == printing::UNKNOWN_COLOR_MODEL) {
+    return false;
+  }
+
+  if (!base::Contains(capabilities.dpis, settings.dpi_size()))
+    return false;
+
+  const printing::PrintSettings::RequestedMedia& requested_media =
+      settings.requested_media();
+  return std::any_of(
+      capabilities.papers.begin(), capabilities.papers.end(),
+      [&requested_media](
+          const printing::PrinterSemanticCapsAndDefaults::Paper& paper) {
+        return paper.size_um == requested_media.size_microns &&
+               paper.vendor_id == requested_media.vendor_id;
+      });
 }
 
 }  // namespace extensions

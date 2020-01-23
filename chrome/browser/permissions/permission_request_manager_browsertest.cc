@@ -39,7 +39,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
-#include "media/base/media_switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -70,12 +69,6 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     mock_permission_prompt_factory_.reset();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // Enable fake devices so we can test getUserMedia() on devices without
-    // physical media devices.
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
 
   PermissionRequestManager* GetPermissionRequestManager() {

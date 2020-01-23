@@ -18,7 +18,6 @@
 #include "content/public/test/content_test_suite_base.h"
 #include "content/shell/app/shell_main_delegate.h"
 #include "content/shell/common/shell_switches.h"
-#include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/test/ui_controls.h"
 
@@ -58,7 +57,6 @@ class AshContentPerfTestLauncherDelegate : public content::TestLauncherDelegate 
       const base::FilePath& temp_data_dir) override {
     command_line->AppendSwitchPath(switches::kContentShellDataPath,
                                    temp_data_dir);
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     return true;
   }
 

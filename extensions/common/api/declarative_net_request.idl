@@ -54,9 +54,8 @@ namespace declarativeNetRequest {
     upgradeScheme,
     // Remove request/response headers from the network request.
     removeHeaders,
-    // TODO(crbug.com/1038831): Add documentation once the implementation is
-    // complete.
-    [nodoc]
+    // Allow all requests within a frame hierarchy, including the frame request
+    // itself.
     allowAllRequests
   };
 
@@ -182,6 +181,10 @@ namespace declarativeNetRequest {
 
     // List of resource types which the rule can match. An empty list is not
     // allowed.
+    //
+    // Note: this must be specified for <code>allowAllRequests</code> rules and
+    // may only include the <code>sub_frame</code> and <code>main_frame</code>
+    // resource types.
     ResourceType[]? resourceTypes;
 
     // List of resource types which the rule won't match. Only one of

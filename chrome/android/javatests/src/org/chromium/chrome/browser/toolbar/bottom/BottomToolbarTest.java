@@ -4,6 +4,15 @@
 
 package org.chromium.chrome.browser.toolbar.bottom;
 
+import static org.chromium.chrome.test.util.ToolbarTestUtils.BOTTOM_TOOLBAR;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.BOTTOM_TOOLBAR_HOME;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.BOTTOM_TOOLBAR_NEW_TAB;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.BOTTOM_TOOLBAR_SEARCH;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.BOTTOM_TOOLBAR_SHARE;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.BOTTOM_TOOLBAR_TAB_SWITCHER;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.checkToolbarButtonVisibility;
+import static org.chromium.chrome.test.util.ToolbarTestUtils.checkToolbarVisibility;
+
 import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,7 +26,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
@@ -53,27 +61,19 @@ public class BottomToolbarTest {
 
     @Test
     @MediumTest
-    public void testBottomToolbarVisibility() {
-        mActivityTestRule.startMainActivityOnBlankPage();
-        Assert.assertNotNull("BottomToolbarCoordinator should be constructed.",
-                mActivityTestRule.getActivity().getToolbarManager().getBottomToolbarCoordinator());
-
-        View bottomToolbar = mActivityTestRule.getActivity().findViewById(R.id.bottom_toolbar);
-        Assert.assertEquals("Bottom toolbar view should be visible.", View.VISIBLE,
-                bottomToolbar.getVisibility());
-    }
-
-    @Test
-    @MediumTest
-    public void testBottomToolbarTabSwitcherButton_Home_Search_Tab_Switcher()
-            throws ExecutionException {
+    public void testBottomToolbar_Home_Search_Tab_Switcher() throws ExecutionException {
         BottomToolbarVariationManager.setVariation(Variations.HOME_SEARCH_TAB_SWITCHER);
         mActivityTestRule.startMainActivityOnBlankPage();
-        Assert.assertFalse("Tab switcher should not be visible.",
-                mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
 
-        ViewGroup bottomToolbar = mActivityTestRule.getActivity().findViewById(R.id.bottom_toolbar);
-        View tabSwitcherButton = bottomToolbar.findViewById(R.id.bottom_tab_switcher_button);
+        checkToolbarVisibility(BOTTOM_TOOLBAR, true);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_HOME, true);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_SEARCH, true);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_TAB_SWITCHER, true);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_NEW_TAB, false);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_SHARE, false);
+
+        ViewGroup bottomToolbar = mActivityTestRule.getActivity().findViewById(BOTTOM_TOOLBAR);
+        View tabSwitcherButton = bottomToolbar.findViewById(BOTTOM_TOOLBAR_TAB_SWITCHER);
 
         OverviewModeBehaviorWatcher overviewModeWatcher = new OverviewModeBehaviorWatcher(
                 mActivityTestRule.getActivity().getOverviewModeBehavior(), true, false);
@@ -82,5 +82,41 @@ public class BottomToolbarTest {
 
         Assert.assertTrue("Tab switcher should be visible.",
                 mActivityTestRule.getActivity().getOverviewModeBehavior().overviewVisible());
+    }
+
+    @Test
+    @MediumTest
+    public void testBottomToolbar_New_Tab_Search_Share() throws ExecutionException {
+        BottomToolbarVariationManager.setVariation(Variations.NEW_TAB_SEARCH_SHARE);
+        mActivityTestRule.startMainActivityOnBlankPage();
+
+        checkToolbarVisibility(BOTTOM_TOOLBAR, true);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_NEW_TAB, true);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_SEARCH, true);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_SHARE, true);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_HOME, false);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_TAB_SWITCHER, false);
+
+        int tabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
+        ViewGroup bottomToolbar = mActivityTestRule.getActivity().findViewById(BOTTOM_TOOLBAR);
+        View newTabButton = bottomToolbar.findViewById(BOTTOM_TOOLBAR_NEW_TAB);
+        TestThreadUtils.runOnUiThreadBlocking(() -> newTabButton.callOnClick());
+
+        Assert.assertEquals(
+                tabCount + 1, mActivityTestRule.getActivity().getCurrentTabModel().getCount());
+    }
+
+    @Test
+    @MediumTest
+    public void testBottomToolbar_Home_Search_Share() {
+        BottomToolbarVariationManager.setVariation(Variations.HOME_SEARCH_SHARE);
+        mActivityTestRule.startMainActivityOnBlankPage();
+
+        checkToolbarVisibility(BOTTOM_TOOLBAR, true);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_HOME, true);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_SEARCH, true);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_SHARE, true);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_NEW_TAB, false);
+        checkToolbarButtonVisibility(BOTTOM_TOOLBAR, BOTTOM_TOOLBAR_TAB_SWITCHER, false);
     }
 }

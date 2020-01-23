@@ -26,7 +26,8 @@ import org.chromium.ui.test.util.DisableAnimationsTestRule;
 /** An integration test for PaymentRequestEvent.changePaymentMethod(). */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        "enable-blink-features=PaymentMethodChangeEvent,PaymentHandlerChangePaymentMethod"})
+        "enable-blink-features=PaymentMethodChangeEvent,PaymentHandlerChangePaymentMethod",
+        "disable-field-trial-config"})
 @MediumTest
 public class PaymentHandlerChangePaymentMethodTest {
     // Disable animations to reduce flakiness.

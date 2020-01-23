@@ -9,7 +9,7 @@
     ImplementedAs=DOMTaskController,
     RuntimeEnabled=WebScheduler
 ] interface TaskController : AbortController {
-    [CallWith=Document] constructor(optional TaskPriority priority = "default");
+    [CallWith=Document] constructor(optional TaskPriority priority = "user-visible");
     void setPriority(TaskPriority priority);
 };
 

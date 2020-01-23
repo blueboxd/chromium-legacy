@@ -12,12 +12,16 @@ import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
+import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withTagValue;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
@@ -39,6 +43,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto;
@@ -326,5 +331,58 @@ public class AutofillAssistantPaymentTest {
         waitUntilKeyboardMatchesCondition(mTestRule, true);
         onView(withText("User form")).perform(scrollTo(), click());
         waitUntilKeyboardMatchesCondition(mTestRule, false);
+    }
+
+    @Test
+    @MediumTest
+    public void testIncompleteAddressOnCompleteCard() throws Exception {
+        PersonalDataManager.AutofillProfile mockProfile = new PersonalDataManager.AutofillProfile(
+                /* guid= */ "",
+                /* origin= */ "https://www.example.com", "John Doe", /* companyName= */ "",
+                "Somestreet",
+                /* region= */ "", "Switzerland", "", /* postalCode= */ "", /* sortingCode= */ "",
+                "CH", "+41 79 123 45 67", "johndoe@google.com", /* languageCode= */ "");
+        String profileId = mHelper.setProfile(mockProfile);
+        mHelper.addDummyCreditCard(profileId);
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                    .setRequestPaymentMethod(true)
+                                                    .addSupportedBasicCardNetworks("visa")
+                                                    .setShowTermsAsCheckbox(true)
+                                                    .setRequestTermsAndConditions(true)
+                                                    .setAcceptTermsAndConditionsText("accept terms")
+                                                    .setTermsAndConditionsState(
+                                                            TermsAndConditionsState.ACCEPTED))
+                        .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Payment")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        // Check our UI.
+        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+        onView(withContentDescription("Continue")).check(matches(not(isEnabled())));
+        onView(allOf(withId(R.id.incomplete_error),
+                       withParent(withId(R.id.payment_method_summary))))
+                .check(matches(allOf(isDisplayed(), withText("Information missing"))));
+        onView(withId(R.id.payment_method_summary)).perform(click());
+        waitUntilViewMatchesCondition(withId(R.id.payment_method_full), isDisplayed());
+
+        // Check CardEditor UI.
+        onView(withContentDescription("Edit card")).perform(click());
+        waitUntilViewMatchesCondition(
+                withContentDescription("Card number*"), allOf(isDisplayed(), isEnabled()));
+        onView(withText(containsString("John Doe, Somestreet")))
+                .check(matches(withText(containsString("Enter a valid address"))));
     }
 }

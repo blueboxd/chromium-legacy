@@ -3931,6 +3931,154 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
                                      base::nullopt /* timestamp */));
 }
 
+// Tests the allowAllRequests action.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest, AllowAllRequests) {
+  struct RuleData {
+    int id;
+    int priority;
+    std::string action_type;
+    std::string url_filter;
+    bool is_regex_rule;
+    base::Optional<std::vector<std::string>> resource_types;
+  };
+
+  auto run_test = [this](const GURL& page_url,
+                         const std::vector<RuleData>& rule_data,
+                         const std::vector<std::string>& paths_seen,
+                         const std::vector<std::string>& paths_not_seen) {
+    std::vector<TestRule> test_rules;
+    for (const auto& rule : rule_data) {
+      TestRule test_rule = CreateGenericRule();
+      test_rule.id = rule.id;
+      test_rule.priority = rule.priority;
+      test_rule.action->type = rule.action_type;
+      test_rule.condition->url_filter.reset();
+      if (rule.is_regex_rule)
+        test_rule.condition->regex_filter = rule.url_filter;
+      else
+        test_rule.condition->url_filter = rule.url_filter;
+      test_rule.condition->resource_types = rule.resource_types;
+      test_rules.push_back(test_rule);
+    }
+
+    ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(test_rules));
+
+    ui_test_utils::NavigateToURL(browser(), page_url);
+
+    const std::set<GURL> requests_seen = GetAndResetRequestsToServer();
+
+    for (const auto& path : paths_seen) {
+      GURL expected_request_url = embedded_test_server()->GetURL(path);
+      EXPECT_TRUE(base::Contains(requests_seen, expected_request_url))
+          << expected_request_url.spec()
+          << " was not requested from the server.";
+    }
+
+    for (const auto& path : paths_not_seen) {
+      GURL expected_request_url = embedded_test_server()->GetURL(path);
+      EXPECT_FALSE(base::Contains(requests_seen, expected_request_url))
+          << expected_request_url.spec() << " request seen unexpectedly.";
+    }
+
+    UninstallExtension(last_loaded_extension_id());
+  };
+
+  // This page causes the following requests.
+  GURL page_url = embedded_test_server()->GetURL("example.com",
+                                                 "/page_with_two_frames.html");
+  std::vector<std::string> requests = {
+      {"/page_with_two_frames.html"},         // 0
+      {"/subresources/script.js"},            // 1
+      {"/child_frame.html?frame=1"},          // 2
+      {"/subresources/script.js?frameId=1"},  // 3
+      {"/child_frame.html?frame=2"},          // 4
+      {"/subresources/script.js?frameId=2"},  // 5
+  };
+
+  {
+    SCOPED_TRACE("Testing case 1");
+    std::vector<RuleData> rule_data = {
+        {1, 4, "allowAllRequests", "page_with_two_frames\\.html", true,
+         std::vector<std::string>({"main_frame"})},
+        {2, 3, "block", "script.js|", false},
+        {3, 5, "block", "script.js?frameId=1", false},
+        {4, 3, "block", "script\\.js?frameId=2", true}};
+    // Requests:
+    // -/page_with_two_frames.html (Matching rule=1)
+    //   -/subresources/script.js (Matching rule=[1,2] Winner=1)
+    //   -/child_frame.html?frame=1 (Matching Rule=1)
+    //     -/subresources/script.js?frameId=1 (Matching Rule=[1,3] Winner=3)
+    //   -/child_frame.html?frame=2 (Matching Rule=1)
+    //     -/subresources/script.js?frameId=2 (Matching Rule=1,4 Winner=1)
+    // Hence only requests[3] is blocked.
+    run_test(page_url, rule_data,
+             {requests[0], requests[1], requests[2], requests[4], requests[5]},
+             {requests[3]});
+  }
+
+  {
+    SCOPED_TRACE("Testing case 2");
+    std::vector<RuleData> rule_data = {
+        {1, 4, "allowAllRequests", "page_with_two_frames.html", false,
+         std::vector<std::string>({"main_frame"})},
+        {2, 5, "block", "script\\.js", true},
+        {3, 6, "allowAllRequests", "child_frame.html", false,
+         std::vector<std::string>({"sub_frame"})},
+        {4, 7, "block", "frame=1", true}};
+
+    // Requests:
+    // -/page_with_two_frames.html (Matching rule=1)
+    //   -/subresources/script.js (Matching rule=[1,2] Winner=2, Blocked)
+    //   -/child_frame.html?frame=1 (Matching Rule=[1,3,4] Winner=4, Blocked)
+    //     -/subresources/script.js?frameId=1 (Source Frame was blocked)
+    //   -/child_frame.html?frame=2 (Matching Rule=[1,3] Winner=3)
+    //     -/subresources/script.js?frameId=2 (Matching Rule=[1,2,3] Winner=3)
+    run_test(page_url, rule_data, {requests[0], requests[4], requests[5]},
+             {requests[1], requests[2], requests[3]});
+  }
+
+  {
+    SCOPED_TRACE("Testing case 3");
+    std::vector<RuleData> rule_data = {
+        {1, 1, "allowAllRequests", "page_with_two_frames.html", false,
+         std::vector<std::string>({"main_frame"})},
+        {2, 5, "block", ".*", true},
+    };
+
+    // Requests:
+    // -/page_with_two_frames.html (Matching rule=1)
+    //   -/subresources/script.js (Matching rule=[1,2] Winner=2)
+    //   -/child_frame.html?frame=1 (Matching Rule=[1,2] Winner=2)
+    //     -/subresources/script.js?frameId=1 (Source Frame was blocked)
+    //   -/child_frame.html?frame=2 (Matching Rule=[1,2] Winner=2)
+    //     -/subresources/script.js?frameId=2 (Source frame was blocked)
+    // Hence only the main-frame request goes through.
+    run_test(page_url, rule_data, {requests[0]},
+             {requests[1], requests[2], requests[3], requests[4], requests[5]});
+  }
+  {
+    SCOPED_TRACE("Testing case 4");
+    std::vector<RuleData> rule_data = {
+        {1, 6, "allowAllRequests", "page_with_two_frames\\.html", true,
+         std::vector<std::string>({"main_frame"})},
+        {2, 5, "block", "*", false},
+    };
+
+    // Requests:
+    // -/page_with_two_frames.html (Matching rule=1)
+    //   -/subresources/script.js (Matching rule=[1,2] Winner=1)
+    //   -/child_frame.html?frame=1 (Matching Rule=[1,2] Winner=1)
+    //     -/subresources/script.js?frameId=1 (Matching Rule=[1,2] Winner=1)
+    //   -/child_frame.html?frame=2 (Matching Rule=[1,2] Winner=1)
+    //     -/subresources/script.js?frameId=2 (Matching Rule=[1,2] Winner=1)
+    // Hence all requests go through.
+    run_test(page_url, rule_data,
+             {requests[0], requests[1], requests[2], requests[3], requests[4],
+              requests[5]},
+             {});
+  }
+}
+
 // Test fixture to verify that host permissions for the request url and the
 // request initiator are properly checked when redirecting requests. Loads an
 // example.com url with four sub-frames named frame_[1..4] from hosts

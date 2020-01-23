@@ -411,6 +411,9 @@ void TabStripUIHandler::RegisterMessages() {
 }
 
 void TabStripUIHandler::HandleCreateNewTab(const base::ListValue* args) {
+  UMA_HISTOGRAM_ENUMERATION("Tab.NewTab",
+                            TabStripModel::NEW_TAB_BUTTON_IN_WEBUI_TAB_STRIP,
+                            TabStripModel::NEW_TAB_ENUM_COUNT);
   chrome::ExecuteCommand(browser_, IDC_NEW_TAB);
 }
 
@@ -475,10 +478,13 @@ base::DictionaryValue TabStripUIHandler::GetTabGroupData(TabGroup* group) {
       embedder_->GetThemeProvider()->GetColor(ThemeProperties::COLOR_FRAME));
   const tab_groups::TabGroupColor tab_group_color =
       tab_groups::GetTabGroupColorSet().at(visual_data->color());
+  const SkColor group_color = is_dark_frame ? tab_group_color.dark_theme_color
+                                            : tab_group_color.light_theme_color;
+  visual_data_dict.SetString("color",
+                             color_utils::SkColorToRgbString(group_color));
   visual_data_dict.SetString(
-      "color", color_utils::SkColorToRgbaString(
-                   is_dark_frame ? tab_group_color.dark_theme_color
-                                 : tab_group_color.light_theme_color));
+      "textColor", color_utils::SkColorToRgbString(
+                       color_utils::GetColorWithMaxContrast(group_color)));
 
   return visual_data_dict;
 }

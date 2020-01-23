@@ -7,7 +7,7 @@ document
 ++++description Name='This is an address element.'
 ++contentinfo
 ++++description Name='This is a footer element.'
-++form
+++form IsControlElement=false
 ++++description Name='This is a form element.'
 ++main
 ++++description Name='This is a main element.'

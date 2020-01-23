@@ -214,11 +214,9 @@ public interface TabObserver {
      * @param isProvisionalLoad Whether the failed load occurred during the provisional load.
      * @param isMainFrame       Whether failed load happened for the main frame.
      * @param errorCode         Code for the occurring error.
-     * @param description       The description for the error.
      * @param failingUrl        The url that was loading when the error occurred.
      */
-    void onDidFailLoad(
-            Tab tab, boolean isMainFrame, int errorCode, String description, String failingUrl);
+    void onDidFailLoad(Tab tab, boolean isMainFrame, int errorCode, String failingUrl);
 
     /**
      * Called when a navigation is started in the WebContents.

@@ -53,6 +53,10 @@ void PageLoadMetricsTestWaiter::AddSubframeNavigationExpectation() {
   expected_subframe_navigation_ = true;
 }
 
+void PageLoadMetricsTestWaiter::AddSubframeDataExpectation() {
+  expected_subframe_data_ = true;
+}
+
 void PageLoadMetricsTestWaiter::AddMinimumCompleteResourcesExpectation(
     int expected_minimum_complete_resources) {
   expected_minimum_complete_resources_ = expected_minimum_complete_resources;
@@ -152,6 +156,11 @@ void PageLoadMetricsTestWaiter::OnResourceDataUseObserved(
         current_network_body_bytes_ += resource->encoded_body_length;
     }
     current_network_bytes_ += resource->delta_bytes;
+
+    // If |rfh| is a subframe with nonzero bytes, update the subframe
+    // data expectation.
+    if (rfh->GetParent() && resource->delta_bytes > 0)
+      expected_subframe_data_ = false;
   }
   if (ExpectationsSatisfied() && run_loop_)
     run_loop_->Quit();
@@ -264,15 +273,21 @@ bool PageLoadMetricsTestWaiter::SubframeNavigationExpectationsSatisfied()
   return !expected_subframe_navigation_;
 }
 
+bool PageLoadMetricsTestWaiter::SubframeDataExpectationsSatisfied() const {
+  return !expected_subframe_data_;
+}
+
 bool PageLoadMetricsTestWaiter::ExpectationsSatisfied() const {
   return subframe_expected_fields_.Empty() && page_expected_fields_.Empty() &&
          ResourceUseExpectationsSatisfied() &&
          WebFeaturesExpectationsSatisfied() &&
          SubframeNavigationExpectationsSatisfied() &&
-         expected_frame_sizes_.empty() && CpuTimeExpectationsSatisfied();
+         SubframeDataExpectationsSatisfied() && expected_frame_sizes_.empty() &&
+         CpuTimeExpectationsSatisfied();
 }
 
-PageLoadMetricsTestWaiter::WaiterMetricsObserver::~WaiterMetricsObserver() {}
+PageLoadMetricsTestWaiter::WaiterMetricsObserver::~WaiterMetricsObserver() =
+    default;
 
 PageLoadMetricsTestWaiter::WaiterMetricsObserver::WaiterMetricsObserver(
     base::WeakPtr<PageLoadMetricsTestWaiter> waiter)

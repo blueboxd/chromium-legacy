@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.infobar.IPHInfoBarSupport;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
-import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.components.download.DownloadState;
@@ -851,9 +850,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         }
 
         ChromeTabbedActivity activity = (ChromeTabbedActivity) getActivity();
-        Profile profile = mIsIncognito ? Profile.getLastUsedProfile().getOffTheRecordProfile()
-                                       : Profile.getLastUsedProfile().getOriginalProfile();
-        activity.getToolbarButtonInProductHelpController().maybeShowDownloadContinuingIPH(profile);
+        activity.getToolbarButtonInProductHelpController().showDownloadContinuingIPH();
     }
 
     @Nullable

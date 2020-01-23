@@ -14,6 +14,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "gpu/ipc/client/client_shared_image_interface.h"
 #include "gpu/ipc/common/command_buffer_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/common/gpu_param_traits_macros.h"
@@ -237,6 +238,11 @@ int32_t GpuChannelHost::GenerateRouteID() {
 
 void GpuChannelHost::CrashGpuProcessForTesting() {
   Send(new GpuChannelMsg_CrashForTesting());
+}
+
+std::unique_ptr<ClientSharedImageInterface>
+GpuChannelHost::CreateClientSharedImageInterface() {
+  return std::make_unique<ClientSharedImageInterface>(&shared_image_interface_);
 }
 
 GpuChannelHost::~GpuChannelHost() = default;

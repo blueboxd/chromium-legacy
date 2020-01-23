@@ -589,7 +589,7 @@
 <translation id="3587738293690942763">Medio</translation>
 <translation id="3592413004129370115">Italian (sobre)</translation>
 <translation id="3600246354004376029"><ph name="TITLE" />, <ph name="DOMAIN" />, <ph name="TIME" /></translation>
-<translation id="3608932978122581043">Proporcionar orientación</translation>
+<translation id="3608932978122581043">Orientación de entrada</translation>
 <translation id="3614103345592970299">Tamaño 2</translation>
 <translation id="361438452008624280">Entrada de lista "<ph name="LANGUAGE_ID" />": idioma no disponible o desconocido.</translation>
 <translation id="3615877443314183785">Introduce una fecha de vencimiento válida</translation>
@@ -1710,7 +1710,7 @@ Más información:
 <translation id="8681531050781943054">No ha sido posible cargar la página web <ph name="PAGE" /> porque:</translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Disponible</translation>
-<translation id="868922510921656628">Páginas por set</translation>
+<translation id="868922510921656628">Páginas por conjunto</translation>
 <translation id="869891660844655955">Fecha de caducidad</translation>
 <translation id="8703575177326907206">Tu conexión a <ph name="DOMAIN" /> no está cifrada.</translation>
 <translation id="8718314106902482036">El pago no se ha completado</translation>

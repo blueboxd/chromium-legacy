@@ -32,29 +32,35 @@ namespace {
 const storage::FileSystemType kTemporary = storage::kFileSystemTypeTemporary;
 const storage::FileSystemType kPersistent = storage::kFileSystemTypePersistent;
 
-// We'll use these three distinct origins for testing, both as strings and as
-// Origins in appropriate contexts.
-const char kTestOrigin1[] = "http://host1:1";
-const char kTestOrigin2[] = "http://host2:2";
-const char kTestOrigin3[] = "http://host3:3";
-
-// Extensions and Devtools should be ignored.
-const char kTestOriginExt[] = "chrome-extension://abcdefghijklmnopqrstuvwxyz";
-const char kTestOriginDevTools[] = "devtools://abcdefghijklmnopqrstuvw";
-
-const url::Origin kOrigin1 = url::Origin::Create(GURL(kTestOrigin1));
-const url::Origin kOrigin2 = url::Origin::Create(GURL(kTestOrigin2));
-const url::Origin kOrigin3 = url::Origin::Create(GURL(kTestOrigin3));
-const url::Origin kOriginExt = url::Origin::Create(GURL(kTestOriginExt));
-const url::Origin kOriginDevTools =
-    url::Origin::Create(GURL(kTestOriginDevTools));
-
 // TODO(mkwst): Update this size once the discussion in http://crbug.com/86114
 // is concluded.
 const int kEmptyFileSystemSize = 0;
 
 using FileSystemInfoList =
     std::list<BrowsingDataFileSystemHelper::FileSystemInfo>;
+
+// We'll use these three distinct origins for testing, both as strings and as
+// Origins in appropriate contexts.
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+url::Origin Origin1() {
+  return url::Origin::Create(GURL("http://host1:1"));
+}
+url::Origin Origin2() {
+  return url::Origin::Create(GURL("http://host2:2"));
+}
+url::Origin Origin3() {
+  return url::Origin::Create(GURL("http://host3:3"));
+}
+
+// Extensions and Devtools should be ignored.
+url::Origin OriginExt() {
+  return url::Origin::Create(
+      GURL("chrome-extension://abcdefghijklmnopqrstuvwxyz"));
+}
+url::Origin OriginDevTools() {
+  return url::Origin::Create(GURL("devtools://abcdefghijklmnopqrstuvw"));
+}
 
 // The FileSystem APIs are all asynchronous; this testing class wraps up the
 // boilerplate code necessary to deal with waiting for responses. In a nutshell,
@@ -157,20 +163,20 @@ class BrowsingDataFileSystemHelperTest : public testing::Test {
     BlockUntilQuit(&run_loop);
   }
 
-  // Sets up kOrigin1 with a temporary file system, kOrigin2 with a persistent
-  // file system, and kOrigin3 with both.
+  // Sets up Origin1() with a temporary file system, Origin2() with a persistent
+  // file system, and Origin3() with both.
   virtual void PopulateTestFileSystemData() {
-    CreateDirectoryForOriginAndType(kOrigin1, kTemporary);
-    CreateDirectoryForOriginAndType(kOrigin2, kPersistent);
-    CreateDirectoryForOriginAndType(kOrigin3, kTemporary);
-    CreateDirectoryForOriginAndType(kOrigin3, kPersistent);
+    CreateDirectoryForOriginAndType(Origin1(), kTemporary);
+    CreateDirectoryForOriginAndType(Origin2(), kPersistent);
+    CreateDirectoryForOriginAndType(Origin3(), kTemporary);
+    CreateDirectoryForOriginAndType(Origin3(), kPersistent);
 
-    EXPECT_FALSE(FileSystemContainsOriginAndType(kOrigin1, kPersistent));
-    EXPECT_TRUE(FileSystemContainsOriginAndType(kOrigin1, kTemporary));
-    EXPECT_TRUE(FileSystemContainsOriginAndType(kOrigin2, kPersistent));
-    EXPECT_FALSE(FileSystemContainsOriginAndType(kOrigin2, kTemporary));
-    EXPECT_TRUE(FileSystemContainsOriginAndType(kOrigin3, kPersistent));
-    EXPECT_TRUE(FileSystemContainsOriginAndType(kOrigin3, kTemporary));
+    EXPECT_FALSE(FileSystemContainsOriginAndType(Origin1(), kPersistent));
+    EXPECT_TRUE(FileSystemContainsOriginAndType(Origin1(), kTemporary));
+    EXPECT_TRUE(FileSystemContainsOriginAndType(Origin2(), kPersistent));
+    EXPECT_FALSE(FileSystemContainsOriginAndType(Origin2(), kTemporary));
+    EXPECT_TRUE(FileSystemContainsOriginAndType(Origin3(), kPersistent));
+    EXPECT_TRUE(FileSystemContainsOriginAndType(Origin3(), kTemporary));
   }
 
   // Calls OpenFileSystem with OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT
@@ -215,20 +221,20 @@ TEST_F(BrowsingDataFileSystemHelperTest, FetchData) {
   // Order is arbitrary, verify all three origins.
   bool test_hosts_found[3] = {false, false, false};
   for (const auto& info : *file_system_info_list_) {
-    if (info.origin == kOrigin1) {
+    if (info.origin == Origin1()) {
       EXPECT_FALSE(test_hosts_found[0]);
       test_hosts_found[0] = true;
       EXPECT_FALSE(base::Contains(info.usage_map, kPersistent));
       EXPECT_TRUE(base::Contains(info.usage_map, kTemporary));
       EXPECT_EQ(kEmptyFileSystemSize,
                 info.usage_map.at(storage::kFileSystemTypeTemporary));
-    } else if (info.origin == kOrigin2) {
+    } else if (info.origin == Origin2()) {
       EXPECT_FALSE(test_hosts_found[1]);
       test_hosts_found[1] = true;
       EXPECT_TRUE(base::Contains(info.usage_map, kPersistent));
       EXPECT_FALSE(base::Contains(info.usage_map, kTemporary));
       EXPECT_EQ(kEmptyFileSystemSize, info.usage_map.at(kPersistent));
-    } else if (info.origin == kOrigin3) {
+    } else if (info.origin == Origin3()) {
       EXPECT_FALSE(test_hosts_found[2]);
       test_hosts_found[2] = true;
       EXPECT_TRUE(base::Contains(info.usage_map, kPersistent));
@@ -249,15 +255,15 @@ TEST_F(BrowsingDataFileSystemHelperTest, FetchData) {
 TEST_F(BrowsingDataFileSystemHelperTest, DeleteData) {
   PopulateTestFileSystemData();
 
-  helper_->DeleteFileSystemOrigin(kOrigin1);
-  helper_->DeleteFileSystemOrigin(kOrigin2);
+  helper_->DeleteFileSystemOrigin(Origin1());
+  helper_->DeleteFileSystemOrigin(Origin2());
 
   FetchFileSystems();
 
   EXPECT_EQ(1UL, file_system_info_list_->size());
   BrowsingDataFileSystemHelper::FileSystemInfo info =
       *(file_system_info_list_->begin());
-  EXPECT_EQ(kOrigin3, info.origin);
+  EXPECT_EQ(Origin3(), info.origin);
   EXPECT_TRUE(base::Contains(info.usage_map, kPersistent));
   EXPECT_TRUE(base::Contains(info.usage_map, kTemporary));
   EXPECT_EQ(kEmptyFileSystemSize, info.usage_map[kPersistent]);
@@ -268,7 +274,7 @@ TEST_F(BrowsingDataFileSystemHelperTest, DeleteData) {
 // whether or not it currently contains file systems.
 TEST_F(BrowsingDataFileSystemHelperTest, Empty) {
   ASSERT_TRUE(canned_helper_->empty());
-  canned_helper_->Add(kOrigin1);
+  canned_helper_->Add(Origin1());
   ASSERT_FALSE(canned_helper_->empty());
   canned_helper_->Reset();
   ASSERT_TRUE(canned_helper_->empty());
@@ -277,19 +283,19 @@ TEST_F(BrowsingDataFileSystemHelperTest, Empty) {
 // Verifies that AddFileSystem correctly adds file systems. The canned helper
 // does not record usage size.
 TEST_F(BrowsingDataFileSystemHelperTest, CannedAddFileSystem) {
-  canned_helper_->Add(kOrigin1);
-  canned_helper_->Add(kOrigin2);
+  canned_helper_->Add(Origin1());
+  canned_helper_->Add(Origin2());
 
   FetchCannedFileSystems();
 
   EXPECT_EQ(2U, file_system_info_list_->size());
   auto info = file_system_info_list_->begin();
-  EXPECT_EQ(kOrigin1, info->origin);
+  EXPECT_EQ(Origin1(), info->origin);
   EXPECT_FALSE(base::Contains(info->usage_map, kPersistent));
   EXPECT_FALSE(base::Contains(info->usage_map, kTemporary));
 
   info++;
-  EXPECT_EQ(kOrigin2, info->origin);
+  EXPECT_EQ(Origin2(), info->origin);
   EXPECT_FALSE(base::Contains(info->usage_map, kPersistent));
   EXPECT_FALSE(base::Contains(info->usage_map, kTemporary));
 }
@@ -298,9 +304,9 @@ TEST_F(BrowsingDataFileSystemHelperTest, CannedAddFileSystem) {
 // extension and devtools schemes.
 TEST_F(BrowsingDataFileSystemHelperTest, IgnoreExtensionsAndDevTools) {
   ASSERT_TRUE(canned_helper_->empty());
-  canned_helper_->Add(kOriginExt);
+  canned_helper_->Add(OriginExt());
   ASSERT_TRUE(canned_helper_->empty());
-  canned_helper_->Add(kOriginDevTools);
+  canned_helper_->Add(OriginDevTools());
   ASSERT_TRUE(canned_helper_->empty());
 }
 

@@ -1372,30 +1372,31 @@ class LayerTreeHostTestNoDamageCausesNoInvalidate : public LayerTreeHostTest {
         break;
       case 2:
         EndTest();
+        break;
     }
   }
 
   void DidInvalidateLayerTreeFrameSink(LayerTreeHostImpl* impl) override {
-    switch (impl->active_tree()->source_frame_number()) {
+    int source_frame_number = impl->active_tree()->source_frame_number();
+    if (source_frame_number == 0) {
       // Be sure that invalidates happen before commits, so the below failure
       // works.
-      case 0:
-        first_frame_invalidate_before_commit_ = true;
-        break;
-      // Frame 1 will invalidate, even though it has no damage. The early
-      // damage check that prevents frame 2 from invalidating only runs if
-      // a previous frame did not have damage.
-
-      // This frame should not cause an invalidate, since there is no visible
-      // damage.
-      case 2:
-        ADD_FAILURE();
+      first_frame_invalidate_before_commit_ = true;
+    } else if (source_frame_number > 0) {
+      // The first frame (frame number 0) has damage because it's the first
+      // frame. All subsequent frames in this test are set up to have no damage.
+      // The early damage check will prevent further invalidates without damage
+      // after 2 consecutive invalidates without damage. So check there is no
+      // more than 2.
+      invalidate_without_damage_count_++;
+      EXPECT_LT(invalidate_without_damage_count_, 2);
     }
   }
 
  private:
   scoped_refptr<Layer> layer_;
   bool first_frame_invalidate_before_commit_ = false;
+  int invalidate_without_damage_count_ = 0;
 };
 
 // This behavior is specific to Android WebView, which only uses

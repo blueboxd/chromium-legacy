@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS Same-origin prerequisite check: the original prototype is accessible
-FAIL Same-origin: setting the prototype to an empty object via Object.setPrototypeOf should throw a TypeError assert_throws: function "() => {
+FAIL Same-origin: setting the prototype to an empty object via Object.setPrototypeOf should throw a TypeError assert_throws_js: function "() => {
       Object.setPrototypeOf(target, newValue);
     }" did not throw
 FAIL Same-origin: setting the prototype to an empty object via __proto__ should throw a TypeError assert_throws: function "function() {

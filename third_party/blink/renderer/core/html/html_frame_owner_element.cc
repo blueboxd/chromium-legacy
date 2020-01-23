@@ -581,7 +581,7 @@ void HTMLFrameOwnerElement::Trace(Visitor* visitor) {
 bool HTMLFrameOwnerElement::IsLoadingFrameDefaultEagerEnforced() const {
   return RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
          !GetDocument().IsFeatureEnabled(
-             mojom::FeaturePolicyFeature::kLoadingFrameDefaultEager);
+             mojom::blink::FeaturePolicyFeature::kLoadingFrameDefaultEager);
 }
 
 }  // namespace blink

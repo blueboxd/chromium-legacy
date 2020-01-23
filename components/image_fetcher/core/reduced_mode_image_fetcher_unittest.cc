@@ -44,12 +44,16 @@ namespace image_fetcher {
 
 namespace {
 
-const GURL kImageUrl = GURL("http://gstatic.img.com/foo.jpg");
-
 constexpr char kUmaClientName[] = "TestUma";
 constexpr char kImageData[] = "data";
 
 const char kImageFetcherEventHistogramName[] = "ImageFetcher.Events";
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL ImageUrl() {
+  return GURL("http://gstatic.img.com/foo.jpg");
+}
 
 }  // namespace
 
@@ -85,11 +89,11 @@ class ReducedModeImageFetcherTest : public testing::Test {
         base::SequencedTaskRunnerHandle::Get());
 
     // Use an initial request to start the cache up.
-    image_cache_->SaveImage(kImageUrl.spec(), kImageData,
+    image_cache_->SaveImage(ImageUrl().spec(), kImageData,
                             /* needs_transcoding */ false);
     RunUntilIdle();
     db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
-    image_cache_->DeleteImage(kImageUrl.spec());
+    image_cache_->DeleteImage(ImageUrl().spec());
     RunUntilIdle();
 
     shared_factory_ =
@@ -115,7 +119,7 @@ class ReducedModeImageFetcherTest : public testing::Test {
 
     EXPECT_CALL(data_callback, Run(kImageData, _));
     reduced_mode_image_fetcher()->FetchImageAndData(
-        kImageUrl, data_callback.Get(), ImageFetcherCallback(),
+        ImageUrl(), data_callback.Get(), ImageFetcherCallback(),
         ImageFetcherParams(TRAFFIC_ANNOTATION_FOR_TESTS, kUmaClientName));
     db()->LoadCallback(true);
     RunUntilIdle();
@@ -160,14 +164,14 @@ class ReducedModeImageFetcherTest : public testing::Test {
 
 TEST_F(ReducedModeImageFetcherTest, FetchNeedsTranscodingImageFromCache) {
   // Save the image that needs transcoding in the database.
-  image_cache()->SaveImage(kImageUrl.spec(), kImageData,
+  image_cache()->SaveImage(ImageUrl().spec(), kImageData,
                            /* needs_transcoding */ true);
   VerifyCacheHit();
 }
 
 TEST_F(ReducedModeImageFetcherTest, FetchImageFromCache) {
   // Save the image that doesn't need transcoding in the database.
-  image_cache()->SaveImage(kImageUrl.spec(), kImageData,
+  image_cache()->SaveImage(ImageUrl().spec(), kImageData,
                            /* needs_transcoding */ false);
   VerifyCacheHit();
 }

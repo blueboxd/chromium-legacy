@@ -222,6 +222,10 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // Meant for histograms recorded in FullCardRequest.
   base::TimeTicks form_parsed_timestamp_;
 
+  // Timestamp for when fido_authenticator_->IsUserVerifiable() is called.
+  base::Optional<base::TimeTicks> is_user_verifiable_called_timestamp_ =
+      base::nullopt;
+
   // Authenticators for card unmasking.
   std::unique_ptr<CreditCardCVCAuthenticator> cvc_authenticator_;
 #if !defined(OS_IOS)

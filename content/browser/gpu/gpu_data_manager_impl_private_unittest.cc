@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -15,7 +16,9 @@
 #include "content/browser/gpu/gpu_data_manager_testing_entry_enums_autogen.h"
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_feature_type.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/common/memory_stats.h"
@@ -54,7 +57,7 @@ static GURL GetDomain2ForTesting() {
   return GURL("http://bar.com/");
 }
 
-}  // namespace anonymous
+}  // namespace
 
 class GpuDataManagerImplPrivateTest : public testing::Test {
  public:
@@ -256,7 +259,7 @@ TEST_F(GpuDataManagerImplPrivateTest, UnblockThisDomainFrom3DAPIs) {
 #if !defined(OS_FUCHSIA)
 TEST_F(GpuDataManagerImplPrivateTest, FallbackToSwiftShader) {
   ScopedGpuDataManagerImplPrivate manager;
-  EXPECT_EQ(gpu::GpuMode::HARDWARE_ACCELERATED, manager->GetGpuMode());
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_GL, manager->GetGpuMode());
 
   manager->FallBackToNextGpuMode();
   EXPECT_EQ(gpu::GpuMode::SWIFTSHADER, manager->GetGpuMode());
@@ -266,7 +269,7 @@ TEST_F(GpuDataManagerImplPrivateTest, FallbackWithSwiftShaderDisabled) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisableSoftwareRasterizer);
   ScopedGpuDataManagerImplPrivate manager;
-  EXPECT_EQ(gpu::GpuMode::HARDWARE_ACCELERATED, manager->GetGpuMode());
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_GL, manager->GetGpuMode());
 
   manager->FallBackToNextGpuMode();
 #if defined(OS_WIN)
@@ -284,5 +287,72 @@ TEST_F(GpuDataManagerImplPrivateTest, GpuStartsWithGpuDisabled) {
   EXPECT_EQ(gpu::GpuMode::SWIFTSHADER, manager->GetGpuMode());
 }
 #endif  // !OS_ANDROID && !OS_CHROMEOS
+
+#if defined(OS_MACOSX)
+TEST_F(GpuDataManagerImplPrivateTest, FallbackFromMetalToGL) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kMetal);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_METAL, manager->GetGpuMode());
+
+  manager->FallBackToNextGpuMode();
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_GL, manager->GetGpuMode());
+}
+#endif  // OS_MACOSX
+
+#if BUILDFLAG(ENABLE_VULKAN)
+TEST_F(GpuDataManagerImplPrivateTest, GpuStartsWithUseVulkanFlag) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kUseVulkan, switches::kVulkanImplementationNameNative);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_VULKAN, manager->GetGpuMode());
+}
+
+TEST_F(GpuDataManagerImplPrivateTest, GpuStartsWithVulkanFeatureFlag) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kVulkan);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_VULKAN, manager->GetGpuMode());
+}
+
+// Don't run these tests on Fuchsia, which doesn't support falling back from
+// Vulkan.
+#if !defined(OS_FUCHSIA)
+TEST_F(GpuDataManagerImplPrivateTest, FallbackFromVulkanToGL) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kVulkan);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_VULKAN, manager->GetGpuMode());
+
+  manager->FallBackToNextGpuMode();
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_GL, manager->GetGpuMode());
+}
+
+TEST_F(GpuDataManagerImplPrivateTest, VulkanInitializationFails) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kVulkan);
+  ScopedGpuDataManagerImplPrivate manager;
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_VULKAN, manager->GetGpuMode());
+
+  // Simulate GPU process initialization completing with Vulkan unavailable.
+  gpu::GpuFeatureInfo gpu_feature_info;
+  for (auto& status : gpu_feature_info.status_values)
+    status = gpu::GpuFeatureStatus::kGpuFeatureStatusEnabled;
+  gpu_feature_info.status_values[gpu::GpuFeatureType::GPU_FEATURE_TYPE_VULKAN] =
+      gpu::GpuFeatureStatus::kGpuFeatureStatusDisabled;
+  manager->UpdateGpuFeatureInfo(gpu_feature_info, base::nullopt);
+
+  // GpuDataManager should update its mode to be GL.
+  EXPECT_EQ(gpu::GpuMode::HARDWARE_GL, manager->GetGpuMode());
+
+  // The first fallback should go to SwiftShader on platforms where fallback to
+  // software is allowed.
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  manager->FallBackToNextGpuMode();
+  EXPECT_EQ(gpu::GpuMode::SWIFTSHADER, manager->GetGpuMode());
+#endif  // !OS_ANDROID && !OS_CHROMEOS
+}
+#endif  // !OS_FUCHSIA
+#endif  // BUILDFLAG(ENABLE_VULKAN)
 
 }  // namespace content

@@ -13,8 +13,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "media/learning/common/learning_task.h"
+#include "media/learning/common/target_histogram.h"
 #include "media/learning/impl/model.h"
-#include "media/learning/impl/target_histogram.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 
 namespace media {

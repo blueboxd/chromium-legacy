@@ -1,4 +1,4 @@
-group
+region
 ++document Name='PDF document containing 2 pages'
 ++++region Name='Page 1'
 ++++++heading IsControlElement=false

@@ -177,9 +177,11 @@ class WebpParser extends SimpleImageParser {
           throw new Error(
               'Invalid VP8 lossy bitstream signature: ' + lossySignature);
         }
-        var dimensionBits = br.readScalar(4);
-        metadata.width = dimensionBits & 0x3fff;
-        metadata.height = (dimensionBits >> 16) & 0x3fff;
+        {
+          const dimensionBits = br.readScalar(4);
+          metadata.width = dimensionBits & 0x3fff;
+          metadata.height = (dimensionBits >> 16) & 0x3fff;
+        }
         break;
 
       // VP8 lossless bitstream format.
@@ -190,9 +192,11 @@ class WebpParser extends SimpleImageParser {
           throw new Error(
               'Invalid VP8 lossless bitstream signature: ' + losslessSignature);
         }
-        var dimensionBits = br.readScalar(4);
-        metadata.width = (dimensionBits & 0x3fff) + 1;
-        metadata.height = ((dimensionBits >> 14) & 0x3fff) + 1;
+        {
+          const dimensionBits = br.readScalar(4);
+          metadata.width = (dimensionBits & 0x3fff) + 1;
+          metadata.height = ((dimensionBits >> 14) & 0x3fff) + 1;
+        }
         break;
 
       // VP8 extended file format.

@@ -603,6 +603,9 @@
         "test_target": "//chrome/installer/util:installer_util_unittests"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/autofill.interactive_ui_tests.filter"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -5485,6 +5488,9 @@
         "test_target": "//chrome/browser/browser_switcher/bho:browser_switcher_bho_unittests"
       },
       {
+        "args": [
+          "--disable-features=WebRTC-H264WithOpenH264FFmpeg"
+        ],
         "isolate_coverage_data": true,
         "merge": {
           "args": [],
@@ -5498,7 +5504,7 @@
               "os": "Windows-10-15063"
             }
           ],
-          "shards": 10
+          "shards": 15
         },
         "test": "browser_tests",
         "test_target": "//chrome/test:browser_tests"
@@ -5705,6 +5711,9 @@
         "test_target": "//ui/compositor:compositor_unittests"
       },
       {
+        "args": [
+          "--disable-features=WebRTC-H264WithOpenH264FFmpeg"
+        ],
         "isolate_coverage_data": true,
         "merge": {
           "args": [],
@@ -7246,52 +7255,6 @@
         "test_target": "//chrome/test:telemetry_gpu_unittests"
       },
       {
-        "isolate_coverage_data": true,
-        "isolate_name": "telemetry_perf_unittests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "telemetry_perf_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ],
-          "idempotent": false,
-          "shards": 12
-        },
-        "test_target": "//chrome/test:telemetry_perf_unittests"
-      },
-      {
-        "args": [
-          "--jobs=1",
-          "--extra-browser-args=--disable-gpu"
-        ],
-        "isolate_coverage_data": true,
-        "isolate_name": "telemetry_unittests",
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
-        },
-        "name": "telemetry_unittests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-15063"
-            }
-          ],
-          "idempotent": false,
-          "shards": 4
-        },
-        "test_target": "//chrome/test:telemetry_unittests"
-      },
-      {
         "args": [
           "--gtest-benchmark-name=views_perftests"
         ],
@@ -7317,7 +7280,9 @@
       },
       {
         "args": [
-          "--num-retries=3"
+          "--num-retries=3",
+          "--target",
+          "Release_x64"
         ],
         "isolate_coverage_data": true,
         "isolate_name": "blink_web_tests",
@@ -7337,7 +7302,7 @@
               "os": "Windows-10-15063"
             }
           ],
-          "shards": 12
+          "shards": 28
         },
         "test_target": "//:blink_web_tests"
       }
@@ -8016,6 +7981,9 @@
         "test_target": "//chrome/installer/util:installer_util_unittests"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/autofill.interactive_ui_tests.filter"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -9332,6 +9300,9 @@
         "test_target": "//chrome/installer/util:installer_util_unittests"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/autofill.interactive_ui_tests.filter"
+        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

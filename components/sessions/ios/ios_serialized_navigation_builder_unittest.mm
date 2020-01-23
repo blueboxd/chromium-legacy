@@ -27,14 +27,14 @@ std::unique_ptr<web::NavigationItem> MakeNavigationItemForTest() {
   std::unique_ptr<web::NavigationItem> navigation_item(
       web::NavigationItem::Create());
   navigation_item->SetReferrer(web::Referrer(
-      test_data::kReferrerURL,
+      test_data::ReferrerUrl(),
       static_cast<web::ReferrerPolicy>(test_data::kReferrerPolicy)));
-  navigation_item->SetURL(test_data::kVirtualURL);
+  navigation_item->SetURL(test_data::VirtualUrl());
   navigation_item->SetTitle(test_data::kTitle);
   navigation_item->SetTransitionType(test_data::kTransitionType);
   navigation_item->SetTimestamp(test_data::kTimestamp);
   navigation_item->GetFavicon().valid = true;
-  navigation_item->GetFavicon().url = test_data::kFaviconURL;
+  navigation_item->GetFavicon().url = test_data::FaviconUrl();
   return navigation_item;
 }
 
@@ -53,14 +53,14 @@ TEST_F(IOSSerializedNavigationBuilderTest, FromNavigationItem) {
   EXPECT_EQ(test_data::kIndex, navigation.index());
 
   EXPECT_EQ(navigation_item->GetUniqueID(), navigation.unique_id());
-  EXPECT_EQ(test_data::kReferrerURL, navigation.referrer_url());
+  EXPECT_EQ(test_data::ReferrerUrl(), navigation.referrer_url());
   EXPECT_EQ(test_data::kReferrerPolicy, navigation.referrer_policy());
-  EXPECT_EQ(test_data::kVirtualURL, navigation.virtual_url());
+  EXPECT_EQ(test_data::VirtualUrl(), navigation.virtual_url());
   EXPECT_EQ(test_data::kTitle, navigation.title());
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       navigation.transition_type(), test_data::kTransitionType));
   EXPECT_EQ(test_data::kTimestamp, navigation.timestamp());
-  EXPECT_EQ(test_data::kFaviconURL, navigation.favicon_url());
+  EXPECT_EQ(test_data::FaviconUrl(), navigation.favicon_url());
 
   // The following fields should be left at their default values.
   SerializedNavigationEntry default_navigation;

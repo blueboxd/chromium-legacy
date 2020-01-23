@@ -11,6 +11,8 @@ import android.content.Context;
 import android.os.Build;
 import android.util.Pair;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.NativeMethods;
@@ -28,6 +30,7 @@ import java.util.Set;
  * Utilities for working with incognito tabs spread across multiple activities.
  */
 public class IncognitoUtils {
+    private static Boolean sIsEnabledForTesting;
 
     private IncognitoUtils() {}
 
@@ -127,6 +130,9 @@ public class IncognitoUtils {
      * @return true if incognito mode is enabled.
      */
     public static boolean isIncognitoModeEnabled() {
+        if (sIsEnabledForTesting != null) {
+            return sIsEnabledForTesting;
+        }
         return IncognitoUtilsJni.get().getIncognitoModeEnabled();
     }
 
@@ -135,6 +141,11 @@ public class IncognitoUtils {
      */
     public static boolean isIncognitoModeManaged() {
         return IncognitoUtilsJni.get().getIncognitoModeManaged();
+    }
+
+    @VisibleForTesting
+    public static void setEnabledForTesting(Boolean enabled) {
+        sIsEnabledForTesting = enabled;
     }
 
     @NativeMethods

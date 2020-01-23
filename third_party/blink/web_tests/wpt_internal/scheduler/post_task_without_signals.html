@@ -11,7 +11,7 @@
 async_test(t => {
   function* priorityGenerator() {
     let priorities = [
-      "immediate", "high", "default", "low", "idle"
+      "user-blocking", "user-visible", "background"
     ];
     for (let i = 0; i < priorities.length; i++)
       yield priorities[i];

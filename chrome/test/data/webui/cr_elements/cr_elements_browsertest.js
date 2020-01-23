@@ -350,7 +350,14 @@ CrElementsFingerprintProgressArcTest.prototype = {
   ]),
 };
 
-TEST_F('CrElementsFingerprintProgressArcTest', 'DISABLED_All', function() {
+// https://crbug.com/1044390 - maybe flaky on Mac?
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_Fingerprint DISABLED_Fingerprint');
+GEN('#else');
+GEN('#define MAYBE_Fingerprint Fingerprint');
+GEN('#endif');
+
+TEST_F('CrElementsFingerprintProgressArcTest', 'MAYBE_Fingerprint', function() {
   mocha.run();
 });
 

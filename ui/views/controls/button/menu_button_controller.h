@@ -77,10 +77,6 @@ class VIEWS_EXPORT MenuButtonController : public ButtonController {
   // menu, this is distinct from IsTriggerableEvent().
   bool IsTriggerableEventType(const ui::Event& event);
 
-  // Returns true if the amount of time since the last menu_closed_time_ is
-  // large enough to be considered an intentionally different event.
-  bool IsIntentionalMenuTrigger() const;
-
  private:
   // Increment/decrement the number of "pressed" locks this button has, and
   // set the state accordingly. The ink drop is snapped to the final ACTIVATED
@@ -102,6 +98,9 @@ class VIEWS_EXPORT MenuButtonController : public ButtonController {
   // menu is displayed using a modal loop and, unlike regular menus in
   // Windows, the button is not part of the displayed menu.
   base::TimeTicks menu_closed_time_;
+
+  // Tracks if the current triggering event should open a menu.
+  bool is_intentional_menu_trigger_ = true;
 
   // The current number of "pressed" locks this button has.
   int pressed_lock_count_ = 0;

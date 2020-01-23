@@ -31,6 +31,10 @@ namespace content {
 class WebContents;
 }
 
+namespace sessions {
+class SessionTabHelperDelegate;
+}
+
 namespace weblayer {
 class BrowserImpl;
 class FullscreenDelegate;
@@ -177,6 +181,9 @@ class TabImpl : public Tab,
   void UpdateRendererPrefs(bool should_sync_prefs);
 
   void InitializeAutofill();
+
+  sessions::SessionTabHelperDelegate* GetSessionServiceTabHelperDelegate(
+      content::WebContents* web_contents);
 
 #if defined(OS_ANDROID)
   void UpdateBrowserControlsState(content::BrowserControlsState constraints,

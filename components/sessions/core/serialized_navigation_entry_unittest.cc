@@ -65,14 +65,14 @@ TEST(SerializedNavigationEntryTest, Pickle) {
 
   // Fields that are written to the pickle.
   EXPECT_EQ(test_data::kIndex, new_navigation.index());
-  EXPECT_EQ(test_data::kReferrerURL, new_navigation.referrer_url());
+  EXPECT_EQ(test_data::ReferrerUrl(), new_navigation.referrer_url());
   EXPECT_EQ(test_data::kReferrerPolicy, new_navigation.referrer_policy());
-  EXPECT_EQ(test_data::kVirtualURL, new_navigation.virtual_url());
+  EXPECT_EQ(test_data::VirtualUrl(), new_navigation.virtual_url());
   EXPECT_EQ(test_data::kTitle, new_navigation.title());
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       new_navigation.transition_type(), test_data::kTransitionType));
   EXPECT_EQ(test_data::kHasPostData, new_navigation.has_post_data());
-  EXPECT_EQ(test_data::kOriginalRequestURL,
+  EXPECT_EQ(test_data::OriginalRequestUrl(),
             new_navigation.original_request_url());
   EXPECT_EQ(test_data::kIsOverridingUserAgent,
             new_navigation.is_overriding_user_agent());

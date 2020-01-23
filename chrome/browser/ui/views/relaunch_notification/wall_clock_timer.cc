@@ -44,7 +44,7 @@ void WallClockTimer::Stop() {
   RemoveObserver();
 }
 
-bool WallClockTimer::IsRunning() {
+bool WallClockTimer::IsRunning() const {
   return timer_.IsRunning();
 }
 

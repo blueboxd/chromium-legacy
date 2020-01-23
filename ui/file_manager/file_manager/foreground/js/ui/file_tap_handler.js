@@ -91,7 +91,7 @@ class FileTapHandler {
    */
   handleTouchEvents(event, index, callback) {
     switch (event.type) {
-      case 'touchstart':
+      case 'touchstart': {
         // Only track the position of the single touch. However, we detect a
         // two-finger tap for opening a context menu of the target.
         if (event.touches.length == 2) {
@@ -108,7 +108,7 @@ class FileTapHandler {
         // can reset this.activeTouchId_ to undefined.
         // if (this.activeTouchId_ !== undefined)
         //   return;
-        var touch = event.targetTouches[0];
+        const touch = event.targetTouches[0];
         this.activeTouchId_ = touch.identifier;
         this.startTouchX_ = this.lastTouchX_ = touch.clientX;
         this.startTouchY_ = this.lastTouchY_ = touch.clientY;
@@ -130,13 +130,13 @@ class FileTapHandler {
             this.hasLongPressProcessed_ = true;
           }
         }, FileTapHandler.LONG_PRESS_THRESHOLD_MILLISECONDS);
-        break;
+      } break;
 
-      case 'touchmove':
+      case 'touchmove': {
         if (this.activeTouchId_ === undefined) {
           break;
         }
-        var touch = this.findActiveTouch_(event.changedTouches);
+        const touch = this.findActiveTouch_(event.changedTouches);
         if (!touch) {
           break;
         }
@@ -161,7 +161,7 @@ class FileTapHandler {
         }
         this.lastMoveX_ = moveX;
         this.lastMoveY_ = moveY;
-        break;
+      } break;
 
       case 'touchend':
         if (!this.tapStarted_) {

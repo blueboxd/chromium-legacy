@@ -20,11 +20,9 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/buffer.h"
 
-namespace network {
-class SharedURLLoaderFactory;
-}  // namespace network
-
 namespace chromeos {
+
+class WilcoDtcSupportdNetworkContext;
 
 // Establishes Mojo communication to the wilco_dtc_supportd daemon. The Mojo
 // pipe gets bootstrapped via D-Bus, and the class takes care of waiting until
@@ -56,11 +54,11 @@ class WilcoDtcSupportdBridge final
   static int max_connection_attempt_count_for_testing();
 
   explicit WilcoDtcSupportdBridge(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+      std::unique_ptr<WilcoDtcSupportdNetworkContext> network_context);
   // For use in tests.
   WilcoDtcSupportdBridge(
       std::unique_ptr<Delegate> delegate,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      std::unique_ptr<WilcoDtcSupportdNetworkContext> network_context,
       std::unique_ptr<WilcoDtcSupportdNotificationController>
           notification_controller);
 

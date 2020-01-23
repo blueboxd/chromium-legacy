@@ -92,6 +92,9 @@ class MockBinaryFCMService : public BinaryFCMService {
 
   MOCK_METHOD1(GetInstanceID,
                void(BinaryFCMService::GetInstanceIDCallback callback));
+  MOCK_METHOD2(UnregisterInstanceID,
+               void(const std::string& token,
+                    BinaryFCMService::UnregisterInstanceIDCallback callback));
 };
 
 class BinaryUploadServiceTest : public testing::Test {
@@ -120,6 +123,12 @@ class BinaryUploadServiceTest : public testing::Test {
         .WillByDefault(
             Invoke([id](BinaryFCMService::GetInstanceIDCallback callback) {
               std::move(callback).Run(id);
+            }));
+    ON_CALL(*fcm_service_, UnregisterInstanceID(_, _))
+        .WillByDefault(
+            Invoke([](const std::string& token,
+                      BinaryFCMService::UnregisterInstanceIDCallback callback) {
+              std::move(callback).Run(true);
             }));
   }
 

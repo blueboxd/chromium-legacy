@@ -2785,10 +2785,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrostiniUsbAllowUnsupportedName,
      flag_descriptions::kCrostiniUsbAllowUnsupportedDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUsbAllowUnsupported)},
-    {"file-manager-feedback-panel",
-     flag_descriptions::kFileManagerFeedbackPanelName,
-     flag_descriptions::kFileManagerFeedbackPanelDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kEnableFileManagerFeedbackPanel)},
     {"files-ng", flag_descriptions::kFilesNGName,
      flag_descriptions::kFilesNGDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kFilesNG)},
@@ -2807,6 +2803,11 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_ANDROID)
+    {"omnibox-assistant-voice-search",
+     flag_descriptions::kOmniboxAssistantVoiceSearchName,
+     flag_descriptions::kOmniboxAssistantVoiceSearchDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxAssistantVoiceSearch)},
+
     {"omnibox-search-engine-logo",
      flag_descriptions::kOmniboxSearchEngineLogoName,
      flag_descriptions::kOmniboxSearchEngineLogoDescription, kOsAndroid,
@@ -4855,6 +4856,15 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSyncSetupFriendlySettingsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSyncSetupFriendlySettings)},
 #endif  // !defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+    {"block-external-form-redirects-no-gesture",
+     flag_descriptions::kIntentBlockExternalFormRedirectsNoGestureName,
+     flag_descriptions::kIntentBlockExternalFormRedirectsNoGestureDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         chrome::android::kIntentBlockExternalFormRedirectsNoGesture)},
+#endif  // defined(OS_ANDROID)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

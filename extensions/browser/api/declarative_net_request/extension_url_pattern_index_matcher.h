@@ -29,8 +29,6 @@ class ExtensionUrlPatternIndexMatcher final : public RulesetMatcherBase {
 
   // RulesetMatcherBase override:
   ~ExtensionUrlPatternIndexMatcher() override;
-  base::Optional<RequestAction> GetBeforeRequestAction(
-      const RequestParams& params) const override;
   uint8_t GetRemoveHeadersMask(
       const RequestParams& params,
       uint8_t excluded_remove_headers_mask,
@@ -41,6 +39,17 @@ class ExtensionUrlPatternIndexMatcher final : public RulesetMatcherBase {
 
  private:
   using UrlPatternIndexMatcher = url_pattern_index::UrlPatternIndexMatcher;
+
+  // RulesetMatcherBase override:
+  base::Optional<RequestAction> GetAllowAllRequestsAction(
+      const RequestParams& params) const override;
+  base::Optional<RequestAction> GetBeforeRequestActionIgnoringAncestors(
+      const RequestParams& params) const override;
+
+  // Returns the highest priority action from
+  // |flat::IndexType_before_request_except_allow_all_requests| index.
+  base::Optional<RequestAction> GetBeforeRequestActionHelper(
+      const RequestParams& params) const;
 
   const url_pattern_index::flat::UrlRule* GetMatchingRule(
       const RequestParams& params,

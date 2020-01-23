@@ -375,6 +375,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "block-external-form-redirects-no-gesture",
+    "owners": [ "jochen", "tedchoc" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "bluetooth-aggressive-appearance-filter",
     "owners": [ "hansberry", "cros-system-services@google.com" ],
     "expiry_milestone": 85
@@ -392,7 +397,7 @@
   {
     "name": "calculate-native-win-occlusion",
     "owners": [ "davidbienvenu", "fdoray" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 84
   },
   {
     "name": "camera-system-web-app",
@@ -1014,7 +1019,7 @@
   },
   {
     "name": "enable-aura-tooltips-on-windows",
-    "owners": [ "cliffsmo" ],
+    "owners": [ "cliffsmo@microsoft.com" ],
     "expiry_milestone": 78
   },
   {
@@ -1086,11 +1091,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "enable-backdrop-filter",
-    "owners": [ "masonfreed", "paint-dev@chromium.org" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "enable-background-blur",
     "owners": [ "newcomer" ],
     "expiry_milestone": 86
@@ -1122,7 +1122,7 @@
   },
   {
     "name": "enable-caption-settings",
-    "owners": [ "evliu" ],
+    "owners": [ "evliu@google.com" ],
     "expiry_milestone": 80
   },
   {
@@ -1362,7 +1362,7 @@
   {
     "name": "enable-experimental-productivity-features",
     "owners": [ "feature-control@chromium.org" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 86
   },
   {
     "name": "enable-experimental-web-platform-features",
@@ -2114,7 +2114,7 @@
   {
     "name": "enable-webgl2-compute-context",
     "owners": [ "webgl-team@google.com" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 85
   },
   {
     "name": "enable-webnfc",
@@ -2253,11 +2253,6 @@
     "name": "file-handling-api",
     "owners": ["harrisjay@chromium.org", "raymes@chromium.org"],
     "expiry_milestone": 82
-  },
-  {
-    "name": "file-manager-feedback-panel",
-    "owners": [ "adanilo" ],
-    "expiry_milestone": 81
   },
   {
     "name": "files-ng",
@@ -2774,6 +2769,11 @@
     "name": "offlining-recent-pages",
     "owners": [ "carlosk", "offline-dev" ],
     "expiry_milestone": 76
+  },
+  {
+    "name": "omnibox-assistant-voice-search",
+    "owners": [ "wylieb", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 85
   },
   {
     "name": "omnibox-autocomplete-titles",
@@ -3365,7 +3365,7 @@
   {
     "name": "split-settings-sync",
     "owners": [ "jamescook", "cros-system-services@google.com" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 84
   },
   {
     "name": "stop-in-background",
@@ -3683,8 +3683,8 @@
   },
   {
     "name": "web-contents-occlusion",
-    "owners": [ "davidbienvenu" ],
-    "expiry_milestone": 81
+    "owners": [ "davidbienvenu", "fdoray" ],
+    "expiry_milestone": 84
   },
   {
     "name": "webui-a11y-enhancements",

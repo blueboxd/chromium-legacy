@@ -112,8 +112,7 @@ import org.chromium.ui.modelutil.PropertyModel;
     }
 
     @Override
-    public void didFailLoad(
-            boolean isMainFrame, int errorCode, String description, String failingUrl) {
+    public void didFailLoad(boolean isMainFrame, int errorCode, String failingUrl) {
         mHandler.post(() -> {
             // TODO(crbug.com/1017926): Respond to service worker with the net error.
             ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);

@@ -47,7 +47,7 @@ class ScopedGObject {
       g_object_ref_sink(obj_);
   }
 
-  // This function is necessary so that libgtkui can overload it in
+  // This function is necessary so that gtk can overload it in
   // the case of T = GtkStyleContext.
   void Unref() {
     if (obj_)

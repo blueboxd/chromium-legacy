@@ -43,76 +43,26 @@ feature](https://wicg.github.io/feature-policy/#define-inherited-policy)
 A step-to-step guide with examples.
 
 ##### Shipping features behind a flag
-There are currently two runtime-enabled flags: `FeaturePolicy` (status:
-stable) and `FeaturePolicyExperimentalFeatures` (status: experimental).
 If the additional feature is unshipped, or if the correct behaviour with feature
-policy is undetermined, consider shipping the feature behind a flag (i.e.,
-`FeaturePolicyExperimentalFeatures`).
+policy is undetermined, consider shipping the feature behind a runtime-enabled feature.
 
 ##### Define new feature
 1. Feature policy features are defined in
-`third_party/blink/public/common/feature_policy/feature_policy_feature.h`. Add the new feature
-enum with a brief decription about what the feature does in the comment, right
-above `LAST_FEATURE`
+`third_party/blink/renderer/core/feature_policy/feature_policy_features.json5`. Add the new feature,
+placing any runtime-enabled feature or origin trial dependencies in its "depends_on" field as
+described in the file's comments.
 
 2. Append the new feature enum with a brief description as well in
-`third_party/blink/public/mojom/feature_policy/feature_policy.mojom`
+`third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom`
 
-3. Update `third_party/blink/public/mojom/feature_policy/feature_policy.mojom_traits.h`
-to include the new feature
-
-4. Update `third_party/blink/renderer/platform/feature_policy/feature_policy.cc`:
-Add your `("feature-name", FeatureEnumValue)` mapping to
-  `GetDefaultFeatureNameMap()` (note: "feature-name" is the string web
-  developers will be using to define the policy in the HTTP header and iframe
-  "allow" attribute).
-+ If shipping behind the flag (`FeaturePolicyExperimentalFeatures`):
-Add the mapping inside the `if
-(RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled())`
-stament;
-+ Otherwise:
-Add the mapping above the if statment.
+3. In `third_party/blink/renderer/platform/feature_policy/feature_policy.cc`,
+add an entry to `FeaturePolicy::GetDefaultFeatureList` with the default value
+to use for the new feature.
 
 ##### Integrate the feature behaviour with feature policy
-1. Add a case for the feature in `IsSupportedInFeaturePolicy()` (which checks
-if feature policy is enabled and the feature is supported in feature policy):
-- If shipping behind the flag (`FeaturePolicyExperimentalFeatures`):
+1. The most common way to check if features are enabled is `ExecutionContext::IsFeatureEnabled`.
 
-    return RuntimeEnabledFeatures::FeaturePolicyExperimentalFeaturesEnabled();
-
-- Otherwise:
-
-    return true;
-
-
-2. Implement the behaviour of the new feature for the 3 cases:
-- Default behaviour without feature policy
-i.e,
-
-    if (!IsSupportedInFeaturePolicy(...)) {
-      ...
-    }
-
-- When feature policy is enabled and feature is enabled by feature policy;
-i.e,
-
-    if (!IsSupportedInFeaturePolicy(...)) {
-      if (frame->IsFeatureEnabled(...)) {
-        ...
-      }
-    }
-
-- When feature policy is enabled and feature is disabled by feature policy.
-i.e,
-
-    if (IsSupportedInFeaturePolicy(...)) {
-      if (!frame->IsFeatureEnabled(...)) {
-        ...
-      }
-    }
-
-
-3. Examples:
+2. Examples:
 - `vibrate`: `NavigatorVibration::vibrate()`
 - `payment`: `AllowedToUsePaymentRequest()`
 - `usb`: `USB::getDevices()`
@@ -124,5 +74,5 @@ instructions on how to use the feature policy test framework.
 
 #### Contacts
 For more questions, please feel free to reach out to:
-loonybear@chromium.org
 iclelland@chromium.org
+(Emerita: loonybear@)

@@ -736,7 +736,7 @@ ImageBitmap* WebGLRenderingContextBase::TransferToImageBitmapBase(
   WebFeature feature = WebFeature::kOffscreenCanvasTransferToImageBitmapWebGL;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
   return MakeGarbageCollected<ImageBitmap>(
-      GetDrawingBuffer()->TransferToStaticBitmapImage(nullptr));
+      GetDrawingBuffer()->TransferToStaticBitmapImage());
 }
 
 void WebGLRenderingContextBase::commit() {
@@ -1263,10 +1263,8 @@ void WebGLRenderingContextBase::InitializeNewContext() {
 void WebGLRenderingContextBase::SetupFlags() {
   DCHECK(GetDrawingBuffer());
   if (canvas()) {
-    if (Page* p = canvas()->GetDocument().GetPage()) {
-      synthesized_errors_to_console_ =
-          p->GetSettings().GetWebGLErrorsToConsoleEnabled();
-    }
+    synthesized_errors_to_console_ =
+        canvas()->GetDocument().GetSettings()->GetWebGLErrorsToConsoleEnabled();
   }
 
   is_depth_stencil_supported_ =
@@ -1370,9 +1368,9 @@ void WebGLRenderingContextBase::MarkContextChanged(
   if (!marked_canvas_dirty_) {
     marked_canvas_dirty_ = true;
     LayoutBox* layout_box = canvas()->GetLayoutBox();
-    if (layout_box && layout_box->HasAcceleratedCompositing()) {
+    auto* settings = canvas()->GetDocument().GetSettings();
+    if (layout_box && settings->GetAcceleratedCompositingEnabled())
       layout_box->ContentChanged(change_type);
-    }
     IntSize canvas_size = ClampedCanvasSize();
     DidDraw(SkIRect::MakeXYWH(0, 0, canvas_size.Width(), canvas_size.Height()));
   }

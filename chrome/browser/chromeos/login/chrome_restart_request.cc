@@ -8,10 +8,12 @@
 #include <vector>
 
 #include "ash/public/cpp/app_list/app_list_switches.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"
@@ -221,6 +223,26 @@ void DeriveCommandLine(const GURL& start_url,
   }
 }
 
+// Adds whitelisted features to |out_command_line| if they are enabled in the
+// current session.
+void DeriveEnabledFeatures(base::CommandLine* out_command_line) {
+  static const base::Feature* kForwardEnabledFeatures[] = {
+      &ash::features::kAutoNightLight,
+  };
+
+  std::vector<std::string> enabled_features;
+  for (const auto* feature : kForwardEnabledFeatures) {
+    if (base::FeatureList::IsEnabled(*feature))
+      enabled_features.push_back(feature->name);
+  }
+
+  if (enabled_features.empty())
+    return;
+
+  out_command_line->AppendSwitchASCII("enable-features",
+                                      base::JoinString(enabled_features, ","));
+}
+
 // Simulates a session manager restart by launching give command line
 // and exit current process.
 void ReLaunch(const base::CommandLine& command_line) {
@@ -334,6 +356,7 @@ void GetOffTheRecordCommandLine(const GURL& start_url,
     otr_switches.SetString(switches::kOobeGuestSession, std::string());
 
   DeriveCommandLine(start_url, base_command_line, otr_switches, command_line);
+  DeriveEnabledFeatures(command_line);
 }
 
 void RestartChrome(const base::CommandLine& command_line) {

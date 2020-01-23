@@ -163,7 +163,7 @@ bool FrameSequenceMetrics::HasDataLeftForReporting() const {
          main_throughput_.frames_expected > 0;
 }
 
-void FrameSequenceMetrics::ReportMetrics(const std::string& debug_trace) {
+void FrameSequenceMetrics::ReportMetrics(std::string debug_trace) {
   DCHECK_LE(impl_throughput_.frames_produced, impl_throughput_.frames_expected);
   DCHECK_LE(main_throughput_.frames_produced, main_throughput_.frames_expected);
   TRACE_EVENT_NESTABLE_ASYNC_END2(
@@ -368,7 +368,9 @@ void FrameSequenceTrackerCollection::NotifyFramePresented(
       }
       if (metrics->HasEnoughDataForReporting()) {
 #if DCHECK_IS_ON()
-        metrics->ReportMetrics(tracker->frame_sequence_trace_.str());
+        std::string output = tracker->frame_sequence_trace_.str().substr(
+            tracker->ignored_trace_char_count_);
+        metrics->ReportMetrics(std::move(output));
 #else
         metrics->ReportMetrics();
 #endif
@@ -655,10 +657,14 @@ void FrameSequenceTracker::ReportFrameEnd(const viz::BeginFrameArgs& args) {
         << TRACKER_DCHECK_MSG;
     --impl_throughput().frames_expected;
 #if DCHECK_IS_ON()
-    DCHECK_LT(impl_throughput().frames_processed,
-              impl_throughput().frames_received)
-        << TRACKER_DCHECK_MSG;
     ++impl_throughput().frames_processed;
+    // If these two are the same, it means that each impl frame is either
+    // no-damage or submitted. That's expected, so we don't need those in the
+    // output of DCHECK.
+    if (impl_throughput().frames_processed == impl_throughput().frames_received)
+      ignored_trace_char_count_ = frame_sequence_trace_.str().size();
+    else
+      NOTREACHED() << TRACKER_DCHECK_MSG;
 #endif
     begin_impl_frame_data_.previous_sequence = 0;
   }

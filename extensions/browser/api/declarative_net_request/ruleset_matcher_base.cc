@@ -6,6 +6,8 @@
 
 #include "base/strings/strcat.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/request_params.h"
 #include "net/base/url_util.h"
@@ -200,6 +202,57 @@ RulesetMatcherBase::RulesetMatcherBase(
     : extension_id_(extension_id), source_type_(source_type) {}
 RulesetMatcherBase::~RulesetMatcherBase() = default;
 
+base::Optional<RequestAction> RulesetMatcherBase::GetBeforeRequestAction(
+    const RequestParams& params) const {
+  base::Optional<RequestAction> action =
+      GetBeforeRequestActionIgnoringAncestors(params);
+  base::Optional<RequestAction> parent_action =
+      GetAllowlistedFrameAction(params.parent_routing_id);
+
+  return GetMaxPriorityAction(std::move(action), std::move(parent_action));
+}
+
+void RulesetMatcherBase::OnRenderFrameDeleted(content::RenderFrameHost* host) {
+  DCHECK(host);
+  allowlisted_frames_.erase(content::GlobalFrameRoutingId(
+      host->GetProcess()->GetID(), host->GetRoutingID()));
+}
+
+void RulesetMatcherBase::OnDidFinishNavigation(content::RenderFrameHost* host) {
+  // Note: we only start tracking frames on navigation, since a document only
+  // issues network requests after the corresponding navigation is committed.
+  // Hence we need not listen to OnRenderFrameCreated.
+  DCHECK(host);
+
+  RequestParams params(host);
+
+  // Find the highest priority allowAllRequests action corresponding to this
+  // frame.
+  base::Optional<RequestAction> parent_action =
+      GetAllowlistedFrameAction(params.parent_routing_id);
+  base::Optional<RequestAction> frame_action =
+      GetAllowAllRequestsAction(params);
+  base::Optional<RequestAction> action =
+      GetMaxPriorityAction(std::move(parent_action), std::move(frame_action));
+
+  content::GlobalFrameRoutingId frame_id(host->GetProcess()->GetID(),
+                                         host->GetRoutingID());
+  if (action)
+    allowlisted_frames_.insert(std::make_pair(frame_id, std::move(*action)));
+  else
+    allowlisted_frames_.erase(frame_id);
+}
+
+base::Optional<RequestAction>
+RulesetMatcherBase::GetAllowlistedFrameActionForTesting(
+    content::RenderFrameHost* host) const {
+  DCHECK(host);
+
+  content::GlobalFrameRoutingId frame_id(host->GetProcess()->GetID(),
+                                         host->GetRoutingID());
+  return GetAllowlistedFrameAction(frame_id);
+}
+
 RequestAction RulesetMatcherBase::CreateBlockOrCollapseRequestAction(
     const RequestParams& params,
     const flat_rule::UrlRule& rule) const {
@@ -213,6 +266,12 @@ RequestAction RulesetMatcherBase::CreateAllowAction(
     const RequestParams& params,
     const flat_rule::UrlRule& rule) const {
   return CreateRequestAction(RequestAction::Type::ALLOW, rule);
+}
+
+RequestAction RulesetMatcherBase::CreateAllowAllRequestsAction(
+    const RequestParams& params,
+    const url_pattern_index::flat::UrlRule& rule) const {
+  return CreateRequestAction(RequestAction::Type::ALLOW_ALL_REQUESTS, rule);
 }
 
 base::Optional<RequestAction> RulesetMatcherBase::CreateUpgradeAction(
@@ -314,6 +373,15 @@ RequestAction RulesetMatcherBase::CreateRequestAction(
     const flat_rule::UrlRule& rule) const {
   return RequestAction(type, rule.id(), rule.priority(), source_type(),
                        extension_id());
+}
+
+base::Optional<RequestAction> RulesetMatcherBase::GetAllowlistedFrameAction(
+    content::GlobalFrameRoutingId frame_id) const {
+  auto it = allowlisted_frames_.find(frame_id);
+  if (it == allowlisted_frames_.end())
+    return base::nullopt;
+
+  return it->second.Clone();
 }
 
 }  // namespace declarative_net_request

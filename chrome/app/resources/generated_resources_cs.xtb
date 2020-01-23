@@ -860,7 +860,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="219008588003277019">Modul nativního klienta: <ph name="NEXE_NAME" /></translation>
 <translation id="2190355936436201913">(prázdné)</translation>
 <translation id="2191223688506386601">Ještě poslední věc</translation>
-<translation id="2191754378957563929">Zap</translation>
+<translation id="2191754378957563929">Zapnuto</translation>
 <translation id="2192505247865591433">Zdroj:</translation>
 <translation id="2193365732679659387">Nastavení důvěryhodnosti</translation>
 <translation id="2195331105963583686">I poté své zařízení <ph name="DEVICE_TYPE" /> budete moci nadále používat, ale již nebude dostávat automatické aktualizace softwaru a zabezpečení</translation>
@@ -3131,7 +3131,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5449588825071916739">Přidat do záložek všechny karty</translation>
 <translation id="5449716055534515760">Zavřít okno</translation>
 <translation id="5454166040603940656">(<ph name="PROVIDER" />)</translation>
-<translation id="5454360575035671759">Odstraněním Plugin VM will se smaže váš virtuální počítač. To zahrnuje i aplikace, nastavení a data. Opravdu chcete pokračovat?</translation>
+<translation id="5454360575035671759">Odstraníte-li Plugin VM, smaže se váš virtuální počítač. To zahrnuje i aplikace, nastavení a data. Opravdu chcete pokračovat?</translation>
 <translation id="5457113250005438886">Neplatné</translation>
 <translation id="5457459357461771897">Číst a mazat fotografie, hudbu a další média z počítače</translation>
 <translation id="5457599981699367932">Použít jako host</translation>
@@ -4770,7 +4770,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7792388396321542707">Ukončit sdílení</translation>
 <translation id="779308894558717334">Světle zelená</translation>
 <translation id="7793098747275782155">Tmavě modrá</translation>
-<translation id="7797571222998226653">Vyp</translation>
+<translation id="7797571222998226653">Vypnuto</translation>
 <translation id="7799299114731150374">Tapeta byla úspěšně nastavena</translation>
 <translation id="7800518121066352902">Otočit &amp;proti směru hodinových ručiček</translation>
 <translation id="780301667611848630">Ne, děkuji</translation>
@@ -5021,7 +5021,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8101987792947961127">Je vyžadováno použití funkce Powerwash při dalším restartu</translation>
 <translation id="8102159139658438129">Možnosti připojeného telefonu najdete v sekci <ph name="LINK_BEGIN" />Nastavení<ph name="LINK_END" /></translation>
 <translation id="8104696615244072556">Tato akce resetuje zařízení <ph name="IDS_SHORT_PRODUCT_NAME" /> pomocí funkce Powerwash a obnoví předchozí verzi aplikace.</translation>
-<translation id="8106661353233173262">Došlo k chybě. U kontrolovaného souboru došlo k vypršení časového limitu.</translation>
 <translation id="8107015733319732394">Instalace Obchodu Google Play do zařízení <ph name="DEVICE_TYPE" />. Tato operace může několik minut trvat.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Žádné soubory cookie třetích stran}=1{1 soubor cookie třetí strany je blokován}few{# soubory cookie třetích stran jsou blokovány}many{# souboru cookie třetích stran je blokováno}other{# souborů cookie třetích stran je blokováno}}</translation>
 <translation id="810875025413331850">V okolí nebyla nalezena žádná zařízení.</translation>

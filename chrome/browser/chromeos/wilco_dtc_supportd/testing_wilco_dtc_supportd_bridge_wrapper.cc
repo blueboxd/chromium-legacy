@@ -16,7 +16,9 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/fake_wilco_dtc_supportd_client.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_bridge.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_client.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_network_context.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -144,10 +146,10 @@ std::unique_ptr<TestingWilcoDtcSupportdBridgeWrapper>
 TestingWilcoDtcSupportdBridgeWrapper::Create(
     wilco_dtc_supportd::mojom::WilcoDtcSupportdService*
         mojo_wilco_dtc_supportd_service,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    std::unique_ptr<WilcoDtcSupportdNetworkContext> network_context,
     std::unique_ptr<WilcoDtcSupportdBridge>* bridge) {
   return base::WrapUnique(new TestingWilcoDtcSupportdBridgeWrapper(
-      mojo_wilco_dtc_supportd_service, std::move(url_loader_factory), bridge));
+      mojo_wilco_dtc_supportd_service, std::move(network_context), bridge));
 }
 
 TestingWilcoDtcSupportdBridgeWrapper::~TestingWilcoDtcSupportdBridgeWrapper() =
@@ -205,7 +207,7 @@ void TestingWilcoDtcSupportdBridgeWrapper::HandleMojoGetService(
 TestingWilcoDtcSupportdBridgeWrapper::TestingWilcoDtcSupportdBridgeWrapper(
     wilco_dtc_supportd::mojom::WilcoDtcSupportdService*
         mojo_wilco_dtc_supportd_service,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    std::unique_ptr<WilcoDtcSupportdNetworkContext> network_context,
     std::unique_ptr<WilcoDtcSupportdBridge>* bridge)
     : mojo_wilco_dtc_supportd_service_receiver_(
           mojo_wilco_dtc_supportd_service) {
@@ -218,7 +220,7 @@ TestingWilcoDtcSupportdBridgeWrapper::TestingWilcoDtcSupportdBridgeWrapper(
               base::BindRepeating(
                   &TestingWilcoDtcSupportdBridgeWrapper::HandleMojoGetService,
                   base::Unretained(this)))),
-      url_loader_factory,
+      std::move(network_context),
       std::make_unique<WilcoDtcSupportdNotificationController>(
           profile_manager->profile_manager()));
 }

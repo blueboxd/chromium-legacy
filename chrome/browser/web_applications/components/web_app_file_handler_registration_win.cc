@@ -32,29 +32,31 @@ namespace {
 // Returns the app-specific-launcher filename to be used for |app_name|.
 base::FilePath GetAppSpecificLauncherFilename(const base::string16& app_name) {
   // Remove any characters that are illegal in Windows filenames.
-  base::FilePath sanitized_app_name =
-      web_app::internals::GetSanitizedFileName(app_name);
+  base::string16 sanitized_app_name =
+      web_app::internals::GetSanitizedFileName(app_name).value();
 
-  // If |sanitized_app_name| is a reserved filename, append '_' to allow its use
-  // as the launcher filename (e.g. "nul" => "nul_"). If |sanitized_app_name|
-  // starts with a reserved filename followed by '.', replace all '.' characters
-  // with '_' (e.g. "nul.l" => "nul_l"). This is needed because anything after
-  // '.' is interpreted as part of a file extension for the purpose of
-  // identifying reserved filenames, so appending '_' fails to legitimize a
-  // reserved filename when a '.' is present (e.g. "nul.l_" is rejected).
-  if (net::IsReservedNameOnWindows(sanitized_app_name.value())) {
-    base::string16 allowed_filename = sanitized_app_name.value();
-    if (!base::ReplaceChars(allowed_filename, L".", L"_", &allowed_filename))
-      allowed_filename.append(L"_");
-    sanitized_app_name = base::FilePath(allowed_filename);
-  }
+  // On Windows 7, where the launcher has no file extension, replace any '.'
+  // characters with '_' to prevent a portion of the filename from being
+  // interpreted as its extension.
+  const bool is_win_7 = base::win::GetVersion() == base::win::Version::WIN7;
+  if (is_win_7)
+    base::ReplaceChars(sanitized_app_name, L".", L"_", &sanitized_app_name);
 
-  // On Windows 8+, add .exe extension. On Windows 7, where the launcher
-  // filename is used as the app's display name in the Open With menu, omit the
-  // extension.
-  if (base::win::GetVersion() > base::win::Version::WIN7)
-    return sanitized_app_name.AddExtension(L"exe");
-  return sanitized_app_name;
+  // If |sanitized_app_name| is a reserved filename, prepend '_' to allow its
+  // use as the launcher filename (e.g. "nul" => "_nul"). Prepending is
+  // preferred over appending in order to handle filenames containing '.', as
+  // Windows' logic for checking reserved filenames views characters after '.'
+  // as file extensions, and only the pre-file-extension portion is checked for
+  // legitimacy (e.g. "nul_" is allowed, but "nul.a_" is not).
+  if (net::IsReservedNameOnWindows(sanitized_app_name))
+    sanitized_app_name = L"_" + sanitized_app_name;
+
+  // On Windows 8+, add .exe extension. On Windows 7, where an app's display
+  // name in the Open With menu can't be set programmatically, omit the
+  // extension to use the launcher filename as the app's display name.
+  if (!is_win_7)
+    return base::FilePath(sanitized_app_name).AddExtension(L"exe");
+  return base::FilePath(sanitized_app_name);
 }
 
 }  // namespace

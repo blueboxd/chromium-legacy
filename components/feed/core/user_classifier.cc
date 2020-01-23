@@ -253,7 +253,7 @@ double UserClassifier::GetEstimatedAvgTime(Event event) const {
                                        min_hours_, max_hours_);
 }
 
-UserClassifier::UserClass UserClassifier::GetUserClass() const {
+UserClass UserClassifier::GetUserClass() const {
   // The pref_service_ can be null in tests.
   if (!pref_service_) {
     return UserClass::kActiveSuggestionsViewer;

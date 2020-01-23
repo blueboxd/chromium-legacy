@@ -1014,7 +1014,6 @@ class CORE_EXPORT NGConstraintSpace final {
           is_new_formatting_context(false),
           is_orthogonal_writing_mode_root(false),
           is_painted_atomically(false),
-          is_fixed_block_size_indefinite(false),
           use_first_line_style(false),
           ancestor_has_clearance_past_adjoining_floats(false),
           needs_baseline(false),
@@ -1023,6 +1022,7 @@ class CORE_EXPORT NGConstraintSpace final {
           is_shrink_to_fit(false),
           is_fixed_inline_size(false),
           is_fixed_block_size(false),
+          is_fixed_block_size_indefinite(false),
           table_cell_child_layout_mode(static_cast<unsigned>(
               NGTableCellChildLayoutMode::kNotTableCellChild)),
           percentage_inline_storage(kSameAsAvailable),
@@ -1050,6 +1050,8 @@ class CORE_EXPORT NGConstraintSpace final {
       return is_shrink_to_fit == other.is_shrink_to_fit &&
              is_fixed_inline_size == other.is_fixed_inline_size &&
              is_fixed_block_size == other.is_fixed_block_size &&
+             is_fixed_block_size_indefinite ==
+                 other.is_fixed_block_size_indefinite &&
              table_cell_child_layout_mode == other.table_cell_child_layout_mode;
     }
 
@@ -1064,7 +1066,6 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned is_orthogonal_writing_mode_root : 1;
 
     unsigned is_painted_atomically : 1;
-    unsigned is_fixed_block_size_indefinite : 1;
     unsigned use_first_line_style : 1;
     unsigned ancestor_has_clearance_past_adjoining_floats : 1;
 
@@ -1075,6 +1076,7 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned is_shrink_to_fit : 1;
     unsigned is_fixed_inline_size : 1;
     unsigned is_fixed_block_size : 1;
+    unsigned is_fixed_block_size_indefinite : 1;
     unsigned table_cell_child_layout_mode : 2;  // NGTableCellChildLayoutMode
 
     unsigned percentage_inline_storage : 2;           // NGPercentageStorage

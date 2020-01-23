@@ -33,11 +33,6 @@ class SpeechRecognitionTest : public extensions::PlatformAppBrowserTest {
     extensions::PlatformAppBrowserTest::SetUp();
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
-    extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
-  }
-
  private:
   std::unique_ptr<content::FakeSpeechRecognitionManager>
       fake_speech_recognition_manager_;

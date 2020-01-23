@@ -7,11 +7,8 @@
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/ui/history/history_consumer.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 enum class UrlLoadStrategy;
 

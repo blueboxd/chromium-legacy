@@ -84,6 +84,15 @@ class SESSIONS_EXPORT CommandStorageManager {
   // Passes all pending commands to the backend for saving.
   void Save();
 
+  // Returns true if StartSaveTimer() has been called, but a save has not yet
+  // occurred.
+  bool HasPendingSave() const;
+
+  // Requests the commands for the current session.
+  base::CancelableTaskTracker::TaskId ScheduleGetCurrentSessionCommands(
+      GetCommandsCallback callback,
+      base::CancelableTaskTracker* tracker);
+
  protected:
   // Provided for subclasses.
   CommandStorageManager(scoped_refptr<CommandStorageBackend> backend,
@@ -98,6 +107,14 @@ class SESSIONS_EXPORT CommandStorageManager {
   }
 
   CommandStorageBackend* backend() { return backend_.get(); }
+
+  // Creates the necessary callbacks/taskid for using CancelableTaskTracker
+  // with a request for the backend to fetch session commands.
+  base::CancelableTaskTracker::TaskId CreateCallbackForGetCommands(
+      base::CancelableTaskTracker* tracker,
+      GetCommandsCallback callback,
+      base::CancelableTaskTracker::IsCanceledCallback* is_canceled,
+      GetCommandsCallback* backend_callback);
 
  private:
   friend class CommandStorageManagerTestHelper;
@@ -121,8 +138,9 @@ class SESSIONS_EXPORT CommandStorageManager {
   // all tasks *must* be processed in the order they are scheduled.
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
-  // Used to invoke Save.
-  base::WeakPtrFactory<CommandStorageManager> weak_factory_{this};
+  // Used solely for saving after a delay, and not to be used for any other
+  // purposes.
+  base::WeakPtrFactory<CommandStorageManager> weak_factory_for_timer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CommandStorageManager);
 };

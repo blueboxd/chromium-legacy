@@ -326,4 +326,9 @@ const base::Feature kTabKeyCanEscapeOmniboxPopup{
 const base::Feature kOmniboxLooseMaxLimitOnDedicatedRows{
     "OmniboxLooseMaxLimitOnDedicatedRows", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, use Assistant for omnibox voice query recognition instead of
+// Android's built-in voice recognition service. Only works on Android.
+const base::Feature kOmniboxAssistantVoiceSearch{
+    "OmniboxAssistantVoiceSearch", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace omnibox

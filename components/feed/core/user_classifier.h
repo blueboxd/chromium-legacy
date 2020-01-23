@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/feed/core/common/enums.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -24,16 +25,6 @@ namespace feed {
 // Based on these long-term user rates, it classifies the user in a UserClass.
 class UserClassifier {
  public:
-  // Different groupings of usage. A user will belong to exactly one of these at
-  // any given point in time. Can change at runtime.
-  enum class UserClass {
-    kRareSuggestionsViewer,      // Almost never opens surfaces that show
-                                 // suggestions, like the NTP.
-    kActiveSuggestionsViewer,    // Frequently shown suggestions, but does not
-                                 // usually open them.
-    kActiveSuggestionsConsumer,  // Frequently opens news articles.
-  };
-
   // For estimating the average length of the intervals between two successive
   // events, we keep a simple frequency model, a single value that we call
   // "rate" below.

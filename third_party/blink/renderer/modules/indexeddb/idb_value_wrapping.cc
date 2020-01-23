@@ -87,9 +87,6 @@ void IDBValueWrapper::Clone(ScriptState* script_state, ScriptValue* clone) {
   DCHECK(!done_cloning_) << __func__ << " called after DoneCloning()";
 #endif  // DCHECK_IS_ON()
 
-  // It is safe to unconditionally enable WASM module decoding because the
-  // relevant checks were already performed in SerializedScriptValue::Serialize,
-  // called by the IDBValueWrapper constructor.
   *clone = DeserializeScriptValue(script_state, serialized_value_.get(),
                                   &blob_info_);
 }

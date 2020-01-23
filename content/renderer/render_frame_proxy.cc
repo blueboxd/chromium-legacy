@@ -33,7 +33,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
-#include "content/renderer/resource_timing_info_conversions.h"
 #include "ipc/ipc_message_macros.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "printing/buildflags/buildflags.h"
@@ -42,7 +41,6 @@
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_resource_timing_info.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -421,8 +419,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateFramePolicy, OnDidUpdateFramePolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_DidSetFramePolicyHeaders,
                         OnDidSetFramePolicyHeaders)
-    IPC_MESSAGE_HANDLER(FrameMsg_ForwardResourceTimingToParent,
-                        OnForwardResourceTimingToParent)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
     IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureRequestPolicy,
                         OnEnforceInsecureRequestPolicy)
@@ -485,12 +481,6 @@ void RenderFrameProxy::OnViewChanged(
 
 void RenderFrameProxy::OnDidStopLoading() {
   web_frame_->DidStopLoading();
-}
-
-void RenderFrameProxy::OnForwardResourceTimingToParent(
-    const ResourceTimingInfo& info) {
-  web_frame_->ForwardResourceTimingToParent(
-      ResourceTimingInfoToWebResourceTimingInfo(info));
 }
 
 void RenderFrameProxy::OnDidUpdateName(const std::string& name,

@@ -6,8 +6,13 @@
 
 #include <algorithm>
 
+#include "base/path_service.h"
+#include "components/base32/base32.h"
+#include "content/public/browser/browser_context.h"
 #include "weblayer/browser/profile_impl.h"
+#include "weblayer/browser/session_service.h"
 #include "weblayer/browser/tab_impl.h"
+#include "weblayer/common/weblayer_paths.h"
 #include "weblayer/public/browser_observer.h"
 
 #if defined(OS_ANDROID)
@@ -19,19 +24,27 @@
 
 namespace weblayer {
 
-std::unique_ptr<Browser> Browser::Create(Profile* profile) {
-  return std::make_unique<BrowserImpl>(static_cast<ProfileImpl*>(profile));
+std::unique_ptr<Browser> Browser::Create(Profile* profile,
+                                         const std::string& persistence_id) {
+  return std::make_unique<BrowserImpl>(static_cast<ProfileImpl*>(profile),
+                                       persistence_id);
 }
 
 #if defined(OS_ANDROID)
 BrowserImpl::BrowserImpl(ProfileImpl* profile,
+                         const std::string& persistence_id,
                          const base::android::JavaParamRef<jobject>& java_impl)
-    : BrowserImpl(profile) {
+    : BrowserImpl(profile, persistence_id) {
   java_impl_ = java_impl;
 }
 #endif
 
-BrowserImpl::BrowserImpl(ProfileImpl* profile) : profile_(profile) {}
+BrowserImpl::BrowserImpl(ProfileImpl* profile,
+                         const std::string& persistence_id)
+    : profile_(profile), persistence_id_(persistence_id) {
+  if (!persistence_id.empty())
+    CreateSessionServiceAndRestore();
+}
 
 BrowserImpl::~BrowserImpl() {
   while (!tabs_.empty()) {
@@ -153,6 +166,10 @@ const std::vector<Tab*>& BrowserImpl::GetTabs() {
   return tabs_;
 }
 
+void BrowserImpl::PrepareForShutdown() {
+  session_service_.reset();
+}
+
 void BrowserImpl::AddObserver(BrowserObserver* observer) {
   browser_observers_.AddObserver(observer);
 }
@@ -161,13 +178,30 @@ void BrowserImpl::RemoveObserver(BrowserObserver* observer) {
   browser_observers_.RemoveObserver(observer);
 }
 
+base::FilePath BrowserImpl::GetSessionServiceDataPath() {
+  base::FilePath base_path;
+  if (profile_->GetBrowserContext()->IsOffTheRecord()) {
+    CHECK(base::PathService::Get(DIR_USER_DATA, &base_path));
+    base_path = base_path.AppendASCII("Incognito Restore Data");
+  } else {
+    base_path = profile_->data_path().AppendASCII("Restore Data");
+  }
+  const std::string encoded_name = base32::Base32Encode(persistence_id_);
+  return base_path.AppendASCII("State" + encoded_name);
+}
+
+void BrowserImpl::CreateSessionServiceAndRestore() {
+  session_service_ =
+      std::make_unique<SessionService>(GetSessionServiceDataPath(), this);
+}
+
 #if defined(OS_ANDROID)
 static jlong JNI_BrowserImpl_CreateBrowser(
     JNIEnv* env,
     jlong profile,
     const base::android::JavaParamRef<jobject>& java_impl) {
-  return reinterpret_cast<intptr_t>(
-      new BrowserImpl(reinterpret_cast<ProfileImpl*>(profile), java_impl));
+  return reinterpret_cast<intptr_t>(new BrowserImpl(
+      reinterpret_cast<ProfileImpl*>(profile), std::string(), java_impl));
 }
 
 static void JNI_BrowserImpl_DeleteBrowser(JNIEnv* env, jlong browser) {

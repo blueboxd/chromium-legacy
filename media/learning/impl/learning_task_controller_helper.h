@@ -47,7 +47,9 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerHelper
   virtual ~LearningTaskControllerHelper();
 
   // See LearningTaskController::BeginObservation.
-  void BeginObservation(base::UnguessableToken id, FeatureVector features);
+  void BeginObservation(base::UnguessableToken id,
+                        FeatureVector features,
+                        base::Optional<ukm::SourceId> source_id);
   void CompleteObservation(base::UnguessableToken id,
                            const ObservationCompletion& completion);
   void CancelObservation(base::UnguessableToken id);

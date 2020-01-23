@@ -20,10 +20,18 @@ namespace {
 const int64_t kRequestId1 = 42;
 const int64_t kRequestId2 = 43;
 const int64_t kRequestId3 = 44;
-const GURL kUrl1("http://example.com");
-const GURL kUrl2("http://another-example.com");
+
 const ClientId kClientId1("bookmark", "1234");
 const ClientId kClientId2("async", "5678");
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL Url1() {
+  return GURL("http://example.com");
+}
+GURL Url2() {
+  return GURL("http://another-example.com");
+}
 
 class ChangeRequestsStateTaskTest : public RequestQueueTaskTestBase {
  public:
@@ -43,12 +51,12 @@ class ChangeRequestsStateTaskTest : public RequestQueueTaskTestBase {
 
 void ChangeRequestsStateTaskTest::AddItemsToStore() {
   base::Time creation_time = OfflineTimeNow();
-  SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
+  SavePageRequest request_1(kRequestId1, Url1(), kClientId1, creation_time,
                             true);
   store_.AddRequest(request_1, RequestQueue::AddOptions(),
                     base::BindOnce(&ChangeRequestsStateTaskTest::AddRequestDone,
                                    base::Unretained(this)));
-  SavePageRequest request_2(kRequestId2, kUrl2, kClientId2, creation_time,
+  SavePageRequest request_2(kRequestId2, Url2(), kClientId2, creation_time,
                             true);
   store_.AddRequest(request_2, RequestQueue::AddOptions(),
                     base::BindOnce(&ChangeRequestsStateTaskTest::AddRequestDone,

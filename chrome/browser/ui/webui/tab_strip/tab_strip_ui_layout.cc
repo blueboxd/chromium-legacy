@@ -42,12 +42,16 @@ TabStripUILayout TabStripUILayout::CalculateForWebViewportSize(
                                          layout.tab_title_height);
   }
 
+  layout.tab_thumbnail_aspect_ratio =
+      layout.tab_thumbnail_size.width() /
+      static_cast<double>(layout.tab_thumbnail_size.height());
+
   return layout;
 }
 
 base::Value TabStripUILayout::AsDictionary() const {
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetStringKey("--tabstrip-tab-list-padding",
+  dict.SetStringKey("--tabstrip-tab-list-vertical-padding",
                     base::NumberToString(padding_around_tab_list) + "px");
   dict.SetStringKey("--tabstrip-tab-title-height",
                     base::NumberToString(tab_title_height) + "px");
@@ -55,6 +59,8 @@ base::Value TabStripUILayout::AsDictionary() const {
                     base::NumberToString(tab_thumbnail_size.width()) + "px");
   dict.SetStringKey("--tabstrip-tab-thumbnail-height",
                     base::NumberToString(tab_thumbnail_size.height()) + "px");
+  dict.SetStringKey("--tabstrip-tab-thumbnail-aspect-ratio",
+                    base::NumberToString(tab_thumbnail_aspect_ratio));
   dict.SetStringKey("--tabstrip-viewport-width",
                     base::NumberToString(viewport_width) + "px");
   return dict;

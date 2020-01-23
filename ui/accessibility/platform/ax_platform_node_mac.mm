@@ -167,6 +167,7 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kNone, NSAccessibilityGroupRole},
       {ax::mojom::Role::kNote, NSAccessibilityGroupRole},
       {ax::mojom::Role::kParagraph, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kPluginObject, NSAccessibilityGroupRole},
       {ax::mojom::Role::kPopUpButton, NSAccessibilityPopUpButtonRole},
       {ax::mojom::Role::kPre, NSAccessibilityGroupRole},
       {ax::mojom::Role::kPresentational, NSAccessibilityGroupRole},
@@ -397,9 +398,9 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 - (void)detach {
   if (!_node)
     return;
+  _node = nil;
   NSAccessibilityPostNotification(
       self, NSAccessibilityUIElementDestroyedNotification);
-  _node = nil;
 }
 
 - (NSRect)boundsInScreen {

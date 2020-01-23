@@ -5022,7 +5022,6 @@ Glabājiet atslēgas failu drošā vietā. Tas būs vajadzīgs, lai izveidotu ja
 <translation id="8101987792947961127">Nākamajā atkārtotas palaišanas reizē jāizpilda funkcija Powerwash</translation>
 <translation id="8102159139658438129">Dodieties uz sadaļu <ph name="LINK_BEGIN" />Iestatījumi<ph name="LINK_END" />, lai skatītu pievienotā tālruņa opcijas.</translation>
 <translation id="8104696615244072556">Aktivizējiet savā <ph name="IDS_SHORT_PRODUCT_NAME" /> ierīcē funkciju Powerwash un atjaunojiet iepriekšējo versiju.</translation>
-<translation id="8106661353233173262">Radās kļūda. Skenētajam failam iestājās noildze.</translation>
 <translation id="8107015733319732394">Notiek Google Play veikala instalēšana jūsu ierīcē (<ph name="DEVICE_TYPE" />). Tas var ilgt dažas minūtes.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Nav trešās puses sīkfailu}=1{Bloķēts 1 trešās puses sīkfails}zero{Bloķēti # trešās puses sīkfaili}one{Bloķēts # trešās puses sīkfails}other{Bloķēti # trešās puses sīkfaili}}</translation>
 <translation id="810875025413331850">Nav atrasta neviena tuvumā esoša ierīce.</translation>

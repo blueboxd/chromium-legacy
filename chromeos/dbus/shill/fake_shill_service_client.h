@@ -71,6 +71,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
                                   ErrorCallback error_callback) override;
   void GetLoadableProfileEntries(const dbus::ObjectPath& service_path,
                                  DictionaryValueCallback callback) override;
+  void GetWiFiPassphrase(const dbus::ObjectPath& service_path,
+                         StringCallback callback,
+                         ErrorCallback error_callback) override;
   ShillServiceClient::TestInterface* GetTestInterface() override;
 
   // ShillServiceClient::TestInterface overrides.

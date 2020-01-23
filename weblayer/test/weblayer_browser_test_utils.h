@@ -18,9 +18,12 @@ struct FormData;
 
 namespace weblayer {
 class Shell;
+class Tab;
 
 // Navigates |shell| to |url| and wait for completed navigation.
 void NavigateAndWaitForCompletion(const GURL& url, Shell* shell);
+
+void NavigateAndWaitForCompletion(const GURL& url, Tab* tab);
 
 // Navigates |shell| to |url| and wait for failed navigation.
 void NavigateAndWaitForFailure(const GURL& url, Shell* shell);

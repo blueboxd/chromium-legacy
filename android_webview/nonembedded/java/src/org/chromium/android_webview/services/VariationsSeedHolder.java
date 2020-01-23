@@ -55,12 +55,9 @@ public class VariationsSeedHolder {
         // newer than mDestinationDate.
         private long mDestinationDate;
 
-        private Runnable mOnFinished;
-
-        public SeedWriter(ParcelFileDescriptor destination, long date, Runnable onFinished) {
+        public SeedWriter(ParcelFileDescriptor destination, long date) {
             mDestination = destination;
             mDestinationDate = date;
-            mOnFinished = onFinished;
         }
 
         @Override
@@ -86,7 +83,7 @@ public class VariationsSeedHolder {
                 }
             } finally {
                 VariationsUtils.closeSafely(mDestination);
-                mOnFinished.run();
+                onWriteFinished();
             }
         }
     }
@@ -140,8 +137,8 @@ public class VariationsSeedHolder {
     }
 
     @VisibleForTesting
-    public void writeSeedIfNewer(ParcelFileDescriptor destination, long date, Runnable onFinished) {
-        mSeedHandler.post(new SeedWriter(destination, date, onFinished));
+    public void writeSeedIfNewer(ParcelFileDescriptor destination, long date) {
+        mSeedHandler.post(new SeedWriter(destination, date));
     }
 
     @VisibleForTesting
@@ -153,4 +150,7 @@ public class VariationsSeedHolder {
     public void scheduleFetchIfNeeded() {
         AwVariationsSeedFetcher.scheduleIfNeeded();
     }
+
+    // overridden by tests
+    public void onWriteFinished() {}
 }

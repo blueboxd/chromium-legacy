@@ -2041,7 +2041,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="3819800052061700452">&amp;Pantaila osoa</translation>
 <translation id="3820172043799983114">PIN kodeak ez du balio.</translation>
 <translation id="3820749202859700794">SECG kurba eliptikoko secp521r1 (edo, bestela esanda: NIST P-521)</translation>
-<translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Luzapen bat onartu da}other{# luzapen bat onartu dira}}</translation>
+<translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Luzapen bat onartu da}other{# luzapen onartu dira}}</translation>
 <translation id="3822559385185038546">Administratzaileak ezartzen du proxya</translation>
 <translation id="3826440694796503677">Administratzaileak desgaitu egin du Google-ko kontuak gehitzeko aukera</translation>
 <translation id="3827306204503227641">Jarraitu baimentzen proben eremuan sartu gabeko pluginak</translation>
@@ -3082,7 +3082,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5376931455988532197">Fitxategia handiegia da</translation>
 <translation id="537813040452600081">Leiho honetan ikusten dituzun orriak ez dira arakatzailearen historian agertuko eta ez dute bestelako aztarnarik utziko (adibidez, cookieak) saioa amaitu ondoren. Deskargatzen dituzun fitxategiak eta sortzen dituzun laster-markak ez dira gordeko.</translation>
 <translation id="5379140238605961210">Jarraitu mikrofonorako sarbidea blokeatzen</translation>
-<translation id="5382591305415226340">Kudeatu onartzen diren estekak</translation>
+<translation id="5382591305415226340">Kudeatu esteka bateragarriak</translation>
 <translation id="5383377866517186886">Kamera erabiltzeko baimena desaktibatuta dago Mac sistemaren hobespenetan</translation>
 <translation id="5384883051496921101">Webgune hau informazioa partekatzera doa aplikazio batekin ezkutuko modutik kanpo.</translation>
 <translation id="5388885445722491159">Parekatuta</translation>
@@ -3150,7 +3150,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5470735824776589490">Berrabiarazi egin behar da gailuan fabrikako ezarpenak berrezarri ahal izateko. <ph name="LINK_BEGIN" />Lortu informazio gehiago<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Kaixo! Testua ahots bihurtzeko eginbidearen ahotsa naiz.</translation>
 <translation id="5473333559083690127">Idatzi berriro PIN kodea</translation>
-<translation id="548137908954174608">Gaitu istanteko azpitituluak</translation>
+<translation id="548137908954174608">Gaitu Istanteko azpitituluak</translation>
 <translation id="5481941284378890518">Gehitu inguruko inprimagailuak</translation>
 <translation id="5483785310822538350">Baliogabetu fitxategietarako eta gailurako sarbidea</translation>
 <translation id="5485080380723335835">Segurtasuna bermatzeko, blokeatuta dago <ph name="DEVICE_TYPE" /> gailua. Aurrera egiteko, idatzi pasahitza eskuz.</translation>
@@ -5022,7 +5022,6 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="8101987792947961127">Fabrikako ezarpenak berrezarri behar dira Powerwash bidez hurrengo aldiz berrabiaraztean</translation>
 <translation id="8102159139658438129">Joan <ph name="LINK_BEGIN" />Ezarpenak<ph name="LINK_END" /> atalera eta ikusi konektatutako telefonoarekin egin dezakezuna</translation>
 <translation id="8104696615244072556">Berrezarri <ph name="IDS_SHORT_PRODUCT_NAME" /> gailuaren fabrikako ezarpenak eta itzuli aurreko bertsiora.</translation>
-<translation id="8106661353233173262">Arazoren bat izan da. Analizatutako fitxategiaren denbora-muga gainditu da.</translation>
 <translation id="8107015733319732394">Google Play Store <ph name="DEVICE_TYPE" /> gailuan instalatzen ari gara. Minutu batzuk beharko ditugu.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Ez dago hirugarrenen cookierik}=1{Hirugarrenen 1 cookie blokeatu da}other{Hirugarrenen # cookie blokeatu dira}}</translation>
 <translation id="810875025413331850">Ez da aurkitu gailurik inguruan.</translation>

@@ -215,10 +215,6 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // the combined opacity of the parent.
   float GetCombinedOpacity() const;
 
-  // Returns the target color temperature if animator is running, or the current
-  // temperature otherwise.
-  float GetTargetTemperature() const;
-
   // Blur pixels by 3 * this amount in anything below the layer and visible
   // through the layer.
   float background_blur() const { return background_blur_sigma_; }

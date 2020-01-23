@@ -751,6 +751,7 @@
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> tiene prioridad sobre esta política. Esto quiere decir que no se instalará ninguna extensión de la lista negra, incluso si proviene de un sitio en esta lista.</translation>
 <translation id="214901426630414675">Restringir el modo de impresión doble</translation>
 <translation id="2149330464730004005">Habilitar la impresión a color</translation>
+<translation id="2151831603578119302">Habilita las combinaciones de teclas para las funciones de accesibilidad</translation>
 <translation id="2156132677421487971">Configura las políticas para <ph name="PRODUCT_NAME" />, una función que permite que los usuarios envíen el contenido de las pestañas, los sitios o el escritorio del navegador a pantallas y sistemas de sonido remotos.</translation>
 <translation id="2156755242840687300">Habilita los servidores de impresión externos</translation>
 <translation id="2160336427036785721">Configura la cantidad de memoria que puede usar una única instancia de <ph name="PRODUCT_NAME" /> antes de que se empiecen a descartar las pestañas (es decir que se liberará la memoria que utiliza la pestaña, la cual se deberá volver a cargar cuando se seleccione), a fin de ahorrar memoria.
@@ -859,6 +860,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2294382669900758280">No se tiene en cuenta la reproducción de video en las apps de Android, incluso si esta política se establece como <ph name="TRUE" />.</translation>
 <translation id="2299220924812062390">Especificar una lista de complementos habilitados</translation>
 <translation id="2303795211377219696">Habilitar la función Autocompletar para tarjetas de crédito</translation>
+<translation id="2307496301287881990">Informa los estados de la tarjeta gráfica y la pantalla</translation>
 <translation id="2309390639296060546">Configuración de geolocalización predeterminada</translation>
 <translation id="2327252517317514801">Definir los dominios con permiso para acceder a G Suite</translation>
 <translation id="2328573323851533589">Se puede usar esta política para forzar la habilitación o inhabilitación de la búsqueda de filtraciones de credenciales en <ph name="PRODUCT_NAME" />.
@@ -1112,6 +1114,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se inhabilita la política o no se configura, se usará la configuración predeterminada de aislamiento de sitios de la plataforma para la pantalla de acceso.
       </translation>
 <translation id="2587719089023392205">Establecer <ph name="PRODUCT_NAME" /> como navegador predeterminado</translation>
+<translation id="2588071938417715443">Esta política establece el acceso a las funciones controlables de la IU de descubrimiento local (<ph name="CHROME_DEVICES_LINK" />) que muestra los dispositivos detectables cerca del usuario y los dispositivos en la nube que están registrados con ellos. En todos los sistemas operativos, excepto en <ph name="PRODUCT_OS_NAME" />, la IU de descubrimiento local también permite que los usuarios agreguen a <ph name="CLOUD_PRINT_NAME" /> impresoras clásicas conectadas a sus computadoras.</translation>
 <translation id="2592091433672667839">Duración de la inactividad antes de que se muestre el protector de pantalla en el modo de venta</translation>
 <translation id="2592162121850992309">Si esta política se configura como verdadera o no se configura, se habilitará la aceleración de hardware a menos que una función determinada de la GPU esté en la lista negra.
 
@@ -1354,19 +1357,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2960691910306063964">Habilitar o inhabilitar la autenticación sin PIN para hosts de acceso remoto</translation>
 <translation id="2987155890997901449">Habilitar ARC</translation>
 <translation id="2987227569419001736">Controlar el uso de la API de Bluetooth web</translation>
-<translation id="3011301228198307065">Configura la URL de la página principal predeterminada en <ph name="PRODUCT_NAME" /> y evita que los usuarios la modifiquen.
-
-          La página principal es la que se abre con el botón Página principal. Las páginas que se abren al inicio se controlan a través de las políticas RestoreOnStartup.
-
-          El tipo de página principal puede configurarse como una URL que se especifica aquí o establecerse en la página Nueva pestaña. Si se selecciona la página Nueva pestaña, no se aplicará esta política.
-
-          Si se habilita esta configuración, los usuarios no podrán cambiar la URL de la página principal en <ph name="PRODUCT_NAME" />, pero podrán elegir la página Nueva pestaña como principal.
-
-          Si no se establecen esta política ni HomepageIsNewTabPage, el usuario podrá elegir la página principal.
-
-          La URL debe tener un esquema estándar, p. ej., "http://ejemplo.com" o "https://ejemplo.com".
-
-          Esta política solo está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="3016255526521614822">Incluir en la lista blanca las apps para tomar notas que se permiten en la pantalla bloqueada de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3020064401262077616">Controla las políticas de supervisión parental, que se aplican solo a las cuentas de menores de edad.</translation>
 <translation id="3021562480854470924">Cantidad de hitos que se permiten en la reversión</translation>
@@ -2853,6 +2843,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se crea la conexión VPN mediante una app de VPN, esta política no modificará la IU de la app. Por lo tanto, es posible que el usuario aún pueda usar la app para modificar la conexión VPN.
 
       Esta política está diseñada para usarse junto con la función "VPN siempre activada", que permite que el administrador decida establecer una conexión VPN en el inicio.</translation>
+<translation id="5401696449591951427">Habilita <ph name="CHROME_DEVICES_LINK" /></translation>
 <translation id="5405289061476885481">Establece los diseños de teclado compatibles con la pantalla de acceso de <ph name="PRODUCT_OS_NAME" />.
 
       Si esta política se establece como una lista de identificadores de método de entrada, estos métodos estarán disponibles en la pantalla de acceso y se preseleccionará el primero de ellos. Cuando se activa un módulo de sesión de usuario en la pantalla de acceso, el último método de entrada que este utilizó estará disponible junto con aquellos que especifica esta política. Si no se establece esta política, los métodos de entrada de la pantalla de acceso se obtendrán a partir de la configuración regional que se muestra en la pantalla de acceso. Se ignorarán los valores que no sean identificadores válidos de métodos de entrada.</translation>
@@ -3113,6 +3104,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si no se configura esta política, se implementará la acción predeterminada, es decir, la suspensión.
 
           Si la acción es la suspensión, <ph name="PRODUCT_OS_NAME" /> se podrá configurar por separado para que la pantalla se bloquee o no antes de la suspensión.</translation>
+<translation id="574983287620584622">Habilita las combinaciones de teclas para las funciones de accesibilidad en la pantalla de acceso</translation>
 <translation id="5755002458331714762"> En 2018, las API de Web Components v0 (Shadow DOM v0, Custom Elements v0 y HTML Imports) dejaron de estar disponibles. Además, se inhabilitaron de forma predeterminada a partir de la versión M80. Esta política permite volver a habilitar estas funciones de forma selectiva hasta la versión M84.
 
       Si se establece esta política como verdadera, se habilitarán las funciones de Web Components v0 para todos los sitios.
@@ -4255,6 +4247,15 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se establece como falsa, no se recopilarán los datos de "Navegación segura".
 
       Esta política solo es válida si se habilita la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="777734450201217641">Habilita las combinaciones de teclas para las funciones de accesibilidad en la pantalla de acceso.
+
+          Si se establece como verdadera esta política, las combinaciones de teclas para las funciones de accesibilidad estarán siempre habilitadas en la pantalla de acceso.
+
+          Si se establece como falsa, las combinaciones de teclas para las funciones de accesibilidad estarán siempre inhabilitadas en la pantalla de acceso.
+
+          Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
+
+          Si no la estableces, las combinaciones de teclas para las funciones de accesibilidad estarán habilitadas de forma predeterminada en la pantalla de acceso.</translation>
 <translation id="7777535871204167559">Tratar los dispositivos de almacenamiento externo como de solo lectura</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="7792973482799545782">No permitir que ningún sitio cargue contenido mixto bloqueable</translation>
@@ -4679,6 +4680,15 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Advertencia: No se recomienda configurar restricciones de la versión, ya que pueden impedir que los usuarios reciban actualizaciones de software y correcciones de seguridad muy importantes. La restricción de las actualizaciones a un prefijo de una versión específica puede poner en riesgo a los usuarios.</translation>
 <translation id="8519264904050090490">Direcciones URL de excepción manual de usuario administrado</translation>
+<translation id="8519516251436131647">Habilita las combinaciones de teclas para las funciones de accesibilidad.
+
+          Si se establece esta política como verdadera, las combinaciones de teclas para las funciones de accesibilidad estarán siempre habilitadas.
+
+          Si se establece como falsa, las combinaciones de teclas para las funciones de accesibilidad estarán siempre inhabilitadas.
+
+          Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
+
+          Si no la estableces, las combinaciones de teclas para las funciones de accesibilidad estarán habilitadas de forma predeterminada.</translation>
 <translation id="8525526490824335042">Contenedor de Linux</translation>
 <translation id="8538235451413605457">Configura los requisitos de la versión mínima permitida de <ph name="PRODUCT_NAME" />. Las versiones anteriores se tratan como obsoletas, y es posible que el dispositivo no permita acceder al usuario si no actualiza el SO.
       Si la versión actual se vuelve obsoleta durante la sesión de usuario, se lo forzará al usuario a salir.
@@ -4917,6 +4927,12 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si no se establece esta política, se utilizará "PromptOnAccess" y el usuario podrá cambiarla.</translation>
 <translation id="8911348623012274122">Establecer el límite de memoria para las instancias de Chrome</translation>
+<translation id="8911736066340032670">Informa datos relacionados con la pantalla, como la frecuencia de actualización, y
+      con la tarjeta gráfica, como la versión del controlador.
+
+      Si se establece la política como falsa o no se establece, no se informarán
+      los estados de la pantalla y la tarjeta gráfica. Si se establece como verdadera, se informarán
+      estos estados.</translation>
 <translation id="891435090623616439">codificada como cadena JSON; para obtener detalles, se puede consultar <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Permite que los usuarios administren los Certificados de CA instalados</translation>
 <translation id="8926275581598789324">Ten en cuenta que esta política es obsoleta y se eliminará en la versión 82 de <ph name="PRODUCT_OS_NAME" />. En su lugar, utiliza <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.

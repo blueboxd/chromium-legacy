@@ -91,8 +91,10 @@
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
       'linux-win_cross-rel',
+      'mac-rel',  # crbug.com/1042757
       'ToTLinuxTSan',  # https://crbug.com/368525
       'Mac10.10 Tests',  # https://crbug.com/828031
+      'Mac10.13 Tests',  # https://crbug.com/1042757
       'Linux TSan Tests',  # https://crbug.com/368525
       'Win10 Tests x64 (dbg)',
     ],
@@ -139,6 +141,17 @@
         },
       },
       'Win10 Tests x64': {
+        # crbug.com/868082
+        'args': [
+          '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
+        ],
+        'swarming': {
+          # This is for slow test execution that often becomes a critical path of
+          # swarming jobs. crbug.com/868114
+          'shards': 15,
+        }
+      },
+      'Win10 Tests x64 Code Coverage': {
         # crbug.com/868082
         'args': [
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
@@ -377,6 +390,11 @@
           'shards': 2,
         },
       },
+      'linux-blink-heap-concurrent-marking-tsan-rel': {
+        'swarming': {
+          'shards': 2,
+        },
+      },
     },
   },
   'content_browsertests': {
@@ -431,6 +449,12 @@
           '--no-sandbox',
         ],
       },
+      'Win10 Tests x64 Code Coverage': {
+        # crbug.com/868082
+        'args': [
+          '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
+        ],
+      },
       'android-arm64-proguard-rel': {
         'swarming': {
           'shards': 16,
@@ -452,6 +476,11 @@
       'android-marshmallow-arm64-rel': {
         'swarming': {
           'shards': 16,
+        },
+      },
+      'linux-blink-heap-concurrent-marking-tsan-rel': {
+        'swarming': {
+          'shards': 4,
         },
       },
       'linux-chromeos-code-coverage': {
@@ -766,11 +795,27 @@
           'shards': 6,
         },
       },
+      'Win 7 Tests x64 (1)': {
+        # These tests are continually flaky on Win7 bots, crbug.com/967588
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/autofill.interactive_ui_tests.filter',
+        ],
+      },
       # temporary, https://crbug.com/818832
       'Win10 Tests x64 (dbg)': {
         'experiment_percentage': 100,
       },
+      'Win7 Tests (1)': {
+        # These tests are continually flaky on Win7 bots, crbug.com/967588
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/autofill.interactive_ui_tests.filter',
+        ],
+      },
       'Win7 Tests (dbg)(1)': {
+        # These tests are continually flaky on Win7 bots, crbug.com/967588
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/autofill.interactive_ui_tests.filter',
+        ],
         'swarming': {
           'shards': 4,
         },
@@ -1015,6 +1060,11 @@
           '--gtest_filter=-NetworkQualityEstimatorTest.TestTCPSocketRTT',
         ],
       },
+      'linux-blink-heap-concurrent-marking-tsan-rel': {
+        'swarming': {
+          'shards': 4,
+        }
+      },
       'linux-chromeos-dbg': {
         'swarming': {
           'shards': 2,
@@ -1037,9 +1087,21 @@
       'Mac10.13 Tests (dbg)',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
+      'mac-rel',
     ],
     'modifications': {
       'Win10 Tests x64': {
+        # crbug.com/868082
+        'args': [
+          '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
+        ],
+        # This is for slow test execution that often becomes a critical path of
+        # swarming jobs. crbug.com/868114
+        'swarming': {
+          'shards': 20,
+        },
+      },
+      'Win10 Tests x64 Code Coverage': {
         # crbug.com/868082
         'args': [
           '--disable-features=WebRTC-H264WithOpenH264FFmpeg',
@@ -1065,6 +1127,7 @@
       'Mac10.13 Tests (dbg)',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
+      'mac-rel',
     ],
   },
   'network_service_content_browsertests': {
@@ -1082,6 +1145,7 @@
       'Mac10.13 Tests (dbg)',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
+      'mac-rel',
     ],
   },
   'network_service_extensions_browsertests': {
@@ -1098,6 +1162,7 @@
       'Mac10.13 Tests (dbg)',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
+      'mac-rel',
     ],
   },
   'network_service_headless_browsertests': {
@@ -1119,6 +1184,7 @@
       'Mac10.13 Tests (dbg)',
       'Mac ASan 64 Tests (1)',
       'ToTMacASan',
+      'mac-rel',
     ],
     'modifications': {
       'Win10 Tests x64 (dbg)': {
@@ -1560,6 +1626,8 @@
       'Linux - Future (dbg)',  # client.v8.chromium
       'Win10 Tests x64',
       'Win10 Tests x64 (dbg)',
+      'Win10 Tests x64 Code Coverage',
+      'mac-rel',
     ],
   },
   'telemetry_unittests': {
@@ -1574,6 +1642,7 @@
       'Mac10.11 Tests',
 
       'Win10 Tests x64',
+      'Win10 Tests x64 Code Coverage',
     ],
   },
   'unit_tests': {
@@ -1935,6 +2004,15 @@
           'Debug_x64',
         ],
       },
+      'Win10 Tests x64 Code Coverage': {
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
+        'swarming': {
+          "shards": 28
+        },
+      },
       'Win7 Tests (dbg)(1)': {
         'args': [
           '--debug',
@@ -2028,6 +2106,18 @@
           '--additional-driver-flag=--enable-blink-features=LayoutNGFragmentPaint',
         ],
       },
+      'mac-rel': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              # Run the layout tests on a consistent set of hardware
+              # (Mac Minis).
+              'gpu': '8086:0a2e',
+            },
+          ],
+          'shards': 25,
+        },
+      },
       'mac10.10-blink-rel-dummy': {
         'swarming': {
           'shards': 20,
@@ -2084,6 +2174,11 @@
         # Increase timeout. See https://crbug.com/847229.
         'swarming': {
           'hard_timeout': 1200,
+        },
+      },
+      'linux-blink-heap-concurrent-marking-tsan-rel': {
+        'swarming': {
+          'shards': 2,
         },
       },
     },

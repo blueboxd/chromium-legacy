@@ -5194,7 +5194,7 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageCalculateContentsScale) {
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
       FakePictureLayerImpl::Create(pending_tree, root_id(),
                                    pending_raster_source);
-  pending_layer->set_is_directly_composited_image(true);
+  pending_layer->SetDirectlyCompositedImageSize(layer_bounds);
   pending_layer->SetDrawsContent(true);
   FakePictureLayerImpl* pending_layer_ptr = pending_layer.get();
   pending_tree->SetRootLayerForTesting(std::move(pending_layer));
@@ -5219,7 +5219,7 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageIgnoreIdealContentsScale) {
   std::unique_ptr<FakePictureLayerImpl> pending_layer =
       FakePictureLayerImpl::Create(pending_tree, root_id(),
                                    pending_raster_source);
-  pending_layer->set_is_directly_composited_image(true);
+  pending_layer->SetDirectlyCompositedImageSize(layer_bounds);
   pending_layer->SetDrawsContent(true);
   FakePictureLayerImpl* pending_layer_ptr = pending_layer.get();
   pending_tree->SetRootLayerForTesting(std::move(pending_layer));
@@ -5277,7 +5277,7 @@ TEST_F(LegacySWPictureLayerImplTest, CompositedImageRasterScaleChanges) {
       FakeRasterSource::CreateFilled(layer_bounds);
 
   SetupPendingTree(pending_raster_source);
-  pending_layer()->set_is_directly_composited_image(true);
+  pending_layer()->SetDirectlyCompositedImageSize(layer_bounds);
 
   float expected_contents_scale = 0.25f;
   for (int i = 1; i < 30; ++i) {

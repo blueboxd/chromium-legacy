@@ -1369,7 +1369,7 @@ Unaweza kudhibiti mipangilio ya akaunti hii kwa kusakinisha programu ya Family L
 <translation id="2875698561019555027">(Kurasa za hitilafu kwenye Chrome)</translation>
 <translation id="2876336351874743617">Kidole cha 2</translation>
 <translation id="2876369937070532032">Hutuma kwa Google URL za baadhi ya kurasa ambazo umetembelea wakati usalama wako uko hatarini</translation>
-<translation id="2877030408509021795">Imekamilisha kuchanganua, kila kitu ni shwari</translation>
+<translation id="2877030408509021795">Imekamilisha kuchanganua, kila kitu ni shwari.</translation>
 <translation id="2878782256107578644">Inachanganua, ungependa kufungua sasa?</translation>
 <translation id="288042212351694283">Fikia vifaa vyako vya Ubia wa Hatua mbili</translation>
 <translation id="2881076733170862447">Unapobofya Kiendelezi</translation>
@@ -5020,7 +5020,6 @@ Weka faili yako ya funguo mahali salama. Utaihitaji kuunda matoleo mapya ya kien
 <translation id="8101987792947961127">Powerwash inahitajika kwenye kuwasha kunakofuata</translation>
 <translation id="8102159139658438129">Nenda kwenye <ph name="LINK_BEGIN" />Mipangilio<ph name="LINK_END" /> ili uone chaguo za simu yako iliyounganishwa</translation>
 <translation id="8104696615244072556">Tumia Powerwash kwenye kifaa <ph name="IDS_SHORT_PRODUCT_NAME" /> chako na urejee kwenye toleo la awali.</translation>
-<translation id="8106661353233173262">Hitilafu fulani imetokea. Muda wa kuchanganua faili umeisha.</translation>
 <translation id="8107015733319732394">Inasakinisha duka la Google Play kwenye <ph name="DEVICE_TYPE" />. Huenda hatua hii ikachukua dakika chache.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Hakuna vidakuzi vya mtu au kampuni nyingine}=1{Imezuia kidakuzi kimoja cha mtu au kampuni nyingine}other{Imezuia vidakuzi # vya mtu na kampuni nyingine}}</translation>
 <translation id="810875025413331850">Haikupata vifaa vyovyote vilivyo karibu.</translation>

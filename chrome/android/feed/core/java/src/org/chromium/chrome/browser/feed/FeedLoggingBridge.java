@@ -373,15 +373,6 @@ public class FeedLoggingBridge implements BasicLoggingApi {
                 mNativeFeedLoggingBridge, FeedLoggingBridge.this);
     }
 
-    private void onManageInterestsClicked(int position) {
-        // Bridge could have been destroyed for policy when this is called.
-        // See https://crbug.com/901414.
-        if (mNativeFeedLoggingBridge == 0) return;
-
-        FeedLoggingBridgeJni.get().onManageInterestsClicked(
-                mNativeFeedLoggingBridge, FeedLoggingBridge.this, position);
-    }
-
     /**
      * One-shot reporter that records the first time the user scrolls in the {@link Stream}.
      */
@@ -463,7 +454,5 @@ public class FeedLoggingBridge implements BasicLoggingApi {
         void onContentTargetVisited(long nativeFeedLoggingBridge, FeedLoggingBridge caller,
                 long visitTimeMs, boolean isOffline, boolean returnToNtp);
         void reportScrolledAfterOpen(long nativeFeedLoggingBridge, FeedLoggingBridge caller);
-        void onManageInterestsClicked(
-                long nativeFeedLoggingBridge, FeedLoggingBridge caller, int position);
     }
 }

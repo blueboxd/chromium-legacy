@@ -33,7 +33,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_H_
 
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/public/platform/web_resource_timing_info.h"
+#include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
@@ -160,12 +160,12 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   // Generates timing info suitable for appending to the performance entries of
   // a context with |origin|. This should be rarely used; most callsites should
   // prefer the convenience method |GenerateAndAddResourceTiming()|.
-  static WebResourceTimingInfo GenerateResourceTiming(
+  static mojom::blink::ResourceTimingInfoPtr GenerateResourceTiming(
       const SecurityOrigin& destination_origin,
       const ResourceTimingInfo&,
       ExecutionContext& context_for_use_counter);
   void AddResourceTiming(
-      const WebResourceTimingInfo&,
+      mojom::blink::ResourceTimingInfoPtr,
       const AtomicString& initiator_type,
       mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
           worker_timing_receiver);

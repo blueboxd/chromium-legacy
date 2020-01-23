@@ -310,7 +310,7 @@ void MediaMetricsProvider::AcquireLearningTaskController(
 
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<learning::MojoLearningTaskControllerService>(
-          controller->GetLearningTask(), std::move(controller)),
+          controller->GetLearningTask(), source_id_, std::move(controller)),
       std::move(receiver));
 }
 

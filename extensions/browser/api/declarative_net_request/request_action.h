@@ -34,6 +34,9 @@ struct RequestAction {
     UPGRADE,
     // Remove request/response headers.
     REMOVE_HEADERS,
+    // Allow the network request. This request is either for an allowlisted
+    // frame or originated from one.
+    ALLOW_ALL_REQUESTS,
   };
 
   RequestAction(Type type,
@@ -44,6 +47,9 @@ struct RequestAction {
   ~RequestAction();
   RequestAction(RequestAction&&);
   RequestAction& operator=(RequestAction&&);
+
+  // Helper to create a copy.
+  RequestAction Clone() const;
 
   Type type = Type::BLOCK;
 
@@ -78,9 +84,17 @@ struct RequestAction {
   bool IsRedirectOrUpgrade() const {
     return type == Type::REDIRECT || type == Type::UPGRADE;
   }
+  bool IsAllowOrAllowAllRequests() const {
+    return type == Type::ALLOW || type == Type::ALLOW_ALL_REQUESTS;
+  }
 
-  DISALLOW_COPY_AND_ASSIGN(RequestAction);
+ private:
+  RequestAction(const RequestAction&);
 };
+
+base::Optional<RequestAction> GetMaxPriorityAction(
+    base::Optional<RequestAction> lhs,
+    base::Optional<RequestAction> rhs);
 
 }  // namespace declarative_net_request
 }  // namespace extensions

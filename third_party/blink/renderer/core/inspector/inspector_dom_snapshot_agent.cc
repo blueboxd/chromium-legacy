@@ -475,11 +475,9 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node, int parent_index) {
     }
 
     if (element->GetPseudoId()) {
-      protocol::DOM::PseudoType pseudo_type;
-      if (InspectorDOMAgent::GetPseudoElementType(element->GetPseudoId(),
-                                                  &pseudo_type)) {
-        SetRare(nodes->getPseudoType(nullptr), index, pseudo_type);
-      }
+      SetRare(
+          nodes->getPseudoType(nullptr), index,
+          InspectorDOMAgent::ProtocolPseudoElementType(element->GetPseudoId()));
     }
     VisitPseudoElements(element, index);
 

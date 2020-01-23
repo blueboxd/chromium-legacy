@@ -34,8 +34,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
-#include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
@@ -302,19 +300,6 @@ void WebRemoteFrameImpl::SetReplicatedInsecureNavigationsSet(
     const WebVector<unsigned>& set) {
   DCHECK(GetFrame());
   GetFrame()->SetInsecureNavigationsSet(set);
-}
-
-void WebRemoteFrameImpl::ForwardResourceTimingToParent(
-    const WebResourceTimingInfo& info) {
-  auto* parent_frame = To<WebLocalFrameImpl>(Parent()->ToWebLocalFrame());
-  HTMLFrameOwnerElement* owner_element =
-      To<HTMLFrameOwnerElement>(frame_->Owner());
-  DCHECK(owner_element);
-  // TODO(https://crbug.com/900700): Take a Mojo pending receiver for
-  // WorkerTimingContainer for navigation from the calling function.
-  DOMWindowPerformance::performance(*parent_frame->GetFrame()->DomWindow())
-      ->AddResourceTiming(info, owner_element->localName(),
-                          mojo::NullReceiver() /* worker_timing_receiver */);
 }
 
 void WebRemoteFrameImpl::DidStartLoading() {

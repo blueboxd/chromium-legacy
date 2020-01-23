@@ -29,7 +29,7 @@ class VIZ_SERVICE_EXPORT DisplayDamageTracker : public SurfaceObserver {
   class VIZ_SERVICE_EXPORT Observer {
    public:
     virtual ~Observer() = default;
-    virtual void OnDisplayDamaged() = 0;
+    virtual void OnDisplayDamaged(SurfaceId surface_id) = 0;
     virtual void OnRootFrameMissing(bool missing) = 0;
     virtual void OnPendingSurfacesChanged() = 0;
   };
@@ -101,7 +101,7 @@ class VIZ_SERVICE_EXPORT DisplayDamageTracker : public SurfaceObserver {
                             bool display_damaged);
 
   // Used to send corresponding notifications to observers.
-  void NotifyDisplayDamaged();
+  void NotifyDisplayDamaged(SurfaceId surface_id);
   void NotifyRootFrameMissing(bool missing);
   void NotifyPendingSurfacesChanged();
 

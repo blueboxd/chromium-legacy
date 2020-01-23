@@ -1,9 +1,8 @@
 This is a testharness.js-based test.
-Found 50 tests; 43 PASS, 7 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS createDataChannel with no argument should throw TypeError
 PASS createDataChannel with closed connection should throw InvalidStateError
-FAIL createDataChannel attribute default values assert_equals: expected (string) "low" but got (undefined) undefined
-FAIL createDataChannel with provided parameters should initialize attributes to provided values assert_equals: expected (string) "high" but got (undefined) undefined
+FAIL createDataChannel attribute default values assert_equals: expected "blob" but got "arraybuffer"
+FAIL createDataChannel with provided parameters should initialize attributes to provided values assert_equals: expected "blob" but got "arraybuffer"
 PASS createDataChannel with label "foo" should succeed
 PASS createDataChannel with label null should succeed
 PASS createDataChannel with label undefined should succeed
@@ -30,8 +29,6 @@ PASS createDataChannel with id 65536 and negotiated not set should throw TypeErr
 PASS createDataChannel with id -1 should throw TypeError
 PASS createDataChannel with id 65535 should throw TypeError
 PASS createDataChannel with id 65536 should throw TypeError
-FAIL createDataChannel with priority "high" should succeed assert_equals: expected (string) "high" but got (undefined) undefined
-FAIL createDataChannel with invalid priority should throw TypeError assert_throws: function "() => pc.createDataChannel('', { priority: 'invalid' })" did not throw
 PASS createDataChannel with too long label should throw TypeError
 PASS createDataChannel with too long label (2 byte unicode) should throw TypeError
 PASS createDataChannel with same label used twice should not throw

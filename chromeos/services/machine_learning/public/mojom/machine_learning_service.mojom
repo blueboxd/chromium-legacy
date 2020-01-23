@@ -29,10 +29,11 @@ enum LoadModelResult {
 interface MachineLearningService {
   // The BuiltinModelId inside BuiltinModelSpec is used to specify the model to
   // be loaded.
-  LoadBuiltinModel(BuiltinModelSpec spec, Model& request)
+  LoadBuiltinModel(BuiltinModelSpec spec, pending_receiver<Model> receiver)
       => (LoadModelResult result);
   // The FlatbufferModelSpec contains both of the flatbuffer content and the
   // metadata.
-  LoadFlatBufferModel(FlatBufferModelSpec spec, Model& request)
+  LoadFlatBufferModel(FlatBufferModelSpec spec,
+                      pending_receiver<Model> receiver)
       => (LoadModelResult result);
 };

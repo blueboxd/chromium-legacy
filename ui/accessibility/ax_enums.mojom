@@ -253,6 +253,7 @@ enum Role {
   kNote,
   kPane,
   kParagraph,
+  kPluginObject,
   kPopUpButton,
   kPre,
   kPresentational,

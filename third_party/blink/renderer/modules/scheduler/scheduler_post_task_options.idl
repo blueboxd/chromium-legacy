@@ -5,11 +5,9 @@
 // Experimental Scheduling API Proposal:
 // https://docs.google.com/document/d/1xU7HyNsEsbXhTgt0ZnXDbeSXm5-m5FzkLJAT6LTizEI/edit#
 enum TaskPriority {
-    "immediate",
-    "high",
-    "default",
-    "low",
-    "idle"
+    "user-blocking",
+    "user-visible",
+    "background"
 };
 
 dictionary SchedulerPostTaskOptions {

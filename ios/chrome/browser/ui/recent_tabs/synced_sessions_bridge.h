@@ -12,10 +12,7 @@
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 namespace signin {
 class IdentityManager;

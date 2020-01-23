@@ -422,10 +422,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_WithNotification",
+                    "name": "Enabled_NoNotification",
                     "params": {
-                        "update_notification_interval_days": "21",
-                        "update_notification_state": "true"
+                        "flow": "best_effort"
                     },
                     "enable_features": [
                         "InlineUpdateFlow"
@@ -1629,6 +1628,21 @@
             ]
         }
     ],
+    "ChromeOSLauncherAssistantIntegration": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "EnableEmbeddedAssistantUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChromeSmartSelection": [
         {
             "platforms": [
@@ -2684,6 +2698,21 @@
                         "EphemeralTab",
                         "EphemeralTabUsingBottomSheet",
                         "IPH_EphemeralTab"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ExpandablePaymentHandler": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ScrollToExpandPaymentHandler"
                     ]
                 }
             ]
@@ -4293,6 +4322,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OfflinePagesSharing"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxAssistantVoiceSearch": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxAssistantVoiceSearch"
                     ]
                 }
             ]

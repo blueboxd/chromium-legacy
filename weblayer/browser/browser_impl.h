@@ -5,6 +5,7 @@
 #ifndef WEBLAYER_BROWSER_BROWSER_IMPL_H_
 #define WEBLAYER_BROWSER_BROWSER_IMPL_H_
 
+#include <memory>
 #include <vector>
 
 #include "base/observer_list.h"
@@ -15,21 +16,29 @@
 #include "base/android/scoped_java_ref.h"
 #endif
 
+namespace base {
+class FilePath;
+}
+
 namespace weblayer {
 
 class ProfileImpl;
+class SessionService;
 class TabImpl;
 
 class BrowserImpl : public Browser {
  public:
 #if defined(OS_ANDROID)
   BrowserImpl(ProfileImpl* profile,
+              const std::string& persistence_id,
               const base::android::JavaParamRef<jobject>& java_impl);
 #endif
-  explicit BrowserImpl(ProfileImpl* profile);
+  BrowserImpl(ProfileImpl* profile, const std::string& persistence_id);
   ~BrowserImpl() override;
   BrowserImpl(const BrowserImpl&) = delete;
   BrowserImpl& operator=(const BrowserImpl&) = delete;
+
+  SessionService* session_service() { return session_service_.get(); }
 
   ProfileImpl* profile() { return profile_; }
 
@@ -57,10 +66,16 @@ class BrowserImpl : public Browser {
   void SetActiveTab(Tab* tab) override;
   Tab* GetActiveTab() override;
   const std::vector<Tab*>& GetTabs() override;
+  void PrepareForShutdown() override;
   void AddObserver(BrowserObserver* observer) override;
   void RemoveObserver(BrowserObserver* observer) override;
 
  private:
+  void CreateSessionServiceAndRestore();
+
+  // Returns the path used by |session_service_|.
+  base::FilePath GetSessionServiceDataPath();
+
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_impl_;
 #endif
@@ -69,6 +84,7 @@ class BrowserImpl : public Browser {
   std::vector<Tab*> tabs_;
   TabImpl* active_tab_ = nullptr;
   const std::string persistence_id_;
+  std::unique_ptr<SessionService> session_service_;
 };
 
 }  // namespace weblayer

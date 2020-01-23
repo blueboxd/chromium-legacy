@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -307,7 +308,8 @@ void WallpaperPrivateGetSyncSettingFunction::CheckSyncServiceStatus() {
     // OS-level sync as a whole and wallpaper sync must be enabled.
     bool os_wallpaper_sync_enabled =
         sync_service->GetUserSettings()->IsOsSyncFeatureEnabled() &&
-        profile->GetPrefs()->GetBoolean(syncer::prefs::kSyncOsWallpaper);
+        profile->GetPrefs()->GetBoolean(
+            chromeos::settings::prefs::kSyncOsWallpaper);
     dict->SetBoolean(kSyncThemes, os_wallpaper_sync_enabled);
     Respond(OneArgument(std::move(dict)));
     return;

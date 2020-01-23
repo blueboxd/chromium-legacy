@@ -62,12 +62,12 @@ class MetadataCacheItem {
   storeProperties(requestId, typedObject) {
     let changed = false;
     const object = /** @type {!Object} */ (typedObject);
-    for (let name in object) {
+    for (const name in object) {
       if (/.Error$/.test(name) && object[name]) {
         object[name.substr(0, name.length - 5)] = undefined;
       }
     }
-    for (let name in object) {
+    for (const name in object) {
       if (/.Error$/.test(name)) {
         continue;
       }

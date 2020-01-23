@@ -92,6 +92,8 @@ class PLATFORM_EXPORT FloatRect {
 
   constexpr bool IsEmpty() const { return size_.IsEmpty(); }
   constexpr bool IsZero() const { return size_.IsZero(); }
+  // True if no member is infinite or NaN.
+  bool IsFinite() const;
   bool IsExpressibleAsIntRect() const;
 
   FloatPoint Center() const {

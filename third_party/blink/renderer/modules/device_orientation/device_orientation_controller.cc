@@ -78,8 +78,9 @@ void DeviceOrientationController::DidAddEventListener(
           WebURL(GetDocument().Url()));
     }
 
-    if (!CheckPolicyFeatures({mojom::FeaturePolicyFeature::kAccelerometer,
-                              mojom::FeaturePolicyFeature::kGyroscope})) {
+    if (!CheckPolicyFeatures(
+            {mojom::blink::FeaturePolicyFeature::kAccelerometer,
+             mojom::blink::FeaturePolicyFeature::kGyroscope})) {
       LogToConsolePolicyFeaturesDisabled(GetDocument().GetFrame(),
                                          EventTypeName());
       return;

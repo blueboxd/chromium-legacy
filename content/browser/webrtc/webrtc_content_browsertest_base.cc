@@ -29,9 +29,6 @@ namespace content {
 
 void WebRtcContentBrowserTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
-  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kUseFakeDeviceForMediaStream));
-
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnforceWebRtcIPPermissionCheck);
 
@@ -50,6 +47,8 @@ void WebRtcContentBrowserTestBase::SetUp() {
   chromeos::CrasAudioHandler::InitializeForTesting();
 #endif
   ContentBrowserTest::SetUp();
+  ASSERT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kUseFakeDeviceForMediaStream));
 }
 
 void WebRtcContentBrowserTestBase::TearDown() {

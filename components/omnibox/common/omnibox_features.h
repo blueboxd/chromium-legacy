@@ -71,6 +71,10 @@ extern const base::Feature kTabKeyCanEscapeOmniboxPopup;
 // TODO(krb): Move more flags here.
 extern const base::Feature kOmniboxLooseMaxLimitOnDedicatedRows;
 
+// Omnibox UI - these affect the UI or function of the location bar (not the
+// popup).
+extern const base::Feature kOmniboxAssistantVoiceSearch;
+
 }  // namespace omnibox
 
 #endif  // COMPONENTS_OMNIBOX_COMMON_OMNIBOX_FEATURES_H_

@@ -88,9 +88,21 @@ class TabStripController {
   // Adds a new tab to end of the tab group.
   virtual void AddNewTabInGroup(const tab_groups::TabGroupId& group) = 0;
 
+  // Adds a tab to an existing tab group.
+  virtual void AddTabToGroup(int model_index,
+                             const tab_groups::TabGroupId& group) = 0;
+
+  // Removes a tab from its tab group.
+  virtual void RemoveTabFromGroup(int model_index) = 0;
+
   // Moves the tab at |start_index| so that it is now at |final_index|, sliding
   // any tabs in between left or right as appropriate.
   virtual void MoveTab(int start_index, int final_index) = 0;
+
+  // Moves all the tabs in |group| so that it is now at |final_index|, sliding
+  // any tabs in between left or right as appropriate.
+  virtual void MoveGroup(const tab_groups::TabGroupId& group,
+                         int final_index) = 0;
 
   // Shows a context menu for the tab at the specified point in screen coords.
   virtual void ShowContextMenuForTab(Tab* tab,

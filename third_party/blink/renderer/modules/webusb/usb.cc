@@ -316,7 +316,7 @@ bool USB::IsContextSupported() const {
 
 bool USB::IsFeatureEnabled(ReportOptions report_options) const {
   return GetExecutionContext()->IsFeatureEnabled(
-      mojom::FeaturePolicyFeature::kUsb, report_options);
+      mojom::blink::FeaturePolicyFeature::kUsb, report_options);
 }
 
 void USB::Trace(blink::Visitor* visitor) {

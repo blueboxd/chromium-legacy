@@ -34,9 +34,9 @@ AbsoluteOrientationSensor::AbsoluteOrientationSensor(
                         options,
                         exception_state,
                         SensorType::ABSOLUTE_ORIENTATION_QUATERNION,
-                        {mojom::FeaturePolicyFeature::kAccelerometer,
-                         mojom::FeaturePolicyFeature::kGyroscope,
-                         mojom::FeaturePolicyFeature::kMagnetometer}) {}
+                        {mojom::blink::FeaturePolicyFeature::kAccelerometer,
+                         mojom::blink::FeaturePolicyFeature::kGyroscope,
+                         mojom::blink::FeaturePolicyFeature::kMagnetometer}) {}
 
 void AbsoluteOrientationSensor::Trace(blink::Visitor* visitor) {
   OrientationSensor::Trace(visitor);

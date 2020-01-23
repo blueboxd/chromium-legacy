@@ -62,25 +62,26 @@ AppsContainerView::AppsContainerView(ContentsView* contents_view,
     : contents_view_(contents_view) {
   SetPaintToLayer(ui::LAYER_NOT_DRAWN);
 
-  suggestion_chip_container_view_ =
-      new SuggestionChipContainerView(contents_view);
-  AddChildView(suggestion_chip_container_view_);
+  suggestion_chip_container_view_ = AddChildView(
+      std::make_unique<SuggestionChipContainerView>(contents_view));
 
-  apps_grid_view_ = new AppsGridView(contents_view_, nullptr);
-  AddChildView(apps_grid_view_);
+  apps_grid_view_ =
+      AddChildView(std::make_unique<AppsGridView>(contents_view_, nullptr));
 
   // Page switcher should be initialized after AppsGridView.
-  page_switcher_ =
-      new PageSwitcher(apps_grid_view_->pagination_model(), true /* vertical */,
-                       contents_view_->app_list_view()->is_tablet_mode());
-  AddChildView(page_switcher_);
+  auto page_switcher = std::make_unique<PageSwitcher>(
+      apps_grid_view_->pagination_model(), true /* vertical */,
+      contents_view_->app_list_view()->is_tablet_mode());
+  page_switcher_ = AddChildView(std::move(page_switcher));
 
-  app_list_folder_view_ = new AppListFolderView(this, model, contents_view_);
+  auto app_list_folder_view =
+      std::make_unique<AppListFolderView>(this, model, contents_view_);
   // The folder view is initially hidden.
-  app_list_folder_view_->SetVisible(false);
-  folder_background_view_ = new FolderBackgroundView(app_list_folder_view_);
-  AddChildView(folder_background_view_);
-  AddChildView(app_list_folder_view_);
+  app_list_folder_view->SetVisible(false);
+  auto folder_background_view =
+      std::make_unique<FolderBackgroundView>(app_list_folder_view.get());
+  folder_background_view_ = AddChildView(std::move(folder_background_view));
+  app_list_folder_view_ = AddChildView(std::move(app_list_folder_view));
 
   apps_grid_view_->SetModel(model);
   apps_grid_view_->SetItemList(model->top_level_item_list());

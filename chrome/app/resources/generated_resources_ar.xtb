@@ -396,7 +396,7 @@
 <translation id="1545177026077493356">وضع الكشك التلقائي</translation>
 <translation id="1545775234664667895">تم تثبيت المظهر "<ph name="THEME_NAME" />".</translation>
 <translation id="1546280085599573572">غيّرت هذه الإضافة الصفحة التي تظهر عند النقر على زر الصفحة الرئيسية.</translation>
-<translation id="1549275686094429035">‏تم تفعيل وقت تشغيل التطبيقات في Chrome</translation>
+<translation id="1549275686094429035">‏تم تفعيل "وقت تشغيل التطبيقات في Chrome"</translation>
 <translation id="1549788673239553762">يريد <ph name="APP_NAME" /> الوصول إلى <ph name="VOLUME_NAME" />. قد يعدّل أو يحذف ملفاتك.</translation>
 <translation id="1553538517812678578">غير محدودة</translation>
 <translation id="1554390798506296774">السماح دومًا للمكونات الإضافية غير المحمية <ph name="HOST" /></translation>
@@ -651,7 +651,7 @@
 <translation id="1879000426787380528">تسجيل الدخول باسم</translation>
 <translation id="1880905663253319515">هل تريد حذف الشهادة "<ph name="CERTIFICATE_NAME" />"؟</translation>
 <translation id="1884013283844450420">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، الشبكة <ph name="NETWORK_NAME" />، الاتصال</translation>
-<translation id="1884930769492918228">تتبُع موضع الكاميرا وربطها مع غرفتك</translation>
+<translation id="1884930769492918228">تتبُع موضع الكاميرا وتصوير غرفتك</translation>
 <translation id="1886996562706621347">السماح لمواقع الويب بأن تطلب أن تصبح معالجات تلقائية للبروتوكولات (مستحسن)</translation>
 <translation id="1887442540531652736">خطأ في تسجيل الدخول</translation>
 <translation id="1887597546629269384">‏يُرجى قول "Hey Google" مرة أخرى.</translation>
@@ -764,7 +764,7 @@
 <translation id="2059913712424898428">المنطقة الزمنية</translation>
 <translation id="2065405795449409761">‏يتم التحكم في Chrome من خلال برامج اختبار مبرمجة.</translation>
 <translation id="2071393345806050157">ليس هناك ملف سجل محلي.</translation>
-<translation id="2073148037220830746">{NUM_EXTENSIONS,plural, =1{انقر لتثبيت الإضافة.}zero{ما مِن إضافات لتثبيتها.}two{انقر لتثبيت هاتَين الإضافتَين.}few{انقر لتثبيت هذه الإضافات.}many{انقر لتثبيت هذه الإضافات.}other{انقر لتثبيت هذه الإضافات.}}</translation>
+<translation id="2073148037220830746">{NUM_EXTENSIONS,plural, =1{انقر لتثبيت الإضافة.}zero{انقر لتثبيت الإضافات.}two{انقر لتثبيت هاتَين الإضافتَين.}few{انقر لتثبيت هذه الإضافات.}many{انقر لتثبيت هذه الإضافات.}other{انقر لتثبيت هذه الإضافات.}}</translation>
 <translation id="2075474481720804517">البطارية <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="2075959085554270910">تتيح لك تفعيل ميزة الضغط للنقر وميزة السحب بالنقر أو إيقافهما.</translation>
 <translation id="2076269580855484719">إخفاء هذا المكون الإضافي</translation>
@@ -2041,7 +2041,7 @@
 <translation id="3819800052061700452">م&amp;لء الشاشة</translation>
 <translation id="3820172043799983114">رقم التعريف الشخصي غير صالح.</translation>
 <translation id="3820749202859700794">‏منحنى SECG ناقص المقطع secp521r1‏ (aka NIST P-521)</translation>
-<translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{تمت الموافقة على إضافة واحدة.}zero{لم تتم الموافقة على إيّ إضافة.}two{تمت الموافقة على إضافتَين.}few{تمت الموافقة على # إضافات.}many{تمت الموافقة على # إضافةً.}other{تمت الموافقة على # إضافة.}}</translation>
+<translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{تمت الموافقة على إضافة واحدة.}zero{تمّت الموافقة على # إضافة.}two{تمت الموافقة على إضافتَين.}few{تمت الموافقة على # إضافات.}many{تمت الموافقة على # إضافةً.}other{تمت الموافقة على # إضافة.}}</translation>
 <translation id="3822559385185038546">تم فرض هذا الخادم الوكيل بواسطة المشرف</translation>
 <translation id="3826440694796503677">‏لقد أوقف المشرف إمكانية إضافة المزيد من حسابات Google.</translation>
 <translation id="3827306204503227641">متابعة السماح للمكونات الإضافية غير المحمية</translation>
@@ -2397,7 +2397,7 @@
 <translation id="4353114845960720315">أثناء استخدامك وضع "الواقع الافتراضي"، يمكن لهذا الموقع الإلكتروني التعرُّف على ما يلي:</translation>
 <translation id="4354344420232759511">ستظهر المواقع التي تزورها هنا.</translation>
 <translation id="435527878592612277">اختيار صورتك</translation>
-<translation id="4357784477082216550">يرغب موقع <ph name="URL" /> في تتبُع موضع الكاميرا وربطها مع غرفتك.</translation>
+<translation id="4357784477082216550">يرغب موقع <ph name="URL" /> في تتبُع موضع الكاميرا وتصوير غرفتك.</translation>
 <translation id="4358313196493694334">تثبيت النقر على الموقع الجغرافي</translation>
 <translation id="4359408040881008151">تم التثبيت بسبب الإضافة (الإضافات) التابعة.</translation>
 <translation id="4359717112757026264">مناظر المدن</translation>
@@ -2638,7 +2638,7 @@
 <translation id="4720185134442950733">شبكة بيانات الجوّال</translation>
 <translation id="4722735765955348426">كلمة مرور <ph name="USERNAME" /></translation>
 <translation id="4722920479021006856"><ph name="APP_NAME" /> يشارك شاشتك.</translation>
-<translation id="4723140812774948886">تبديل مع التالي</translation>
+<translation id="4723140812774948886">تبديل العنصر المختار مع العنصر التالي</translation>
 <translation id="4724450788351008910">تغيير الاقتران</translation>
 <translation id="4725511304875193254">كورجي</translation>
 <translation id="4726710629007580002">ظهرت تحذيرات عن محاولة تثبيت هذه الإضافة:</translation>
@@ -2953,7 +2953,7 @@
 <translation id="51918995459521422">يريد <ph name="ORIGIN" /> تنزيل ملفات متعددة.</translation>
 <translation id="5192062846343383368">‏فتح تطبيق Family Link للاطّلاع على إعدادات الإشراف</translation>
 <translation id="5193988420012215838">تم النسخ إلى الحافظة</translation>
-<translation id="5203920255089865054">{NUM_EXTENSIONS,plural, =1{انقر لعرض الإضافة.}zero{ما مِن إضافات لعرضِها.}two{انقر لعرض هاتَين الإضافتَين.}few{انقر لعرض هذه الإضافات.}many{انقر لعرض هذه الإضافات.}other{انقر لعرض هذه الإضافات.}}</translation>
+<translation id="5203920255089865054">{NUM_EXTENSIONS,plural, =1{انقر لعرض الإضافة.}zero{انقر لعرض الإضافات.}two{انقر لعرض هاتَين الإضافتَين.}few{انقر لعرض هذه الإضافات.}many{انقر لعرض هذه الإضافات.}other{انقر لعرض هذه الإضافات.}}</translation>
 <translation id="5204673965307125349">‏يُرجى إجراء powerwash للجهاز وإعادة المحاولة.</translation>
 <translation id="5206215183583316675">هل تريد حذف "<ph name="CERTIFICATE_NAME" />"؟</translation>
 <translation id="520621735928254154">خطأ في استيراد الشهادة</translation>
@@ -3036,7 +3036,7 @@
 <translation id="5310281978693206542">إرسال الرابط إلى الأجهزة</translation>
 <translation id="5311304534597152726">تسجيل الدخول باسم</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> يُرجى إعادة المحاولة.</translation>
-<translation id="5313628438272378649">هذا التحميل ينتهك سياسات أمان مؤسستك ولا يمكن تحميله.</translation>
+<translation id="5313628438272378649">إنّ عملية تحميل هذا المحتوى تنتهك سياسات أمان مؤسستك ولا يمكن إتمامها.</translation>
 <translation id="5315738755890845852">قوس متعرج إضافي: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">الهوية</translation>
 <translation id="5317780077021120954">حفظ</translation>
@@ -3092,7 +3092,7 @@
 <translation id="5398772614898833570">تم حظر الإعلانات</translation>
 <translation id="5402815541704507626">تنزيل التحديث باستخدام بيانات الجوّال</translation>
 <translation id="540296380408672091">حظر ملفات تعريف الارتباط على <ph name="HOST" /> دومًا</translation>
-<translation id="540495485885201800">تبديل مع السابق</translation>
+<translation id="540495485885201800">تبديل العنصر المختار مع العنصر السابق</translation>
 <translation id="5405146885510277940">إعادة ضبط الإعدادات</translation>
 <translation id="5408750356094797285">تكبير/تصغير: <ph name="PERCENT" /></translation>
 <translation id="5411472733320185105">عدم استخدام إعدادات الخادم الوكيل لهذه المضيفات والنطاقات:</translation>
@@ -3130,7 +3130,7 @@
 <translation id="5449588825071916739">وضع إشارة على جميع علامات التبويب</translation>
 <translation id="5449716055534515760">إغلاق &amp;النافذة</translation>
 <translation id="5454166040603940656">مع <ph name="PROVIDER" /></translation>
-<translation id="5454360575035671759">‏ستؤدي إزالة Plugin VM إلى حذف VM الخاص بك، ويشمل هذا تطبيقاته وإعداداته وبياناته. هل فعلًا لديك رغبة في المواصلة؟</translation>
+<translation id="5454360575035671759">‏ستؤدي إزالة المكوّن الإضافي Plugin VM إلى حذف الجهاز الافتراضي (VM) الخاص بك، ويشمل هذا تطبيقاته وإعداداته وبياناته. هل أنت متأكّد من أنّك تريد المواصلة؟</translation>
 <translation id="5457113250005438886">غير صالحة</translation>
 <translation id="5457459357461771897">التعرّف على الصور، والموسيقى، والوسائط الأخرى من الكمبيوتر وحذفها</translation>
 <translation id="5457599981699367932">تصفَّح كزائر</translation>
@@ -3184,7 +3184,7 @@
 <translation id="5518584115117143805">شهادة تشفير البريد الإلكتروني</translation>
 <translation id="5521078259930077036">هل هذه هي الصفحة الرئيسية التي كنت تتوقع ظهورها؟</translation>
 <translation id="5522156646677899028">هذه الإضافة تحتوي على ثغرة أمنية خطيرة.</translation>
-<translation id="5523149538118225875">{NUM_EXTENSIONS,plural, =1{تم تثبيت إضافة واحدة من قِبل مشرفك.}zero{لم يثبّت مشرفك أيّ إضافة.}two{تم تثبيت إضافتَين من قِبل مشرفك.}few{تم تثبيت # إضافات من قِبل مشرفك.}many{تم تثبيت # إضافةً من قِبل مشرفك.}other{تم تثبيت # إضافة من قِبل مشرفك.}}</translation>
+<translation id="5523149538118225875">{NUM_EXTENSIONS,plural, =1{ثبَّت مشرفك إضافة واحدة.}zero{ثبَّت مشرفك # إضافة.}two{ثبَّت مشرفك إضافتَين.}few{ثبَّت مشرفك # إضافات.}many{ثبَّت مشرفك # إضافةً.}other{ثبَّت مشرفك # إضافة.}}</translation>
 <translation id="5525677322972469346">إنشاء مستخدم جديد تحت الإشراف</translation>
 <translation id="5526701598901867718">الكل (غير آمن)</translation>
 <translation id="5526745900034778153">تسجيل الدخول مرة أخرى لاستئناف المزامنة</translation>
@@ -4055,7 +4055,7 @@
 <translation id="677965093459947883">صغير جدًا</translation>
 <translation id="6781284683813954823">رابط رسومات الشعار المبتكرة</translation>
 <translation id="6781978626986383437">‏تم إلغاء عملية الاحتفاظ بنسخة احتياطية من Linux</translation>
-<translation id="6785915470941880363"><ph name="LINK_BEGIN" />المزيد من المعلومات عن<ph name="LINK_END" /> التمرير العكسي</translation>
+<translation id="6785915470941880363"><ph name="LINK_BEGIN" />المزيد من المعلومات عن<ph name="LINK_END" /> المحتوى المتحرك باتجاه عكسي</translation>
 <translation id="6786747875388722282">الإضافات</translation>
 <translation id="6787839852456839824">اختصارات لوحة المفاتيح</translation>
 <translation id="6788210894632713004">إضافة تم فك حزمتها</translation>
@@ -4162,7 +4162,7 @@
 <translation id="6923132443355966645">التمرير / النقر على</translation>
 <translation id="6923633482430812883">‏حدث خطأ أثناء تحميل المشاركة. لذا يُرجى التحقّق من أن خادم الملفات الذي تتصل به يدعم بروتوكول SMB الإصدار 2 أو الإصدارات الأحدث.</translation>
 <translation id="6930036377490597025">مفتاح الأمان الخارجي أو جهاز الاستشعار المدمج</translation>
-<translation id="6930161297841867798">{NUM_EXTENSIONS,plural, =1{تم رفض إضافة واحدة.}zero{لم يتم رفض أي إضافات.}two{تم رفض إضافتَين.}few{تم رفض # إضافات.}many{تم رفض # إضافةً.}other{تم رفض # إضافة.}}</translation>
+<translation id="6930161297841867798">{NUM_EXTENSIONS,plural, =1{تم رفض إضافة واحدة.}zero{تم رفض # إضافة.}two{تم رفض إضافتَين.}few{تم رفض # إضافات.}many{تم رفض # إضافةً.}other{تم رفض # إضافة.}}</translation>
 <translation id="6935286146439255109">درج الورق غير متاح</translation>
 <translation id="693807610556624488">تتجاوز عملية الكتابة الحد الأقصى لطول السمة على: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6938386202199793006">يتوفّر لديك طابعة واحدة محفوظة.</translation>
@@ -5021,7 +5021,6 @@
 <translation id="8101987792947961127">‏يتطلب إجراء Powerwash بعد عملية إعادة التشغيل التالية</translation>
 <translation id="8102159139658438129">يُرجى الانتقال إلى <ph name="LINK_BEGIN" />الإعدادات<ph name="LINK_END" /> للاطِّلاع على خيارات لهاتفك المتَّصل</translation>
 <translation id="8104696615244072556">‏استخدم وظيفة Powerwash <ph name="IDS_SHORT_PRODUCT_NAME" /> وارجع إلى الإصدار السابق.</translation>
-<translation id="8106661353233173262">حدث خطأ. تطلّب فحص الملفّ وقتًا أطول من اللازم.</translation>
 <translation id="8107015733319732394">‏تثبيت متجر Google Play على <ph name="DEVICE_TYPE" />. قد يستغرق ذلك بضع دقائق.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{ليس هناك ملفات تعريف ارتباط تابعة لجهات خارجية}=1{تم حظر ملف تعريف ارتباط واحد تابع لجهات خارجية}two{تم حظر ملفَي تعريف ارتباط تابعَين لجهات خارجية}few{تم حظر # ملفات تعريف ارتباط تابعة لجهات خارجية}many{تم حظر # ملف تعريف ارتباط تابع لجهات خارجية}other{تم حظر # ملف تعريف ارتباط تابع لجهات خارجية}}</translation>
 <translation id="810875025413331850">لم يتم العثور على أجهزة مجاورة.</translation>
@@ -5106,7 +5105,7 @@
 <translation id="8227119283605456246">إرفاق ملف</translation>
 <translation id="8230134520748321204">هل تريد حفظ كلمة المرور لـ <ph name="ORIGIN" />؟</translation>
 <translation id="8234795456569844941">يُرجى مساعدة مهندسينا في حل هذه المشكلة. أخبرنا بما حدث مباشرة قبل ظهور رسالة خطأ الملف الشخصي:</translation>
-<translation id="8236123533334037984">تعمل مؤسستك على مسح هذا التحميل للتأكد من موافقته لسياسات الأمان.</translation>
+<translation id="8236123533334037984">تعمل مؤسستك على مسح هذا المحتوى المُحمَّل للتأكد من توافقه مع سياسات الأمان.</translation>
 <translation id="8236917170563564587">مشاركة علامة التبويب هذه بدلاً من ذلك</translation>
 <translation id="8237647586961940482">زهري داكن وأحمر</translation>
 <translation id="8241040075392580210">الظلال</translation>

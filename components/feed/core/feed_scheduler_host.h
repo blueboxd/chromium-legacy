@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/feed/core/common/enums.h"
 #include "components/feed/core/refresh_throttler.h"
 #include "components/feed/core/user_classifier.h"
 #include "components/web_resource/eula_accepted_notifier.h"
@@ -49,33 +50,6 @@ enum NativeRequestBehavior {
 // content.
 class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
  public:
-  // The TriggerType enum specifies values for the events that can trigger
-  // refreshing articles. When adding values, be certain to also update the
-  // corresponding definition in enums.xml.
-  enum class TriggerType {
-    kNtpShown = 0,
-    kForegrounded = 1,
-    kFixedTimer = 2,
-    kMaxValue = kFixedTimer
-  };
-
-  // Enum for the status of the refresh, reported through UMA.
-  // If any new values are added, update the corresponding definition in
-  // enums.xml.
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum ShouldRefreshResult {
-    kShouldRefresh = 0,
-    kDontRefreshOutstandingRequest = 1,
-    kDontRefreshTriggerDisabled = 2,
-    kDontRefreshNetworkOffline = 3,
-    kDontRefreshEulaNotAccepted = 4,
-    kDontRefreshArticlesHidden = 5,
-    kDontRefreshRefreshSuppressed = 6,
-    kDontRefreshNotStale = 7,
-    kDontRefreshRefreshThrottled = 8,
-    kMaxValue = kDontRefreshRefreshThrottled,
-  };
 
   FeedSchedulerHost(PrefService* profile_prefs,
                     PrefService* local_state,
@@ -224,8 +198,7 @@ class FeedSchedulerHost : web_resource::EulaAcceptedNotifier::Observer {
 
   // In the case the user transitions between user classes, hold onto a
   // throttler for any situation.
-  base::flat_map<UserClassifier::UserClass, std::unique_ptr<RefreshThrottler>>
-      throttlers_;
+  base::flat_map<UserClass, std::unique_ptr<RefreshThrottler>> throttlers_;
 
   // Status of the last fetch for debugging.
   int last_fetch_status_ = 0;

@@ -1134,6 +1134,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
         *should_collapse_initiator = true;
         return net::ERR_BLOCKED_BY_CLIENT;
       case DNRRequestAction::Type::ALLOW:
+      case DNRRequestAction::Type::ALLOW_ALL_REQUESTS:
         DCHECK_EQ(1u, actions.size());
         OnDNRActionMatched(browser_context, *request, action);
         break;

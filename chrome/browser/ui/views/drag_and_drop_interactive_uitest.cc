@@ -21,8 +21,10 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/view_ids.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -815,8 +817,9 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropTextFromOutside) {
 #define MAYBE_DropValidUrlFromOutside DropValidUrlFromOutside
 #endif
 // Scenario: drag URL from outside the browser and drop to the right frame.
-// Mostly focuses on covering the navigation path (the dragover and/or drop DOM
-// events are already covered via the DropTextFromOutside test above).
+// Mostly focuses on covering 1) the navigation path, 2) focus behavior.  This
+// test explicitly does not cover the dragover and/or drop DOM events - they are
+// already covered via the DropTextFromOutside test above.
 IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropValidUrlFromOutside) {
   std::string frame_site = use_cross_site_subframe() ? "b.com" : "a.com";
   ASSERT_TRUE(NavigateToTestPage("a.com"));
@@ -825,6 +828,11 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropValidUrlFromOutside) {
       browser()->tab_strip_model()->GetActiveWebContents();
   content::NavigationController& controller = web_contents->GetController();
   int initial_history_count = controller.GetEntryCount();
+
+  // Focus the omnibox.
+  chrome::FocusLocationBar(browser());
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 
   // Drag a normal URL from outside the browser into/over the right frame.
   GURL dragged_url = embedded_test_server()->GetURL("d.com", "/title2.html");
@@ -839,6 +847,10 @@ IN_PROC_BROWSER_TEST_P(DragAndDropBrowserTest, MAYBE_DropValidUrlFromOutside) {
   nav_observer.Wait();
   EXPECT_EQ(dragged_url, web_contents->GetMainFrame()->GetLastCommittedURL());
   EXPECT_EQ(initial_history_count + 1, controller.GetEntryCount());
+
+  // Verify that the focus moved from the omnibox to the tab contents.
+  EXPECT_FALSE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
+  EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_TAB_CONTAINER));
 }
 
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(THREAD_SANITIZER)

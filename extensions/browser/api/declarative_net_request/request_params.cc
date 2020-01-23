@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/declarative_net_request/request_params.h"
 
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/resource_type.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -74,13 +76,51 @@ bool IsThirdPartyRequest(const GURL& url, const url::Origin& document_origin) {
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
+bool IsThirdPartyRequest(const url::Origin& origin,
+                         const url::Origin& document_origin) {
+  if (document_origin.opaque())
+    return true;
+
+  return !net::registry_controlled_domains::SameDomainOrHost(
+      origin, document_origin,
+      net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+}
+
+content::GlobalFrameRoutingId GetFrameRoutingId(
+    content::RenderFrameHost* host) {
+  if (!host)
+    return content::GlobalFrameRoutingId();
+
+  return content::GlobalFrameRoutingId(host->GetProcess()->GetID(),
+                                       host->GetRoutingID());
+}
+
 }  // namespace
 
 RequestParams::RequestParams(const WebRequestInfo& info)
     : url(&info.url),
       first_party_origin(info.initiator.value_or(url::Origin())),
-      element_type(GetElementType(info)) {
+      element_type(GetElementType(info)),
+      parent_routing_id(info.parent_routing_id) {
   is_third_party = IsThirdPartyRequest(*url, first_party_origin);
+}
+
+RequestParams::RequestParams(content::RenderFrameHost* host)
+    : url(&host->GetLastCommittedURL()),
+      parent_routing_id(GetFrameRoutingId(host->GetParent())) {
+  if (host->GetParent()) {
+    // Note the discrepancy with the WebRequestInfo constructor. For a
+    // navigation request, we'd use the request initiator as the
+    // |first_party_origin|. But here we use the origin of the parent frame.
+    // This is the same as crbug.com/996998.
+    first_party_origin = host->GetParent()->GetLastCommittedOrigin();
+    element_type = url_pattern_index::flat::ElementType_SUBDOCUMENT;
+  } else {
+    first_party_origin = url::Origin();
+    element_type = url_pattern_index::flat::ElementType_MAIN_FRAME;
+  }
+  is_third_party =
+      IsThirdPartyRequest(host->GetLastCommittedOrigin(), first_party_origin);
 }
 
 RequestParams::RequestParams() = default;

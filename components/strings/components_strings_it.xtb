@@ -194,7 +194,7 @@
 <translation id="1743520634839655729">Per pagare più velocemente la prossima volta, salva la carta e l'indirizzo di fatturazione sul tuo Account Google e su questo dispositivo.</translation>
 <translation id="1743570585616704562">Non riconosciuta</translation>
 <translation id="1745880797583122200">Il browser in uso è gestito</translation>
-<translation id="1746113442205726301">Turno Y immagine</translation>
+<translation id="1746113442205726301">Spostamento Y immagine</translation>
 <translation id="17513872634828108">Schede aperte</translation>
 <translation id="1752021286346845558">Mailbox 8</translation>
 <translation id="1753706481035618306">Numero di pagina</translation>
@@ -643,7 +643,7 @@
 <translation id="3789155188480882154">Dimensione 16</translation>
 <translation id="3797522431967816232">Prc3 (Envelope)</translation>
 <translation id="3799805948399000906">Nome carattere richiesto</translation>
-<translation id="3807366285948165054">Turno X immagine</translation>
+<translation id="3807366285948165054">Spostamento X immagine</translation>
 <translation id="3807873520724684969">Contenuti dannosi bloccati.</translation>
 <translation id="3808375843007691220">Avviso: funzioni sperimentali da qui in avanti.</translation>
 <translation id="3810973564298564668">Gestisci</translation>
@@ -692,7 +692,7 @@
 <translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">L'impostazione della configurazione proxy prevede l'utilizzo di un URL script .pac, non di server proxy fissi.</translation>
 <translation id="4082393374666368382">Impostazioni - Gestione</translation>
-<translation id="4088981014127559358">Lato 1 turno Y immagine</translation>
+<translation id="4088981014127559358">Spostamento Y lato 1 immagine</translation>
 <translation id="4098354747657067197">Sito ingannevole in vista</translation>
 <translation id="4101413244023615925">Testo e grafica</translation>
 <translation id="4103249731201008433">Il numero di serie del dispositivo non è valido</translation>
@@ -1057,7 +1057,7 @@
 <translation id="5632627355679805402">I tuoi dati sono stati criptati con la tua <ph name="BEGIN_LINK" />password Google<ph name="END_LINK" /> in data <ph name="TIME" />. Inserisci la password per avviare la sincronizzazione.</translation>
 <translation id="5633066919399395251">Gli utenti malintenzionati attualmente presenti sul sito <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> potrebbero cercare di installare sul tuo computer programmi pericolosi che carpiscono o eliminano le tue informazioni (ad esempio, foto, password, messaggi e carte di credito). <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Contenuti ingannevoli bloccati.</translation>
-<translation id="5644090287519800334">Lato 1 turno X immagine</translation>
+<translation id="5644090287519800334">Spostamento X lato 1 immagine</translation>
 <translation id="5645854190134202180">Secondo turno</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5663614846592581799">9x11 (Envelope)</translation>
@@ -1367,7 +1367,7 @@
 <translation id="7135130955892390533">Mostra stato</translation>
 <translation id="7138472120740807366">Metodo di consegna</translation>
 <translation id="7139724024395191329">Emirato</translation>
-<translation id="714064300541049402">Lato 2 immagine X turno</translation>
+<translation id="714064300541049402">Spostamento X lato 2 immagine</translation>
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> altro}other{<ph name="PAYMENT_METHOD_PREVIEW" /> e altri <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Lavanda</translation>
@@ -1474,7 +1474,7 @@ Ulteriori dettagli:
 <translation id="7569983096843329377">Nero</translation>
 <translation id="7575207903026901870">Rimuovi il pulsante Suggerimento, premi INVIO per rimuovere questo suggerimento</translation>
 <translation id="7578104083680115302">Paga velocemente su siti e app su più dispositivi utilizzando le carte salvate su Google.</translation>
-<translation id="7581199239021537589">Lato 2 turno Y immagine</translation>
+<translation id="7581199239021537589">Spostamento Y lato 2 immagine</translation>
 <translation id="7592362899630581445">Il certificato del server vìola i vincoli relativi ai nomi.</translation>
 <translation id="7598391785903975535">Meno di <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187"><ph name="HOST_NAME" /> al momento non è in grado di gestire la richiesta.</translation>

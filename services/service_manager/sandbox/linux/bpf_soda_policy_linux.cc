@@ -4,18 +4,12 @@
 
 #include "services/service_manager/sandbox/linux/bpf_soda_policy_linux.h"
 
-#include <sys/socket.h>
-
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
-#include "sandbox/linux/seccomp-bpf-helpers/sigsys_handlers.h"
-#include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 
 using sandbox::bpf_dsl::Allow;
-using sandbox::bpf_dsl::Arg;
-using sandbox::bpf_dsl::If;
 using sandbox::bpf_dsl::ResultExpr;
 using sandbox::bpf_dsl::Trap;
 using sandbox::syscall_broker::BrokerProcess;
@@ -27,36 +21,9 @@ SodaProcessPolicy::~SodaProcessPolicy() = default;
 
 ResultExpr SodaProcessPolicy::EvaluateSyscall(int system_call_number) const {
   switch (system_call_number) {
-#if defined(__NR_uname)
-    case __NR_uname:
-#endif
-#if defined(__NR_setitimer)
-    case __NR_setitimer:
-#endif
-#if defined(__NR_sigaltstack)
-    case __NR_sigaltstack:
-#endif
 #if defined(__NR_eventfd2)
     case __NR_eventfd2:
-#endif
-#if defined(__NR_getitimer)
-    case __NR_getitimer:
-#endif
-#if defined(__NR_rseq)
-    case __NR_rseq:
-#endif
       return Allow();
-#if defined(__NR_prlimit64)
-    case __NR_prlimit64:
-      return sandbox::RestrictPrlimit64(GetPolicyPid());
-#endif
-#if defined(__NR_getsockopt)
-    case __NR_getsockopt: {
-      const Arg<int> level(1);
-      const Arg<int> optname(2);
-      return If(AllOf(level == SOL_SOCKET, optname == SO_PEEK_OFF), Allow())
-          .Else(sandbox::CrashSIGSYS());
-    }
 #endif
     default:
       auto* broker_process = SandboxLinux::GetInstance()->broker_process();

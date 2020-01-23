@@ -31,13 +31,14 @@ namespace printing {
 // This section contains helper code for PPD parsing for semantic capabilities.
 namespace {
 
-const char kColorDevice[] = "ColorDevice";
-const char kColorModel[] = "ColorModel";
-const char kColorMode[] = "ColorMode";
-const char kProcessColorModel[] = "ProcessColorModel";
-const char kPrintoutMode[] = "PrintoutMode";
-const char kDraftGray[] = "Draft.Gray";
-const char kHighGray[] = "High.Gray";
+constexpr char kColorDevice[] = "ColorDevice";
+constexpr char kColorModel[] = "ColorModel";
+constexpr char kColorMode[] = "ColorMode";
+constexpr char kInk[] = "Ink";
+constexpr char kProcessColorModel[] = "ProcessColorModel";
+constexpr char kPrintoutMode[] = "PrintoutMode";
+constexpr char kDraftGray[] = "Draft.Gray";
+constexpr char kHighGray[] = "High.Gray";
 
 constexpr char kDuplex[] = "Duplex";
 constexpr char kDuplexNone[] = "None";
@@ -370,6 +371,32 @@ bool GetHPColorModeSettings(ppd_file_t* ppd,
   return true;
 }
 
+bool GetEpsonInkSettings(ppd_file_t* ppd,
+                         ColorModel* color_model_for_black,
+                         ColorModel* color_model_for_color,
+                         bool* color_is_default) {
+  // Epson printers use "Ink" attribute in their PPDs.
+  ppd_option_t* color_mode_option = ppdFindOption(ppd, kInk);
+  if (!color_mode_option)
+    return false;
+
+  if (ppdFindChoice(color_mode_option, kColor))
+    *color_model_for_color = EPSON_INK_COLOR;
+  if (ppdFindChoice(color_mode_option, kMono))
+    *color_model_for_black = EPSON_INK_MONO;
+
+  ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kInk);
+  if (!mode_choice) {
+    mode_choice =
+        ppdFindChoice(color_mode_option, color_mode_option->defchoice);
+  }
+
+  if (mode_choice) {
+    *color_is_default = EqualsCaseInsensitiveASCII(mode_choice->choice, kColor);
+  }
+  return true;
+}
+
 bool GetProcessColorModelSettings(ppd_file_t* ppd,
                                   ColorModel* color_model_for_black,
                                   ColorModel* color_model_for_color,
@@ -417,6 +444,7 @@ bool GetColorModelSettings(ppd_file_t* ppd,
          GetHPColorSettings(ppd, cm_black, cm_color, is_color) ||
          GetHPColorModeSettings(ppd, cm_black, cm_color, is_color) ||
          GetBrotherColorSettings(ppd, cm_black, cm_color, is_color) ||
+         GetEpsonInkSettings(ppd, cm_black, cm_color, is_color) ||
          GetProcessColorModelSettings(ppd, cm_black, cm_color, is_color);
 }
 

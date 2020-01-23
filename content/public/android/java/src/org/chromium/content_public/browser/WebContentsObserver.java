@@ -90,11 +90,9 @@ public abstract class WebContentsObserver {
      * Called when an error occurs while loading a page and/or the page fails to load.
      * @param isMainFrame Whether the navigation occurred in main frame.
      * @param errorCode Error code for the occurring error.
-     * @param description The description for the error.
      * @param failingUrl The url that was loading when the error occurred.
      */
-    public void didFailLoad(
-            boolean isMainFrame, int errorCode, String description, String failingUrl) {}
+    public void didFailLoad(boolean isMainFrame, int errorCode, String failingUrl) {}
 
     /**
      * Called when the page had painted something non-empty.

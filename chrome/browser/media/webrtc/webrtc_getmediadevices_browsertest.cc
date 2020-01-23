@@ -58,9 +58,6 @@ class WebRtcGetMediaDevicesBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Ensure the infobar is enabled, since we expect that in this test.
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream));
-
-    // Always use fake devices.
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
 
  protected:

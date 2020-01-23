@@ -749,6 +749,7 @@
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> 的效力優於這項政策。換句話說，系統不會安裝黑名單上的任何擴充功能，即使將該功能的來源網站加到這份清單中也一樣。</translation>
 <translation id="214901426630414675">限制使用雙面列印模式</translation>
 <translation id="2149330464730004005">啟用彩色列印</translation>
+<translation id="2151831603578119302">啟用無障礙功能快速鍵</translation>
 <translation id="2156132677421487971">設定「<ph name="PRODUCT_NAME" />」的各項政策。這項功能可讓使用者透過瀏覽器將分頁、網站或桌面內容傳送至遠端的螢幕和音響設備。</translation>
 <translation id="2156755242840687300">已啟用的外部列印伺服器</translation>
 <translation id="2160336427036785721">設定單一 <ph name="PRODUCT_NAME" /> 例項可用的記憶體大小。超過此值後，系統會開始捨棄分頁以節省記憶體。這表示系統會釋放分頁所用的記憶體，而當使用者切換至該分頁時，系統必須重新載入該分頁。
@@ -859,6 +860,7 @@
 <translation id="2294382669900758280">即使將這項政策設為 <ph name="TRUE" />，在 Android 應用程式中播放的影片仍不會受到影響。</translation>
 <translation id="2299220924812062390">指定停用的外掛程式清單</translation>
 <translation id="2303795211377219696">啟用信用卡的自動填入功能</translation>
+<translation id="2307496301287881990">回報顯示狀態和圖形狀態</translation>
 <translation id="2309390639296060546">預設地理位置設定</translation>
 <translation id="2327252517317514801">定義可存取 G Suite 的網域</translation>
 <translation id="2328573323851533589">這項政策可用於強制啟用或強制停用 <ph name="PRODUCT_NAME" /> 中的憑證外洩檢查功能。
@@ -1113,6 +1115,7 @@
       如果不設定或停用這項政策，系統會將平台預設的網站隔離設定套用至登入畫面。
       </translation>
 <translation id="2587719089023392205">將 <ph name="PRODUCT_NAME" /> 設為預設瀏覽器</translation>
+<translation id="2588071938417715443">這項政策可控管本機搜尋 UI (<ph name="CHROME_DEVICES_LINK" />) 中可操控功能的存取權。本機搜尋 UI 會顯示使用者附近的可搜尋裝置，以及註冊於這些可搜尋裝置的雲端裝置。在所有作業系統上 (<ph name="PRODUCT_OS_NAME" />除外)，本機搜尋 UI 也能讓使用者將連接至電腦的傳統印表機新增至 <ph name="CLOUD_PRINT_NAME" />。</translation>
 <translation id="2592091433672667839">螢幕保護程式顯示前的閒置時間會顯示在零售模式下的登入畫面上</translation>
 <translation id="2592162121850992309">如果將這項政策設為 True 或不設定，系統會啟用硬體加速功能 (惟特定 GPU 功能遭禁用時除外)。
 
@@ -1351,19 +1354,6 @@
 <translation id="2960691910306063964">針對遠端存取主機啟用或停用無 PIN 碼驗證機制</translation>
 <translation id="2987155890997901449">啟用 ARC</translation>
 <translation id="2987227569419001736">控制 Web Bluetooth API 使用權限</translation>
-<translation id="3011301228198307065">設定 <ph name="PRODUCT_NAME" /> 的預設首頁網址，並禁止使用者變更這項設定。
-
-          首頁是指點選 [首頁] 按鈕後開啟的網頁。啟動時開啟的網頁由 RestoreOnStartup 政策控管。
-
-          你可以將首頁類型設定為在此處指定的網址或「新分頁」。如果你選取「新分頁」，則本政策不會生效。
-
-          如果啟用這項設定，使用者將無法變更 <ph name="PRODUCT_NAME" /> 的首頁網址，但仍可選擇將首頁設定為「新分頁」。
-
-          如果這項政策和 HomepageIsNewTabPage 皆不做設定，則使用者可以自行選擇首頁。
-
-          網址必須採用標準架構，例如「http://example.com」或「https://example.com」。
-
-          這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="3016255526521614822">將「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面允許的筆記應用程式加入許可清單</translation>
 <translation id="3020064401262077616">控管家長監督政策，這些政策只適用於兒童帳戶。</translation>
 <translation id="3021562480854470924">允許復原的重要事件數</translation>
@@ -2836,6 +2826,7 @@
       如果 VPN 連線是透過 VPN 應用程式所建立，則應用程式內的 UI 將不受這項政策影響，因此使用者仍可透過應用程式修改 VPN 連線。
 
       這項政策應與「永久連線的 VPN」功能一併使用，以便管理員決定是否在啟動時建立 VPN 連線。</translation>
+<translation id="5401696449591951427">啟用 <ph name="CHROME_DEVICES_LINK" /></translation>
 <translation id="5405289061476885481">設定 <ph name="PRODUCT_OS_NAME" /> 登入畫面可使用的鍵盤配置。
 
       如果將這項政策設為輸入法識別碼清單，登入畫面即可顯示指定的輸入法。系統會預先選取第一個指定的輸入法。在特定使用者視窗的登入畫面中，除了這項政策指定的輸入法之外，還會提供使用者最後一次使用的輸入法。如果未設定這項政策，系統會根據登入畫面顯示的語言代碼提供登入畫面的輸入法。如果值不是有效的輸入法識別碼，則會遭到忽略。</translation>
@@ -3093,6 +3084,7 @@
           如果不設定這項政策，則系統會採取預設動作，也就是暫停作業。
 
           如果將動作設為暫停作業，你可以另行設定 <ph name="PRODUCT_OS_NAME" />在暫停作業前鎖定或不鎖定螢幕。</translation>
+<translation id="574983287620584622">在登入畫面上啟用無障礙功能快速鍵</translation>
 <translation id="5755002458331714762"> Web Components v0 API (Shadow DOM v0、Custom Elements v0 和 HTML Imports) 已在 2018 年淘汰，並從 M80 版開始預設為停用。這項政策可讓你選擇性地重新啟用這些功能，直到 M84 版為止。
 
       如果將這項政策設為 True，系統會在所有網站上啟用 Web Components v0 功能。
@@ -4210,6 +4202,15 @@
       如果將這項政策設為 False，系統將不會收集安全瀏覽資料。
 
       只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
+<translation id="777734450201217641">在登入畫面上啟用無障礙功能快速鍵。
+
+          如果將這項政策設為 True，系統將一律在登入畫面上啟用無障礙功能快速鍵。
+
+          如果將這項政策設為 False，系統將一律在登入畫面上停用無障礙功能快速鍵。
+
+          設好這項政策後，使用者即無法變更或覆寫設定。
+
+           如果不設定這項政策，系統會在登入畫面上預設啟用無障礙功能快速鍵。</translation>
 <translation id="7777535871204167559">以唯讀模式處理外部儲存裝置</translation>
 <translation id="7788511847830146438">根據設定檔</translation>
 <translation id="7792973482799545782">不允許任何網站載入可封鎖的混合內容</translation>
@@ -4611,6 +4612,15 @@
 
       警告：我們不建議設定版本限制，因為這可能導致使用者無法接收軟體更新，且無法修正重大的安全性問題。限制僅能更新至指定前置碼版本，可能讓使用者面臨風險。</translation>
 <translation id="8519264904050090490">管理化環境下使用者手動建立的例外網址</translation>
+<translation id="8519516251436131647">啟用無障礙功能快速鍵。
+
+          如果將這項政策設為 True，系統將一律啟用無障礙功能快速鍵。
+
+          如果將這項政策設為 False，系統將一律停用無障礙功能快速鍵。
+
+          設好這項政策後，使用者即無法變更或覆寫設定。
+
+          如果不設定這項政策，系統在預設狀態下會啟用無障礙功能快速鍵。</translation>
 <translation id="8525526490824335042">Linux 容器</translation>
 <translation id="8538235451413605457">設定最低 <ph name="PRODUCT_NAME" /> 版本限制。低於指定值的版本即為過舊版本，必須更新作業系統，使用者才能登入裝置。
       如果目前的版本在使用者工作階段期間成為過舊版本，使用者會遭到強制登出。
@@ -4847,6 +4857,12 @@
 
           如果你未設定這項政策，系統就會使用「PromptOnAccess」，使用者可自行變更。</translation>
 <translation id="8911348623012274122">設定 Chrome 例項可以使用的記憶體大小限制</translation>
+<translation id="8911736066340032670">回報與顯示相關的資訊 (例如重新整理頻率)，以及
+      與圖形相關的資訊 (例如驅動程式版本)。
+
+      如果將這項政策設為 False 或不予設定，系統將不會
+      回報顯示狀態和圖形狀態。如果設為 True，系統將會
+      回報顯示狀態和圖形狀態。</translation>
 <translation id="891435090623616439">以 JSON 字串格式編碼，詳情請參閱 <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">允許使用者管理已安裝的 CA 憑證。</translation>
 <translation id="8926275581598789324">請注意，這項政策已遭淘汰，並將在 <ph name="PRODUCT_OS_NAME" />第 82 版中移除。請改用 <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />。

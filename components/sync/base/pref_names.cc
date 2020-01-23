@@ -41,13 +41,6 @@ const char kSyncAllOsTypes[] = "sync.all_os_types";
 // OS user selectable types.
 const char kSyncOsApps[] = "sync.os_apps";
 const char kSyncOsPreferences[] = "sync.os_preferences";
-
-// Boolean specifying whether OS wallpaper sync is enabled. This is stored
-// separately from |kSyncOsPreferences| because it's an edge case - wallpaper
-// does not have its own ModelType, so it cannot be part of UserSelectableOsType
-// like the other OS sync types.
-// TODO(https://crbug.com/967987): Break this dependency.
-const char kSyncOsWallpaper[] = "sync.os_wallpaper";
 #endif
 
 // Booleans specifying whether the user has selected to sync the following

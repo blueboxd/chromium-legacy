@@ -51,6 +51,14 @@ jumbo_component("animation") {
     sources += [ "animation_win.cc" ]
   }
 
+  if (is_desktop_linux) {
+    sources += [
+      "animation_linux.cc",
+      "animation_settings_provider_linux.cc",
+      "animation_settings_provider_linux.h",
+    ]
+  }
+
   if (!is_android) {
     sources += [
       "throb_animation.cc",

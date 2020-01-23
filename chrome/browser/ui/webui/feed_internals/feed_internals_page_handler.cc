@@ -34,15 +34,15 @@ feed_internals::mojom::TimePtr ToMojoTime(base::Time time) {
                         : feed_internals::mojom::Time::New(time.ToJsTime());
 }
 
-std::string TriggerTypeToString(feed::FeedSchedulerHost::TriggerType* trigger) {
+std::string TriggerTypeToString(feed::TriggerType* trigger) {
   if (trigger == nullptr)
     return "Not set";
   switch (*trigger) {
-    case feed::FeedSchedulerHost::TriggerType::kNtpShown:
+    case feed::TriggerType::kNtpShown:
       return "NTP Shown";
-    case feed::FeedSchedulerHost::TriggerType::kForegrounded:
+    case feed::TriggerType::kForegrounded:
       return "Foregrounded";
-    case feed::FeedSchedulerHost::TriggerType::kFixedTimer:
+    case feed::TriggerType::kFixedTimer:
       return "Fixed Timer";
   }
 }

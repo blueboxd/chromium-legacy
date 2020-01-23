@@ -220,8 +220,7 @@ NET_ERROR(SSL_BAD_RECORD_MAC_ALERT, -126)
 // The proxy requested authentication (for tunnel establishment).
 NET_ERROR(PROXY_AUTH_REQUESTED, -127)
 
-// The SSL server attempted to use a weak ephemeral Diffie-Hellman key.
-NET_ERROR(SSL_WEAK_SERVER_EPHEMERAL_DH_KEY, -129)
+// Error -129 was removed (SSL_WEAK_SERVER_EPHEMERAL_DH_KEY).
 
 // Could not create a connection to the proxy server. An error occurred
 // either in resolving its name, or in connecting a socket to it.

@@ -49,4 +49,4 @@ For GTK3.20 or later, themes will as usual have to replace ".entry" with
 "entry".
 
 The list of CSS selectors that Chromium uses to determine its colors is in
-//src/chrome/browser/ui/libgtkui/native_theme_gtk.cc.
+//src/chrome/browser/ui/gtk/native_theme_gtk.cc.

@@ -126,46 +126,6 @@ TEST_F(WindowTreeHostTest, NoRewritesPostIME) {
   host()->RemoveEventRewriter(&event_rewriter);
 }
 
-TEST_F(WindowTreeHostTest, ColorSpace) {
-  EXPECT_EQ(gfx::ColorSpace::CreateSRGB(),
-            host()->compositor()->output_color_space());
-
-  test_screen()->SetColorSpace(gfx::ColorSpace::CreateDisplayP3D65());
-  EXPECT_EQ(gfx::ColorSpace::CreateDisplayP3D65(),
-            host()->compositor()->output_color_space());
-}
-
-#if defined(OS_WIN)
-TEST_F(WindowTreeHostTest, ColorSpaceHDR) {
-  EXPECT_EQ(gfx::ColorSpace::CreateSRGB(),
-            host()->compositor()->output_color_space());
-
-  // UI compositor overrides HDR color space based on whether alpha blending is
-  // needed or not.
-  test_screen()->SetColorSpace(gfx::ColorSpace::CreateHDR10());
-  host()->compositor()->SetBackgroundColor(SK_ColorBLACK);
-  EXPECT_EQ(gfx::ColorSpace::CreateHDR10(),
-            host()->compositor()->output_color_space());
-
-  test_screen()->SetColorSpace(gfx::ColorSpace::CreateHDR10());
-  host()->compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
-  EXPECT_EQ(gfx::ColorSpace::CreateSCRGBLinear(),
-            host()->compositor()->output_color_space());
-
-  // UI compositor does not override color space if it's already SCRGB linear.
-  test_screen()->SetColorSpace(gfx::ColorSpace::CreateSCRGBLinear(), 200.f);
-  host()->compositor()->SetBackgroundColor(SK_ColorBLACK);
-  EXPECT_EQ(gfx::ColorSpace::CreateSCRGBLinear(),
-            host()->compositor()->output_color_space());
-
-  // UI compositor does not override SDR color space.
-  test_screen()->SetColorSpace(gfx::ColorSpace::CreateSRGB(), 200.f);
-  host()->compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
-  EXPECT_EQ(gfx::ColorSpace::CreateSRGB(),
-            host()->compositor()->output_color_space());
-}
-#endif  // OS_WIN
-
 class TestWindow : public ui::StubWindow {
  public:
   explicit TestWindow(ui::PlatformWindowDelegate* delegate)

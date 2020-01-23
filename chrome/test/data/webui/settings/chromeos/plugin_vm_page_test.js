@@ -9,6 +9,7 @@ class TestPluginVmBrowserProxy extends TestBrowserProxy {
       'getPluginVmSharedPathsDisplayText',
       'removePluginVmSharedPath',
       'removePluginVm',
+      'requestPluginVmInstallerView',
     ]);
   }
 
@@ -27,10 +28,86 @@ class TestPluginVmBrowserProxy extends TestBrowserProxy {
   removePluginVm() {
     this.methodCalled('removePluginVm');
   }
+
+  /** override */
+  requestPluginVmInstallerView() {
+    this.methodCalled('requestPluginVmInstallerView');
+  }
 }
 
 /** @type {?TestPluginVmBrowserProxy} */
 let pluginVmBrowserProxy = null;
+
+suite('PluginVmPage', function() {
+  /** @type {?SettingsPluginVmElement} */
+  let page = null;
+
+  /** @type {Array<string>} */
+  let routes;
+  /** @type {!Object} */
+  let preTestSettingsRoutes;
+  /** @type {!function(string)} */
+  let preTestRouterNavigateTo;
+
+  setup(function() {
+    pluginVmBrowserProxy = new TestPluginVmBrowserProxy();
+    settings.PluginVmBrowserProxyImpl.instance_ = pluginVmBrowserProxy;
+    PolymerTest.clearBody();
+    page = document.createElement('settings-plugin-vm-page');
+
+    routes = [];
+
+    preTestRouterNavigateTo = settings.Router.getInstance().navigateTo;
+    settings.Router.getInstance().navigateTo = (route) => routes.push(route);
+
+    preTestSettingsRoutes = settings.routes;
+    settings.routes = {PLUGIN_VM_DETAILS: 'TEST_PLUGIN_VM_DETAILS_ROUTE'};
+  });
+
+  teardown(function() {
+    page.remove();
+
+    settings.Router.getInstance().navigateTo = preTestRouterNavigateTo;
+
+    settings.routes = preTestSettingsRoutes;
+  });
+
+  test('ImageExistsLink', function() {
+    page.prefs = {
+      plugin_vm: {
+        image_exists: {value: true},
+      }
+    };
+    document.body.appendChild(page);
+    Polymer.dom.flush();
+
+    const button = page.$$('cr-icon-button');
+    assertTrue(!!button);
+
+    assertDeepEquals(routes, []);
+    button.click();
+    assertDeepEquals(routes, ['TEST_PLUGIN_VM_DETAILS_ROUTE']);
+  });
+
+  test('ImageDoesntExist', function() {
+    page.prefs = {
+      plugin_vm: {
+        image_exists: {value: false},
+      }
+    };
+    document.body.appendChild(page);
+    Polymer.dom.flush();
+
+    const button = page.$$('cr-button');
+    assertTrue(!!button);
+
+    assertEquals(
+        0, pluginVmBrowserProxy.getCallCount('requestPluginVmInstallerView'));
+    button.click();
+    assertEquals(
+        1, pluginVmBrowserProxy.getCallCount('requestPluginVmInstallerView'));
+  });
+});
 
 suite('Details', function() {
   /** @type {?SettingsPluginVmSubpageElement} */

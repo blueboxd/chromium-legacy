@@ -11,23 +11,28 @@
 namespace android_webview {
 
 class BeginFrameSourceWebView::BeginFrameObserver
-    : public viz::BeginFrameObserverBase {
+    : public viz::BeginFrameObserver {
  public:
-  BeginFrameObserver(BeginFrameSourceWebView* owner) : owner_(owner) {
-    wants_animate_only_begin_frames_ = true;
+  BeginFrameObserver(BeginFrameSourceWebView* owner) : owner_(owner) {}
+
+  void OnBeginFrame(const viz::BeginFrameArgs& args) override {
+    last_used_begin_frame_args_ = args;
+    owner_->SendBeginFrame(args);
   }
 
-  bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) override {
-    owner_->SendBeginFrame(args);
-    return true;
+  const viz::BeginFrameArgs& LastUsedBeginFrameArgs() const override {
+    return last_used_begin_frame_args_;
   }
 
   void OnBeginFrameSourcePausedChanged(bool paused) override {
     owner_->OnSetBeginFrameSourcePaused(paused);
   }
 
+  bool WantsAnimateOnlyBeginFrames() const override { return true; }
+
  private:
   BeginFrameSourceWebView* const owner_;
+  viz::BeginFrameArgs last_used_begin_frame_args_;
 };
 
 BeginFrameSourceWebView::BeginFrameSourceClient::BeginFrameSourceClient(

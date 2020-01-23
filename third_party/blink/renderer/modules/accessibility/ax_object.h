@@ -409,7 +409,6 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   }
   virtual bool IsControl() const { return false; }
   virtual bool IsDefault() const { return false; }
-  virtual bool IsEmbeddedObject() const { return false; }
   virtual bool IsFieldset() const { return false; }
   virtual bool IsHeading() const { return false; }
   virtual bool IsImage() const { return false; }

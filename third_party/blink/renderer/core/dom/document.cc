@@ -226,6 +226,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
+#include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
@@ -640,22 +641,16 @@ Document::Document() : Document(DocumentInit::Create()) {}
 Document::Document(const DocumentInit& initializer,
                    DocumentClassFlags document_classes)
     : Document(initializer,
-               SecurityContextInit(initializer, document_classes),
+               SecurityContextInit(initializer),
                document_classes) {}
 
 Document::Document(const DocumentInit& initializer,
-                   SecurityContextInit security_initializer,
+                   const SecurityContextInit& security_initializer,
                    DocumentClassFlags document_classes)
     : ContainerNode(nullptr, kCreateDocument),
       TreeScope(*this),
       ExecutionContext(V8PerIsolateData::MainThreadIsolate(),
-                       security_initializer.GetAgent(),
-                       security_initializer.GetOriginTrialContext(),
-                       security_initializer.GetSecurityOrigin(),
-                       security_initializer.GetSandboxFlags(),
-                       security_initializer.TakeFeaturePolicy(),
-                       security_initializer.TakeDocumentPolicy(),
-                       security_initializer.GetSecureContextMode()),
+                       security_initializer),
       evaluate_media_queries_on_style_recalc_(false),
       pending_sheet_layout_(kNoLayoutWithPendingSheets),
       window_agent_factory_(security_initializer.GetWindowAgentFactory()),
@@ -3636,6 +3631,9 @@ void Document::ImplicitClose() {
   if (domWindow())
     domWindow()->DocumentWasClosed();
 
+  if (GetFrame() && GetFrame()->IsMainFrame())
+    GetFrame()->GetLocalFrameHostRemote().DocumentOnLoadCompleted();
+
   if (GetFrame()) {
     GetFrame()->Client()->DispatchDidHandleOnloadEvents();
     Loader()->GetApplicationCacheHost()->StopDeferringEvents();
@@ -5607,7 +5605,7 @@ void Document::setDomain(const String& raw_domain,
 
   const String feature_policy_error =
       "Setting `document.domain` is disabled by Feature Policy.";
-  if (!IsFeatureEnabled(mojom::FeaturePolicyFeature::kDocumentDomain,
+  if (!IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kDocumentDomain,
                         ReportOptions::kReportOnFailure,
                         feature_policy_error)) {
     exception_state.ThrowSecurityError(feature_policy_error);
@@ -6523,7 +6521,7 @@ void Document::PoliciesInitialized(
       frame_ && !frame_->IsMainFrame() &&
       RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
       !GetSecurityContext().GetFeaturePolicy()->IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kVerticalScroll);
+          mojom::blink::FeaturePolicyFeature::kVerticalScroll);
 }
 
 const ParsedFeaturePolicy Document::GetOwnerContainerPolicy() const {
@@ -6591,8 +6589,9 @@ bool Document::AllowedToUseDynamicMarkUpInsertion(
   if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
     return true;
   }
-  if (!frame_ || IsFeatureEnabled(mojom::FeaturePolicyFeature::kDocumentWrite,
-                                  ReportOptions::kReportOnFailure)) {
+  if (!frame_ ||
+      IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kDocumentWrite,
+                       ReportOptions::kReportOnFailure)) {
     return true;
   }
 
@@ -6839,6 +6838,20 @@ Document::EnsureIntersectionObserverController() {
         MakeGarbageCollected<IntersectionObserverController>(this);
   }
   return *intersection_observer_controller_;
+}
+
+ElementIntersectionObserverData*
+Document::DocumentExplicitRootIntersectionObserverData() const {
+  return document_explicit_root_intersection_observer_data_.Get();
+}
+
+ElementIntersectionObserverData&
+Document::EnsureDocumentExplicitRootIntersectionObserverData() {
+  if (!document_explicit_root_intersection_observer_data_) {
+    document_explicit_root_intersection_observer_data_ =
+        MakeGarbageCollected<ElementIntersectionObserverData>();
+  }
+  return *document_explicit_root_intersection_observer_data_;
 }
 
 ResizeObserverController& Document::EnsureResizeObserverController() {
@@ -7826,6 +7839,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(elem_sheet_);
   visitor->Trace(node_iterators_);
   visitor->Trace(ranges_);
+  visitor->Trace(document_explicit_root_intersection_observer_data_);
   visitor->Trace(style_engine_);
   visitor->Trace(form_controller_);
   visitor->Trace(visited_link_state_);
@@ -7936,7 +7950,7 @@ bool Document::IsSlotAssignmentOrLegacyDistributionDirty() const {
 bool Document::IsLazyLoadPolicyEnforced() const {
   return RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled() &&
          !GetSecurityContext().GetFeaturePolicy()->IsFeatureEnabled(
-             mojom::FeaturePolicyFeature::kLazyLoad);
+             mojom::blink::FeaturePolicyFeature::kLazyLoad);
 }
 
 bool Document::IsFocusAllowed() const {
@@ -7965,7 +7979,7 @@ bool Document::IsFocusAllowed() const {
   if (!RuntimeEnabledFeatures::BlockingFocusWithoutUserActivationEnabled())
     return true;
   return IsFeatureEnabled(
-      mojom::FeaturePolicyFeature::kFocusWithoutUserActivation);
+      mojom::blink::FeaturePolicyFeature::kFocusWithoutUserActivation);
 }
 
 NavigationInitiatorImpl& Document::NavigationInitiator() {
@@ -7989,11 +8003,12 @@ WindowAgent& Document::GetWindowAgent() {
 }
 
 void Document::CountPotentialFeaturePolicyViolation(
-    mojom::FeaturePolicyFeature feature) const {
+    mojom::blink::FeaturePolicyFeature feature) const {
   wtf_size_t index = static_cast<wtf_size_t>(feature);
   if (potentially_violated_features_.size() == 0) {
     potentially_violated_features_.resize(
-        static_cast<wtf_size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1);
+        static_cast<wtf_size_t>(mojom::blink::FeaturePolicyFeature::kMaxValue) +
+        1);
   } else if (potentially_violated_features_[index]) {
     return;
   }
@@ -8002,7 +8017,7 @@ void Document::CountPotentialFeaturePolicyViolation(
                             feature);
 }
 void Document::ReportFeaturePolicyViolation(
-    mojom::FeaturePolicyFeature feature,
+    mojom::blink::FeaturePolicyFeature feature,
     mojom::FeaturePolicyDisposition disposition,
     const String& message,
     const String& source_file) const {

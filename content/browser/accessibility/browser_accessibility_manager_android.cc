@@ -287,8 +287,9 @@ bool BrowserAccessibilityManagerAndroid::NextAtGranularity(
       base::i18n::UTF16CharIterator iter(text.data(), text.size());
       while (!iter.end() && iter.array_pos() <= cursor_index)
         iter.Advance();
-      *start_index = iter.array_pos();
       *end_index = iter.array_pos();
+      iter.Rewind();
+      *start_index = iter.array_pos();
       break;
     }
     case ANDROID_ACCESSIBILITY_NODE_INFO_MOVEMENT_GRANULARITY_WORD:
@@ -335,7 +336,7 @@ bool BrowserAccessibilityManagerAndroid::PreviousAtGranularity(
         iter.Advance();
       }
       *start_index = previous_index;
-      *end_index = previous_index;
+      *end_index = iter.array_pos();
       break;
     }
     case ANDROID_ACCESSIBILITY_NODE_INFO_MOVEMENT_GRANULARITY_WORD:

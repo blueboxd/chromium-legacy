@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/wilco_dtc_supportd/mojo_utils.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_client.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_messaging.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_network_context.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_notification_controller.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -27,7 +28,6 @@
 #include "mojo/public/cpp/platform/platform_handle.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/cros_system_api/dbus/wilco_dtc_supportd/dbus-constants.h"
 
 namespace chromeos {
@@ -113,19 +113,19 @@ int WilcoDtcSupportdBridge::max_connection_attempt_count_for_testing() {
 }
 
 WilcoDtcSupportdBridge::WilcoDtcSupportdBridge(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    std::unique_ptr<WilcoDtcSupportdNetworkContext> network_context)
     : WilcoDtcSupportdBridge(
           std::make_unique<WilcoDtcSupportdBridgeDelegateImpl>(),
-          std::move(url_loader_factory),
+          std::move(network_context),
           std::make_unique<WilcoDtcSupportdNotificationController>()) {}
 
 WilcoDtcSupportdBridge::WilcoDtcSupportdBridge(
     std::unique_ptr<Delegate> delegate,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    std::unique_ptr<WilcoDtcSupportdNetworkContext> network_context,
     std::unique_ptr<WilcoDtcSupportdNotificationController>
         notification_controller)
     : delegate_(std::move(delegate)),
-      web_request_service_(std::move(url_loader_factory)),
+      web_request_service_(std::move(network_context)),
       notification_controller_(std::move(notification_controller)) {
   DCHECK(delegate_);
   DCHECK(notification_controller_);

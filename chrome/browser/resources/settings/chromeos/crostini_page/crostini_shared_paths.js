@@ -67,5 +67,14 @@ Polymer({
     settings.CrostiniBrowserProxyImpl.getInstance().removeCrostiniSharedPath(
         DEFAULT_CROSTINI_VM, event.model.item.path);
   },
+
+  /**
+   * @param {number} index
+   * @return {string}
+   * @private
+   */
+  generatePathDisplayTextId_(index) {
+    return 'path-display-text-' + index;
+  },
 });
 })();

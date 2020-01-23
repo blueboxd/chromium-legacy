@@ -465,6 +465,15 @@ TEST_F(AssistantPageViewTabletModeTest,
   EXPECT_TRUE(IsKeyboardShowing());
 }
 
+TEST_F(AssistantPageViewTabletModeTest, ShouldNotShowKeyboardWhenItsDisabled) {
+  // This tests the scenario where the keyboard is disabled even in tablet mode,
+  // e.g. when an external keyboard is connected to a tablet.
+  DisableKeyboard();
+  ShowAssistantUiInTextMode();
+
+  EXPECT_FALSE(IsKeyboardShowing());
+}
+
 TEST_F(AssistantPageViewTabletModeTest,
        ShouldFocusTextFieldAfterPressingKeyboardInputToggle) {
   ShowAssistantUiInVoiceMode();

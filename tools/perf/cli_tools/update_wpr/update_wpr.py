@@ -280,12 +280,11 @@ class WprUpdater(object):
 
 
     args.extend([
-      '--output-format=html', '--show-stdout',
-      '--reset-results', '--story-filter={story}',
-      '--browser-logging-verbosity=verbose',
-      '--pageset-repeat=%s' % self.repeat,
-      '--output-dir', self.output_dir,
-      '--also-run-disabled-tests'])
+        '--output-format=html', '--show-stdout', '--reset-results',
+        '--story-filter={story}', '--browser-logging-verbosity=verbose',
+        '--pageset-repeat=%s' % self.repeat, '--output-dir', self.output_dir,
+        '--also-run-disabled-tests', '--legacy-json-trace-format'
+    ])
     if live:
       args.append('--use-live-sites')
     out_file = self._CheckLog(args, log_name=log_name)

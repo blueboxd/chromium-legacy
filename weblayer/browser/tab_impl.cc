@@ -10,6 +10,7 @@
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_provider.h"
+#include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
@@ -26,6 +27,7 @@
 #include "weblayer/browser/isolated_world_ids.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/profile_impl.h"
+#include "weblayer/browser/session_service.h"
 #include "weblayer/public/download_delegate.h"
 #include "weblayer/public/fullscreen_delegate.h"
 #include "weblayer/public/new_tab_delegate.h"
@@ -148,6 +150,11 @@ TabImpl::TabImpl(ProfileImpl* profile,
   Observe(web_contents_.get());
 
   navigation_controller_ = std::make_unique<NavigationControllerImpl>(this);
+
+  sessions::SessionTabHelper::CreateForWebContents(
+      web_contents_.get(),
+      base::BindRepeating(&TabImpl::GetSessionServiceTabHelperDelegate,
+                          base::Unretained(this)));
 }
 
 TabImpl::~TabImpl() {
@@ -526,6 +533,12 @@ void TabImpl::InitializeAutofill() {
       i18n::GetApplicationLocale(),
       autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER,
       autofill_provider_.get());
+}
+
+sessions::SessionTabHelperDelegate* TabImpl::GetSessionServiceTabHelperDelegate(
+    content::WebContents* web_contents) {
+  DCHECK_EQ(web_contents, web_contents_.get());
+  return browser_ ? browser_->session_service() : nullptr;
 }
 
 }  // namespace weblayer

@@ -92,10 +92,10 @@ bool DeviceSingleWindowEventController::IsSameSecurityOriginAsMainFrame()
 }
 
 bool DeviceSingleWindowEventController::CheckPolicyFeatures(
-    const Vector<mojom::FeaturePolicyFeature>& features) const {
+    const Vector<mojom::blink::FeaturePolicyFeature>& features) const {
   const Document& document = GetDocument();
   return std::all_of(features.begin(), features.end(),
-                     [&document](mojom::FeaturePolicyFeature feature) {
+                     [&document](mojom::blink::FeaturePolicyFeature feature) {
                        return document.IsFeatureEnabled(
                            feature, ReportOptions::kReportOnFailure);
                      });

@@ -196,8 +196,6 @@ source_set("common") {
     "pepper_renderer_instance_data.h",
     "process_type.cc",
     "resource_messages.h",
-    "resource_timing_info.cc",
-    "resource_timing_info.h",
     "sandbox_init_linux.cc",
     "sandbox_init_mac.cc",
     "sandbox_init_win.cc",

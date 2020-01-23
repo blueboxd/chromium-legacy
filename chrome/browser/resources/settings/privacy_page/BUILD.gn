@@ -54,7 +54,6 @@ js_library("privacy_page_browser_proxy") {
 js_library("privacy_page") {
   deps = [
     ":privacy_page_browser_proxy",
-    "..:metrics_browser_proxy",
     "..:page_visibility",
     "..:route",
     "..:router",
@@ -131,7 +130,6 @@ js_library("security_keys_bio_enroll_dialog") {
 js_library("security_page") {
   deps = [
     ":privacy_page_browser_proxy",
-    "..:metrics_browser_proxy",
     "..:route",
     "..:router",
     "../people_page:sync_browser_proxy",

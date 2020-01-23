@@ -21,21 +21,6 @@
 namespace extensions {
 namespace declarative_net_request {
 
-namespace {
-
-base::Optional<RequestAction> GetMaxPriorityAction(
-    base::Optional<RequestAction> lhs,
-    base::Optional<RequestAction> rhs) {
-  if (!lhs)
-    return rhs;
-  if (!rhs)
-    return lhs;
-  return lhs->rule_priority > rhs->rule_priority ? std::move(lhs)
-                                                 : std::move(rhs);
-}
-
-}  // namespace
-
 // static
 RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
     const RulesetSource& source,
@@ -104,6 +89,24 @@ uint8_t RulesetMatcher::GetRemoveHeadersMask(
 bool RulesetMatcher::IsExtraHeadersMatcher() const {
   return url_pattern_index_matcher_.IsExtraHeadersMatcher() ||
          regex_matcher_.IsExtraHeadersMatcher();
+}
+
+void RulesetMatcher::OnRenderFrameDeleted(content::RenderFrameHost* host) {
+  url_pattern_index_matcher_.OnRenderFrameDeleted(host);
+  regex_matcher_.OnRenderFrameDeleted(host);
+}
+
+void RulesetMatcher::OnDidFinishNavigation(content::RenderFrameHost* host) {
+  url_pattern_index_matcher_.OnDidFinishNavigation(host);
+  regex_matcher_.OnDidFinishNavigation(host);
+}
+
+base::Optional<RequestAction>
+RulesetMatcher::GetAllowlistedFrameActionForTesting(
+    content::RenderFrameHost* host) const {
+  return GetMaxPriorityAction(
+      url_pattern_index_matcher_.GetAllowlistedFrameActionForTesting(host),
+      regex_matcher_.GetAllowlistedFrameActionForTesting(host));
 }
 
 RulesetMatcher::RulesetMatcher(

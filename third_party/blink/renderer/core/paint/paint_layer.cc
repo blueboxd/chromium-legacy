@@ -412,7 +412,7 @@ void PaintLayer::UpdateTransformationMatrix() {
         ComputedStyle::kIncludeIndependentTransformProperties);
     MakeMatrixRenderable(
         *transform,
-        Compositor() ? Compositor()->HasAcceleratedCompositing() : false);
+        box->GetDocument().GetSettings()->GetAcceleratedCompositingEnabled());
   }
 }
 

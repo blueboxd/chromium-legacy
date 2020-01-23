@@ -93,13 +93,13 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantMainStage
   AssistantViewDelegate* const delegate_;  // Owned by Shell.
 
   // Content layout container and children. Owned by view hierarchy.
-  AssistantHeaderView* header_;
-  views::View* content_layout_container_;
-  UiElementContainerView* ui_element_container_;
-  AssistantFooterView* footer_;
+  AssistantHeaderView* header_ = nullptr;
+  views::View* content_layout_container_ = nullptr;
+  UiElementContainerView* ui_element_container_ = nullptr;
+  AssistantFooterView* footer_ = nullptr;
 
   // Query layout container and children. Owned by view hierarchy.
-  views::View* query_layout_container_;
+  views::View* query_layout_container_ = nullptr;
   AssistantQueryView* active_query_view_ = nullptr;
   AssistantQueryView* committed_query_view_ = nullptr;
   AssistantQueryView* pending_query_view_ = nullptr;

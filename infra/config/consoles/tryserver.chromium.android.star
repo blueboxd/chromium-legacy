@@ -16,6 +16,7 @@ luci.list_view(
         'try/android-cronet-arm-dbg',
         'try/android_cronet_tester',
         'try/android_mojo',
+        'try/android-lollipop-arm-rel',
         'try/android-marshmallow-arm64-rel',
         'try/android-marshmallow-x86-fyi-rel',
         'try/android-pie-arm64-rel',

@@ -90,14 +90,15 @@ class APP_LIST_EXPORT AssistantDialogPlate
 
   AssistantViewDelegate* const delegate_;
 
-  LogoView* molecule_icon_;                       // Owned by view hierarchy.
-  views::View* input_modality_layout_container_;  // Owned by view hierarchy.
-  views::View* keyboard_layout_container_;        // Owned by view hierarchy.
-  views::View* voice_layout_container_;           // Owned by view hierarchy.
-  views::ImageButton* keyboard_input_toggle_;     // Owned by view hierarchy.
-  views::ImageButton* voice_input_toggle_;        // Owned by view hierarchy.
-  MicView* animated_voice_input_toggle_;          // Owned by view hierarchy.
-  views::Textfield* textfield_;                   // Owned by view hierarchy.
+  // The following views are all owned by the view hierarchy
+  LogoView* molecule_icon_ = nullptr;
+  views::View* input_modality_layout_container_ = nullptr;
+  views::View* keyboard_layout_container_ = nullptr;
+  views::View* voice_layout_container_ = nullptr;
+  views::ImageButton* keyboard_input_toggle_ = nullptr;
+  views::ImageButton* voice_input_toggle_ = nullptr;
+  MicView* animated_voice_input_toggle_ = nullptr;
+  views::Textfield* textfield_ = nullptr;
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver> animation_observer_;
   std::unique_ptr<AssistantQueryHistory::Iterator> query_history_iterator_;

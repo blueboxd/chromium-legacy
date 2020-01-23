@@ -10,6 +10,7 @@
 #include "content/public/test/browser_test_base.h"
 
 namespace weblayer {
+class ProfileImpl;
 class Shell;
 
 class WebLayerBrowserTest : public content::BrowserTestBase {
@@ -24,6 +25,8 @@ class WebLayerBrowserTest : public content::BrowserTestBase {
 
   // Returns the window for the test.
   Shell* shell() const { return shell_; }
+
+  ProfileImpl* GetProfile();
 
  private:
   Shell* shell_ = nullptr;

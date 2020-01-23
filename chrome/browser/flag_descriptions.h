@@ -847,6 +847,9 @@ extern const char kUseMultiloginEndpointDescription[];
 extern const char kOfferStoreUnmaskedWalletCardsName[];
 extern const char kOfferStoreUnmaskedWalletCardsDescription[];
 
+extern const char kOmniboxAssistantVoiceSearchName[];
+extern const char kOmniboxAssistantVoiceSearchDescription[];
+
 extern const char kOmniboxAutocompleteTitlesName[];
 extern const char kOmniboxAutocompleteTitlesDescription[];
 
@@ -1561,6 +1564,9 @@ extern const char kHomepageLocationDescription[];
 extern const char kHomepageSettingsUIConversionName[];
 extern const char kHomepageSettingsUIConversionDescription[];
 
+extern const char kIntentBlockExternalFormRedirectsNoGestureName[];
+extern const char kIntentBlockExternalFormRedirectsNoGestureDescription[];
+
 extern const char kInterestFeedNotificationsName[];
 extern const char kInterestFeedNotificationsDescription[];
 
@@ -2171,9 +2177,6 @@ extern const char kExperimentalAccessibilitySwitchAccessDescription[];
 
 extern const char kExperimentalAccessibilitySwitchAccessTextName[];
 extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
-
-extern const char kFileManagerFeedbackPanelDescription[];
-extern const char kFileManagerFeedbackPanelName[];
 
 extern const char kFileManagerTouchModeName[];
 extern const char kFileManagerTouchModeDescription[];

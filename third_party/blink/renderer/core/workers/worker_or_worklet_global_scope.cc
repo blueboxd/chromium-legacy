@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
+#include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/loader_factory_for_worker.h"
@@ -178,19 +179,11 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     std::unique_ptr<WebContentSettingsClient> content_settings_client,
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     WorkerReportingProxy& reporting_proxy)
-    : ExecutionContext(isolate,
-                       agent,
-                       MakeGarbageCollected<OriginTrialContext>(),
-                       origin,
-                       WebSandboxFlags::kNone,
-                       nullptr, /* feature_policy */
-                       nullptr, /* document_policy */
-                       // Until there are APIs that are available in workers or
-                       // or worklets that require a privileged context test
-                       // that checks ancestors, just do a simple check here.
-                       origin->IsPotentiallyTrustworthy()
-                           ? SecureContextMode::kSecureContext
-                           : SecureContextMode::kInsecureContext),
+    : ExecutionContext(
+          isolate,
+          SecurityContextInit(origin,
+                              MakeGarbageCollected<OriginTrialContext>(),
+                              agent)),
       off_main_thread_fetch_option_(off_main_thread_fetch_option),
       name_(name),
       parent_devtools_token_(parent_devtools_token),

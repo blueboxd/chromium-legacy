@@ -8,20 +8,14 @@
 #include <utility>
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/views/assistant/assistant_main_view.h"
-#include "ash/app_list/views/assistant/assistant_page_view.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/test/test_assistant_web_view_factory.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
-#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/test/assistant_test_api.h"
 #include "ash/shell.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/run_loop.h"
-#include "ui/compositor/scoped_animation_duration_scale_mode.h"
-#include "ui/views/controls/textfield/textfield.h"
 
 namespace ash {
 
@@ -72,10 +66,6 @@ void AssistantAshTestBase::SetUp() {
   scoped_feature_list_.InitAndEnableFeature(
       app_list_features::kEnableAssistantLauncherUI);
 
-  // Enable virtual keyboard.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      keyboard::switches::kEnableVirtualKeyboard);
-
   AshTestBase::SetUp();
 
   // Make the display big enough to hold the app list.
@@ -95,14 +85,13 @@ void AssistantAshTestBase::SetUp() {
 
   test_api_->DisableAnimations();
 
-  // Wait for virtual keyboard to load.
-  SetTouchKeyboardEnabled(true);
+  EnableKeyboard();
 }
 
 void AssistantAshTestBase::TearDown() {
   windows_.clear();
   widgets_.clear();
-  SetTouchKeyboardEnabled(false);
+  DisableKeyboard();
   AshTestBase::TearDown();
   scoped_feature_list_.Reset();
 }
@@ -263,7 +252,8 @@ void AssistantAshTestBase::DismissKeyboard() {
 }
 
 bool AssistantAshTestBase::IsKeyboardShowing() const {
-  return keyboard::IsKeyboardShowing();
+  auto* keyboard_controller = keyboard::KeyboardUIController::Get();
+  return keyboard_controller->IsEnabled() && keyboard::IsKeyboardShowing();
 }
 
 AssistantInteractionController* AssistantAshTestBase::interaction_controller() {

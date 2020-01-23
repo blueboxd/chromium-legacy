@@ -17,11 +17,6 @@
 namespace blink {
 
 namespace {
-bool IsSkImageOriginTopLeft(sk_sp<SkImage> image) {
-  GrSurfaceOrigin origin;
-  image->getBackendTexture(false, &origin);
-  return origin == kTopLeft_GrSurfaceOrigin;
-}
 
 struct ReleaseContext {
   scoped_refptr<TextureHolder::MailboxRef> mailbox_ref;
@@ -44,15 +39,6 @@ void ReleaseTexture(void* ctx) {
 }
 
 }  // namespace
-
-SkiaTextureHolder::SkiaTextureHolder(
-    sk_sp<SkImage> image,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
-        context_provider_wrapper)
-    : TextureHolder(std::move(context_provider_wrapper),
-                    base::MakeRefCounted<MailboxRef>(nullptr),
-                    IsSkImageOriginTopLeft(image)),
-      image_(std::move(image)) {}
 
 SkiaTextureHolder::SkiaTextureHolder(
     const MailboxTextureHolder* mailbox_texture_holder,

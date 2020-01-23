@@ -8,10 +8,14 @@
 -MSE_*ClearKey/EncryptedMediaTest.*
 -SRC_*ClearKey/EncryptedMediaTest.*
 
-# Non-Existent Mailbox Error During Deletion. https://crbug.com/1043934
+# SkiaOutputSurfaceImplOnGpu::MakeCurrent Fails. https://crbug.com/1012282
 -*CompositorImplLowEndBrowserTest.CompositorImplDropsResourcesOnBackground*
 
 # FeatureList Flakes. https://crbug.com/1012372
 -NavigationBrowserTest.HistoryBackCancelPendingNavigationUserGesture/1
 -SitePerProcessBrowserTest.*
 -TextFragmentAnchorBrowserTest.DisabledOnScriptNavigation/0
+
+# crbug.com/1037939
+-BackForwardCacheBrowserTest.VideoSuspendAndResume
+-P/CompositorImplBrowserTestRefreshRate.VideoPreference/0

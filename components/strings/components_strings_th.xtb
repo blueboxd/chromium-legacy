@@ -476,7 +476,7 @@
 <translation id="3096100844101284527">เพิ่มที่อยู่สำหรับรับสินค้า</translation>
 <translation id="3105172416063519923">รหัสสินทรัพย์:</translation>
 <translation id="3109728660330352905">คุณไม่มีสิทธิ์ดูหน้านี้</translation>
-<translation id="3113284927548439113">กะสาม</translation>
+<translation id="3113284927548439113">กะที่ 3</translation>
 <translation id="3116158981186517402">แยกออกเป็นชั้นๆ</translation>
 <translation id="3120730422813725195">Elo</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />ลองเรียกใช้การวินิจฉัยการเชื่อมต่อ<ph name="END_LINK" /></translation>
@@ -1044,7 +1044,7 @@
 <translation id="5633066919399395251">ผู้โจมตีที่กำลังอยู่ใน <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> อาจพยายามติดตั้งโปรแกรมอันตรายซึ่งจะขโมยหรือลบข้อมูล (ตัวอย่างเช่น รูปภาพ รหัสผ่าน ข้อความ และบัตรเครดิต) ลงในคอมพิวเตอร์ของคุณ <ph name="BEGIN_LEARN_MORE_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">บล็อกเนื้อหาที่หลอกลวงแล้ว</translation>
 <translation id="5644090287519800334">เปลี่ยนตำแหน่งรูปภาพด้าน 1 ตามแกน X</translation>
-<translation id="5645854190134202180">กะสอง</translation>
+<translation id="5645854190134202180">กะที่ 2</translation>
 <translation id="5659593005791499971">อีเมล</translation>
 <translation id="5663614846592581799">9x11 (ซองจดหมาย)</translation>
 <translation id="5663955426505430495">ผู้ดูแลระบบของอุปกรณ์นี้ได้ติดตั้งส่วนขยายสำหรับฟังก์ชันเพิ่มเติม ส่วนขยายเข้าถึงข้อมูลบางส่วนของคุณได้</translation>
@@ -1533,7 +1533,7 @@
 <translation id="7878562273885520351">รหัสผ่านของคุณอาจถูกขโมยได้</translation>
 <translation id="7882421473871500483">น้ำตาล</translation>
 <translation id="7887683347370398519">ตรวจสอบ CVC และลองอีกครั้ง</translation>
-<translation id="7888575728750733395">Intent การแสดงภาพการพิมพ์</translation>
+<translation id="7888575728750733395">การปรับค่าสีการพิมพ์</translation>
 <translation id="7904208859782148177">C3 (ซองจดหมาย)</translation>
 <translation id="7932579305932748336">เคลือบ</translation>
 <translation id="79338296614623784">ป้อนหมายเลขโทรศัพท์ที่ถูกต้อง</translation>

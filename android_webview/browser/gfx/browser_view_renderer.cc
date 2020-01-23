@@ -116,11 +116,10 @@ BrowserViewRenderer::BrowserViewRenderer(
       clear_view_(false),
       offscreen_pre_raster_(false),
       recorder_(base::MakeRefCounted<AwAttachingToWindowRecorder>()) {
+  begin_frame_source_ = std::make_unique<BeginFrameSourceWebView>();
   if (::features::IsUsingVizForWebView()) {
-    root_frame_sink_proxy_ =
-        std::make_unique<RootFrameSinkProxy>(ui_task_runner_, this);
-  } else {
-    begin_frame_source_ = std::make_unique<BeginFrameSourceWebView>();
+    root_frame_sink_proxy_ = std::make_unique<RootFrameSinkProxy>(
+        ui_task_runner_, this, begin_frame_source_.get());
   }
   UpdateBeginFrameSource();
   recorder_->Start();
@@ -130,6 +129,9 @@ BrowserViewRenderer::~BrowserViewRenderer() {
   recorder_->OnDestroyed();
   DCHECK(compositor_map_.empty());
   DCHECK(!current_compositor_frame_consumer_);
+
+  // We need to destroy |root_frame_sink_proxy_| before |begin_frame_source_|;
+  root_frame_sink_proxy_.reset();
 }
 
 base::WeakPtr<CompositorFrameProducer> BrowserViewRenderer::GetWeakPtr() {
@@ -560,13 +562,11 @@ bool BrowserViewRenderer::IsClientVisible() const {
 }
 
 void BrowserViewRenderer::UpdateBeginFrameSource() {
-  if (begin_frame_source_) {
-    if (IsClientVisible()) {
-      begin_frame_source_->SetParentSource(
-          RootBeginFrameSourceWebView::GetInstance());
-    } else {
-      begin_frame_source_->SetParentSource(nullptr);
-    }
+  if (IsClientVisible()) {
+    begin_frame_source_->SetParentSource(
+        RootBeginFrameSourceWebView::GetInstance());
+  } else {
+    begin_frame_source_->SetParentSource(nullptr);
   }
 }
 
@@ -863,6 +863,8 @@ void BrowserViewRenderer::CopyOutput(
 }
 
 void BrowserViewRenderer::Invalidate() {
+  if (compositor_)
+    compositor_->DidInvalidate();
   PostInvalidate(compositor_);
 }
 
@@ -873,15 +875,7 @@ void BrowserViewRenderer::OnInputEvent() {
 
 void BrowserViewRenderer::AddBeginFrameCompletionCallback(
     base::OnceClosure callback) {
-  if (begin_frame_source_)
-    begin_frame_source_->AddBeginFrameCompletionCallback(std::move(callback));
-}
-
-void BrowserViewRenderer::ProgressFling(base::TimeTicks frame_time) {
-  if (!compositor_)
-    return;
-  TRACE_EVENT0("android_webview", "BrowserViewRenderer::ProgressFling");
-  compositor_->ProgressFling(frame_time);
+  begin_frame_source_->AddBeginFrameCompletionCallback(std::move(callback));
 }
 
 void BrowserViewRenderer::PostInvalidate(

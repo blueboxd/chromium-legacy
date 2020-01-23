@@ -441,7 +441,7 @@ Background.prototype = {
       entered
           .filter((f) => {
             return f.role == RoleType.EMBEDDED_OBJECT ||
-                f.role == RoleType.IFRAME;
+                f.role == RoleType.PLUGIN_OBJECT || f.role == RoleType.IFRAME;
           })
           .forEach((container) => {
             if (!container.state[StateType.FOCUSED]) {

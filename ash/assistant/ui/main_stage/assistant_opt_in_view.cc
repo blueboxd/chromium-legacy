@@ -134,7 +134,8 @@ void AssistantOptInView::InitLayout() {
       views::BoxLayout::MainAxisAlignment::kCenter);
 
   // Container.
-  container_ = new AssistantOptInContainer(/*listener=*/this);
+  container_ = AddChildView(
+      std::make_unique<AssistantOptInContainer>(/*listener=*/this));
 
   layout_manager =
       container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -144,14 +145,12 @@ void AssistantOptInView::InitLayout() {
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
-  AddChildView(container_);
-
   // Label.
-  label_ = new views::StyledLabel(base::string16(), /*listener=*/nullptr);
+  label_ = container_->AddChildView(std::make_unique<views::StyledLabel>(
+      base::string16(), /*listener=*/nullptr));
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
 
-  container_->AddChildView(label_);
   container_->SetFocusForPlatform();
 
   UpdateLabel(AssistantState::Get()->consent_status().value_or(

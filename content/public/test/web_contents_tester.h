@@ -160,10 +160,7 @@ class WebContentsTester {
   virtual void TestDidFinishLoad(const GURL& url) = 0;
 
   // Simulates terminating an load with a network error.
-  virtual void TestDidFailLoadWithError(
-      const GURL& url,
-      int error_code,
-      const base::string16& error_description) = 0;
+  virtual void TestDidFailLoadWithError(const GURL& url, int error_code) = 0;
 
   // Returns whether PauseSubresourceLoading was called on this web contents.
   virtual bool GetPauseSubresourceLoadingCalled() = 0;

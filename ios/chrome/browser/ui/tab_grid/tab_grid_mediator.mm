@@ -15,12 +15,12 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
@@ -341,9 +341,8 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   if (!self.closedSessionWindow)
     return;
   DCHECK(self.browser->GetBrowserState());
-  [self.browser->GetTabModel() restoreSessionWindow:self.closedSessionWindow
-                                  forInitialRestore:NO];
-
+  SessionRestorationBrowserAgent::FromBrowser(self.browser)
+      ->RestoreSessionWindow(self.closedSessionWindow);
   self.closedSessionWindow = nil;
   [self removeEntriesFromTabRestoreService];
   self.syncedClosedTabsCount = 0;

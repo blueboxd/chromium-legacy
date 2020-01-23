@@ -38,8 +38,7 @@ class RefreshThrottlerTest : public testing::Test {
         {{"quota_SuggestionFetcherActiveNTPUser", "2"}});
 
     throttler_ = std::make_unique<RefreshThrottler>(
-        UserClassifier::UserClass::kActiveSuggestionsViewer, &test_prefs_,
-        &test_clock_);
+        UserClass::kActiveSuggestionsViewer, &test_prefs_, &test_clock_);
   }
 
  protected:

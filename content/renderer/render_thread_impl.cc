@@ -1780,7 +1780,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
 #if defined(OS_ANDROID)
   if (GetContentClient()->UsingSynchronousCompositing()) {
     // TODO(ericrk): Collapse with non-webview registration below.
-    if (features::IsUsingVizForWebView()) {
+    if (features::IsUsingVizFrameSubmissionForWebView()) {
       frame_sink_provider_->CreateForWidget(
           render_widget->routing_id(),
           std::move(compositor_frame_sink_receiver),

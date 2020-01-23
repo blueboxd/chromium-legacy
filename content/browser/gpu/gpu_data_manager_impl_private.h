@@ -191,8 +191,6 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void RequestDxDiagNodeData();
   void RequestGpuSupportedRuntimeVersion(bool delayed);
 
-  void GoToNextGpuMode(bool is_fallback);
-
   void RecordCompositingMode();
 
   GpuDataManagerImpl* const owner_;
@@ -229,8 +227,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   // Order of gpu process fallback states, used as a stack.
   std::vector<gpu::GpuMode> fallback_modes_;
 
-  // Used to tell if the gpu was disabled due to process crashes.
-  bool hardware_disabled_by_fallback_ = false;
+  // Used to tell if the gpu was disabled by an explicit call to
+  // DisableHardwareAcceleration(), rather than by fallback.
+  bool hardware_disabled_explicitly_ = false;
 
   // We disable histogram stuff in testing, especially in unit tests because
   // they cause random failures.

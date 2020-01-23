@@ -1242,21 +1242,6 @@ void ChromeContentRendererClient::PrepareErrorPageForHttpStatusError(
           http_method == "POST", error_html);
 }
 
-void ChromeContentRendererClient::GetErrorDescription(
-    const blink::WebURLError& web_error,
-    const std::string& http_method,
-    base::string16* error_description) {
-  error_page::Error error = error_page::Error::NetError(
-      web_error.url(), web_error.reason(), web_error.resolve_error_info(),
-      web_error.has_copy_in_cache());
-  if (error_description) {
-    *error_description = error_page::LocalizedError::GetErrorDetails(
-        error.domain(), error.reason(),
-        error.resolve_error_info().is_secure_network_error,
-        http_method == "POST");
-  }
-}
-
 void ChromeContentRendererClient::PostIOThreadCreated(
     base::SingleThreadTaskRunner* io_thread_task_runner) {
   io_thread_task_runner->PostTask(

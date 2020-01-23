@@ -89,6 +89,7 @@ class MoreButton : public views::Button {
     TrayPopupUtils::ConfigureTrayPopupButton(this);
 
     views::InstallPillHighlightPathGenerator(this);
+    focus_ring()->SetColor(UnifiedSystemTrayView::GetFocusRingColor());
   }
 
   ~MoreButton() override = default;

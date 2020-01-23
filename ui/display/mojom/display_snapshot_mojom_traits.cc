@@ -81,6 +81,10 @@ bool StructTraits<display::mojom::DisplaySnapshotDataView,
   if (!data.ReadType(&type))
     return false;
 
+  display::PrivacyScreenState privacy_screen_state;
+  if (!data.ReadPrivacyScreenState(&privacy_screen_state))
+    return false;
+
   display::PanelOrientation panel_orientation;
   if (!data.ReadPanelOrientation(&panel_orientation))
     return false;
@@ -136,7 +140,7 @@ bool StructTraits<display::mojom::DisplaySnapshotDataView,
   *out = std::make_unique<display::DisplaySnapshot>(
       data.display_id(), origin, physical_size, type,
       data.is_aspect_preserving_scaling(), data.has_overscan(),
-      data.has_privacy_screen(), data.has_color_correction_matrix(),
+      privacy_screen_state, data.has_color_correction_matrix(),
       data.color_correction_in_linear_space(), color_space,
       data.bits_per_channel(), display_name, file_path, std::move(modes),
       panel_orientation, std::move(edid), current_mode, native_mode,

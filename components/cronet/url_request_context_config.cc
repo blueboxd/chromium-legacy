@@ -207,37 +207,6 @@ ParseNetworkErrorLoggingHeaders(
   return result;
 }
 
-quic::ParsedQuicVersionVector ParseQuicVersions(
-    const std::string& quic_versions) {
-  quic::ParsedQuicVersionVector supported_versions;
-  quic::QuicTransportVersionVector all_supported_versions =
-      quic::AllSupportedTransportVersions();
-
-  for (const base::StringPiece& version : base::SplitStringPiece(
-           quic_versions, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    auto it = all_supported_versions.begin();
-    while (it != all_supported_versions.end()) {
-      if (quic::QuicVersionToString(*it) == version) {
-        supported_versions.push_back(
-            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, *it));
-        // Remove the supported version to deduplicate versions extracted from
-        // |quic_versions|.
-        all_supported_versions.erase(it);
-        break;
-      }
-      ++it;
-    }
-
-    for (const auto& supported_version : quic::AllSupportedVersions()) {
-      if (quic::AlpnForVersion(supported_version) == version) {
-        supported_versions.push_back(supported_version);
-        break;
-      }
-    }
-  }
-  return supported_versions;
-}
-
 }  // namespace
 
 URLRequestContextConfig::QuicHint::QuicHint(const std::string& host,
@@ -347,7 +316,7 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
       std::string quic_version_string;
       if (quic_args->GetString(kQuicVersion, &quic_version_string)) {
         quic::ParsedQuicVersionVector supported_versions =
-            ParseQuicVersions(quic_version_string);
+            net::ParseQuicVersions(quic_version_string);
         if (!supported_versions.empty())
           quic_params->supported_versions = supported_versions;
       }

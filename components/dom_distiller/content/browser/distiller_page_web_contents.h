@@ -67,8 +67,7 @@ class DistillerPageWebContents : public DistillerPage,
 
   void DidFailLoad(content::RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
-                   int error_code,
-                   const base::string16& error_description) override;
+                   int error_code) override;
 
  protected:
   bool StringifyOutput() override;

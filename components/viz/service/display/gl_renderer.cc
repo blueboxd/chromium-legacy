@@ -1012,7 +1012,8 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     surface->getCanvas()->save();
     gfx::RRectF clip_rect(backdrop_filter_bounds.value());
     clip_rect.Scale(params->backdrop_filter_quality);
-    surface->getCanvas()->setMatrix(backdrop_filter_bounds_transform.matrix());
+    surface->getCanvas()->setMatrix(
+        SkMatrix(backdrop_filter_bounds_transform.matrix()));
     surface->getCanvas()->clipRRect(SkRRect(clip_rect), SkClipOp::kIntersect,
                                     true /* antialias */);
     surface->getCanvas()->resetMatrix();

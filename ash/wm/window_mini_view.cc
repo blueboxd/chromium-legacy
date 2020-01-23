@@ -155,18 +155,21 @@ WindowMiniView::WindowMiniView(aura::Window* source_window)
   SetBorder(std::move(border));
 }
 
-void WindowMiniView::Layout() {
-  gfx::Rect bounds = GetContentsBounds();
+gfx::Rect WindowMiniView::GetContentAreaBounds() const {
+  const int margin = GetMargin();
+  gfx::Rect bounds(GetLocalBounds());
+  bounds.Inset(margin, margin);
+  bounds.Inset(0, kHeaderHeightDp, 0, 0);
+  return bounds;
+}
 
-  if (backdrop_view_) {
-    gfx::Rect backdrop_bounds = bounds;
-    backdrop_bounds.Inset(0, kHeaderHeightDp, 0, 0);
-    backdrop_view_->SetBoundsRect(backdrop_bounds);
-  }
+void WindowMiniView::Layout() {
+  const gfx::Rect content_area_bounds = GetContentAreaBounds();
+  if (backdrop_view_)
+    backdrop_view_->SetBoundsRect(content_area_bounds);
 
   if (preview_view_) {
-    gfx::Rect preview_bounds = bounds;
-    preview_bounds.Inset(0, kHeaderHeightDp, 0, 0);
+    gfx::Rect preview_bounds = content_area_bounds;
     preview_bounds.ClampToCenteredSize(GetPreviewViewSize());
     preview_view_->SetBoundsRect(preview_bounds);
   }

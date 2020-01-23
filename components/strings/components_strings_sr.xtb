@@ -341,7 +341,7 @@
 <translation id="2465655957518002998">Одаберите начин доставе</translation>
 <translation id="2465688316154986572">Спајање</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />да покренете дијагностику мреже<ph name="END_LINK" /></translation>
-<translation id="2469153820345007638">Редослед од 1 до Н</translation>
+<translation id="2469153820345007638">Редослед од 1 до n</translation>
 <translation id="2473195200299095979">Преведите ову страницу</translation>
 <translation id="2479410451996844060">Неважећа URL адреса претраге.</translation>
 <translation id="2482878487686419369">Обавештења</translation>
@@ -479,7 +479,7 @@
 <translation id="3060227939791841287">C9 (коверат)</translation>
 <translation id="3061707000357573562">Услуга крпљења</translation>
 <translation id="3064966200440839136">Напустићете режим без архивирања да бисте платили у спољној апликацији. Желите ли да наставите?</translation>
-<translation id="3080254622891793721">Графика</translation>
+<translation id="3080254622891793721">Слика</translation>
 <translation id="3086579638707268289">Ваше активности на вебу се прате</translation>
 <translation id="3087734570205094154">Дно</translation>
 <translation id="3095940652251934233">Изјава</translation>
@@ -697,7 +697,7 @@
 <translation id="4082393374666368382">Подешавања – управљање</translation>
 <translation id="4088981014127559358">Померање слике 1. стране по Y оси</translation>
 <translation id="4098354747657067197">Пред вама је обмањујући сајт</translation>
-<translation id="4101413244023615925">Текст и графика</translation>
+<translation id="4101413244023615925">Текст и слика</translation>
 <translation id="4103249731201008433">Серијски број уређаја је неважећи</translation>
 <translation id="4103763322291513355">Посетите &lt;strong&gt;chrome://policy&lt;/strong&gt; да бисте видели листу URL-ова стављених на црну листу и друге смернице које је наметнуо администратор система.</translation>
 <translation id="4108231218301530806">Следећи пут верификуј ову картицу помоћу дигиталног отиска.</translation>
@@ -1135,7 +1135,7 @@
 <translation id="5990559369517809815">Додатак је блокирао захтеве упућене серверу.</translation>
 <translation id="5992691462791905444">Пресавијање у облику полу-хармонике</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> резултата за „<ph name="SEARCH_TEXT" />“</translation>
-<translation id="6008122969617370890">Редослед од Н до 1</translation>
+<translation id="6008122969617370890">Редослед од n до 1</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6014801569448771146">Проверите лозинке</translation>
 <translation id="6015796118275082299">Година</translation>

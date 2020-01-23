@@ -252,3 +252,38 @@ IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest, MakeAndModelMigration) {
   histograms.ExpectBucketCount("Printing.CUPS.MigratedMakeAndModel",
                                1 /* kMigrated */, 1);
 }
+
+IN_PROC_BROWSER_TEST_F(TwoClientPrintersSyncTest,
+                       InvalidPpdReferenceResolution) {
+  ASSERT_TRUE(SetupClients());
+
+  // Initialize sync bridge with test printer.
+  auto printer = CreateTestPrinterSpecifics(0);
+  const std::string spec_printer_id = printer->id();
+
+  auto ppd_ref = std::make_unique<sync_pb::PrinterPPDReference>();
+  ppd_ref->set_autoconf(true);
+  ppd_ref->set_user_supplied_ppd_url("file://fake_ppd_url");
+  printer->set_allocated_ppd_reference(ppd_ref.release());
+
+  auto* bridge = GetPrinterStore(0)->GetSyncBridge();
+  bridge->AddPrinter(std::move(printer));
+
+  // Confirm that the bridge is not migrated.
+  auto spec_printer = bridge->GetPrinter(spec_printer_id);
+  ASSERT_TRUE(spec_printer);
+  ASSERT_TRUE(spec_printer->has_ppd_reference());
+  auto spec_ppd_ref = spec_printer->ppd_reference();
+  ASSERT_TRUE(spec_ppd_ref.autoconf());
+  ASSERT_TRUE(spec_ppd_ref.has_user_supplied_ppd_url());
+
+  // Perform sync.
+  ASSERT_TRUE(SetupSync());
+  spec_printer = bridge->GetPrinter(spec_printer_id);
+  ASSERT_TRUE(spec_printer);
+  ASSERT_TRUE(spec_printer->has_ppd_reference());
+
+  spec_ppd_ref = spec_printer->ppd_reference();
+  EXPECT_FALSE(spec_ppd_ref.autoconf());
+  EXPECT_TRUE(spec_ppd_ref.has_user_supplied_ppd_url());
+}

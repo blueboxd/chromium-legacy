@@ -390,7 +390,7 @@
 <translation id="2687555958734450033">Оптимальный вариант</translation>
 <translation id="2691924980723297736">Предупреждение</translation>
 <translation id="2699302886720511147">Карты, которые принимаются к оплате</translation>
-<translation id="2701514975700770343">Оборотной стороной вверх</translation>
+<translation id="2701514975700770343">Лицевой стороной вниз</translation>
 <translation id="2702801445560668637">Список для чтения</translation>
 <translation id="2704283930420550640">Значение не соответствует формату.</translation>
 <translation id="2705137772291741111">Невозможно прочитать копию сайта, сохраненную в кеше.</translation>
@@ -623,7 +623,7 @@
 <translation id="3765032636089507299">Страница безопасного просмотра находится в разработке.</translation>
 <translation id="3765588406864124894">Почтовый ящик 9</translation>
 <translation id="3778403066972421603">Хотите сохранить карту в аккаунте Google и на этом устройстве?</translation>
-<translation id="3780694243617746492">Приёмник</translation>
+<translation id="3780694243617746492">Выходной лоток</translation>
 <translation id="3781428340399460090">Ярко-розовый</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">Срок действия: до <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
@@ -812,7 +812,7 @@
 <translation id="4628948037717959914">Фото</translation>
 <translation id="4635654612248442824">Ко всем запросам сайта <ph name="ORIGIN" /> требуется применять правила в отношении источников, однако это сейчас невозможно.</translation>
 <translation id="464342062220857295">Функции поиска</translation>
-<translation id="4644670975240021822">В обратном порядке на оборотной стороне</translation>
+<translation id="4644670975240021822">В обратном порядке лицевой стороной вниз</translation>
 <translation id="4646534391647090355">Перейти сейчас</translation>
 <translation id="4658638640878098064">Скоба в левом верхнем углу</translation>
 <translation id="4668929960204016307">,</translation>
@@ -994,7 +994,7 @@
 <translation id="5430298929874300616">Удалить закладку</translation>
 <translation id="5431657950005405462">Файл не найден</translation>
 <translation id="5439770059721715174">Ошибка проверки схемы, <ph name="ERROR_PATH" />: <ph name="ERROR" /></translation>
-<translation id="5443468954631487277">В обратном порядке на лицевой стороне</translation>
+<translation id="5443468954631487277">В обратном порядке лицевой стороной вверх</translation>
 <translation id="5452270690849572955">Страница <ph name="HOST_NAME" /> не найдена</translation>
 <translation id="5455374756549232013">Неверная временная метка политики</translation>
 <translation id="5457113250005438886">Недопустимые данные</translation>
@@ -1511,7 +1511,7 @@
 <translation id="7764225426217299476">Добавить адрес</translation>
 <translation id="7766518757692125295">Юбка</translation>
 <translation id="7770259615151589601">Designated-Long</translation>
-<translation id="7773005668374414287">В том же порядке на лицевой стороне</translation>
+<translation id="7773005668374414287">В том же порядке лицевой стороной вверх</translation>
 <translation id="777702478322588152">Префектура</translation>
 <translation id="7791196057686275387">Прессование</translation>
 <translation id="7791543448312431591">Добавить</translation>
@@ -1725,7 +1725,7 @@
 <translation id="8866928039507595380">Фальцовка</translation>
 <translation id="886872106311861689">В3</translation>
 <translation id="8870413625673593573">Недавно закрытые</translation>
-<translation id="8870494189203302833">В том же порядке на оборотной стороне</translation>
+<translation id="8870494189203302833">В том же порядке лицевой стороной вниз</translation>
 <translation id="8874824191258364635">Введите действительный номер карты.</translation>
 <translation id="8891727572606052622">Недопустимый режим работы прокси-сервера.</translation>
 <translation id="8894794286471754040">Начиная с длинного края</translation>

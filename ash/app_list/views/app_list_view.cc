@@ -618,20 +618,24 @@ void AppListView::InitContents(bool is_tablet_mode) {
   DCHECK(!search_box_view_);
   DCHECK(!announcement_view_);
 
+  auto app_list_background_shield =
+      std::make_unique<AppListBackgroundShieldView>(delegate_->GetShelfSize() /
+                                                    2);
+  app_list_background_shield->UpdateBackground(/*use_blur*/ !is_tablet_mode &&
+                                               is_background_blur_enabled_);
   app_list_background_shield_ =
-      new AppListBackgroundShieldView(delegate_->GetShelfSize() / 2);
-  app_list_background_shield_->UpdateBackground(/*use_blur*/ !is_tablet_mode &&
-                                                is_background_blur_enabled_);
-  AddChildView(app_list_background_shield_);
+      AddChildView(std::move(app_list_background_shield));
 
-  app_list_main_view_ = new AppListMainView(delegate_, this);
-  search_box_view_ = new SearchBoxView(app_list_main_view_, delegate_, this);
+  auto app_list_main_view = std::make_unique<AppListMainView>(delegate_, this);
+  search_box_view_ =
+      new SearchBoxView(app_list_main_view.get(), delegate_, this);
   search_box_view_->Init(is_tablet_mode);
 
-  app_list_main_view_->Init(0, search_box_view_);
-  AddChildView(app_list_main_view_);
-  announcement_view_ = new views::View();
-  AddChildView(announcement_view_);
+  // Assign |app_list_main_view_| here since it is accessed during Init().
+  app_list_main_view_ = app_list_main_view.get();
+  app_list_main_view->Init(0, search_box_view_);
+  AddChildView(std::move(app_list_main_view));
+  announcement_view_ = AddChildView(std::make_unique<views::View>());
 }
 
 void AppListView::InitWidget(gfx::NativeView parent) {

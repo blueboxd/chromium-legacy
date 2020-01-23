@@ -291,7 +291,6 @@ void SyncPrefs::RegisterProfilePrefs(
   for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
     registry->RegisterBooleanPref(GetPrefNameForOsType(type), false);
   }
-  registry->RegisterBooleanPref(prefs::kSyncOsWallpaper, false);
 #endif
 
   // Internal or bookkeeping prefs.

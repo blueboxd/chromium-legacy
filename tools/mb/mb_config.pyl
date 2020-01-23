@@ -66,6 +66,7 @@
       'android-cronet-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86',
       'android-incremental-dbg': 'android_incremental_debug_bot',
       'android-kitkat-arm-rel': 'android_release_bot_minimal_symbols_fastbuild',
+      'android-lollipop-arm-rel': 'android_release_bot_minimal_symbols_fastbuild',
 
       # This bot must use the gpu_tests mixin to match 'Android FYI Release (Nexus 5X)'
       # on the chromium.gpu waterfall, which it mirrors via trybots.pyl.
@@ -675,6 +676,7 @@
       # shared library loading is fixed.
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
       'android-kitkat-arm-rel': 'android_release_trybot_fastbuild',
+      'android-lollipop-arm-rel': 'android_release_trybot_fastbuild',
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild_java_coverage',
       'android-marshmallow-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',

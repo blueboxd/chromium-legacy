@@ -32,9 +32,10 @@ PasswordModelTypeController::PasswordModelTypeController(
       state_changed_callback_(state_changed_callback) {
   pref_registrar_.Init(pref_service_);
   pref_registrar_.Add(
-      prefs::kAccountStorageOptedInAccounts,
-      base::BindRepeating(&PasswordModelTypeController::OnOptInPrefChanged,
-                          base::Unretained(this)));
+      prefs::kAccountStoragePerAccountSettings,
+      base::BindRepeating(
+          &PasswordModelTypeController::OnOptInStateMaybeChanged,
+          base::Unretained(this)));
 }
 
 PasswordModelTypeController::~PasswordModelTypeController() = default;
@@ -88,7 +89,10 @@ void PasswordModelTypeController::OnStateChanged(syncer::SyncService* sync) {
   state_changed_callback_.Run();
 }
 
-void PasswordModelTypeController::OnOptInPrefChanged() {
+void PasswordModelTypeController::OnOptInStateMaybeChanged() {
+  // Note: This method gets called in many other situations as well, not just
+  // when the opt-in state changes, but DataTypePreconditionChanged() is cheap
+  // if nothing actually changed, so some spurious calls don't hurt.
   sync_service_->DataTypePreconditionChanged(syncer::PASSWORDS);
 }
 

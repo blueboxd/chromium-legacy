@@ -494,28 +494,7 @@ class ProgressCenterPanel {
 
     // Update an open view item.
     const newItem = targetGroup.getItem(item.id);
-    if (util.isFeedbackPanelEnabled()) {
-      this.updateFeedbackPanelItem(item, newItem);
-    } else {
-      let itemElement = this.getItemElement_(item.id);
-      if (newItem) {
-        if (!itemElement) {
-          itemElement =
-              new ProgressCenterItemElement(this.element_.ownerDocument);
-          // Find quiet node and insert the item before the quiet node.
-          this.openView_.insertBefore(
-              itemElement, this.openView_.querySelector('.quiet'));
-        }
-        itemElement.update(newItem, targetGroup.isAnimated(item.id));
-      } else {
-        if (itemElement) {
-          itemElement.parentNode.removeChild(itemElement);
-        }
-      }
-
-      // Update the close view.
-      this.updateCloseView_();
-    }
+    this.updateFeedbackPanelItem(item, newItem);
   }
 
   /**
@@ -534,17 +513,9 @@ class ProgressCenterPanel {
     } else {
       const itemId = event.target.getAttribute('data-progress-id');
       targetGroup.completeItemAnimation(itemId);
-      if (util.isFeedbackPanelEnabled()) {
-        const panelItem = this.feedbackHost_.findPanelItemById(itemId);
-        if (panelItem) {
-          this.feedbackHost_.removePanelItem(panelItem);
-        }
-      } else {
-        const newItem = targetGroup.getItem(itemId);
-        const itemElement = this.getItemElement_(itemId);
-        if (!newItem && itemElement) {
-          itemElement.parentNode.removeChild(itemElement);
-        }
+      const panelItem = this.feedbackHost_.findPanelItemById(itemId);
+      if (panelItem) {
+        this.feedbackHost_.removePanelItem(panelItem);
       }
     }
     this.updateCloseView_();

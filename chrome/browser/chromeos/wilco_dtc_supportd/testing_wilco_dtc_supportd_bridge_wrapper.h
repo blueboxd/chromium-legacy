@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_CHROMEOS_WILCO_DTC_SUPPORTD_TESTING_WILCO_DTC_SUPPORTD_BRIDGE_WRAPPER_H_
 #define CHROME_BROWSER_CHROMEOS_WILCO_DTC_SUPPORTD_TESTING_WILCO_DTC_SUPPORTD_BRIDGE_WRAPPER_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_refptr.h"
-#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_bridge.h"
-#include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom-forward.h"
+#include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -17,6 +17,9 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
+
+class WilcoDtcSupportdBridge;
+class WilcoDtcSupportdNetworkContext;
 
 // Manages a fake instance of WilcoDtcSupportdBridge for unit tests. Mocks out
 // the Mojo communication and provides tools for simulating and handling Mojo
@@ -31,7 +34,7 @@ class TestingWilcoDtcSupportdBridgeWrapper final {
   static std::unique_ptr<TestingWilcoDtcSupportdBridgeWrapper> Create(
       wilco_dtc_supportd::mojom::WilcoDtcSupportdService*
           mojo_wilco_dtc_supportd_service,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loade_factory,
+      std::unique_ptr<WilcoDtcSupportdNetworkContext> network_context,
       std::unique_ptr<WilcoDtcSupportdBridge>* bridge);
 
   ~TestingWilcoDtcSupportdBridgeWrapper();
@@ -57,7 +60,7 @@ class TestingWilcoDtcSupportdBridgeWrapper final {
   TestingWilcoDtcSupportdBridgeWrapper(
       wilco_dtc_supportd::mojom::WilcoDtcSupportdService*
           mojo_wilco_dtc_supportd_service,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      std::unique_ptr<WilcoDtcSupportdNetworkContext> network_context,
       std::unique_ptr<WilcoDtcSupportdBridge>* bridge);
 
   // Implements the GetService Mojo method of the WilcoDtcSupportdServiceFactory

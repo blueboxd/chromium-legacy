@@ -115,7 +115,7 @@ ScriptPromise HID::getDevices(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  if (!context->IsFeatureEnabled(mojom::FeaturePolicyFeature::kHid,
+  if (!context->IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kHid,
                                  ReportOptions::kReportOnFailure)) {
     exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
     return ScriptPromise();
@@ -141,7 +141,8 @@ ScriptPromise HID::requestDevice(ScriptState* script_state,
   }
 
   if (!frame->GetDocument()->IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kHid, ReportOptions::kReportOnFailure)) {
+          mojom::blink::FeaturePolicyFeature::kHid,
+          ReportOptions::kReportOnFailure)) {
     exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
     return ScriptPromise();
   }

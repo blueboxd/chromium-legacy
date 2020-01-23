@@ -3092,7 +3092,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5398772614898833570">Anuncios bloqueados</translation>
 <translation id="5402815541704507626">Descargar la actualización a través de datos móviles</translation>
 <translation id="540296380408672091">Siempre bloquear las cookies en <ph name="HOST" /></translation>
-<translation id="540495485885201800">Cambiar con la anterior</translation>
+<translation id="540495485885201800">Cambiar con el elemento anterior</translation>
 <translation id="5405146885510277940">Restablecer configuración</translation>
 <translation id="5408750356094797285">Zoom: <ph name="PERCENT" /></translation>
 <translation id="5411472733320185105">No usar la configuración proxy para estos dominios y hosts:</translation>
@@ -5020,7 +5020,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8101987792947961127">Se requiere Powerwash en el siguiente reinicio</translation>
 <translation id="8102159139658438129">Para ver las opciones para tu teléfono conectado, accede a la <ph name="LINK_BEGIN" />Configuración<ph name="LINK_END" /></translation>
 <translation id="8104696615244072556">Usa la función Powerwash en el dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> y regresa a la versión anterior.</translation>
-<translation id="8106661353233173262">Se produjo un error. Se agotó el tiempo de espera para analizar el archivo.</translation>
 <translation id="8107015733319732394">Se está instalando Google Play Store en tu <ph name="DEVICE_TYPE" />. Esta acción puede tardar unos minutos.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{No hay cookies de terceros}=1{Se bloqueó 1 cookie de terceros}other{Se bloquearon # cookies de terceros}}</translation>
 <translation id="810875025413331850">No se encontraron dispositivos cercanos.</translation>

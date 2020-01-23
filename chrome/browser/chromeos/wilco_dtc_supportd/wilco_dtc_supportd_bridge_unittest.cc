@@ -8,12 +8,13 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/fake_wilco_dtc_supportd_client.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/testing_wilco_dtc_supportd_network_context.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_bridge.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_network_context.h"
 #include "chrome/services/wilco_dtc_supportd/public/mojom/wilco_dtc_supportd.mojom.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -22,8 +23,6 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/handle.h"
-#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -191,8 +190,7 @@ class WilcoDtcSupportdBridgeTest : public testing::Test {
     wilco_dtc_supportd_bridge_ = std::make_unique<WilcoDtcSupportdBridge>(
         std::make_unique<FakeWilcoDtcSupportdBridgeDelegate>(
             &mojo_wilco_dtc_supportd_service_factory_),
-        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            &test_url_loader_factory_),
+        std::make_unique<TestingWilcoDtcSupportdNetworkContext>(),
         std::move(notification_controller));
   }
 
@@ -264,7 +262,6 @@ class WilcoDtcSupportdBridgeTest : public testing::Test {
 
   mojo::Remote<wilco_dtc_supportd::mojom::WilcoDtcSupportdClient>
       mojo_wilco_dtc_supportd_client_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
 };
 
 }  // namespace

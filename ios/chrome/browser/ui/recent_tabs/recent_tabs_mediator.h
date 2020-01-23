@@ -7,14 +7,12 @@
 
 #import <Foundation/Foundation.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/recent_tabs/closed_tabs_observer_bridge.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/recent_tabs/synced_sessions_bridge.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 
-namespace ios {
-class ChromeBrowserState;
-}
 class WebStateList;
 
 @protocol RecentTabsConsumer;

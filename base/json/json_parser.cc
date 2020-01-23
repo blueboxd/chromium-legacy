@@ -126,7 +126,7 @@ JSONParser::StringBuilder& JSONParser::StringBuilder::operator=(
     StringBuilder&& other) = default;
 
 void JSONParser::StringBuilder::Append(uint32_t point) {
-  DCHECK(IsValidCharacter(point));
+  DCHECK(IsValidCodepoint(point));
 
   if (point < kExtendedASCIIStart && !string_) {
     DCHECK_EQ(static_cast<char>(point), pos_[length_]);
@@ -430,7 +430,6 @@ Optional<Value> JSONParser::ConsumeString() {
   StringBuilder string;
   if (!ConsumeStringRaw(&string))
     return nullopt;
-
   return Value(string.DestructiveAsString());
 }
 
@@ -448,10 +447,9 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
   while (PeekChar()) {
     uint32_t next_char = 0;
     if (!ReadUnicodeCharacter(input_.data(),
-                              static_cast<int32_t>(input_.length()),
-                              &index_,
+                              static_cast<int32_t>(input_.length()), &index_,
                               &next_char) ||
-        !IsValidCharacter(next_char)) {
+        !IsValidCodepoint(next_char)) {
       if ((options_ & JSON_REPLACE_INVALID_CHARACTERS) == 0) {
         ReportError(JSONReader::JSON_UNSUPPORTED_ENCODING, 1);
         return false;
@@ -575,8 +573,12 @@ bool JSONParser::DecodeUTF16(uint32_t* out_code_point) {
 
     // Make sure that the token has more characters to consume the
     // lower surrogate.
-    if (!ConsumeIfMatch("\\u"))
-      return false;
+    if (!ConsumeIfMatch("\\u")) {
+      if ((options_ & JSON_REPLACE_INVALID_CHARACTERS) == 0)
+        return false;
+      *out_code_point = kUnicodeReplacementPoint;
+      return true;
+    }
 
     escape_sequence = ConsumeChars(4);
     if (!escape_sequence)
@@ -586,25 +588,20 @@ bool JSONParser::DecodeUTF16(uint32_t* out_code_point) {
     if (!UnprefixedHexStringToInt(*escape_sequence, &code_unit16_low))
       return false;
 
-    if (!CBU16_IS_TRAIL(code_unit16_low))
-      return false;
+    if (!CBU16_IS_TRAIL(code_unit16_low)) {
+      if ((options_ & JSON_REPLACE_INVALID_CHARACTERS) == 0)
+        return false;
+      *out_code_point = kUnicodeReplacementPoint;
+      return true;
+    }
 
     uint32_t code_point =
         CBU16_GET_SUPPLEMENTARY(code_unit16_high, code_unit16_low);
-    if (!IsValidCharacter(code_point))
-      return false;
 
     *out_code_point = code_point;
   } else {
     // Not a surrogate.
     DCHECK(CBU16_IS_SINGLE(code_unit16_high));
-    if (!IsValidCharacter(code_unit16_high)) {
-      if ((options_ & JSON_REPLACE_INVALID_CHARACTERS) == 0) {
-        return false;
-      }
-      *out_code_point = kUnicodeReplacementPoint;
-      return true;
-    }
 
     *out_code_point = code_unit16_high;
   }

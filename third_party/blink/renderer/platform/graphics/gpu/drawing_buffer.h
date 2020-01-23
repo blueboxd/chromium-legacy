@@ -228,10 +228,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // contents of the front buffer. This is done without any pixel copies. The
   // texture in the ImageBitmap is from the active ContextProvider on the
   // DrawingBuffer.
-  // If out_release_callback is null, the image is discarded.  If it is non-null
-  // the image must be recycled or discarded by calling *out_release_callback.
-  scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage(
-      std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
+  scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage();
 
   bool CopyToPlatformTexture(gpu::gles2::GLES2Interface*,
                              GLenum dst_target,
@@ -356,18 +353,22 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     bool pixel_pack_buffer_binding_dirty_ = false;
   };
 
-  struct ColorBuffer : public RefCounted<ColorBuffer> {
-    ColorBuffer(DrawingBuffer*,
+  struct ColorBuffer : public base::RefCountedThreadSafe<ColorBuffer> {
+    ColorBuffer(base::WeakPtr<DrawingBuffer> drawing_buffer,
                 const IntSize&,
                 GLuint texture_id,
                 std::unique_ptr<gfx::GpuMemoryBuffer>,
                 gpu::Mailbox mailbox);
     ~ColorBuffer();
 
+    // The thread on which the ColorBuffer is created and the DrawingBuffer is
+    // bound to.
+    const base::PlatformThreadRef owning_thread_ref;
+
     // The owning DrawingBuffer. Note that DrawingBuffer is explicitly destroyed
     // by the beginDestruction method, which will eventually drain all of its
     // ColorBuffers.
-    scoped_refptr<DrawingBuffer> drawing_buffer;
+    base::WeakPtr<DrawingBuffer> drawing_buffer;
     const IntSize size;
     const GLuint texture_id = 0;
     std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
@@ -430,8 +431,10 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   // Callbacks for mailboxes given to the compositor from
   // FinishPrepareTransferableResource{Gpu,Software}.
+  static void NotifyMailboxReleasedGpu(scoped_refptr<ColorBuffer>,
+                                       const gpu::SyncToken&,
+                                       bool lost_resource);
   void MailboxReleasedGpu(scoped_refptr<ColorBuffer>,
-                          const gpu::SyncToken&,
                           bool lost_resource);
   void MailboxReleasedSoftware(RegisteredBitmap,
                                const gpu::SyncToken&,
@@ -629,6 +632,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
 
   const gl::GpuPreference initial_gpu_;
   gl::GpuPreference current_active_gpu_;
+
+  base::WeakPtrFactory<DrawingBuffer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DrawingBuffer);
 };

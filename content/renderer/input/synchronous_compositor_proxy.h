@@ -120,7 +120,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   mojo::AssociatedReceiver<mojom::SynchronousCompositor> receiver_{this};
   const bool use_in_process_zero_copy_software_draw_;
 
-  const bool using_viz_for_webview_;
+  const bool viz_frame_submission_enabled_;
 
   bool needs_begin_frames_ = false;
 

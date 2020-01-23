@@ -1208,9 +1208,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   _tabSwitcher = self.mainCoordinator.tabSwitcher;
   // Call -restoreInternalState so that the grid shows the correct panel.
-  [_tabSwitcher restoreInternalStateWithMainTabModel:self.mainTabModel
-                                         otrTabModel:self.otrTabModel
-                                      activeTabModel:self.currentTabModel];
+  [_tabSwitcher restoreInternalStateWithMainBrowser:self.mainBrowser
+                                         otrBrowser:self.otrBrowser
+                                      activeBrowser:self.currentBrowser];
 
   // Decide if the First Run UI needs to run.
   BOOL firstRun = (FirstRun::IsChromeFirstRun() ||
@@ -1442,6 +1442,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (TabModel*)currentTabModel {
   return self.currentBVC.tabModel;
+}
+
+- (Browser*)currentBrowser {
+  return self.interfaceProvider.currentInterface.browser;
 }
 
 - (ios::ChromeBrowserState*)currentBrowserState {

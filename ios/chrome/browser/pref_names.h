@@ -48,6 +48,8 @@ extern const char kSigninShouldPromptForSigninAgain[];
 extern const char kOmniboxGeolocationAuthorizationState[];
 extern const char kOmniboxGeolocationLastAuthorizationAlertVersion[];
 
+extern const char kIosUserZoomMultipliers[];
+
 }  // namespace prefs
 
 #endif  // IOS_CHROME_BROWSER_PREF_NAMES_H_

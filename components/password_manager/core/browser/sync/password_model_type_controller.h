@@ -47,7 +47,7 @@ class PasswordModelTypeController : public syncer::ModelTypeController,
   void OnStateChanged(syncer::SyncService* sync) override;
 
  private:
-  void OnOptInPrefChanged();
+  void OnOptInStateMaybeChanged();
 
   PrefService* const pref_service_;
   syncer::SyncService* const sync_service_;

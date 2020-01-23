@@ -17,8 +17,9 @@ namespace blink {
 
 class Element;
 class LayoutObject;
+class Node;
 
-// Computes the intersection between an ancestor (root) element and a
+// Computes the intersection between an ancestor (root) node and a
 // descendant (target) element, with overflow and CSS clipping applied.
 // Optionally also checks whether the target is occluded or has visual
 // effects applied.
@@ -67,11 +68,11 @@ class CORE_EXPORT IntersectionGeometry {
   };
 
   static const LayoutObject* GetRootLayoutObjectForTarget(
-      const Element* root_element,
+      const Node* root_node,
       LayoutObject* target,
       bool check_containing_block_chain);
 
-  IntersectionGeometry(const Element* root,
+  IntersectionGeometry(const Node* root,
                        const Element& target,
                        const Vector<Length>& root_margin,
                        const Vector<float>& thresholds,
@@ -79,7 +80,7 @@ class CORE_EXPORT IntersectionGeometry {
                        CachedRects* cached_rects = nullptr);
 
   IntersectionGeometry(const RootGeometry& root_geometry,
-                       const Element& explicit_root,
+                       const Node& explicit_root,
                        const Element& target,
                        const Vector<float>& thresholds,
                        unsigned flags,

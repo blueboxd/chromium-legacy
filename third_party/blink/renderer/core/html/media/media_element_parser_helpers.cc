@@ -38,10 +38,10 @@ void ReportUnsizedMediaViolation(const LayoutObject* layout_object,
   if (!style.LogicalWidth().IsSpecified() &&
       !style.LogicalHeight().IsSpecified()) {
     layout_object->GetDocument().CountPotentialFeaturePolicyViolation(
-        mojom::FeaturePolicyFeature::kUnsizedMedia);
+        mojom::blink::FeaturePolicyFeature::kUnsizedMedia);
     if (send_report) {
       layout_object->GetDocument().ReportFeaturePolicyViolation(
-          mojom::FeaturePolicyFeature::kUnsizedMedia,
+          mojom::blink::FeaturePolicyFeature::kUnsizedMedia,
           mojom::FeaturePolicyDisposition::kEnforce);
     }
   }

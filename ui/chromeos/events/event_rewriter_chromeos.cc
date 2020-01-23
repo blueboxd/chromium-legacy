@@ -1157,8 +1157,9 @@ void EventRewriterChromeOS::RewriteFunctionKeys(const ui::KeyEvent& key_event,
   }
 
   const bool search_is_pressed = (state->flags & ui::EF_COMMAND_DOWN) != 0;
-  if (layout == kKbdTopRowLayoutWilco) {
-    if (RewriteTopRowKeysForLayoutWilco(key_event, search_is_pressed, state)) {
+  if (layout == kKbdTopRowLayoutWilco || layout == kKbdTopRowLayoutDrallion) {
+    if (RewriteTopRowKeysForLayoutWilco(key_event, search_is_pressed, state,
+                                        layout)) {
       return;
     }
   } else if ((state->key_code >= ui::VKEY_F1) &&
@@ -1480,7 +1481,8 @@ void EventRewriterChromeOS::RewriteKeyEventInContext(
 bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
     const ui::KeyEvent& key_event,
     bool search_is_pressed,
-    ui::EventRewriterChromeOS::MutableKeyState* state) {
+    ui::EventRewriterChromeOS::MutableKeyState* state,
+    KeyboardTopRowLayout layout) {
   // When the kernel issues an function key (Fn modifier help down) and the
   // search key is pressed, the function key needs to be mapped to its
   // corresponding action key. This table defines those function-to-action
@@ -1556,6 +1558,9 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
        {ui::EF_NONE, ui::DomCode::F12, ui::DomKey::F12, ui::VKEY_F12}},
       {{ui::EF_NONE, ui::VKEY_MEDIA_LAUNCH_APP2},
        {ui::EF_NONE, ui::DomCode::F3, ui::DomKey::F3, ui::VKEY_F3}},
+      // VKEY_PRIVACY_SCREEN_TOGGLE shares a key with F12 on Drallion.
+      {{ui::EF_NONE, ui::VKEY_PRIVACY_SCREEN_TOGGLE},
+       {ui::EF_NONE, ui::DomCode::F12, ui::DomKey::F12, ui::VKEY_F12}},
   };
 
   ui::EventRewriterChromeOS::MutableKeyState incoming_without_command = *state;
@@ -1565,6 +1570,16 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
     // Incoming key code is a Fn key. Check if it needs to be mapped back to its
     // corresponding action key.
     if (search_is_pressed) {
+      // On Drallion, F12 shares a key with privacy screen toggle. Account for
+      // this before rewriting for Wilco 1.0 layout.
+      if (layout == kKbdTopRowLayoutDrallion &&
+          state->key_code == ui::VKEY_F12) {
+        state->key_code = ui::VKEY_PRIVACY_SCREEN_TOGGLE;
+        state->code = DomCode::PRIVACY_SCREEN_TOGGLE;
+        // Clear command flag before returning
+        state->flags = (state->flags & ~ui::EF_COMMAND_DOWN);
+        return true;
+      }
       return RewriteWithKeyboardRemappings(kFnkeysToActionKeys,
                                            base::size(kFnkeysToActionKeys),
                                            incoming_without_command, state);
@@ -1575,11 +1590,18 @@ bool EventRewriterChromeOS::RewriteTopRowKeysForLayoutWilco(
     // Incoming key code is an action key. Check if it needs to be mapped back
     // to its corresponding function key.
     if (search_is_pressed != ForceTopRowAsFunctionKeys()) {
+      // On Drallion, mirror mode toggle is on its own key so don't remap it.
+      if (layout == kKbdTopRowLayoutDrallion &&
+          MatchKeyboardRemapping(
+              *state, {ui::EF_CONTROL_DOWN, ui::VKEY_MEDIA_LAUNCH_APP2})) {
+        // Clear command flag before returning
+        state->flags = (state->flags & ~ui::EF_COMMAND_DOWN);
+        return true;
+      }
       return RewriteWithKeyboardRemappings(kActionToFnKeys,
                                            base::size(kActionToFnKeys),
                                            incoming_without_command, state);
     }
-
     // At this point we know search_is_pressed == ForceTopRowAsFunctionKeys().
     // If they're both true, they cancel each other. Thus we can clear the
     // search-key modifier flag.

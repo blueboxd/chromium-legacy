@@ -113,7 +113,6 @@ class WebRtcVideoCaptureSharedDeviceBrowserTest
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
   }
 

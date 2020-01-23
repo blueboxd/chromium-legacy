@@ -188,6 +188,11 @@ template("trichrome_library_apk_tmpl") {
       }
     }
 
+    # http://crbug.com/1042107.
+    if (is_component_build) {
+      main_component_library = "libmonochrome.cr.so"
+    }
+
     if (!is_java_debug) {
       proguard_enabled = true
       proguard_configs = [

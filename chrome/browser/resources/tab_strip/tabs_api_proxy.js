@@ -71,6 +71,7 @@ let ExtensionsApiTab;
 /**
  * @typedef {{
  *   color: string,
+ *   textColor: string,
  *   title: string,
  * }}
  */

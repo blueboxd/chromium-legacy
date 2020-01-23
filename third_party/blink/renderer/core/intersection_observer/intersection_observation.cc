@@ -76,18 +76,16 @@ void IntersectionObservation::Disconnect() {
     DCHECK(target_->IntersectionObserverData());
     ElementIntersectionObserverData* observer_data =
         target_->IntersectionObserverData();
-    observer_data->RemoveObservation(*Observer());
+    observer_data->RemoveObservation(*this);
     // We track connected elements that are either the root of an explicit root
     // observer, or the target of an implicit root observer. If the target was
     // previously being tracked, but no longer needs to be tracked, then remove
     // it.
-    if (target_->isConnected() && Observer()->RootIsImplicit() &&
-        !observer_data->IsTargetOfImplicitRootObserver() &&
-        !observer_data->IsRoot()) {
+    if (target_->isConnected() && Observer()->RootIsImplicit()) {
       IntersectionObserverController* controller =
           target_->GetDocument().GetIntersectionObserverController();
       if (controller)
-        controller->RemoveTrackedElement(*target_);
+        controller->RemoveTrackedObservation(*this);
     }
   }
   entries_.clear();

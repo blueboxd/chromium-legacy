@@ -1391,6 +1391,12 @@ const char kOfferStoreUnmaskedWalletCardsDescription[] =
     "Show the checkbox to offer local saving of a credit card downloaded from "
     "the server.";
 
+const char kOmniboxAssistantVoiceSearchName[] =
+    "Omnibox Assistant Voice Search";
+const char kOmniboxAssistantVoiceSearchDescription[] =
+    "When enabled, use Assistant for omnibox voice query recognition instead of"
+    " Android's built-in voice recognition service. Only works on Android.";
+
 const char kOmniboxAutocompleteTitlesName[] = "Omnibox Autocomplete Titles";
 const char kOmniboxAutocompleteTitlesDescription[] =
     "Allows autocompleting bookmark, history, and document suggestions when the"
@@ -2618,6 +2624,12 @@ const char kHomepageSettingsUIConversionDescription[] =
     "homepage URL through a radio button group, and add promo box on NTP "
     "if homepage is not enabled.";
 
+const char kIntentBlockExternalFormRedirectsNoGestureName[] =
+    "Block intents from form submissions without user gesture";
+const char kIntentBlockExternalFormRedirectsNoGestureDescription[] =
+    "Require a user gesture that triggered a form submission in order to "
+    "allow for redirecting to an external intent.";
+
 const char kInterestFeedNotificationsName[] = "Interest Feed Notifications";
 const char kInterestFeedNotificationsDescription[] =
     "Show notifications for some suggested content from the interest feed. "
@@ -3640,10 +3652,6 @@ const char kExperimentalAccessibilitySwitchAccessTextName[] =
 const char kExperimentalAccessibilitySwitchAccessTextDescription[] =
     "Enable experimental or in-progress Switch Access features for improved "
     "text input";
-
-const char kFileManagerFeedbackPanelDescription[] =
-    "Enable feedback panel in the Files app.";
-const char kFileManagerFeedbackPanelName[] = "Files App. feedback panel";
 
 const char kFileManagerTouchModeName[] = "Files App. touch mode";
 const char kFileManagerTouchModeDescription[] =

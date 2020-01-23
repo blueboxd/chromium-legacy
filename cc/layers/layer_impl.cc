@@ -927,9 +927,16 @@ float LayerImpl::GetIdealContentsScale() const {
   gfx::Vector2dF transform_scales =
       MathUtil::ComputeTransform2dScaleComponents(transform, default_scale);
 
+  return GetPreferredRasterScale(transform_scales);
+}
+
+float LayerImpl::GetPreferredRasterScale(
+    gfx::Vector2dF raster_space_scale_factor) {
   constexpr float kMaxScaleRatio = 5.f;
-  float lower_scale = std::min(transform_scales.x(), transform_scales.y());
-  float higher_scale = std::max(transform_scales.x(), transform_scales.y());
+  float lower_scale =
+      std::min(raster_space_scale_factor.x(), raster_space_scale_factor.y());
+  float higher_scale =
+      std::max(raster_space_scale_factor.x(), raster_space_scale_factor.y());
   return std::min(kMaxScaleRatio * lower_scale, higher_scale);
 }
 

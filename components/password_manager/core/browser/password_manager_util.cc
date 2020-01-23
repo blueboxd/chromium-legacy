@@ -60,6 +60,61 @@ std::string GetAccountHash(const CoreAccountId& account_id) {
   return account_hash;
 }
 
+const char kAccountStorageOptedInKey[] = "opted_in";
+
+// Helper class for reading account storage settings for a given account.
+class AccountStorageSettingsReader {
+ public:
+  AccountStorageSettingsReader(const PrefService* prefs,
+                               const CoreAccountId& account_id) {
+    DCHECK(!account_id.empty());
+
+    const base::DictionaryValue* global_pref = prefs->GetDictionary(
+        password_manager::prefs::kAccountStoragePerAccountSettings);
+    if (global_pref)
+      account_settings_ = global_pref->FindDictKey(GetAccountHash(account_id));
+  }
+
+  bool IsOptedIn() {
+    if (!account_settings_)
+      return false;
+    return account_settings_->FindBoolKey(kAccountStorageOptedInKey)
+        .value_or(false);
+  }
+
+ private:
+  // May be null, if no settings for this account were saved yet.
+  const base::Value* account_settings_ = nullptr;
+};
+
+// Helper class for updating account storage settings for a given account. Like
+// with DictionaryPrefUpdate, updates are only published once the instance gets
+// destroyed.
+class ScopedAccountStorageSettingsUpdate {
+ public:
+  ScopedAccountStorageSettingsUpdate(PrefService* prefs,
+                                     const CoreAccountId& account_id)
+      : update_(prefs,
+                password_manager::prefs::kAccountStoragePerAccountSettings) {
+    DCHECK(!account_id.empty());
+    const std::string account_hash = GetAccountHash(account_id);
+    account_settings_ = update_->FindDictKey(account_hash);
+    if (!account_settings_) {
+      account_settings_ =
+          update_->SetKey(account_hash, base::DictionaryValue());
+    }
+    DCHECK(account_settings_);
+  }
+
+  void SetOptedIn(bool opt_in) {
+    account_settings_->SetBoolKey(kAccountStorageOptedInKey, opt_in);
+  }
+
+ private:
+  DictionaryPrefUpdate update_;
+  base::Value* account_settings_ = nullptr;
+};
+
 }  // namespace
 
 // Update |credential| to reflect usage.
@@ -345,13 +400,7 @@ bool IsOptedInForAccountStorage(const PrefService* pref_service,
   if (account_id.empty())
     return false;
 
-  const base::DictionaryValue* dict = pref_service->GetDictionary(
-      password_manager::prefs::kAccountStorageOptedInAccounts);
-  if (!dict)
-    return false;
-
-  base::Optional<bool> opted_in = dict->FindBoolKey(GetAccountHash(account_id));
-  return opted_in.value_or(false);
+  return AccountStorageSettingsReader(pref_service, account_id).IsOptedIn();
 }
 
 bool ShouldShowAccountStorageOptIn(const PrefService* pref_service,
@@ -398,9 +447,8 @@ void SetAccountStorageOptIn(PrefService* pref_service,
     // rare, but is ultimately harmless - just do nothing here.
     return;
   }
-  DictionaryPrefUpdate update(
-      pref_service, password_manager::prefs::kAccountStorageOptedInAccounts);
-  update->SetBoolean(GetAccountHash(account_id), opt_in);
+  ScopedAccountStorageSettingsUpdate(pref_service, account_id)
+      .SetOptedIn(opt_in);
 }
 
 }  // namespace password_manager_util

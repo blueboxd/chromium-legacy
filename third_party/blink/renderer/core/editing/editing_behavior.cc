@@ -177,6 +177,10 @@ const KeyboardCodeKeyDownEntry kKeyboardCodeKeyDownEntries[] = {
     {'Z', kCtrlKey | kShiftKey, "Redo"},
     {'Y', kCtrlKey, "Redo"},
 #endif
+#if defined(OS_WIN)
+    {VKEY_BACK, kAltKey, "Undo"},
+    {VKEY_BACK, kAltKey | kShiftKey, "Redo"},
+#endif
     {VKEY_INSERT, 0, "OverWrite"},
 };
 

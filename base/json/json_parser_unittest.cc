@@ -310,12 +310,6 @@ TEST_F(JSONParserTest, ErrorMessages) {
   EXPECT_EQ(JSONParser::FormatErrorMessage(1, 7, JSONReader::kInvalidEscape),
             root.error_message);
   EXPECT_EQ(JSONReader::JSON_INVALID_ESCAPE, root.error_code);
-
-  root = JSONReader::ReadAndReturnValueWithError(("[\"\\ufffe\"]"),
-                                                 JSON_PARSE_RFC);
-  EXPECT_EQ(JSONParser::FormatErrorMessage(1, 8, JSONReader::kInvalidEscape),
-            root.error_message);
-  EXPECT_EQ(JSONReader::JSON_INVALID_ESCAPE, root.error_code);
 }
 
 TEST_F(JSONParserTest, Decode4ByteUtf8Char) {
@@ -331,14 +325,43 @@ TEST_F(JSONParserTest, Decode4ByteUtf8Char) {
 TEST_F(JSONParserTest, DecodeUnicodeNonCharacter) {
   // Tests Unicode code points (encoded as escaped UTF-16) that are not valid
   // characters.
-  EXPECT_FALSE(JSONReader::Read("[\"\\ufdd0\"]"));
-  EXPECT_FALSE(JSONReader::Read("[\"\\ufffe\"]"));
-  EXPECT_FALSE(JSONReader::Read("[\"\\ud83f\\udffe\"]"));
-
-  EXPECT_TRUE(
-      JSONReader::Read("[\"\\ufdd0\"]", JSON_REPLACE_INVALID_CHARACTERS));
-  EXPECT_TRUE(
-      JSONReader::Read("[\"\\ufffe\"]", JSON_REPLACE_INVALID_CHARACTERS));
+  EXPECT_TRUE(JSONReader::Read("[\"\\uFDD0\"]"));         // U+FDD0
+  EXPECT_TRUE(JSONReader::Read("[\"\\uFDDF\"]"));         // U+FDDF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uFDEF\"]"));         // U+FDEF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uFFFE\"]"));         // U+FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uFFFF\"]"));         // U+FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD83F\\uDFFE\"]"));  // U+01FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD83F\\uDFFF\"]"));  // U+01FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD87F\\uDFFE\"]"));  // U+02FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD87F\\uDFFF\"]"));  // U+02FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD8BF\\uDFFE\"]"));  // U+03FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD8BF\\uDFFF\"]"));  // U+03FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD8FF\\uDFFE\"]"));  // U+04FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD8FF\\uDFFF\"]"));  // U+04FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD93F\\uDFFE\"]"));  // U+05FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD93F\\uDFFF\"]"));  // U+05FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD97F\\uDFFE\"]"));  // U+06FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD97F\\uDFFF\"]"));  // U+06FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD9BF\\uDFFE\"]"));  // U+07FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD9BF\\uDFFF\"]"));  // U+07FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD9FF\\uDFFE\"]"));  // U+08FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uD9FF\\uDFFF\"]"));  // U+08FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDA3F\\uDFFE\"]"));  // U+09FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDA3F\\uDFFF\"]"));  // U+09FFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDA7F\\uDFFE\"]"));  // U+0AFFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDA7F\\uDFFF\"]"));  // U+0AFFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDABF\\uDFFE\"]"));  // U+0BFFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDABF\\uDFFF\"]"));  // U+0BFFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDAFF\\uDFFE\"]"));  // U+0CFFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDAFF\\uDFFF\"]"));  // U+0CFFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDB3F\\uDFFE\"]"));  // U+0DFFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDB3F\\uDFFF\"]"));  // U+0DFFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDB7F\\uDFFE\"]"));  // U+0EFFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDB7F\\uDFFF\"]"));  // U+0EFFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDBBF\\uDFFE\"]"));  // U+0FFFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDBBF\\uDFFF\"]"));  // U+0FFFFF
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDBFF\\uDFFE\"]"));  // U+10FFFE
+  EXPECT_TRUE(JSONReader::Read("[\"\\uDBFF\\uDFFF\"]"));  // U+10FFFF
 }
 
 TEST_F(JSONParserTest, DecodeNegativeEscapeSequence) {
@@ -346,28 +369,31 @@ TEST_F(JSONParserTest, DecodeNegativeEscapeSequence) {
   EXPECT_FALSE(JSONReader::Read("[\"\\u-00A\"]"));
 }
 
-// Verifies invalid utf-8 characters are replaced.
+// Verifies invalid code points are replaced.
 TEST_F(JSONParserTest, ReplaceInvalidCharacters) {
-  const std::string bogus_char = "󿿿";
-  const std::string quoted_bogus_char = "\"" + bogus_char + "\"";
-  std::unique_ptr<JSONParser> parser(
-      NewTestParser(quoted_bogus_char, JSON_REPLACE_INVALID_CHARACTERS));
-  Optional<Value> value(parser->ConsumeString());
-  ASSERT_TRUE(value);
-  std::string str;
-  EXPECT_TRUE(value->GetAsString(&str));
-  EXPECT_EQ(kUnicodeReplacementString, str);
-}
-
-TEST_F(JSONParserTest, ReplaceInvalidUTF16EscapeSequence) {
-  const std::string invalid = "\"\\ufffe\"";
+  // U+D800 is a lone surrogate.
+  const std::string invalid = "\"\xED\xA0\x80\"";
   std::unique_ptr<JSONParser> parser(
       NewTestParser(invalid, JSON_REPLACE_INVALID_CHARACTERS));
   Optional<Value> value(parser->ConsumeString());
   ASSERT_TRUE(value);
   std::string str;
   EXPECT_TRUE(value->GetAsString(&str));
-  EXPECT_EQ(kUnicodeReplacementString, str);
+  // Expect three U+FFFD (one for each UTF-8 byte in the invalid code
+  // point).
+  EXPECT_EQ("\xEF\xBF\xBD\xEF\xBF\xBD\xEF\xBF\xBD", str);
+}
+
+TEST_F(JSONParserTest, ReplaceInvalidUTF16EscapeSequence) {
+  // U+D800 is a lone surrogate.
+  const std::string invalid = "\"_\\uD800_\"";
+  std::unique_ptr<JSONParser> parser(
+      NewTestParser(invalid, JSON_REPLACE_INVALID_CHARACTERS));
+  Optional<Value> value(parser->ConsumeString());
+  ASSERT_TRUE(value);
+  std::string str;
+  EXPECT_TRUE(value->GetAsString(&str));
+  EXPECT_EQ("_\xEF\xBF\xBD_", str);
 }
 
 TEST_F(JSONParserTest, ParseNumberErrors) {

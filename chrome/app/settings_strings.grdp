@@ -614,6 +614,9 @@
     <message name="IDS_SETTINGS_CROSTINI_SHARED_PATHS_LIST_HEADING" desc="Label for list of shared folders.">
       Shared folders
     </message>
+    <message name="IDS_SETTINGS_CROSTINI_SHARED_PATHS_LIST_EMPTY_MESSAGE" desc="Message shown when the user has not yet shared any folders in Crostini.">
+      Shared folders will appear here
+    </message>
     <message name="IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_ADD" desc="Instructions for how to add shared folders in Crostini.">
       To share, right-click on a folder in Files app, then select "Share with Linux".
     </message>
@@ -725,10 +728,10 @@
       Remove sharing
     </message>
     <message name="IDS_SETTINGS_PLUGIN_VM_REMOVE_LABEL" desc="Label for the row to open a dialog confirming removal of Plugin VM.">
-      Remove Plugin VM
+      Uninstall Plugin VM
     </message>
     <message name="IDS_SETTINGS_PLUGIN_VM_REMOVE_BUTTON" desc="Label for the button to open a dialog confirming removal of Plugin VM.">
-      Remove
+      Uninstall
     </message>
     <message name="IDS_SETTINGS_PLUGIN_VM_CONFIRM_REMOVE_DIALOG_BODY" desc="Message of the confirmation dialog displayed before removal begins.">
       Removing Plugin VM will delete your VM. This includes its applications, settings, and data. Are you sure you wish to continue?

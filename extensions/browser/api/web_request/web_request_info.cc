@@ -206,6 +206,7 @@ void WebRequestInfoInitParams::InitializeWebViewAndFrameData(
     web_view_rules_registry_id =
         navigation_ui_data->web_view_rules_registry_id();
     frame_data = navigation_ui_data->frame_data();
+    parent_routing_id = navigation_ui_data->parent_routing_id();
   } else if (frame_id >= 0) {
     // Grab any WebView-related information if relevant.
     WebViewRendererState::WebViewInfo web_view_info;
@@ -220,6 +221,9 @@ void WebRequestInfoInitParams::InitializeWebViewAndFrameData(
     // For subresource loads we attempt to resolve the FrameData immediately.
     frame_data = ExtensionApiFrameIdMap::Get()->GetFrameData(render_process_id,
                                                              frame_id);
+
+    parent_routing_id =
+        content::GlobalFrameRoutingId(render_process_id, frame_id);
   }
 }
 
@@ -244,7 +248,8 @@ WebRequestInfo::WebRequestInfo(WebRequestInfoInitParams params)
       web_view_rules_registry_id(params.web_view_rules_registry_id),
       web_view_embedder_process_id(params.web_view_embedder_process_id),
       is_service_worker_script(params.is_service_worker_script),
-      navigation_id(std::move(params.navigation_id)) {}
+      navigation_id(std::move(params.navigation_id)),
+      parent_routing_id(params.parent_routing_id) {}
 
 WebRequestInfo::~WebRequestInfo() = default;
 

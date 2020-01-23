@@ -709,7 +709,7 @@ void GraphicsLayer::SetContentsToImage(
     auto affine =
         image_orientation.TransformFromDefault(FloatSize(image_size_));
     auto transform = affine.ToTransformationMatrix();
-    matrix = TransformationMatrix::ToSkMatrix44(transform);
+    matrix = SkMatrix(TransformationMatrix::ToSkMatrix44(transform));
   } else if (paint_image) {
     matrix = SkMatrix::I();
     image_size_ = IntSize(paint_image.width(), paint_image.height());

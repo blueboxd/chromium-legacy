@@ -17,10 +17,10 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.native_page.BasicNativePage;
-import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPageView.IncognitoNewTabPageManager;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
+import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 

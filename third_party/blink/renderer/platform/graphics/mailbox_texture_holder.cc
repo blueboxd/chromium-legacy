@@ -14,55 +14,10 @@
 
 namespace blink {
 
-namespace {
-
-void ReleaseTexture(
-    bool is_converted_from_skia_texture,
-    unsigned texture_id,
-    std::unique_ptr<gpu::Mailbox> mailbox,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider,
-    std::unique_ptr<gpu::SyncToken> sync_token) {
-  if (!is_converted_from_skia_texture && texture_id && context_provider) {
-    context_provider->ContextProvider()->ContextGL()->WaitSyncTokenCHROMIUM(
-        sync_token->GetData());
-    context_provider->ContextProvider()->ContextGL()->DeleteTextures(
-        1, &texture_id);
-  }
-}
-
-}  // namespace
-
 MailboxTextureHolder::MailboxTextureHolder(
     const gpu::Mailbox& mailbox,
-    const gpu::SyncToken& sync_token,
-    unsigned texture_id_to_delete_after_mailbox_consumed,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
-        context_provider_wrapper,
-    IntSize mailbox_size,
-    bool is_origin_top_left)
-    : TextureHolder(std::move(context_provider_wrapper),
-                    base::MakeRefCounted<MailboxRef>(nullptr),
-                    is_origin_top_left),
-      mailbox_(mailbox),
-      texture_id_(texture_id_to_delete_after_mailbox_consumed),
-      is_converted_from_skia_texture_(false),
-      thread_id_(0),
-      sk_image_info_(SkImageInfo::MakeN32Premul(mailbox_size.Width(),
-                                                mailbox_size.Height())),
-      texture_target_(GL_TEXTURE_2D) {
-  DCHECK(mailbox_.IsSharedImage());
-
-  mailbox_ref()->set_sync_token(sync_token);
-  InitCommon();
-}
-
-MailboxTextureHolder::MailboxTextureHolder(
-    const gpu::Mailbox& mailbox,
-    const gpu::SyncToken& sync_token,
-    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&
-        context_provider_wrapper,
+    base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     scoped_refptr<MailboxRef> mailbox_ref,
-    PlatformThreadId context_thread_id,
     const SkImageInfo& sk_image_info,
     GLenum texture_target,
     bool is_origin_top_left)
@@ -70,16 +25,9 @@ MailboxTextureHolder::MailboxTextureHolder(
                     std::move(mailbox_ref),
                     is_origin_top_left),
       mailbox_(mailbox),
-      texture_id_(0),
-      is_converted_from_skia_texture_(false),
-      thread_id_(context_thread_id),
       sk_image_info_(sk_image_info),
       texture_target_(texture_target) {
-  DCHECK(thread_id_);
-  DCHECK(!IsCrossThread() || sync_token.verified_flush());
   DCHECK(mailbox_.IsSharedImage());
-
-  this->mailbox_ref()->set_sync_token(sync_token);
 }
 
 void MailboxTextureHolder::Sync(MailboxSyncMode mode) {
@@ -133,12 +81,6 @@ void MailboxTextureHolder::Sync(MailboxSyncMode mode) {
   }
 }
 
-void MailboxTextureHolder::InitCommon() {
-  DCHECK(!thread_id_);
-  thread_id_ = base::PlatformThread::CurrentId();
-  texture_thread_task_runner_ = Thread::Current()->GetTaskRunner();
-}
-
 bool MailboxTextureHolder::IsValid() const {
   if (IsCrossThread()) {
     // If context is is from another thread, validity cannot be verified.
@@ -149,29 +91,9 @@ bool MailboxTextureHolder::IsValid() const {
 }
 
 bool MailboxTextureHolder::IsCrossThread() const {
-  return thread_id_ != base::PlatformThread::CurrentId();
+  return mailbox_ref()->is_cross_thread();
 }
 
-MailboxTextureHolder::~MailboxTextureHolder() {
-  std::unique_ptr<gpu::SyncToken> passed_sync_token(
-      new gpu::SyncToken(mailbox_ref()->sync_token()));
-  std::unique_ptr<gpu::Mailbox> passed_mailbox(new gpu::Mailbox(mailbox_));
-
-  if (texture_thread_task_runner_ && IsCrossThread()) {
-    PostCrossThreadTask(
-        *texture_thread_task_runner_, FROM_HERE,
-        CrossThreadBindOnce(&ReleaseTexture, is_converted_from_skia_texture_,
-                            texture_id_, WTF::Passed(std::move(passed_mailbox)),
-                            WTF::Passed(ContextProviderWrapper()),
-                            WTF::Passed(std::move(passed_sync_token))));
-  } else {
-    ReleaseTexture(is_converted_from_skia_texture_, texture_id_,
-                   std::move(passed_mailbox), ContextProviderWrapper(),
-                   std::move(passed_sync_token));
-  }
-
-  texture_id_ = 0u;  // invalidate the texture.
-  texture_thread_task_runner_ = nullptr;
-}
+MailboxTextureHolder::~MailboxTextureHolder() = default;
 
 }  // namespace blink

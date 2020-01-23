@@ -15,6 +15,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/window_backdrop.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "base/bind.h"
@@ -92,8 +93,8 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
   // TODO(https://crbug.com/997480): Determine if all non-resizable windows
   // should have this behavior, or just the feedback app.
   if (app_window->extension_id() == extension_misc::kFeedbackExtensionId) {
-    window->SetProperty(ash::kBackdropWindowMode,
-                        ash::BackdropWindowMode::kAutoSemiOpaque);
+    ash::WindowBackdrop::Get(window)->SetBackdropType(
+        ash::WindowBackdrop::BackdropType::kSemiOpaque);
   }
   observed_window_.Add(window);
 }

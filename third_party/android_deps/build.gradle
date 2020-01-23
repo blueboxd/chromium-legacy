@@ -137,6 +137,10 @@ dependencies {
 
     buildCompile "com.google.errorprone:error_prone_core:2.3.3"
 
+    // Jetify to androidx.
+    buildCompile "com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta08"
+    buildCompile "commons-cli:commons-cli:1.3.1"
+
     // testCompile targets have test_only = true.
     testCompile "androidx.test:core:1.0.0"
     testCompile "androidx.test:monitor:1.1.0"

@@ -49,6 +49,7 @@ namespace blink {
 class ContentSecurityPolicy;
 class FeaturePolicy;
 class PolicyValue;
+class SecurityContextInit;
 class SecurityOrigin;
 struct ParsedFeaturePolicyDeclaration;
 
@@ -73,11 +74,7 @@ class CORE_EXPORT SecurityContext {
  public:
   enum SecurityContextType { kLocal, kRemote };
 
-  SecurityContext(scoped_refptr<SecurityOrigin> origin,
-                  WebSandboxFlags sandbox_flags,
-                  std::unique_ptr<FeaturePolicy> feature_policy,
-                  std::unique_ptr<DocumentPolicy> document_policy,
-                  SecurityContextType context_type);
+  SecurityContext(const SecurityContextInit&, SecurityContextType context_type);
   virtual ~SecurityContext() = default;
 
   void Trace(blink::Visitor*);
@@ -160,9 +157,9 @@ class CORE_EXPORT SecurityContext {
   // If a non-null base::Optional<mojom::FeaturePolicyDisposition>* is provided
   // and the feature is disabled via feature policy, it will be populated to
   // indicate whether the feature usage should be blocked or merely reported.
-  bool IsFeatureEnabled(mojom::FeaturePolicyFeature) const;
+  bool IsFeatureEnabled(mojom::blink::FeaturePolicyFeature) const;
   bool IsFeatureEnabled(
-      mojom::FeaturePolicyFeature,
+      mojom::blink::FeaturePolicyFeature,
       PolicyValue threshold_value,
       base::Optional<mojom::FeaturePolicyDisposition>* = nullptr) const;
 
@@ -174,7 +171,7 @@ class CORE_EXPORT SecurityContext {
   std::unique_ptr<DocumentPolicy> document_policy_;
 
  private:
-  FeatureEnabledState GetFeatureEnabledState(mojom::FeaturePolicyFeature,
+  FeatureEnabledState GetFeatureEnabledState(mojom::blink::FeaturePolicyFeature,
                                              PolicyValue threshold_value) const;
 
   Member<ContentSecurityPolicy> content_security_policy_;

@@ -5023,7 +5023,6 @@
 <translation id="8101987792947961127">ต้องใช้ Powerwash ในการรีบูตครั้งถัดไป</translation>
 <translation id="8102159139658438129">ไปที่<ph name="LINK_BEGIN" />การตั้งค่า<ph name="LINK_END" />เพื่อดูตัวเลือกสำหรับโทรศัพท์ที่เชื่อมต่อ</translation>
 <translation id="8104696615244072556">Powerwash อุปกรณ์ <ph name="IDS_SHORT_PRODUCT_NAME" /> ของคุณและเปลี่ยนกลับไปใช้เวอร์ชันก่อนหน้า</translation>
-<translation id="8106661353233173262">เกิดข้อผิดพลาด ไฟล์ที่สแกนหมดเวลาแล้ว</translation>
 <translation id="8107015733319732394">กำลังติดตั้ง Google Play Store ใน <ph name="DEVICE_TYPE" /> อาจใช้เวลาสักครู่</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{ไม่มีคุกกี้ของบุคคลที่สาม}=1{บล็อกคุกกี้ของบุคคลที่สามไว้ 1 รายการ}other{บล็อกคุกกี้ของบุคคลที่สามไว้ # รายการ}}</translation>
 <translation id="810875025413331850">ไม่พบอุปกรณ์ที่อยู่ใกล้เคียง</translation>
@@ -5108,7 +5107,7 @@
 <translation id="8227119283605456246">แนบไฟล์</translation>
 <translation id="8230134520748321204">บันทึกรหัสผ่านสำหรับ <ph name="ORIGIN" /> ไหม</translation>
 <translation id="8234795456569844941">โปรดช่วยวิศวกรของเราแก้ปัญหานี้ แจ้งให้เราทราบถึงสิ่งที่เกิดขึ้นก่อนที่คุณจะได้รับข้อความแสดงข้อผิดพลาดของโปรไฟล์</translation>
-<translation id="8236123533334037984">องค์กรของคุณกำลังสแกนการอัปโหลดนี้เพื่อการอนุมัติด้านความปลอดภัย</translation>
+<translation id="8236123533334037984">องค์กรของคุณกำลังสแกนข้อมูลที่อัปโหลดนี้เพื่อการอนุมัติด้านความปลอดภัย</translation>
 <translation id="8236917170563564587">แชร์แท็บนี้แทน</translation>
 <translation id="8237647586961940482">สีชมพูเข้มและสีแดง</translation>
 <translation id="8241040075392580210">เชดดี้</translation>

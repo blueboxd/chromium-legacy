@@ -63,6 +63,10 @@ bool FloatRect::EqualWithinEpsilon(const FloatRect& other,
 
 #endif
 
+bool FloatRect::IsFinite() const {
+  return static_cast<SkRect>(*this).isFinite();
+}
+
 bool FloatRect::IsExpressibleAsIntRect() const {
   return isWithinIntRange(X()) && isWithinIntRange(Y()) &&
          isWithinIntRange(Width()) && isWithinIntRange(Height()) &&

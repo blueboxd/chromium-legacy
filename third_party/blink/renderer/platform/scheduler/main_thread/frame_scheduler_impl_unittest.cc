@@ -2314,11 +2314,9 @@ class WebSchedulingTaskQueueTest : public FrameSchedulerImplTest {
   // Helper for posting tasks to a WebSchedulingTaskQueue. |task_descriptor| is
   // a string with space delimited task identifiers. The first letter of each
   // task identifier specifies the task queue priority:
-  // - 'I': Immediate
-  // - 'H': High
-  // - 'D': Default
-  // - 'L': Low
-  // - 'E': Idle
+  // - 'U': UserBlocking
+  // - 'V': UserVisible
+  // - 'B': Background
   void PostWebSchedulingTestTasks(Vector<String>* run_order,
                                   const String& task_descriptor) {
     std::istringstream stream(task_descriptor.Utf8());
@@ -2327,20 +2325,14 @@ class WebSchedulingTaskQueueTest : public FrameSchedulerImplTest {
       stream >> task;
       WebSchedulingPriority priority;
       switch (task[0]) {
-        case 'I':
-          priority = WebSchedulingPriority::kImmediatePriority;
+        case 'U':
+          priority = WebSchedulingPriority::kUserBlockingPriority;
           break;
-        case 'H':
-          priority = WebSchedulingPriority::kHighPriority;
+        case 'V':
+          priority = WebSchedulingPriority::kUserVisiblePriority;
           break;
-        case 'D':
-          priority = WebSchedulingPriority::kDefaultPriority;
-          break;
-        case 'L':
-          priority = WebSchedulingPriority::kLowPriority;
-          break;
-        case 'E':
-          priority = WebSchedulingPriority::kIdlePriority;
+        case 'B':
+          priority = WebSchedulingPriority::kBackgroundPriority;
           break;
         default:
           EXPECT_FALSE(true);
@@ -2361,23 +2353,23 @@ class WebSchedulingTaskQueueTest : public FrameSchedulerImplTest {
 TEST_F(WebSchedulingTaskQueueTest, TasksRunInPriorityOrder) {
   Vector<String> run_order;
 
-  PostWebSchedulingTestTasks(&run_order, "E1 E2 L1 L2 D1 D2 H1 H2 I1 I2");
+  PostWebSchedulingTestTasks(&run_order, "B1 B2 V1 V2 U1 U2");
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_THAT(run_order, testing::ElementsAre("I1", "I2", "H1", "H2", "D1",
-                                              "D2", "L1", "L2", "E1", "E2"));
+  EXPECT_THAT(run_order,
+              testing::ElementsAre("U1", "U2", "V1", "V2", "B1", "B2"));
 }
 
 TEST_F(WebSchedulingTaskQueueTest, DynamicTaskPriorityOrder) {
   Vector<String> run_order;
 
-  PostWebSchedulingTestTasks(&run_order, "E1 E2 D1 D2 I1 I2");
-  task_queues_[static_cast<int>(WebSchedulingPriority::kImmediatePriority)]
-      ->SetPriority(WebSchedulingPriority::kLowPriority);
+  PostWebSchedulingTestTasks(&run_order, "B1 B2 V1 V2 U1 U2");
+  task_queues_[static_cast<int>(WebSchedulingPriority::kUserBlockingPriority)]
+      ->SetPriority(WebSchedulingPriority::kBackgroundPriority);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order,
-              testing::ElementsAre("D1", "D2", "I1", "I2", "E1", "E2"));
+              testing::ElementsAre("V1", "V2", "B1", "B2", "U1", "U2"));
 }
 
 }  // namespace frame_scheduler_impl_unittest

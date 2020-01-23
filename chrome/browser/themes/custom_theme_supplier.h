@@ -43,6 +43,11 @@ class CustomThemeSupplier
     return theme_type_;
   }
 
+  const std::string& extension_id() const {
+    DCHECK_EQ(theme_type_, EXTENSION);
+    return extension_id_;
+  }
+
   // Called when the theme starts being used.
   virtual void StartUsingTheme();
 
@@ -72,11 +77,17 @@ class CustomThemeSupplier
  protected:
   virtual ~CustomThemeSupplier();
 
+  void set_extension_id(base::StringPiece id) {
+    DCHECK_EQ(theme_type_, EXTENSION);
+    id.CopyToString(&extension_id_);
+  }
+
  private:
   friend class base::RefCountedDeleteOnSequence<CustomThemeSupplier>;
   friend class base::DeleteHelper<CustomThemeSupplier>;
 
   ThemeType theme_type_;
+  std::string extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomThemeSupplier);
 };

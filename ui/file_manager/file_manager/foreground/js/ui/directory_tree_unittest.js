@@ -87,8 +87,8 @@ function setUp() {
  * @return {!HTMLElement}
  */
 function createElements() {
-  let parent = document.createElement('div');
-  let tree = document.createElement('div');
+  const parent = document.createElement('div');
+  const tree = document.createElement('div');
   parent.appendChild(tree);
   return /** @type {!HTMLElement} */ (tree);
 }
@@ -117,8 +117,8 @@ function createMockMetadataModel() {
  * @return {!Array<string>} Array of label strings.
  */
 function getDirectoryTreeItemLabels(directoryTree) {
-  let labels = [];
-  for (let item of directoryTree.items) {
+  const labels = [];
+  for (const item of directoryTree.items) {
     labels.push(item.label);
   }
   return labels;
@@ -616,11 +616,11 @@ function testAddFirstTeamDrive(callback) {
           .then(() => {
             fakeFileSystemURLEntries['filesystem:drive/team_drives/a'] =
                 MockDirectoryEntry.create(driveFileSystem, '/team_drives/a');
-            let event = {
+            const event = {
               entry: fakeFileSystemURLEntries['filesystem:drive/team_drives'],
               eventType: 'changed',
             };
-            for (let listener of directoryChangedListeners) {
+            for (const listener of directoryChangedListeners) {
               listener(event);
             }
           })
@@ -677,11 +677,11 @@ function testRemoveLastTeamDrive(callback) {
             });
           })
           .then(() => {
-            let event = {
+            const event = {
               entry: fakeFileSystemURLEntries['filesystem:drive/team_drives'],
               eventType: 'changed',
             };
-            for (let listener of directoryChangedListeners) {
+            for (const listener of directoryChangedListeners) {
               listener(event);
             }
           })
@@ -723,7 +723,7 @@ function testAddFirstComputer(callback) {
   directoryTree = /** @type {!DirectoryTree} */ (directoryTree);
   directoryTree.redraw(true);
 
-  let driveItem = directoryTree.items[0];
+  const driveItem = directoryTree.items[0];
 
   // Test that we initially do not have a Computers item under Drive, and that
   // adding a filesystem "/Computers/a" results in the Computers item being
@@ -736,11 +736,11 @@ function testAddFirstComputer(callback) {
           .then(() => {
             fakeFileSystemURLEntries['filesystem:drive/Computers/a'] =
                 MockDirectoryEntry.create(driveFileSystem, '/Computers/a');
-            let event = {
+            const event = {
               entry: fakeFileSystemURLEntries['filesystem:drive/Computers'],
               eventType: 'changed',
             };
-            for (let listener of directoryChangedListeners) {
+            for (const listener of directoryChangedListeners) {
               listener(event);
             }
           })
@@ -798,11 +798,11 @@ function testRemoveLastComputer(callback) {
             });
           })
           .then(() => {
-            let event = {
+            const event = {
               entry: fakeFileSystemURLEntries['filesystem:drive/Computers'],
               eventType: 'changed',
             };
-            for (let listener of directoryChangedListeners) {
+            for (const listener of directoryChangedListeners) {
               listener(event);
             }
           })

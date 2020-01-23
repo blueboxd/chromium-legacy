@@ -32,11 +32,6 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
 
   const sk_sp<SkImage>& GetSkImage() const { return image_; }
 
-  // When creating a AcceleratedStaticBitmap from a texture-backed SkImage, this
-  // function will be called to create a TextureHolder object.
-  SkiaTextureHolder(sk_sp<SkImage>,
-                    base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&);
-
   // This function consumes the mailbox in the input parameter and turn it into
   // a texture-backed SkImage.
   // |shared_image_texture_id| is an optional texture bound to the

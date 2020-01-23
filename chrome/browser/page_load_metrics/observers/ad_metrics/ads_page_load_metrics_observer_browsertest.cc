@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -38,6 +39,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "media/base/media_switches.h"
+#include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
@@ -56,6 +58,10 @@ namespace {
 const char kCrossOriginHistogramId[] =
     "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
     "OriginStatus";
+
+const char kCreativeOriginHistogramId[] =
+    "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
+    "CreativeOriginStatus";
 
 const char kAdUserActivationHistogramId[] =
     "PageLoad.Clients.Ads.FrameCounts.AdFrames.PerFrame."
@@ -219,6 +225,184 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
   ukm_recorder.ExpectEntryMetric(
       entries.front(), ukm::builders::AdFrameLoad::kStatus_CrossOriginName,
       static_cast<int>(FrameData::OriginStatus::kCross));
+}
+
+// Each CreativeOriginStatus* browser test inputs a pointer to a frame object
+// representing the frame tree path of a website with with a (possibly null)
+// ad subframe, which itself may have linearly nested subframes.
+// Each test then queries cross_site_iframe_factory.html with the query string
+// corresponding to the frame tree path, computes the actual creative origin
+// status and compares it to the expected creative origin status.
+class CreativeOriginAdsPageLoadMetricsObserverBrowserTest
+    : public AdsPageLoadMetricsObserverBrowserTest {
+ public:
+  CreativeOriginAdsPageLoadMetricsObserverBrowserTest() = default;
+  ~CreativeOriginAdsPageLoadMetricsObserverBrowserTest() override = default;
+
+  // Data structure to store the frame tree path for the root/main frame and
+  // its single ad subframe (if such a child exists), as well as to keep track
+  // of whether or not to render text in the frame. A child frame may have at
+  // most one child frame of its own, and so forth.
+  class Frame {
+   public:
+    Frame(std::string origin,
+          std::unique_ptr<Frame> child,
+          bool has_text = false)
+        : origin_(origin), child_(std::move(child)), has_text_(has_text) {}
+
+    ~Frame() = default;
+
+    bool HasChild() const { return child_ != nullptr; }
+
+    bool HasDescendantRenderingText(bool is_top_frame = true) const {
+      if (!is_top_frame && has_text_)
+        return true;
+
+      if (!child_)
+        return false;
+
+      return child_->HasDescendantRenderingText(false);
+    }
+
+    std::string Hostname() const { return origin_ + ".com"; }
+
+    std::string Print(bool should_escape = false) const {
+      std::vector<std::string> query_pieces = {origin_};
+      if (!has_text_)
+        query_pieces.push_back("{no-text-render}");
+      query_pieces.push_back("(");
+      if (child_)
+        query_pieces.push_back(child_->Print());
+      query_pieces.push_back(")");
+      std::string out = base::StrCat(query_pieces);
+      if (should_escape)
+        out = net::EscapeQueryParamValue(out, false /* use_plus */);
+      return out;
+    }
+
+    std::string PrintChild(bool should_escape = false) const {
+      return HasChild() ? child_->Print(should_escape) : "";
+    }
+
+   private:
+    std::string origin_;
+    std::unique_ptr<Frame> child_;
+    bool has_text_;
+  };
+
+  // A convenience function to make frame creation less verbose.
+  std::unique_ptr<Frame> MakeFrame(std::string origin,
+                                   std::unique_ptr<Frame> child,
+                                   bool has_text = false) {
+    return std::make_unique<Frame>(origin, std::move(child), has_text);
+  }
+
+  void TestCreativeOriginStatus(std::unique_ptr<Frame> frames,
+                                FrameData::OriginStatus expected_status =
+                                    FrameData::OriginStatus::kUnknown) {
+    base::HistogramTester histogram_tester;
+
+    // The file cross_site_iframe_factory.html loads URLs like:
+    // http://a.com:40919/
+    //   cross_site_iframe_factory.html?a{no-text-render}(b(c{no-text-render}))
+    // The frame thus intended as the creative will be the only one in which
+    // text renders.
+    std::string ad_suffix = frames->PrintChild(true /* should_escape */);
+    if (!ad_suffix.empty())
+      SetRulesetToDisallowURLsWithPathSuffix(ad_suffix);
+    std::string query = frames->Print();
+    std::string relative_url = "/cross_site_iframe_factory.html?" + query;
+    const GURL main_url(
+        embedded_test_server()->GetURL(frames->Hostname(), relative_url));
+
+    // If there is text to render in any subframe, wait until there is a first
+    // contentful paint.  Load some bytes in any case.
+    auto waiter = CreatePageLoadMetricsTestWaiter();
+    if (frames->HasDescendantRenderingText()) {
+      waiter->AddSubFrameExpectation(
+          page_load_metrics::PageLoadMetricsTestWaiter::TimingField::
+              kFirstContentfulPaint);
+    } else if (frames->HasChild()) {
+      waiter->AddSubframeDataExpectation();
+    }
+    EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), main_url));
+    waiter->Wait();
+
+    // Navigate away to force the histogram recording.
+    EXPECT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+
+    // Test histograms.
+    if (frames->HasChild()) {
+      histogram_tester.ExpectUniqueSample(kCreativeOriginHistogramId,
+                                          expected_status, 1);
+    } else {
+      // If no subframe exists, verify that histogram is not set.
+      histogram_tester.ExpectTotalCount(kCreativeOriginHistogramId, 0);
+    }
+  }
+};
+
+// Test that an ad with same origin as the main page is same-origin.
+IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
+                       CreativeOriginStatusSame) {
+  TestCreativeOriginStatus(
+      MakeFrame("a",
+                MakeFrame("a", MakeFrame("b", MakeFrame("c", nullptr)), true)),
+      FrameData::OriginStatus::kSame);
+}
+
+// Test that an ad with a different origin as the main page is cross-origin.
+IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
+                       CreativeOriginStatusCross) {
+  TestCreativeOriginStatus(
+      MakeFrame("a", MakeFrame("b", MakeFrame("c", nullptr), true)),
+      FrameData::OriginStatus::kCross);
+}
+
+// Test that an ad creative with the same different origin as the main page,
+// but nested in a cross-origin root ad frame, is same-origin.
+IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
+                       CreativeOriginStatusSameNested) {
+  TestCreativeOriginStatus(
+      MakeFrame("a",
+                MakeFrame("b", MakeFrame("a", MakeFrame("c", nullptr), true))),
+      FrameData::OriginStatus::kSame);
+}
+
+// Test that an ad creative with a different origin as the main page,
+// but nested in a same-origin root ad frame, is cross-origin.
+IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
+                       CreativeOriginStatusCrossNested) {
+  TestCreativeOriginStatus(
+      MakeFrame("a",
+                MakeFrame("a", MakeFrame("b", MakeFrame("c", nullptr), true))),
+      FrameData::OriginStatus::kCross);
+}
+
+// Test that an ad creative with a different origin as the main page,
+// but nested two deep in a same-origin root ad frame, is cross-origin.
+IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
+                       CreativeOriginStatusCrossDoubleNested) {
+  TestCreativeOriginStatus(
+      MakeFrame("a",
+                MakeFrame("a", MakeFrame("a", MakeFrame("b", nullptr, true)))),
+      FrameData::OriginStatus::kCross);
+}
+
+// Test that if no iframe renders text, the creative origin status is
+// indeterminate.
+IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
+                       CreativeOriginStatusNoCreativeDesignated) {
+  TestCreativeOriginStatus(
+      MakeFrame("a", MakeFrame("b", MakeFrame("c", nullptr))),
+      FrameData::OriginStatus::kUnknown);
+}
+
+// Test that if no iframe is created, there is no histogram set.
+IN_PROC_BROWSER_TEST_F(CreativeOriginAdsPageLoadMetricsObserverBrowserTest,
+                       CreativeOriginStatusNoSubframes) {
+  TestCreativeOriginStatus(MakeFrame("a", nullptr));
 }
 
 IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,

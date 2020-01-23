@@ -10,6 +10,8 @@
 Polymer({
   is: 'settings-plugin-vm-page',
 
+  behaviors: [PrefsBehavior],
+
   properties: {
     /** Preferences state. */
     prefs: {
@@ -33,8 +35,24 @@ Polymer({
     },
   },
 
-  /** @private */
+  /**
+   * @param {!Event} event
+   * @private
+   */
   onSubpageClick_(event) {
-    settings.Router.getInstance().navigateTo(settings.routes.PLUGIN_VM_DETAILS);
+    if (this.getPref('plugin_vm.image_exists').value) {
+      settings.Router.getInstance().navigateTo(
+          settings.routes.PLUGIN_VM_DETAILS);
+    }
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onEnableClick_(event) {
+    settings.PluginVmBrowserProxyImpl.getInstance()
+        .requestPluginVmInstallerView();
+    event.stopPropagation();
   },
 });

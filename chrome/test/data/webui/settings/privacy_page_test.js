@@ -149,30 +149,14 @@ cr.define('settings_privacy_page', function() {
       /** @type {settings.TestPrivacyPageBrowserProxy} */
       let testBrowserProxy;
 
-      /** @type {settings.TestMetricsBrowserProxy} */
-      let testMetricsBrowserProxy;
-
       /** @type {SettingsPrivacyPageElement} */
       let page;
 
       setup(function() {
-        testMetricsBrowserProxy = new TestMetricsBrowserProxy();
-        settings.MetricsBrowserProxyImpl.instance_ = testMetricsBrowserProxy;
         testBrowserProxy = new TestPrivacyPageBrowserProxy();
         settings.PrivacyPageBrowserProxyImpl.instance_ = testBrowserProxy;
-        const testSyncBrowserProxy = new TestSyncBrowserProxy();
-        settings.SyncBrowserProxyImpl.instance_ = testSyncBrowserProxy;
         PolymerTest.clearBody();
         page = document.createElement('settings-privacy-page');
-        page.prefs = {
-          profile: {password_manager_leak_detection: {value: true}},
-          signin: {
-            allowed_on_next_startup:
-                {type: chrome.settingsPrivate.PrefType.BOOLEAN, value: true}
-          },
-          safebrowsing:
-              {enabled: {value: true}, scout_reporting_enabled: {value: true}},
-        };
         document.body.appendChild(page);
       });
 
@@ -182,7 +166,7 @@ cr.define('settings_privacy_page', function() {
 
       test('LogMangeCerfificatesClick', function() {
         page.$$('#manageCertificates').click();
-        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
             .then(result => {
               assertEquals(
                   settings.SettingsPageInteractions.PRIVACY_MANAGE_CERTIFICATES,
@@ -192,7 +176,7 @@ cr.define('settings_privacy_page', function() {
 
       test('LogClearBrowsingClick', function() {
         page.$$('#clearBrowsingData').click();
-        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
             .then(result => {
               assertEquals(
                   settings.SettingsPageInteractions.PRIVACY_CLEAR_BROWSING_DATA,
@@ -202,7 +186,7 @@ cr.define('settings_privacy_page', function() {
 
       test('LogDoNotTrackClick', function() {
         page.$$('#doNotTrack').click();
-        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
             .then(result => {
               assertEquals(
                   settings.SettingsPageInteractions.PRIVACY_DO_NOT_TRACK,
@@ -212,7 +196,7 @@ cr.define('settings_privacy_page', function() {
 
       test('LogCanMakePaymentToggleClick', function() {
         page.$$('#canMakePaymentToggle').click();
-        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
             .then(result => {
               assertEquals(
                   settings.SettingsPageInteractions.PRIVACY_PAYMENT_METHOD,
@@ -222,32 +206,10 @@ cr.define('settings_privacy_page', function() {
 
       test('LogSiteSettingsSubpageClick', function() {
         page.$$('#site-settings-subpage-trigger').click();
-        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
+        return testBrowserProxy.whenCalled('recordSettingsPageHistogram')
             .then(result => {
               assertEquals(
                   settings.SettingsPageInteractions.PRIVACY_SITE_SETTINGS,
-                  result);
-            });
-      });
-
-      test('LogSafeBrowsingToggleClick', function() {
-        Polymer.dom.flush();
-        page.$$('#safeBrowsingToggle').click();
-        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions.PRIVACY_SAFE_BROWSING,
-                  result);
-            });
-      });
-
-      test('LogSafeBrowsingReportingToggleClick', function() {
-        Polymer.dom.flush();
-        page.$$('#safeBrowsingReportingToggle').click();
-        return testMetricsBrowserProxy.whenCalled('recordSettingsPageHistogram')
-            .then(result => {
-              assertEquals(
-                  settings.SettingsPageInteractions.PRIVACY_IMPROVE_SECURITY,
                   result);
             });
       });

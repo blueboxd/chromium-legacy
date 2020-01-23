@@ -1,0 +1,4 @@
+# Using WallClockTimer from relaunch notification until it's moved into base.
+include_rules = [
+  "+chrome/browser/ui/views/relaunch_notification/wall_clock_timer.h",
+]

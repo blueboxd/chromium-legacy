@@ -142,7 +142,7 @@ class TestLayerTreeFrameSink : public LayerTreeFrameSink,
       parent_local_surface_id_allocator_;
   gfx::Size display_size_;
   float device_scale_factor_ = 0;
-  gfx::ColorSpace output_color_space_ = gfx::ColorSpace::CreateSRGB();
+  gfx::DisplayColorSpaces display_color_spaces_;
 
   // Uses surface_manager_.
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;

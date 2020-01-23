@@ -30,7 +30,6 @@
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
 #include "chrome/browser/enterprise_reporting/report_generator.h"
 #include "chrome/browser/enterprise_reporting/report_scheduler.h"
-#include "chrome/browser/enterprise_reporting/request_timer.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -783,8 +782,7 @@ void UserCloudPolicyManagerChromeOS::StartReportSchedulerIfReady(
   }
 
   report_scheduler_ = std::make_unique<enterprise_reporting::ReportScheduler>(
-      client(), std::make_unique<enterprise_reporting::RequestTimer>(),
-      std::make_unique<enterprise_reporting::ReportGenerator>());
+      client(), std::make_unique<enterprise_reporting::ReportGenerator>());
 
   report_scheduler_->OnDMTokenUpdated();
 }

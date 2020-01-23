@@ -2368,7 +2368,7 @@ bool WebLocalFrameImpl::IsAllowedToDownload() const {
     // allow downloads.
     if (GetFrame()->Tree().Parent() &&
         !GetFrame()->Tree().Parent()->GetSecurityContext()->IsFeatureEnabled(
-            mojom::FeaturePolicyFeature::kDownloads)) {
+            mojom::blink::FeaturePolicyFeature::kDownloads)) {
       return false;
     }
     return !GetFrame()->Owner() ||

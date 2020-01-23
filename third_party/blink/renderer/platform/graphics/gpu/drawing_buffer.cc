@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/web_graphics_context_3d_provider_wrapper.h"
@@ -190,7 +191,8 @@ DrawingBuffer::DrawingBuffer(
       opengl_flip_y_extension_(
           ContextProvider()->GetCapabilities().mesa_framebuffer_flip_y),
       initial_gpu_(gpu_preference),
-      current_active_gpu_(gpu_preference) {
+      current_active_gpu_(gpu_preference),
+      weak_factory_(this) {
   // Used by browser tests to detect the use of a DrawingBuffer.
   TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);
@@ -390,9 +392,9 @@ bool DrawingBuffer::FinishPrepareTransferableResourceSoftware(
   // This holds a ref on the DrawingBuffer that will keep it alive until the
   // mailbox is released (and while the release callback is running). It also
   // owns the SharedBitmap.
-  auto func = WTF::Bind(&DrawingBuffer::MailboxReleasedSoftware,
-                        scoped_refptr<DrawingBuffer>(this),
-                        WTF::Passed(std::move(registered)));
+  auto func = base::BindOnce(&DrawingBuffer::MailboxReleasedSoftware,
+                             weak_factory_.GetWeakPtr(),
+                             WTF::Passed(std::move(registered)));
   *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));
 
   ResetBuffersToAutoClear();
@@ -501,9 +503,8 @@ bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
 
     // This holds a ref on the DrawingBuffer that will keep it alive until the
     // mailbox is released (and while the release callback is running).
-    auto func =
-        WTF::Bind(&DrawingBuffer::MailboxReleasedGpu,
-                  scoped_refptr<DrawingBuffer>(this), color_buffer_for_mailbox);
+    auto func = base::BindOnce(&DrawingBuffer::NotifyMailboxReleasedGpu,
+                               color_buffer_for_mailbox);
     *out_release_callback = viz::SingleReleaseCallback::Create(std::move(func));
   }
 
@@ -515,17 +516,28 @@ bool DrawingBuffer::FinishPrepareTransferableResourceGpu(
   return true;
 }
 
+// static
+void DrawingBuffer::NotifyMailboxReleasedGpu(
+    scoped_refptr<ColorBuffer> color_buffer,
+    const gpu::SyncToken& sync_token,
+    bool lost_resource) {
+  DCHECK(color_buffer->owning_thread_ref == base::PlatformThread::CurrentRef());
+
+  // Update the SyncToken to ensure that we will wait for it even if we
+  // immediately destroy this buffer.
+  color_buffer->receive_sync_token = sync_token;
+  if (color_buffer->drawing_buffer) {
+    color_buffer->drawing_buffer->MailboxReleasedGpu(color_buffer,
+                                                     lost_resource);
+  }
+}
+
 void DrawingBuffer::MailboxReleasedGpu(scoped_refptr<ColorBuffer> color_buffer,
-                                       const gpu::SyncToken& sync_token,
                                        bool lost_resource) {
   // If the mailbox has been returned by the compositor then it is no
   // longer being presented, and so is no longer the front buffer.
   if (color_buffer == front_color_buffer_)
     front_color_buffer_ = nullptr;
-
-  // Update the SyncToken to ensure that we will wait for it even if we
-  // immediately destroy this buffer.
-  color_buffer->receive_sync_token = sync_token;
 
   if (destruction_in_progress_ || color_buffer->size != size_ ||
       gl_->GetGraphicsResetStatusKHR() != GL_NO_ERROR || lost_resource ||
@@ -558,8 +570,7 @@ void DrawingBuffer::MailboxReleasedSoftware(RegisteredBitmap registered,
   recycled_bitmaps_.push_back(std::move(registered));
 }
 
-scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
-    std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
+scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage() {
   ScopedStateRestorer scoped_state_restorer(this);
 
   viz::TransferableResource transferable_resource;
@@ -580,34 +591,9 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
         SkImage::MakeFromBitmap(black_bitmap));
   }
 
+  DCHECK(release_callback);
   DCHECK_EQ(size_.Width(), transferable_resource.size.width());
   DCHECK_EQ(size_.Height(), transferable_resource.size.height());
-
-  // Make our own textureId that is a reference on the same texture backing
-  // being used as the front buffer (which was returned from
-  // PrepareTransferableResourceInternal()). We do not need to wait on the sync
-  // token in |transferable_resource| since the mailbox was produced on the same
-  // |m_gl| context that we are using here. Similarly, the |release_callback|
-  // will run on the same context so we don't need to send a sync token for this
-  // consume action back to it.
-  // TODO(danakj): Instead of using PrepareTransferableResourceInternal(), we
-  // could just use the actual texture id and avoid needing to produce/consume a
-  // mailbox.
-  GLuint texture_id = gl_->CreateAndTexStorage2DSharedImageCHROMIUM(
-      transferable_resource.mailbox_holder.mailbox.name);
-
-  if (out_release_callback) {
-    // Allow the consumer to release the resource when done using it, so it can
-    // be recycled.
-    *out_release_callback = std::move(release_callback);
-  } else {
-    // Return the mailbox but report that the resource is lost to prevent trying
-    // to use the backing for future frames. We keep it alive with our own
-    // reference to the backing via our |textureId|.
-    gpu::SyncToken sync_token;
-    gl_->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
-    release_callback->Run(sync_token, true /* lost_resource */);
-  }
 
   // We reuse the same mailbox name from above since our texture id was consumed
   // from it.
@@ -620,12 +606,18 @@ scoped_refptr<StaticBitmapImage> DrawingBuffer::TransferToStaticBitmapImage(
   const auto& sk_image_sync_token =
       transferable_resource.mailbox_holder.sync_token;
 
+  const SkImageInfo sk_image_info =
+      SkImageInfo::MakeN32Premul(size_.Width(), size_.Height());
+
   // TODO(xidachen): Create a small pool of recycled textures from
   // ImageBitmapRenderingContext's transferFromImageBitmap, and try to use them
   // in DrawingBuffer.
-  return AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
-      sk_image_mailbox, sk_image_sync_token, texture_id,
-      context_provider_->GetWeakPtr(), size_, opengl_flip_y_extension_);
+  return AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
+      sk_image_mailbox, sk_image_sync_token, /* shared_image_texture_id = */ 0,
+      sk_image_info, transferable_resource.mailbox_holder.texture_target,
+      /* is_origin_top_left = */ opengl_flip_y_extension_,
+      context_provider_->GetWeakPtr(), base::PlatformThread::CurrentRef(),
+      Thread::Current()->GetTaskRunner(), std::move(release_callback));
 }
 
 scoped_refptr<DrawingBuffer::ColorBuffer>
@@ -675,18 +667,29 @@ scoped_refptr<CanvasResource> DrawingBuffer::AsCanvasResource(
 }
 
 DrawingBuffer::ColorBuffer::ColorBuffer(
-    DrawingBuffer* drawing_buffer,
+    base::WeakPtr<DrawingBuffer> drawing_buffer,
     const IntSize& size,
     GLuint texture_id,
     std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
     gpu::Mailbox mailbox)
-    : drawing_buffer(drawing_buffer),
+    : owning_thread_ref(base::PlatformThread::CurrentRef()),
+      drawing_buffer(std::move(drawing_buffer)),
       size(size),
       texture_id(texture_id),
       gpu_memory_buffer(std::move(gpu_memory_buffer)),
       mailbox(mailbox) {}
 
 DrawingBuffer::ColorBuffer::~ColorBuffer() {
+  if (base::PlatformThread::CurrentRef() != owning_thread_ref ||
+      !drawing_buffer) {
+    // If the context has been destroyed no cleanup is necessary since all
+    // resources below are automatically destroyed. Note that if a ColorBuffer
+    // is being destroyed on a different thread, it implies that the owning
+    // thread was destroyed which means the associated context was also
+    // destroyed.
+    return;
+  }
+
   gpu::gles2::GLES2Interface* gl = drawing_buffer->gl_;
   gpu::SharedImageInterface* sii =
       drawing_buffer->ContextProvider()->SharedImageInterface();
@@ -1628,8 +1631,9 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     // Import frontbuffer of swap chain into GL.
     texture_id = gl_->CreateAndTexStorage2DSharedImageCHROMIUM(
         front_buffer_mailbox.name);
-    front_color_buffer_ = base::AdoptRef(
-        new ColorBuffer(this, size, texture_id, nullptr, front_buffer_mailbox));
+    front_color_buffer_ = base::MakeRefCounted<ColorBuffer>(
+        weak_factory_.GetWeakPtr(), size, texture_id, nullptr,
+        front_buffer_mailbox);
   }
   // Import the backbuffer of swap chain or allocated SharedImage into GL.
   texture_id =
@@ -1656,9 +1660,9 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     gl_->DeleteFramebuffers(1, &fbo);
   }
 
-  return base::AdoptRef(new ColorBuffer(this, size, texture_id,
-                                        std::move(gpu_memory_buffer),
-                                        back_buffer_mailbox));
+  return base::MakeRefCounted<ColorBuffer>(
+      weak_factory_.GetWeakPtr(), size, texture_id,
+      std::move(gpu_memory_buffer), back_buffer_mailbox);
 }
 
 void DrawingBuffer::AttachColorBufferToReadFramebuffer() {

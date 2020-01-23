@@ -252,7 +252,7 @@ bool ShouldBlockSyncScriptForFeaturePolicy(const ScriptElementBase* element,
                                            mojom::ScriptType script_type,
                                            bool parser_inserted) {
   if (element->GetDocument().IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kSyncScript)) {
+          mojom::blink::FeaturePolicyFeature::kSyncScript)) {
     return false;
   }
 

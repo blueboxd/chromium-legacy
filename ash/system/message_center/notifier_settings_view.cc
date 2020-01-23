@@ -240,9 +240,8 @@ class ScrollContentsView : public views::View {
 class EmptyNotifierView : public views::View {
  public:
   EmptyNotifierView() {
-    const SkColor text_color =
-        AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-            ContentLayerType::kTextPrimary, kUnifiedMenuTextColor);
+    const SkColor text_color = AshColorProvider::Get()->GetContentLayerColor(
+        ContentLayerType::kTextPrimary, AshColorMode::kDark);
     auto layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0);
     layout->set_main_axis_alignment(
@@ -292,9 +291,8 @@ NotifierSettingsView::NotifierButton::NotifierButton(
   auto checkbox =
       std::make_unique<views::Checkbox>(base::string16(), this /* listener */);
   name_view->SetAutoColorReadabilityEnabled(false);
-  name_view->SetEnabledColor(
-      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor));
+  name_view->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kTextPrimary, AshColorMode::kDark));
   name_view->SetSubpixelRenderingEnabled(false);
   // "Roboto-Regular, 13sp" is specified in the mock.
   name_view->SetFontList(
@@ -438,9 +436,8 @@ NotifierSettingsView::NotifierSettingsView() {
   auto quiet_mode_label =
       std::make_unique<views::Label>(l10n_util::GetStringUTF16(
           IDS_ASH_MESSAGE_CENTER_QUIET_MODE_BUTTON_TOOLTIP));
-  const SkColor text_color =
-      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor);
+  const SkColor text_color = AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kTextPrimary, AshColorMode::kDark);
   quiet_mode_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   // "Roboto-Regular, 13sp" is specified in the mock.
   quiet_mode_label->SetFontList(

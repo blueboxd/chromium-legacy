@@ -21,7 +21,11 @@ class BrowserControlsOffsetManagerClient;
 // Manages the position of the browser controls.
 class CC_EXPORT BrowserControlsOffsetManager {
  public:
-  enum AnimationDirection { NO_ANIMATION, SHOWING_CONTROLS, HIDING_CONTROLS };
+  enum class AnimationDirection {
+    NO_ANIMATION,
+    SHOWING_CONTROLS,
+    HIDING_CONTROLS
+  };
 
   static std::unique_ptr<BrowserControlsOffsetManager> Create(
       BrowserControlsOffsetManagerClient* client,
@@ -142,7 +146,7 @@ class CC_EXPORT BrowserControlsOffsetManager {
     // Whether the animation is initialized with a direction and start and stop
     // values.
     bool IsInitialized() { return initialized_; }
-    bool Direction() { return direction_; }
+    AnimationDirection Direction() { return direction_; }
     void Initialize(AnimationDirection direction,
                     float start_value,
                     float stop_value,
@@ -170,7 +174,7 @@ class CC_EXPORT BrowserControlsOffsetManager {
     // Whether the animation is initialized by setting start and stop time and
     // values.
     bool initialized_ = false;
-    AnimationDirection direction_ = NO_ANIMATION;
+    AnimationDirection direction_ = AnimationDirection::NO_ANIMATION;
     // Monotonic start and stop times.
     base::TimeTicks start_time_;
     base::TimeTicks stop_time_;

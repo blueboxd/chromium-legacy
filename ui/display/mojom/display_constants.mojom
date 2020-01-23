@@ -31,3 +31,9 @@ enum PanelOrientation {
   RIGHT_UP = 3
 };
 
+// Corresponds to display::PrivacyScreenState
+enum PrivacyScreenState {
+  DISABLED = 0,
+  ENABLED = 1,
+  NOT_SUPPORTED = 2
+};

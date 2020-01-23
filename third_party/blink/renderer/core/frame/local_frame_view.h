@@ -242,8 +242,6 @@ class CORE_EXPORT LocalFrameView final
   bool GetIntrinsicSizingInfo(IntrinsicSizingInfo&) const override;
   bool HasIntrinsicSizingInfo() const override;
 
-  void UpdateAcceleratedCompositingSettings();
-
   void UpdateCountersAfterStyleChange();
 
   void Dispose() override;

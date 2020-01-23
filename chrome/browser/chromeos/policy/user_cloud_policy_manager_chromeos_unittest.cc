@@ -28,7 +28,6 @@
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/enterprise_reporting/report_scheduler.h"
-#include "chrome/browser/enterprise_reporting/request_timer.h"
 #include "chrome/browser/policy/cloud/cloud_policy_test_utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -893,10 +892,8 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, TestReportSchedulerCreation) {
   EXPECT_TRUE(manager_->GetReportSchedulerForTesting());
 
   // Make sure the |report_scheduler| submit the request to DM Server.
-  enterprise_reporting::RequestTimer* request_timer =
-      manager_->GetReportSchedulerForTesting()->GetRequestTimerForTesting();
-  EXPECT_TRUE(request_timer->IsFirstTimerRunning());
-  EXPECT_FALSE(request_timer->IsRepeatTimerRunning());
+  EXPECT_TRUE(manager_->GetReportSchedulerForTesting()
+                  ->IsNextReportScheduledForTesting());
 }
 
 TEST_P(UserCloudPolicyManagerChromeOSTest, TestReportSchedulerDelayedCreation) {
@@ -941,10 +938,8 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, TestReportSchedulerDelayedCreation) {
   EXPECT_TRUE(manager_->GetReportSchedulerForTesting());
 
   // Make sure the |report_scheduler| submit the request to DM Server.
-  enterprise_reporting::RequestTimer* request_timer =
-      manager_->GetReportSchedulerForTesting()->GetRequestTimerForTesting();
-  EXPECT_TRUE(request_timer->IsFirstTimerRunning());
-  EXPECT_FALSE(request_timer->IsRepeatTimerRunning());
+  EXPECT_TRUE(manager_->GetReportSchedulerForTesting()
+                  ->IsNextReportScheduledForTesting());
 }
 
 TEST_P(UserCloudPolicyManagerChromeOSTest, TestSkipReportSchedulerCreation) {

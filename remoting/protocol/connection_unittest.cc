@@ -236,7 +236,7 @@ class FakeAudioPlayer : public AudioStub {
       }
     }
 
-    const int kMaxErrorHz = 50;
+    const int kMaxErrorHz = 100;
     int left_hz = (left * kAudioSampleRate / (num_samples - skipped_samples));
     EXPECT_LE(kTestAudioSignalFrequencyLeftHz - kMaxErrorHz, left_hz);
     EXPECT_GE(kTestAudioSignalFrequencyLeftHz + kMaxErrorHz, left_hz);

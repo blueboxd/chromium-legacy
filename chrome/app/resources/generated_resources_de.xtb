@@ -4040,7 +4040,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6758056191028427665">Teilen Sie uns mit, wie zufrieden Sie mit uns sind.</translation>
 <translation id="6759193508432371551">Zurücksetzen auf Werkseinstellungen</translation>
 <translation id="6762833852331690540">An</translation>
-<translation id="6767115174726603949">Auf Virtual-Reality-Geräte und -Daten zugreifen</translation>
+<translation id="6767115174726603949">Auf Virtual-Reality-Geräte und ‑Daten zugreifen</translation>
 <translation id="6767566652486411142">Andere Sprache auswählen…</translation>
 <translation id="6767639283522617719">Beitritt zur Domain nicht möglich. Achten Sie darauf, dass die Einstellungen für die Organisationseinheit richtig sind.</translation>
 <translation id="6769712124046837540">Drucker wird hinzugefügt...</translation>
@@ -5019,7 +5019,6 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8101987792947961127">Powerwash beim nächsten Neustart erforderlich</translation>
 <translation id="8102159139658438129">Rufen Sie die <ph name="LINK_BEGIN" />Einstellungen<ph name="LINK_END" /> auf, um Optionen für Ihr verbundenes Smartphone zu sehen.</translation>
 <translation id="8104696615244072556">Powerwash für Ihr <ph name="IDS_SHORT_PRODUCT_NAME" />-Gerät ausführen und auf die vorherige Version zurücksetzen</translation>
-<translation id="8106661353233173262">Ein Fehler ist aufgetreten. Zeitüberschreitung beim Scannen der Datei.</translation>
 <translation id="8107015733319732394">Google Play Store wird auf Ihrem <ph name="DEVICE_TYPE" /> installiert. Dies kann ein paar Minuten dauern.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Keine Drittanbieter-Cookies}=1{1 Cookie von Drittanbietern wird blockiert}other{# Cookies von Drittanbietern werden blockiert}}</translation>
 <translation id="810875025413331850">Keine Geräte in der Nähe gefunden.</translation>

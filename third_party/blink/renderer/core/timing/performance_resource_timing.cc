@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/timing/performance_resource_timing.h"
 
 #include "third_party/blink/public/mojom/timing/performance_mark_or_measure.mojom-blink.h"
-#include "third_party/blink/public/platform/web_resource_timing_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
@@ -48,12 +47,12 @@
 namespace blink {
 
 PerformanceResourceTiming::PerformanceResourceTiming(
-    const WebResourceTimingInfo& info,
+    const mojom::blink::ResourceTimingInfo& info,
     base::TimeTicks time_origin,
     const AtomicString& initiator_type,
     mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
         worker_timing_receiver)
-    : PerformanceEntry(info.name,
+    : PerformanceEntry(AtomicString(info.name),
                        Performance::MonotonicTimeToDOMHighResTimeStamp(
                            time_origin,
                            info.start_time,
@@ -69,7 +68,7 @@ PerformanceResourceTiming::PerformanceResourceTiming(
           static_cast<String>(info.alpn_negotiated_protocol)),
       connection_info_(static_cast<String>(info.connection_info)),
       time_origin_(time_origin),
-      timing_(info.timing),
+      timing_(ResourceLoadTiming::FromMojo(info.timing.get())),
       last_redirect_end_time_(info.last_redirect_end_time),
       response_end_(info.response_end),
       context_type_(info.context_type),
@@ -93,13 +92,12 @@ PerformanceResourceTiming::PerformanceResourceTiming(
     const AtomicString& name,
     base::TimeTicks time_origin,
     bool is_secure_context,
-    const WebVector<WebServerTimingInfo>& server_timing)
+    HeapVector<Member<PerformanceServerTiming>> server_timing)
     : PerformanceEntry(name, 0.0, 0.0),
       time_origin_(time_origin),
       context_type_(mojom::RequestContextType::HYPERLINK),
       is_secure_context_(is_secure_context),
-      server_timing_(
-          PerformanceServerTiming::FromParsedServerTiming(server_timing)),
+      server_timing_(std::move(server_timing)),
       worker_timing_receiver_(this, mojo::NullReceiver()) {}
 
 PerformanceResourceTiming::~PerformanceResourceTiming() = default;

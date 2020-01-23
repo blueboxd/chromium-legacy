@@ -160,9 +160,24 @@ void PPAPITestBase::SetUpCommandLine(base::CommandLine* command_line) {
 
   // Smooth scrolling confuses the scrollbar test.
   command_line->AppendSwitch(switches::kDisableSmoothScrolling);
+
+  // For a particular host name, resolve another specific host name (which
+  // should then be added to the DNS cache), and then return a particular proxy.
+  // Otherwise, return DIRECT.
+  command_line->AppendSwitchASCII(switches::kProxyPacUrl,
+                                  "data:,"
+                                  "function FindProxyForURL(url, host) {"
+                                  "  if (host == 'use.proxy.test') {"
+                                  "    dnsResolveEx('host_resolver.test');"
+                                  "    return 'PROXY proxy.test';"
+                                  "  }"
+                                  "  return 'DIRECT'"
+                                  "}");
 }
 
 void PPAPITestBase::SetUpOnMainThread() {
+  host_resolver()->AddRule("host_resolver.test",
+                           embedded_test_server()->host_port_pair().host());
   host_resolver()->AddRuleWithFlags(
       "host_resolver.test", embedded_test_server()->host_port_pair().host(),
       net::HOST_RESOLVER_CANONNAME);
@@ -305,7 +320,6 @@ OutOfProcessPPAPITest::OutOfProcessPPAPITest() {
 
 void OutOfProcessPPAPITest::SetUpCommandLine(base::CommandLine* command_line) {
   PPAPITest::SetUpCommandLine(command_line);
-  command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
 }
 
@@ -321,7 +335,6 @@ void PPAPINaClTest::SetUpCommandLine(base::CommandLine* command_line) {
   // Enable running (non-portable) NaCl outside of the Chrome web store.
   command_line->AppendSwitch(switches::kEnableNaCl);
   command_line->AppendSwitchASCII(switches::kAllowNaClSocketAPI, "127.0.0.1");
-  command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
 #endif
 }

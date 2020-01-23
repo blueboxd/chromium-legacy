@@ -294,6 +294,12 @@ base::flat_set<std::string>& GetNeverSniffedMimeTypes() {
       "application/vnd.spreadsheet-openxml",
       "application/vnd.wordprocessing-openxml",
       "text/csv",
+      // Block signed documents to protect (potentially sensitive) unencrypted
+      // body of the signed document.  There should be no need to block
+      // encrypted documents (e.g. `multipart/encrypted` nor
+      // `application/pgp-encrypted`) and no need to block the signatures (e.g.
+      // `application/pgp-signature`).
+      "multipart/signed",
       // Block multipart responses because a protected type (e.g. JSON) can
       // become multipart if returned in a range request with multiple parts.
       // This is compatible with the web because the renderer can only see into

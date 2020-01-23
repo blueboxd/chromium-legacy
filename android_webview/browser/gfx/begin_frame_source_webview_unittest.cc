@@ -199,4 +199,22 @@ TEST_F(BeginFrameSourceWebViewTest, ChildPauseChangeOnSetParent) {
   begin_frame_source_.RemoveObserver(&observer_);
 }
 
+TEST_F(BeginFrameSourceWebViewTest, Reentrancy) {
+  begin_frame_source_.SetParentSource(&root_begin_frame_source_);
+  begin_frame_source_.AddObserver(&observer_);
+
+  // Re-Add observer inside OnBeginFrame so it will trigger missed BeginFrame
+  EXPECT_CALL(observer_, OnBeginFrame(testing::_))
+      .WillRepeatedly(testing::Invoke([&](const viz::BeginFrameArgs& args) {
+        if (args.type == viz::BeginFrameArgs::MISSED)
+          return;
+        begin_frame_source_.RemoveObserver(&observer_);
+        begin_frame_source_.AddObserver(&observer_);
+      }));
+
+  test_begin_frame_source_.OnBeginFrame(BeginFrameArgsForTesting(1));
+
+  begin_frame_source_.RemoveObserver(&observer_);
+}
+
 }  // namespace android_webview

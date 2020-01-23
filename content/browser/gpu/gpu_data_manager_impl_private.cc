@@ -37,6 +37,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/config/gpu_blocklist.h"
 #include "gpu/config/gpu_driver_bug_list.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
@@ -51,6 +52,7 @@
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/ipc/host/shader_disk_cache.h"
+#include "gpu/vulkan/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
@@ -275,13 +277,44 @@ void RequestVideoMemoryUsageStats(
 
 // Determines if SwiftShader is available as a fallback for WebGL.
 bool SwiftShaderAllowed() {
-#if !BUILDFLAG(ENABLE_SWIFTSHADER)
-  return false;
-#else
+#if BUILDFLAG(ENABLE_SWIFTSHADER)
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableSoftwareRasterizer);
+#else
+  return false;
 #endif
 }
+
+// These functions are never called on the Fuchsia path. Leave them undefined to
+// fix a compiler warning.
+#if !defined(OS_FUCHSIA)
+// Determines if Vulkan is available for the GPU process.
+bool VulkanAllowed() {
+#if BUILDFLAG(ENABLE_VULKAN)
+  // Vulkan will be enabled if certain flags are present.
+  // --enable-features=Vulkan will cause Vulkan to be used for compositing and
+  // rasterization. --use-vulkan by itself will initialize Vulkan so that it can
+  // be used for other purposes, such as WebGPU.
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  gpu::GrContextType gr_context_type = gpu::gles2::ParseGrContextType();
+  gpu::VulkanImplementationName use_vulkan =
+      gpu::gles2::ParseVulkanImplementationName(command_line, gr_context_type);
+  return use_vulkan != gpu::VulkanImplementationName::kNone;
+#else
+  return false;
+#endif
+}
+
+// Determines if Metal is available for the GPU process.
+bool MetalAllowed() {
+#if defined(OS_MACOSX)
+  return base::FeatureList::IsEnabled(features::kMetal);
+#else
+  return false;
+#endif
+}
+#endif  // !OS_FUCHSIA
 
 // These values are logged to UMA. Entries should not be renumbered and numeric
 // values should never be reused. Please keep in sync with "CompositingMode" in
@@ -361,14 +394,18 @@ void GpuDataManagerImplPrivate::InitializeGpuModes() {
     // embedder. Falling back to SW compositing in that case is not supported.
 #if defined(OS_FUCHSIA)
     fallback_modes_.clear();
-#endif
+    fallback_modes_.push_back(gpu::GpuMode::HARDWARE_VULKAN);
+#else
+    fallback_modes_.push_back(gpu::GpuMode::HARDWARE_GL);
 
-    // TODO(sgilhuly): Add a way to differentiate between using hardware GL and
-    // hardware Vulkan.
-    fallback_modes_.push_back(gpu::GpuMode::HARDWARE_ACCELERATED);
+    if (VulkanAllowed())
+      fallback_modes_.push_back(gpu::GpuMode::HARDWARE_VULKAN);
+    if (MetalAllowed())
+      fallback_modes_.push_back(gpu::GpuMode::HARDWARE_METAL);
+#endif  // OS_FUCHSIA
   }
 
-  GoToNextGpuMode(/*is_fallback=*/false);
+  FallBackToNextGpuMode();
 }
 
 void GpuDataManagerImplPrivate::BlacklistWebGLForTesting() {
@@ -396,7 +433,9 @@ gpu::GPUInfo GpuDataManagerImplPrivate::GetGPUInfoForHardwareGpu() const {
 
 bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
   switch (gpu_mode_) {
-    case gpu::GpuMode::HARDWARE_ACCELERATED:
+    case gpu::GpuMode::HARDWARE_GL:
+    case gpu::GpuMode::HARDWARE_METAL:
+    case gpu::GpuMode::HARDWARE_VULKAN:
       return true;
     case gpu::GpuMode::SWIFTSHADER:
       DCHECK(SwiftShaderAllowed());
@@ -411,10 +450,10 @@ bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
           if (base::CommandLine::ForCurrentProcess()->HasSwitch(
                   switches::kDisableGpu))
             *reason += "through commandline switch --disable-gpu.";
-          else if (hardware_disabled_by_fallback_)
-            *reason += "due to frequent crashes.";
-          else
+          else if (hardware_disabled_explicitly_)
             *reason += "in chrome://settings.";
+          else
+            *reason += "due to frequent crashes.";
         }
       }
       return false;
@@ -678,6 +717,19 @@ void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
     const base::Optional<gpu::GpuFeatureInfo>&
         gpu_feature_info_for_hardware_gpu) {
   gpu_feature_info_ = gpu_feature_info;
+  // If Vulkan initialization fails, the GPU process can silently fallback to
+  // GL. Update the GPU mode for this case.
+#if !defined(OS_FUCHSIA)
+  if (gpu_mode_ == gpu::GpuMode::HARDWARE_VULKAN &&
+      gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_VULKAN] !=
+          gpu::GpuFeatureStatus::kGpuFeatureStatusEnabled) {
+    // TODO(sgilhuly): The GpuMode in GpuProcessHost will still be
+    // HARDWARE_VULKAN. This isn't a big issue right now because both GPU modes
+    // report to the same histogram. The first fallback will occur after 4
+    // crashes, instead of 3.
+    FallBackToNextGpuMode();
+  }
+#endif  // !OS_FUCHSIA
   if (!gpu_feature_info_for_hardware_gpu_.IsInitialized()) {
     if (gpu_feature_info_for_hardware_gpu.has_value()) {
       DCHECK(gpu_feature_info_for_hardware_gpu->IsInitialized());
@@ -712,8 +764,7 @@ gpu::GpuExtraInfo GpuDataManagerImplPrivate::GetGpuExtraInfo() const {
 }
 
 bool GpuDataManagerImplPrivate::IsGpuCompositingDisabled() const {
-  return disable_gpu_compositing_ ||
-         gpu_mode_ != gpu::GpuMode::HARDWARE_ACCELERATED;
+  return disable_gpu_compositing_ || !HardwareAccelerationEnabled();
 }
 
 void GpuDataManagerImplPrivate::SetGpuCompositingDisabled() {
@@ -739,7 +790,9 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
 
   std::string use_gl;
   switch (gpu_mode_) {
-    case gpu::GpuMode::HARDWARE_ACCELERATED:
+    case gpu::GpuMode::HARDWARE_GL:
+    case gpu::GpuMode::HARDWARE_METAL:
+    case gpu::GpuMode::HARDWARE_VULKAN:
       use_gl = browser_command_line->GetSwitchValueASCII(switches::kUseGL);
       break;
     case gpu::GpuMode::SWIFTSHADER:
@@ -810,15 +863,31 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
                                            ->GetPlatformProperties()
                                            .message_pump_type_for_gpu;
 #endif
+
+#if defined(OS_MACOSX)
+  if (gpu_mode_ != gpu::GpuMode::HARDWARE_METAL)
+    gpu_preferences->enable_metal = false;
+#elif BUILDFLAG(ENABLE_VULKAN)
+  if (gpu_mode_ != gpu::GpuMode::HARDWARE_VULKAN)
+    gpu_preferences->use_vulkan = gpu::VulkanImplementationName::kNone;
+#endif
 }
 
 void GpuDataManagerImplPrivate::DisableHardwareAcceleration() {
-  if (gpu_mode_ == gpu::GpuMode::HARDWARE_ACCELERATED)
-    GoToNextGpuMode(/*is_fallback=*/false);
+  hardware_disabled_explicitly_ = true;
+  while (HardwareAccelerationEnabled())
+    FallBackToNextGpuMode();
 }
 
 bool GpuDataManagerImplPrivate::HardwareAccelerationEnabled() const {
-  return gpu_mode_ == gpu::GpuMode::HARDWARE_ACCELERATED;
+  switch (gpu_mode_) {
+    case gpu::GpuMode::HARDWARE_GL:
+    case gpu::GpuMode::HARDWARE_METAL:
+    case gpu::GpuMode::HARDWARE_VULKAN:
+      return true;
+    default:
+      return false;
+  }
 }
 
 void GpuDataManagerImplPrivate::OnGpuBlocked() {
@@ -1065,10 +1134,6 @@ gpu::GpuMode GpuDataManagerImplPrivate::GetGpuMode() const {
 }
 
 void GpuDataManagerImplPrivate::FallBackToNextGpuMode() {
-  GoToNextGpuMode(/*is_fallback=*/true);
-}
-
-void GpuDataManagerImplPrivate::GoToNextGpuMode(bool is_fallback) {
   if (fallback_modes_.empty()) {
 #if defined(OS_ANDROID)
     FatalGpuProcessLaunchFailureOnBackground();
@@ -1076,20 +1141,12 @@ void GpuDataManagerImplPrivate::GoToNextGpuMode(bool is_fallback) {
     IntentionallyCrashBrowserForUnusableGpuProcess();
   }
 
-  if (is_fallback && gpu_mode_ == gpu::GpuMode::HARDWARE_ACCELERATED)
-    hardware_disabled_by_fallback_ = true;
   gpu_mode_ = fallback_modes_.back();
   fallback_modes_.pop_back();
-  switch (gpu_mode_) {
-    case gpu::GpuMode::HARDWARE_ACCELERATED:
-    case gpu::GpuMode::SWIFTSHADER:
-      break;
-    case gpu::GpuMode::DISPLAY_COMPOSITOR:
-    case gpu::GpuMode::DISABLED:
-      OnGpuBlocked();
-      break;
-    case gpu::GpuMode::UNKNOWN:
-      NOTREACHED();
+  DCHECK_NE(gpu_mode_, gpu::GpuMode::UNKNOWN);
+  if (gpu_mode_ == gpu::GpuMode::DISPLAY_COMPOSITOR ||
+      gpu_mode_ == gpu::GpuMode::DISABLED) {
+    OnGpuBlocked();
   }
 }
 

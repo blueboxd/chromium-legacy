@@ -36,6 +36,11 @@
          use_base_dir="false"
          type="BINDATA"
          compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_CR_FINGERPRINT_PROGRESS_ARC_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
   <include name="IDR_CR_ELEMENTS_CR_EXPAND_BUTTON_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_expand_button/cr_expand_button.m.js"
          use_base_dir="false"

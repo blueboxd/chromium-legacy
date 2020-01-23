@@ -69,7 +69,7 @@ class COMPONENT_EXPORT(ASSISTANT_UI) CaptionBar : public views::View,
 
  private:
   void InitLayout();
-  void AddButton(AssistantButton* button);
+  void AddButton(std::unique_ptr<AssistantButton> button);
   void HandleButton(AssistantButtonId id);
   AssistantButton* GetButtonWithId(AssistantButtonId id);
 

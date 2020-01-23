@@ -97,9 +97,8 @@ AddUserButton::AddUserButton(UserChooserDetailedViewController* controller)
 
   auto* label = new views::Label(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SIGN_IN_ANOTHER_ACCOUNT));
-  label->SetEnabledColor(
-      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor));
+  label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kTextPrimary, AshColorMode::kDark));
   label->SetAutoColorReadabilityEnabled(false);
   label->SetSubpixelRenderingEnabled(false);
   AddChildView(label);
@@ -139,9 +138,8 @@ class Separator : public views::View {
 
 views::View* CreateAddUserErrorView(const base::string16& message) {
   auto* label = new views::Label(message);
-  label->SetEnabledColor(
-      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor));
+  label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kTextPrimary, AshColorMode::kDark));
   label->SetAutoColorReadabilityEnabled(false);
   label->SetSubpixelRenderingEnabled(false);
   label->SetBorder(
@@ -230,9 +228,8 @@ UserItemButton::UserItemButton(int user_index,
       Shell::Get()->session_controller()->GetUserSession(user_index);
 
   name_->SetText(base::UTF8ToUTF16(user_session->user_info.display_name));
-  name_->SetEnabledColor(
-      AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor));
+  name_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
+      ContentLayerType::kTextPrimary, AshColorMode::kDark));
   name_->SetAutoColorReadabilityEnabled(false);
   name_->SetSubpixelRenderingEnabled(false);
   vertical_labels->AddChildView(name_);

@@ -38,9 +38,12 @@ class MediaStreamPermissionTest : public WebRtcTestBase {
   ~MediaStreamPermissionTest() override {}
 
   // InProcessBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUp() override {
+    WebRtcTestBase::SetUp();
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     // This test expects to run with fake devices but real UI.
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
+    EXPECT_TRUE(
+        command_line->HasSwitch(switches::kUseFakeDeviceForMediaStream));
     EXPECT_FALSE(command_line->HasSwitch(switches::kUseFakeUIForMediaStream))
         << "Since this test tests the UI we want the real UI!";
   }

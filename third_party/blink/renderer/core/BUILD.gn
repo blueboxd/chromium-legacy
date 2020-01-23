@@ -403,9 +403,7 @@ blink_python_runner("generated_settings_macros") {
              "../build/scripts/templates/settings_macros.h.tmpl",
              "frame/settings.json5",
            ]
-  outputs = [
-    "$blink_core_output_dir/settings_macros.h",
-  ]
+  outputs = [ "$blink_core_output_dir/settings_macros.h" ]
 
   args = [
     rebase_path("frame/settings.json5", root_build_dir),
@@ -464,9 +462,7 @@ css_properties("make_core_generated_computed_style_initial_values") {
   script = "../build/scripts/core/style/make_computed_style_initial_values.py"
   in_files = [ "style/computed_style_extra_fields.json5" ]
   other_inputs = [ "../build/scripts/core/style/templates/computed_style_initial_values.h.tmpl" ]
-  outputs = [
-    "$blink_core_output_dir/style/computed_style_initial_values.h",
-  ]
+  outputs = [ "$blink_core_output_dir/style/computed_style_initial_values.h" ]
 }
 
 css_properties("make_core_generated_computed_style_base") {
@@ -506,9 +502,7 @@ css_properties("make_core_generated_css_value_id_mappings") {
     "../build/scripts/core/css/templates/css_value_id_mappings_generated.h.tmpl",
     "../build/scripts/keyword_utils.py",
   ]
-  outputs = [
-    "$blink_core_output_dir/css/css_value_id_mappings_generated.h",
-  ]
+  outputs = [ "$blink_core_output_dir/css/css_value_id_mappings_generated.h" ]
 }
 
 css_properties("make_core_generated_css_property_instances") {
@@ -589,9 +583,7 @@ code_generator("make_core_generated_media_features") {
   other_inputs =
       scripts_for_json5_files + [ "../build/scripts/media_feature_symbol.py" ]
   templates = [ "../build/scripts/core/css/templates/media_features.h.tmpl" ]
-  outputs = [
-    "$blink_core_output_dir/css/media_features.h",
-  ]
+  outputs = [ "$blink_core_output_dir/css/media_features.h" ]
 }
 
 css_properties("make_core_generated_style_property_shorthand") {
@@ -715,9 +707,7 @@ process_json5_files("make_core_generated_svg_element_type_helpers") {
 
   in_files = [ "svg/svg_tag_names.json5" ]
   other_inputs = make_element_type_helpers_files
-  outputs = [
-    "$blink_core_output_dir/svg_element_type_helpers.h",
-  ]
+  outputs = [ "$blink_core_output_dir/svg_element_type_helpers.h" ]
 }
 
 # make_event_factory -----------------------------------------------------------
@@ -727,9 +717,7 @@ make_event_factory("make_core_generated_event_factory") {
     "$blink_core_output_dir/event_interface_names.json5",
     "events/event_interface_aliases.json5",
   ]
-  outputs = [
-    "$blink_core_output_dir/event_factory.cc",
-  ]
+  outputs = [ "$blink_core_output_dir/event_factory.cc" ]
 }
 
 # make_names -------------------------------------------------------------------
@@ -822,12 +810,8 @@ action("make_core_generated_html_entity_table") {
   visibility = [ ":*" ]
   script = "../build/scripts/make_html_entity_table.py"
 
-  inputs = [
-    "html/parser/html_entity_names.csv",
-  ]
-  outputs = [
-    "$blink_core_output_dir/html_entity_table.cc",
-  ]
+  inputs = [ "html/parser/html_entity_names.csv" ]
+  outputs = [ "$blink_core_output_dir/html_entity_table.cc" ]
 
   args = [ "-o" ] + rebase_path(outputs, root_build_dir)
   args += rebase_path(inputs, root_build_dir)
@@ -840,9 +824,7 @@ blink_python_runner("make_core_generated_css_tokenizer_codepoints") {
   visibility = [ ":*" ]
   script = "../build/scripts/core/css/make_css_tokenizer_codepoints.py"
 
-  outputs = [
-    "$blink_core_output_dir/css/css_tokenizer_codepoints.cc",
-  ]
+  outputs = [ "$blink_core_output_dir/css/css_tokenizer_codepoints.cc" ]
 
   args = [
     "--output_dir",
@@ -862,9 +844,7 @@ blink_python_runner("make_core_generated_css_primitive_value_unit_trie") {
              input_file,
              "../build/scripts/core/css/templates/css_primitive_value_unit_trie.cc.tmpl",
            ]
-  outputs = [
-    "$blink_core_output_dir/css/css_primitive_value_unit_trie.cc",
-  ]
+  outputs = [ "$blink_core_output_dir/css/css_primitive_value_unit_trie.cc" ]
 
   args = [
     rebase_path(input_file, root_build_dir),
@@ -884,9 +864,7 @@ blink_python_runner("make_core_generated_feature_policy_helper") {
              "../platform/runtime_enabled_features.json5",
              "../build/scripts/templates/feature_policy_helper.cc.tmpl",
            ]
-  outputs = [
-    "$blink_core_output_dir/feature_policy/feature_policy_helper.cc",
-  ]
+  outputs = [ "$blink_core_output_dir/feature_policy/feature_policy_helper.cc" ]
 
   args = [
     rebase_path("../platform/runtime_enabled_features.json5", root_build_dir),
@@ -930,9 +908,7 @@ blink_python_runner("make_core_generated_origin_trials") {
              "../platform/runtime_enabled_features.json5",
              "../build/scripts/templates/origin_trials.cc.tmpl",
            ]
-  outputs = [
-    "$blink_core_output_dir/origin_trials/origin_trials.cc",
-  ]
+  outputs = [ "$blink_core_output_dir/origin_trials/origin_trials.cc" ]
 
   args = [
     rebase_path("../platform/runtime_enabled_features.json5", root_build_dir),
@@ -948,9 +924,7 @@ blink_python_runner("make_core_generated_web_origin_trials") {
              "../platform/runtime_enabled_features.json5",
              "../build/scripts/templates/web_origin_trials.cc.tmpl",
            ]
-  outputs = [
-    "$blink_core_output_dir/exported/web_origin_trials.cc",
-  ]
+  outputs = [ "$blink_core_output_dir/exported/web_origin_trials.cc" ]
 
   args = [
     rebase_path("../platform/runtime_enabled_features.json5", root_build_dir),
@@ -1221,91 +1195,6 @@ jumbo_source_set("unit_tests") {
     "frame/visual_viewport_test.cc",
     "fullscreen/scoped_allow_fullscreen_test.cc",
     "geometry/dom_matrix_test.cc",
-    "html/anchor_element_metrics_sender_test.cc",
-    "html/anchor_element_metrics_test.cc",
-    "html/canvas/canvas_async_blob_creator_test.cc",
-    "html/canvas/canvas_font_cache_test.cc",
-    "html/canvas/html_canvas_element_test.cc",
-    "html/canvas/image_data_test.cc",
-    "html/custom/custom_element_definition_test.cc",
-    "html/custom/custom_element_descriptor_test.cc",
-    "html/custom/custom_element_reaction_queue_test.cc",
-    "html/custom/custom_element_reaction_stack_test.cc",
-    "html/custom/custom_element_reaction_test_helpers.h",
-    "html/custom/custom_element_registry_test.cc",
-    "html/custom/custom_element_test.cc",
-    "html/custom/custom_element_test_helpers.cc",
-    "html/custom/custom_element_test_helpers.h",
-    "html/custom/custom_element_upgrade_sorter_test.cc",
-    "html/forms/email_input_type_test.cc",
-    "html/forms/external_date_time_chooser_test.cc",
-    "html/forms/external_popup_menu_test.cc",
-    "html/forms/file_input_type_test.cc",
-    "html/forms/form_controller_test.cc",
-    "html/forms/form_data_test.cc",
-    "html/forms/html_data_list_element_test.cc",
-    "html/forms/html_form_control_element_test.cc",
-    "html/forms/html_form_element_test.cc",
-    "html/forms/html_input_element_test.cc",
-    "html/forms/html_output_element_test.cc",
-    "html/forms/html_select_element_test.cc",
-    "html/forms/html_text_area_element_test.cc",
-    "html/forms/internal_popup_menu_test.cc",
-    "html/forms/option_list_test.cc",
-    "html/forms/password_input_type_test.cc",
-    "html/forms/step_range_test.cc",
-    "html/forms/text_control_element_test.cc",
-    "html/forms/type_ahead_test.cc",
-    "html/html_content_element_test.cc",
-    "html/html_dimension_test.cc",
-    "html/html_element_test.cc",
-    "html/html_embed_element_test.cc",
-    "html/html_frame_element_test.cc",
-    "html/html_iframe_element_test.cc",
-    "html/html_image_element_test.cc",
-    "html/html_link_element_sizes_attribute_test.cc",
-    "html/html_link_element_test.cc",
-    "html/html_meta_element_test.cc",
-    "html/html_object_element_test.cc",
-    "html/html_plugin_element_test.cc",
-    "html/html_slot_element_test.cc",
-    "html/html_table_row_element_test.cc",
-    "html/image_document_test.cc",
-    "html/imports/html_import_sheets_test.cc",
-    "html/lazy_load_frame_observer_test.cc",
-    "html/lazy_load_image_observer_test.cc",
-    "html/link_element_loading_test.cc",
-    "html/link_rel_attribute_test.cc",
-    "html/media/autoplay_uma_helper_test.cc",
-    "html/media/html_media_element_event_listeners_test.cc",
-    "html/media/html_media_element_test.cc",
-    "html/media/html_media_test_helper.cc",
-    "html/media/html_media_test_helper.h",
-    "html/media/html_video_element_persistent_test.cc",
-    "html/media/html_video_element_test.cc",
-    "html/media/media_custom_controls_fullscreen_detector_test.cc",
-    "html/media/video_auto_fullscreen_test.cc",
-    "html/media/video_filling_viewport_test.cc",
-    "html/media/video_wake_lock_test.cc",
-    "html/parser/atomic_html_token_test.cc",
-    "html/parser/compact_html_token_test.cc",
-    "html/parser/html_document_parser_loading_test.cc",
-    "html/parser/html_document_parser_test.cc",
-    "html/parser/html_entity_parser_test.cc",
-    "html/parser/html_parser_idioms_test.cc",
-    "html/parser/html_preload_scanner_document_test.cc",
-    "html/parser/html_preload_scanner_test.cc",
-    "html/parser/html_resource_preloader_test.cc",
-    "html/parser/html_srcset_parser_test.cc",
-    "html/parser/html_tokenizer_test.cc",
-    "html/parser/html_tree_builder_simulator_test.cc",
-    "html/parser/html_view_source_parser_test.cc",
-    "html/parser/text_resource_decoder_test.cc",
-    "html/shadow/progress_shadow_element_test.cc",
-    "html/time_ranges_test.cc",
-    "html/track/text_track_list_test.cc",
-    "html/track/vtt/buffered_line_reader_test.cc",
-    "html/track/vtt/vtt_scanner_test.cc",
     "imagebitmap/image_bitmap_test.cc",
     "input/event_handler_test.cc",
     "input/fallback_cursor_event_manager_test.cc",
@@ -1458,7 +1347,6 @@ jumbo_source_set("unit_tests") {
     "page/scrolling/scroll_into_view_test.cc",
     "page/scrolling/scroll_metrics_test.cc",
     "page/scrolling/scroll_state_test.cc",
-    "page/scrolling/scrolling_coordinator_test.cc",
     "page/scrolling/scrolling_test.cc",
     "page/scrolling/snap_coordinator_test.cc",
     "page/scrolling/text_fragment_anchor_metrics_test.cc",
@@ -1614,11 +1502,10 @@ jumbo_source_set("unit_tests") {
     "//third_party/blink/renderer/core/css:unit_tests",
     "//third_party/blink/renderer/core/editing:unit_tests",
     "//third_party/blink/renderer/core/fileapi:unit_tests",
+    "//third_party/blink/renderer/core/html:unit_tests",
   ]
 
-  data_deps = [
-    ":unit_tests_data",
-  ]
+  data_deps = [ ":unit_tests_data" ]
 
   # FIXME: Enable mojo unittests on Android after fixing data dependency.
   # crbug.com/741925
@@ -1649,9 +1536,7 @@ group("unit_tests_data") {
 
 jumbo_source_set("perf_tests") {
   testonly = true
-  sources = [
-    "layout/visual_rect_mapping_perftest.cc",
-  ]
+  sources = [ "layout/visual_rect_mapping_perftest.cc" ]
 
   configs += [
     ":blink_core_pch",
@@ -1694,9 +1579,7 @@ jumbo_source_set("unit_test_support") {
 
 # Fuzzer for blink::StyleSheetContents
 fuzzer_test("stylesheet_contents_fuzzer") {
-  sources = [
-    "css/style_sheet_contents_fuzzer.cc",
-  ]
+  sources = [ "css/style_sheet_contents_fuzzer.cc" ]
   deps = [
     ":core",
     "../platform:blink_fuzzer_test_support",
@@ -1708,9 +1591,7 @@ fuzzer_test("stylesheet_contents_fuzzer") {
 
 # Fuzzer for blink::CSSParserFastPaths
 fuzzer_test("css_parser_fast_paths_fuzzer") {
-  sources = [
-    "css/parser/css_parser_fast_paths_fuzzer.cc",
-  ]
+  sources = [ "css/parser/css_parser_fast_paths_fuzzer.cc" ]
   deps = [
     ":core",
     "../platform:blink_fuzzer_test_support",
@@ -1734,9 +1615,7 @@ fuzzer_test("html_preload_scanner_fuzzer") {
 
 # Fuzzer for blink::ContentSecurityPolicy.
 fuzzer_test("content_security_policy_fuzzer") {
-  sources = [
-    "frame/csp/content_security_policy_fuzzer.cc",
-  ]
+  sources = [ "frame/csp/content_security_policy_fuzzer.cc" ]
   deps = [
     ":core",
     "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
@@ -1761,16 +1640,12 @@ fuzzer_test("css_parser_proto_fuzzer") {
 }
 
 proto_library("css_proto") {
-  sources = [
-    "css/parser/css.proto",
-  ]
+  sources = [ "css/parser/css.proto" ]
 }
 
 # Fuzzers for blink::FeaturePolicy.
 fuzzer_test("feature_policy_fuzzer") {
-  sources = [
-    "feature_policy/feature_policy_fuzzer.cc",
-  ]
+  sources = [ "feature_policy/feature_policy_fuzzer.cc" ]
   deps = [
     "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
     "//third_party/icu",
@@ -1781,9 +1656,7 @@ fuzzer_test("feature_policy_fuzzer") {
 }
 
 fuzzer_test("feature_policy_attr_fuzzer") {
-  sources = [
-    "feature_policy/feature_policy_attr_fuzzer.cc",
-  ]
+  sources = [ "feature_policy/feature_policy_attr_fuzzer.cc" ]
   deps = [
     "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
     "//third_party/icu",
@@ -1794,9 +1667,7 @@ fuzzer_test("feature_policy_attr_fuzzer") {
 }
 
 fuzzer_test("feature_policy_value_fuzzer") {
-  sources = [
-    "feature_policy/feature_policy_value_fuzzer.cc",
-  ]
+  sources = [ "feature_policy/feature_policy_value_fuzzer.cc" ]
   deps = [
     "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
     "//third_party/icu",

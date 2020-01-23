@@ -37,7 +37,8 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         // For all the tests in this file, we expect abort exception when there is no supported
         // payment instruments instead of showing payment request UI.
-        "enable-features=" + ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT})
+        "enable-features=" + ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT,
+        "disable-field-trial-config"})
 public class PaymentRequestServiceWorkerPaymentAppTest {
     // Disable animations to reduce flakiness.
     @ClassRule

@@ -5,7 +5,7 @@
 /**
  * @type {!MetadataItem}
  */
-let metadataA = new MetadataItem();
+const metadataA = new MetadataItem();
 metadataA.contentMimeType = 'value';
 
 
@@ -50,7 +50,7 @@ function testMetadataCacheItemStoreInReverseOrder() {
   item.startRequests(1, item.createRequests(['contentMimeType']));
   item.startRequests(2, item.createRequests(['contentMimeType']));
 
-  let metadataB = new MetadataItem();
+  const metadataB = new MetadataItem();
   metadataB.contentMimeType = 'value2';
 
   assertTrue(item.storeProperties(2, metadataB));
@@ -81,7 +81,7 @@ function testMetadataCacheItemHasFreshCache() {
   item.startRequests(
       1, item.createRequests(['contentMimeType', 'externalFileUrl']));
 
-  let metadata = new MetadataItem();
+  const metadata = new MetadataItem();
   metadata.contentMimeType = 'mime';
   metadata.externalFileUrl = 'url';
 
@@ -102,7 +102,7 @@ function testMetadataCacheItemShouldNotUpdateBeforeInvalidation() {
   item.startRequests(1, item.createRequests(['contentMimeType']));
   item.storeProperties(1, metadataA);
 
-  let metadataB = new MetadataItem();
+  const metadataB = new MetadataItem();
   metadataB.contentMimeType = 'value2';
 
   item.storeProperties(2, metadataB);
@@ -113,11 +113,11 @@ function testMetadataCacheItemError() {
   const item = new MetadataCacheItem();
   item.startRequests(1, item.createRequests(['contentThumbnailUrl']));
 
-  let metadataWithError = new MetadataItem();
+  const metadataWithError = new MetadataItem();
   metadataWithError.contentThumbnailUrlError = new Error('Error');
 
   item.storeProperties(1, metadataWithError);
-  let property = item.get(['contentThumbnailUrl']);
+  const property = item.get(['contentThumbnailUrl']);
   assertEquals(undefined, property.contentThumbnailUrl);
   assertEquals('Error', property.contentThumbnailUrlError.message);
 }
@@ -126,7 +126,7 @@ function testMetadataCacheItemErrorShouldNotFetchedDirectly() {
   const item = new MetadataCacheItem();
   item.startRequests(1, item.createRequests(['contentThumbnailUrl']));
 
-  let metadataWithError = new MetadataItem();
+  const metadataWithError = new MetadataItem();
   metadataWithError.contentThumbnailUrlError = new Error('Error');
 
   item.storeProperties(1, metadataWithError);

@@ -12,7 +12,7 @@ function writeDirectory_(bytes, tag) {
   assertEquals(2, tag.format);
   assertTrue(tag.componentCount > 4);
 
-  let byteWriter = new ByteWriter(bytes.buffer, 0);
+  const byteWriter = new ByteWriter(bytes.buffer, 0);
   byteWriter.writeScalar(1, 2);  // Number of fields.
 
   byteWriter.writeScalar(tag.id, 2);
@@ -59,8 +59,8 @@ class ConsoleLogger {
 function parseExifData_(bytes) {
   const exifParser = new ExifParser(new ConsoleLogger());
 
-  let tags = {};
-  let byteReader = new ByteReader(bytes.buffer);
+  const tags = {};
+  const byteReader = new ByteReader(bytes.buffer);
   assertEquals(0, exifParser.readDirectory(byteReader, tags));
   return tags;
 }
@@ -70,7 +70,7 @@ function parseExifData_(bytes) {
  */
 function testWithoutNullCharacterTermination() {
   // Create exif with a value that does not end with null character.
-  let data = new Uint8Array(0x10000);
+  const data = new Uint8Array(0x10000);
   writeDirectory_(data, /** @type {!ExifEntry} */ ({
                     id: 0x10f,          // Manufacturer Id.
                     format: 2,          // String format.

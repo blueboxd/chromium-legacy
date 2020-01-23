@@ -18,7 +18,7 @@ namespace network_hints {
 // Each renderer process requires its own filter.
 class SimpleNetworkHintsHandlerImpl : public mojom::NetworkHintsHandler {
  public:
-  explicit SimpleNetworkHintsHandlerImpl(int render_process_id);
+  SimpleNetworkHintsHandlerImpl(int render_process_id, int render_frame_id);
   ~SimpleNetworkHintsHandlerImpl() override;
 
   static void Create(
@@ -30,7 +30,8 @@ class SimpleNetworkHintsHandlerImpl : public mojom::NetworkHintsHandler {
   void Preconnect(const GURL& url, bool allow_credentials) override;
 
  private:
-  int render_process_id_;
+  const int render_process_id_;
+  const int render_frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleNetworkHintsHandlerImpl);
 };

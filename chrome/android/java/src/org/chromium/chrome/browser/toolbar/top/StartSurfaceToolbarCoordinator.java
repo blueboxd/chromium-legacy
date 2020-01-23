@@ -43,6 +43,7 @@ class StartSurfaceToolbarCoordinator {
      */
     void destroy() {
         mToolbarMediator.destroy();
+        if (mIncognitoSwitchCoordinator != null) mIncognitoSwitchCoordinator.destroy();
     }
     /**
      * @param appMenuButtonHelper The helper for managing menu button interactions.

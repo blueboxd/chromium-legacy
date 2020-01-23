@@ -370,7 +370,7 @@ void FailLoadsAfterLoginObserver::Observe(
 
 // An observer for watching the CaptivePortalService.  It tracks the last
 // received result and the total number of received results.
-class CaptivePortalObserver : public content::NotificationObserver {
+class CaptivePortalObserver {
  public:
   explicit CaptivePortalObserver(Profile* profile);
 
@@ -387,9 +387,7 @@ class CaptivePortalObserver : public content::NotificationObserver {
 
  private:
   // Records results and exits the message loop, if needed.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  void Observe(const CaptivePortalService::Results& results);
 
   // Number of times OnPortalResult has been called since construction.
   int num_results_received_;
@@ -401,14 +399,12 @@ class CaptivePortalObserver : public content::NotificationObserver {
   bool waiting_for_result_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
-  Profile* profile_;
-
   CaptivePortalService* captive_portal_service_;
+
+  std::unique_ptr<CaptivePortalService::Subscription> subscription_;
 
   // Last result received.
   CaptivePortalResult captive_portal_result_;
-
-  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalObserver);
 };
@@ -417,13 +413,12 @@ CaptivePortalObserver::CaptivePortalObserver(Profile* profile)
     : num_results_received_(0),
       num_results_to_wait_for_(0),
       waiting_for_result_(false),
-      profile_(profile),
       captive_portal_service_(
           CaptivePortalServiceFactory::GetForProfile(profile)),
       captive_portal_result_(
           captive_portal_service_->last_detection_result()) {
-  registrar_.Add(this, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-                 content::Source<content::BrowserContext>(profile_));
+  subscription_ = captive_portal_service_->RegisterCallback(
+      base::Bind(&CaptivePortalObserver::Observe, base::Unretained(this)));
 }
 
 void CaptivePortalObserver::WaitForResults(int num_results_to_wait_for) {
@@ -440,20 +435,11 @@ void CaptivePortalObserver::WaitForResults(int num_results_to_wait_for) {
 }
 
 void CaptivePortalObserver::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  ASSERT_EQ(type, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT);
-  ASSERT_EQ(profile_, content::Source<content::BrowserContext>(source).ptr());
+    const CaptivePortalService::Results& results) {
+  EXPECT_EQ(captive_portal_result_, results.previous_result);
+  EXPECT_EQ(captive_portal_service_->last_detection_result(), results.result);
 
-  CaptivePortalService::Results* results =
-      content::Details<CaptivePortalService::Results>(details).ptr();
-
-  EXPECT_EQ(captive_portal_result_, results->previous_result);
-  EXPECT_EQ(captive_portal_service_->last_detection_result(),
-            results->result);
-
-  captive_portal_result_ = results->result;
+  captive_portal_result_ = results.result;
   ++num_results_received_;
 
   if (waiting_for_result_ &&

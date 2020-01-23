@@ -98,6 +98,11 @@ luci.console_view(
             short_name = 'L',
         ),
         luci.console_view_entry(
+            builder = 'ci/android-lollipop-arm-rel',
+            category = 'tester|phone|rel',
+            short_name = 'L',
+        ),
+        luci.console_view_entry(
             builder = 'ci/Marshmallow 64 bit Tester',
             category = 'tester|phone',
             short_name = 'M',

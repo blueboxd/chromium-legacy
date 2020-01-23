@@ -313,7 +313,7 @@ void ClipboardPromise::RequestPermission(
   }
 
   if (!document.IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kClipboard,
+          mojom::blink::FeaturePolicyFeature::kClipboard,
           ReportOptions::kReportOnFailure,
           "The Clipboard API has been blocked because of a Feature Policy "
           "applied to the current document. See https://goo.gl/EuHzyv for more "

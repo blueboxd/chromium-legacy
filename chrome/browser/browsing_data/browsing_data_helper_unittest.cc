@@ -14,18 +14,6 @@
 
 namespace {
 
-const char kTestOrigin1[] = "http://host1:1/";
-const char kTestOrigin2[] = "http://host2:1/";
-const char kTestOrigin3[] = "http://host3:1/";
-const char kTestOriginExt[] = "chrome-extension://abcdefghijklmnopqrstuvwxyz/";
-const char kTestOriginDevTools[] = "devtools://abcdefghijklmnopqrstuvw/";
-
-const GURL kOrigin1(kTestOrigin1);
-const GURL kOrigin2(kTestOrigin2);
-const GURL kOrigin3(kTestOrigin3);
-const GURL kOriginExt(kTestOriginExt);
-const GURL kOriginDevTools(kTestOriginDevTools);
-
 class BrowsingDataHelperTest : public testing::Test {
  public:
   BrowsingDataHelperTest() {}

@@ -43,8 +43,7 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   NavigationController* GetController() override;
   void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
                             const GURL& url,
-                            int error_code,
-                            const base::string16& error_description) override;
+                            int error_code) override;
   void DidNavigate(RenderFrameHostImpl* render_frame_host,
                    const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
                    std::unique_ptr<NavigationRequest> navigation_request,

@@ -59,7 +59,7 @@ class FeedUserClassifierTest : public testing::Test {
 TEST_F(FeedUserClassifierTest, ShouldBeActiveSuggestionsViewerInitially) {
   UserClassifier* user_classifier = CreateUserClassifier();
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kActiveSuggestionsViewer));
+              Eq(UserClass::kActiveSuggestionsViewer));
 }
 
 TEST_F(FeedUserClassifierTest,
@@ -69,7 +69,7 @@ TEST_F(FeedUserClassifierTest,
   // After one click still only an active user.
   user_classifier->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kActiveSuggestionsViewer));
+              Eq(UserClass::kActiveSuggestionsViewer));
 
   // After a few more clicks, become an active consumer.
   for (int i = 0; i < 5; i++) {
@@ -77,7 +77,7 @@ TEST_F(FeedUserClassifierTest,
     user_classifier->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   }
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kActiveSuggestionsConsumer));
+              Eq(UserClass::kActiveSuggestionsConsumer));
 }
 
 TEST_F(FeedUserClassifierTest,
@@ -95,13 +95,13 @@ TEST_F(FeedUserClassifierTest,
   test_clock()->Advance(base::TimeDelta::FromHours(1));
   user_classifier->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kActiveSuggestionsViewer));
+              Eq(UserClass::kActiveSuggestionsViewer));
 
   // One more click to become an active consumer.
   test_clock()->Advance(base::TimeDelta::FromHours(1));
   user_classifier->OnEvent(UserClassifier::Event::kSuggestionsUsed);
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kActiveSuggestionsConsumer));
+              Eq(UserClass::kActiveSuggestionsConsumer));
 }
 
 TEST_F(FeedUserClassifierTest,
@@ -111,12 +111,12 @@ TEST_F(FeedUserClassifierTest,
   // After two days of waiting still an active user.
   test_clock()->Advance(base::TimeDelta::FromDays(2));
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kActiveSuggestionsViewer));
+              Eq(UserClass::kActiveSuggestionsViewer));
 
   // Two more days to become a rare user.
   test_clock()->Advance(base::TimeDelta::FromDays(2));
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kRareSuggestionsViewer));
+              Eq(UserClass::kRareSuggestionsViewer));
 }
 
 TEST_F(FeedUserClassifierTest,
@@ -131,12 +131,12 @@ TEST_F(FeedUserClassifierTest,
   // After one days of waiting still an active user.
   test_clock()->Advance(base::TimeDelta::FromDays(1));
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kActiveSuggestionsViewer));
+              Eq(UserClass::kActiveSuggestionsViewer));
 
   // One more day to become a rare user.
   test_clock()->Advance(base::TimeDelta::FromDays(1));
   EXPECT_THAT(user_classifier->GetUserClass(),
-              Eq(UserClassifier::UserClass::kRareSuggestionsViewer));
+              Eq(UserClass::kRareSuggestionsViewer));
 }
 
 class FeedUserClassifierEventTest

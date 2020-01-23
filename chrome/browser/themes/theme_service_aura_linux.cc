@@ -95,12 +95,8 @@ bool ThemeServiceAuraLinux::IsSystemThemeDistinctFromDefaultTheme() const {
   return true;
 }
 
-bool ThemeServiceAuraLinux::UsingDefaultTheme() const {
-  return ThemeService::UsingDefaultTheme() && !UsingSystemTheme();
-}
-
-bool ThemeServiceAuraLinux::UsingSystemTheme() const {
-  const CustomThemeSupplier* theme_supplier = get_theme_supplier();
+bool ThemeServiceAuraLinux::IsSystemTheme(
+    const CustomThemeSupplier* theme_supplier) const {
   return theme_supplier &&
          theme_supplier->get_theme_type() == CustomThemeSupplier::NATIVE_X11;
 }

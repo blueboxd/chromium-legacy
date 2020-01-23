@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
+#include "base/no_destructor.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
@@ -21,6 +22,7 @@
 #include "extensions/common/extension_builder.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 #include "url/url_util.h"
 
 namespace app_list {
@@ -30,15 +32,23 @@ const char kMapsArcApp[] = "gmhipfhgnoelkiiofcnimehjnpaejiel";
 const char kCalculatorArcApp[] = "adeiokjnhlgkiokkojlphcelpojmlkpj";
 const char kPhotosPWAApp[] = "ncmjhecbjeaamljdfahankockkkdmedg";
 
-const GURL kPhotosPWAUrl = GURL("http://photos.google.com/");
-const GURL kMapsArcUrl = GURL("app://play/gbpfhehadcpcndihhameeacbdmbjbhgi");
-const GURL kCalculatorArcUrl =
-    GURL("app://play/adeiokjnhlgkiokkojlphcelpojmlkpj");
-
 const char kMapsPackageName[] = "com.google.android.apps.maps";
 const char kCalculatorPackageName[] = "com.google.android.calculator";
 
 namespace {
+
+const GURL& PhotosPWAUrl() {
+  static base::NoDestructor<GURL> url("http://photos.google.com/");
+  return *url;
+}
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL MapsArcUrl() {
+  return GURL("app://play/gbpfhehadcpcndihhameeacbdmbjbhgi");
+}
+GURL CalculatorArcUrl() {
+  return GURL("app://play/adeiokjnhlgkiokkojlphcelpojmlkpj");
+}
 
 bool TestIsWebstoreExtension(base::StringPiece id) {
   return (id == kGmailChromeApp);
@@ -61,7 +71,7 @@ class AppLaunchEventLoggerForTest : public AppLaunchEventLogger {
 
  protected:
   const GURL& GetLaunchWebURL(const extensions::Extension* extension) override {
-    return kPhotosPWAUrl;
+    return PhotosPWAUrl();
   }
 };
 
@@ -95,7 +105,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodePWA) {
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(1ul, entries.size());
   const auto* entry = entries.back();
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, kPhotosPWAUrl);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, PhotosPWAUrl());
   test_ukm_recorder_.ExpectEntryMetric(entry, "AllClicksLast24Hours", 1);
   test_ukm_recorder_.ExpectEntryMetric(entry, "AllClicksLastHour", 1);
   test_ukm_recorder_.ExpectEntryMetric(entry, "AppType", 3);
@@ -106,7 +116,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodePWA) {
       test_ukm_recorder_.GetEntriesByName("AppListAppClickData");
   ASSERT_EQ(1ul, click_entries.size());
   const auto* photos_entry = click_entries.back();
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(photos_entry, kPhotosPWAUrl);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(photos_entry, PhotosPWAUrl());
   test_ukm_recorder_.ExpectEntryMetric(photos_entry, "AppLaunchId",
                                        entry->source_id);
   test_ukm_recorder_.ExpectEntryMetric(photos_entry, "AppType", 3);
@@ -163,7 +173,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeArc) {
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(1ul, entries.size());
   const auto* entry = entries.back();
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, kMapsArcUrl);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, MapsArcUrl());
   test_ukm_recorder_.ExpectEntryMetric(entry, "AppType", 2);
   test_ukm_recorder_.ExpectEntryMetric(entry, "LaunchedFrom", 1);
 }
@@ -214,7 +224,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckMultipleClicks) {
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(6ul, entries.size());
   const auto* entry = entries.back();
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, kPhotosPWAUrl);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, PhotosPWAUrl());
   test_ukm_recorder_.ExpectEntryMetric(entry, "AllClicksLast24Hours", 6);
   test_ukm_recorder_.ExpectEntryMetric(entry, "AllClicksLastHour", 6);
   test_ukm_recorder_.ExpectEntryMetric(entry, "AppType", 3);
@@ -237,63 +247,63 @@ TEST_F(AppLaunchEventLoggerTest, CheckMultipleClicks) {
                   .GetSourceForSourceId(click_entries.at(17)->source_id)
                   ->url()] = click_entries.at(17);
 
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(entries_map[kPhotosPWAUrl],
-                                             kPhotosPWAUrl);
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(entries_map[kMapsArcUrl],
-                                             kMapsArcUrl);
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(entries_map[kCalculatorArcUrl],
-                                             kCalculatorArcUrl);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entries_map[PhotosPWAUrl()],
+                                             PhotosPWAUrl());
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entries_map[MapsArcUrl()],
+                                             MapsArcUrl());
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entries_map[CalculatorArcUrl()],
+                                             CalculatorArcUrl());
 
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[PhotosPWAUrl()],
                                        "AppLaunchId", entry->source_id);
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kMapsArcUrl], "AppLaunchId",
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[MapsArcUrl()], "AppLaunchId",
                                        entry->source_id);
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kCalculatorArcUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[CalculatorArcUrl()],
                                        "AppLaunchId", entry->source_id);
 
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[PhotosPWAUrl()],
                                        "ClicksLast24Hours", 2);
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kMapsArcUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[MapsArcUrl()],
                                        "ClicksLast24Hours", 1);
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kCalculatorArcUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[CalculatorArcUrl()],
                                        "ClicksLast24Hours", 2);
 
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[PhotosPWAUrl()],
                                        "ClicksLastHour", 2);
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kMapsArcUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[MapsArcUrl()],
                                        "ClicksLastHour", 1);
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kCalculatorArcUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[CalculatorArcUrl()],
                                        "ClicksLastHour", 2);
 
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[PhotosPWAUrl()],
                                        "MostRecentlyUsedIndex", 1);
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kMapsArcUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[MapsArcUrl()],
                                        "MostRecentlyUsedIndex", 3);
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kCalculatorArcUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[CalculatorArcUrl()],
                                        "MostRecentlyUsedIndex", 0);
 
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[PhotosPWAUrl()],
                                        "TimeSinceLastClick", 0);
 
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[PhotosPWAUrl()],
                                        "TotalClicks", 2);
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kMapsArcUrl], "TotalClicks",
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[MapsArcUrl()], "TotalClicks",
                                        1);
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kCalculatorArcUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[CalculatorArcUrl()],
                                        "TotalClicks", 2);
 
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[PhotosPWAUrl()],
                                        "LastLaunchedFrom", 2);
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kMapsArcUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[MapsArcUrl()],
                                        "LastLaunchedFrom", 1);
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kCalculatorArcUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[CalculatorArcUrl()],
                                        "LastLaunchedFrom", 1);
 
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kPhotosPWAUrl], "ClickRank",
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[PhotosPWAUrl()], "ClickRank",
                                        1);
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kMapsArcUrl], "ClickRank",
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[MapsArcUrl()], "ClickRank",
                                        3);
-  test_ukm_recorder_.ExpectEntryMetric(entries_map[kCalculatorArcUrl],
+  test_ukm_recorder_.ExpectEntryMetric(entries_map[CalculatorArcUrl()],
                                        "ClickRank", 1);
 }
 
@@ -316,7 +326,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSuggestionChip) {
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(1ul, entries.size());
   const auto* entry = entries.back();
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, kPhotosPWAUrl);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, PhotosPWAUrl());
   test_ukm_recorder_.ExpectEntryMetric(entry, "PositionIndex", 3);
   test_ukm_recorder_.ExpectEntryMetric(entry, "LaunchedFrom", 2);
 }
@@ -340,7 +350,7 @@ TEST_F(AppLaunchEventLoggerTest, CheckUkmCodeSearchBox) {
   const auto entries = test_ukm_recorder_.GetEntriesByName("AppListAppLaunch");
   ASSERT_EQ(1ul, entries.size());
   const auto* entry = entries.back();
-  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, kPhotosPWAUrl);
+  test_ukm_recorder_.ExpectEntrySourceHasUrl(entry, PhotosPWAUrl());
   test_ukm_recorder_.ExpectEntryMetric(entry, "PositionIndex", 3);
   test_ukm_recorder_.ExpectEntryMetric(entry, "LaunchedFrom", 4);
 }

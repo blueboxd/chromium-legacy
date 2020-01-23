@@ -63,6 +63,7 @@ FeaturePodIconButton::FeaturePodIconButton(views::ButtonListener* listener,
   TrayPopupUtils::ConfigureTrayPopupButton(this);
   views::InstallCircleHighlightPathGenerator(this);
   GetViewAccessibility().OverrideIsLeaf(true);
+  focus_ring()->SetColor(UnifiedSystemTrayView::GetFocusRingColor());
 }
 
 FeaturePodIconButton::~FeaturePodIconButton() = default;
@@ -171,6 +172,8 @@ FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
 
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
+
+  focus_ring()->SetColor(UnifiedSystemTrayView::GetFocusRingColor());
 }
 
 FeaturePodLabelButton::~FeaturePodLabelButton() = default;
@@ -267,9 +270,8 @@ void FeaturePodLabelButton::ShowDetailedViewArrow() {
 
 void FeaturePodLabelButton::OnEnabledChanged() {
   const AshColorProvider* color_provider = AshColorProvider::Get();
-  const SkColor primary_text_color =
-      color_provider->DeprecatedGetContentLayerColor(
-          ContentLayerType::kTextPrimary, kUnifiedMenuTextColor);
+  const SkColor primary_text_color = color_provider->GetContentLayerColor(
+      ContentLayerType::kTextPrimary, AshColorMode::kDark);
   const SkColor secondary_text_color = color_provider->GetContentLayerColor(
       ContentLayerType::kTextSecondary, AshColorMode::kDark);
   label_->SetEnabledColor(

@@ -82,7 +82,7 @@ void RecyclableCompositorMac::UpdateSurface(
   }
   if (color_space != color_space_) {
     color_space_ = color_space;
-    compositor()->SetDisplayColorSpace(color_space_);
+    compositor()->SetDisplayColorSpaces(gfx::DisplayColorSpaces(color_space_));
   }
 }
 
@@ -94,7 +94,7 @@ void RecyclableCompositorMac::InvalidateSurface() {
   compositor()->SetScaleAndSize(
       scale_factor_, size_pixels_,
       local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation());
-  compositor()->SetDisplayColorSpace(color_space_);
+  compositor()->SetDisplayColorSpaces(gfx::DisplayColorSpaces());
 }
 
 void RecyclableCompositorMac::OnCompositingDidCommit(

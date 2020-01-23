@@ -101,6 +101,10 @@ gfx::GpuMemoryBuffer* GpuMemoryBufferImageCopy::CopyImage(Image* image) {
     gl_->EndSharedImageAccessDirectCHROMIUM(source_texture_id);
   gl_->DeleteTextures(1, &source_texture_id);
 
+  gpu::SyncToken copy_done_sync_token;
+  gl_->GenSyncTokenCHROMIUM(copy_done_sync_token.GetData());
+  static_image->UpdateSyncToken(copy_done_sync_token);
+
   // Cleanup the draw framebuffer, associated image and texture.
   gl_->BindTexture(target, dest_texture_id);
   gl_->ReleaseTexImage2DCHROMIUM(target, image_id);

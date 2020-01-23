@@ -5021,7 +5021,6 @@
 <translation id="8101987792947961127">다음에 재부팅할 때 Powerwash 필요</translation>
 <translation id="8102159139658438129"><ph name="LINK_BEGIN" />설정<ph name="LINK_END" />으로 이동해 연결된 휴대전화의 옵션을 확인하세요.</translation>
 <translation id="8104696615244072556"><ph name="IDS_SHORT_PRODUCT_NAME" /> 기기를 Powerwash한 다음 이전 버전으로 돌아가세요.</translation>
-<translation id="8106661353233173262">문제가 발생했습니다. 검사된 파일이 타임아웃되었습니다.</translation>
 <translation id="8107015733319732394"><ph name="DEVICE_TYPE" />에 Google Play 스토어를 설치합니다. 설치하는 데 몇 분 정도 걸릴 수 있습니다.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{타사 쿠키 없음}=1{타사 쿠키 1개가 차단됨}other{타사 쿠키 #개가 차단됨}}</translation>
 <translation id="810875025413331850">주변 기기를 찾을 수 없습니다.</translation>

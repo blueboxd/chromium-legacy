@@ -233,10 +233,8 @@ public class ProxyChangeListener {
             return ProxyConfig.DIRECT;
         }
 
-        // TODO(laisminchillo): replace '29' with 'Build.VERSION_CODES.Q'
-        // when Android Q is finalized for release
-        if (Build.VERSION.SDK_INT == 29 && proxyInfo.getHost().equals("localhost")
-                && proxyInfo.getPort() == -1) {
+        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q
+                && proxyInfo.getHost().equals("localhost") && proxyInfo.getPort() == -1) {
             // There's a bug in Android Q's PAC support. If ConnectivityManager
             // returns localhost:-1 then use the intent from the PROXY_CHANGE_ACTION
             // broadcast to extract the ProxyConfig. See http://crbug.com/993538.

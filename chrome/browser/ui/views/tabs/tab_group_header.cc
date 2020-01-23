@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
@@ -107,7 +108,23 @@ bool TabGroupHeader::OnKeyPressed(const ui::KeyEvent& event) {
     return true;
   }
 
-  // TODO(connily): Handle moving the entire group left/right, similar to tabs.
+  constexpr int kModifiedFlag =
+#if defined(OS_MACOSX)
+      ui::EF_COMMAND_DOWN;
+#else
+      ui::EF_CONTROL_DOWN;
+#endif
+
+  if (event.type() == ui::ET_KEY_PRESSED && (event.flags() & kModifiedFlag)) {
+    if (event.key_code() == ui::VKEY_RIGHT) {
+      tab_strip_->ShiftGroupRight(group().value());
+      return true;
+    }
+    if (event.key_code() == ui::VKEY_LEFT) {
+      tab_strip_->ShiftGroupLeft(group().value());
+      return true;
+    }
+  }
 
   return false;
 }

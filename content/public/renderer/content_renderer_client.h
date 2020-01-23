@@ -161,13 +161,6 @@ class CONTENT_EXPORT ContentRendererClient {
       int http_status,
       std::string* error_html) {}
 
-  // Returns as |error_description| a brief description of the error that
-  // ocurred. The out parameter may be not written to in certain cases (lack of
-  // information on the error code)
-  virtual void GetErrorDescription(const blink::WebURLError& error,
-                                   const std::string& http_method,
-                                   base::string16* error_description) {}
-
   // Allows the embedder to control when media resources are loaded. Embedders
   // can run |closure| immediately if they don't wish to defer media resource
   // loading.  If |has_played_media_before| is true, the render frame has

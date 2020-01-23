@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
+#include "base/sys_byteorder.h"
 #include "base/test/task_environment.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/skia_paint_canvas.h"
@@ -26,6 +27,7 @@
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
+#include "third_party/libyuv/include/libyuv/scale.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -384,7 +386,7 @@ class PaintCanvasVideoRendererTest : public testing::Test {
 
   SkBitmap bitmap_;
   cc::SkiaPaintCanvas target_canvas_;
-  base::test::SingleThreadTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintCanvasVideoRendererTest);
 };
@@ -622,6 +624,58 @@ TEST_F(PaintCanvasVideoRendererTest, CroppedFrame) {
   EXPECT_EQ(SK_ColorGREEN,
             bitmap()->getColor(kWidth * 1 / 8 - 1, kHeight * 3 / 6));
   EXPECT_EQ(SK_ColorBLUE, bitmap()->getColor(kWidth * 3 / 8, kHeight * 3 / 6));
+}
+
+uint32_t MaybeConvertABGRToARGB(uint32_t abgr) {
+#if SK_B32_SHIFT == 0 && SK_G32_SHIFT == 8 && SK_R32_SHIFT == 16 && \
+    SK_A32_SHIFT == 24
+  return abgr;
+#else
+  return (base::ByteSwap(abgr & 0x00FFFFFF) >> 8) | (abgr & 0xFF000000);
+#endif
+}
+
+TEST_F(PaintCanvasVideoRendererTest, CroppedFrameToRGBParallel) {
+  // We need a test frame large enough to trigger parallel conversion. So we use
+  // cropped_frame() as a base and scale it up. Note: Visible rect and natural
+  // size must be even.
+  auto test_frame = VideoFrame::CreateFrame(
+      PIXEL_FORMAT_I420, gfx::Size(3840, 2160), gfx::Rect(1440, 810, 1920, 810),
+      gfx::Size(1920, 810), base::TimeDelta());
+
+  // Fill in the frame with the same data as the cropped frame.
+  libyuv::I420Scale(cropped_frame()->data(0), cropped_frame()->stride(0),
+                    cropped_frame()->data(1), cropped_frame()->stride(1),
+                    cropped_frame()->data(2), cropped_frame()->stride(2),
+                    cropped_frame()->coded_size().width(),
+                    cropped_frame()->coded_size().height(), test_frame->data(0),
+                    test_frame->stride(0), test_frame->data(1),
+                    test_frame->stride(1), test_frame->data(2),
+                    test_frame->stride(2), test_frame->coded_size().width(),
+                    test_frame->coded_size().height(), libyuv::kFilterNone);
+
+  const gfx::Size visible_size = test_frame->visible_rect().size();
+  const size_t row_bytes = visible_size.width() * sizeof(SkColor);
+  const size_t allocation_size = row_bytes * visible_size.height();
+
+  std::unique_ptr<uint8_t, base::AlignedFreeDeleter> memory(
+      static_cast<uint8_t*>(base::AlignedAlloc(
+          allocation_size, media::VideoFrame::kFrameAddressAlignment)));
+  memset(memory.get(), 0, allocation_size);
+
+  PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
+      test_frame.get(), memory.get(), row_bytes);
+
+  const uint32_t* rgb_pixels = reinterpret_cast<uint32_t*>(memory.get());
+
+  // Check the corners; this is sufficient to reveal https://crbug.com/1027442.
+  EXPECT_EQ(SK_ColorBLACK, rgb_pixels[0]);
+  EXPECT_EQ(MaybeConvertABGRToARGB(SK_ColorRED),
+            rgb_pixels[visible_size.width() - 1]);
+  EXPECT_EQ(SK_ColorGREEN,
+            rgb_pixels[visible_size.width() * (visible_size.height() - 1)]);
+  EXPECT_EQ(MaybeConvertABGRToARGB(SK_ColorBLUE),
+            rgb_pixels[(visible_size.width() - 1) * visible_size.height()]);
 }
 
 TEST_F(PaintCanvasVideoRendererTest, CroppedFrame_NoScaling) {

@@ -31,7 +31,7 @@ Gyroscope::Gyroscope(ExecutionContext* execution_context,
              options,
              exception_state,
              SensorType::GYROSCOPE,
-             {mojom::FeaturePolicyFeature::kGyroscope}) {}
+             {mojom::blink::FeaturePolicyFeature::kGyroscope}) {}
 
 double Gyroscope::x(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);

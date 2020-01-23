@@ -7,7 +7,7 @@ module viz.mojom;
 import "gpu/ipc/common/context_result.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/mojom/ca_layer_params.mojom";
-import "ui/gfx/mojom/color_space.mojom";
+import "ui/gfx/mojom/display_color_spaces.mojom";
 import "ui/gfx/mojom/overlay_transform.mojom";
 import "ui/gfx/mojom/transform.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -32,10 +32,9 @@ interface DisplayPrivate {
   // display. This only works in GPU compositing.
   SetDisplayColorMatrix(gfx.mojom.Transform color_matrix);
 
-  // Sets the device color space for rendering and white level in nits used for
-  // scaling SDR content.  This only works in GPU compositing.
-  SetDisplayColorSpace(gfx.mojom.ColorSpace device_color_space,
-                       float sdr_white_level);
+  // Sets the color spaces that may be used for rendering. This only has an
+  // effect when using GPU compositing.
+  SetDisplayColorSpaces(gfx.mojom.DisplayColorSpaces display_color_spaces);
   SetOutputIsSecure(bool secure);
 
   // Updates vsync parameters used to generate BeginFrames for this display.

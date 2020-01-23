@@ -188,29 +188,29 @@ IntersectionGeometry::RootGeometry::RootGeometry(const LayoutObject* root,
   root_to_document_transform = transform_state.AccumulatedTransform();
 }
 
-// If root_element is non-null, it is treated as the explicit root of an
+// If root_node is non-null, it is treated as the explicit root of an
 // IntersectionObserver; if it is valid, its LayoutObject is returned.
 //
-// If root_element is null, returns the object to be used as the implicit root
+// If root_node is null, returns the object to be used as the implicit root
 // for a given target.
 //
 //   https://w3c.github.io/IntersectionObserver/#dom-intersectionobserver-root
 const LayoutObject* IntersectionGeometry::GetRootLayoutObjectForTarget(
-    const Element* root_element,
+    const Node* root_node,
     LayoutObject* target,
     bool check_containing_block_chain) {
-  if (!root_element)
+  if (!root_node)
     return target ? LocalRootView(*target) : nullptr;
-  if (!root_element->isConnected())
+  if (!root_node->isConnected())
     return nullptr;
 
   LayoutObject* root = nullptr;
   if (RuntimeEnabledFeatures::
           IntersectionObserverDocumentScrollingElementRootEnabled() &&
-      root_element == root_element->GetDocument().scrollingElement()) {
-    root = root_element->GetDocument().GetLayoutView();
+      root_node->IsDocumentNode()) {
+    root = To<Document>(root_node)->GetLayoutView();
   } else {
-    root = root_element->GetLayoutObject();
+    root = root_node->GetLayoutObject();
     if (target && check_containing_block_chain &&
         !IsContainingBlockChainDescendant(target, root)) {
       root = nullptr;
@@ -219,7 +219,7 @@ const LayoutObject* IntersectionGeometry::GetRootLayoutObjectForTarget(
   return root;
 }
 
-IntersectionGeometry::IntersectionGeometry(const Element* root_element,
+IntersectionGeometry::IntersectionGeometry(const Node* root_node,
                                            const Element& target_element,
                                            const Vector<Length>& root_margin,
                                            const Vector<float>& thresholds,
@@ -230,13 +230,13 @@ IntersectionGeometry::IntersectionGeometry(const Element* root_element,
       threshold_index_(0) {
   if (cached_rects)
     cached_rects->valid = false;
-  if (!root_element)
+  if (!root_node)
     flags_ |= kRootIsImplicit;
   LayoutObject* target = GetTargetLayoutObject(target_element);
   if (!target)
     return;
-  const LayoutObject* root = GetRootLayoutObjectForTarget(
-      root_element, target, !ShouldUseCachedRects());
+  const LayoutObject* root =
+      GetRootLayoutObjectForTarget(root_node, target, !ShouldUseCachedRects());
   if (!root)
     return;
   RootGeometry root_geometry(root, root_margin);
@@ -244,7 +244,7 @@ IntersectionGeometry::IntersectionGeometry(const Element* root_element,
 }
 
 IntersectionGeometry::IntersectionGeometry(const RootGeometry& root_geometry,
-                                           const Element& explicit_root,
+                                           const Node& explicit_root,
                                            const Element& target_element,
                                            const Vector<float>& thresholds,
                                            unsigned flags,

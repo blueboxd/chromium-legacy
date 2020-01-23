@@ -767,6 +767,7 @@
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" />, bu politikaya göre daha önceliklidir. Diğer bir deyişle, kara listedeki bir uzantı bu listedeki bir sitede bulunsa bile yüklenmeyecektir.</translation>
 <translation id="214901426630414675">Dupleks yazdırma modunu kısıtla</translation>
 <translation id="2149330464730004005">Renkli yazdırmayı etkinleştir</translation>
+<translation id="2151831603578119302">Erişilebilirlik özellikleri kısayollarını etkinleştir</translation>
 <translation id="2156132677421487971">Kullanıcıların tarayıcılarındaki sekme, site veya masaüstü içeriklerini uzak ekranlara ve ses sistemlerine göndermelerine olanak tanıyan <ph name="PRODUCT_NAME" /> özelliğine ilişkin politikaları yapılandırın.</translation>
 <translation id="2156755242840687300">Harici yazdırma sunucuları etkin</translation>
 <translation id="2160336427036785721">Bellekten tasarruf etmek için sekmelerin silinmeye başlamasından önce (sekme tarafından kullanılan bellek serbest kalır ve sekmeye geçiş yapıldığında sekmenin yeniden yüklenmesi gerekir) tek bir <ph name="PRODUCT_NAME" /> örneğinin kullanabileceği bellek miktarını yapılandırır.
@@ -879,6 +880,7 @@
 <translation id="2294382669900758280">Bu politika <ph name="TRUE" /> seçeneğine ayarlansa bile Android uygulamalarında video oynatma dikkate alınmaz.</translation>
 <translation id="2299220924812062390">Etkinleştirilmiş eklentilerin listesini belirt</translation>
 <translation id="2303795211377219696">Kredi kartları için Otomatik Doldurma özelliğini etkinleştirme</translation>
+<translation id="2307496301287881990">Ekran ve grafik durumlarını raporla</translation>
 <translation id="2309390639296060546">Varsayılan coğrafi konum ayarı</translation>
 <translation id="2327252517317514801">G Suite'e erişmesine izin verilen alan adlarını tanımla</translation>
 <translation id="2328573323851533589">Bu politika, <ph name="PRODUCT_NAME" /> ürününde kimlik bilgisi sızıntılarının kontrolünü etkinleştirmeyi veya devre dışı bırakmayı zorunlu tutmak için kullanılabilir.
@@ -1138,6 +1140,7 @@
       Bu politika yapılandırılmaz veya devre dışı bırakılırsa, oturum açma ekranı için platformun varsayılan site izolasyonu ayarları kullanılır.
       </translation>
 <translation id="2587719089023392205"><ph name="PRODUCT_NAME" /> ürününü varsayılan tarayıcım olarak ayarla</translation>
+<translation id="2588071938417715443">Bu politika, kullanıcının etrafındaki bulunabilir cihazların yanı sıra kendisine kayıtlı bulut cihazları gösteren yerel keşif kullanıcı arayüzündeki (<ph name="CHROME_DEVICES_LINK" />) kontrol edilebilir özelliklere erişimi denetler. <ph name="PRODUCT_OS_NAME" /> hariç tüm işletim sistemlerinde yerel keşif kullanıcı arayüzü, kullanıcıların, bilgisayarlarına bağlı klasik yazıcıları <ph name="CLOUD_PRINT_NAME" /> hizmetine eklemelerine izin verir.</translation>
 <translation id="2592091433672667839">Perakende modunda oturum açma ekranında ekran koruyucunun devreye girmesi için geçecek boşta kalma süresi</translation>
 <translation id="2592162121850992309">Bu politika true (doğru) değerine ayarlanırsa veya ayarlanmadan bırakılırsa, belirli bir GPU özelliği kara listeye alınmadığı sürece donanım hızlandırma özelliği etkinleştirilir.
 
@@ -1386,19 +1389,6 @@
 <translation id="2960691910306063964">Uzaktan erişim ana makineleri için PIN'siz kimlik doğrulamayı etkinleştir veya devre dışı bırak</translation>
 <translation id="2987155890997901449">ARC'yi etkinleştir</translation>
 <translation id="2987227569419001736">Web Bluetooth API'sının kullanımını kontrol et</translation>
-<translation id="3011301228198307065"><ph name="PRODUCT_NAME" /> ürününde varsayılan ana sayfa URL'sini yapılandırır ve kullanıcıların bu ayarı değiştirmesini önler.
-
-          Ana sayfa, Ana Sayfa düğmesine basıldığında açılan sayfadır. Başlangıçta açılan sayfalar RestoreOnStartup politikalarıyla kontrol edilir.
-
-          Ana sayfa türü burada belirteceğiniz bir URL'ye ayarlanabileceği gibi, Yeni Sekme Sayfası'na da ayarlanabilir. Yeni Sekme Sayfası'nı seçerseniz bu politika geçerli olmaz.
-
-          Bu ayarı etkinleştirirseniz, kullanıcılar <ph name="PRODUCT_NAME" /> ürününde ana sayfa URL'lerini değiştiremez, ancak ana sayfa olarak yine de Yeni Sekme Sayfası'nı seçebilirler.
-
-          Bu politikanın ayarlanmadan bırakılması, HomepageIsNewTabPage politikası da ayarlanmamışsa, kullanıcının kendi ana sayfasını seçmesine olanak tanır.
-
-          URL'nin standart şeması olması gerekir. Ör. "http://example.com" veya "https://example.com".
-
-          Bu politika yalnızca bir <ph name="MS_AD_NAME" /> alan adına katılmış Windows örneklerinde veya cihaz yönetimine kaydolmuş Windows 10 Pro ya da Enterprise örneklerinde kullanılabilir.</translation>
 <translation id="3016255526521614822">Beyaz listedeki not alma uygulamalarına <ph name="PRODUCT_OS_NAME" /> kilit ekranında izin verilir</translation>
 <translation id="3020064401262077616">Yalnızca çocuk hesaplarına uygulanan ebeveyn gözetimi politikalarını kontrol eder.</translation>
 <translation id="3021562480854470924">Geri alma işleminin izin verildiği dönüm noktası sayısı</translation>
@@ -2926,6 +2916,7 @@ politikayı geçersiz kılamaz.
       VPN bağlantısı VPN uygulaması ile oluşturulduysa, uygulamanın içindeki kullanıcı arayüzü bu politikadan etkilenmez. Dolayısıyla kullanıcı, VPN bağlantısını değiştirmek için uygulamayı kullanmaya devam edebilir.
 
       Bu politika, yöneticinin başlangıçta VPN bağlantısı kurmaya karar vermesini sağlayan "Her zaman açık VPN" özelliğiyle birlikte kullanılmak üzere tasarlanmıştır.</translation>
+<translation id="5401696449591951427"><ph name="CHROME_DEVICES_LINK" /> bağlantısını etkinleştir</translation>
 <translation id="5405289061476885481"><ph name="PRODUCT_OS_NAME" /> oturum açma ekranında hangi klavye düzenlerine izin verileceğini yapılandırır.
 
       Bu politika bir giriş yöntemi tanımlayıcıları listesine ayarlanırsa belirtilen giriş yöntemleri oturum açma ekranında kullanılabilir. Belirtilen ilk giriş yöntemi önceden seçilir. Oturum açma ekranında bir kullanıcı simgesine odaklanılmışken, kullanıcının kullandığı son giriş yöntemi de bu politikada belirtilen giriş yöntemlerine ek olarak gösterilir. Bu politika ayarlanmazsa oturum açma ekranındaki giriş yöntemleri, oturum açma ekranının görüntülendiği yerel ayardan türetilir. Geçerli giriş yöntemi tanımlayıcıları olmayan değerler yok sayılır.</translation>
@@ -3195,6 +3186,7 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
           Bu politika ayarlanmadan bırakılırsa, varsayılan işlem olarak askıya alma uygulanır.
 
           Uygulanacak işlem askıya alma ise, <ph name="PRODUCT_OS_NAME" />, askıya almadan önce ekranı kilitleyecek veya kilitlemeyecek şekilde ayrı olarak yapılandırılabilir.</translation>
+<translation id="574983287620584622">Giriş ekranında erişilebilirlik özellikleri kısayollarını etkinleştir</translation>
 <translation id="5755002458331714762"> Web Bileşenleri v0 API'leri (Gölge DOM v0, Özel Öğeler v0 ve HTML İçe Aktarmaları) 2018'de kullanımdan kaldırılmıştır ve M80 düzeyinden itibaren varsayılan olarak devre dışıdır. Bu politika, bu özelliklerin M84'e kadar seçilerek yeniden etkinleştirilmesine olanak tanır.
 
       Bu politika True (Doğru) değerine ayarlanırsa Web Bileşenleri v0 özellikleri tüm siteler için etkinleştirilir.
@@ -4346,6 +4338,15 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Bu politika False (Yanlış) değerine ayarlanırsa Güvenli Tarama verileri toplanmaz.
 
       Bu politika yalnızca <ph name="CHROME_REPORTING_EXTENSION_NAME" /> etkinleştirildiğinde ve makine <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> politikasına kayıtlı olduğunda geçerli olur.</translation>
+<translation id="777734450201217641">Giriş ekranında erişilebilirlik özellikleri kısayollarını etkinleştirin.
+
+          Bu politika doğru (true) değerine ayarlanırsa giriş ekranında erişilebilirlik özellikleri kısayolları her zaman etkinleştirilir.
+
+          Bu politika yanlış (false) değerine ayarlanırsa giriş ekranında erişilebilirlik özellikleri kısayolları her zaman devre dışı bırakılır.
+
+          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
+
+          Bu politika ayarlanmadan bırakılırsa giriş ekranında erişilebilirlik özellikleri kısayolları varsayılan olarak etkinleştirilir.</translation>
 <translation id="7777535871204167559">Harici depolama cihazlarını salt okunur olarak ele al</translation>
 <translation id="7788511847830146438">Her Profil İçin Ayrı</translation>
 <translation id="7792973482799545782">Hiçbir sitenin engellenebilir karma içerik yüklemesine izin verme</translation>
@@ -4747,6 +4748,15 @@ Windows'da politika yapılandırmak için önerilen yol GPO kullanmaktır. Ancak
 
       Uyarı: Kullanıcıların yazılım güncellemelerini ve kritik güvenlik düzeltmelerini almasını engelleyebileceği için sürüm kısıtlamalarının yapılandırılması önerilmez. Güncellemeleri belirli bir sürüm ön ekiyle sınırlamak, kullanıcıları risk altında bırakabilir.</translation>
 <translation id="8519264904050090490">Yönetilen kullanıcı manuel istisna URL'leri</translation>
+<translation id="8519516251436131647">Erişilebilirlik özellikleri kısayollarını etkinleştirin.
+
+          Bu politika doğru (true) değerine ayarlanırsa erişilebilirlik özellikleri kısayolları her zaman etkinleştirilir.
+
+          Bu politika yanlış (false) değerine ayarlanırsa erişilebilirlik özellikleri kısayolları her zaman devre dışı bırakılır.
+
+          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
+
+          Bu politika ayarlanmadan bırakılırsa erişilebilirlik özellikleri kısayolları varsayılan olarak etkinleştirilir.</translation>
 <translation id="8525526490824335042">Linux kapsayıcı</translation>
 <translation id="8538235451413605457">İzin verilen minimum <ph name="PRODUCT_NAME" /> sürümü gereksinimini yapılandırır. Aşağıda belirtilen sürümler eski olarak kabul edilir ve cihaz, OS güncellenmeden kullanıcının oturum açmasına izin vermez.
       Geçerli sürüm, kullanıcı oturumu sırasında eski durumuna dönüşürse kullanıcı oturumunu kapatmaya zorlanır.
@@ -4991,6 +5001,9 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
           Bu politika ayarlanmadan bırakılırsa, 'PromptOnAccess' kullanılır ve kullanıcı, bu ayarı değiştirebilir.</translation>
 <translation id="8911348623012274122">Chrome örnekleri için bellek sınırı ayarla</translation>
+<translation id="8911736066340032670">Yenileme hızı gibi ekranla ilgili bilgileri ve sürücünün sürümü gibi grafikle ilgili bilgileri raporlayın.
+
+      Politika yanlış (false) değerine ayarlanır veya ayarlanmadan bırakılırsa ekran ve grafik durumu raporlanmaz. Doğru (true) değerine ayarlanırsa ekran ve grafik durumları raporlanır.</translation>
 <translation id="891435090623616439">JSON dizesi olarak kodlanmıştır, ayrıntılar için <ph name="COMPLEX_POLICIES_URL" /> sayfasına bakın</translation>
 <translation id="8917070657147922192">Kullanıcıların yüklü CA sertifikalarını yönetmelerine izin ver.</translation>
 <translation id="8926275581598789324">Bu politikanın artık kullanılmadığını ve <ph name="PRODUCT_OS_NAME" /> sürüm 82'de kaldırılacağını unutmayın. Lütfen bunun yerine <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" /> politikasını kullanın.

@@ -488,8 +488,9 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, ReshapeWithInFlightSurfaces) {
 
   output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), false,
                           gfx::OVERLAY_TRANSFORM_NONE);
-  // swap completion callbacks is cleared.
-  EXPECT_EQ(0u, swap_completion_callbacks().size());
+
+  // swap completion callbacks should not be cleared.
+  EXPECT_EQ(1u, swap_completion_callbacks().size());
 
   PageFlipComplete();
   EXPECT_FALSE(displayed_image());

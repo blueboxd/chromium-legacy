@@ -27,11 +27,15 @@ using TestCompletionCallback =
     BrowsingDataHelperCallback<content::StorageUsageInfo>;
 
 const char kTestIdentifier1[] = "http_www.example.com_0";
-const url::Origin kTestOrigin =
-    url::Origin::Create(GURL("http://www.example.com"));
 
 const char kTestIdentifierExtension[] =
   "chrome-extension_behllobkkfkfnphdnhnkndlbkcpglgmj_0";
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+url::Origin TestOrigin() {
+  return url::Origin::Create(GURL("http://www.example.com"));
+}
 
 class BrowsingDataDatabaseHelperTest : public InProcessBrowserTest {
  public:
@@ -81,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, FetchData) {
       }));
   run_loop.Run();
   ASSERT_EQ(1UL, database_info_list.size());
-  EXPECT_EQ(kTestOrigin, database_info_list.begin()->origin);
+  EXPECT_EQ(TestOrigin(), database_info_list.begin()->origin);
 }
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataDatabaseHelperTest, CannedAddDatabase) {

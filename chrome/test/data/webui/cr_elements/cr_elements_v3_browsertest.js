@@ -99,6 +99,32 @@ TEST_F('CrElementsExpandButtonV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrElementsFingerprintProgressArcV3Test =
+    class extends CrElementsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_fingerprint_progress_arc_tests.m.js';
+  }
+
+  /** @override */
+  get commandLineSwitches() {
+    return [{switchName: 'enable-pixel-output-in-tests'}];
+  }
+};
+
+// https://crbug.com/1044390 - maybe flaky on Mac?
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_Fingerprint DISABLED_Fingerprint');
+GEN('#else');
+GEN('#define MAYBE_Fingerprint Fingerprint');
+GEN('#endif');
+
+TEST_F(
+    'CrElementsFingerprintProgressArcV3Test', 'MAYBE_Fingerprint', function() {
+      mocha.run();
+    });
+
+// eslint-disable-next-line no-var
 var CrElementsIconButtonV3Test = class extends CrElementsV3BrowserTest {
   /** @override */
   get browsePreload() {

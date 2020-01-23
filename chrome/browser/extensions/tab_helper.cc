@@ -45,6 +45,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "extensions/browser/api/declarative/rules_registry_service.h"
+#include "extensions/browser/api/declarative_net_request/web_contents_helper.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
@@ -79,7 +80,8 @@ TabHelper::TabHelper(content::WebContents* web_contents)
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       extension_app_(NULL),
       script_executor_(new ScriptExecutor(web_contents)),
-      extension_action_runner_(new ExtensionActionRunner(web_contents)) {
+      extension_action_runner_(new ExtensionActionRunner(web_contents)),
+      declarative_net_request_helper_(web_contents) {
   // The ActiveTabPermissionManager requires a session ID; ensure this
   // WebContents has one.
   CreateSessionServiceTabHelper(web_contents);

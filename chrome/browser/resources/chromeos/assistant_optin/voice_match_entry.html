@@ -22,8 +22,9 @@
         <div id="active-text" active$="[[active]]">
           <content select=".entry-content"></content>
         </div>
-        <div id="completed-text" completed$="[[completed]]"
-            i18n-content=assistantVoiceMatchComplete></div>
+        <div id="completed-text" completed$="[[completed]]">
+          [[i18nDynamic(locale, 'assistantVoiceMatchComplete')]]
+        </div>
       </div>
     </div>
   </template>

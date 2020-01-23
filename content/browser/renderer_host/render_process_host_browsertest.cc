@@ -950,7 +950,6 @@ class CaptureStreamRenderProcessHostTest : public RenderProcessHostTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // These flags are necessary to emulate camera input for getUserMedia()
     // tests.
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
     RenderProcessHostTest::SetUpCommandLine(command_line);
   }

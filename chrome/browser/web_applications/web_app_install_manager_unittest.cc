@@ -43,7 +43,11 @@ namespace web_app {
 
 namespace {
 
-const GURL kIconUrl{"https://example.com/app.ico"};
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL IconUrl() {
+  return GURL("https://example.com/app.ico");
+}
 
 base::NullableString16 ToNullableUTF16(const std::string& str) {
   return base::NullableString16(base::UTF8ToUTF16(str), false);
@@ -189,7 +193,7 @@ class WebAppInstallManagerTest : public WebAppTest {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->app_url = url;
     WebApplicationIconInfo icon_info;
-    icon_info.url = kIconUrl;
+    icon_info.url = IconUrl();
     icon_info.square_size_px = icon_size::k256;
     web_app_info->icon_infos.push_back(std::move(icon_info));
     return web_app_info;
@@ -410,7 +414,7 @@ TEST_F(WebAppInstallManagerTest,
               event_order.push_back(task_index == 1 ? Event::Task1_Started
                                                     : Event::Task2_Started);
               IconsMap icons_map;
-              AddIconToIconsMap(kIconUrl, icon_size::k256, SK_ColorBLUE,
+              AddIconToIconsMap(IconUrl(), icon_size::k256, SK_ColorBLUE,
                                 &icons_map);
               return icons_map;
             }));
@@ -502,7 +506,7 @@ TEST_F(WebAppInstallManagerTest,
               run_loop.Quit();
 
               IconsMap icons_map;
-              AddIconToIconsMap(kIconUrl, icon_size::k256, SK_ColorBLUE,
+              AddIconToIconsMap(IconUrl(), icon_size::k256, SK_ColorBLUE,
                                 &icons_map);
               return icons_map;
             }));

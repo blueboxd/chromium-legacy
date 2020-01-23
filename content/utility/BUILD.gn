@@ -77,6 +77,10 @@ jumbo_source_set("utility") {
   if (!is_android) {
     deps += [ "//services/proxy_resolver:lib" ]
   }
+
+  if (is_linux) {
+    deps += [ "//content/utility/soda:soda_sandbox_hook" ]
+  }
 }
 
 # See comment at the top of //content/BUILD.gn for how this works.

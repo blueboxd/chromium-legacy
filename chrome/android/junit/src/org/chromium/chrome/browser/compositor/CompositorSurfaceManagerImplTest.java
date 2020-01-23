@@ -129,7 +129,7 @@ public class CompositorSurfaceManagerImplTest {
         MockitoAnnotations.initMocks(this);
         Activity activity = Robolectric.buildActivity(Activity.class).setup().get();
         mLayout = new FrameLayout(activity);
-        mManager = new CompositorSurfaceManagerImpl(mLayout, mCallback, false);
+        mManager = new CompositorSurfaceManagerImpl(mLayout, mCallback);
     }
 
     private void runDelayedTasks() {

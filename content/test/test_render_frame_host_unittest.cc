@@ -58,8 +58,7 @@ class TestRenderFrameHostTest : public RenderViewHostImplTestHarness,
 
   void DidFailLoad(RenderFrameHost* render_frame_host,
                    const GURL& url,
-                   int error_code,
-                   const base::string16& error_description) override {
+                   int error_code) override {
     events_.push_back("DidFailLoad");
   }
 

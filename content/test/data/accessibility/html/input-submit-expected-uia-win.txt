@@ -1,9 +1,9 @@
 document
-++form
+++form IsControlElement=false
 ++++textbox
 ++++button Name='First submit in a form is a valid default button'
 ++++button Name='Second submit in a form not a valid default button'
-++form
+++form IsControlElement=false
 ++++textbox
 ++++button Name='First image button in a form is a valid default button'
 ++++++img

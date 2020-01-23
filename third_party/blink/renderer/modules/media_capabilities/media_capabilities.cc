@@ -698,8 +698,9 @@ ScriptPromise MediaCapabilities::GetEmeSupport(
 
   // See context here:
   // https://sites.google.com/a/chromium.org/dev/Home/chromium-security/deprecating-permissions-in-cross-origin-iframes
-  if (!document->IsFeatureEnabled(mojom::FeaturePolicyFeature::kEncryptedMedia,
-                                  ReportOptions::kReportOnFailure)) {
+  if (!document->IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kEncryptedMedia,
+          ReportOptions::kReportOnFailure)) {
     UseCounter::Count(document,
                       WebFeature::kEncryptedMediaDisabledByFeaturePolicy);
     document->AddConsoleMessage(

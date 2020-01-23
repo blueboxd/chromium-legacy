@@ -116,9 +116,9 @@ ScriptPromise NavigatorWebMIDI::requestMIDIAccess(
   document.CountUseOnlyInCrossOriginIframe(
       WebFeature::kRequestMIDIAccessIframe_ObscuredByFootprinting);
 
-  if (!document.IsFeatureEnabled(mojom::FeaturePolicyFeature::kMidiFeature,
-                                 ReportOptions::kReportOnFailure,
-                                 kFeaturePolicyConsoleWarning)) {
+  if (!document.IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kMidiFeature,
+          ReportOptions::kReportOnFailure, kFeaturePolicyConsoleWarning)) {
     UseCounter::Count(document, WebFeature::kMidiDisabledByFeaturePolicy);
     exception_state.ThrowSecurityError(kFeaturePolicyErrorMessage);
     return ScriptPromise();

@@ -38,7 +38,6 @@
 namespace {
 
 constexpr gfx::Size kSize(640, 480);
-const GURL kTestUrl("https://test.com/path");
 
 }  // namespace
 

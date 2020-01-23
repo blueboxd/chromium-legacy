@@ -505,18 +505,27 @@ bool IsStringASCII(WStringPiece str) {
 }
 #endif
 
-bool IsStringUTF8(StringPiece str) {
-  const char *src = str.data();
+template <bool (*Validator)(uint32_t)>
+inline static bool DoIsStringUTF8(StringPiece str) {
+  const char* src = str.data();
   int32_t src_len = static_cast<int32_t>(str.length());
   int32_t char_index = 0;
 
   while (char_index < src_len) {
     int32_t code_point;
     CBU8_NEXT(src, char_index, src_len, code_point);
-    if (!IsValidCharacter(code_point))
+    if (!Validator(code_point))
       return false;
   }
   return true;
+}
+
+bool IsStringUTF8(StringPiece str) {
+  return DoIsStringUTF8<IsValidCharacter>(str);
+}
+
+bool IsStringUTF8AllowingNoncharacters(StringPiece str) {
+  return DoIsStringUTF8<IsValidCodepoint>(str);
 }
 
 // Implementation note: Normally this function will be called with a hardcoded

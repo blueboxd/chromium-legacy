@@ -71,8 +71,7 @@ import java.net.URISyntaxException;
     }
 
     @Override
-    public void didFailLoad(
-            boolean isMainFrame, int errorCode, String description, String failingUrl) {
+    public void didFailLoad(boolean isMainFrame, int errorCode, String failingUrl) {
         mModel.set(PaymentHandlerToolbarProperties.PROGRESS_VISIBLE, false);
     }
 

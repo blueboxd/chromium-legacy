@@ -19,9 +19,7 @@ constexpr char kSourceTextPath[] = "translateResult.sourceText";
 constexpr char kSourceLanguageLocalizedNamePath[] =
     "translateResult.sourceTextLanguageLocalizedName";
 constexpr char kTranslatedTextPath[] = "translateResult.translatedText";
-// TODO(llin): The language localized name might contains bracket, for example
-// Chinese (Traditional). Update the template after UX is finalized.
-constexpr char kSourceTextTemplate[] = "%s (%s)";
+constexpr char kSourceTextTemplate[] = "%s · %s";
 
 }  // namespace
 

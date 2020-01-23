@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "net/base/net_export.h"
 #include "net/third_party/quiche/src/quic/core/quic_tag.h"
+#include "net/third_party/quiche/src/quic/core/quic_versions.h"
 
 namespace net {
 
@@ -19,6 +20,11 @@ namespace net {
 // string in |connection_options|.
 NET_EXPORT quic::QuicTagVector ParseQuicConnectionOptions(
     const std::string& connection_options);
+
+// Returns the list of QUIC versions represented by the comma separated
+// string in |quic_versions|.
+NET_EXPORT quic::ParsedQuicVersionVector ParseQuicVersions(
+    const std::string& quic_versions);
 
 }  // namespace net
 

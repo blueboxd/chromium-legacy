@@ -25,3 +25,8 @@ struct ObservationCompletion {
   TargetValue target_value;
   uint64 weight = 1;
 };
+
+// learning::TargetHistogram (common/target_histogram.h)
+struct TargetHistogram {
+  map<TargetValue, double> counts;
+};

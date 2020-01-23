@@ -122,11 +122,6 @@ class ChromeContentRendererClient
                                           const std::string& http_method,
                                           int http_status,
                                           std::string* error_html) override;
-
-  void GetErrorDescription(const blink::WebURLError& error,
-                           const std::string& http_method,
-                           base::string16* error_description) override;
-
   bool DeferMediaLoad(content::RenderFrame* render_frame,
                       bool has_played_media_before,
                       base::OnceClosure closure) override;

@@ -692,7 +692,7 @@
 <translation id="4082393374666368382">Sozlamalar – Boshqaruv</translation>
 <translation id="4088981014127559358">Tasvirning old tomondagi Y oʻqidagi siljish</translation>
 <translation id="4098354747657067197">Ehtiyot bo‘ling, qalbaki sayt!</translation>
-<translation id="4101413244023615925">Matn va tasvirlar</translation>
+<translation id="4101413244023615925">Matn va grafika</translation>
 <translation id="4103249731201008433">Qurilma seriya raqami noto‘g‘ri</translation>
 <translation id="4103763322291513355">Administrator tomonidan qora ro‘yxatga qo‘shilgan URL manzillar va boshqa parametrlarni ko‘rish uchun quyidagi sahifaga o‘ting: &lt;strong&gt;chrome://policy&lt;/strong&gt;</translation>
 <translation id="4108231218301530806">Keyingi safar bu karta barmoq izi bilan tasdiqlansin.</translation>
@@ -1481,7 +1481,7 @@ Batafsil axborot:
 <translation id="7613889955535752492">Muddati: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="7615602087246926389">Sizda allaqachon boshqa Google hisobi paroli orqali shifrlangan ma’lumotlar mavjud. O‘sha parolni quyida kiriting.</translation>
 <translation id="7619838219691048931">Oxirgi varaq</translation>
-<translation id="762844065391966283">Bir obektdan</translation>
+<translation id="762844065391966283">Bir obyektdan</translation>
 <translation id="7633909222644580952">Foydalanish statistikasi va ishdan chiqishlar hisoboti</translation>
 <translation id="7637571805876720304">Bu kredit karta Chromium’dan o‘chirib tashlansinmi?</translation>
 <translation id="7638605456503525968">Ketma-ket portlar</translation>
@@ -1704,7 +1704,7 @@ Batafsil axborot:
 <translation id="8681531050781943054"><ph name="PAGE" /> veb-sahifasi quyidagi sabablarga ko‘ra yuklanmadi:</translation>
 <translation id="8685155993131031756">Prc-16K</translation>
 <translation id="8688672835843460752">Bo‘sh</translation>
-<translation id="868922510921656628">Toʻplamdagi sahifalar soni</translation>
+<translation id="868922510921656628">Majmuadagi sahifalar soni</translation>
 <translation id="869891660844655955">Tugash muddati</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN" /> domeniga ulanish shifrlanmagan.</translation>
 <translation id="8718314106902482036">To‘lov amalga oshirilmagan</translation>

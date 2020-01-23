@@ -643,6 +643,12 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Used to avoid multiple concurrent menu requests. The value is null if none.
   ShelfID item_awaiting_response_;
 
+  // The callback for in-flight async request for a context menu.
+  // Used to cancel the request if context menu should be
+  // cancelled, for example if shelf item drag starts.
+  base::CancelableOnceCallback<void(std::unique_ptr<ui::SimpleMenuModel> model)>
+      context_menu_callback_;
+
   // The timestamp of the event which closed the last menu - or 0.
   base::TimeTicks closing_event_time_;
 

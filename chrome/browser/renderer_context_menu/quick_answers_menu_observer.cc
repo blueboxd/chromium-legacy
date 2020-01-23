@@ -6,12 +6,14 @@
 
 #include <utility>
 
+#include "ash/public/cpp/assistant/assistant_interface_binder.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/context_menu_params.h"
@@ -76,6 +78,7 @@ void QuickAnswersMenuObserver::InitMenu(
   // Fetch Quick Answer.
   QuickAnswersRequest request;
   request.selected_text = selected_text;
+  query_ = request.selected_text;
   quick_answers_client_->SendRequest(request);
 }
 
@@ -93,7 +96,8 @@ bool QuickAnswersMenuObserver::IsCommandIdEnabled(int command_id) {
 }
 
 void QuickAnswersMenuObserver::ExecuteCommand(int command_id) {
-  // TODO(llin): Implements Quick Answers click action.
+  if (command_id == IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY)
+    SendAssistantQuery(query_);
 }
 
 void QuickAnswersMenuObserver::OnQuickAnswerReceived(
@@ -131,4 +135,14 @@ void QuickAnswersMenuObserver::SetQuickAnswerClientForTesting(
     std::unique_ptr<chromeos::quick_answers::QuickAnswersClient>
         quick_answers_client) {
   quick_answers_client_ = std::move(quick_answers_client);
+}
+
+void QuickAnswersMenuObserver::SendAssistantQuery(const std::string& query) {
+  mojo::Remote<chromeos::assistant::mojom::AssistantController>
+      assistant_controller;
+  ash::AssistantInterfaceBinder::GetInstance()->BindController(
+      assistant_controller.BindNewPipeAndPassReceiver());
+  assistant_controller->StartTextInteraction(
+      query, /*allow_tts=*/false,
+      chromeos::assistant::mojom::AssistantQuerySource::kQuickAnswers);
 }

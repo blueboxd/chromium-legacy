@@ -1,0 +1,13 @@
+Name: Android Jetifier Processor
+Short Name: jetifier-processor
+URL: https://developer.android.com/jetpack/androidx
+Version: 1.0.0-beta08
+License: Apache Version 2.0
+License File: LICENSE
+Security Critical: yes
+
+Description:
+Android Jetifier Processor
+
+Local Modifications:
+No modifications.

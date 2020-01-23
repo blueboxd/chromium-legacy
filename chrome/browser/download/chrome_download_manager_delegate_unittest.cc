@@ -89,11 +89,16 @@ using ::testing::ReturnRefOfCopy;
 using ::testing::SetArgPointee;
 using ::testing::WithArg;
 using url::Origin;
-
 namespace {
 
-const Origin kSecureOrigin = Origin::Create(GURL("https://example.org/"));
-const Origin kInsecureOrigin = Origin::Create(GURL("http://example.org/"));
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+Origin SecureOrigin() {
+  return Origin::Create(GURL("https://example.org"));
+}
+Origin InsecureOrigin() {
+  return Origin::Create(GURL("http://example.org"));
+}
 
 class MockWebContentsDelegate : public content::WebContentsDelegate {
  public:
@@ -493,6 +498,8 @@ void ExpectExtensionOnlyIn(const InsecureDownloadExtensions& ext,
   }
 }
 
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
 GURL ForceGoogleSafeSearch(const GURL& url) {
   GURL new_url;
   safe_search_util::ForceGoogleSafeSearch(url, &new_url);
@@ -766,7 +773,8 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_Blocked) {
   const GURL kExeUrl("http://example.com/foo.exe");
 
   std::unique_ptr<download::MockDownloadItem> exe_download_item =
-      PrepareDownloadItemForMixedContent(kExeUrl, kSecureOrigin, base::nullopt);
+      PrepareDownloadItemForMixedContent(kExeUrl, SecureOrigin(),
+                                         base::nullopt);
   DetermineDownloadTargetResult result;
   base::HistogramTester histograms;
   base::test::ScopedFeatureList feature_list;
@@ -795,7 +803,7 @@ TEST_F(ChromeDownloadManagerDelegateTest,
   content::PluginService::GetInstance()->Init();
 #endif
   std::unique_ptr<download::MockDownloadItem> download_item =
-      PrepareDownloadItemForMixedContent(kExeUrl, kSecureOrigin, kRedirectUrl);
+      PrepareDownloadItemForMixedContent(kExeUrl, SecureOrigin(), kRedirectUrl);
   DetermineDownloadTargetResult result;
   base::test::ScopedFeatureList feature_list;
   base::HistogramTester histograms;
@@ -824,7 +832,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_HttpPageOk) {
   {
     base::HistogramTester histograms;
     std::unique_ptr<download::MockDownloadItem> download_item =
-        PrepareDownloadItemForMixedContent(kHttpsUrl, kInsecureOrigin,
+        PrepareDownloadItemForMixedContent(kHttpsUrl, InsecureOrigin(),
                                            base::nullopt);
     DetermineDownloadTarget(download_item.get(), &result);
 
@@ -842,7 +850,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_HttpPageOk) {
   {
     base::HistogramTester histograms;
     std::unique_ptr<download::MockDownloadItem> download_item =
-        PrepareDownloadItemForMixedContent(kHttpUrl, kInsecureOrigin,
+        PrepareDownloadItemForMixedContent(kHttpUrl, InsecureOrigin(),
                                            base::nullopt);
     DetermineDownloadTarget(download_item.get(), &result);
 
@@ -870,7 +878,7 @@ TEST_F(ChromeDownloadManagerDelegateTest,
   std::unique_ptr<download::MockDownloadItem> exe_download_item =
       PrepareDownloadItemForMixedContent(kExeUrl, base::nullopt, base::nullopt);
   ON_CALL(*exe_download_item, GetTabUrl())
-      .WillByDefault(ReturnRefOfCopy(kSecureOrigin.GetURL()));
+      .WillByDefault(ReturnRefOfCopy(SecureOrigin().GetURL()));
   ON_CALL(*exe_download_item, GetDownloadSource())
       .WillByDefault(Return(download::DownloadSource::CONTEXT_MENU));
   DetermineDownloadTargetResult result;
@@ -915,7 +923,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_HttpChain) {
   content::PluginService::GetInstance()->Init();
 #endif
   std::unique_ptr<download::MockDownloadItem> download_item =
-      PrepareDownloadItemForMixedContent(kExeUrl, kSecureOrigin, kRedirectUrl);
+      PrepareDownloadItemForMixedContent(kExeUrl, SecureOrigin(), kRedirectUrl);
   DetermineDownloadTargetResult result;
   base::test::ScopedFeatureList feature_list;
   base::HistogramTester histograms;
@@ -944,9 +952,11 @@ TEST_F(ChromeDownloadManagerDelegateTest,
 #endif
 
   std::unique_ptr<download::MockDownloadItem> exe_download_item =
-      PrepareDownloadItemForMixedContent(kExeUrl, kSecureOrigin, base::nullopt);
+      PrepareDownloadItemForMixedContent(kExeUrl, SecureOrigin(),
+                                         base::nullopt);
   std::unique_ptr<download::MockDownloadItem> foo_download_item =
-      PrepareDownloadItemForMixedContent(kFooUrl, kSecureOrigin, base::nullopt);
+      PrepareDownloadItemForMixedContent(kFooUrl, SecureOrigin(),
+                                         base::nullopt);
   DetermineDownloadTargetResult result;
 
   {

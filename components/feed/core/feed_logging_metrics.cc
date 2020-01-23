@@ -631,11 +631,6 @@ void FeedLoggingMetrics::OnMoreButtonClicked(int position) {
       kMaxSuggestionsForArticle + 1);
 }
 
-void FeedLoggingMetrics::OnManageInterestsClicked(int position) {
-  base::UmaHistogramExactLinear("ContentSuggestions.Feed.ManageInterestsOpened",
-                                position, kMaxSuggestionsTotal);
-}
-
 void FeedLoggingMetrics::OnNotInterestedInSource(int position, bool committed) {
   RecordUndoableActionUMA(
       "ContentSuggestions.Feed.InterestHeader.NotInterestedInSource", position,

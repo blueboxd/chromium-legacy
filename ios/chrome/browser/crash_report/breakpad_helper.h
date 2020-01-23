@@ -11,6 +11,9 @@
 
 namespace breakpad_helper {
 
+// Key for breadcrumbs attached to crash reports.
+extern NSString* const kBreadcrumbs;
+
 // Starts the crash handlers. This must be run as soon as possible to catch
 // early crashes.
 void Start(const std::string& channel_name);

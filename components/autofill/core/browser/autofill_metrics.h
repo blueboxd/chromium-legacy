@@ -1147,6 +1147,12 @@ class AutofillMetrics {
   static void LogUserPerceivedLatencyOnCardSelection(PreflightCallEvent event,
                                                      bool fido_auth_enabled);
 
+  // Logs the duration of WebAuthn's
+  // IsUserVerifiablePlatformAuthenticatorAvailable() call. It is supposedly an
+  // extremely quick IPC.
+  static void LogUserVerifiabilityCheckDuration(
+      const base::TimeDelta& duration);
+
   // Logs the result of a WebAuthn prompt.
   static void LogWebauthnResult(WebauthnFlowEvent event,
                                 WebauthnResultMetric metric);

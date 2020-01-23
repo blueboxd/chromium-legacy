@@ -223,6 +223,8 @@ component("cpp") {
     "wallpaper_info.h",
     "wallpaper_types.h",
     "window_animation_types.h",
+    "window_backdrop.cc",
+    "window_backdrop.h",
     "window_pin_type.cc",
     "window_pin_type.h",
     "window_properties.cc",

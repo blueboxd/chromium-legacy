@@ -222,6 +222,13 @@ public class AssistantPaymentMethodSection
             errorMessageView.setText(R.string.autofill_assistant_payment_information_missing);
             return;
         }
+        if (method.getBillingProfile() != null
+                && AutofillAddress.checkAddressCompletionStatus(method.getBillingProfile(),
+                           AutofillAddress.CompletenessCheckType.IGNORE_PHONE)
+                        != AutofillAddress.CompletionStatus.COMPLETE) {
+            errorMessageView.setText(R.string.autofill_assistant_payment_information_missing);
+            return;
+        }
 
         if (mRequiresBillingPostalCode
                 && (method.getBillingProfile() == null

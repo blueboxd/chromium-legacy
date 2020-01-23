@@ -373,6 +373,25 @@ void FakeShillServiceClient::GetLoadableProfileEntries(
                      call_status, base::Owned(result_properties.release())));
 }
 
+void FakeShillServiceClient::GetWiFiPassphrase(
+    const dbus::ObjectPath& service_path,
+    StringCallback callback,
+    ErrorCallback error_callback) {
+  base::DictionaryValue* service_properties =
+      GetModifiableServiceProperties(service_path.value(), false);
+  if (!service_properties) {
+    LOG(ERROR) << "Service not found: " << service_path.value();
+    std::move(error_callback).Run("Error.InvalidService", "Invalid Service");
+    return;
+  }
+
+  std::string passphrase;
+  service_properties->GetStringWithoutPathExpansion(shill::kPassphraseProperty,
+                                                    &passphrase);
+
+  std::move(callback).Run(passphrase);
+}
+
 ShillServiceClient::TestInterface* FakeShillServiceClient::GetTestInterface() {
   return this;
 }

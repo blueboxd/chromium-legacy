@@ -651,7 +651,7 @@
 <translation id="1879000426787380528">Prijavite se kao</translation>
 <translation id="1880905663253319515">Izbrisati certifikat "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1884013283844450420">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, povežite</translation>
-<translation id="1884930769492918228">Pratiti položaj kamere i mapirati vašu prostoriju</translation>
+<translation id="1884930769492918228">pratiti položaj kamere i mapirati vašu prostoriju</translation>
 <translation id="1886996562706621347">Dopusti web-lokacijama traženje dopuštenja da postanu zadani rukovatelji za protokole (preporučeno)</translation>
 <translation id="1887442540531652736">Pogreška prijave</translation>
 <translation id="1887597546629269384">Ponovo izgovorite "Hej Google"</translation>
@@ -2041,7 +2041,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="3819800052061700452">&amp;Puni ekran</translation>
 <translation id="3820172043799983114">PIN nije važeći.</translation>
 <translation id="3820749202859700794">SECG eliptična krivulja secp521r1 (poznata i kao NIST P-521)</translation>
-<translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Proširenje je odobreno}one{Broj odobrenih proširenja: #}few{Broj odobrenih proširenja: #}other{Broj odobrenih proširenja: #}}</translation>
+<translation id="3821372858277557370">{NUM_EXTENSIONS,plural, =1{Proširenje je odobreno}one{Odobreno je # proširenje}few{Odobrena su # proširenja}other{Odobreno je # proširenja}}</translation>
 <translation id="3822559385185038546">Taj proxy nametnuo je administrator</translation>
 <translation id="3826440694796503677">Vaš je administrator onemogućio dodavanje dodatnih Google računa</translation>
 <translation id="3827306204503227641">Nastavi dopuštati dodatke izvan testnog okruženja</translation>
@@ -3150,7 +3150,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5470735824776589490">Da biste mogli izvršiti Powerwash, trebate ponovo pokrenuti uređaj. <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
 <translation id="5471768120198416576">Bok! Ja sam vaš glas alata za pretvaranje teksta u govor.</translation>
 <translation id="5473333559083690127">Ponovo unesite novi PIN</translation>
-<translation id="548137908954174608">Omogućivanje Automatskih titlova</translation>
+<translation id="548137908954174608">Omogućivanje automatskih titlova</translation>
 <translation id="5481941284378890518">Dodaj pisače u blizini</translation>
 <translation id="5483785310822538350">Opozovi pristup datotekama i uređaju</translation>
 <translation id="5485080380723335835">Vaš je <ph name="DEVICE_TYPE" /> zaključan radi sigurnosti. Ručno unesite zaporku za nastavak.</translation>
@@ -3187,7 +3187,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5518584115117143805">Certifikat enkripcije e-pošte</translation>
 <translation id="5521078259930077036">Je li to početna stranica koju ste očekivali?</translation>
 <translation id="5522156646677899028">To proširenje sadrži ozbiljni sigurnosni propust.</translation>
-<translation id="5523149538118225875">{NUM_EXTENSIONS,plural, =1{Vaš administrator instalirao je proširenje}one{Vaš administrator instalirao je sljedeći broj proširenja: #}few{Vaš administrator instalirao je sljedeći broj proširenja: #}other{Vaš administrator instalirao je sljedeći broj proširenja: #}}</translation>
+<translation id="5523149538118225875">{NUM_EXTENSIONS,plural, =1{Vaš administrator instalirao je proširenje}one{Vaš administrator instalirao je # proširenje}few{Vaš administrator instalirao je # proširenja}other{Vaš administrator instalirao je # proširenja}}</translation>
 <translation id="5525677322972469346">Izradi novog nadziranog korisnika</translation>
 <translation id="5526701598901867718">Sve (nije sigurno)</translation>
 <translation id="5526745900034778153">Prijavite se opet da biste ponovo pokrenuli sinkronizaciju</translation>
@@ -4044,7 +4044,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="6758056191028427665">Recite nam koliko ste zadovoljni nama.</translation>
 <translation id="6759193508432371551">Vraćanje na tvorničke postavke</translation>
 <translation id="6762833852331690540">Uključeno</translation>
-<translation id="6767115174726603949">Pristupiti uređajima i podacima virtualne stvarnosti</translation>
+<translation id="6767115174726603949">pristupiti uređajima i podacima virtualne stvarnosti</translation>
 <translation id="6767566652486411142">Odabir drugog jezika…</translation>
 <translation id="6767639283522617719">Nije uspjelo pridruživanje domeni. Provjerite jesu li postavke ispravne za organizacijsku jedinicu.</translation>
 <translation id="6769712124046837540">Dodavanje pisača...</translation>
@@ -4057,7 +4057,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="677965093459947883">Vrlo mali</translation>
 <translation id="6781284683813954823">Veza za doodle logotip</translation>
 <translation id="6781978626986383437">Otkazano je sigurnosno kopiranje Linuxa</translation>
-<translation id="6785915470941880363">Obrnuto pomicanje <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
+<translation id="6785915470941880363">Pomicanje u obratnom smjeru <ph name="LINK_BEGIN" />Saznajte više<ph name="LINK_END" /></translation>
 <translation id="6786747875388722282">Proširenja</translation>
 <translation id="6787839852456839824">Tipkovnički prečaci</translation>
 <translation id="6788210894632713004">Raspakirano proširenje</translation>
@@ -4471,7 +4471,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="7352651011704765696">Nešto nije u redu</translation>
 <translation id="735361434055555355">Instaliranje Linuxa...</translation>
 <translation id="7353887511974462734">Dodaj u postojeću grupu</translation>
-<translation id="7354341762311560488">Senzor otiska prsta nalazi se u zadnjoj donjoj tipki s lijeve strane tipkovnice. Dodirnite ga lagano bilo kojim prstom.</translation>
+<translation id="7354341762311560488">Senzor otiska prsta nalazi se na zadnjoj donjoj tipki s lijeve strane tipkovnice. Dodirnite ga lagano bilo kojim prstom.</translation>
 <translation id="735745346212279324">Veza s VPN-om prekinuta</translation>
 <translation id="7359588939039777303">Oglasi su blokirani.</translation>
 <translation id="7360183604634508679">Izbornik oznaka</translation>
@@ -5023,7 +5023,6 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8101987792947961127">Pri sljedećem ponovnom pokretanju potrebno je izvršiti Powerwash</translation>
 <translation id="8102159139658438129">Otvorite <ph name="LINK_BEGIN" />Postavke<ph name="LINK_END" /> da biste vidjeli opcije za povezani telefon</translation>
 <translation id="8104696615244072556">Pokrenite Powerwash na svom <ph name="IDS_SHORT_PRODUCT_NAME" /> uređaju i vratite ga na prethodnu verziju.</translation>
-<translation id="8106661353233173262">Nešto nije u redu. Skeniranje datoteke je isteklo.</translation>
 <translation id="8107015733319732394">Trgovina Google Play instalira se na vašem uređaju <ph name="DEVICE_TYPE" />. To bi moglo potrajati nekoliko minuta.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Bez kolačića treće strane}=1{Blokiran je jedan kolačić treće strane}one{Blokiran je # kolačić treće strane}few{Blokirana su # kolačića treće strane}other{Blokirano je # kolačića treće strane}}</translation>
 <translation id="810875025413331850">Nije pronađen nijedan uređaj u blizini.</translation>

@@ -176,8 +176,7 @@ class StartupObserver : public WebContentsObserver {
 
   void DidFailLoad(content::RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
-                   int error_code,
-                   const base::string16& error_description) override {
+                   int error_code) override {
     if (!render_frame_host->GetParent())
       OnStartupComplete();
   }

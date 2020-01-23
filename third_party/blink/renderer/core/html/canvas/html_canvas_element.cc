@@ -72,7 +72,6 @@
 #include "third_party/blink/renderer/core/layout/layout_html_canvas.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
-#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -601,7 +600,7 @@ void HTMLCanvasElement::Reset() {
     if (layout_object->IsCanvas()) {
       if (old_size != Size()) {
         ToLayoutHTMLCanvas(layout_object)->CanvasSizeChanged();
-        if (GetLayoutBox() && GetLayoutBox()->HasAcceleratedCompositing())
+        if (GetDocument().GetSettings()->GetAcceleratedCompositingEnabled())
           GetLayoutBox()->ContentChanged(kCanvasChanged);
       }
       if (had_resource_provider)
@@ -616,7 +615,8 @@ bool HTMLCanvasElement::PaintsIntoCanvasBuffer() const {
   DCHECK(context_);
   if (!context_->IsComposited())
     return true;
-  if (GetLayoutBox() && GetLayoutBox()->HasAcceleratedCompositing())
+  auto* settings = GetDocument().GetSettings();
+  if (settings && settings->GetAcceleratedCompositingEnabled())
     return false;
 
   return true;
@@ -1049,7 +1049,8 @@ bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
   // The following is necessary for handling the special case of canvases in
   // the dev tools overlay, which run in a process that supports accelerated
   // 2d canvas but in a special compositing context that does not.
-  if (GetLayoutBox() && !GetLayoutBox()->HasAcceleratedCompositing())
+  auto* settings = GetDocument().GetSettings();
+  if (settings && !settings->GetAcceleratedCompositingEnabled())
     return false;
 
   // Avoid creating |contextProvider| until we're sure we want to try use it,

@@ -561,7 +561,7 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
 
     arrow_to_icon_spacer_ = AddChildView(std::make_unique<NonAccessibleView>());
     arrow_to_icon_spacer_->SetPreferredSize(
-        gfx::Size(0, GetArrowToIconSpacerHeight()));
+        gfx::Size(0, kSpacingBetweenChallengeResponseArrowAndIconDp));
 
     icon_ = AddChildView(std::make_unique<views::ImageView>());
     icon_->SetImage(GetImageForIcon());
@@ -587,8 +587,9 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     if (sender == arrow_button_) {
-      DCHECK_NE(state_, State::kAuthenticating);
-      on_start_tap_.Run();
+      // Ignore further clicks while handling the previous one.
+      if (state_ != State::kAuthenticating)
+        on_start_tap_.Run();
     } else {
       NOTREACHED();
     }
@@ -607,9 +608,7 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
                               base::Unretained(this), State::kInitial));
     }
 
-    arrow_button_->SetVisible(state_ != State::kAuthenticating);
-    arrow_to_icon_spacer_->SetPreferredSize(
-        gfx::Size(0, GetArrowToIconSpacerHeight()));
+    arrow_button_->EnableLoadingAnimation(state == State::kAuthenticating);
     icon_->SetImage(GetImageForIcon());
     label_->SetText(GetTextForLabel());
 
@@ -619,15 +618,6 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
   void RequestFocus() override { arrow_button_->RequestFocus(); }
 
  private:
-  int GetArrowToIconSpacerHeight() const {
-    int spacer_height = kSpacingBetweenChallengeResponseArrowAndIconDp;
-    // During authentication, the arrow button is hidden, so the spacer should
-    // consume this space to avoid moving controls below it.
-    if (state_ == State::kAuthenticating)
-      spacer_height += kChallengeResponseArrowSizeDp;
-    return spacer_height;
-  }
-
   gfx::ImageSkia GetImageForIcon() const {
     switch (state_) {
       case State::kInitial:

@@ -30,9 +30,16 @@ namespace offline_pages {
 namespace {
 
 const char kTestNamespace[] = "default";
-const GURL kTestUrl1("http://example.com");
-const GURL kTestUrl2("http://other.page.com");
 const ClientId kTestClientIdNoMatch(kTestNamespace, "20170905");
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL TestUrl1() {
+  return GURL("http://example.com");
+}
+GURL TestUrl2() {
+  return GURL("http://other.page.com");
+}
 
 GURL OriginalUrl() {
   return GURL("http://original.com");
@@ -100,7 +107,7 @@ bool DeletePageTaskTest::CheckPageDeleted(const OfflinePageItem& page) {
 TEST_F(DeletePageTaskTest, OfflinePageItemIsPopulated) {
   generator()->SetNamespace(kTestNamespace);
   OfflinePageItem page1 = generator()->CreateItemWithTempFile();
-  page1.url = kTestUrl1;
+  page1.url = TestUrl1();
   page1.original_url_if_different = OriginalUrl();
   page1.request_origin = "test-origin";
   page1.system_download_id = 1234;
@@ -130,11 +137,11 @@ TEST_F(DeletePageTaskTest, OfflinePageItemIsPopulated) {
 TEST_F(DeletePageTaskTest, DeletePageByUrlPredicate) {
   // Add 3 pages and try to delete 2 of them using url predicate.
   generator()->SetNamespace(kTestNamespace);
-  generator()->SetUrl(kTestUrl1);
+  generator()->SetUrl(TestUrl1());
   OfflinePageItem page1 = generator()->CreateItemWithTempFile();
   generator()->SetAccessCount(200);
   OfflinePageItem page2 = generator()->CreateItemWithTempFile();
-  generator()->SetUrl(kTestUrl2);
+  generator()->SetUrl(TestUrl2());
   OfflinePageItem page3 = generator()->CreateItemWithTempFile();
 
   store_test_util()->InsertItem(page1);
@@ -146,7 +153,7 @@ TEST_F(DeletePageTaskTest, DeletePageByUrlPredicate) {
   EXPECT_TRUE(base::PathExists(page2.file_path));
   EXPECT_TRUE(base::PathExists(page3.file_path));
 
-  // Delete all pages with url contains example.com, which are with kTestUrl1.
+  // Delete all pages with url contains example.com, which are with TestUrl1().
   UrlPredicate predicate = base::BindRepeating([](const GURL& url) -> bool {
     return url.spec().find("example.com") != std::string::npos;
   });
@@ -181,10 +188,10 @@ TEST_F(DeletePageTaskTest, DeletePageByUrlPredicate) {
 TEST_F(DeletePageTaskTest, DeletePageByUrlPredicateNotFound) {
   // Add 3 pages and try to delete 2 of them using url predicate.
   generator()->SetNamespace(kTestNamespace);
-  generator()->SetUrl(kTestUrl1);
+  generator()->SetUrl(TestUrl1());
   OfflinePageItem page1 = generator()->CreateItemWithTempFile();
   OfflinePageItem page2 = generator()->CreateItemWithTempFile();
-  generator()->SetUrl(kTestUrl2);
+  generator()->SetUrl(TestUrl2());
   OfflinePageItem page3 = generator()->CreateItemWithTempFile();
 
   store_test_util()->InsertItem(page1);
@@ -222,7 +229,7 @@ TEST_F(DeletePageTaskTest, DeletePageByUrlPredicateNotFound) {
 TEST_F(DeletePageTaskTest, DeletePageForPageLimit) {
   // Add 3 pages, the kTestNamespace has a limit of 1 for page per url.
   generator()->SetNamespace(kTestNamespace);
-  generator()->SetUrl(kTestUrl1);
+  generator()->SetUrl(TestUrl1());
   // Guarantees that page1 will be deleted by making it older.
   base::Time now = OfflineTimeNow();
   generator()->SetLastAccessTime(now - base::TimeDelta::FromMinutes(5));
@@ -230,7 +237,7 @@ TEST_F(DeletePageTaskTest, DeletePageForPageLimit) {
   generator()->SetLastAccessTime(now);
   OfflinePageItem page2 = generator()->CreateItemWithTempFile();
   OfflinePageItem page = generator()->CreateItem();
-  generator()->SetUrl(kTestUrl2);
+  generator()->SetUrl(TestUrl2());
   OfflinePageItem page3 = generator()->CreateItemWithTempFile();
 
   store_test_util()->InsertItem(page1);
@@ -264,11 +271,11 @@ TEST_F(DeletePageTaskTest, DeletePageForPageLimit) {
 TEST_F(DeletePageTaskTest, DeletePageForPageLimit_UnlimitedNamespace) {
   // Add 3 pages, the kTestNamespace has a limit of 1 for page per url.
   generator()->SetNamespace(kDownloadNamespace);
-  generator()->SetUrl(kTestUrl1);
+  generator()->SetUrl(TestUrl1());
   OfflinePageItem page1 = generator()->CreateItemWithTempFile();
   OfflinePageItem page2 = generator()->CreateItemWithTempFile();
   OfflinePageItem page = generator()->CreateItem();
-  generator()->SetUrl(kTestUrl2);
+  generator()->SetUrl(TestUrl2());
   OfflinePageItem page3 = generator()->CreateItemWithTempFile();
 
   store_test_util()->InsertItem(page1);

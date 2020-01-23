@@ -734,7 +734,7 @@
 <translation id="2018352199541442911">Désolés, votre périphérique de stockage externe n'est pas compatible pour le moment.</translation>
 <translation id="2019718679933488176">&amp;Ouvrir le fichier audio dans un nouvel onglet</translation>
 <translation id="2020183425253392403">Afficher les paramètres d'adresses réseau</translation>
-<translation id="2020225359413970060">Balayer le fichier</translation>
+<translation id="2020225359413970060">Analyser le fichier</translation>
 <translation id="2022953316617983419">Code QR</translation>
 <translation id="2023167225947895179">Ce NIP est facile à deviner</translation>
 <translation id="202352106777823113">Le téléchargement prenait trop de temps et a été interrompu par le réseau.</translation>
@@ -764,7 +764,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2059913712424898428">Fuseau horaire</translation>
 <translation id="2065405795449409761">Google Chrome est contrôlé par un logiciel de test automatisé.</translation>
 <translation id="2071393345806050157">Pas de journal local.</translation>
-<translation id="2073148037220830746">{NUM_EXTENSIONS,plural, =1{Cliquez pour installer l'extension}one{Cliquez pour installer cette extension}other{Cliquez pour installer ces extensions}}</translation>
+<translation id="2073148037220830746">{NUM_EXTENSIONS,plural, =1{Cliquer pour installer l'extension}one{Cliquer pour installer cette extension}other{Cliquer pour installer ces extensions}}</translation>
 <translation id="2075474481720804517">Pile à <ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="2075959085554270910">Permet d'activer/de désactiver la fonction Toucher pour cliquer et le déplacement tactile</translation>
 <translation id="2076269580855484719">Masquer ce plugiciel</translation>
@@ -2957,7 +2957,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="51918995459521422"><ph name="ORIGIN" /> veut télécharger plusieurs fichiers</translation>
 <translation id="5192062846343383368">Ouvrez l'application Family Link pour afficher vos paramètres de supervision</translation>
 <translation id="5193988420012215838">Copié dans votre presse-papier</translation>
-<translation id="5203920255089865054">{NUM_EXTENSIONS,plural, =1{Cliquez pour afficher l'extension}one{Cliquez pour afficher cette extension}other{Cliquez pour afficher ces extensions}}</translation>
+<translation id="5203920255089865054">{NUM_EXTENSIONS,plural, =1{Cliquer pour afficher l'extension}one{Cliquer pour afficher cette extension}other{Cliquer pour afficher ces extensions}}</translation>
 <translation id="5204673965307125349">Veuillez effectuer un Powerwash sur l'appareil et réessayer.</translation>
 <translation id="5206215183583316675">Supprimer « <ph name="CERTIFICATE_NAME" /> »?</translation>
 <translation id="520621735928254154">Erreur d'importation du certificat</translation>
@@ -3903,7 +3903,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6531282281159901044">Conserver le fichier dangereux</translation>
 <translation id="6532101170117367231">Enregistrer dans Google Disque</translation>
 <translation id="6532106788206463496">Enregistrer les modifications</translation>
-<translation id="6532663472409656417">Entreprise inscrite</translation>
+<translation id="6532663472409656417">Inscrit à une entreprise</translation>
 <translation id="654039047105555694"><ph name="BEGIN_BOLD" />Remarque<ph name="END_BOLD" /> : n'activez cette option que si vous êtes sûr de ce que vous faites ou si vous avez été invité à le faire. En effet, la collecte de données est susceptible de diminuer les performances.</translation>
 <translation id="6541638731489116978">Ce site a été bloqué : il ne peut pas accéder à vos capteurs de mouvement.</translation>
 <translation id="6545665334409411530">Fréquence de répétition</translation>
@@ -4045,7 +4045,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6758056191028427665">Donnez-nous votre avis sur nos services.</translation>
 <translation id="6759193508432371551">Rétablir la configuration d'usine</translation>
 <translation id="6762833852331690540">Activé</translation>
-<translation id="6767115174726603949">Accéder aux appareil et aux données de réalité virtuelle</translation>
+<translation id="6767115174726603949">Accéder aux appareils et aux données de réalité virtuelle</translation>
 <translation id="6767566652486411142">Choisir une autre langue…</translation>
 <translation id="6767639283522617719">Impossible d'associer le domaine. Assurez-vous que les paramètres sont corrects pour l'unité organisationnelle.</translation>
 <translation id="6769712124046837540">Ajout d'une imprimante en cours…</translation>
@@ -5023,7 +5023,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8101987792947961127">Réinitialisation « Powerwash » nécessaire au prochain démarrage</translation>
 <translation id="8102159139658438129">Accédez à <ph name="LINK_BEGIN" />Paramètres<ph name="LINK_END" /> pour afficher les options de votre téléphone connecté</translation>
 <translation id="8104696615244072556">Utilisez la fonction Powerwash sur votre appareil <ph name="IDS_SHORT_PRODUCT_NAME" /> et revenez à la version précédente.</translation>
-<translation id="8106661353233173262">Un problème s'est produit. Le fichier analysé a expiré.</translation>
 <translation id="8107015733319732394">Installation du Google Play Store sur votre <ph name="DEVICE_TYPE" /> en cours… Cela peut prendre quelques minutes.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Aucun témoin tiers}=1{1 témoin tiers est bloqué}one{# témoin tiers est bloqué}other{# témoins tiers sont bloqués}}</translation>
 <translation id="810875025413331850">Aucun appareil à proximité n'a été détecté.</translation>

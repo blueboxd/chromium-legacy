@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEXTURE_HOLDER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -24,19 +25,22 @@ class PLATFORM_EXPORT TextureHolder {
  public:
   class MailboxRef : public ThreadSafeRefCounted<MailboxRef> {
    public:
-    explicit MailboxRef(
-        std::unique_ptr<viz::SingleReleaseCallback> release_callback)
-        : release_callback_(std::move(release_callback)) {}
-    ~MailboxRef() {
-      if (release_callback_)
-        release_callback_->Run(sync_token_, false /* resource_lost */);
-    }
+    MailboxRef(const gpu::SyncToken& sync_token,
+               base::PlatformThreadRef context_thread_ref,
+               scoped_refptr<base::SingleThreadTaskRunner> context_task_runner,
+               std::unique_ptr<viz::SingleReleaseCallback> release_callback);
+    ~MailboxRef();
 
+    bool is_cross_thread() const {
+      return base::PlatformThread::CurrentRef() != context_thread_ref_;
+    }
     void set_sync_token(gpu::SyncToken token) { sync_token_ = token; }
     const gpu::SyncToken& sync_token() const { return sync_token_; }
 
    private:
     gpu::SyncToken sync_token_;
+    const base::PlatformThreadRef context_thread_ref_;
+    const scoped_refptr<base::SingleThreadTaskRunner> context_task_runner_;
     std::unique_ptr<viz::SingleReleaseCallback> release_callback_;
   };
 

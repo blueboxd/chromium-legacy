@@ -49,6 +49,17 @@ enterprise_management::AppActivity::AppState AppStateForReporting(
 
 }  // namespace
 
+AppActivityRegistry::TestApi::TestApi(AppActivityRegistry* registry)
+    : registry_(registry) {}
+
+AppActivityRegistry::TestApi::~TestApi() = default;
+
+const base::Optional<AppLimit>& AppActivityRegistry::TestApi::GetAppLimit(
+    const AppId& app_id) const {
+  DCHECK(base::Contains(registry_->activity_registry_, app_id));
+  return registry_->activity_registry_.at(app_id).limit;
+}
+
 AppActivityRegistry::AppDetails::AppDetails() = default;
 
 AppActivityRegistry::AppDetails::AppDetails(const AppActivity& activity)
@@ -76,6 +87,8 @@ void AppActivityRegistry::OnAppInstalled(const AppId& app_id) {
   // sessions and app service does not. Make sure not to override cached state.
   if (!base::Contains(activity_registry_, app_id))
     Add(app_id);
+
+  // TODO(agawronska): Update the limit from policy when new app is installed.
 }
 
 void AppActivityRegistry::OnAppUninstalled(const AppId& app_id) {
@@ -227,6 +240,21 @@ void AppActivityRegistry::CleanRegistry(base::Time timestamp) {
       ++it;
     }
   }
+}
+
+void AppActivityRegistry::UpdateAppLimits(
+    const std::map<AppId, AppLimit>& app_limits) {
+  for (auto& entry : activity_registry_) {
+    const AppId& app_id = entry.first;
+    const base::Optional<AppLimit>& app_limit = entry.second.limit;
+    if (!base::Contains(app_limits, app_id)) {
+      if (app_limit)
+        entry.second.limit = base::nullopt;
+    } else {
+      entry.second.limit = app_limits.at(app_id);
+    }
+  }
+  // TODO(agawronska): Propagate information about the limit changes.
 }
 
 void AppActivityRegistry::Add(const AppId& app_id) {

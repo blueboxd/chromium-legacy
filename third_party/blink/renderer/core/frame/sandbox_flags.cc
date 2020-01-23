@@ -42,19 +42,21 @@ const SandboxFlagFeaturePolicyPairs& SandboxFlagsWithFeaturePolicies() {
   DEFINE_STATIC_LOCAL(
       SandboxFlagFeaturePolicyPairs, array,
       ({{WebSandboxFlags::kTopNavigation,
-         mojom::FeaturePolicyFeature::kTopNavigation},
-        {WebSandboxFlags::kForms, mojom::FeaturePolicyFeature::kFormSubmission},
-        {WebSandboxFlags::kScripts, mojom::FeaturePolicyFeature::kScript},
-        {WebSandboxFlags::kPopups, mojom::FeaturePolicyFeature::kPopups},
+         mojom::blink::FeaturePolicyFeature::kTopNavigation},
+        {WebSandboxFlags::kForms,
+         mojom::blink::FeaturePolicyFeature::kFormSubmission},
+        {WebSandboxFlags::kScripts,
+         mojom::blink::FeaturePolicyFeature::kScript},
+        {WebSandboxFlags::kPopups, mojom::blink::FeaturePolicyFeature::kPopups},
         {WebSandboxFlags::kPointerLock,
-         mojom::FeaturePolicyFeature::kPointerLock},
-        {WebSandboxFlags::kModals, mojom::FeaturePolicyFeature::kModals},
+         mojom::blink::FeaturePolicyFeature::kPointerLock},
+        {WebSandboxFlags::kModals, mojom::blink::FeaturePolicyFeature::kModals},
         {WebSandboxFlags::kOrientationLock,
-         mojom::FeaturePolicyFeature::kOrientationLock},
+         mojom::blink::FeaturePolicyFeature::kOrientationLock},
         {WebSandboxFlags::kPresentationController,
-         mojom::FeaturePolicyFeature::kPresentation},
+         mojom::blink::FeaturePolicyFeature::kPresentation},
         {WebSandboxFlags::kDownloads,
-         mojom::FeaturePolicyFeature::kDownloads}}));
+         mojom::blink::FeaturePolicyFeature::kDownloads}}));
   return array;
 }
 

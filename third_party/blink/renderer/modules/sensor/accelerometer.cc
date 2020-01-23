@@ -13,8 +13,8 @@ namespace blink {
 Accelerometer* Accelerometer::Create(ExecutionContext* execution_context,
                                      const SpatialSensorOptions* options,
                                      ExceptionState& exception_state) {
-  const Vector<mojom::FeaturePolicyFeature> features(
-      {mojom::FeaturePolicyFeature::kAccelerometer});
+  const Vector<mojom::blink::FeaturePolicyFeature> features(
+      {mojom::blink::FeaturePolicyFeature::kAccelerometer});
   return MakeGarbageCollected<Accelerometer>(
       execution_context, options, exception_state, SensorType::ACCELEROMETER,
       features);
@@ -32,7 +32,7 @@ Accelerometer::Accelerometer(
     const SpatialSensorOptions* options,
     ExceptionState& exception_state,
     SensorType sensor_type,
-    const Vector<mojom::FeaturePolicyFeature>& features)
+    const Vector<mojom::blink::FeaturePolicyFeature>& features)
     : Sensor(execution_context,
              options,
              exception_state,

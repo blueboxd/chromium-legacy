@@ -98,6 +98,7 @@ class CanvasFontCache;
 class ChromeClient;
 class Comment;
 class ComputedAccessibleNode;
+class ElementIntersectionObserverData;
 class WindowAgent;
 class WindowAgentFactory;
 class ComputedStyle;
@@ -954,6 +955,14 @@ class CORE_EXPORT Document : public ContainerNode,
   IntersectionObserverController* GetIntersectionObserverController();
   IntersectionObserverController& EnsureIntersectionObserverController();
 
+  // This is used to track IntersectionObservers for which this document is the
+  // explicit root. The IntersectionObserverController tracks *all* observers
+  // associated with this document; usually that's what you want.
+  ElementIntersectionObserverData*
+  DocumentExplicitRootIntersectionObserverData() const;
+  ElementIntersectionObserverData&
+  EnsureDocumentExplicitRootIntersectionObserverData();
+
   ResizeObserverController* GetResizeObserverController() const {
     return resize_observer_controller_;
   }
@@ -1506,9 +1515,9 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   void CountPotentialFeaturePolicyViolation(
-      mojom::FeaturePolicyFeature) const override;
+      mojom::blink::FeaturePolicyFeature) const override;
   void ReportFeaturePolicyViolation(
-      mojom::FeaturePolicyFeature,
+      mojom::blink::FeaturePolicyFeature,
       mojom::FeaturePolicyDisposition,
       const String& message = g_empty_string,
       // If source_file is set to empty string,
@@ -1656,7 +1665,7 @@ class CORE_EXPORT Document : public ContainerNode,
   class NetworkStateObserver;
 
   Document(const DocumentInit& initization,
-           SecurityContextInit init_helper,
+           const SecurityContextInit& init_helper,
            DocumentClassFlags document_classes);
 
   // Post initialization of the object handling of both feature policy and
@@ -1885,6 +1894,9 @@ class CORE_EXPORT Document : public ContainerNode,
   uint16_t listener_types_;
 
   MutationObserverOptions mutation_observer_types_;
+
+  Member<ElementIntersectionObserverData>
+      document_explicit_root_intersection_observer_data_;
 
   Member<StyleEngine> style_engine_;
   Member<StyleSheetList> style_sheet_list_;

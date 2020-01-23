@@ -49,9 +49,9 @@ function makeSimpleFileListModel(names) {
 function createFakeMetadataModel(data) {
   return /** @type {!MetadataModel} */ ({
     getCache: (entries, names) => {
-      let result = [];
+      const result = [];
       for (let i = 0; i < entries.length; i++) {
-        let metadata = {};
+        const metadata = {};
         if (!entries[i].isDirectory && data[entries[i].name]) {
           for (let j = 0; j < names.length; j++) {
             metadata[names[j]] = data[entries[i].name][names[j]];

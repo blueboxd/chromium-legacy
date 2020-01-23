@@ -162,7 +162,8 @@ TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, EmitsMetricsOnStart) {
   VerifyHistograms(tester);
 }
 
-TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, EmitsMetricsWhenTimerFires) {
+TEST_F(GoogleSearchDomainMixingMetricsEmitterTest,
+       DISABLED_EmitsMetricsWhenTimerFires) {
   // Metrics were computed up to 4am on Jan 1st.
   base::Time last_metrics_time;
   ASSERT_TRUE(

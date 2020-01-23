@@ -171,9 +171,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void SendGpuProcessMessage(IPC::Message* message) override;
 #endif
 
-  // Message handlers.
-  void OnFieldTrialActivated(const std::string& trial_name);
-
   bool LaunchGpuProcess();
 
   void SendOutstandingReplies();

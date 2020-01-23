@@ -61,9 +61,10 @@ void DeviceOrientationAbsoluteController::DidAddEventListener(
   if (!has_event_listener_) {
     // TODO: add rappor url logging as in DeviceOrientationController.
 
-    if (!CheckPolicyFeatures({mojom::FeaturePolicyFeature::kAccelerometer,
-                              mojom::FeaturePolicyFeature::kGyroscope,
-                              mojom::FeaturePolicyFeature::kMagnetometer})) {
+    if (!CheckPolicyFeatures(
+            {mojom::blink::FeaturePolicyFeature::kAccelerometer,
+             mojom::blink::FeaturePolicyFeature::kGyroscope,
+             mojom::blink::FeaturePolicyFeature::kMagnetometer})) {
       LogToConsolePolicyFeaturesDisabled(GetDocument().GetFrame(),
                                          EventTypeName());
       return;

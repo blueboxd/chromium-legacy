@@ -23,6 +23,9 @@ cr.define('settings', function() {
 
     /* Removes the default vm if it is installed. */
     removePluginVm() {}
+
+    /* Show Plugin Vm installer. */
+    requestPluginVmInstallerView() {}
   }
 
   /** @implements {settings.PluginVmBrowserProxy} */
@@ -40,6 +43,11 @@ cr.define('settings', function() {
     /** @override */
     removePluginVm() {
       chrome.send('removePluginVm');
+    }
+
+    /** @override */
+    requestPluginVmInstallerView() {
+      chrome.send('requestPluginVmInstallerView');
     }
   }
 

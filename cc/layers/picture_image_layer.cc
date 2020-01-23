@@ -24,13 +24,6 @@ PictureImageLayer::~PictureImageLayer() {
   ClearClient();
 }
 
-std::unique_ptr<LayerImpl> PictureImageLayer::CreateLayerImpl(
-    LayerTreeImpl* tree_impl) {
-  auto layer_impl = PictureLayerImpl::Create(tree_impl, id());
-  layer_impl->set_is_directly_composited_image(true);
-  return std::move(layer_impl);
-}
-
 bool PictureImageLayer::HasDrawableContent() const {
   return image_ && PictureLayer::HasDrawableContent();
 }
@@ -50,6 +43,12 @@ void PictureImageLayer::SetImage(PaintImage image,
   image_ = std::move(image);
   matrix_ = matrix;
   uses_width_as_height_ = uses_width_as_height;
+
+  int width = uses_width_as_height_ ? image_.height() : image_.width();
+  int height = uses_width_as_height_ ? image_.width() : image_.height();
+  picture_layer_inputs_.directly_composited_image_size =
+      gfx::Size(width, height);
+
   UpdateDrawsContent(HasDrawableContent());
   SetNeedsDisplay();
 }
@@ -65,15 +64,16 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
   DCHECK_GT(image_.height(), 0);
   DCHECK(layer_tree_host());
 
-  int width = uses_width_as_height_ ? image_.height() : image_.width();
-  int height = uses_width_as_height_ ? image_.width() : image_.height();
-
-  float content_to_layer_scale_x = static_cast<float>(bounds().width()) / width;
+  gfx::Size image_size =
+      picture_layer_inputs_.directly_composited_image_size.value();
+  float content_to_layer_scale_x =
+      static_cast<float>(bounds().width()) / image_size.width();
   float content_to_layer_scale_y =
-      static_cast<float>(bounds().height()) / height;
+      static_cast<float>(bounds().height()) / image_size.height();
 
   bool has_scale = !MathUtil::IsWithinEpsilon(content_to_layer_scale_x, 1.f) ||
                    !MathUtil::IsWithinEpsilon(content_to_layer_scale_y, 1.f);
+  DCHECK(!has_scale);
   bool needs_save = has_scale || !matrix_.isIdentity();
 
   auto display_list = base::MakeRefCounted<DisplayItemList>();
@@ -101,6 +101,7 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
 
   display_list->EndPaintOfUnpaired(PaintableRegion());
   display_list->Finalize();
+
   return display_list;
 }
 

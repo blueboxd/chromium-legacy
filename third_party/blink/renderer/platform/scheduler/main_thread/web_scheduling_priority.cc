@@ -8,45 +8,33 @@ namespace blink {
 
 namespace {
 
-const AtomicString& ImmediatePriorityKeyword() {
-  DEFINE_STATIC_LOCAL(const AtomicString, immediate_priority, ("immediate"));
-  return immediate_priority;
+const AtomicString& UserBlockingPriorityKeyword() {
+  DEFINE_STATIC_LOCAL(const AtomicString, user_blocking_priority,
+                      ("user-blocking"));
+  return user_blocking_priority;
 }
 
-const AtomicString& HighPriorityKeyword() {
-  DEFINE_STATIC_LOCAL(const AtomicString, high_priority, ("high"));
-  return high_priority;
+const AtomicString& UserVisiblePriorityKeyword() {
+  DEFINE_STATIC_LOCAL(const AtomicString, user_visible_priority,
+                      ("user-visible"));
+  return user_visible_priority;
 }
 
-const AtomicString& DefaultPriorityKeyword() {
-  DEFINE_STATIC_LOCAL(const AtomicString, default_priority, ("default"));
-  return default_priority;
-}
-
-const AtomicString& LowPriorityKeyword() {
-  DEFINE_STATIC_LOCAL(const AtomicString, low_priority, ("low"));
-  return low_priority;
-}
-
-const AtomicString& IdlePriorityKeyword() {
-  DEFINE_STATIC_LOCAL(const AtomicString, idle_priority, ("idle"));
-  return idle_priority;
+const AtomicString& BackgroundPriorityKeyword() {
+  DEFINE_STATIC_LOCAL(const AtomicString, background_priority, ("background"));
+  return background_priority;
 }
 
 }  // namespace
 
 AtomicString WebSchedulingPriorityToString(WebSchedulingPriority priority) {
   switch (priority) {
-    case WebSchedulingPriority::kImmediatePriority:
-      return ImmediatePriorityKeyword();
-    case WebSchedulingPriority::kHighPriority:
-      return HighPriorityKeyword();
-    case WebSchedulingPriority::kDefaultPriority:
-      return DefaultPriorityKeyword();
-    case WebSchedulingPriority::kLowPriority:
-      return LowPriorityKeyword();
-    case WebSchedulingPriority::kIdlePriority:
-      return IdlePriorityKeyword();
+    case WebSchedulingPriority::kUserBlockingPriority:
+      return UserBlockingPriorityKeyword();
+    case WebSchedulingPriority::kUserVisiblePriority:
+      return UserVisiblePriorityKeyword();
+    case WebSchedulingPriority::kBackgroundPriority:
+      return BackgroundPriorityKeyword();
   }
 
   NOTREACHED();
@@ -55,19 +43,14 @@ AtomicString WebSchedulingPriorityToString(WebSchedulingPriority priority) {
 
 WebSchedulingPriority WebSchedulingPriorityFromString(
     const AtomicString& priority) {
-  if (priority == ImmediatePriorityKeyword())
-    return WebSchedulingPriority::kImmediatePriority;
-  if (priority == HighPriorityKeyword())
-    return WebSchedulingPriority::kHighPriority;
-  if (priority == DefaultPriorityKeyword())
-    return WebSchedulingPriority::kDefaultPriority;
-  if (priority == LowPriorityKeyword())
-    return WebSchedulingPriority::kLowPriority;
-  if (priority == IdlePriorityKeyword())
-    return WebSchedulingPriority::kIdlePriority;
-
+  if (priority == UserBlockingPriorityKeyword())
+    return WebSchedulingPriority::kUserBlockingPriority;
+  if (priority == UserVisiblePriorityKeyword())
+    return WebSchedulingPriority::kUserVisiblePriority;
+  if (priority == BackgroundPriorityKeyword())
+    return WebSchedulingPriority::kBackgroundPriority;
   NOTREACHED();
-  return WebSchedulingPriority::kDefaultPriority;
+  return WebSchedulingPriority::kUserVisiblePriority;
 }
 
 }  // namespace blink

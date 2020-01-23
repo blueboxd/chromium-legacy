@@ -54,7 +54,8 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
   void BeginObservation(
       base::UnguessableToken id,
       const FeatureVector& features,
-      const base::Optional<TargetValue>& default_target) override;
+      const base::Optional<TargetValue>& default_target,
+      const base::Optional<ukm::SourceId>& source_id) override;
   void CompleteObservation(base::UnguessableToken id,
                            const ObservationCompletion& completion) override;
   void CancelObservation(base::UnguessableToken id) override;
@@ -62,6 +63,8 @@ class COMPONENT_EXPORT(LEARNING_IMPL) LearningTaskControllerImpl
       base::UnguessableToken id,
       const base::Optional<TargetValue>& default_target) override;
   const LearningTask& GetLearningTask() override;
+  void PredictDistribution(const FeatureVector& features,
+                           PredictionCB callback) override;
 
  private:
   // Add |example| to the training data, and process it.

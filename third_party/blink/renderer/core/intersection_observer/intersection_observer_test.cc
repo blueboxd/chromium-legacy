@@ -6,9 +6,14 @@
 
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_delegate.h"
@@ -46,6 +51,10 @@ class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
   int CallCount() const { return call_count_; }
   int EntryCount() const { return entries_.size(); }
   const IntersectionObserverEntry* LastEntry() const { return entries_.back(); }
+  void Clear() {
+    entries_.clear();
+    call_count_ = 0;
+  }
   PhysicalRect LastIntersectionRect() const {
     if (entries_.IsEmpty())
       return PhysicalRect();
@@ -124,7 +133,7 @@ TEST_F(IntersectionObserverTest, NotificationSentWhenRootRemoved) {
   Element* root = GetDocument().getElementById("root");
   ASSERT_TRUE(root);
   IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
-  observer_init->setRoot(root);
+  observer_init->setRoot(ElementOrDocument::FromElement(root));
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
       MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
@@ -151,27 +160,32 @@ TEST_F(IntersectionObserverTest, NotificationSentWhenRootRemoved) {
   EXPECT_FALSE(observer_delegate->LastEntry()->isIntersecting());
 }
 
-TEST_F(IntersectionObserverTest, ScrollingElementRootClips) {
+TEST_F(IntersectionObserverTest, DocumentRootClips) {
   ScopedIntersectionObserverDocumentScrollingElementRootForTest scope(true);
   WebView().MainFrameWidget()->Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
+  SimRequest iframe_resource("https://example.com/iframe.html", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete(R"HTML(
+    <iframe src="iframe.html" style="width:200px; height:100px"></iframe>
+  )HTML");
+  iframe_resource.Complete(R"HTML(
     <div id='target'>Hello, world!</div>
     <div id='spacer' style='height:2000px'></div>
   )HTML");
 
-  Element* root = GetDocument().scrollingElement();
-  ASSERT_TRUE(root);
+  Document* iframe_document = To<WebLocalFrameImpl>(MainFrame().FirstChild())
+                                  ->GetFrame()
+                                  ->GetDocument();
   IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
-  observer_init->setRoot(root);
+  observer_init->setRoot(ElementOrDocument::FromDocument(iframe_document));
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
       MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
   IntersectionObserver* observer = IntersectionObserver::Create(
       observer_init, *observer_delegate, exception_state);
   ASSERT_FALSE(exception_state.HadException());
-  Element* target = GetDocument().getElementById("target");
+  Element* target = iframe_document->getElementById("target");
   ASSERT_TRUE(target);
   observer->observe(target, exception_state);
 
@@ -182,8 +196,8 @@ TEST_F(IntersectionObserverTest, ScrollingElementRootClips) {
   EXPECT_EQ(observer_delegate->EntryCount(), 1);
   EXPECT_TRUE(observer_delegate->LastEntry()->isIntersecting());
 
-  GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 1000),
-                                                          kProgrammaticScroll);
+  iframe_document->View()->LayoutViewport()->SetScrollOffset(
+      ScrollOffset(0, 1000), kProgrammaticScroll);
   Compositor().BeginFrame();
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
@@ -380,11 +394,11 @@ TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
 
   Element* target = GetDocument().getElementById("target");
   ASSERT_TRUE(target);
+  IntersectionObserverController& controller =
+      GetDocument().EnsureIntersectionObserverController();
   observer->observe(target, exception_state);
-  EXPECT_EQ(GetDocument()
-                .EnsureIntersectionObserverController()
-                .GetTrackedTargetCountForTesting(),
-            1u);
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
+  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 1u);
 
   Compositor().BeginFrame();
   test::RunPendingTasks();
@@ -396,10 +410,8 @@ TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
                                                           kProgrammaticScroll);
   Compositor().BeginFrame();
   observer->disconnect();
-  EXPECT_EQ(GetDocument()
-                .EnsureIntersectionObserverController()
-                .GetTrackedTargetCountForTesting(),
-            0u);
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
+  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
   test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 1);
 }
@@ -488,15 +500,122 @@ TEST_F(IntersectionObserverTest, TrackedTargetBookkeeping) {
   observer2->observe(target, exception_state);
   ASSERT_FALSE(exception_state.HadException());
 
+  ElementIntersectionObserverData* target_data =
+      target->IntersectionObserverData();
+  ASSERT_TRUE(target_data);
   IntersectionObserverController& controller =
       GetDocument().EnsureIntersectionObserverController();
-  EXPECT_EQ(controller.GetTrackedTargetCountForTesting(), 1u);
+  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 2u);
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
   observer1->unobserve(target, exception_state);
   ASSERT_FALSE(exception_state.HadException());
-  EXPECT_EQ(controller.GetTrackedTargetCountForTesting(), 1u);
+  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 1u);
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
   observer2->unobserve(target, exception_state);
   ASSERT_FALSE(exception_state.HadException());
-  EXPECT_EQ(controller.GetTrackedTargetCountForTesting(), 0u);
+  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
+}
+
+TEST_F(IntersectionObserverTest, TrackedRootBookkeeping) {
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <div id='root'>
+      <div id='target1'></div>
+      <div id='target2'></div>
+    </div>
+  )HTML");
+
+  IntersectionObserverController& controller =
+      GetDocument().EnsureIntersectionObserverController();
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
+  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
+
+  Persistent<Element> root = GetDocument().getElementById("root");
+  Persistent<Element> target = GetDocument().getElementById("target1");
+  Persistent<IntersectionObserverInit> observer_init =
+      IntersectionObserverInit::Create();
+  observer_init->setRoot(ElementOrDocument::FromElement(root));
+  Persistent<TestIntersectionObserverDelegate> observer_delegate =
+      MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());
+  Persistent<IntersectionObserver> observer =
+      IntersectionObserver::Create(observer_init, *observer_delegate);
+
+  // For an explicit-root observer, the root element is tracked, even when it
+  // has no observations.
+  ElementIntersectionObserverData* root_data = root->IntersectionObserverData();
+  ASSERT_TRUE(root_data);
+  EXPECT_FALSE(root_data->IsEmpty());
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 1u);
+  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
+
+  // For an explicit-root observer, target elements are not tracked.
+  observer->observe(target);
+  ElementIntersectionObserverData* target_data =
+      target->IntersectionObserverData();
+  ASSERT_TRUE(target_data);
+  EXPECT_FALSE(target_data->IsEmpty());
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 1u);
+  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
+
+  // The existing observation should keep the observer alive and active, even
+  // when there are no other references to the observer.
+  observer = nullptr;
+  // Flush any pending notifications, which hold a hard reference to the
+  // observer and can prevent it from being gc'ed. The observation will be the
+  // only thing keeping the observer alive.
+  test::RunPendingTasks();
+  observer_delegate->Clear();
+  V8GCController::CollectAllGarbageForTesting(
+      v8::Isolate::GetCurrent(),
+      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  EXPECT_FALSE(root_data->IsEmpty());
+  EXPECT_FALSE(target_data->IsEmpty());
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 1u);
+  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
+
+  // When the last observation is disconnected, as a result of the target being
+  // gc'ed, the observer should also get gc'ed and the root element should no
+  // longer be tracked.
+  target->remove();
+  target = nullptr;
+  target_data = nullptr;
+  // Removing the target from the DOM tree forces a notification to be
+  // queued, so flush it out.
+  test::RunPendingTasks();
+  observer_delegate->Clear();
+  V8GCController::CollectAllGarbageForTesting(
+      v8::Isolate::GetCurrent(),
+      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  EXPECT_TRUE(root_data->IsEmpty());
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
+  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
+
+  target = GetDocument().getElementById("target2");
+  observer = IntersectionObserver::Create(observer_init, *observer_delegate);
+  observer->observe(target);
+  target_data = target->IntersectionObserverData();
+  ASSERT_TRUE(target_data);
+
+  // If the explicit root of an observer goes away, any existing observations
+  // should be disconnected.
+  target->remove();
+  root->remove();
+  root = nullptr;
+  test::RunPendingTasks();
+  observer_delegate->Clear();
+  observer_delegate = nullptr;
+  observer_init = nullptr;
+  // Removing the target from the tree is not enough to disconnect the
+  // observation.
+  EXPECT_FALSE(target_data->IsEmpty());
+  V8GCController::CollectAllGarbageForTesting(
+      v8::Isolate::GetCurrent(),
+      v8::EmbedderHeapTracer::EmbedderStackState::kEmpty);
+  EXPECT_TRUE(target_data->IsEmpty());
+  EXPECT_EQ(controller.GetTrackedObserverCountForTesting(), 0u);
+  EXPECT_EQ(controller.GetTrackedObservationCountForTesting(), 0u);
 }
 
 TEST_F(IntersectionObserverTest, RootMarginDevicePixelRatio) {
@@ -566,7 +685,7 @@ TEST_F(IntersectionObserverTest, CachedRectsTest) {
   Element* target2 = GetDocument().getElementById("target2");
 
   IntersectionObserverInit* observer_init = IntersectionObserverInit::Create();
-  observer_init->setRoot(root);
+  observer_init->setRoot(ElementOrDocument::FromElement(root));
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
       MakeGarbageCollected<TestIntersectionObserverDelegate>(GetDocument());

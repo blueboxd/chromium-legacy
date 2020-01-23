@@ -198,7 +198,7 @@ void DamageTracker::ComputeSurfaceDamage(
     bool is_rect_valid = damage_for_this_update_.GetAsRect(&damage_rect);
     if (is_rect_valid && !damage_rect.IsEmpty()) {
       damage_rect = render_surface->Filters().MapRect(
-          damage_rect, render_surface->SurfaceScale().matrix());
+          damage_rect, SkMatrix(render_surface->SurfaceScale().matrix()));
       damage_for_this_update_ = DamageAccumulator();
       damage_for_this_update_.Union(damage_rect);
     }

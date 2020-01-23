@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -2983,7 +2984,7 @@ TEST_F(ViewTest, ConversionsWithTransform) {
     transform.Translate(1.0, 1.0);
 
     // convert to a 3x3 matrix.
-    const SkMatrix& matrix = transform.matrix();
+    const SkMatrix& matrix = SkMatrix(transform.matrix());
 
     EXPECT_EQ(210, matrix.getTranslateX());
     EXPECT_EQ(-55, matrix.getTranslateY());
@@ -3004,7 +3005,7 @@ TEST_F(ViewTest, ConversionsWithTransform) {
     transform.ConcatTransform(t3);
 
     // convert to a 3x3 matrix
-    const SkMatrix& matrix = transform.matrix();
+    const SkMatrix& matrix = SkMatrix(transform.matrix());
 
     EXPECT_EQ(210, matrix.getTranslateX());
     EXPECT_EQ(-55, matrix.getTranslateY());

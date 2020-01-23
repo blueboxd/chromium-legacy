@@ -72,7 +72,7 @@
 <translation id="1263231323834454256">បញ្ជី​អាន</translation>
 <translation id="1264126396475825575">របាយការណ៍គាំងបានថតនៅម៉ោង <ph name="CRASH_TIME" /> (មិនទាន់បានអាប់ឡូត ឬមិនអើពើ)</translation>
 <translation id="1270502636509132238">មធ្យោបាយ​ទៅយក</translation>
-<translation id="1281476433249504884">ទម្រស្ទេកខ័រទី 1</translation>
+<translation id="1281476433249504884">ទម្រគំនរ​ទី 1</translation>
 <translation id="1285320974508926690">មិនបកប្រែគេហទំព័រនេះទៀតឡើយ</translation>
 <translation id="1285400217480592994">ស្កេន​ខ្លឹមសារ​នៃ​ឯកសារ​ដែល​អ្នក​ទាញយក ឬ​បង្ហោះ​នៅក្នុង Chrome​។</translation>
 <translation id="1292701964462482250">"កម្មវិធី​នៅលើ​កុំព្យូទ័រ​របស់អ្នក​កំពុង​បញ្ឈប់ Chrome មិន​ឱ្យ​ភ្ជាប់​ទៅ​អ៊ីនធឺណិត​​ដោយសុវត្ថិភាព" (កុំព្យូទ័រ​ Windows តែ​ប៉ុណ្ណោះ)</translation>
@@ -114,7 +114,7 @@
 <translation id="1408787208417187241">កិប​បីគ្រាប់​ខាងលើ</translation>
 <translation id="1413809658975081374">កំហុសឆ្គងឯកជនភាព</translation>
 <translation id="1426410128494586442">បាទ/ចាស</translation>
-<translation id="1428146450423315676">ទម្រស្ទេកខ័រទី 7</translation>
+<translation id="1428146450423315676">ទម្រគំនរទី 7</translation>
 <translation id="1430915738399379752">បោះពុម្ព</translation>
 <translation id="1442386063175183758">បត់ភ្ជិត​ផ្ទាំង​ខាងស្ដាំ</translation>
 <translation id="1442987760062738829">ចោះ</translation>
@@ -663,7 +663,7 @@
 <translation id="3884278016824448484">មានបញ្ហាជាមួយឧបករណ៍សម្គាល់ឧបករណ៍</translation>
 <translation id="3885155851504623709">តំបន់រដ្ឋបាល</translation>
 <translation id="388632593194507180">បានរកឃើញ​ការឃ្លាំមើល</translation>
-<translation id="3886948180919384617">ទម្រស្ទេកខ័រទី 3</translation>
+<translation id="3886948180919384617">ទម្រគំនរទី 3</translation>
 <translation id="3890664840433101773">បញ្ចូល​អ៊ីមែល</translation>
 <translation id="3897092660631435901">ម៉ឺនុយ</translation>
 <translation id="3901925938762663762">កាតនេះផុតកំណត់។</translation>
@@ -756,7 +756,7 @@
 <translation id="4258748452823770588">ហេត្ថលេខាមិនល្អ</translation>
 <translation id="4261046003697461417">មិនអាចដាក់​ចំណារលើឯកសារ​ដែលត្រូវបានការពារនោះ​ទេ</translation>
 <translation id="4265872034478892965">អនុញ្ញាតដោយអ្នកគ្រប់គ្រងរបស់អ្នក</translation>
-<translation id="4270541775497538019">ទម្រស្ទេកខ័រទី 6</translation>
+<translation id="4270541775497538019">ទម្រគំនរ​ទី 6</translation>
 <translation id="4275830172053184480">ចាប់ផ្តើមឧបករណ៍របស់អ្នកឡើងវិញ</translation>
 <translation id="4277028893293644418">កំណត់​ពាក្យ​សម្ងាត់​ឡើងវិញ</translation>
 <translation id="4279811152705618813"><ph name="DEVICE_TYPE" /> របស់​អ្នក​ស្ថិតក្រោម​ការគ្រប់គ្រង​របស់ <ph name="ENROLLMENT_DOMAIN" /></translation>
@@ -772,7 +772,7 @@
 <translation id="4318566738941496689">អាសយដ្ឋានបណ្ដាញ និងឈ្មោះ​ឧបករណ៍របស់អ្នក</translation>
 <translation id="4325863107915753736">បានបរាជ័យក្នុងការស្វែងរកអត្ថបទ</translation>
 <translation id="4326324639298822553">ពិនិត្យមើល​កាលបរិច្ឆេទ​ផុត​កំណត់​របស់អ្នក​ រួច​ព្យាយាម​ម្តង​ទៀត​</translation>
-<translation id="4331519897422864041">ទម្រស្ទេកខ័រទី 5</translation>
+<translation id="4331519897422864041">ទម្រគំនរ​ទី 5</translation>
 <translation id="4331708818696583467">គ្មានសុវត្ថិភាព</translation>
 <translation id="4340982228985273705">កុំព្យូទ័រនេះ​មិនត្រូវបាន​រកឃើញ​ថាជា​សហគ្រាស​ដែលបាន​គ្រប់គ្រង​ទេ ដូច្នេះ​គោលការណ៍​អាចដំឡើង​កម្មវិធី​បន្ថែម​ដែលបាន​បង្ហោះដោយ​ស្វ័យប្រវត្តិ​នៅ​លើ Chrome Webstore តែ​ប៉ុណ្ណោះ។ URL កំណែថ្មី​របស់ Chrome Webstore គឺ "<ph name="CWS_UPDATE_URL" />" ។</translation>
 <translation id="4346197816712207223">បណ្ណ​ឥណទាន​ដែល​​ទទួលយក</translation>
@@ -950,7 +950,7 @@
 <translation id="515292512908731282">C4 (ស្រោម​សំបុត្រ)</translation>
 <translation id="5158275234811857234">គម្រប</translation>
 <translation id="5159010409087891077">បើក​ទំព័រ​នៅក្នុង​ផ្ទាំងឯកជន​ថ្មី (⇧⌘N)</translation>
-<translation id="5161506081086828129">ទម្រស្ទេកខ័រទី 9</translation>
+<translation id="5161506081086828129">ទម្រគំនរទី 9</translation>
 <translation id="516920405563544094">បញ្ចូល CVC សម្រាប់ <ph name="CREDIT_CARD" /> ។ បន្ទាប់​ពីអ្នក​បញ្ជាក់​ហើយ ព័ត៌មាន​លម្អិត​អំពី​កាតដែលបាន​មកពីគណនី Google របស់អ្នក​នឹងត្រូវ​បាន​ចែករំលែក​ជាមួយ​គេហទំព័រ​នេះ។</translation>
 <translation id="5169827969064885044">អ្នកអាច​បាត់បង់​សិទ្ធិចូល​ប្រើ​គណនី​​របស់ស្ថាប័នអ្នក ឬ​ជួបប្រទះ​នឹង​ការលួចយក​អត្តសញ្ញាណ។ Chrome សូមណែនាំ​ឱ្យប្ដូរ​ពាក្យសម្ងាត់​របស់អ្នក​ឥឡូវនេះ។</translation>
 <translation id="5170017743895942767">Chrome Enterprise User Protect</translation>
@@ -1010,7 +1010,7 @@
 <translation id="5396631636586785122">ដេរគែម​ខាងស្ដាំ</translation>
 <translation id="5400836586163650660">ប្រផេះ</translation>
 <translation id="540969355065856584">ម៉ាស៊ីនមេនេះមិនអាចបង្ហាញថាវាជា <ph name="DOMAIN" /> នោះទេ វិញ្ញាបនបត្រសុវត្ថិភាពរបស់វាមិនមានសុពលភាពទេនៅពេលនេះ។ វាអាចបណ្តាលមកពីការកំណត់រចនាសម្ព័ន្ធមិនត្រឹមត្រូវ ឬមានអ្នកវាយប្រហារកំពុងរារាំងការតភ្ជាប់របស់អ្នក។</translation>
-<translation id="541416427766103491">ទម្រស្ទេកខ័រទី 4</translation>
+<translation id="541416427766103491">ទម្រគំនរ​ទី 4</translation>
 <translation id="5421136146218899937">ជម្រះទិន្នន័យរុករក...</translation>
 <translation id="5430298929874300616">ដកចំណាំចេញ</translation>
 <translation id="5431657950005405462">រកមិនឃើញឯកសាររបស់អ្នកទេ</translation>
@@ -1065,7 +1065,7 @@
 <translation id="5633066919399395251">អ្នក​វាយ​ប្រហារ​ដែល​បច្ចុប្បន្នធ្វើទៅលើ <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> អាចនឹងព្យាយាមដំឡើងកម្មវិធីដែលមានគ្រោះថ្នាក់នៅលើ​កុំព្យូទ័រ​របស់អ្នក ដែលកម្មវិធីនោះ​អាច​លួច ឬលុប​ព័ត៌មាន​របស់អ្នក (ឧទាហរណ៍៖ រូបថត ពាក្យសម្ងាត់ សារ និងបណ្ណឥណទាន)។ <ph name="BEGIN_LEARN_MORE_LINK" />ស្វែងយល់បន្ថែម<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">បានទប់ស្កាត់​ខ្លឹមសារបញ្ឆោត។</translation>
 <translation id="5644090287519800334">ការប្ដូរ​រូបភាព X នៃចំហៀងទី 1</translation>
-<translation id="5645854190134202180">ការប្ដូរ​លើកទីពីរ</translation>
+<translation id="5645854190134202180">វេនទីពីរ</translation>
 <translation id="5659593005791499971">អ៊ីម៉េល</translation>
 <translation id="5663614846592581799">9x11 (ស្រោម​សំបុត្រ)</translation>
 <translation id="5663955426505430495">អ្នកគ្រប់គ្រង​ឧបករណ៍នេះ​បានដំឡើង​កម្មវិធីបន្ថែមសម្រាប់​មុខងារបន្ថែម។ កម្មវិធីបន្ថែម​មានសិទ្ធិចូលប្រើ​ទិន្នន័យមួយចំនួន​របស់អ្នក។</translation>
@@ -1109,7 +1109,7 @@
 <translation id="5855253129151731373">ឈ្មោះម៉ាស៊ីនរបស់​គេហទំព័រ​នេះ​ស្រដៀងគ្នា​នឹង <ph name="LOOKALIKE_DOMAIN" />។ ជួនកាល អ្នក​វាយប្រហារ​ក្លែងបន្លំជា​គេហទំព័រ​ផ្សេងៗ ដោយ​ធ្វើការ​ផ្លាស់ប្ដូរ​តិចតួចដែលពិបាក​សម្គាល់​ចំពោះឈ្មោះដែន​។
 
     ប្រសិនបើ​អ្នកយល់ថា ឈ្មោះដែននេះមានបញ្ហា សូម​ចូលទៅកាន់ https://bugs.chromium.org/p/chromium/issues/entry?template=Safety+Tips+Appeals។</translation>
-<translation id="5862579898803147654">ទម្រស្ទេកខ័រទី 8</translation>
+<translation id="5862579898803147654">ទម្រគំនរ​ទី 8</translation>
 <translation id="5863847714970149516">ទំព័រ​ខាងមុខ​អាច​ព្យាយាម​គិតប្រាក់​ពីអ្នក</translation>
 <translation id="5866257070973731571">បញ្ចូល​លេខ​ទូរសព្ទ</translation>
 <translation id="5866898949289125849">អ្នកកំពុងមើល​ទំព័រឧបករណ៍​របស់​អ្នកអភិវឌ្ឍន៍</translation>
@@ -1278,7 +1278,7 @@
 <translation id="6604181099783169992">ឧបករណ៍​ចាប់​សញ្ញាពន្លឺ ឬចលនា</translation>
 <translation id="6609880536175561541">Prc7 (ស្រោម​សំបុត្រ)</translation>
 <translation id="6612358246767739896">មាតិកាដែលបានការពារ</translation>
-<translation id="6615297766614333076">ទម្រស្ទេកខ័រទី 2</translation>
+<translation id="6615297766614333076">ទម្រគំនរ​ទី 2</translation>
 <translation id="6624427990725312378">ព័ត៌មាន​ទំនាក់ទំនង</translation>
 <translation id="6626291197371920147">បញ្ចូលលេខកាតឲ្យបានត្រឹមត្រូវ</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> ស្វែងរក</translation>
@@ -1685,7 +1685,7 @@
 <translation id="8479754468255770962">កិប​ខាងក្រោម​ផ្នែកខាង​ឆ្វេង</translation>
 <translation id="8483780878231876732">ដើម្បីប្រើកាតពីគណនី Google របស់អ្នក សូមចូលទៅកាន់ Chrome</translation>
 <translation id="8488350697529856933">អនុវត្តទៅ</translation>
-<translation id="8490137692873530638">ទម្រស្ទេកខ័រទី 10</translation>
+<translation id="8490137692873530638">ទម្រគំនរ​ទី 10</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> បានចំណាយពេលយូរពេកដើម្បីឆ្លើយតប</translation>
 <translation id="8503559462189395349">ពាក្យ​សម្ងាត់ Chrome</translation>
 <translation id="8503813439785031346">ឈ្មោះអ្នកប្រើ</translation>

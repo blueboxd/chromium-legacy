@@ -59,7 +59,7 @@ CSSInterpolationTypesMap::CSSInterpolationTypesMap(
     const Document& document)
     : registry_(registry) {
   allow_all_animations_ = document.IsFeatureEnabled(
-      blink::mojom::FeaturePolicyFeature::kLayoutAnimations);
+      blink::mojom::blink::FeaturePolicyFeature::kLayoutAnimations);
 }
 
 static const PropertyRegistration* GetRegistration(

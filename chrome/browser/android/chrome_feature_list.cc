@@ -12,7 +12,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/stl_util.h"
-#include "chrome/android/chrome_jni_headers/ChromeFeatureList_jni.h"
+#include "chrome/browser/flags/jni_headers/ChromeFeatureList_jni.h"
 #include "chrome/browser/share/features.h"
 #include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/common/chrome_features.h"
@@ -233,10 +233,11 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &offline_pages::kPrefetchingOfflinePagesFeature,
     &omnibox::kHideSteadyStateUrlScheme,
     &omnibox::kHideSteadyStateUrlTrivialSubdomains,
+    &omnibox::kOmniboxAssistantVoiceSearch,
     &omnibox::kOmniboxRichEntitySuggestions,
+    &omnibox::kOmniboxSearchEngineLogo,
     &omnibox::kQueryInOmnibox,
     &omnibox::kUIExperimentShowSuggestionFavicons,
-    &omnibox::kOmniboxSearchEngineLogo,
     &password_manager::features::kGooglePasswordManager,
     &password_manager::features::kPasswordEditingAndroid,
     &password_manager::features::kPasswordManagerOnboardingAndroid,

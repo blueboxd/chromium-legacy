@@ -62,6 +62,8 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->set_gpu_raster_max_texture_size(
       layer_tree_host()->device_viewport_rect().size());
   layer_impl->SetIsBackdropFilterMask(is_backdrop_filter_mask());
+  layer_impl->SetDirectlyCompositedImageSize(
+      picture_layer_inputs_.directly_composited_image_size);
 
   // TODO(enne): http://crbug.com/918126 debugging
   CHECK(this);

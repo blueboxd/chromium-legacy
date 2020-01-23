@@ -187,6 +187,10 @@ class FrameData {
 
   OriginStatus origin_status() const { return origin_status_; }
 
+  OriginStatus creative_origin_status() const {
+    return creative_origin_status_;
+  }
+
   size_t bytes() const { return bytes_; }
 
   size_t network_bytes() const { return network_bytes_; }
@@ -217,6 +221,10 @@ class FrameData {
 
   void set_timing(page_load_metrics::mojom::PageLoadTimingPtr timing) {
     timing_ = std::move(timing);
+  }
+
+  void set_creative_origin_status(OriginStatus creative_origin_status) {
+    creative_origin_status_ = creative_origin_status;
   }
 
   HeavyAdStatus heavy_ad_status() const { return heavy_ad_status_; }
@@ -301,6 +309,7 @@ class FrameData {
   // The number of bytes that are same origin to the root ad frame.
   size_t same_origin_bytes_;
   OriginStatus origin_status_;
+  OriginStatus creative_origin_status_;
   bool frame_navigated_;
   UserActivationStatus user_activation_status_;
   bool is_display_none_;

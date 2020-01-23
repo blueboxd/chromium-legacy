@@ -651,7 +651,7 @@
 <translation id="1879000426787380528">Se connecter à l'aide du compte</translation>
 <translation id="1880905663253319515">Supprimer le certificat "<ph name="CERTIFICATE_NAME" />" ?</translation>
 <translation id="1884013283844450420">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, connexion</translation>
-<translation id="1884930769492918228">Suivre la position de la caméra et cartographier votre pièce</translation>
+<translation id="1884930769492918228">Suivre la position de la caméra et cartographier la pièce</translation>
 <translation id="1886996562706621347">Permettre aux sites de demander l'autorisation de devenir gestionnaires par défaut des protocoles (recommandé)</translation>
 <translation id="1887442540531652736">Erreur de connexion</translation>
 <translation id="1887597546629269384">Dites à nouveau "Ok Google"</translation>
@@ -3133,7 +3133,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5449588825071916739">Ajouter tous les onglets aux favoris…</translation>
 <translation id="5449716055534515760">Fe&amp;rmer la fenêtre</translation>
 <translation id="5454166040603940656">avec <ph name="PROVIDER" /></translation>
-<translation id="5454360575035671759">Si vous supprimez Plugin VM, la VM le sera également, y compris ses applications, ses paramètres et ses données. Voulez-vous vraiment continuer ?</translation>
+<translation id="5454360575035671759">Si vous supprimez Plugin VM, cela supprimera aussi la VM, y compris ses applications, ses paramètres et ses données. Voulez-vous vraiment continuer ?</translation>
 <translation id="5457113250005438886">Non valide</translation>
 <translation id="5457459357461771897">Accéder aux photos, à la musique et aux autres fichiers multimédias stockés sur votre ordinateur et les supprimer</translation>
 <translation id="5457599981699367932">Naviguer en tant qu'invité</translation>
@@ -4472,7 +4472,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7352651011704765696">Un problème est survenu</translation>
 <translation id="735361434055555355">Installation de Linux…</translation>
 <translation id="7353887511974462734">Ajouter à un groupe existant</translation>
-<translation id="7354341762311560488">Le lecteur d'empreinte digitale est situé en bas à gauche du clavier. Appuyez dessus légèrement avec n'importe quel doigt.</translation>
+<translation id="7354341762311560488">Le lecteur d'empreinte digitale est situé en bas à gauche sur le clavier. Appuyez dessus légèrement avec n'importe quel doigt.</translation>
 <translation id="735745346212279324">VPN déconnecté</translation>
 <translation id="7359588939039777303">Annonces bloquées.</translation>
 <translation id="7360183604634508679">Menu "Favoris"</translation>
@@ -5024,7 +5024,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8101987792947961127">Powerwash requis au prochain redémarrage</translation>
 <translation id="8102159139658438129">Accédez à <ph name="LINK_BEGIN" />Paramètres<ph name="LINK_END" /> pour consulter les options de votre téléphone connecté</translation>
 <translation id="8104696615244072556">Réinitialiser l'appareil <ph name="IDS_SHORT_PRODUCT_NAME" /> avec la fonctionnalité Powerwash et rétablir la version précédente</translation>
-<translation id="8106661353233173262">Un problème est survenu. Le délai d'analyse du fichier a été dépassé.</translation>
 <translation id="8107015733319732394">Installation du Google Play Store sur votre <ph name="DEVICE_TYPE" />. Cette opération peut prendre quelques minutes.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Aucun cookie tiers}=1{1 cookie tiers bloqué}one{# cookie tiers bloqué}other{# cookies tiers bloqués}}</translation>
 <translation id="810875025413331850">Aucun appareil à proximité n'a été trouvé.</translation>
@@ -5109,7 +5108,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8227119283605456246">Joindre un fichier</translation>
 <translation id="8230134520748321204">Enregistrer le mot de passe pour <ph name="ORIGIN" /> ?</translation>
 <translation id="8234795456569844941">Pour aider nos ingénieurs à corriger ce problème, veuillez nous indiquer ce qui s'est passé juste avant de recevoir le message d'erreur concernant le profil :</translation>
-<translation id="8236123533334037984">Votre organisation analyse ces données importées à des fins de sécurité.</translation>
+<translation id="8236123533334037984">Votre organisation analyse le contenu de l'importation pour en vérifier la conformité.</translation>
 <translation id="8236917170563564587">Partager cet onglet à la place</translation>
 <translation id="8237647586961940482">Rose foncé et rouge</translation>
 <translation id="8241040075392580210">Nuage</translation>

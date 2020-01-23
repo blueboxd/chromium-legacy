@@ -11,37 +11,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/sessions/core/snapshotting_command_storage_backend.h"
 
 namespace sessions {
-namespace {
-
-// Helper used by ScheduleGetLastSessionCommands. It runs callback on TaskRunner
-// thread if it's not canceled.
-void RunIfNotCanceled(
-    const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-    SnapshottingCommandStorageManager::GetCommandsCallback callback,
-    std::vector<std::unique_ptr<SessionCommand>> commands) {
-  if (is_canceled.Run())
-    return;
-  std::move(callback).Run(std::move(commands));
-}
-
-void PostOrRunInternalGetCommandsCallback(
-    base::SequencedTaskRunner* task_runner,
-    SnapshottingCommandStorageManager::GetCommandsCallback callback,
-    std::vector<std::unique_ptr<SessionCommand>> commands) {
-  if (task_runner->RunsTasksInCurrentSequence()) {
-    std::move(callback).Run(std::move(commands));
-  } else {
-    task_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), std::move(commands)));
-  }
-}
-
-}  // namespace
 
 SnapshottingCommandStorageManager::SnapshottingCommandStorageManager(
     SessionType type,
@@ -78,22 +50,15 @@ SnapshottingCommandStorageManager::ScheduleGetLastSessionCommands(
     GetCommandsCallback callback,
     base::CancelableTaskTracker* tracker) {
   base::CancelableTaskTracker::IsCanceledCallback is_canceled;
-  base::CancelableTaskTracker::TaskId id =
-      tracker->NewTrackedTaskId(&is_canceled);
-
-  GetCommandsCallback run_if_not_canceled =
-      base::BindOnce(&RunIfNotCanceled, is_canceled, std::move(callback));
-
-  GetCommandsCallback callback_runner =
-      base::BindOnce(&PostOrRunInternalGetCommandsCallback,
-                     base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
-                     std::move(run_if_not_canceled));
+  GetCommandsCallback backend_callback;
+  const base::CancelableTaskTracker::TaskId id = CreateCallbackForGetCommands(
+      tracker, std::move(callback), &is_canceled, &backend_callback);
 
   backend_task_runner()->PostNonNestableTask(
       FROM_HERE,
       base::BindOnce(
           &SnapshottingCommandStorageBackend::ReadLastSessionCommands,
-          GetSnapshottingBackend(), is_canceled, std::move(callback_runner)));
+          GetSnapshottingBackend(), is_canceled, std::move(backend_callback)));
   return id;
 }
 

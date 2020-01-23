@@ -416,15 +416,18 @@ class TabListElement extends CustomElement {
           tabGroupElement.appendChild(tabElement);
           elementToInsert = tabGroupElement;
         }
-      } else if (
-          elementAtIndex && elementAtIndex.parentElement &&
+      }
+
+      if (elementAtIndex && elementAtIndex.parentElement &&
           isTabGroupElement(elementAtIndex.parentElement) &&
-          elementAtIndex.previousElementSibling === null) {
-        // If the element at the model index is in a group and is the first
-        // element in its group, insert the new element before its
-        // TabGroupElement. If a TabElement is being sandwiched between two
-        // TabElements in a group, it can be assumed that the tab will
-        // eventually be inserted into the group as well.
+          (elementAtIndex.previousElementSibling === null &&
+           elementAtIndex.tab.groupId !== tabElement.tab.groupId)) {
+        // If the element at the model index is in a group, and the group is
+        // different from the new tab's group, and is the first element in its
+        // group, insert the new element before its TabGroupElement. If a
+        // TabElement is being sandwiched between two TabElements in a group, it
+        // can be assumed that the tab will eventually be inserted into the
+        // group as well.
         elementAtIndex = elementAtIndex.parentElement;
       }
 

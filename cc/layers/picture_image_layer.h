@@ -27,9 +27,6 @@ class CC_EXPORT PictureImageLayer : public PictureLayer, ContentLayerClient {
                 const SkMatrix& matrix,
                 bool uses_width_as_height);
 
-  // Layer implementation.
-  std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
-
   gfx::Rect PaintableRegion() override;
 
   // ContentLayerClient implementation.

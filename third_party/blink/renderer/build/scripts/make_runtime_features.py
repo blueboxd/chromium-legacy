@@ -53,11 +53,10 @@ class BaseRuntimeFeatureWriter(json5_generator.Writer):
         assert self.file_basename
 
         self._features = self.json5_file.name_dictionaries
-        origin_trial_set = util.origin_trials(self._features)
-
+        # Dependency graph specified by 'depends_on' attribute.
+        self._dependency_graph = util.init_graph(self._features)
         # Make sure the resulting dictionaries have all the keys we expect.
         for feature in self._features:
-            feature['in_origin_trial'] = str(feature['name']) in origin_trial_set
             feature['data_member_name'] = self._data_member_name(feature['name'])
             # Most features just check their is_foo_enabled_ bool
             # but some depend on or are implied by other bools.
@@ -66,6 +65,8 @@ class BaseRuntimeFeatureWriter(json5_generator.Writer):
             for implied_by_name in feature['implied_by']:
                 enabled_condition += ' || ' + self._data_member_name(implied_by_name)
             for dependant_name in feature['depends_on']:
+                assert dependant_name in self._dependency_graph, dependant_name + ' is not a feature.'
+                self._dependency_graph[dependant_name].append(str(feature['name']))
                 enabled_condition += ' && ' + self._data_member_name(dependant_name)
             feature['enabled_condition'] = enabled_condition
             # If 'status' is a dict, add the values for all the not-mentioned platforms too.
@@ -73,6 +74,9 @@ class BaseRuntimeFeatureWriter(json5_generator.Writer):
                 feature['status'] = self._status_with_all_platforms(feature['status'])
             # Specify the type of status
             feature['status_type'] = "dict" if isinstance(feature['status'], dict) else "str"
+
+        util.check_if_dependency_graph_contains_cycle(self._dependency_graph)
+        util.set_origin_trials_features(self._features, self._dependency_graph)
 
         self._standard_features = [feature for feature in self._features if not feature['custom']]
         self._origin_trial_features = [feature for feature in self._features if feature['in_origin_trial']]

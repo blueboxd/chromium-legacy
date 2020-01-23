@@ -100,7 +100,7 @@ FAIL x..β (using <a>.hostname) assert_equals: expected "x..xn--nxa" but got ""
 FAIL x..β (using <area>) Failed to construct 'URL': Invalid URL
 FAIL x..β (using <area>.host) assert_equals: expected "x..xn--nxa" but got ""
 FAIL x..β (using <area>.hostname) assert_equals: expected "x..xn--nxa" but got ""
-FAIL xn--a (using URL) assert_throws: function "() => makeURL("url", hostTest.input)" did not throw
+FAIL xn--a (using URL) assert_throws_js: function "() => makeURL("url", hostTest.input)" did not throw
 FAIL xn--a (using URL.host) assert_equals: expected "x" but got "xn--a"
 FAIL xn--a (using URL.hostname) assert_equals: expected "x" but got "xn--a"
 FAIL xn--a (using <a>) assert_equals: expected "" but got "xn--a"
@@ -109,7 +109,7 @@ FAIL xn--a (using <a>.hostname) assert_equals: expected "x" but got "xn--a"
 FAIL xn--a (using <area>) assert_equals: expected "" but got "xn--a"
 FAIL xn--a (using <area>.host) assert_equals: expected "x" but got "xn--a"
 FAIL xn--a (using <area>.hostname) assert_equals: expected "x" but got "xn--a"
-FAIL xn--a.xn--nxa (using URL) assert_throws: function "() => makeURL("url", hostTest.input)" did not throw
+FAIL xn--a.xn--nxa (using URL) assert_throws_js: function "() => makeURL("url", hostTest.input)" did not throw
 FAIL xn--a.xn--nxa (using URL.host) assert_equals: expected "x" but got "xn--a.xn--nxa"
 FAIL xn--a.xn--nxa (using URL.hostname) assert_equals: expected "x" but got "xn--a.xn--nxa"
 FAIL xn--a.xn--nxa (using <a>) assert_equals: expected "" but got "xn--a.xn--nxa"
@@ -172,7 +172,7 @@ FAIL ‍.example (using <a>.hostname) assert_equals: expected "x" but got ""
 FAIL ‍.example (using <area>) assert_equals: expected "https://‍.example/x" but got "https://%E2%80%8D.example/x"
 FAIL ‍.example (using <area>.host) assert_equals: expected "x" but got ""
 FAIL ‍.example (using <area>.hostname) assert_equals: expected "x" but got ""
-FAIL xn--1ug.example (using URL) assert_throws: function "() => makeURL("url", hostTest.input)" did not throw
+FAIL xn--1ug.example (using URL) assert_throws_js: function "() => makeURL("url", hostTest.input)" did not throw
 FAIL xn--1ug.example (using URL.host) assert_equals: expected "x" but got "xn--1ug.example"
 FAIL xn--1ug.example (using URL.hostname) assert_equals: expected "x" but got "xn--1ug.example"
 FAIL xn--1ug.example (using <a>) assert_equals: expected "" but got "xn--1ug.example"
@@ -190,7 +190,7 @@ FAIL يa (using <a>.hostname) assert_equals: expected "x" but got ""
 FAIL يa (using <area>) assert_equals: expected "https://يa/x" but got "https://%D9%8Aa/x"
 FAIL يa (using <area>.host) assert_equals: expected "x" but got ""
 FAIL يa (using <area>.hostname) assert_equals: expected "x" but got ""
-FAIL xn--a-yoc (using URL) assert_throws: function "() => makeURL("url", hostTest.input)" did not throw
+FAIL xn--a-yoc (using URL) assert_throws_js: function "() => makeURL("url", hostTest.input)" did not throw
 FAIL xn--a-yoc (using URL.host) assert_equals: expected "x" but got "xn--a-yoc"
 FAIL xn--a-yoc (using URL.hostname) assert_equals: expected "x" but got "xn--a-yoc"
 FAIL xn--a-yoc (using <a>) assert_equals: expected "" but got "xn--a-yoc"
@@ -226,7 +226,7 @@ FAIL �.com (using <a>.hostname) assert_equals: expected "x" but got ""
 FAIL �.com (using <area>) assert_equals: expected "https://\ufffd.com/x" but got "https://%EF%BF%BD.com/x"
 FAIL �.com (using <area>.host) assert_equals: expected "x" but got ""
 FAIL �.com (using <area>.hostname) assert_equals: expected "x" but got ""
-FAIL xn--zn7c.com (using URL) assert_throws: function "() => makeURL("url", hostTest.input)" did not throw
+FAIL xn--zn7c.com (using URL) assert_throws_js: function "() => makeURL("url", hostTest.input)" did not throw
 FAIL xn--zn7c.com (using URL.host) assert_equals: expected "x" but got "xn--zn7c.com"
 FAIL xn--zn7c.com (using URL.hostname) assert_equals: expected "x" but got "xn--zn7c.com"
 FAIL xn--zn7c.com (using <a>) assert_equals: expected "" but got "xn--zn7c.com"

@@ -1674,6 +1674,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="StyleAndLayout">
+    <obsolete>
+      Removed January 2020 in favor of separate Style and Layout metrics.
+    </obsolete>
     <summary>
       The time spent in layout and style document lifecycle work, between
       navigation and First Contentful Paint, in microseconds. Will be obsolete
@@ -2390,6 +2393,9 @@ be describing additional metrics about the same event.
     </aggregation>
   </metric>
   <metric name="StyleAndLayout">
+    <obsolete>
+      Removed January 2020 in favor of separate Style and Layout metrics.
+    </obsolete>
     <summary>
       The time taken for style and layout for the main frame in microseconds
       during the sampled frame.
@@ -2449,6 +2455,9 @@ be describing additional metrics about the same event.
     </summary>
   </metric>
   <metric name="StyleAndLayoutPercentage">
+    <obsolete>
+      Removed January 2020 in favor of separate Style and Layout metrics.
+    </obsolete>
     <summary>
       The percentage of the main frame time used in style and layout work. An
       int in the range [0,100].

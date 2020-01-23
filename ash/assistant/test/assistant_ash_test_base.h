@@ -141,14 +141,16 @@ class AssistantAshTestBase : public AshTestBase {
   // Return the button to enable text mode.
   views::View* keyboard_input_toggle();
 
-  // Show the on-screen keyboard.
+  // Show/Dismiss the on-screen keyboard.
   void ShowKeyboard();
-
-  // Dismiss the on-screen keyboard.
   void DismissKeyboard();
 
   // Returns if the on-screen keyboard is being displayed.
   bool IsKeyboardShowing() const;
+
+  // Enable/Disable the on-screen keyboard.
+  void EnableKeyboard() { SetVirtualKeyboardEnabled(true); }
+  void DisableKeyboard() { SetVirtualKeyboardEnabled(false); }
 
  private:
   AssistantInteractionController* interaction_controller();

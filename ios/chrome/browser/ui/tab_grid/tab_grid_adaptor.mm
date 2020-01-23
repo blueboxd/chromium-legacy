@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
@@ -26,12 +25,12 @@
 
 #pragma mark - TabSwitcher
 
-- (void)restoreInternalStateWithMainTabModel:(TabModel*)mainModel
-                                 otrTabModel:(TabModel*)otrModel
-                              activeTabModel:(TabModel*)activeModel {
+- (void)restoreInternalStateWithMainBrowser:(Browser*)mainBrowser
+                                 otrBrowser:(Browser*)otrBrowser
+                              activeBrowser:(Browser*)activeBrowser {
   // The only action here is to signal to the tab grid which panel should be
   // active.
-  if (activeModel == otrModel) {
+  if (activeBrowser == otrBrowser) {
     self.tabGridViewController.activePage = TabGridPageIncognitoTabs;
   } else {
     self.tabGridViewController.activePage = TabGridPageRegularTabs;
@@ -53,8 +52,8 @@
   // Tell the delegate to display the tab.
   DCHECK(self.delegate);
   [self.delegate tabSwitcher:self
-      shouldFinishWithActiveModel:browser->GetTabModel()
-                     focusOmnibox:NO];
+      shouldFinishWithBrowser:browser
+                 focusOmnibox:NO];
 }
 
 - (void)setOtrBrowser:(Browser*)browser {

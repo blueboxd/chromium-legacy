@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/ssl/ssl_client_auth_metrics.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
@@ -37,46 +36,63 @@ using web_modal::WebContentsModalDialogManager;
 
 namespace {
 
-struct TestClientCertificateDelegateResults
-    : public base::SupportsWeakPtr<TestClientCertificateDelegateResults> {
-  bool destroyed = false;
-  bool continue_with_certificate_called = false;
-  scoped_refptr<net::X509Certificate> cert;
-  scoped_refptr<net::SSLPrivateKey> key;
+class TestClientCertificateDelegateResults {
+ public:
+  bool destroyed() const { return destroyed_; }
+  bool continue_with_certificate_called() const {
+    return continue_with_certificate_called_;
+  }
+
+  net::X509Certificate* cert() const { return cert_.get(); }
+  net::SSLPrivateKey* key() const { return key_.get(); }
+
+  void WaitForDelegateDestroyed() {
+    if (!destroyed_)
+      run_loop_.Run();
+    EXPECT_TRUE(destroyed_);
+  }
+
+  void OnDelegateDestroyed() {
+    destroyed_ = true;
+    run_loop_.Quit();
+  }
+
+  void ContinueWithCertificate(scoped_refptr<net::X509Certificate> cert,
+                               scoped_refptr<net::SSLPrivateKey> key) {
+    EXPECT_FALSE(continue_with_certificate_called_);
+    cert_ = std::move(cert);
+    key_ = std::move(key);
+    continue_with_certificate_called_ = true;
+  }
+
+ private:
+  bool destroyed_ = false;
+  bool continue_with_certificate_called_ = false;
+  scoped_refptr<net::X509Certificate> cert_;
+  scoped_refptr<net::SSLPrivateKey> key_;
+  base::RunLoop run_loop_;
 };
 
 class TestClientCertificateDelegate
     : public content::ClientCertificateDelegate {
  public:
   // Creates a ClientCertificateDelegate that sets |results->destroyed| to true
-  // on destruction. The |results| parameter is a WeakPtr so we avoid retaining
-  // a dangling pointer to a stack object that has since been deallocated.
+  // on destruction. The delegate must not outlive |results|.
   explicit TestClientCertificateDelegate(
-      base::WeakPtr<TestClientCertificateDelegateResults> results)
+      TestClientCertificateDelegateResults* results)
       : results_(results) {}
 
-  ~TestClientCertificateDelegate() override {
-    if (!results_) {
-      return;
-    }
-    results_->destroyed = true;
-  }
+  ~TestClientCertificateDelegate() override { results_->OnDelegateDestroyed(); }
 
   // content::ClientCertificateDelegate.
   void ContinueWithCertificate(scoped_refptr<net::X509Certificate> cert,
                                scoped_refptr<net::SSLPrivateKey> key) override {
-    if (!results_) {
-      return;
-    }
-    EXPECT_FALSE(results_->continue_with_certificate_called);
-    results_->cert = cert;
-    results_->key = key;
-    results_->continue_with_certificate_called = true;
+    results_->ContinueWithCertificate(std::move(cert), std::move(key));
     // TODO(mattm): Add a test of selecting the 2nd certificate (if possible).
   }
 
  private:
-  base::WeakPtr<TestClientCertificateDelegateResults> results_;
+  TestClientCertificateDelegateResults* results_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClientCertificateDelegate);
 };
@@ -154,21 +170,19 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Basic) {
       chrome::ShowSSLClientCertificateSelector(
           web_contents, auth_requestor_->cert_request_info_.get(),
           GetTestCertificateList(),
-          std::make_unique<TestClientCertificateDelegate>(results.AsWeakPtr()));
+          std::make_unique<TestClientCertificateDelegate>(&results));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
   WebContentsModalDialogManager::TestApi test_api(
       web_contents_modal_dialog_manager);
   test_api.CloseAllDialogs();
-  base::RunLoop().RunUntilIdle();
+  results.WaitForDelegateDestroyed();
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   histograms.ExpectUniqueSample(kClientCertSelectHistogramName,
                                 ClientCertSelectionResult::kUserCloseTab, 1);
-
-  EXPECT_TRUE(results.destroyed);
-  EXPECT_FALSE(results.continue_with_certificate_called);
+  EXPECT_FALSE(results.continue_with_certificate_called());
 }
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
@@ -185,35 +199,21 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
       chrome::ShowSSLClientCertificateSelector(
           web_contents, auth_requestor_->cert_request_info_.get(),
           GetTestCertificateList(),
-          std::make_unique<TestClientCertificateDelegate>(results.AsWeakPtr()));
+          std::make_unique<TestClientCertificateDelegate>(&results));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
   // Cancel the dialog without selecting a certificate.
   std::move(cancellation_callback).Run();
 
-  base::RunLoop().RunUntilIdle();
+  results.WaitForDelegateDestroyed();
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   // The user did not close the tab, so there should be zero samples reported
   // for ClientCertSelectionResult::kUserCloseTab.
+  histograms.ExpectTotalCount(kClientCertSelectHistogramName, 0);
 
-  // A note on object lifetimes:
-  //
-  // The earlier call to ShowSSLClientCertificateSelector() created a
-  // self-owning (and self-deleting) SSLClientAuthObserver, which also owns the
-  // TestClientCertificateDelegate in this test.
-  //
-  // At this point, the TestClientCertificateDelegate's destructor has not
-  // executed because no SSLClientAuthObserver methods that trigger
-  // self-deletion have been called, e.g.  ContinueWithCertificate().
-  //
-  // Since ~TestClientCertificateDelegate() must write to |results| to indicate
-  // destruction occurred, it must have some way to know whether |results|
-  // still exists. This is why we are using a WeakPtr to |results|.
-
-  EXPECT_FALSE(results.destroyed);
-  EXPECT_FALSE(results.continue_with_certificate_called);
+  EXPECT_FALSE(results.continue_with_certificate_called());
 }
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Cancel) {
@@ -229,23 +229,22 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Cancel) {
       chrome::ShowSSLClientCertificateSelectorMacForTesting(
           web_contents, auth_requestor_->cert_request_info_.get(),
           GetTestCertificateList(),
-          std::make_unique<TestClientCertificateDelegate>(results.AsWeakPtr()),
+          std::make_unique<TestClientCertificateDelegate>(&results),
           base::DoNothing());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
   ok_and_cancelable->ClickCancelButton();
-  base::RunLoop().RunUntilIdle();
+  results.WaitForDelegateDestroyed();
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   histograms.ExpectUniqueSample(kClientCertSelectHistogramName,
                                 ClientCertSelectionResult::kUserCancel, 1);
 
   // ContinueWithCertificate(nullptr, nullptr) should have been called.
-  EXPECT_TRUE(results.destroyed);
-  EXPECT_TRUE(results.continue_with_certificate_called);
-  EXPECT_FALSE(results.cert);
-  EXPECT_FALSE(results.key);
+  EXPECT_TRUE(results.continue_with_certificate_called());
+  EXPECT_FALSE(results.cert());
+  EXPECT_FALSE(results.key());
 }
 
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Accept) {
@@ -261,28 +260,27 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, Accept) {
       chrome::ShowSSLClientCertificateSelectorMacForTesting(
           web_contents, auth_requestor_->cert_request_info_.get(),
           GetTestCertificateList(),
-          std::make_unique<TestClientCertificateDelegate>(results.AsWeakPtr()),
+          std::make_unique<TestClientCertificateDelegate>(&results),
           base::DoNothing());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
   ok_and_cancelable->ClickOkButton();
-  base::RunLoop().RunUntilIdle();
+  results.WaitForDelegateDestroyed();
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
   // The first cert in the list should have been selected.
-  EXPECT_TRUE(results.destroyed);
-  EXPECT_TRUE(results.continue_with_certificate_called);
-  EXPECT_EQ(client_cert1_, results.cert);
-  ASSERT_TRUE(results.key);
+  EXPECT_TRUE(results.continue_with_certificate_called());
+  EXPECT_EQ(client_cert1_, results.cert());
+  ASSERT_TRUE(results.key());
 
   histograms.ExpectUniqueSample(kClientCertSelectHistogramName,
                                 ClientCertSelectionResult::kUserSelect, 1);
 
   // The test keys are RSA keys.
   EXPECT_EQ(net::SSLPrivateKey::DefaultAlgorithmPreferences(EVP_PKEY_RSA, true),
-            results.key->GetAlgorithmPreferences());
-  TestSSLPrivateKeyMatches(results.key.get(), pkcs8_key1_);
+            results.key()->GetAlgorithmPreferences());
+  TestSSLPrivateKeyMatches(results.key(), pkcs8_key1_);
 }
 
 // Test that switching to another tab correctly hides the sheet.
@@ -304,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, HideShow) {
       chrome::ShowSSLClientCertificateSelector(
           web_contents, auth_requestor_->cert_request_info_.get(),
           GetTestCertificateList(),
-          std::make_unique<TestClientCertificateDelegate>(results.AsWeakPtr()));
+          std::make_unique<TestClientCertificateDelegate>(&results));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
 
@@ -327,19 +325,20 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest, HideShow) {
   EXPECT_EQ(1.0, [sheet_window alphaValue]);
   EXPECT_FALSE([overlay_window ignoresMouseEvents]);
 
-  EXPECT_FALSE(results.destroyed);
-  EXPECT_FALSE(results.continue_with_certificate_called);
+  EXPECT_FALSE(results.destroyed());
+  EXPECT_FALSE(results.continue_with_certificate_called());
 
   // Close the tab. Delegate should be destroyed without continuing.
   chrome::CloseTab(browser());
-  EXPECT_TRUE(results.destroyed);
-  EXPECT_FALSE(results.continue_with_certificate_called);
+  results.WaitForDelegateDestroyed();
+  EXPECT_FALSE(results.continue_with_certificate_called());
 }
 
 // Test that we can't trigger the crash from https://crbug.com/653093
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
                        WorkaroundTableViewCrash) {
   base::RunLoop run_loop;
+  TestClientCertificateDelegateResults results;
 
   @autoreleasepool {
     content::WebContents* web_contents =
@@ -347,7 +346,9 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
     chrome::OkAndCancelableForTesting* ok_and_cancelable =
         chrome::ShowSSLClientCertificateSelectorMacForTesting(
             web_contents, auth_requestor_->cert_request_info_.get(),
-            GetTestCertificateList(), nullptr, run_loop.QuitClosure());
+            GetTestCertificateList(),
+            std::make_unique<TestClientCertificateDelegate>(&results),
+            run_loop.QuitClosure());
     base::RunLoop().RunUntilIdle();
 
     ok_and_cancelable->ClickOkButton();
@@ -370,4 +371,6 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMacTest,
                   userInfo:@{
                     @"NSScrollerStyle" : @(NSScrollerStyleOverlay)
                   }];
+
+  results.WaitForDelegateDestroyed();
 }

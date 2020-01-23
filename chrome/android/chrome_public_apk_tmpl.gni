@@ -78,6 +78,9 @@ template("chrome_public_common_apk_or_module_tmpl") {
   assert(_is_64_bit_browser || !_is_64_bit_browser)  # Mark as used.
   assert(!(_is_monochrome && _is_trichrome),
          "Cannot be both trichrome and monochrome!")
+  assert(_is_trichrome == defined(invoker.static_library_provider),
+         "If trichrome library is used, static_library_provider must be set " +
+             "so that a dep can be added on the library APK.")
 
   # Adds unwind table asset to the chrome apk for the given library target. This
   # is not part of generic apk assets target since it depends on the main shared

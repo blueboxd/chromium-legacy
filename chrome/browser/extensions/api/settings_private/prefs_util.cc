@@ -49,6 +49,7 @@
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -444,6 +445,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[guest_os::prefs::kGuestOSPathsSharedToVms] =
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
+
+  // Plugin Vm
+  (*s_whitelist)[plugin_vm::prefs::kPluginVmImageExists] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Android Apps.
   (*s_whitelist)[arc::prefs::kArcEnabled] =

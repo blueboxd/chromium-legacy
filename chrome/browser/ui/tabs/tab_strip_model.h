@@ -131,8 +131,12 @@ class TabStripModel : public TabGroupController {
     // WebUI touch-optimized tab strip.
     NEW_TAB_BUTTON_IN_TOOLBAR_FOR_TOUCH = 3,
 
+    // New tab was opened through the new tab button inside of the WebUI tab
+    // strip.
+    NEW_TAB_BUTTON_IN_WEBUI_TAB_STRIP = 4,
+
     // Number of enum entries, used for UMA histogram reporting macros.
-    NEW_TAB_ENUM_COUNT = 4,
+    NEW_TAB_ENUM_COUNT = 5,
   };
 
   static constexpr int kNoTab = -1;
@@ -280,6 +284,10 @@ class TabStripModel : public TabGroupController {
   // move no further than index 2. The non-pinned tabs are moved to the target
   // index + selected-pinned tab-count (3 + 1).
   void MoveSelectedTabsTo(int index);
+
+  // Moves all tabs in |group| to |to_index|. This has no checks to make sure
+  // the position is valid for a group to move to.
+  void MoveGroupTo(const tab_groups::TabGroupId& group, int to_index);
 
   // Returns the currently active WebContents, or NULL if there is none.
   content::WebContents* GetActiveWebContents() const;

@@ -252,6 +252,22 @@ IDNSpoofChecker::IDNSpoofChecker() {
        "[[:Mymr:]]",
        "[ခဂငထပဝ၀၂ၔၜ\u1090\u1091\u1095\u1096\u1097]",
        {"mm"}},
+      {// Thai
+       "[[:Thai:]]",
+  // Some of the Thai characters are only confusable on Linux, so the Linux
+  // set is larger than other platforms. Ideally we don't want to have any
+  // differences between platforms, but doing so is unavoidable here as
+  // these characters look significantly different between Linux and other
+  // platforms.
+  // The ideal fix would be to change the omnibox font used for Thai. In
+  // that case, the Linux-only list should be revisited and potentially
+  // removed.
+#if defined(OS_LINUX)
+       "[ทนบพรหเแ๐ดลปฟม]",
+#else
+       "[บพเแ๐]",
+#endif
+       {"th"}},
   };
   for (const WholeScriptConfusableData& data : kWholeScriptConfusables) {
     auto all_letters = std::make_unique<icu::UnicodeSet>(

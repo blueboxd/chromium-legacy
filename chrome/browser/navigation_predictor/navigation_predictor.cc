@@ -23,7 +23,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -41,14 +40,6 @@ namespace {
 // but the params it exposes are variable.
 const base::Feature kNavigationPredictorMultiplePrerenders{
     "NavigationPredictorMultiplePrerenders", base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsMainFrame(content::RenderFrameHost* rfh) {
-  // Don't use rfh->GetRenderViewHost()->GetMainFrame() here because
-  // RenderViewHost is being deprecated and because in OOPIF,
-  // RenderViewHost::GetMainFrame() returns nullptr for child frames hosted in a
-  // different process from the main frame.
-  return rfh->GetParent() == nullptr;
-}
 
 std::string GetURLWithoutRefParams(const GURL& gurl) {
   url::Replacements<char> replacements;
@@ -121,10 +112,8 @@ struct NavigationPredictor::NavigationScore {
   base::Optional<size_t> score_rank;
 };
 
-NavigationPredictor::NavigationPredictor(
-    content::RenderFrameHost* render_frame_host)
-    : browser_context_(
-          render_frame_host->GetSiteInstance()->GetBrowserContext()),
+NavigationPredictor::NavigationPredictor(content::WebContents* web_contents)
+    : browser_context_(web_contents->GetBrowserContext()),
       ratio_area_scale_(base::GetFieldTrialParamByFeatureAsInt(
           blink::features::kNavigationPredictor,
           "ratio_area_scale",
@@ -210,22 +199,15 @@ NavigationPredictor::NavigationPredictor(
       normalize_navigation_scores_(base::GetFieldTrialParamByFeatureAsBool(
           blink::features::kNavigationPredictor,
           "normalize_scores",
-          true)),
-      render_frame_host_(render_frame_host) {
+          true)) {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
-  DCHECK(render_frame_host_);
-
-  if (!IsMainFrame(render_frame_host))
-    return;
 
   if (browser_context_->IsOffTheRecord())
     return;
 
   ukm_recorder_ = ukm::UkmRecorder::Get();
 
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
   current_visibility_ = web_contents->GetVisibility();
   ukm_source_id_ = web_contents->GetLastCommittedSourceId();
   Observe(web_contents);
@@ -250,9 +232,13 @@ void NavigationPredictor::Create(
   if (render_frame_host->GetParent())
     return;
 
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host);
+  if (!web_contents)
+    return;
+
   mojo::MakeSelfOwnedReceiver(
-      std::make_unique<NavigationPredictor>(render_frame_host),
-      std::move(receiver));
+      std::make_unique<NavigationPredictor>(web_contents), std::move(receiver));
 }
 
 bool NavigationPredictor::IsValidMetricFromRenderer(
@@ -260,7 +246,6 @@ bool NavigationPredictor::IsValidMetricFromRenderer(
   return metric.target_url.SchemeIsHTTPOrHTTPS() &&
          metric.source_url.SchemeIsHTTPOrHTTPS();
 }
-
 
 void NavigationPredictor::RecordTimingOnClick() {
   base::TimeTicks current_timing = base::TimeTicks::Now();
@@ -948,6 +933,13 @@ double NavigationPredictor::GetPageMetricsScore() const {
 void NavigationPredictor::NotifyPredictionUpdated(
     const std::vector<std::unique_ptr<NavigationScore>>&
         sorted_navigation_scores) {
+  // It is possible for this class to still exist while its WebContents and
+  // RenderFrameHost are being destroyed. This can be detected by checking
+  // |web_contents()| which will be nullptr if the WebContents has been
+  // destroyed.
+  if (!web_contents())
+    return;
+
   NavigationPredictorKeyedService* service =
       NavigationPredictorKeyedServiceFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context_));
@@ -957,7 +949,7 @@ void NavigationPredictor::NotifyPredictionUpdated(
   for (const auto& nav_score : sorted_navigation_scores) {
     top_urls.push_back(nav_score->url);
   }
-  service->OnPredictionUpdated(render_frame_host_, document_url_, top_urls);
+  service->OnPredictionUpdated(web_contents(), document_url_, top_urls);
 }
 
 void NavigationPredictor::MaybeTakeActionOnLoad(
@@ -1007,6 +999,13 @@ void NavigationPredictor::Prefetch(
     const GURL& url_to_prefetch) {
   DCHECK(!prerender_handle_);
   DCHECK(!prefetch_url_);
+
+  // It is possible for this class to still exist while its WebContents and
+  // RenderFrameHost are being destroyed. This can be detected by checking
+  // |web_contents()| which will be nullptr if the WebContents has been
+  // destroyed.
+  if (!web_contents())
+    return;
 
   content::SessionStorageNamespace* session_storage_namespace =
       web_contents()->GetController().GetDefaultSessionStorageNamespace();

@@ -6,6 +6,7 @@
 
 #include "skia/public/mojom/skcolor.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom-blink.h"
+#include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink.h"
 
 namespace blink {
 
@@ -80,6 +81,11 @@ void FakeLocalFrameHost::DidBlockNavigation(
 void FakeLocalFrameHost::DispatchLoad() {}
 
 void FakeLocalFrameHost::RenderFallbackContentInParentProcess() {}
+
+void FakeLocalFrameHost::ForwardResourceTimingToParent(
+    mojom::blink::ResourceTimingInfoPtr timing) {}
+
+void FakeLocalFrameHost::DidFinishDocumentLoad() {}
 
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

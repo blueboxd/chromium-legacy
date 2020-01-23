@@ -1,5 +1,5 @@
 document
-++form
+++form IsControlElement=false
 ++++description
 ++++++description Name='Pet name:'
 ++++textbox Name='Pet name:' IsRequiredForForm=true

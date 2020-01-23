@@ -209,7 +209,7 @@ FontDisplay RemoteFontFaceSource::GetFontDisplayWithFeaturePolicyCheck(
   if (display != kFontDisplayFallback && display != kFontDisplayOptional &&
       context && context->IsDocument() &&
       !To<Document>(context)->IsFeatureEnabled(
-          mojom::FeaturePolicyFeature::kFontDisplay, report)) {
+          mojom::blink::FeaturePolicyFeature::kFontDisplay, report)) {
     return kFontDisplayOptional;
   }
   return display;

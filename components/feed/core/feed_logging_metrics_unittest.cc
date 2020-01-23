@@ -22,8 +22,6 @@ using testing::SizeIs;
 namespace feed {
 namespace {
 
-GURL kVisitedUrl("http://visited_url.com/");
-
 // Fixed "now" to make tests more deterministic.
 char kNowString[] = "2018-06-11 15:41";
 
@@ -39,9 +37,15 @@ enum FeedActionType {
   DOWNLOAD = 5,
 };
 
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL VisitedUrl() {
+  return GURL("http://visited_url.com/");
+}
+
 void CheckURLVisit(const GURL& url,
                    FeedLoggingMetrics::CheckURLVisitCallback callback) {
-  if (url == kVisitedUrl) {
+  if (url == VisitedUrl()) {
     std::move(callback).Run(true);
   } else {
     std::move(callback).Run(false);
@@ -178,7 +182,7 @@ TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionWindowOpened) {
 
 TEST_F(FeedLoggingMetricsTest, ShouldLogOnSuggestionDismissedCommitIfVisited) {
   base::HistogramTester histogram_tester;
-  feed_logging_metrics()->OnSuggestionDismissed(/*position=*/10, kVisitedUrl,
+  feed_logging_metrics()->OnSuggestionDismissed(/*position=*/10, VisitedUrl(),
                                                 true);
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "NewTabPage.ContentSuggestions.DismissedVisited.Commit"),
@@ -198,7 +202,7 @@ TEST_F(FeedLoggingMetricsTest,
 TEST_F(FeedLoggingMetricsTest,
        ShouldLogOnSuggestionDismissedUndoIfUndoDismissAndVisited) {
   base::HistogramTester histogram_tester;
-  feed_logging_metrics()->OnSuggestionDismissed(/*position=*/10, kVisitedUrl,
+  feed_logging_metrics()->OnSuggestionDismissed(/*position=*/10, VisitedUrl(),
                                                 false);
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "NewTabPage.ContentSuggestions.DismissedVisited.Undo"),
@@ -253,15 +257,6 @@ TEST_F(FeedLoggingMetricsTest, ShouldLogOnMoreButtonClicked) {
   EXPECT_THAT(histogram_tester.GetAllSamples(
                   "NewTabPage.UserClassifier.AverageHoursToUseSuggestions"),
               SizeIs(1));
-}
-
-TEST_F(FeedLoggingMetricsTest, ShouldLogOnManageInterestsClicked) {
-  base::HistogramTester histogram_tester;
-
-  feed_logging_metrics()->OnManageInterestsClicked(1);
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "ContentSuggestions.Feed.ManageInterestsOpened"),
-              ElementsAre(base::Bucket(/*min=*/1, /*count=*/1)));
 }
 
 }  // namespace feed

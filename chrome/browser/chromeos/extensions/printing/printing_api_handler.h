@@ -13,13 +13,17 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/chromeos/extensions/printing/print_job_controller.h"
+#include "chrome/browser/chromeos/extensions/printing/print_job_submitter.h"
 #include "chrome/browser/chromeos/extensions/printing/printer_capabilities_provider.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/common/extensions/api/printing.h"
+#include "chrome/services/printing/public/mojom/pdf_flattener.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router_factory.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
 class CupsWrapper;
@@ -38,13 +42,18 @@ struct PrinterStatus;
 
 namespace extensions {
 
+class PrintJobSubmitter;
 class ExtensionRegistry;
 
-// Observes CupsPrintJobManager and generates OnJobStatusChanged() events of
-// chrome.printing API.
+// Handles chrome.printing API functions calls, observes CupsPrintJobManager and
+// generates OnJobStatusChanged() events of chrome.printing API.
 class PrintingAPIHandler : public BrowserContextKeyedAPI,
                            public chromeos::CupsPrintJobManager::Observer {
  public:
+  using SubmitJobCallback = base::OnceCallback<void(
+      base::Optional<api::printing::SubmitJobStatus> status,
+      std::unique_ptr<std::string> job_id,
+      base::Optional<std::string> error)>;
   using GetPrinterInfoCallback = base::OnceCallback<void(
       base::Optional<base::Value> capabilities,
       base::Optional<api::printing::PrinterStatus> status,
@@ -69,6 +78,10 @@ class PrintingAPIHandler : public BrowserContextKeyedAPI,
   // Returns the current instance for |browser_context|.
   static PrintingAPIHandler* Get(content::BrowserContext* browser_context);
 
+  void SubmitJob(const std::string& extension_id,
+                 std::unique_ptr<api::printing::SubmitJob::Params> params,
+                 PrintJobSubmitter::SubmitJobCallback callback);
+
   std::vector<api::printing::Printer> GetPrinters();
 
   void GetPrinterInfo(const std::string& printer_id,
@@ -86,6 +99,15 @@ class PrintingAPIHandler : public BrowserContextKeyedAPI,
       chromeos::CupsPrintersManager* printers_manager,
       std::unique_ptr<chromeos::PrinterConfigurer> printer_configurer,
       std::unique_ptr<chromeos::CupsWrapper> cups_wrapper);
+
+  // This is needed to save ownership of |print_job_submitter| object which
+  // could be destructed because of asynchronous work otherwise.
+  void OnPrintJobSubmitted(
+      std::unique_ptr<PrintJobSubmitter> print_job_submitter,
+      PrintJobSubmitter::SubmitJobCallback callback,
+      base::Optional<api::printing::SubmitJobStatus> status,
+      std::unique_ptr<std::string> job_id,
+      base::Optional<std::string> error);
 
   void GetPrinterStatus(
       const std::string& printer_id,
@@ -107,6 +129,8 @@ class PrintingAPIHandler : public BrowserContextKeyedAPI,
   void DispatchJobStatusChangedEvent(api::printing::JobStatus job_status,
                                      base::WeakPtr<chromeos::CupsPrintJob> job);
 
+  void FinishJob(base::WeakPtr<chromeos::CupsPrintJob> job);
+
   // BrowserContextKeyedAPI:
   static const bool kServiceIsNULLWhileTesting = true;
   static const char* service_name() { return "PrintingAPIHandler"; }
@@ -117,8 +141,12 @@ class PrintingAPIHandler : public BrowserContextKeyedAPI,
 
   chromeos::CupsPrintJobManager* print_job_manager_;
   chromeos::CupsPrintersManager* const printers_manager_;
+  PrintJobController print_job_controller_;
   PrinterCapabilitiesProvider printer_capabilities_provider_;
   std::unique_ptr<chromeos::CupsWrapper> cups_wrapper_;
+
+  // Remote interface used to flatten a PDF.
+  mojo::Remote<printing::mojom::PdfFlattener> pdf_flattener_;
 
   ScopedObserver<chromeos::CupsPrintJobManager,
                  chromeos::CupsPrintJobManager::Observer>

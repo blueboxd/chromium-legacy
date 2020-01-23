@@ -32,7 +32,7 @@ Magnetometer::Magnetometer(ExecutionContext* execution_context,
              options,
              exception_state,
              SensorType::MAGNETOMETER,
-             {mojom::FeaturePolicyFeature::kMagnetometer}) {}
+             {mojom::blink::FeaturePolicyFeature::kMagnetometer}) {}
 
 double Magnetometer::x(bool& is_null) const {
   INIT_IS_NULL_AND_RETURN(is_null, 0.0);

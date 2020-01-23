@@ -76,13 +76,6 @@ class LinuxPort(base.Port):
         flags = super(LinuxPort, self).additional_driver_flags()
         if not self.get_option('disable_breakpad'):
             flags += ['--enable-crash-reporter', '--crash-dumps-dir=%s' % self._dump_reader.crash_dumps_directory()]
-        # SkiaRenderer is on by default on Linux. However it was relying on
-        # --fuzzy-diff for many tests to pass. This was obscuring other errors.
-        # While we work on rebaselining and retriaging SkiaRenderer, disable it
-        # for running the tests unless otherwise specified.
-        # TODO(crbug.com/1037835)
-        if '--enable-features=UseSkiaRenderer' not in flags:
-            flags += ['--disable-features=UseSkiaRenderer']
         return flags
 
     def check_build(self, needs_http, printer):

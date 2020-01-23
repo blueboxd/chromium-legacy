@@ -387,8 +387,6 @@ void LocalFrameClientImpl::DispatchDidLoadResourceFromMemoryCache(
 }
 
 void LocalFrameClientImpl::DispatchDidHandleOnloadEvents() {
-  if (!web_frame_->Parent())
-    web_frame_->GetFrame()->GetLocalFrameHostRemote().DocumentOnLoadCompleted();
   if (web_frame_->Client())
     web_frame_->Client()->DidHandleOnloadEvents();
 }
@@ -610,11 +608,6 @@ void LocalFrameClientImpl::ProgressEstimateChanged(double progress_estimate) {
 void LocalFrameClientImpl::DidStopLoading() {
   if (web_frame_->Client())
     web_frame_->Client()->DidStopLoading();
-}
-
-void LocalFrameClientImpl::ForwardResourceTimingToParent(
-    const WebResourceTimingInfo& info) {
-  web_frame_->Client()->ForwardResourceTimingToParent(info);
 }
 
 void LocalFrameClientImpl::DownloadURL(

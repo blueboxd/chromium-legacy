@@ -5,13 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_UI_RECENT_TABS_RECENT_TABS_TABLE_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_RECENT_TABS_RECENT_TABS_TABLE_VIEW_CONTROLLER_H_
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_consumer.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 #include "ui/base/window_open_disposition.h"
 
-namespace ios {
-class ChromeBrowserState;
-}
 enum class UrlLoadStrategy;
 class WebStateList;
 

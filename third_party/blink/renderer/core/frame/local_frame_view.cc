@@ -2329,11 +2329,7 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
     DocumentLifecycle::LifecycleState target_state) {
   TRACE_EVENT0("blink,benchmark",
                "LocalFrameView::RunStyleAndLayoutLifecyclePhases");
-  {
-    SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
-                             LocalFrameUkmAggregator::kStyleAndLayout);
-    UpdateStyleAndLayoutIfNeededRecursive();
-  }
+  UpdateStyleAndLayoutIfNeededRecursive();
   DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kLayoutClean);
 
   frame_->GetDocument()

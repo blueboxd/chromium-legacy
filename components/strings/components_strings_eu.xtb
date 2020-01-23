@@ -258,7 +258,7 @@
 <translation id="2096368010154057602">Departamentua</translation>
 <translation id="2099652385553570808">Hiru grapa ezkerrean</translation>
 <translation id="2102134110707549001">Iradoki pasahitz seguru bat…</translation>
-<translation id="2107021941795971877">Inprimaketa-euskarriak</translation>
+<translation id="2107021941795971877">Inprimatze-euskarriak</translation>
 <translation id="2108755909498034140">Berrabiarazi ordenagailua</translation>
 <translation id="2111256659903765347">Super-A</translation>
 <translation id="2113977810652731515">Txartela</translation>
@@ -301,7 +301,7 @@
 <translation id="2263079731045660823">Eguneratu kreditu-txartelaren betetze automatikoaren datuak Chrome-ren ezarpenetan</translation>
 <translation id="2267047181501709434">Zure nortasuna egiaztatzen…</translation>
 <translation id="2270484714375784793">Telefono-zenbakia</translation>
-<translation id="2276057643614339130">Inprimatu oinarria</translation>
+<translation id="2276057643614339130">Inprimatze-oinarria</translation>
 <translation id="2277103315734023688">Aurreratu</translation>
 <translation id="2283340219607151381">Gorde eta bete helbideak</translation>
 <translation id="2288422996159078444">Zer idazten duzun, zer orri ikusten dituzun edo, orokorrean, sarean egiten duzun edozer ari dira gainbegiratzen. Baliteke webguneetako edukia aldatzea zuk jakin gabe.</translation>
@@ -569,7 +569,7 @@
 <translation id="3533328374079021623">5. postontzia</translation>
 <translation id="3539171420378717834">Gorde gailu honetan txartelaren kopia bat</translation>
 <translation id="3553513561058684206">Zuretzat</translation>
-<translation id="3558573058928565255">Goiza</translation>
+<translation id="3558573058928565255">Eguna</translation>
 <translation id="3566021033012934673">Konexioa ez da pribatua</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" />, <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> webguneko orri kapsulatu batek hau dio:</translation>
@@ -850,7 +850,7 @@
 <translation id="4780900888022378816"><ph name="ENROLLMENT_DOMAIN" /> domeinuak kudeatzen du gailua; <ph name="ACCOUNT_DOMAIN" /> domeinuak, berriz, kontua.</translation>
 <translation id="4785689107224900852">Aldatu fitxa honetara</translation>
 <translation id="4791134497475588553">Instalatutako Linux-erako aplikazioak eta azken erabiltze-data</translation>
-<translation id="4796594887379589189">Lanaren kontuaren IDa</translation>
+<translation id="4796594887379589189">Laneko kontuaren IDa</translation>
 <translation id="4798078619018708837"><ph name="CREDIT_CARD" /> txartelaren xehetasunak eguneratzeko, idatzi iraungitze-data eta CVC kodea. Datuok berresten dituzunean, webgune honekin partekatuko dira Google-ko kontuarekin lotutako txartelaren xehetasunak.</translation>
 <translation id="4800132727771399293">Egiaztatu CVC kodea eta saiatu berriro</translation>
 <translation id="480334179571489655">Jatorrizko gidalerroaren errorea</translation>
@@ -1176,7 +1176,7 @@
 <translation id="6234122620015464377">Moztu dokumentu bakoitzaren ondoren</translation>
 <translation id="6240447795304464094">Google Pay-ren logotipoa</translation>
 <translation id="6241121617266208201">Ezkutatu iradokizunak</translation>
-<translation id="624499991300733384">Inprimaketa-konposizioaren zerbitzua</translation>
+<translation id="624499991300733384">Inprimatze-konposizioaren zerbitzua</translation>
 <translation id="6251924700383757765">Pribatutasun-gidalerroak</translation>
 <translation id="6254436959401408446">Ez dago fitxategia irekitzeko behar adina memoria</translation>
 <translation id="625755898061068298">Webgune honetako segurtasun-abisuak desgaitzea aukeratu duzu.</translation>
@@ -1280,7 +1280,7 @@
 <translation id="6671697161687535275">Inprimaki-iradokizuna Chromium-etik kendu nahi duzu?</translation>
 <translation id="6685834062052613830">Amaitu saioa eta osatu konfigurazioa</translation>
 <translation id="6687335167692595844">Eskatutako letra-tamaina</translation>
-<translation id="6689249931105087298">Erlatiboa, puntu beltzaren konprimaketarekin</translation>
+<translation id="6689249931105087298">Erlatiboa, puntu beltzen konprimaketarekin</translation>
 <translation id="6689271823431384964">Saioa hasita duzunez, txartelak Google-ko kontuan gordetzeko aukera ematen dizu Chrome-k. Aukera hori aldatzeko, joan Ezarpenak atalera. Txartelaren titularraren izena kontutik hartu da.</translation>
 <translation id="6704582573942289642">Hau al da webgunea?</translation>
 <translation id="6710213216561001401">Aurrekoa</translation>

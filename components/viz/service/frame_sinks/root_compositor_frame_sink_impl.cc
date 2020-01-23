@@ -180,10 +180,9 @@ void RootCompositorFrameSinkImpl::SetDisplayColorMatrix(
   display_->SetColorMatrix(color_matrix.matrix());
 }
 
-void RootCompositorFrameSinkImpl::SetDisplayColorSpace(
-    const gfx::ColorSpace& device_color_space,
-    float sdr_white_level) {
-  display_->SetColorSpace(device_color_space, sdr_white_level);
+void RootCompositorFrameSinkImpl::SetDisplayColorSpaces(
+    const gfx::DisplayColorSpaces& display_color_spaces) {
+  display_->SetDisplayColorSpaces(display_color_spaces);
 }
 
 void RootCompositorFrameSinkImpl::SetOutputIsSecure(bool secure) {

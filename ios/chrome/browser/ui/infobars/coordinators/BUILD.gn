@@ -22,6 +22,7 @@ source_set("coordinators") {
     "//components/infobars/core",
     "//components/translate/core/browser",
     "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/browser_state:forward",
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/infobars:public",
     "//ios/chrome/browser/passwords:infobar_delegates",

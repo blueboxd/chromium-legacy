@@ -226,12 +226,14 @@ void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
   const SecurityOrigin* security_origin = GetResourceFetcherProperties()
                                               .GetFetchClientSettingsObject()
                                               .GetSecurityOrigin();
-  WebResourceTimingInfo web_info = Performance::GenerateResourceTiming(
-      *security_origin, info, *global_scope_);
+  mojom::blink::ResourceTimingInfoPtr mojo_info =
+      Performance::GenerateResourceTiming(*security_origin, info,
+                                          *global_scope_);
   // |info| is taken const-ref but this can make destructive changes to
   // WorkerTimingContainer on |info| when a page is controlled by a service
   // worker.
-  resource_timing_notifier_->AddResourceTiming(web_info, info.InitiatorType(),
+  resource_timing_notifier_->AddResourceTiming(std::move(mojo_info),
+                                               info.InitiatorType(),
                                                info.TakeWorkerTimingReceiver());
 }
 

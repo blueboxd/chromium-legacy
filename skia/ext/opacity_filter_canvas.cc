@@ -11,12 +11,12 @@ OpacityFilterCanvas::OpacityFilterCanvas(SkCanvas* canvas,
                                          float opacity,
                                          bool disable_image_filtering)
     : INHERITED(canvas),
-      alpha_(SkScalarRoundToInt(opacity * 255)),
-      disable_image_filtering_(disable_image_filtering) { }
+      opacity_(opacity),
+      disable_image_filtering_(disable_image_filtering) {}
 
 bool OpacityFilterCanvas::onFilter(SkPaint& paint) const {
-  if (alpha_ < 255)
-    paint.setAlpha(alpha_);
+  if (opacity_ < 1.f)
+    paint.setAlphaf(paint.getAlphaf() * opacity_);
 
   if (disable_image_filtering_)
     paint.setFilterQuality(kNone_SkFilterQuality);

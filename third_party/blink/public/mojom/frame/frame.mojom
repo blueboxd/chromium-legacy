@@ -17,6 +17,7 @@ import "third_party/blink/public/mojom/frame/lifecycle.mojom";
 import "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom";
 import "third_party/blink/public/mojom/frame/user_activation_update_types.mojom";
 import "third_party/blink/public/mojom/input/scroll_direction.mojom";
+import "third_party/blink/public/mojom/timing/resource_timing.mojom";
 import "third_party/blink/public/mojom/web_feature/web_feature.mojom";
 import "ui/events/mojom/scroll_granularity.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -184,6 +185,13 @@ interface LocalFrameHost {
   // Sent after the onload handler has been invoked for the document
   // in this frame. Sent for top-level frames.
   DocumentOnLoadCompleted();
+
+  // Notifies the browser that resource timing information is available and
+  // should be added to the performance entries of the parent frame.
+  ForwardResourceTimingToParent(ResourceTimingInfo timing);
+
+  // Notifies the browser that a document has been loaded.
+  DidFinishDocumentLoad();
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -374,4 +382,8 @@ interface RemoteFrame {
   // contents. This only happens for frame owners which render their own
   // fallback contents (i.e., <object>).
   RenderFallbackContent();
+
+  // Sent to the remote frame placeholder in the parent process so that
+  // resource timing information can be added to the parent frame.
+  AddResourceTimingFromChild(ResourceTimingInfo timing);
 };

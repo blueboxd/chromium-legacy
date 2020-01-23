@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "components/url_formatter/url_formatter.h"
 
 void PrintUsage(const char* process_name) {
@@ -22,6 +23,9 @@ void PrintUsage(const char* process_name) {
   std::cout << process_name << " <file>" << std::endl;
   std::cout << std::endl;
   std::cout << "<file> is a text file with one hostname per line." << std::endl;
+  std::cout << "Hostnames must be in ASCII. Internationalized domain names "
+               "(IDN) must be encoded in punycode."
+            << std::endl;
   std::cout << "Each hostname is converted to unicode, if safe. Otherwise, "
             << "it's printed unchanged." << std::endl;
 }
@@ -29,6 +33,14 @@ void PrintUsage(const char* process_name) {
 void Convert(std::istream& input) {
   base::i18n::InitializeICU();
   for (std::string line; std::getline(input, line);) {
+    CHECK(!base::StartsWith(line,
+                            "http:", base::CompareCase::INSENSITIVE_ASCII) &&
+          !base::StartsWith(line,
+                            "https:", base::CompareCase::INSENSITIVE_ASCII) &&
+          base::IsStringASCII(line))
+        << "This binary only accepts hostnames in ASCII form (punycode for "
+           "IDN): "
+        << line;
     std::cout << line << ", " << url_formatter::IDNToUnicode(line) << std::endl;
   }
 }

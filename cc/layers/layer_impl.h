@@ -454,6 +454,9 @@ class CC_EXPORT LayerImpl {
                              SkColor color,
                              float width) const;
 
+  static float GetPreferredRasterScale(
+      gfx::Vector2dF raster_space_scale_factor);
+
  private:
   void ValidateQuadResourcesInternal(viz::DrawQuad* quad) const;
 

@@ -34,13 +34,11 @@ const media_router::MediaSink sink1(kSinkId1,
 const media_router::MediaSink sink2(kSinkId2,
                                     kSinkName2,
                                     media_router::SinkIconType::CAST);
-const media_router::MediaRoute route1(
-    kRouteId1,
-    media_router::MediaSource("https://example.com/"),
-    kSinkId1,
-    "",
-    true,
-    true);
+media_router::MediaRoute Route1() {
+  return media_router::MediaRoute(
+      kRouteId1, media_router::MediaSource("https://example.com/"), kSinkId1,
+      "", true, true);
+}
 
 class MockStartTabMirroringCallback
     : public CastHandler::StartTabMirroringCallback {
@@ -134,7 +132,7 @@ TEST_F(CastHandlerTest, StartTabMirroring) {
             std::move(callback).Run(
                 media_router::mojom::RoutePresentationConnectionPtr(),
                 media_router::RouteRequestResult(
-                    std::make_unique<media_router::MediaRoute>(route1), "id",
+                    std::make_unique<media_router::MediaRoute>(Route1()), "id",
                     "", media_router::RouteRequestResult::OK));
           }));
   EXPECT_CALL(*callback_ptr, sendSuccess());
@@ -154,14 +152,14 @@ TEST_F(CastHandlerTest, StartTabMirroringWithInvalidName) {
 
 TEST_F(CastHandlerTest, StopCasting) {
   sinks_observer_->OnSinksUpdated({sink1, sink2}, {});
-  routes_observer_->OnRoutesUpdated({route1}, {});
+  routes_observer_->OnRoutesUpdated({Route1()}, {});
   EXPECT_CALL(*router_, TerminateRoute(kRouteId1));
   EXPECT_TRUE(handler_->StopCasting(kSinkName1).isSuccess());
 }
 
 TEST_F(CastHandlerTest, StopCastingWithInvalidName) {
   sinks_observer_->OnSinksUpdated({sink1, sink2}, {});
-  routes_observer_->OnRoutesUpdated({route1}, {});
+  routes_observer_->OnRoutesUpdated({Route1()}, {});
   // Attempting to stop casting to a sink without a route should fail.
   EXPECT_EQ(protocol::Response::kError,
             handler_->StopCasting(kSinkName2).status());

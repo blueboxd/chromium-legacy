@@ -109,11 +109,14 @@ class SyncServiceCrypto : public SyncEncryptionHandler::Observer,
   void FetchTrustedVaultKeys();
 
   // Called at various stages of asynchronously fetching and processing trusted
-  // vault encryption keys.
+  // vault encryption keys. |is_second_fetch_attempt| is useful for the case
+  // where multiple passes (up to two) are needed to fetch the keys from the
+  // client.
   void TrustedVaultKeysFetchedFromClient(
+      bool is_second_fetch_attempt,
       const std::vector<std::vector<uint8_t>>& keys);
-  void TrustedVaultKeysAdded();
-  void TrustedVaultKeysMarkedAsStale(bool result);
+  void TrustedVaultKeysAdded(bool is_second_fetch_attempt);
+  void TrustedVaultKeysMarkedAsStale(bool is_second_fetch_attempt, bool result);
   void FetchTrustedVaultKeysCompletedButInsufficient();
 
   // Calls SyncServiceBase::NotifyObservers(). Never null.

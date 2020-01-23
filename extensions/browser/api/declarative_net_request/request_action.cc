@@ -22,5 +22,23 @@ RequestAction::~RequestAction() = default;
 RequestAction::RequestAction(RequestAction&&) = default;
 RequestAction& RequestAction::operator=(RequestAction&&) = default;
 
+RequestAction RequestAction::Clone() const {
+  // Use the private copy constructor to create a copy.
+  return *this;
+}
+
+RequestAction::RequestAction(const RequestAction&) = default;
+
+base::Optional<RequestAction> GetMaxPriorityAction(
+    base::Optional<RequestAction> lhs,
+    base::Optional<RequestAction> rhs) {
+  if (!lhs)
+    return rhs;
+  if (!rhs)
+    return lhs;
+  return lhs->rule_priority > rhs->rule_priority ? std::move(lhs)
+                                                 : std::move(rhs);
+}
+
 }  // namespace declarative_net_request
 }  // namespace extensions

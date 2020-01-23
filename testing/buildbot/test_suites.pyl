@@ -3868,6 +3868,7 @@
       'gpu_info_collection_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
+      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
     ],
 
     'gpu_angle_perf_smoke_isolated_scripts_and_test_buildbucket_api_gpu_use_cases': [
@@ -4308,11 +4309,11 @@
           'dimension_sets': [
             {
               'device type': 'iPhone X',
-              'os': '13.2',
+              'os': '13.3',
             },
             {
               'device type': 'iPhone 7',
-              'os': '13.2',
+              'os': '13.3',
             },
             {
               'device type': 'iPhone X',

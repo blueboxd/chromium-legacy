@@ -150,9 +150,6 @@ class SynchronousLayerTreeFrameSink
   void DeliverMessages();
   bool CalledOnValidThread() const;
 
-  // Sends DidNotProduceFrame to CompositorFrameSink for the previous BeginFrame
-  // if we didn't send DidNotProduceFrame/SubmitCompositorFrame already.
-  void SendAckToLastBeginFrameIfNeeded();
 
   const int routing_id_;
   const uint32_t layer_tree_frame_sink_id_;
@@ -224,11 +221,9 @@ class SynchronousLayerTreeFrameSink
   base::ThreadChecker thread_checker_;
 
   // Indicates that webview using viz
-  bool viz_for_webview_enabled_;
+  const bool viz_frame_submission_enabled_;
   bool begin_frames_paused_ = false;
   bool needs_begin_frames_ = false;
-
-  viz::BeginFrameArgs last_unconfirmed_begin_frame_args_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousLayerTreeFrameSink);
 };

@@ -319,7 +319,7 @@ suite('TabList', () => {
 
   // Test that the TabList does not add a non-grouped tab to a tab group at the
   // same index.
-  test('HandleSingleTabNextToGroup', () => {
+  test('HandleSingleTabBeforeGroup', () => {
     const tabInGroup = {
       active: false,
       alertStates: [],
@@ -342,6 +342,54 @@ suite('TabList', () => {
     assertEquals(tabsContainerChildren.item(3).tagName, 'TABSTRIP-TAB');
     assertEquals(tabsContainerChildren.item(3).tab, tabNotInGroup);
     assertEquals(tabsContainerChildren.item(4).tagName, 'TABSTRIP-TAB-GROUP');
+  });
+
+  test('HandleGroupedTabBeforeDifferentGroup', () => {
+    const tabInOriginalGroup = tabs[1];
+    webUIListenerCallback(
+        'tab-group-state-changed', tabInOriginalGroup.id,
+        tabInOriginalGroup.index, 'originalGroup');
+
+    // Create another group from the tab before group A.
+    const tabInPrecedingGroup = tabs[0];
+    webUIListenerCallback(
+        'tab-group-state-changed', tabInPrecedingGroup.id,
+        tabInPrecedingGroup.index, 'precedingGroup');
+    const tabsContainerChildren =
+        tabList.shadowRoot.querySelector('#unpinnedTabs').children;
+
+    const precedingGroup = tabsContainerChildren[0];
+    assertEquals(precedingGroup.tagName, 'TABSTRIP-TAB-GROUP');
+    assertEquals(precedingGroup.dataset.groupId, 'precedingGroup');
+    assertEquals(precedingGroup.children.length, 1);
+    assertEquals(precedingGroup.children[0].tab.id, tabInPrecedingGroup.id);
+
+    const originalGroup = tabsContainerChildren[1];
+    assertEquals(originalGroup.tagName, 'TABSTRIP-TAB-GROUP');
+    assertEquals(originalGroup.dataset.groupId, 'originalGroup');
+    assertEquals(originalGroup.children.length, 1);
+    assertEquals(originalGroup.children[0].tab.id, tabInOriginalGroup.id);
+  });
+
+  test('HandleGroupedTabBeforeSameGroup', () => {
+    const originalTabInGroup = tabs[1];
+    webUIListenerCallback(
+        'tab-group-state-changed', originalTabInGroup.id,
+        originalTabInGroup.index, 'sameGroup');
+
+    // Create another group from the tab before group A.
+    const precedingTabInGroup = tabs[0];
+    webUIListenerCallback(
+        'tab-group-state-changed', precedingTabInGroup.id,
+        precedingTabInGroup.index, 'sameGroup');
+
+    const tabGroups = getTabGroups();
+    const tabGroup = tabGroups[0];
+    assertEquals(tabGroups.length, 1);
+    assertEquals(tabGroup.dataset.groupId, 'sameGroup');
+    assertEquals(tabGroup.children.length, 2);
+    assertEquals(tabGroup.children[0].tab.id, precedingTabInGroup.id);
+    assertEquals(tabGroup.children[1].tab.id, originalTabInGroup.id);
   });
 
   test('removes a tab when tab is removed from current window', async () => {

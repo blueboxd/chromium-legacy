@@ -2222,6 +2222,7 @@ bool VaapiWrapper::Execute_Locked(VASurfaceID va_surface_id) {
   DVLOG(4) << "Pending VA bufs to commit: " << pending_va_bufs_.size();
   DVLOG(4) << "Pending slice bufs to commit: " << pending_slice_bufs_.size();
   DVLOG(4) << "Target VA surface " << va_surface_id;
+  const auto decode_start_time = base::TimeTicks::Now();
 
   // Get ready to execute for given surface.
   VAStatus va_res = vaBeginPicture(va_display_, va_context_id_, va_surface_id);
@@ -2243,10 +2244,14 @@ bool VaapiWrapper::Execute_Locked(VASurfaceID va_surface_id) {
                          false);
   }
 
-  // Instruct HW codec to start processing committed buffers.
-  // Does not block and the job is not finished after this returns.
+  // Instruct HW codec to start processing the submitted commands. In theory,
+  // this shouldn't be blocking, relying on vaSyncSurface() instead, however
+  // evidence points to it actually waiting for the job to be done.
   va_res = vaEndPicture(va_display_, va_context_id_);
   VA_SUCCESS_OR_RETURN(va_res, "vaEndPicture", false);
+
+  UMA_HISTOGRAM_TIMES("Media.PlatformVideoDecoding.Decode",
+                      base::TimeTicks::Now() - decode_start_time);
 
   return true;
 }

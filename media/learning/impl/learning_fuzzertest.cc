@@ -68,7 +68,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     if (provider.ConsumeBool())
       default_target = TargetValue(ConsumeDouble(&provider));
     controller.BeginObservation(id, ConsumeFeatureVector(&provider),
-                                default_target);
+                                default_target, base::nullopt);
     controller.CompleteObservation(
         id, ObservationCompletion(TargetValue(ConsumeDouble(&provider)),
                                   ConsumeDouble(&provider)));

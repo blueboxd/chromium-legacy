@@ -112,17 +112,18 @@ bool Animation::ShouldRenderRichAnimation() {
          RichAnimationRenderMode::FORCE_ENABLED;
 }
 
-#if !defined(OS_WIN) && (!defined(OS_MACOSX) || defined(OS_IOS))
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_IOS) || \
+    defined(OS_FUCHSIA)
 // static
 bool Animation::ShouldRenderRichAnimationImpl() {
-  // Defined in platform specific file for Windows and OSX.
   return true;
+  // Defined in platform specific file for Windows and OSX and Linux.
 }
 
 // static
 bool Animation::ScrollAnimationsEnabledBySystem() {
-  // Defined in platform specific files for Windows and OSX.
   return true;
+  // Defined in platform specific files for Windows and OSX and Linux.
 }
 
 #if !defined(OS_ANDROID)
@@ -136,7 +137,8 @@ void Animation::UpdatePrefersReducedMotion() {
   prefers_reduced_motion_ = false;
 }
 #endif  // !defined(OS_ANDROID)
-#endif  // !defined(OS_WIN) && (!defined(OS_MACOSX) || defined(OS_IOS))
+#endif  // defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_IOS) ||
+        // defined(OS_FUCHSIA)
 
 // static
 bool Animation::PrefersReducedMotion() {

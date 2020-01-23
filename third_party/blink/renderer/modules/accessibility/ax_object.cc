@@ -380,6 +380,7 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kNote, "Note"},
     {ax::mojom::Role::kPane, "Pane"},
     {ax::mojom::Role::kParagraph, "Paragraph"},
+    {ax::mojom::Role::kPluginObject, "PluginObject"},
     {ax::mojom::Role::kPopUpButton, "PopUpButton"},
     {ax::mojom::Role::kPre, "Pre"},
     {ax::mojom::Role::kPresentational, "Presentational"},
@@ -1629,6 +1630,8 @@ bool AXObject::IsHiddenForTextAlternativeCalculation() const {
 
   if (GetLayoutObject())
     return GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible;
+  else if (GetNode() && IsA<HTMLNoScriptElement>(GetNode()))
+    return true;
 
   // This is an obscure corner case: if a node has no LayoutObject, that means
   // it's not rendered, but we still may be exploring it as part of a text
@@ -3571,6 +3574,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kNavigation:
     case ax::mojom::Role::kNote:
     case ax::mojom::Role::kPane:
+    case ax::mojom::Role::kPluginObject:
     case ax::mojom::Role::kProgressIndicator:
     case ax::mojom::Role::kRadioGroup:
     case ax::mojom::Role::kRootWebArea:

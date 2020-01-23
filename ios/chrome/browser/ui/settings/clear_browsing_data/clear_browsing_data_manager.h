@@ -6,11 +6,9 @@
 #define IOS_CHROME_BROWSER_UI_SETTINGS_CLEAR_BROWSING_DATA_CLEAR_BROWSING_DATA_MANAGER_H_
 
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 
-namespace ios {
-class ChromeBrowserState;
-}
 class BrowsingDataRemover;
 enum class BrowsingDataRemoveMask;
 

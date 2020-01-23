@@ -322,6 +322,10 @@ android_builder(
 )
 
 android_builder(
+    name = 'android-lollipop-arm-rel',
+)
+
+android_builder(
     name = 'android-pie-arm64-dbg',
 )
 

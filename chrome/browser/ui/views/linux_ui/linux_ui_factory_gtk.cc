@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/views/linux_ui/linux_ui_factory.h"
 
-#include "chrome/browser/ui/libgtkui/gtk_ui.h"
+#include "chrome/browser/ui/gtk/gtk_ui.h"
 
 namespace views {
 

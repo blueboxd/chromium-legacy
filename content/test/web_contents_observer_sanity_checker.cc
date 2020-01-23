@@ -262,8 +262,7 @@ void WebContentsObserverSanityChecker::DidFinishLoad(
 void WebContentsObserverSanityChecker::DidFailLoad(
     RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description) {
+    int error_code) {
   AssertRenderFrameExists(render_frame_host);
 }
 

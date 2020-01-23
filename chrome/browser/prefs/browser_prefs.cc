@@ -81,6 +81,7 @@
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/print_preview/policy_settings.h"
+#include "chrome/browser/updates/announcement_notification/announcement_notification_service.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/webauthn/chrome_authenticator_request_delegate.h"
 #include "chrome/common/buildflags.h"
@@ -313,6 +314,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector_chromeos.h"
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/components/account_manager/account_manager.h"
@@ -787,6 +789,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   // User prefs. Please keep this list alphabetized.
   AccessibilityLabelsService::RegisterProfilePrefs(registry);
   AccessibilityUIMessageHandler::RegisterProfilePrefs(registry);
+  AnnouncementNotificationService::RegisterProfilePrefs(registry);
   AvailabilityProber::RegisterProfilePrefs(registry);
   autofill::prefs::RegisterProfilePrefs(registry);
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
@@ -976,6 +979,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   chromeos::RegisterSamlProfilePrefs(registry);
   chromeos::ScreenTimeController::RegisterProfilePrefs(registry);
   chromeos::ServicesCustomizationDocument::RegisterProfilePrefs(registry);
+  chromeos::settings::OSSettingsUI::RegisterProfilePrefs(registry);
   chromeos::UserImageSyncObserver::RegisterProfilePrefs(registry);
   crostini::prefs::RegisterProfilePrefs(registry);
   chromeos::attestation::TpmChallengeKey::RegisterProfilePrefs(registry);

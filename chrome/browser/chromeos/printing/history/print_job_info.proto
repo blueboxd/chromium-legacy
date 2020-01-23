@@ -77,6 +77,7 @@ message PrintJobInfo {
   enum PrintJobSource {
     PRINT_PREVIEW = 0;
     ARC = 1;
+    EXTENSION = 2;
   }
 
   enum PrintJobStatus {

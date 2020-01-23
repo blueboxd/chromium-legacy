@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_element.h"
 
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/html/html_frame_set_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
@@ -82,7 +83,8 @@ ParsedFeaturePolicy HTMLFrameElement::ConstructContainerPolicy(
   // https://fullscreen.spec.whatwg.org/#model
   ParsedFeaturePolicy container_policy;
   ParsedFeaturePolicyDeclaration allowlist(
-      mojom::FeaturePolicyFeature::kFullscreen, mojom::PolicyValueType::kBool);
+      mojom::blink::FeaturePolicyFeature::kFullscreen,
+      mojom::blink::PolicyValueType::kBool);
   container_policy.push_back(allowlist);
   return container_policy;
 }

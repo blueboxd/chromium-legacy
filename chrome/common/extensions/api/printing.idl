@@ -7,6 +7,35 @@
 [platforms=("chromeos"),
 implemented_in="chrome/browser/chromeos/extensions/printing/printing_api.h"]
 namespace printing {
+  dictionary SubmitJobRequest {
+    // The print job to be submitted.
+    // The only supported content type is "application/pdf", and the CJT ticket
+    // shouldn't include FitToPageTicketItem, PageRangeTicketItem,
+    // ReverseOrderTicketItem and VendorTicketItem fields since they are
+    // irrelevant for native printing. All other fields must be present.
+    printerProvider.PrintJob job;
+
+    // Used internally to store the blob uuid after parameter customization and
+    // shouldn't be populated by the extension.
+    [nodoc] DOMString? documentBlobUuid;
+  };
+
+  // The status of $(ref:submitJob) request.
+  enum SubmitJobStatus {
+    // Sent print job request is accepted.
+    OK
+  };
+
+  // Response for $(ref:submitJob) request.
+  dictionary SubmitJobResponse {
+    // The status of the request.
+    SubmitJobStatus status;
+
+    // The id of created print job. This is a unique identifier among all print
+    // jobs on the device. If status is not OK, jobId will be null.
+    DOMString? jobId;
+  };
+
   // The source of the printer.
   enum PrinterSource {
     // Printer was added by user.
@@ -112,10 +141,14 @@ namespace printing {
     PRINTED
   };
 
+  callback SubmitJobCallback = void(SubmitJobResponse response);
   callback GetPrintersCallback = void(Printer[] printers);
   callback GetPrinterInfoCallback = void(GetPrinterInfoResponse response);
 
   interface Functions {
+    // Submits the job for print.
+    static void submitJob(SubmitJobRequest request, SubmitJobCallback callback);
+
     // Returns the list of available printers on the device. This includes
     // manually added, enterprise and discovered printers.
     static void getPrinters(GetPrintersCallback callback);

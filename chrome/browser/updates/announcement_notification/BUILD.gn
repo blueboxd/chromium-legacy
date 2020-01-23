@@ -1,0 +1,32 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("announcement_notification") {
+  sources = [
+    "announcement_notification_delegate.cc",
+    "announcement_notification_delegate.h",
+    "announcement_notification_service.cc",
+    "announcement_notification_service.h",
+    "announcement_notification_service_factory.cc",
+    "announcement_notification_service_factory.h",
+    "empty_announcement_notification_service.cc",
+    "empty_announcement_notification_service.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/keyed_service/content",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "announcement_notification_service_unittest.cc" ]
+
+  deps = [
+    ":announcement_notification",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

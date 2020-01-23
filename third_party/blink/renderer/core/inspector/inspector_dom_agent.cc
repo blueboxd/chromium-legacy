@@ -160,59 +160,45 @@ Response InspectorDOMAgent::ToResponse(ExceptionState& exception_state) {
   return Response::OK();
 }
 
-bool InspectorDOMAgent::GetPseudoElementType(PseudoId pseudo_id,
-                                             protocol::DOM::PseudoType* type) {
+protocol::DOM::PseudoType InspectorDOMAgent::ProtocolPseudoElementType(
+    PseudoId pseudo_id) {
   switch (pseudo_id) {
     case kPseudoIdFirstLine:
-      *type = protocol::DOM::PseudoTypeEnum::FirstLine;
-      return true;
+      return protocol::DOM::PseudoTypeEnum::FirstLine;
     case kPseudoIdFirstLetter:
-      *type = protocol::DOM::PseudoTypeEnum::FirstLetter;
-      return true;
+      return protocol::DOM::PseudoTypeEnum::FirstLetter;
     case kPseudoIdBefore:
-      *type = protocol::DOM::PseudoTypeEnum::Before;
-      return true;
+      return protocol::DOM::PseudoTypeEnum::Before;
     case kPseudoIdAfter:
-      *type = protocol::DOM::PseudoTypeEnum::After;
-      return true;
+      return protocol::DOM::PseudoTypeEnum::After;
     case kPseudoIdMarker:
-      *type = protocol::DOM::PseudoTypeEnum::Marker;
-      return RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled();
+      return protocol::DOM::PseudoTypeEnum::Marker;
     case kPseudoIdBackdrop:
-      *type = protocol::DOM::PseudoTypeEnum::Backdrop;
-      return true;
+      return protocol::DOM::PseudoTypeEnum::Backdrop;
     case kPseudoIdSelection:
-      *type = protocol::DOM::PseudoTypeEnum::Selection;
-      return true;
+      return protocol::DOM::PseudoTypeEnum::Selection;
     case kPseudoIdFirstLineInherited:
-      *type = protocol::DOM::PseudoTypeEnum::FirstLineInherited;
-      return true;
+      return protocol::DOM::PseudoTypeEnum::FirstLineInherited;
     case kPseudoIdScrollbar:
-      *type = protocol::DOM::PseudoTypeEnum::Scrollbar;
-      return true;
+      return protocol::DOM::PseudoTypeEnum::Scrollbar;
     case kPseudoIdScrollbarThumb:
-      *type = protocol::DOM::PseudoTypeEnum::ScrollbarThumb;
-      return true;
+      return protocol::DOM::PseudoTypeEnum::ScrollbarThumb;
     case kPseudoIdScrollbarButton:
-      *type = protocol::DOM::PseudoTypeEnum::ScrollbarButton;
-      return true;
+      return protocol::DOM::PseudoTypeEnum::ScrollbarButton;
     case kPseudoIdScrollbarTrack:
-      *type = protocol::DOM::PseudoTypeEnum::ScrollbarTrack;
-      return true;
+      return protocol::DOM::PseudoTypeEnum::ScrollbarTrack;
     case kPseudoIdScrollbarTrackPiece:
-      *type = protocol::DOM::PseudoTypeEnum::ScrollbarTrackPiece;
-      return true;
+      return protocol::DOM::PseudoTypeEnum::ScrollbarTrackPiece;
     case kPseudoIdScrollbarCorner:
-      *type = protocol::DOM::PseudoTypeEnum::ScrollbarCorner;
-      return true;
+      return protocol::DOM::PseudoTypeEnum::ScrollbarCorner;
     case kPseudoIdResizer:
-      *type = protocol::DOM::PseudoTypeEnum::Resizer;
-      return true;
+      return protocol::DOM::PseudoTypeEnum::Resizer;
     case kPseudoIdInputListButton:
-      *type = protocol::DOM::PseudoTypeEnum::InputListButton;
-      return true;
-    default:
-      return false;
+      return protocol::DOM::PseudoTypeEnum::InputListButton;
+    case kAfterLastInternalPseudoId:
+    case kPseudoIdNone:
+      CHECK(false);
+      return "";
   }
 }
 
@@ -1552,10 +1538,7 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     }
 
     if (element->GetPseudoId()) {
-      protocol::DOM::PseudoType pseudo_type;
-      if (InspectorDOMAgent::GetPseudoElementType(element->GetPseudoId(),
-                                                  &pseudo_type))
-        value->setPseudoType(pseudo_type);
+      value->setPseudoType(ProtocolPseudoElementType(element->GetPseudoId()));
     } else {
       if (!element->ownerDocument()->xmlVersion().IsEmpty())
         value->setXmlVersion(element->ownerDocument()->xmlVersion());
@@ -1676,26 +1659,24 @@ InspectorDOMAgent::BuildArrayForContainerChildren(
 std::unique_ptr<protocol::Array<protocol::DOM::Node>>
 InspectorDOMAgent::BuildArrayForPseudoElements(Element* element,
                                                NodeToIdMap* nodes_map) {
-  if (!element->GetPseudoElement(kPseudoIdBefore) &&
-      !element->GetPseudoElement(kPseudoIdAfter) &&
-      !element->GetPseudoElement(kPseudoIdMarker))
-    return nullptr;
-
-  auto pseudo_elements =
-      std::make_unique<protocol::Array<protocol::DOM::Node>>();
+  protocol::Array<protocol::DOM::Node> pseudo_elements;
   if (element->GetPseudoElement(kPseudoIdBefore)) {
-    pseudo_elements->emplace_back(BuildObjectForNode(
+    pseudo_elements.emplace_back(BuildObjectForNode(
         element->GetPseudoElement(kPseudoIdBefore), 0, false, nodes_map));
   }
   if (element->GetPseudoElement(kPseudoIdAfter)) {
-    pseudo_elements->emplace_back(BuildObjectForNode(
+    pseudo_elements.emplace_back(BuildObjectForNode(
         element->GetPseudoElement(kPseudoIdAfter), 0, false, nodes_map));
   }
-  if (element->GetPseudoElement(kPseudoIdMarker)) {
-    pseudo_elements->emplace_back(BuildObjectForNode(
+  if (element->GetPseudoElement(kPseudoIdMarker) &&
+      RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled()) {
+    pseudo_elements.emplace_back(BuildObjectForNode(
         element->GetPseudoElement(kPseudoIdMarker), 0, false, nodes_map));
   }
-  return pseudo_elements;
+  if (pseudo_elements.empty())
+    return nullptr;
+  return std::make_unique<protocol::Array<protocol::DOM::Node>>(
+      std::move(pseudo_elements));
 }
 
 std::unique_ptr<protocol::Array<protocol::DOM::BackendNode>>

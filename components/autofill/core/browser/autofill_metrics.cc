@@ -1007,6 +1007,13 @@ void AutofillMetrics::LogUserPerceivedLatencyOnCardSelection(
 }
 
 // static
+void AutofillMetrics::LogUserVerifiabilityCheckDuration(
+    const base::TimeDelta& duration) {
+  base::UmaHistogramLongTimes(
+      "Autofill.BetterAuth.UserVerifiabilityCheckDuration", duration);
+}
+
+// static
 void AutofillMetrics::LogWebauthnResult(WebauthnFlowEvent event,
                                         WebauthnResultMetric metric) {
   std::string histogram_name = "Autofill.BetterAuth.WebauthnResult.";

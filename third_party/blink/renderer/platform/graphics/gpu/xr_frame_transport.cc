@@ -18,9 +18,7 @@ namespace blink {
 
 XRFrameTransport::XRFrameTransport() : submit_frame_client_receiver_(this) {}
 
-XRFrameTransport::~XRFrameTransport() {
-  CallPreviousFrameCallback();
-}
+XRFrameTransport::~XRFrameTransport() = default;
 
 void XRFrameTransport::PresentChange() {
   frame_copier_ = nullptr;
@@ -79,13 +77,6 @@ void XRFrameTransport::FramePreImage(gpu::gles2::GLES2Interface* gl) {
   }
 }
 
-void XRFrameTransport::CallPreviousFrameCallback() {
-  if (previous_image_release_callback_) {
-    previous_image_release_callback_->Run(gpu::SyncToken(), false);
-    previous_image_release_callback_ = nullptr;
-  }
-}
-
 void XRFrameTransport::FrameSubmitMissing(
     device::mojom::blink::XRPresentationProvider* vr_presentation_provider,
     gpu::gles2::GLES2Interface* gl,
@@ -101,7 +92,6 @@ void XRFrameTransport::FrameSubmit(
     gpu::gles2::GLES2Interface* gl,
     DrawingBuffer::Client* drawing_buffer_client,
     scoped_refptr<Image> image_ref,
-    std::unique_ptr<viz::SingleReleaseCallback> release_callback,
     int16_t vr_frame_id) {
   DCHECK(transport_options_);
 
@@ -114,8 +104,6 @@ void XRFrameTransport::FrameSubmit(
     // without waiting.
     if (transport_options_->wait_for_transfer_notification)
       WaitForPreviousTransfer();
-    CallPreviousFrameCallback();
-    previous_image_release_callback_ = std::move(release_callback);
     if (!frame_copier_ || !last_transfer_succeeded_) {
       frame_copier_ = std::make_unique<GpuMemoryBufferImageCopy>(gl);
     }
@@ -173,8 +161,6 @@ void XRFrameTransport::FrameSubmit(
     if (transport_options_->wait_for_transfer_notification)
       WaitForPreviousTransfer();
     previous_image_ = std::move(image_ref);
-    CallPreviousFrameCallback();
-    previous_image_release_callback_ = std::move(release_callback);
 
     // Create mailbox and sync token for transfer.
     TRACE_EVENT_BEGIN0("gpu", "XRFrameTransport::GetMailbox");

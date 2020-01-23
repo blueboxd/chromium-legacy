@@ -23,7 +23,6 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
-#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
@@ -719,14 +718,12 @@ class VirtualKeyboardRootWindowControllerTest
   ~VirtualKeyboardRootWindowControllerTest() override = default;
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        keyboard::switches::kEnableVirtualKeyboard);
     AshTestBase::SetUp();
-    SetTouchKeyboardEnabled(true);
+    SetVirtualKeyboardEnabled(true);
   }
 
   void TearDown() override {
-    SetTouchKeyboardEnabled(false);
+    SetVirtualKeyboardEnabled(false);
     AshTestBase::TearDown();
   }
 

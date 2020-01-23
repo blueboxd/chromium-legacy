@@ -862,8 +862,11 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->nodeName() == "TIME")
     return ax::mojom::Role::kTime;
 
-  if (IsEmbeddedObject())
-    return ax::mojom::Role::kEmbeddedObject;
+  if (IsA<HTMLPlugInElement>(GetNode())) {
+    if (IsA<HTMLEmbedElement>(GetNode()))
+      return ax::mojom::Role::kEmbeddedObject;
+    return ax::mojom::Role::kPluginObject;
+  }
 
   if (IsA<HTMLHRElement>(*GetNode()))
     return ax::mojom::Role::kSplitter;
@@ -1104,10 +1107,6 @@ bool AXNodeObject::ComputeIsEditableRoot() const {
     return !root || !root->IsUserAgent();
   }
   return false;
-}
-
-bool AXNodeObject::IsEmbeddedObject() const {
-  return IsA<HTMLPlugInElement>(GetNode());
 }
 
 bool AXNodeObject::IsFieldset() const {

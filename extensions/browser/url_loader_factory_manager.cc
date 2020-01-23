@@ -262,6 +262,24 @@ std::vector<std::string> CreateExtensionAllowlist() {
     allowlist.push_back(std::string(hash, kHashedExtensionIdLength));
   }
 
+  // Append extensions from the field trial param.
+  std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(
+      extensions_features::kCorbAllowlistAlsoAppliesToOorCors,
+      extensions_features::kCorbAllowlistAlsoAppliesToOorCorsParamName);
+  field_trial_arg = base::ToUpperASCII(field_trial_arg);
+  std::vector<std::string> field_trial_allowlist = base::SplitString(
+      field_trial_arg, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  base::EraseIf(field_trial_allowlist, [](const std::string& hash) {
+    // Filter out invalid data from |field_trial_allowlist|.
+    if (IsValidHashedExtensionId(hash))
+      return false;  // Don't remove.
+
+    LOG(ERROR) << "Invalid extension hash: " << hash;
+    return true;  // Remove.
+  });
+  std::move(field_trial_allowlist.begin(), field_trial_allowlist.end(),
+            std::back_inserter(allowlist));
+
   return allowlist;
 }
 

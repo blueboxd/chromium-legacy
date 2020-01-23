@@ -32,8 +32,15 @@ namespace {
 const base::Feature kPreconnectToSearchTest{"PreconnectToSearch",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-GURL fake_search("https://www.fakesearch.com/");
-GURL google_search("https://www.google.com/");
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL FakeSearch() {
+  return GURL("https://www.fakesearch.com/");
+}
+
+GURL GoogleSearch() {
+  return GURL("https://www.google.com/");
+}
 
 class SearchEnginePreconnectorBrowserTest
     : public subresource_filter::SubresourceFilterBrowserTest,
@@ -52,8 +59,8 @@ class SearchEnginePreconnectorBrowserTest
     ASSERT_TRUE(https_server_->Start());
 
     preresolve_counts_[GetTestURL("/").GetOrigin()] = 0;
-    preresolve_counts_[google_search] = 0;
-    preresolve_counts_[fake_search] = 0;
+    preresolve_counts_[GoogleSearch()] = 0;
+    preresolve_counts_[FakeSearch()] = 0;
 
     subresource_filter::SubresourceFilterBrowserTest::SetUp();
   }
@@ -148,8 +155,8 @@ IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorNoDelaysBrowserTest,
   ASSERT_TRUE(model->loaded());
 
   // Check default URL is being preconnected and test URL is not.
-  WaitForPreresolveCountForURL(google_search, 1);
-  EXPECT_EQ(1, preresolve_counts_[google_search.GetOrigin()]);
+  WaitForPreresolveCountForURL(GoogleSearch(), 1);
+  EXPECT_EQ(1, preresolve_counts_[GoogleSearch().GetOrigin()]);
   EXPECT_EQ(0, preresolve_counts_[GetTestURL("/").GetOrigin()]);
 
   TemplateURLData data;
@@ -205,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorNoDelaysBrowserTest,
   TemplateURLData data_fake_search;
   data_fake_search.SetShortName(base::ASCIIToUTF16(kShortName));
   data_fake_search.SetKeyword(data.short_name());
-  data_fake_search.SetURL(fake_search.spec());
+  data_fake_search.SetURL(FakeSearch().spec());
 
   template_url = model->Add(std::make_unique<TemplateURL>(data_fake_search));
   ASSERT_TRUE(template_url);
@@ -217,10 +224,10 @@ IN_PROC_BROWSER_TEST_F(SearchEnginePreconnectorNoDelaysBrowserTest,
       ->SearchEnginePreconnectorForTesting()
       ->OnAppStateChangedForTesting(true /* in_foreground */);
 
-  WaitForPreresolveCountForURL(fake_search, 2);
+  WaitForPreresolveCountForURL(FakeSearch(), 2);
 
   // Preconnect should occur for fake search (2 since there are 2 NIKs).
-  EXPECT_EQ(2, preresolve_counts_[fake_search]);
+  EXPECT_EQ(2, preresolve_counts_[FakeSearch()]);
 
   // No preconnects should have been issued for the test URL.
   EXPECT_EQ(0, preresolve_counts_[GetTestURL("/").GetOrigin()]);

@@ -31,7 +31,8 @@ class RootFrameSink : public base::RefCounted<RootFrameSink>,
                       public viz::ExternalBeginFrameSourceClient {
  public:
   using SetNeedsBeginFrameCallback = base::RepeatingCallback<void(bool)>;
-  explicit RootFrameSink(SetNeedsBeginFrameCallback set_needs_begin_frame);
+  RootFrameSink(SetNeedsBeginFrameCallback set_needs_begin_frame,
+                base::RepeatingClosure invalidate);
 
   viz::CompositorFrameSinkSupport* support() const { return support_.get(); }
   const viz::FrameSinkId& root_frame_sink_id() const {
@@ -40,6 +41,9 @@ class RootFrameSink : public base::RefCounted<RootFrameSink>,
   void AddChildFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   void RemoveChildFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   bool BeginFrame(const viz::BeginFrameArgs& args, bool had_input_event);
+  void SetBeginFrameSourcePaused(bool paused);
+  void SetNeedsDraw(bool needs_draw);
+  bool IsChildSurface(const viz::FrameSinkId& frame_sink_id);
 
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
@@ -59,11 +63,14 @@ class RootFrameSink : public base::RefCounted<RootFrameSink>,
   viz::FrameSinkManagerImpl* GetFrameSinkManager();
 
   const viz::FrameSinkId root_frame_sink_id_;
+  base::flat_set<viz::FrameSinkId> child_frame_sink_ids_;
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
   std::unique_ptr<viz::ExternalBeginFrameSource> begin_frame_source_;
 
   bool needs_begin_frames_ = false;
+  bool needs_draw_ = false;
   SetNeedsBeginFrameCallback set_needs_begin_frame_;
+  base::RepeatingClosure invalidate_;
 
   THREAD_CHECKER(thread_checker_);
 

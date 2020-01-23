@@ -43,28 +43,7 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
 
   void Resize(const IntSize&);
 
-  scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage(
-      std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
-
-  class PLATFORM_EXPORT MirrorClient : public RefCounted<MirrorClient> {
-   public:
-    void OnMirrorImageAvailable(scoped_refptr<StaticBitmapImage>,
-                                std::unique_ptr<viz::SingleReleaseCallback>);
-
-    void BeginDestruction();
-    scoped_refptr<StaticBitmapImage> GetLastImage();
-    void CallLastReleaseCallback();
-
-    ~MirrorClient();
-
-   private:
-    scoped_refptr<StaticBitmapImage> next_image_;
-    std::unique_ptr<viz::SingleReleaseCallback> next_release_callback_;
-    std::unique_ptr<viz::SingleReleaseCallback> current_release_callback_;
-    std::unique_ptr<viz::SingleReleaseCallback> previous_release_callback_;
-  };
-
-  void SetMirrorClient(scoped_refptr<MirrorClient> mirror_client);
+  scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage();
 
   void UseSharedBuffer(const gpu::MailboxHolder&);
   void DoneWithSharedBuffer();
@@ -75,17 +54,22 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   void BeginDestruction();
 
  private:
-  struct PLATFORM_EXPORT ColorBuffer : public RefCounted<ColorBuffer> {
-    ColorBuffer(XRWebGLDrawingBuffer*,
+  struct PLATFORM_EXPORT ColorBuffer
+      : public base::RefCountedThreadSafe<ColorBuffer> {
+    ColorBuffer(base::WeakPtr<XRWebGLDrawingBuffer>,
                 const IntSize&,
                 const gpu::Mailbox& mailbox,
                 GLuint texture_id);
     ~ColorBuffer();
 
+    // The thread on which the ColorBuffer is created and the DrawingBuffer is
+    // bound to.
+    const base::PlatformThreadRef owning_thread_ref;
+
     // The owning XRWebGLDrawingBuffer. Note that DrawingBuffer is explicitly
     // destroyed by the BeginDestruction method, which will eventually drain all
     // of its ColorBuffers.
-    scoped_refptr<XRWebGLDrawingBuffer> drawing_buffer;
+    base::WeakPtr<XRWebGLDrawingBuffer> drawing_buffer;
     const IntSize size;
 
     // The id of the texture that imports the shared image into the
@@ -126,12 +110,10 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
 
   void ClearBoundFramebuffer();
 
-  void MailboxReleased(scoped_refptr<ColorBuffer>,
-                       const gpu::SyncToken&,
-                       bool lost_resource);
-  void MailboxReleasedToMirror(scoped_refptr<ColorBuffer>,
-                               const gpu::SyncToken&,
-                               bool lost_resource);
+  static void NotifyMailboxReleased(scoped_refptr<ColorBuffer>,
+                                    const gpu::SyncToken&,
+                                    bool lost_resource);
+  void MailboxReleased(scoped_refptr<ColorBuffer>, bool lost_resource);
 
   // Reference to the DrawingBuffer that owns the GL context for this object.
   scoped_refptr<DrawingBuffer> drawing_buffer_;
@@ -174,7 +156,7 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   int max_texture_size_ = 0;
   int sample_count_ = 0;
 
-  scoped_refptr<MirrorClient> mirror_client_;
+  base::WeakPtrFactory<XRWebGLDrawingBuffer> weak_factory_;
 };
 
 }  // namespace blink

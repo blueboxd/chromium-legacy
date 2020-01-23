@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/cr_fingerprint/cr_fingerprint_progress_arc.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// clang-format on
+
 /** @fileoverview Suite of tests for cr-fingerprint-progress-arc. */
-cr.define('cr_fingerprint_progress_arc_test', function() {
+suite('cr_fingerprint_progress_arc_test', function() {
   /**
    * An object descrbing a 2d point.
    * @typedef {{

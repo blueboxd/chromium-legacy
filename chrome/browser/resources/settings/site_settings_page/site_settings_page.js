@@ -168,8 +168,6 @@ Polymer({
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
     this.ALL_SITES = settings.ALL_SITES;
 
-    this.metricsBrowserProxy_ = settings.MetricsBrowserProxyImpl.getInstance();
-
     const keys = Object.keys(settings.ContentSettingsTypes);
     for (let i = 0; i < keys.length; ++i) {
       const key = settings.ContentSettingsTypes[keys[i]];
@@ -254,7 +252,5 @@ Polymer({
     const dataSet =
         /** @type {{route: string}} */ (event.currentTarget.dataset);
     settings.Router.getInstance().navigateTo(settings.routes[dataSet.route]);
-    this.metricsBrowserProxy_.recordSettingsPageHistogram(
-        settings.SettingsPageInteractions['PRIVACY_' + dataSet.route]);
   },
 });

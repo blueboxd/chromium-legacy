@@ -47,6 +47,7 @@ class FakeBaseTabStripController : public TabStripController {
   bool BeforeCloseTab(int index, CloseTabSource source) override;
   void CloseTab(int index, CloseTabSource source) override;
   void MoveTab(int from_index, int to_index) override;
+  void MoveGroup(const tab_groups::TabGroupId&, int to_index) override;
   void ShowContextMenuForTab(Tab* tab,
                              const gfx::Point& p,
                              ui::MenuSourceType source_type) override;
@@ -69,6 +70,9 @@ class FakeBaseTabStripController : public TabStripController {
       const tab_groups::TabGroupId& group) const override;
   void UngroupAllTabsInGroup(const tab_groups::TabGroupId& group) override;
   void AddNewTabInGroup(const tab_groups::TabGroupId& group) override;
+  void AddTabToGroup(int model_index,
+                     const tab_groups::TabGroupId& group) override;
+  void RemoveTabFromGroup(int model_index) override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
   bool EverHasVisibleBackgroundTabShapes() const override;

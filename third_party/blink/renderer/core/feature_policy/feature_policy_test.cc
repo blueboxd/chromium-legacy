@@ -111,11 +111,11 @@ class FeaturePolicyParserTest : public testing::Test {
   url::Origin expected_url_origin_c_ = url::Origin::Create(GURL(ORIGIN_C));
 
   const FeatureNameMap test_feature_name_map = {
-      {"fullscreen", blink::mojom::FeaturePolicyFeature::kFullscreen},
-      {"payment", blink::mojom::FeaturePolicyFeature::kPayment},
-      {"geolocation", blink::mojom::FeaturePolicyFeature::kGeolocation},
+      {"fullscreen", blink::mojom::blink::FeaturePolicyFeature::kFullscreen},
+      {"payment", blink::mojom::blink::FeaturePolicyFeature::kPayment},
+      {"geolocation", blink::mojom::blink::FeaturePolicyFeature::kGeolocation},
       {"oversized-images",
-       blink::mojom::FeaturePolicyFeature::kOversizedImages}};
+       blink::mojom::blink::FeaturePolicyFeature::kOversizedImages}};
 
   const PolicyValue min_value = PolicyValue(false);
   const PolicyValue max_value = PolicyValue(true);
@@ -172,7 +172,7 @@ TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectly) {
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_GE(min_value, parsed_policy[0].fallback_value);
   EXPECT_GE(min_value, parsed_policy[0].opaque_value);
@@ -185,7 +185,7 @@ TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectly) {
                                              origin_b_.get(), &messages,
                                              test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_LE(max_value, parsed_policy[0].fallback_value);
   EXPECT_LE(max_value, parsed_policy[0].opaque_value);
@@ -198,19 +198,21 @@ TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectly) {
       "payment 'self'",
       origin_a_.get(), origin_b_.get(), &messages, test_feature_name_map);
   EXPECT_EQ(3UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_LE(max_value, parsed_policy[0].fallback_value);
   EXPECT_LE(max_value, parsed_policy[0].opaque_value);
   EXPECT_EQ(0UL, parsed_policy[0].values.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[1].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
+            parsed_policy[1].feature);
   EXPECT_GE(min_value, parsed_policy[1].fallback_value);
   EXPECT_GE(min_value, parsed_policy[1].opaque_value);
   EXPECT_EQ(2UL, parsed_policy[1].values.size());
   auto it = parsed_policy[1].values.begin();
   EXPECT_TRUE(it->first.IsSameOriginWith(expected_url_origin_b_));
   EXPECT_TRUE((++it)->first.IsSameOriginWith(expected_url_origin_c_));
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kPayment, parsed_policy[2].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kPayment,
+            parsed_policy[2].feature);
   EXPECT_GE(min_value, parsed_policy[2].fallback_value);
   EXPECT_GE(min_value, parsed_policy[2].opaque_value);
   EXPECT_EQ(1UL, parsed_policy[2].values.size());
@@ -224,19 +226,21 @@ TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectly) {
       "payment 'self' badorigin",
       origin_a_.get(), origin_b_.get(), &messages, test_feature_name_map);
   EXPECT_EQ(3UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_LE(max_value, parsed_policy[0].fallback_value);
   EXPECT_LE(max_value, parsed_policy[0].opaque_value);
   EXPECT_EQ(0UL, parsed_policy[0].values.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[1].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
+            parsed_policy[1].feature);
   EXPECT_GE(min_value, parsed_policy[1].fallback_value);
   EXPECT_GE(min_value, parsed_policy[1].opaque_value);
   EXPECT_EQ(2UL, parsed_policy[1].values.size());
   it = parsed_policy[1].values.begin();
   EXPECT_TRUE(it->first.IsSameOriginWith(expected_url_origin_b_));
   EXPECT_TRUE((++it)->first.IsSameOriginWith(expected_url_origin_c_));
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kPayment, parsed_policy[2].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kPayment,
+            parsed_policy[2].feature);
   EXPECT_GE(min_value, parsed_policy[2].fallback_value);
   EXPECT_GE(min_value, parsed_policy[2].opaque_value);
   EXPECT_EQ(1UL, parsed_policy[2].values.size());
@@ -248,20 +252,22 @@ TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectly) {
                                              origin_a_.get(), nullptr,
                                              &messages, test_feature_name_map);
   EXPECT_EQ(3UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_GE(min_value, parsed_policy[0].fallback_value);
   EXPECT_GE(min_value, parsed_policy[0].opaque_value);
   EXPECT_EQ(1UL, parsed_policy[0].values.size());
   EXPECT_TRUE(parsed_policy[0].values.begin()->first.IsSameOriginWith(
       expected_url_origin_a_));
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[1].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
+            parsed_policy[1].feature);
   EXPECT_GE(min_value, parsed_policy[1].fallback_value);
   EXPECT_GE(min_value, parsed_policy[1].opaque_value);
   EXPECT_EQ(1UL, parsed_policy[1].values.size());
   EXPECT_TRUE(parsed_policy[1].values.begin()->first.IsSameOriginWith(
       expected_url_origin_a_));
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kPayment, parsed_policy[2].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kPayment,
+            parsed_policy[2].feature);
   EXPECT_GE(min_value, parsed_policy[2].opaque_value);
   EXPECT_EQ(1UL, parsed_policy[2].values.size());
   EXPECT_TRUE(parsed_policy[2].values.begin()->first.IsSameOriginWith(
@@ -286,7 +292,7 @@ TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectlyForOpaqueOrigins) {
                                              test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_GE(min_value, parsed_policy[0].fallback_value);
   EXPECT_LE(max_value, parsed_policy[0].opaque_value);
@@ -298,7 +304,7 @@ TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectlyForOpaqueOrigins) {
       test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_GE(min_value, parsed_policy[0].fallback_value);
   EXPECT_LE(max_value, parsed_policy[0].opaque_value);
@@ -310,7 +316,7 @@ TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectlyForOpaqueOrigins) {
                                              test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_LE(max_value, parsed_policy[0].fallback_value);
   EXPECT_LE(max_value, parsed_policy[0].opaque_value);
@@ -322,7 +328,7 @@ TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectlyForOpaqueOrigins) {
       opaque_origin.get(), &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_GE(min_value, parsed_policy[0].fallback_value);
   EXPECT_GE(min_value, parsed_policy[0].opaque_value);
@@ -337,7 +343,7 @@ TEST_F(FeaturePolicyParserTest, PolicyParsedCorrectlyForOpaqueOrigins) {
       opaque_origin.get(), &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kGeolocation,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kGeolocation,
             parsed_policy[0].feature);
   EXPECT_GE(min_value, parsed_policy[0].fallback_value);
   EXPECT_LE(max_value, parsed_policy[0].opaque_value);
@@ -356,7 +362,8 @@ TEST_F(FeaturePolicyParserTest, BooleanPolicyParametersParsedCorrectly) {
                                              origin_a_.get(), origin_b_.get(),
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
+            parsed_policy[0].feature);
   EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(min_value, parsed_policy[0].opaque_value);
   EXPECT_EQ(1UL, parsed_policy[0].values.size());
@@ -370,7 +377,8 @@ TEST_F(FeaturePolicyParserTest, BooleanPolicyParametersParsedCorrectly) {
       FeaturePolicyParser::Parse("fullscreen (true)", origin_a_.get(), nullptr,
                                  &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
+            parsed_policy[0].feature);
   EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(min_value, parsed_policy[0].opaque_value);
   EXPECT_EQ(1UL, parsed_policy[0].values.size());
@@ -386,7 +394,8 @@ TEST_F(FeaturePolicyParserTest, BooleanPolicyParametersParsedCorrectly) {
                                              origin_a_.get(), opaque_origin,
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
+            parsed_policy[0].feature);
   EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(max_value, parsed_policy[0].opaque_value);
   EXPECT_EQ(0UL, parsed_policy[0].values.size());
@@ -397,7 +406,8 @@ TEST_F(FeaturePolicyParserTest, BooleanPolicyParametersParsedCorrectly) {
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
+            parsed_policy[0].feature);
   EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(min_value, parsed_policy[0].opaque_value);
   EXPECT_EQ(1UL, parsed_policy[0].values.size());
@@ -411,7 +421,8 @@ TEST_F(FeaturePolicyParserTest, BooleanPolicyParametersParsedCorrectly) {
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
+            parsed_policy[0].feature);
   EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(min_value, parsed_policy[0].opaque_value);
   EXPECT_EQ(0UL, parsed_policy[0].values.size());
@@ -422,7 +433,8 @@ TEST_F(FeaturePolicyParserTest, BooleanPolicyParametersParsedCorrectly) {
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
+            parsed_policy[0].feature);
   EXPECT_EQ(max_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(max_value, parsed_policy[0].opaque_value);
   EXPECT_EQ(0UL, parsed_policy[0].values.size());
@@ -438,7 +450,7 @@ TEST_F(FeaturePolicyParserTest, DoublePolicyParametersParsedCorrectly) {
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
   EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
@@ -453,7 +465,7 @@ TEST_F(FeaturePolicyParserTest, DoublePolicyParametersParsedCorrectly) {
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
   EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
@@ -468,7 +480,7 @@ TEST_F(FeaturePolicyParserTest, DoublePolicyParametersParsedCorrectly) {
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
   EXPECT_EQ(max_double_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(max_double_value, parsed_policy[0].opaque_value);
@@ -480,7 +492,7 @@ TEST_F(FeaturePolicyParserTest, DoublePolicyParametersParsedCorrectly) {
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
   EXPECT_EQ(min_double_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(min_double_value, parsed_policy[0].opaque_value);
@@ -492,7 +504,7 @@ TEST_F(FeaturePolicyParserTest, DoublePolicyParametersParsedCorrectly) {
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
   EXPECT_EQ(sample_double_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(sample_double_value, parsed_policy[0].opaque_value);
@@ -505,7 +517,7 @@ TEST_F(FeaturePolicyParserTest, DoublePolicyParametersParsedCorrectly) {
       origin_b_.get(), &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
   EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
@@ -524,7 +536,7 @@ TEST_F(FeaturePolicyParserTest, DoublePolicyParametersParsedCorrectly) {
       &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
   EXPECT_EQ(sample_double_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(sample_double_value, parsed_policy[0].opaque_value);
@@ -540,7 +552,7 @@ TEST_F(FeaturePolicyParserTest, DoublePolicyParametersParsedCorrectly) {
       origin_b_.get(), &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
   EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
@@ -559,7 +571,7 @@ TEST_F(FeaturePolicyParserTest, DoublePolicyParametersParsedCorrectly) {
       origin_b_.get(), &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
   EXPECT_EQ(min_double_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(min_double_value, parsed_policy[0].opaque_value);
@@ -582,7 +594,8 @@ TEST_F(FeaturePolicyParserTest, RedundantBooleanItemsRemoved) {
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
+            parsed_policy[0].feature);
   EXPECT_EQ(max_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(max_value, parsed_policy[0].opaque_value);
   EXPECT_EQ(0UL, parsed_policy[0].values.size());
@@ -593,7 +606,8 @@ TEST_F(FeaturePolicyParserTest, RedundantBooleanItemsRemoved) {
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
+            parsed_policy[0].feature);
   EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(min_value, parsed_policy[0].opaque_value);
   EXPECT_EQ(0UL, parsed_policy[0].values.size());
@@ -603,7 +617,8 @@ TEST_F(FeaturePolicyParserTest, RedundantBooleanItemsRemoved) {
                                              origin_a_.get(), origin_b_.get(),
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kFullscreen, parsed_policy[0].feature);
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFullscreen,
+            parsed_policy[0].feature);
   EXPECT_EQ(min_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(min_value, parsed_policy[0].opaque_value);
   EXPECT_EQ(0UL, parsed_policy[0].values.size());
@@ -619,7 +634,7 @@ TEST_F(FeaturePolicyParserTest, RedundantDoubleItemsRemoved) {
       &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
   EXPECT_EQ(sample_double_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(sample_double_value, parsed_policy[0].opaque_value);
@@ -631,7 +646,7 @@ TEST_F(FeaturePolicyParserTest, RedundantDoubleItemsRemoved) {
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
   EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
@@ -642,7 +657,7 @@ TEST_F(FeaturePolicyParserTest, RedundantDoubleItemsRemoved) {
                                              origin_a_.get(), origin_b_.get(),
                                              &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
   EXPECT_EQ(default_double_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(default_double_value, parsed_policy[0].opaque_value);
@@ -660,10 +675,11 @@ TEST_F(FeaturePolicyParserTest, HeaderHistogram) {
   tester.ExpectTotalCount(histogram_name, 2);
   tester.ExpectBucketCount(
       histogram_name,
-      static_cast<int>(blink::mojom::FeaturePolicyFeature::kPayment), 1);
+      static_cast<int>(blink::mojom::blink::FeaturePolicyFeature::kPayment), 1);
   tester.ExpectBucketCount(
       histogram_name,
-      static_cast<int>(blink::mojom::FeaturePolicyFeature::kFullscreen), 1);
+      static_cast<int>(blink::mojom::blink::FeaturePolicyFeature::kFullscreen),
+      1);
 }
 
 // Test counting the use of each feature policy only once per header.
@@ -682,10 +698,12 @@ TEST_F(FeaturePolicyParserTest, HistogramMultiple) {
   tester.ExpectTotalCount(histogram_name, 3);
   tester.ExpectBucketCount(
       histogram_name,
-      static_cast<int>(blink::mojom::FeaturePolicyFeature::kGeolocation), 1);
+      static_cast<int>(blink::mojom::blink::FeaturePolicyFeature::kGeolocation),
+      1);
   tester.ExpectBucketCount(
       histogram_name,
-      static_cast<int>(blink::mojom::FeaturePolicyFeature::kFullscreen), 1);
+      static_cast<int>(blink::mojom::blink::FeaturePolicyFeature::kFullscreen),
+      1);
 }
 
 // Test histogram counting the use of feature policies via "allow"
@@ -705,13 +723,15 @@ TEST_F(FeaturePolicyParserTest, AllowHistogramSameDocument) {
   tester.ExpectTotalCount(histogram_name, 3);
   tester.ExpectBucketCount(
       histogram_name,
-      static_cast<int>(blink::mojom::FeaturePolicyFeature::kPayment), 1);
+      static_cast<int>(blink::mojom::blink::FeaturePolicyFeature::kPayment), 1);
   tester.ExpectBucketCount(
       histogram_name,
-      static_cast<int>(blink::mojom::FeaturePolicyFeature::kFullscreen), 1);
+      static_cast<int>(blink::mojom::blink::FeaturePolicyFeature::kFullscreen),
+      1);
   tester.ExpectBucketCount(
       histogram_name,
-      static_cast<int>(blink::mojom::FeaturePolicyFeature::kGeolocation), 1);
+      static_cast<int>(blink::mojom::blink::FeaturePolicyFeature::kGeolocation),
+      1);
 }
 
 // Test histogram counting the use of feature policies via "allow"
@@ -732,13 +752,15 @@ TEST_F(FeaturePolicyParserTest, AllowHistogramDifferentDocument) {
   tester.ExpectTotalCount(histogram_name, 4);
   tester.ExpectBucketCount(
       histogram_name,
-      static_cast<int>(blink::mojom::FeaturePolicyFeature::kPayment), 1);
+      static_cast<int>(blink::mojom::blink::FeaturePolicyFeature::kPayment), 1);
   tester.ExpectBucketCount(
       histogram_name,
-      static_cast<int>(blink::mojom::FeaturePolicyFeature::kFullscreen), 2);
+      static_cast<int>(blink::mojom::blink::FeaturePolicyFeature::kFullscreen),
+      2);
   tester.ExpectBucketCount(
       histogram_name,
-      static_cast<int>(blink::mojom::FeaturePolicyFeature::kGeolocation), 1);
+      static_cast<int>(blink::mojom::blink::FeaturePolicyFeature::kGeolocation),
+      1);
 }
 
 TEST_F(FeaturePolicyParserTest, ParseParameterizedFeatures) {
@@ -752,7 +774,7 @@ TEST_F(FeaturePolicyParserTest, ParseParameterizedFeatures) {
       "oversized-images *", origin_a_.get(), opaque_origin.get(), &messages,
       test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
   EXPECT_EQ(max_double_value, parsed_policy[0].fallback_value);
   EXPECT_EQ(max_double_value, parsed_policy[0].opaque_value);
@@ -764,7 +786,7 @@ TEST_F(FeaturePolicyParserTest, ParseParameterizedFeatures) {
       opaque_origin.get(), &messages, test_feature_name_map);
   EXPECT_EQ(1UL, parsed_policy.size());
 
-  EXPECT_EQ(mojom::FeaturePolicyFeature::kOversizedImages,
+  EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kOversizedImages,
             parsed_policy[0].feature);
   EXPECT_GE(default_double_value, parsed_policy[0].fallback_value);
   EXPECT_LE(max_double_value, parsed_policy[0].opaque_value);
@@ -1107,7 +1129,7 @@ class FeaturePolicyMutationTest : public testing::Test {
 
   // Returns true if the policy contains a declaration for the feature which
   // allows it in all origins.
-  bool IsFeatureAllowedEverywhere(mojom::FeaturePolicyFeature feature,
+  bool IsFeatureAllowedEverywhere(mojom::blink::FeaturePolicyFeature feature,
                                   const ParsedFeaturePolicy& policy) {
     const auto& result = std::find_if(policy.begin(), policy.end(),
                                       [feature](const auto& declaration) {
@@ -1123,7 +1145,7 @@ class FeaturePolicyMutationTest : public testing::Test {
 
   // Returns true if the policy contains a declaration for the feature which
   // disallows it in all origins.
-  bool IsFeatureDisallowedEverywhere(mojom::FeaturePolicyFeature feature,
+  bool IsFeatureDisallowedEverywhere(mojom::blink::FeaturePolicyFeature feature,
                                      const ParsedFeaturePolicy& policy) {
     const auto& result = std::find_if(policy.begin(), policy.end(),
                                       [feature](const auto& declaration) {
@@ -1145,11 +1167,11 @@ class FeaturePolicyMutationTest : public testing::Test {
       PolicyValue::CreateMaxPolicyValue(mojom::PolicyValueType::kDecDouble);
 
   ParsedFeaturePolicy test_policy = {
-      {mojom::FeaturePolicyFeature::kFullscreen,
+      {mojom::blink::FeaturePolicyFeature::kFullscreen,
        std::map<url::Origin, PolicyValue>{{url_origin_a_, PolicyValue(true)},
                                           {url_origin_b_, PolicyValue(true)}},
        PolicyValue(false), PolicyValue(false)},
-      {mojom::FeaturePolicyFeature::kGeolocation,
+      {mojom::blink::FeaturePolicyFeature::kGeolocation,
        std::map<url::Origin, PolicyValue>{{url_origin_a_, PolicyValue(true)}},
        PolicyValue(false), PolicyValue(false)}};
 
@@ -1157,160 +1179,162 @@ class FeaturePolicyMutationTest : public testing::Test {
 };
 
 TEST_F(FeaturePolicyMutationTest, TestIsFeatureDeclared) {
-  EXPECT_TRUE(
-      IsFeatureDeclared(mojom::FeaturePolicyFeature::kFullscreen, test_policy));
-  EXPECT_TRUE(IsFeatureDeclared(mojom::FeaturePolicyFeature::kGeolocation,
+  EXPECT_TRUE(IsFeatureDeclared(mojom::blink::FeaturePolicyFeature::kFullscreen,
                                 test_policy));
+  EXPECT_TRUE(IsFeatureDeclared(
+      mojom::blink::FeaturePolicyFeature::kGeolocation, test_policy));
   EXPECT_FALSE(
-      IsFeatureDeclared(mojom::FeaturePolicyFeature::kUsb, test_policy));
-  EXPECT_FALSE(
-      IsFeatureDeclared(mojom::FeaturePolicyFeature::kNotFound, test_policy));
+      IsFeatureDeclared(mojom::blink::FeaturePolicyFeature::kUsb, test_policy));
+  EXPECT_FALSE(IsFeatureDeclared(mojom::blink::FeaturePolicyFeature::kNotFound,
+                                 test_policy));
 }
 
 TEST_F(FeaturePolicyMutationTest, TestIsFeatureDeclaredWithEmptyPolicy) {
-  EXPECT_FALSE(IsFeatureDeclared(mojom::FeaturePolicyFeature::kFullscreen,
+  EXPECT_FALSE(IsFeatureDeclared(
+      mojom::blink::FeaturePolicyFeature::kFullscreen, empty_policy));
+  EXPECT_FALSE(IsFeatureDeclared(mojom::blink::FeaturePolicyFeature::kNotFound,
                                  empty_policy));
-  EXPECT_FALSE(
-      IsFeatureDeclared(mojom::FeaturePolicyFeature::kNotFound, empty_policy));
 }
 
 TEST_F(FeaturePolicyMutationTest, TestRemoveAbsentFeature) {
   ASSERT_EQ(2UL, test_policy.size());
-  EXPECT_FALSE(
-      IsFeatureDeclared(mojom::FeaturePolicyFeature::kPayment, test_policy));
-  EXPECT_FALSE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kPayment,
-                                      test_policy));
+  EXPECT_FALSE(IsFeatureDeclared(mojom::blink::FeaturePolicyFeature::kPayment,
+                                 test_policy));
+  EXPECT_FALSE(RemoveFeatureIfPresent(
+      mojom::blink::FeaturePolicyFeature::kPayment, test_policy));
   ASSERT_EQ(2UL, test_policy.size());
-  EXPECT_FALSE(
-      IsFeatureDeclared(mojom::FeaturePolicyFeature::kPayment, test_policy));
+  EXPECT_FALSE(IsFeatureDeclared(mojom::blink::FeaturePolicyFeature::kPayment,
+                                 test_policy));
 }
 
 TEST_F(FeaturePolicyMutationTest, TestRemoveFromEmptyPolicy) {
   ASSERT_EQ(0UL, empty_policy.size());
-  EXPECT_FALSE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kPayment,
-                                      test_policy));
+  EXPECT_FALSE(RemoveFeatureIfPresent(
+      mojom::blink::FeaturePolicyFeature::kPayment, test_policy));
   ASSERT_EQ(0UL, empty_policy.size());
 }
 
 TEST_F(FeaturePolicyMutationTest, TestRemoveFeatureIfPresent) {
   ASSERT_EQ(2UL, test_policy.size());
-  EXPECT_TRUE(
-      IsFeatureDeclared(mojom::FeaturePolicyFeature::kFullscreen, test_policy));
-  EXPECT_TRUE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kFullscreen,
-                                     test_policy));
+  EXPECT_TRUE(IsFeatureDeclared(mojom::blink::FeaturePolicyFeature::kFullscreen,
+                                test_policy));
+  EXPECT_TRUE(RemoveFeatureIfPresent(
+      mojom::blink::FeaturePolicyFeature::kFullscreen, test_policy));
   EXPECT_EQ(1UL, test_policy.size());
-  EXPECT_FALSE(
-      IsFeatureDeclared(mojom::FeaturePolicyFeature::kFullscreen, test_policy));
+  EXPECT_FALSE(IsFeatureDeclared(
+      mojom::blink::FeaturePolicyFeature::kFullscreen, test_policy));
 
   // Attempt to remove the feature again
-  EXPECT_FALSE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kFullscreen,
-                                      test_policy));
+  EXPECT_FALSE(RemoveFeatureIfPresent(
+      mojom::blink::FeaturePolicyFeature::kFullscreen, test_policy));
   EXPECT_EQ(1UL, test_policy.size());
-  EXPECT_FALSE(
-      IsFeatureDeclared(mojom::FeaturePolicyFeature::kFullscreen, test_policy));
+  EXPECT_FALSE(IsFeatureDeclared(
+      mojom::blink::FeaturePolicyFeature::kFullscreen, test_policy));
 }
 
 TEST_F(FeaturePolicyMutationTest, TestRemoveFeatureIfPresentOnSecondFeature) {
   ASSERT_EQ(2UL, test_policy.size());
-  EXPECT_TRUE(IsFeatureDeclared(mojom::FeaturePolicyFeature::kGeolocation,
-                                test_policy));
-  EXPECT_TRUE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kGeolocation,
-                                     test_policy));
+  EXPECT_TRUE(IsFeatureDeclared(
+      mojom::blink::FeaturePolicyFeature::kGeolocation, test_policy));
+  EXPECT_TRUE(RemoveFeatureIfPresent(
+      mojom::blink::FeaturePolicyFeature::kGeolocation, test_policy));
   ASSERT_EQ(1UL, test_policy.size());
-  EXPECT_FALSE(IsFeatureDeclared(mojom::FeaturePolicyFeature::kGeolocation,
-                                 test_policy));
+  EXPECT_FALSE(IsFeatureDeclared(
+      mojom::blink::FeaturePolicyFeature::kGeolocation, test_policy));
 
   // Attempt to remove the feature again
-  EXPECT_FALSE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kGeolocation,
-                                      test_policy));
+  EXPECT_FALSE(RemoveFeatureIfPresent(
+      mojom::blink::FeaturePolicyFeature::kGeolocation, test_policy));
   EXPECT_EQ(1UL, test_policy.size());
-  EXPECT_FALSE(IsFeatureDeclared(mojom::FeaturePolicyFeature::kGeolocation,
-                                 test_policy));
+  EXPECT_FALSE(IsFeatureDeclared(
+      mojom::blink::FeaturePolicyFeature::kGeolocation, test_policy));
 }
 
 TEST_F(FeaturePolicyMutationTest, TestRemoveAllFeatures) {
   ASSERT_EQ(2UL, test_policy.size());
-  EXPECT_TRUE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kFullscreen,
-                                     test_policy));
-  EXPECT_TRUE(RemoveFeatureIfPresent(mojom::FeaturePolicyFeature::kGeolocation,
-                                     test_policy));
+  EXPECT_TRUE(RemoveFeatureIfPresent(
+      mojom::blink::FeaturePolicyFeature::kFullscreen, test_policy));
+  EXPECT_TRUE(RemoveFeatureIfPresent(
+      mojom::blink::FeaturePolicyFeature::kGeolocation, test_policy));
   EXPECT_EQ(0UL, test_policy.size());
-  EXPECT_FALSE(
-      IsFeatureDeclared(mojom::FeaturePolicyFeature::kFullscreen, test_policy));
-  EXPECT_FALSE(IsFeatureDeclared(mojom::FeaturePolicyFeature::kGeolocation,
-                                 test_policy));
+  EXPECT_FALSE(IsFeatureDeclared(
+      mojom::blink::FeaturePolicyFeature::kFullscreen, test_policy));
+  EXPECT_FALSE(IsFeatureDeclared(
+      mojom::blink::FeaturePolicyFeature::kGeolocation, test_policy));
 }
 
 TEST_F(FeaturePolicyMutationTest, TestDisallowIfNotPresent) {
   ParsedFeaturePolicy copy = test_policy;
   // Try to disallow a feature which already exists
   EXPECT_FALSE(DisallowFeatureIfNotPresent(
-      mojom::FeaturePolicyFeature::kFullscreen, copy));
+      mojom::blink::FeaturePolicyFeature::kFullscreen, copy));
   ASSERT_EQ(copy, test_policy);
 
   // Disallow a new feature
-  EXPECT_TRUE(
-      DisallowFeatureIfNotPresent(mojom::FeaturePolicyFeature::kPayment, copy));
+  EXPECT_TRUE(DisallowFeatureIfNotPresent(
+      mojom::blink::FeaturePolicyFeature::kPayment, copy));
   EXPECT_EQ(3UL, copy.size());
   // Verify that the feature is, in fact, now disallowed everywhere
   EXPECT_TRUE(IsFeatureDisallowedEverywhere(
-      mojom::FeaturePolicyFeature::kPayment, copy));
+      mojom::blink::FeaturePolicyFeature::kPayment, copy));
 }
 
 TEST_F(FeaturePolicyMutationTest, TestAllowEverywhereIfNotPresent) {
   ParsedFeaturePolicy copy = test_policy;
   // Try to allow a feature which already exists
   EXPECT_FALSE(AllowFeatureEverywhereIfNotPresent(
-      mojom::FeaturePolicyFeature::kFullscreen, copy));
+      mojom::blink::FeaturePolicyFeature::kFullscreen, copy));
   ASSERT_EQ(copy, test_policy);
 
   // Allow a new feature
   EXPECT_TRUE(AllowFeatureEverywhereIfNotPresent(
-      mojom::FeaturePolicyFeature::kPayment, copy));
+      mojom::blink::FeaturePolicyFeature::kPayment, copy));
   EXPECT_EQ(3UL, copy.size());
   // Verify that the feature is, in fact, allowed everywhere
-  EXPECT_TRUE(
-      IsFeatureAllowedEverywhere(mojom::FeaturePolicyFeature::kPayment, copy));
+  EXPECT_TRUE(IsFeatureAllowedEverywhere(
+      mojom::blink::FeaturePolicyFeature::kPayment, copy));
 }
 
 TEST_F(FeaturePolicyMutationTest, TestDisallowUnconditionally) {
   // Try to disallow a feature which already exists
-  DisallowFeature(mojom::FeaturePolicyFeature::kFullscreen, test_policy);
+  DisallowFeature(mojom::blink::FeaturePolicyFeature::kFullscreen, test_policy);
   // Should not have changed the number of declarations
   EXPECT_EQ(2UL, test_policy.size());
   // Verify that the feature is, in fact, now disallowed everywhere
   EXPECT_TRUE(IsFeatureDisallowedEverywhere(
-      mojom::FeaturePolicyFeature::kFullscreen, test_policy));
+      mojom::blink::FeaturePolicyFeature::kFullscreen, test_policy));
 }
 
 TEST_F(FeaturePolicyMutationTest, TestDisallowNewFeatureUnconditionally) {
   // Try to disallow a feature which does not yet exist
-  DisallowFeature(mojom::FeaturePolicyFeature::kPayment, test_policy);
+  DisallowFeature(mojom::blink::FeaturePolicyFeature::kPayment, test_policy);
   // Should have added a new declaration
   EXPECT_EQ(3UL, test_policy.size());
   // Verify that the feature is, in fact, now disallowed everywhere
   EXPECT_TRUE(IsFeatureDisallowedEverywhere(
-      mojom::FeaturePolicyFeature::kPayment, test_policy));
+      mojom::blink::FeaturePolicyFeature::kPayment, test_policy));
 }
 
 TEST_F(FeaturePolicyMutationTest, TestAllowUnconditionally) {
   // Try to allow a feature which already exists
-  AllowFeatureEverywhere(mojom::FeaturePolicyFeature::kFullscreen, test_policy);
+  AllowFeatureEverywhere(mojom::blink::FeaturePolicyFeature::kFullscreen,
+                         test_policy);
   // Should not have changed the number of declarations
   EXPECT_EQ(2UL, test_policy.size());
   // Verify that the feature is, in fact, now allowed everywhere
   EXPECT_TRUE(IsFeatureAllowedEverywhere(
-      mojom::FeaturePolicyFeature::kFullscreen, test_policy));
+      mojom::blink::FeaturePolicyFeature::kFullscreen, test_policy));
 }
 
 TEST_F(FeaturePolicyMutationTest, TestAllowNewFeatureUnconditionally) {
   // Try to allow a feature which does not yet exist
-  AllowFeatureEverywhere(mojom::FeaturePolicyFeature::kPayment, test_policy);
+  AllowFeatureEverywhere(mojom::blink::FeaturePolicyFeature::kPayment,
+                         test_policy);
   // Should have added a new declaration
   EXPECT_EQ(3UL, test_policy.size());
   // Verify that the feature is, in fact, now allowed everywhere
-  EXPECT_TRUE(IsFeatureAllowedEverywhere(mojom::FeaturePolicyFeature::kPayment,
-                                         test_policy));
+  EXPECT_TRUE(IsFeatureAllowedEverywhere(
+      mojom::blink::FeaturePolicyFeature::kPayment, test_policy));
 }
 
 class FeaturePolicyViolationHistogramTest : public testing::Test {
@@ -1330,21 +1354,23 @@ TEST_F(FeaturePolicyViolationHistogramTest, PotentialViolation) {
   auto dummy_page_holder_ = std::make_unique<DummyPageHolder>();
   // Probing feature state should not count.
   dummy_page_holder_->GetDocument().IsFeatureEnabled(
-      mojom::FeaturePolicyFeature::kPayment);
+      mojom::blink::FeaturePolicyFeature::kPayment);
   tester.ExpectTotalCount(histogram_name, 0);
   // Checking the feature state with reporting intent should record a potential
   // violation.
   dummy_page_holder_->GetDocument().IsFeatureEnabled(
-      mojom::FeaturePolicyFeature::kPayment, ReportOptions::kReportOnFailure);
+      mojom::blink::FeaturePolicyFeature::kPayment,
+      ReportOptions::kReportOnFailure);
   tester.ExpectTotalCount(histogram_name, 1);
   // The potential violation for an already recorded violation does not count
   // again.
   dummy_page_holder_->GetDocument().IsFeatureEnabled(
-      mojom::FeaturePolicyFeature::kPayment, ReportOptions::kReportOnFailure);
+      mojom::blink::FeaturePolicyFeature::kPayment,
+      ReportOptions::kReportOnFailure);
   tester.ExpectTotalCount(histogram_name, 1);
   // Sanity check: check some other feature to increase the count.
   dummy_page_holder_->GetDocument().IsFeatureEnabled(
-      mojom::FeaturePolicyFeature::kFullscreen,
+      mojom::blink::FeaturePolicyFeature::kFullscreen,
       ReportOptions::kReportOnFailure);
   tester.ExpectTotalCount(histogram_name, 2);
 }

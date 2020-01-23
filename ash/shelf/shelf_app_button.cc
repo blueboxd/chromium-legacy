@@ -515,6 +515,13 @@ bool ShelfAppButton::IsIconSizeCurrent() {
   return icon_width == ShelfConfig::Get()->button_icon_size();
 }
 
+bool ShelfAppButton::FireDragTimerForTest() {
+  if (!drag_timer_.IsRunning())
+    return false;
+  drag_timer_.FireNow();
+  return true;
+}
+
 void ShelfAppButton::FireRippleActivationTimerForTest() {
   ripple_activation_timer_.FireNow();
 }

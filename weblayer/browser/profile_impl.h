@@ -38,6 +38,9 @@ class ProfileImpl : public Profile {
 
   content::BrowserContext* GetBrowserContext();
 
+  // Path data is stored at, empty if off-the-record.
+  const base::FilePath& data_path() const { return data_path_; }
+
   // Profile implementation:
   void ClearBrowsingData(const std::vector<BrowsingDataType>& data_types,
                          base::Time from_time,

@@ -41,12 +41,20 @@ namespace {
 const char kSettingsAppNameForLogging[] = "OSSettings";
 const char kDiscoverAppNameForLogging[] = "Discover";
 
-const GURL kAppUrl1(content::GetWebUIURL("system-app1"));
-const GURL kAppUrl2(content::GetWebUIURL("system-app2"));
-const GURL kAppUrl3(content::GetWebUIURL("system-app3"));
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL AppUrl1() {
+  return GURL(content::GetWebUIURL("system-app1"));
+}
+GURL AppUrl2() {
+  return GURL(content::GetWebUIURL("system-app2"));
+}
+GURL AppUrl3() {
+  return GURL(content::GetWebUIURL("system-app3"));
+}
 
 ExternalInstallOptions GetWindowedInstallOptions() {
-  ExternalInstallOptions options(kAppUrl1, DisplayMode::kStandalone,
+  ExternalInstallOptions options(AppUrl1(), DisplayMode::kStandalone,
                                  ExternalInstallSource::kSystemInstalled);
   options.add_to_applications_menu = false;
   options.add_to_desktop = false;
@@ -127,13 +135,13 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
   base::test::ScopedFeatureList disable_feature_list;
   disable_feature_list.InitWithFeatures({}, {features::kSystemWebApps});
 
-  SimulatePreviouslyInstalledApp(kAppUrl1,
+  SimulatePreviouslyInstalledApp(AppUrl1(),
                                  ExternalInstallSource::kSystemInstalled);
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
   system_apps.emplace(
       SystemAppType::SETTINGS,
-      SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
+      SystemAppInfo(kSettingsAppNameForLogging, GURL(AppUrl1())));
 
   system_web_app_manager()->SetSystemAppsForTesting(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -144,19 +152,17 @@ TEST_F(SystemWebAppManagerTest, Disabled) {
 
   // We should try to uninstall the app that is no longer in the System App
   // list.
-  EXPECT_EQ(std::vector<GURL>({kAppUrl1}),
+  EXPECT_EQ(std::vector<GURL>({AppUrl1()}),
             pending_app_manager()->uninstall_requests());
 }
 
 // Test that System Apps do install with the feature enabled.
 TEST_F(SystemWebAppManagerTest, Enabled) {
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps.emplace(
-      SystemAppType::SETTINGS,
-      SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
-  system_apps.emplace(
-      SystemAppType::DISCOVER,
-      SystemAppInfo(kDiscoverAppNameForLogging, GURL(kAppUrl2)));
+  system_apps.emplace(SystemAppType::SETTINGS,
+                      SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
+  system_apps.emplace(SystemAppType::DISCOVER,
+                      SystemAppInfo(kDiscoverAppNameForLogging, AppUrl2()));
 
   system_web_app_manager()->SetSystemAppsForTesting(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -170,16 +176,15 @@ TEST_F(SystemWebAppManagerTest, Enabled) {
 TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
   // Simulate System Apps and a regular app that were installed in the
   // previous session.
-  SimulatePreviouslyInstalledApp(kAppUrl1,
+  SimulatePreviouslyInstalledApp(AppUrl1(),
                                  ExternalInstallSource::kSystemInstalled);
-  SimulatePreviouslyInstalledApp(kAppUrl2,
+  SimulatePreviouslyInstalledApp(AppUrl2(),
                                  ExternalInstallSource::kSystemInstalled);
-  SimulatePreviouslyInstalledApp(kAppUrl3,
+  SimulatePreviouslyInstalledApp(AppUrl3(),
                                  ExternalInstallSource::kInternalDefault);
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps.emplace(
-      SystemAppType::SETTINGS,
-      SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
+  system_apps.emplace(SystemAppType::SETTINGS,
+                      SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
 
   system_web_app_manager()->SetSystemAppsForTesting(std::move(system_apps));
   system_web_app_manager()->Start();
@@ -194,7 +199,7 @@ TEST_F(SystemWebAppManagerTest, UninstallAppInstalledInPreviousSession) {
 
   // We should try to uninstall the app that is no longer in the System App
   // list.
-  EXPECT_EQ(std::vector<GURL>({kAppUrl2}),
+  EXPECT_EQ(std::vector<GURL>({AppUrl2()}),
             pending_app_manager()->uninstall_requests());
 }
 
@@ -203,9 +208,8 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
       SystemWebAppManager::UpdatePolicy::kAlwaysUpdate);
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps.emplace(
-      SystemAppType::SETTINGS,
-      SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
+  system_apps.emplace(SystemAppType::SETTINGS,
+                      SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
   system_web_app_manager()->SetSystemAppsForTesting(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
@@ -216,9 +220,8 @@ TEST_F(SystemWebAppManagerTest, AlwaysUpdate) {
 
   // Create another app. The version hasn't changed but the app should still
   // install.
-  system_apps.emplace(
-      SystemAppType::DISCOVER,
-      SystemAppInfo(kDiscoverAppNameForLogging, GURL(kAppUrl2)));
+  system_apps.emplace(SystemAppType::DISCOVER,
+                      SystemAppInfo(kDiscoverAppNameForLogging, AppUrl2()));
   system_web_app_manager()->SetSystemAppsForTesting(system_apps);
   system_web_app_manager()->Start();
 
@@ -251,9 +254,8 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps.emplace(
-      SystemAppType::SETTINGS,
-      SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
+  system_apps.emplace(SystemAppType::SETTINGS,
+                      SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
   system_web_app_manager()->SetSystemAppsForTesting(system_apps);
 
   system_web_app_manager()->set_current_version(base::Version("1.0.0.0"));
@@ -262,14 +264,13 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
 
   EXPECT_EQ(1u, install_requests.size());
   EXPECT_TRUE(install_requests[0].force_reinstall);
-  EXPECT_TRUE(IsInstalled(kAppUrl1));
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
 
   // Create another app. The version hasn't changed, but we should immediately
   // install anyway, as if a user flipped a chrome://flag. The first app won't
   // force reinstall.
-  system_apps.emplace(
-      SystemAppType::DISCOVER,
-      SystemAppInfo(kDiscoverAppNameForLogging, GURL(kAppUrl2)));
+  system_apps.emplace(SystemAppType::DISCOVER,
+                      SystemAppInfo(kDiscoverAppNameForLogging, AppUrl2()));
   system_web_app_manager()->SetSystemAppsForTesting(system_apps);
   system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
@@ -277,8 +278,8 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   EXPECT_EQ(3u, install_requests.size());
   EXPECT_FALSE(install_requests[1].force_reinstall);
   EXPECT_FALSE(install_requests[2].force_reinstall);
-  EXPECT_TRUE(IsInstalled(kAppUrl1));
-  EXPECT_TRUE(IsInstalled(kAppUrl2));
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
+  EXPECT_TRUE(IsInstalled(AppUrl2()));
 
   // Bump the version number, and an update will trigger, and force
   // reinstallation of both apps.
@@ -289,8 +290,8 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   EXPECT_EQ(5u, install_requests.size());
   EXPECT_TRUE(install_requests[3].force_reinstall);
   EXPECT_TRUE(install_requests[4].force_reinstall);
-  EXPECT_TRUE(IsInstalled(kAppUrl1));
-  EXPECT_TRUE(IsInstalled(kAppUrl2));
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
+  EXPECT_TRUE(IsInstalled(AppUrl2()));
 
   {
     // Disabling System Web Apps uninstalls even without a version change.
@@ -301,8 +302,8 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(2u, pending_app_manager()->uninstall_requests().size());
-    EXPECT_FALSE(IsInstalled(kAppUrl1));
-    EXPECT_FALSE(IsInstalled(kAppUrl2));
+    EXPECT_FALSE(IsInstalled(AppUrl1()));
+    EXPECT_FALSE(IsInstalled(AppUrl2()));
   }
 
   // Re-enabling System Web Apps installs even without a version change.
@@ -312,12 +313,12 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   EXPECT_EQ(7u, install_requests.size());
   EXPECT_FALSE(install_requests[5].force_reinstall);
   EXPECT_FALSE(install_requests[6].force_reinstall);
-  EXPECT_TRUE(IsInstalled(kAppUrl1));
-  EXPECT_TRUE(IsInstalled(kAppUrl2));
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
+  EXPECT_TRUE(IsInstalled(AppUrl2()));
 
   // Changing the install URL of a system app propagates even without a version
   // change.
-  system_apps.find(SystemAppType::SETTINGS)->second.install_url = kAppUrl3;
+  system_apps.find(SystemAppType::SETTINGS)->second.install_url = AppUrl3();
   system_web_app_manager()->SetSystemAppsForTesting(system_apps);
   system_web_app_manager()->Start();
   base::RunLoop().RunUntilIdle();
@@ -325,9 +326,9 @@ TEST_F(SystemWebAppManagerTest, UpdateOnVersionChange) {
   EXPECT_EQ(9u, install_requests.size());
   EXPECT_FALSE(install_requests[7].force_reinstall);
   EXPECT_FALSE(install_requests[8].force_reinstall);
-  EXPECT_FALSE(IsInstalled(kAppUrl1));
-  EXPECT_TRUE(IsInstalled(kAppUrl2));
-  EXPECT_TRUE(IsInstalled(kAppUrl3));
+  EXPECT_FALSE(IsInstalled(AppUrl1()));
+  EXPECT_TRUE(IsInstalled(AppUrl2()));
+  EXPECT_TRUE(IsInstalled(AppUrl3()));
 }
 
 TEST_F(SystemWebAppManagerTest, UpdateOnLocaleChange) {
@@ -338,9 +339,8 @@ TEST_F(SystemWebAppManagerTest, UpdateOnLocaleChange) {
       SystemWebAppManager::UpdatePolicy::kOnVersionChange);
 
   base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-  system_apps.emplace(
-      SystemAppType::SETTINGS,
-      SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
+  system_apps.emplace(SystemAppType::SETTINGS,
+                      SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
   system_web_app_manager()->SetSystemAppsForTesting(system_apps);
 
   // Simulate first execution.
@@ -351,7 +351,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnLocaleChange) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1u, install_requests.size());
-  EXPECT_TRUE(IsInstalled(kAppUrl1));
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
 
   // Change locale setting, should trigger reinstall.
   pending_app_manager()->SetInstallResultCode(
@@ -362,7 +362,7 @@ TEST_F(SystemWebAppManagerTest, UpdateOnLocaleChange) {
 
   EXPECT_EQ(2u, install_requests.size());
   EXPECT_TRUE(install_requests[1].force_reinstall);
-  EXPECT_TRUE(IsInstalled(kAppUrl1));
+  EXPECT_TRUE(IsInstalled(AppUrl1()));
 
   // Do not reinstall because locale is not changed.
   system_web_app_manager()->Start();
@@ -386,9 +386,8 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
       ".Profiles.Other";
   {
     base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-    system_apps.emplace(
-        SystemAppType::SETTINGS,
-        SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
+    system_apps.emplace(SystemAppType::SETTINGS,
+                        SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
     system_web_app_manager()->SetSystemAppsForTesting(system_apps);
 
     histograms.ExpectTotalCount(
@@ -417,12 +416,10 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
   }
   {
     base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-    system_apps.emplace(
-        SystemAppType::SETTINGS,
-        SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
-    system_apps.emplace(
-        SystemAppType::DISCOVER,
-        SystemAppInfo(kDiscoverAppNameForLogging, GURL(kAppUrl2)));
+    system_apps.emplace(SystemAppType::SETTINGS,
+                        SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
+    system_apps.emplace(SystemAppType::DISCOVER,
+                        SystemAppInfo(kDiscoverAppNameForLogging, AppUrl2()));
 
     system_web_app_manager()->SetSystemAppsForTesting(system_apps);
     pending_app_manager()->SetInstallResultCode(
@@ -444,9 +441,8 @@ TEST_F(SystemWebAppManagerTest, InstallResultHistogram) {
   }
   {
     base::flat_map<SystemAppType, SystemAppInfo> system_apps;
-    system_apps.emplace(
-        SystemAppType::SETTINGS,
-        SystemAppInfo(kSettingsAppNameForLogging, GURL(kAppUrl1)));
+    system_apps.emplace(SystemAppType::SETTINGS,
+                        SystemAppInfo(kSettingsAppNameForLogging, AppUrl1()));
     system_web_app_manager()->SetSystemAppsForTesting(system_apps);
     pending_app_manager()->SetInstallResultCode(
         InstallResultCode::kWebAppDisabled);

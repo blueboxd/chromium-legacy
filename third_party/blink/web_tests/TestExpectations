@@ -53,6 +53,7 @@ crbug.com/887140 virtual/hdr/video-canvas-alpha.html [ Failure ]
 crbug.com/1014421 external/wpt/css/cssom-view/MediaQueryList-addListener-handleEvent.html [ Timeout ]
 
 # Tested by paint/background/root-element-background-transparency.html for now.
+external/wpt/css/compositing/root-element-background-transparency.html [ Failure ]
 
 # ====== Site Isolation failures from here ======
 # See also third_party/blink/web_tests/virtual/not-site-per-process/README.md
@@ -1327,6 +1328,7 @@ crbug.com/845235 virtual/layout_ng_flex_box/css3/flexbox/relpos-with-percentage-
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-aspect-ratio-img-column-004.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/hittest-overlapping-margin.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
+crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/percentage-heights-010.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/quirks-auto-block-size-with-percentage-item.html [ Pass Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-004.html [ Failure ]
@@ -1754,9 +1756,6 @@ crbug.com/987224 [ IOS ] virtual/cascade/external/wpt/css/css-paint-api/idlharne
 # PLEASE DO NOT PUT ANYTHING INSIDE THIS SECTION!!
 # ======
 
-# These need further investigation (baselines look broken):
-crbug.com/1035582 virtual/form-controls-refresh-disabled/fast/forms/select/menulist-update-text-popup.html [ Skip ]
-crbug.com/1035582 fast/forms/calendar-picker/calendar-picker-key-operations.html [ Skip ]
 # Put back the one on 4788:
 crbug.com/1035582 fast/forms/suggested-value.html [ Skip ]
 crbug.com/1035582 fast/forms/select/listbox-tap.html [ Skip ]
@@ -1772,23 +1771,17 @@ crbug.com/1035582 fast/forms/button/button-with-float.html [ Skip ]
 crbug.com/1035582 fast/forms/select/listbox-overlay-scrollbar.html [ Skip ]
 crbug.com/1035582 paint/invalidation/scroll/caret-with-composited-scroll.html [ Skip ]
 crbug.com/1035582 paint/pagination/composited-paginated-outlined-box.html [ Skip ]
-# https://test-results.appspot.com/data/layout_results/win10-blink-rel/6784/webkit_layout_tests%20%28with%20patch%29/layout-test-results/results.html
-crbug.com/1035582 virtual/cascade/fast/forms/month/month-appearance-basic.html [ Skip ]
-# https://test-results.appspot.com/data/layout_results/win7-blink-rel/6571/webkit_layout_tests%20%28with%20patch%29/layout-test-results/results.html
-crbug.com/1035582 paint/invalidation/forms/button-reset-focus-by-mouse-then-keydown.html [ Skip ]
-crbug.com/1035582 paint/invalidation/forms/radio-focus-by-mouse-then-keydown.html [ Skip ]
-# Need rebaseline again??
-crbug.com/1035582 [ Win ] editing/caret/caret-position.html [ Skip ]
-crbug.com/1035582 [ Win ] editing/pasteboard/4806874.html [ Skip ]
-crbug.com/1035582 [ Win ] fast/forms/color/color-suggestion-picker-appearance-zoom125.html [ Skip ]
-crbug.com/1035582 [ Win ] fast/multicol/multicol-with-child-renderLayer-for-input.html [ Skip ]
-crbug.com/1035582 [ Win ] virtual/text-antialias/selection/mixed-directionality-selection.html [ Skip ]
+
+# https://ci.chromium.org/p/chromium/builders/try/win7-blink-rel/6652
+crbug.com/1035582 [ Win7 ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-locale-hebrew.html [ Skip ]
+crbug.com/1035582 [ Win7 ] fast/forms/suggestion-picker/time-suggestion-picker-appearance-rtl.html [ Skip ]
+
 
 # ======
 # ====== End of rebaselines for crbug.com/1035582 ======
 # ======
 #
-# PLEASE put new 1035582-related files below this line (AND NOT ABOVE IT!!)...
+# PLEASE put new form controls refresh failures BELOW THIS LINE, and CREATE A NEW BUG NUMBER.
 #
 crbug.com/1035582 [ Mac10.10 ] virtual/controls-refresh-hc/virtual/controls-refresh/color-scheme/select/select-multiple-hover-focused-unselected.html [ Skip ]
 crbug.com/1035582 [ Mac10.10 ] virtual/controls-refresh-hc/virtual/controls-refresh/color-scheme/select/select-multiple-appearance-basic.html [ Skip ]
@@ -2806,6 +2799,68 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-004.html [ Fail
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.11 ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-animation.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-canvas-parent.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-canvas-sibling.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-parent-with-border-radius.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-parent-with-border-radius.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-parent-with-border-radius.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-iframe-sibling.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-border-image.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-border-image.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-border-image.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/compositing_simple_div.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/compositing/compositing_simple_div.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/compositing_simple_div.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-simple.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-stacking-context-001.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-stacking-context-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-stacking-context-001.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-paragraph-background-image.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-parent-element-overflow-hidden-and-border-radius.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-parent-element-overflow-hidden-and-border-radius.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-parent-element-overflow-hidden-and-border-radius.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-intermediate-element-overflow-hidden-and-border-radius.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-intermediate-element-overflow-hidden-and-border-radius.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-intermediate-element-overflow-hidden-and-border-radius.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-paragraph.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-both-parent-and-blended-with-3D-transform.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-both-parent-and-blended-with-3D-transform.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-both-parent-and-blended-with-3D-transform.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-animation.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-blended-with-transform-and-perspective.html [ Failure ]
+crbug.com/626703 [ Mac10.11 ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-blended-with-transform-and-perspective.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-blended-with-transform-and-perspective.html [ Failure ]
+crbug.com/626703 [ Mac10.13 ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-blended-with-transform-and-perspective.html [ Failure ]
+crbug.com/626703 [ Retina ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-blended-with-transform-and-perspective.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-blended-with-transform-and-perspective.html [ Failure ]
+crbug.com/626703 [ Mac10.10 ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-blended-with-transform-and-perspective.html [ Failure Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-svg.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-filter.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-filter.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-filter.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-blended-with-3D-transform.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-blended-with-3D-transform.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-blended-with-3D-transform.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-blended-element-overflow-hidden-and-border-radius.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-blended-element-overflow-hidden-and-border-radius.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-blended-element-overflow-hidden-and-border-radius.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-script.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-iframe-parent.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-blended-element-interposed.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-with-transform-and-preserve-3D.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-with-transform-and-preserve-3D.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-with-transform-and-preserve-3D.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/svg/mix-blend-mode-in-svg-image.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/compositing/svg/mix-blend-mode-in-svg-image.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/svg/mix-blend-mode-in-svg-image.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-parent-element-overflow-scroll-blended-position-fixed.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-parent-element-overflow-scroll-blended-position-fixed.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-parent-element-overflow-scroll-blended-position-fixed.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-video.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-video.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-parent-with-text.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-mask.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/webrtc/RTCPeerConnection-createDataChannel.html [ Failure Crash ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/html/webappapis/scripting/events/event-handler-attributes-body-window.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/html/webappapis/scripting/events/event-handler-attributes-body-window.html [ Failure Timeout ]
@@ -6127,7 +6182,6 @@ crbug.com/1027434 external/wpt/html/browsers/origin/cross-origin-objects/cross-o
 crbug.com/1027434 virtual/not-site-per-process/external/wpt/html/browsers/origin/cross-origin-objects/cross-origin-objects.html [ Pass Timeout ]
 
 # Sheriff 2019-12-02
-crbug.com/1029713 external/wpt/cookie-store/cookieStoreManager_getSubscriptions_multiple.tentative.https.any.html [ Pass Failure ]
 crbug.com/1029528 [ Linux ] http/tests/devtools/network/oopif-content.js [ Pass Failure ]
 crbug.com/1028477 [ Mac ] http/tests/devtools/appcache/appcache-manifest-with-non-existing-file.js [ Pass Timeout ]
 crbug.com/1028477 [ Win ] http/tests/devtools/appcache/appcache-manifest-with-non-existing-file.js [ Pass Timeout ]
@@ -6308,3 +6362,35 @@ crbug.com/1043774 [ Linux ] virtual/web-components-v0-disabled/external/wpt/html
 crbug.com/1044567 [ Mac10.10 ] media/video-colorspace-yuv420.html [ Pass Failure ]
 crbug.com/1044567 [ Mac10.10 ] virtual/audio-service/media/video-colorspace-yuv420.html [ Pass Failure ]
 crbug.com/1044568 [ Mac10.11 ] virtual/cascade/fast/forms/calendar-picker/calendar-picker-appearance-zoom125.html [ Pass Failure ]
+crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/datetimelocal-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
+crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/month-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
+crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/time-suggestion-picker-appearance-locale-hebrew.html [ Pass Failure ]
+crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/date-suggestion-picker-appearance.html [ Pass Failure ]
+crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/date-suggestion-picker-appearance-rtl.html [ Pass Failure ]
+crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/week-suggestion-picker-appearance-rtl.html [ Pass Failure ]
+crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/time-suggestion-picker-appearance-with-scroll-bar.html [ Pass Failure ]
+crbug.com/1044712 [ Win ] fast/forms/suggestion-picker/month-suggestion-picker-appearance-rtl.html [ Pass Failure ]
+crbug.com/1044712 [ Win ] virtual/controls-refresh/color-scheme/suggestion-picker/date-suggestion-picker-appearance.html [ Pass Failure ]
+crbug.com/1044715 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-pan-right-css_touch.html [ Pass Failure ]
+crbug.com/1044715 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-inherit_parent-none_touch.html [ Pass Failure ]
+crbug.com/1044715 [ Win ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-x_touch.html [ Pass Failure ]
+
+# Ref_Tests which fail when SkiaRenderer is enable, and which cannot be
+# rebaselined. TODO(jonross): triage these into any existing bugs or file more
+# specific bugs.
+crbug.com/1043675 [ Linux ] animations/animation-paused-hardware.html [ Failure ]
+crbug.com/1043675 [ Linux ] animations/missing-values-first-keyframe.html [ Failure ]
+crbug.com/1043675 [ Linux ] animations/missing-values-last-keyframe.html [ Failure ]
+crbug.com/1043675 [ Linux ] external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
+crbug.com/1043675 [ Linux ] external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]
+crbug.com/1043675 [ Linux ] http/tests/media/video-frame-size-change.html [ Failure ]
+crbug.com/1043675 [ Linux ] svg/custom/svg-root-with-opacity.html [ Failure ]
+crbug.com/1043675 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/backdrop-filter-basic-opacity-2.html [ Failure ]
+crbug.com/1043675 [ Linux ] virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-opacity.html [ Failure ]
+crbug.com/1043675 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/animation-paused-hardware.html [ Failure ]
+crbug.com/1043675 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/missing-values-first-keyframe.html [ Failure ]
+crbug.com/1043675 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/missing-values-last-keyframe.html [ Failure ]
+
+# The transformed region bleeds into the foreground with SkiaRenderer enabled.
+crbug.com/1044032 [ Linux ] css3/filters/backdrop-filter-transform.html [ Failure ]
+crbug.com/1044032 [ Linux ] virtual/scalefactor200/css3/filters/backdrop-filter-transform.html [ Failure ]

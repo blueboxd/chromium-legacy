@@ -285,8 +285,13 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
       const GURL& url = web_contents->GetLastCommittedURL();
       return IsPageAccessCommandEnabled(*extension, url, command_id);
     }
-    // The following, if they are present, are always enabled.
+    // Extension pinning/unpinning is not available for Incognito as this leaves
+    // a trace of user activity.
     case TOGGLE_VISIBILITY:
+      if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
+        return !browser_->profile()->IsOffTheRecord();
+      return true;
+    // Manage extensions is always enabled.
     case MANAGE_EXTENSIONS:
       return true;
     default:

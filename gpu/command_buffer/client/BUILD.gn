@@ -67,6 +67,7 @@ jumbo_source_set("client_sources") {
     "mapped_memory.h",
     "ring_buffer.cc",
     "ring_buffer.h",
+    "shared_image_interface.cc",
     "shared_image_interface.h",
     "transfer_buffer.cc",
     "transfer_buffer.h",

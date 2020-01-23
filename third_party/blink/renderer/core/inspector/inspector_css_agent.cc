@@ -975,12 +975,11 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
        pseudo_id = static_cast<PseudoId>(pseudo_id + 1)) {
     RuleIndexList* matched_rules = style_resolver.PseudoCSSRulesForElement(
         element, pseudo_id, StyleResolver::kAllCSSRules);
-    protocol::DOM::PseudoType pseudo_type;
-    if (matched_rules && matched_rules->size() &&
-        dom_agent_->GetPseudoElementType(pseudo_id, &pseudo_type)) {
+    if (matched_rules && matched_rules->size()) {
       pseudo_id_matches->fromJust()->emplace_back(
           protocol::CSS::PseudoElementMatches::create()
-              .setPseudoType(pseudo_type)
+              .setPseudoType(
+                  InspectorDOMAgent::ProtocolPseudoElementType(pseudo_id))
               .setMatches(BuildArrayForMatchedRuleList(matched_rules, element,
                                                        pseudo_id))
               .build());

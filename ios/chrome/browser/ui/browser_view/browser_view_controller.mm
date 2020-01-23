@@ -65,6 +65,7 @@
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper_delegate.h"
 #include "ios/chrome/browser/system_flags.h"
+#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_legacy_coordinator.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
@@ -844,8 +845,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 - (SideSwipeController*)sideSwipeController {
   if (!_sideSwipeController) {
     _sideSwipeController =
-        [[SideSwipeController alloc] initWithTabModel:self.tabModel
-                                         browserState:self.browserState];
+        [[SideSwipeController alloc] initWithBrowser:self.browser];
     [_sideSwipeController setSnapshotDelegate:self];
     _sideSwipeController.toolbarInteractionHandler = self.toolbarInterface;
     _sideSwipeController.primaryToolbarSnapshotProvider =

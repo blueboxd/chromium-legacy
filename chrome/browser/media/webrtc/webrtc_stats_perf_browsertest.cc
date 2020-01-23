@@ -85,7 +85,6 @@ class WebRtcStatsPerfBrowserTest : public WebRtcTestBase {
         .AddExtension(test::kY4mFileExtension);
     command_line->AppendSwitchPath(switches::kUseFileForFakeVideoCapture,
                                    input_video);
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
 
   void StartCall(const std::string& audio_codec,

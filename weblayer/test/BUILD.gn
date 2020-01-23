@@ -74,13 +74,13 @@ test("weblayer_browsertests") {
 
   deps = [
     "//base",
-    "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/autofill/core/common",
     "//components/network_time",
     "//components/security_interstitials/content:security_interstitial_page",
+    "//components/sessions:test_support",
     "//components/strings",
     "//content/public/browser",
     "//content/test:test_support",
@@ -151,5 +151,12 @@ test("weblayer_browsertests") {
     use_default_launcher = false
     shared_resources = true
     product_config_java_packages = [ weblayer_product_config_java_package ]
+  } else {
+    sources += [
+      # This test creates Browser objects from C++, which the Java side is not
+      # setup for. SessionService related tests for Java will be done as
+      # integration tests.
+      "../browser/session_service_browsertest.cc",
+    ]
   }
 }

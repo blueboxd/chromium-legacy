@@ -193,21 +193,20 @@ void AssistantMainStage::InitContentLayoutContainer() {
   // preferred size and visibility change events in AssistantMainStage. This is
   // necessary because |content_layout_container_| may not change size in
   // response to these events, necessitating an explicit layout pass.
-  content_layout_container_ = new views::View();
+  auto content_layout_container = std::make_unique<views::View>();
 
-  views::BoxLayout* layout_manager =
-      content_layout_container_->SetLayoutManager(
-          std::make_unique<views::BoxLayout>(
-              views::BoxLayout::Orientation::kVertical));
+  views::BoxLayout* layout_manager = content_layout_container->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
 
   // Header.
-  header_ = new AssistantHeaderView(delegate_);
-  content_layout_container_->AddChildView(header_);
+  header_ = content_layout_container->AddChildView(
+      std::make_unique<AssistantHeaderView>(delegate_));
 
   // UI element container.
-  ui_element_container_ = new UiElementContainerView(delegate_);
+  ui_element_container_ = content_layout_container->AddChildView(
+      std::make_unique<UiElementContainerView>(delegate_));
   ui_element_container_->AddObserver(this);
-  content_layout_container_->AddChildView(ui_element_container_);
 
   layout_manager->SetFlexForView(ui_element_container_, 1,
                                  /*use_min_size=*/true);
@@ -217,20 +216,20 @@ void AssistantMainStage::InitContentLayoutContainer() {
   // its visibility changes, its parent container will still reserve the same
   // layout space. This prevents jank that would otherwise occur due to
   // |ui_element_container_| claiming that empty space.
-  views::View* footer_container = new views::View();
+  auto footer_container = std::make_unique<views::View>();
   footer_container->SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  footer_ = new AssistantFooterView(delegate_);
+  footer_ = footer_container->AddChildView(
+      std::make_unique<AssistantFooterView>(delegate_));
   footer_->AddObserver(this);
 
   // The footer will be animated on its own layer.
   footer_->SetPaintToLayer();
   footer_->layer()->SetFillsBoundsOpaquely(false);
 
-  footer_container->AddChildView(footer_);
-  content_layout_container_->AddChildView(footer_container);
+  content_layout_container->AddChildView(std::move(footer_container));
 
-  AddChildView(content_layout_container_);
+  content_layout_container_ = AddChildView(std::move(content_layout_container));
 }
 
 void AssistantMainStage::InitQueryLayoutContainer() {
@@ -238,12 +237,10 @@ void AssistantMainStage::InitQueryLayoutContainer() {
   // preferred size and visibility change events in AssistantMainStage. This is
   // necessary because |query_layout_container_| may not change size in response
   // to these events, thereby requiring an explicit layout pass.
-  query_layout_container_ = new views::View();
+  query_layout_container_ = AddChildView(std::make_unique<views::View>());
   query_layout_container_->AddObserver(this);
   query_layout_container_->set_can_process_events_within_subtree(false);
   query_layout_container_->SetLayoutManager(std::make_unique<StackLayout>());
-
-  AddChildView(query_layout_container_);
 }
 
 void AssistantMainStage::InitOverlayLayoutContainer() {
@@ -251,32 +248,32 @@ void AssistantMainStage::InitOverlayLayoutContainer() {
   // the content and query layout containers. As such, its children appear over
   // top of and do not cause repositioning to any of content/query layout's
   // underlying views. Events pass through the overlay layout container.
-  overlay_layout_container_ = new views::View();
-  overlay_layout_container_->set_can_process_events_within_subtree(false);
+  auto overlay_layout_container = std::make_unique<views::View>();
+  overlay_layout_container->set_can_process_events_within_subtree(false);
 
-  auto* stack_layout = overlay_layout_container_->SetLayoutManager(
+  auto* stack_layout = overlay_layout_container->SetLayoutManager(
       std::make_unique<StackLayout>());
 
   // Greeting label.
-  greeting_label_ = new views::Label(
+  auto greeting_label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
-  greeting_label_->SetAutoColorReadabilityEnabled(false);
-  greeting_label_->SetBorder(
+  greeting_label->SetAutoColorReadabilityEnabled(false);
+  greeting_label->SetBorder(
       views::CreateEmptyBorder(kGreetingLabelMarginTopDip, 0, 0, 0));
-  greeting_label_->SetEnabledColor(kTextColorPrimary);
-  greeting_label_->SetFontList(
-      assistant::ui::GetDefaultFontList()
-          .DeriveWithSizeDelta(8)
-          .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
-  greeting_label_->SetHorizontalAlignment(
+  greeting_label->SetEnabledColor(kTextColorPrimary);
+  greeting_label->SetFontList(assistant::ui::GetDefaultFontList()
+                                  .DeriveWithSizeDelta(8)
+                                  .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+  greeting_label->SetHorizontalAlignment(
       gfx::HorizontalAlignment::ALIGN_CENTER);
-  greeting_label_->SetMultiLine(true);
+  greeting_label->SetMultiLine(true);
 
   // The greeting label will be animated on its own layer.
-  greeting_label_->SetPaintToLayer();
-  greeting_label_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+  greeting_label->SetPaintToLayer();
+  greeting_label->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
 
-  overlay_layout_container_->AddChildView(greeting_label_);
+  greeting_label_ =
+      overlay_layout_container->AddChildView(std::move(greeting_label));
 
   // We need to stretch |greeting_label_| to match its parent so that it
   // won't use heuristics in Label to infer line breaking, which seems to cause
@@ -285,18 +282,19 @@ void AssistantMainStage::InitOverlayLayoutContainer() {
       greeting_label_, StackLayout::RespectDimension::kHeight);
 
   // Progress indicator.
-  progress_indicator_ = new AssistantProgressIndicator();
-  progress_indicator_->SetBorder(
+  auto progress_indicator = std::make_unique<AssistantProgressIndicator>();
+  progress_indicator->SetBorder(
       views::CreateEmptyBorder(kProgressIndicatorMarginTopDip, 0, 0, 0));
 
   // The progress indicator will be animated on its own layer.
-  progress_indicator_->SetPaintToLayer();
-  progress_indicator_->layer()->SetFillsBoundsOpaquely(false);
-  progress_indicator_->layer()->SetOpacity(0.f);
+  progress_indicator->SetPaintToLayer();
+  progress_indicator->layer()->SetFillsBoundsOpaquely(false);
+  progress_indicator->layer()->SetOpacity(0.f);
 
-  overlay_layout_container_->AddChildView(progress_indicator_);
+  progress_indicator_ =
+      overlay_layout_container->AddChildView(std::move(progress_indicator));
 
-  AddChildView(overlay_layout_container_);
+  overlay_layout_container_ = AddChildView(std::move(overlay_layout_container));
 }
 
 void AssistantMainStage::OnCommittedQueryChanged(const AssistantQuery& query) {
@@ -458,14 +456,13 @@ void AssistantMainStage::OnPendingQueryChanged(const AssistantQuery& query) {
   }
 
   if (!pending_query_view_) {
-    pending_query_view_ = new AssistantQueryView();
+    pending_query_view_ = query_layout_container_->AddChildView(
+        std::make_unique<AssistantQueryView>());
     pending_query_view_->AddObserver(this);
 
     // The query view will be animated on its own layer.
     pending_query_view_->SetPaintToLayer();
     pending_query_view_->layer()->SetFillsBoundsOpaquely(false);
-
-    query_layout_container_->AddChildView(pending_query_view_);
 
     // Starting from 0% opacity...
     pending_query_view_->layer()->SetOpacity(0.f);

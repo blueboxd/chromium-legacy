@@ -89,7 +89,8 @@ class UtilitySandboxedProcessLauncherDelegate
 #if defined(OS_CHROMEOS)
         sandbox_type_ == service_manager::SandboxType::kIme ||
 #endif  // OS_CHROMEOS
-        sandbox_type_ == service_manager::SandboxType::kAudio;
+        sandbox_type_ == service_manager::SandboxType::kAudio ||
+        sandbox_type_ == service_manager::SandboxType::kSoda;
     DCHECK(supported_sandbox_type);
 #endif  // DCHECK_IS_ON()
   }
@@ -173,7 +174,8 @@ class UtilitySandboxedProcessLauncherDelegate
 #if defined(OS_CHROMEOS)
         sandbox_type_ == service_manager::SandboxType::kIme ||
 #endif  // OS_CHROMEOS
-        sandbox_type_ == service_manager::SandboxType::kAudio) {
+        sandbox_type_ == service_manager::SandboxType::kAudio ||
+        sandbox_type_ == service_manager::SandboxType::kSoda) {
       return nullptr;
     }
     return service_manager::GetGenericZygote();

@@ -132,7 +132,6 @@ class CORE_EXPORT LocalFrameUkmAggregator
     kIntersectionObservation,
     kPaint,
     kPrePaint,
-    kStyleAndLayout,  // Remove for M-80
     kStyle,
     kLayout,
     kForcedStyleAndLayout,
@@ -168,7 +167,6 @@ class CORE_EXPORT LocalFrameUkmAggregator
                                              {"IntersectionObservation", true},
                                              {"Paint", true},
                                              {"PrePaint", true},
-                                             {"StyleAndLayout", true},
                                              {"Style", true},
                                              {"Layout", true},
                                              {"ForcedStyleAndLayout", true},

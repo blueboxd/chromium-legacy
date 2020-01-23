@@ -10,17 +10,13 @@
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_timeouts.h"
-#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/captive_portal/captive_portal_testing_utils.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_source.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,18 +28,15 @@ namespace {
 
 // An observer watches the CaptivePortalDetector.  It tracks the last
 // received result and the total number of received results.
-class CaptivePortalObserver : public content::NotificationObserver {
+class CaptivePortalObserver {
  public:
-  CaptivePortalObserver(Profile* profile,
-                        CaptivePortalService* captive_portal_service)
-      : captive_portal_result_(
-            captive_portal_service->last_detection_result()),
+  explicit CaptivePortalObserver(CaptivePortalService* captive_portal_service)
+      : captive_portal_result_(captive_portal_service->last_detection_result()),
         num_results_received_(0),
-        profile_(profile),
-        captive_portal_service_(captive_portal_service) {
-    registrar_.Add(this, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
-                   content::Source<content::BrowserContext>(profile_));
-  }
+        captive_portal_service_(captive_portal_service),
+        subscription_(captive_portal_service->RegisterCallback(
+            base::Bind(&CaptivePortalObserver::Observe,
+                       base::Unretained(this)))) {}
 
   CaptivePortalResult captive_portal_result() const {
     return captive_portal_result_;
@@ -52,30 +45,20 @@ class CaptivePortalObserver : public content::NotificationObserver {
   int num_results_received() const { return num_results_received_; }
 
  private:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    ASSERT_EQ(type, chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT);
-    ASSERT_EQ(profile_, content::Source<content::BrowserContext>(source).ptr());
+  void Observe(const CaptivePortalService::Results& results) {
+    EXPECT_EQ(captive_portal_result_, results.previous_result);
+    EXPECT_EQ(captive_portal_service_->last_detection_result(), results.result);
 
-    CaptivePortalService::Results *results =
-        content::Details<CaptivePortalService::Results>(details).ptr();
-
-    EXPECT_EQ(captive_portal_result_, results->previous_result);
-    EXPECT_EQ(captive_portal_service_->last_detection_result(),
-              results->result);
-
-    captive_portal_result_ = results->result;
+    captive_portal_result_ = results.result;
     ++num_results_received_;
   }
 
   CaptivePortalResult captive_portal_result_;
   int num_results_received_;
 
-  Profile* profile_;
   CaptivePortalService* captive_portal_service_;
 
-  content::NotificationRegistrar registrar_;
+  std::unique_ptr<CaptivePortalService::Subscription> subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalObserver);
 };
@@ -164,7 +147,7 @@ class CaptivePortalServiceTest : public testing::Test,
     AdvanceTime(expected_delay);
     ASSERT_EQ(base::TimeDelta(), GetTimeUntilNextRequest());
 
-    CaptivePortalObserver observer(profile(), service());
+    CaptivePortalObserver observer(service());
     service()->DetectCaptivePortal();
 
     EXPECT_EQ(CaptivePortalService::STATE_TIMER_RUNNING, service()->state());
@@ -196,7 +179,7 @@ class CaptivePortalServiceTest : public testing::Test,
     AdvanceTime(expected_delay);
     ASSERT_EQ(base::TimeDelta(), GetTimeUntilNextRequest());
 
-    CaptivePortalObserver observer(profile(), service());
+    CaptivePortalObserver observer(service());
     service()->DetectCaptivePortal();
 
     EXPECT_EQ(CaptivePortalService::STATE_TIMER_RUNNING, service()->state());
@@ -295,7 +278,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalTwoProfiles) {
   TestingProfile profile2;
   std::unique_ptr<CaptivePortalService> service2(
       new CaptivePortalService(&profile2, profile2.GetPrefs()));
-  CaptivePortalObserver observer2(&profile2, service2.get());
+  CaptivePortalObserver observer2(service2.get());
 
   RunTest(captive_portal::RESULT_INTERNET_CONNECTED, net::OK, 204, 0, nullptr);
   EXPECT_EQ(0, observer2.num_results_received());
@@ -376,7 +359,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabled) {
 // works.
 TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhileRunning) {
   Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
-  CaptivePortalObserver observer(profile(), service());
+  CaptivePortalObserver observer(service());
 
   // Needed to create the URLFetcher, even if it never returns any results.
   service()->DetectCaptivePortal();
@@ -406,7 +389,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefDisabledWhilePending) {
   Initialize(CaptivePortalService::SKIP_OS_CHECK_FOR_TESTING);
   set_initial_backoff_no_portal(base::TimeDelta::FromDays(1));
 
-  CaptivePortalObserver observer(profile(), service());
+  CaptivePortalObserver observer(service());
   service()->DetectCaptivePortal();
   EXPECT_FALSE(FetchingURL());
   EXPECT_TRUE(TimerRunning());
@@ -434,7 +417,7 @@ TEST_F(CaptivePortalServiceTest, CaptivePortalPrefEnabledWhilePending) {
   EnableCaptivePortalDetectionPreference(false);
   RunDisabledTest(0);
 
-  CaptivePortalObserver observer(profile(), service());
+  CaptivePortalObserver observer(service());
   service()->DetectCaptivePortal();
   EXPECT_FALSE(FetchingURL());
   EXPECT_TRUE(TimerRunning());

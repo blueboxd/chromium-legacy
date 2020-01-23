@@ -61,7 +61,7 @@ bool CheckForOversizedImagesPolicy(const LayoutImage& layout_image,
       cached_image ? cached_image->Url().GetString() : g_empty_string;
 
   return !layout_image.GetDocument().IsFeatureEnabled(
-      mojom::FeaturePolicyFeature::kOversizedImages,
+      mojom::blink::FeaturePolicyFeature::kOversizedImages,
       blink::PolicyValue(
           std::max(downscale_ratio_width, downscale_ratio_height),
           blink::mojom::PolicyValueType::kDecDouble),

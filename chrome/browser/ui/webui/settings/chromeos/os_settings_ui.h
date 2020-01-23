@@ -18,7 +18,11 @@
 namespace content {
 class WebUIDataSource;
 class WebUIMessageHandler;
-}
+}  // namespace content
+
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
 
 namespace chromeos {
 namespace settings {
@@ -26,6 +30,8 @@ namespace settings {
 // The WebUI handler for chrome://os-settings.
 class OSSettingsUI : public ui::MojoWebUIController {
  public:
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
   explicit OSSettingsUI(content::WebUI* web_ui);
   ~OSSettingsUI() override;
 

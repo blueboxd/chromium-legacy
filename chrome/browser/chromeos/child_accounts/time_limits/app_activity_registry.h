@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_report_interface.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_service_wrapper.h"
@@ -30,6 +31,18 @@ namespace app_time {
 // 30 days if upload did not happen.
 class AppActivityRegistry : public AppServiceWrapper::EventListener {
  public:
+  // Used for tests to get internal implementation details.
+  class TestApi {
+   public:
+    explicit TestApi(AppActivityRegistry* registry);
+    ~TestApi();
+
+    const base::Optional<AppLimit>& GetAppLimit(const AppId& app_id) const;
+
+   private:
+    AppActivityRegistry* const registry_;
+  };
+
   explicit AppActivityRegistry(AppServiceWrapper* app_service_wrapper);
   AppActivityRegistry(const AppActivityRegistry&) = delete;
   AppActivityRegistry& operator=(const AppActivityRegistry&) = delete;
@@ -66,6 +79,9 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
   // Removes entries for uninstalled apps if there is no more relevant activity
   // data left.
   void CleanRegistry(base::Time timestamp);
+
+  // Updates time limits for the installed apps.
+  void UpdateAppLimits(const std::map<AppId, AppLimit>& app_limits);
 
  private:
   // Bundles detailed data stored for a specific app.

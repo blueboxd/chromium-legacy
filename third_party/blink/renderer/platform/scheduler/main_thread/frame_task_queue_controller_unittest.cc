@@ -260,38 +260,24 @@ TEST_F(FrameTaskQueueControllerTest,
 TEST_F(FrameTaskQueueControllerTest, AddWebSchedulingTaskQueues) {
   scoped_refptr<MainThreadTaskQueue> task_queue =
       frame_task_queue_controller_->NewWebSchedulingTaskQueue(
-          QueueTraits(), WebSchedulingPriority::kImmediatePriority);
+          QueueTraits(), WebSchedulingPriority::kUserBlockingPriority);
   EXPECT_EQ(1u,
             frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
-  EXPECT_EQ(WebSchedulingPriority::kImmediatePriority,
+  EXPECT_EQ(WebSchedulingPriority::kUserBlockingPriority,
             task_queue->web_scheduling_priority().value());
 
   task_queue = frame_task_queue_controller_->NewWebSchedulingTaskQueue(
-      QueueTraits(), WebSchedulingPriority::kHighPriority);
+      QueueTraits(), WebSchedulingPriority::kUserVisiblePriority);
   EXPECT_EQ(2u,
             frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
-  EXPECT_EQ(WebSchedulingPriority::kHighPriority,
+  EXPECT_EQ(WebSchedulingPriority::kUserVisiblePriority,
             task_queue->web_scheduling_priority().value());
 
   task_queue = frame_task_queue_controller_->NewWebSchedulingTaskQueue(
-      QueueTraits(), WebSchedulingPriority::kDefaultPriority);
+      QueueTraits(), WebSchedulingPriority::kBackgroundPriority);
   EXPECT_EQ(3u,
             frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
-  EXPECT_EQ(WebSchedulingPriority::kDefaultPriority,
-            task_queue->web_scheduling_priority().value());
-
-  task_queue = frame_task_queue_controller_->NewWebSchedulingTaskQueue(
-      QueueTraits(), WebSchedulingPriority::kLowPriority);
-  EXPECT_EQ(4u,
-            frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
-  EXPECT_EQ(WebSchedulingPriority::kLowPriority,
-            task_queue->web_scheduling_priority().value());
-
-  task_queue = frame_task_queue_controller_->NewWebSchedulingTaskQueue(
-      QueueTraits(), WebSchedulingPriority::kIdlePriority);
-  EXPECT_EQ(5u,
-            frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
-  EXPECT_EQ(WebSchedulingPriority::kIdlePriority,
+  EXPECT_EQ(WebSchedulingPriority::kBackgroundPriority,
             task_queue->web_scheduling_priority().value());
 }
 
@@ -299,18 +285,18 @@ TEST_F(FrameTaskQueueControllerTest,
        AddMultipleSamePriorityWebSchedulingTaskQueues) {
   scoped_refptr<MainThreadTaskQueue> task_queue1 =
       frame_task_queue_controller_->NewWebSchedulingTaskQueue(
-          QueueTraits(), WebSchedulingPriority::kImmediatePriority);
+          QueueTraits(), WebSchedulingPriority::kUserBlockingPriority);
   EXPECT_EQ(1u,
             frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
-  EXPECT_EQ(WebSchedulingPriority::kImmediatePriority,
+  EXPECT_EQ(WebSchedulingPriority::kUserBlockingPriority,
             task_queue1->web_scheduling_priority().value());
 
   scoped_refptr<MainThreadTaskQueue> task_queue2 =
       frame_task_queue_controller_->NewWebSchedulingTaskQueue(
-          QueueTraits(), WebSchedulingPriority::kImmediatePriority);
+          QueueTraits(), WebSchedulingPriority::kUserBlockingPriority);
   EXPECT_EQ(2u,
             frame_task_queue_controller_->GetAllTaskQueuesAndVoters().size());
-  EXPECT_EQ(WebSchedulingPriority::kImmediatePriority,
+  EXPECT_EQ(WebSchedulingPriority::kUserBlockingPriority,
             task_queue2->web_scheduling_priority().value());
 
   EXPECT_NE(task_queue1.get(), task_queue2.get());

@@ -283,6 +283,11 @@ SkColor UnifiedSystemTrayView::GetBackgroundColor() {
 }
 
 // static
+SkColor UnifiedSystemTrayView::GetFocusRingColor() {
+  return ShelfConfig::Get()->shelf_focus_border_color();
+}
+
+// static
 std::unique_ptr<views::Background> UnifiedSystemTrayView::CreateBackground() {
   return views::CreateBackgroundFromPainter(
       views::Painter::CreateSolidRoundRectPainter(GetBackgroundColor(),

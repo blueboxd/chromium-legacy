@@ -32,8 +32,7 @@ constexpr int kResizeInsideBoundsSize = 1;
 // Background color used for the Chrome OS boot splash screen.
 constexpr SkColor kChromeOsBootColor = SkColorSetRGB(0xfe, 0xfe, 0xfe);
 
-// The border color of keyboard focus for launcher items and system tray.
-constexpr SkColor kFocusBorderColor = SkColorSetA(gfx::kGoogleBlue500, 0x99);
+// The border thickness of keyboard focus for launcher items and system tray.
 constexpr int kFocusBorderThickness = 2;
 
 constexpr int kDefaultLargeCursorSize = 64;

@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
 
 namespace blink {
@@ -139,13 +138,7 @@ blink::mojom::DisplayMode MediaValues::CalculateDisplayMode(LocalFrame* frame) {
 }
 
 bool MediaValues::CalculateThreeDEnabled(LocalFrame* frame) {
-  DCHECK(frame);
-  DCHECK(frame->ContentLayoutObject());
-  DCHECK(frame->ContentLayoutObject()->Compositor());
-  bool three_d_enabled = false;
-  if (LayoutView* view = frame->ContentLayoutObject())
-    three_d_enabled = view->Compositor()->HasAcceleratedCompositing();
-  return three_d_enabled;
+  return frame->GetPage()->GetSettings().GetAcceleratedCompositingEnabled();
 }
 
 bool MediaValues::CalculateInImmersiveMode(LocalFrame* frame) {

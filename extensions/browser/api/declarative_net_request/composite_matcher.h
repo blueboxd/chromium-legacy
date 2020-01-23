@@ -15,6 +15,10 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/common/permissions/permissions_data.h"
 
+namespace content {
+class RenderFrameHost;
+}  // namespace content
+
 namespace extensions {
 namespace declarative_net_request {
 
@@ -69,6 +73,9 @@ class CompositeMatcher {
 
   // Returns whether this modifies "extraHeaders".
   bool HasAnyExtraHeadersMatcher() const;
+
+  void OnRenderFrameDeleted(content::RenderFrameHost* host);
+  void OnDidFinishNavigation(content::RenderFrameHost* host);
 
  private:
   bool ComputeHasAnyExtraHeadersMatcher() const;

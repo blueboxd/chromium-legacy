@@ -16,7 +16,12 @@ namespace weblayer {
 TestNavigationObserver::TestNavigationObserver(const GURL& url,
                                                NavigationEvent target_event,
                                                Shell* shell)
-    : url_(url), target_event_(target_event), tab_(shell->tab()) {
+    : TestNavigationObserver(url, target_event, shell->tab()) {}
+
+TestNavigationObserver::TestNavigationObserver(const GURL& url,
+                                               NavigationEvent target_event,
+                                               Tab* tab)
+    : url_(url), target_event_(target_event), tab_(tab) {
   tab_->GetNavigationController()->AddObserver(this);
 }
 

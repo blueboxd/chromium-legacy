@@ -10,7 +10,6 @@
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
-#include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -18,7 +17,6 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/display/display.h"
@@ -29,12 +27,6 @@
 
 namespace ash {
 namespace {
-
-// Checks if virtual keyboard is force-enabled by enable-virtual-keyboard flag.
-bool IsVirtualKeyboardEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      keyboard::switches::kEnableVirtualKeyboard);
-}
 
 void ResetVirtualKeyboard() {
   keyboard::SetKeyboardEnabledFromShelf(false);
@@ -136,13 +128,6 @@ void VirtualKeyboardController::UpdateDevices() {
 }
 
 void VirtualKeyboardController::UpdateKeyboardEnabled() {
-  if (IsVirtualKeyboardEnabled()) {
-    keyboard::SetTouchKeyboardEnabled(
-        Shell::Get()
-            ->tablet_mode_controller()
-            ->AreInternalInputDeviceEventsBlocked());
-    return;
-  }
   bool ignore_internal_keyboard = Shell::Get()
                                       ->tablet_mode_controller()
                                       ->AreInternalInputDeviceEventsBlocked();

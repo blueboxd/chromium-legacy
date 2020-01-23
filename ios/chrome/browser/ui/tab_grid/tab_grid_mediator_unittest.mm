@@ -283,18 +283,10 @@ class TabGridMediatorTest : public PlatformTest {
 
   // Prepare the mock method to restore the tabs.
   void PrepareForRestoration() {
-    [[[tab_model_ expect] andDo:^(NSInvocation* inv) {
-      SessionWindowIOS* sessionWindow;
-      [inv retainArguments];
-      [inv getArgument:&sessionWindow atIndex:2];
       TestSessionService* test_session_service =
           [[TestSessionService alloc] init];
       SessionRestorationBrowserAgent::CreateForBrowser(browser_.get(),
                                                        test_session_service);
-      SessionRestorationBrowserAgent* session_restoration_agent =
-          SessionRestorationBrowserAgent::FromBrowser(browser_.get());
-      session_restoration_agent->RestoreSessionWindow(sessionWindow);
-    }] restoreSessionWindow:[OCMArg any] forInitialRestore:NO];
   }
 
  protected:

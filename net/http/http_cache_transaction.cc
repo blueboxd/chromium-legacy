@@ -22,6 +22,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"  // For HexEncode.
@@ -79,6 +80,12 @@ void RecordNoStoreHeaderHistogram(int load_flags,
         "Net.MainFrameNoStore",
         response->headers->HasHeaderValue("cache-control", "no-store"));
   }
+}
+
+bool IsOnBatteryPower() {
+  if (base::PowerMonitor::IsInitialized())
+    return base::PowerMonitor::IsOnBatteryPower();
+  return false;
 }
 
 enum ExternallyConditionalizedType {
@@ -1881,7 +1888,7 @@ int HttpCache::Transaction::DoUpdateCachedResponse() {
   }
 
   if (response_.headers->HasHeaderValue("cache-control", "no-store") ||
-      ShouldDisableMediaCaching(response_.headers.get())) {
+      ShouldDisableCaching(response_.headers.get())) {
     if (!entry_->doomed) {
       int ret = cache_->DoomEntry(cache_key_, nullptr);
       DCHECK_EQ(OK, ret);
@@ -3110,7 +3117,7 @@ int HttpCache::Transaction::WriteResponseInfoToEntry(
   // status to a net error and replay the net error.
   if ((response.headers->HasHeaderValue("cache-control", "no-store")) ||
       IsCertStatusError(response.ssl_info.cert_status) ||
-      ShouldDisableMediaCaching(response.headers.get())) {
+      ShouldDisableCaching(response.headers.get())) {
     bool stopped = StopCachingImpl(false);
     DCHECK(stopped);
     if (net_log_.IsCapturing())
@@ -3593,23 +3600,23 @@ void HttpCache::Transaction::TransitionToState(State state) {
   next_state_ = state;
 }
 
-bool HttpCache::Transaction::ShouldDisableMediaCaching(
+bool HttpCache::Transaction::ShouldDisableCaching(
     const HttpResponseHeaders* headers) const {
   bool disable_caching = false;
-  if (base::FeatureList::IsEnabled(features::kTurnOffStreamingMediaCaching)) {
-    // If the acquired content is 'large' and not already cached, and we have
-    // a MIME type of audio or video, then disable the cache for this response.
-    // We based our initial definition of 'large' on the disk cache maximum
-    // block size of 16K, which we observed captures the majority of responses
-    // from various MSE implementations.
+  if (base::FeatureList::IsEnabled(features::kTurnOffStreamingMediaCaching) &&
+      IsOnBatteryPower()) {
+    // If we're running on battery, and the acquired content is 'large' and
+    // not already cached, and we have a MIME type of audio or video, then
+    // disable the cache for this response. We based our initial definition of
+    // 'large' on the disk cache maximum block size of 16K, which we observed
+    // captures the majority of responses from various MSE implementations.
     static constexpr int kMaxContentSize = 4096 * 4;
     std::string mime_type;
+    base::CompareCase insensitive_ascii = base::CompareCase::INSENSITIVE_ASCII;
     if (headers->GetContentLength() > kMaxContentSize &&
         headers->response_code() != 304 && headers->GetMimeType(&mime_type) &&
-        (base::StartsWith(mime_type, "video",
-                          base::CompareCase::INSENSITIVE_ASCII) ||
-         base::StartsWith(mime_type, "audio",
-                          base::CompareCase::INSENSITIVE_ASCII))) {
+        (base::StartsWith(mime_type, "video", insensitive_ascii) ||
+         base::StartsWith(mime_type, "audio", insensitive_ascii))) {
       disable_caching = true;
       MediaCacheStatusResponseHistogram(
           MediaResponseCacheType::kMediaResponseTransactionCacheDisabled);

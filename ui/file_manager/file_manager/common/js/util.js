@@ -1376,14 +1376,6 @@ util.timeoutPromise = (promise, ms, opt_message) => {
 };
 
 /**
- * Examines whether the feedback panel mode is enabled.
- * @return {boolean} True if the feedback panel UI mode is enabled.
- */
-util.isFeedbackPanelEnabled = () => {
-  return loadTimeData.getBoolean('FEEDBACK_PANEL_ENABLED');
-};
-
-/**
  * Returns true when FilesNG is enabled.
  * @return {boolean}
  */

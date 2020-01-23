@@ -211,6 +211,9 @@ class RootNodeWrapper extends SARootNode {
     /** @private {!AutomationNode} */
     this.baseNode_ = baseNode;
 
+    /** @private {boolean} */
+    this.invalidated_ = false;
+
     /** @private {function(chrome.automation.AutomationEvent)} */
     this.childrenChangedHandler_ = this.refresh_.bind(this);
 
@@ -256,7 +259,11 @@ class RootNodeWrapper extends SARootNode {
 
   /** @override */
   isValidGroup() {
-    return !!this.baseNode_.role && super.isValidGroup();
+    if (!this.baseNode_.role) {
+      // If the underlying automation node has been invalidated, return false.
+      return false;
+    }
+    return !this.invalidated_ && super.isValidGroup();
   }
 
   /** @override */
@@ -302,6 +309,8 @@ class RootNodeWrapper extends SARootNode {
     try {
       RootNodeWrapper.findAndSetChildren(this, childConstructor);
     } catch (e) {
+      this.onUnfocus();
+      this.invalidated_ = true;
       SwitchAccess.moveToValidNode();
       return;
     }

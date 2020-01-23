@@ -48,6 +48,7 @@ source_set("feed_core") {
   ]
 
   deps = [
+    "//components/feed/core/common:feed_core_common",
     "//components/prefs",
     "//components/signin/public/identity_manager",
     "//components/variations",

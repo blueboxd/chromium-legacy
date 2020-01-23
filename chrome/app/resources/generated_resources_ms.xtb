@@ -4057,7 +4057,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="677965093459947883">Sangat kecil</translation>
 <translation id="6781284683813954823">Pautan Coretan</translation>
 <translation id="6781978626986383437">Sandaran Linux dibatalkan</translation>
-<translation id="6785915470941880363">Penatalan songsang <ph name="LINK_BEGIN" />ketahui lebih lanjut<ph name="LINK_END" /></translation>
+<translation id="6785915470941880363">Penatalan songsang <ph name="LINK_BEGIN" />Ketahui lebih lanjut<ph name="LINK_END" /></translation>
 <translation id="6786747875388722282">Pelanjutan</translation>
 <translation id="6787839852456839824">Pintasan papan kekunci</translation>
 <translation id="6788210894632713004">Sambungan dinyahpek</translation>
@@ -4471,7 +4471,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="7352651011704765696">Kesilapan telah berlaku</translation>
 <translation id="735361434055555355">Memasang Linux...</translation>
 <translation id="7353887511974462734">Tambahkan tab pada Kumpulan yang Sedia Ada</translation>
-<translation id="7354341762311560488">Penderia cap jari ialah kekunci sebelah kanan di bahagian bawah pada papan kekunci anda. Sentuh dengan lembut menggunakan mana-mana jari.</translation>
+<translation id="7354341762311560488">Penderia cap jari ialah kekunci pada bahagian bawah sebelah kiri papan kekunci anda. Sentuh dengan lembut menggunakan mana-mana jari.</translation>
 <translation id="735745346212279324">VPN diputuskan sambungan</translation>
 <translation id="7359588939039777303">Iklan disekat.</translation>
 <translation id="7360183604634508679">Menu penanda halaman</translation>
@@ -5023,7 +5023,6 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="8101987792947961127">Powerwash diperlukan pada but semula seterusnya</translation>
 <translation id="8102159139658438129">Pergi ke <ph name="LINK_BEGIN" />Tetapan<ph name="LINK_END" /> untuk melihat pilihan bagi telefon anda yang disambungkan</translation>
 <translation id="8104696615244072556">Powerwash peranti <ph name="IDS_SHORT_PRODUCT_NAME" /> anda dan kembali ke versi terdahulu.</translation>
-<translation id="8106661353233173262">Kesilapan telah berlaku. Fail yang diimbas telah tamat masa.</translation>
 <translation id="8107015733319732394">Memasang Gedung Google Play pada <ph name="DEVICE_TYPE" /> anda. Proses ini mungkin mengambil masa beberapa minit.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Tiada kuki pihak ketiga}=1{1 kuki pihak ketiga disekat}other{# kuki pihak ketiga disekat}}</translation>
 <translation id="810875025413331850">Tiada peranti berdekatan dijumpai.</translation>

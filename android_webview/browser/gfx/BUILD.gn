@@ -32,6 +32,8 @@ source_set("gfx") {
     "compositor_frame_producer.h",
     "deferred_gpu_command_service.cc",
     "deferred_gpu_command_service.h",
+    "display_scheduler_webview.cc",
+    "display_scheduler_webview.h",
     "gpu_service_web_view.cc",
     "gpu_service_web_view.h",
     "hardware_renderer.cc",

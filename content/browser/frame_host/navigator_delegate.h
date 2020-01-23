@@ -50,8 +50,7 @@ class CONTENT_EXPORT NavigatorDelegate {
   // Document load in |render_frame_host| failed.
   virtual void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
                                     const GURL& url,
-                                    int error_code,
-                                    const base::string16& error_description) {}
+                                    int error_code) {}
 
   // Handles post-navigation tasks in navigation BEFORE the entry has been
   // committed to the NavigationController.

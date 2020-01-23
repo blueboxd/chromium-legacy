@@ -651,7 +651,7 @@
 <translation id="1879000426787380528">Bejelentkezés mint</translation>
 <translation id="1880905663253319515">Törli a "<ph name="CERTIFICATE_NAME" />" tanúsítványt?</translation>
 <translation id="1884013283844450420"><ph name="NETWORK_INDEX" />. hálózat (összesen <ph name="NETWORK_COUNT" />), <ph name="NETWORK_NAME" />, csatlakozás</translation>
-<translation id="1884930769492918228">Kamera pozíciójának követése és a szoba leképezése</translation>
+<translation id="1884930769492918228">Kamera pozíciójának követése és a szoba feltérképezése</translation>
 <translation id="1886996562706621347">A webhelyek kérhetik, hogy protokollok alapértelmezett kezelői legyenek (ajánlott)</translation>
 <translation id="1887442540531652736">Bejelentkezési hiba</translation>
 <translation id="1887597546629269384">Mondja még egyszer azt, hogy „Ok Google”</translation>
@@ -2399,7 +2399,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4353114845960720315">Amíg VR-módban van, a webhely információkhoz juthat bizonyos dolgokról:</translation>
 <translation id="4354344420232759511">Az Ön által felkeresett webhelyek itt jelennek meg</translation>
 <translation id="435527878592612277">Válassza ki a fotóját</translation>
-<translation id="4357784477082216550">A webhely szeretné követni a kamera pozícióját és leképezni a szobát: <ph name="URL" /></translation>
+<translation id="4357784477082216550">A webhely szeretné követni a kamera pozícióját és feltérképezni a szobát: <ph name="URL" /></translation>
 <translation id="4358313196493694334">Kattintási hely stabilizálása</translation>
 <translation id="4359408040881008151">Telepítve az ezt nélkülözni nem tudó bővítmény(ek) miatt.</translation>
 <translation id="4359717112757026264">Városkép</translation>
@@ -5024,7 +5024,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8101987792947961127">Powerwash szükséges a következő újraindításkor</translation>
 <translation id="8102159139658438129">A <ph name="LINK_BEGIN" />Beállítások<ph name="LINK_END" /> között megtalálja a csatlakoztatott telefonra vonatkozó lehetőségeket.</translation>
 <translation id="8104696615244072556">Hajtson végre Powerwash műveletet <ph name="IDS_SHORT_PRODUCT_NAME" /> eszközén, és térjen vissza a korábbi verzióhoz.</translation>
-<translation id="8106661353233173262">Hiba történt. A fájl ellenőrzése túllépte az időkorlátot.</translation>
 <translation id="8107015733319732394">Folyamatban van a Google Play Áruház telepítése a(z) <ph name="DEVICE_TYPE" /> eszközre. Ez eltarthat néhány percig.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Nem találhatók harmadik féltől származó cookie-k}=1{1 harmadik féltől származó cookie letiltva}other{# harmadik féltől származó cookie letiltva}}</translation>
 <translation id="810875025413331850">Nem található közeli eszköz.</translation>

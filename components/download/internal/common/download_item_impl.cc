@@ -499,8 +499,6 @@ void DownloadItemImpl::ValidateDangerousDownload() {
   if (IsDone() || !IsDangerous())
     return;
 
-  RecordDangerousDownloadAccept(GetDangerType(), GetTargetFilePath());
-
   danger_type_ = DOWNLOAD_DANGER_TYPE_USER_VALIDATED;
 
   TRACE_EVENT_INSTANT1("download", "DownloadItemSaftyStateUpdated",

@@ -5,6 +5,5 @@
 import("//build/config/android/rules.gni")
 
 java_prebuilt("intellij_annotations_java") {
-  testonly = true
   jar_path = "lib/annotations.jar"
 }

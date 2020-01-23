@@ -76,7 +76,8 @@ void AssistantFooterView::InitLayout() {
       chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted;
 
   // Suggestion container.
-  suggestion_container_ = new SuggestionContainerView(delegate_);
+  suggestion_container_ =
+      AddChildView(std::make_unique<SuggestionContainerView>(delegate_));
   suggestion_container_->set_can_process_events_within_subtree(consent_given);
 
   // Suggestion container will be animated on its own layer.
@@ -85,10 +86,9 @@ void AssistantFooterView::InitLayout() {
   suggestion_container_->layer()->SetOpacity(consent_given ? 1.f : 0.f);
   suggestion_container_->SetVisible(consent_given);
 
-  AddChildView(suggestion_container_);
 
   // Opt in view.
-  opt_in_view_ = new AssistantOptInView(delegate_);
+  opt_in_view_ = AddChildView(std::make_unique<AssistantOptInView>(delegate_));
   opt_in_view_->set_can_process_events_within_subtree(!consent_given);
 
   // Opt in view will be animated on its own layer.
@@ -96,8 +96,6 @@ void AssistantFooterView::InitLayout() {
   opt_in_view_->layer()->SetFillsBoundsOpaquely(false);
   opt_in_view_->layer()->SetOpacity(consent_given ? 0.f : 1.f);
   opt_in_view_->SetVisible(!consent_given);
-
-  AddChildView(opt_in_view_);
 }
 
 void AssistantFooterView::OnAssistantConsentStatusChanged(int consent_status) {

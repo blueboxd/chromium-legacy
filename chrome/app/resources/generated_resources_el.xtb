@@ -5024,7 +5024,6 @@
 <translation id="8101987792947961127">Απαιτείται Powerwash στην επόμενη επανεκκίνηση</translation>
 <translation id="8102159139658438129">Μεταβείτε στις <ph name="LINK_BEGIN" />Ρυθμίσεις<ph name="LINK_END" />, για να δείτε τις επιλογές που έχετε για το συνδεδεμένο τηλέφωνο</translation>
 <translation id="8104696615244072556">Επαναφέρετε (powerwash) τη συσκευή σας <ph name="IDS_SHORT_PRODUCT_NAME" /> και επιστρέψτε στην προηγούμενη έκδοση</translation>
-<translation id="8106661353233173262">Παρουσιάστηκε κάποιο πρόβλημα. Ο χρόνος σάρωσης του αρχείου έχει λήξει.</translation>
 <translation id="8107015733319732394">Εγκατάσταση του Google Play Store στη συσκευή σας <ph name="DEVICE_TYPE" />. Αυτό μπορεί να διαρκέσει μερικά λεπτά.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Δεν υπάρχουν cookie τρίτου μέρους}=1{Αποκλείστηκε 1 cookie τρίτου μέρους}other{Αποκλείστηκαν # cookie τρίτου μέρους}}</translation>
 <translation id="810875025413331850">Δεν βρέθηκαν κοντινές συσκευές.</translation>

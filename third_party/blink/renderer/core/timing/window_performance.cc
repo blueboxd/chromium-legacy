@@ -209,13 +209,13 @@ WindowPerformance::CreateNavigationTimingInstance() {
   ResourceTimingInfo* info = document_loader->GetNavigationTimingInfo();
   if (!info)
     return nullptr;
-  WebVector<WebServerTimingInfo> server_timing =
+  HeapVector<Member<PerformanceServerTiming>> server_timing =
       PerformanceServerTiming::ParseServerTiming(*info);
-  if (!server_timing.empty())
+  if (!server_timing.IsEmpty())
     document_loader->CountUse(WebFeature::kPerformanceServerTiming);
 
   return MakeGarbageCollected<PerformanceNavigationTiming>(
-      GetFrame(), info, time_origin_, server_timing);
+      GetFrame(), info, time_origin_, std::move(server_timing));
 }
 
 void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {

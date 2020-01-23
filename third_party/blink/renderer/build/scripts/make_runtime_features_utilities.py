@@ -3,68 +3,47 @@
 # found in the LICENSE file.
 
 
-from collections import defaultdict
-
-
-def _runtime_features_graph_sanity_check(features):
-    """
-    Raises AssertionError when sanity check failed.
-    @param features: a List[Dict]. Each Dict must have key 'depends_on' and 'name'
-    @returns None
-    """
-    feature_pool = {str(f['name']) for f in features}
-    for f in features:
-        for d in f['depends_on']:
-            assert d in feature_pool, "{} not found in runtime_enabled_features.json5".format(d)
-
-    def cyclic(features):
-        """
-        Returns True if the runtime features graph contains a cycle
-        @returns bool
-        """
-        graph = {str(feature['name']): feature['depends_on'] for feature in features}
-        path = set()
-
-        def visit(vertex):
-            path.add(vertex)
-            for neighbor in graph[vertex]:
-                if neighbor in path or visit(neighbor):
-                    return True
-            path.remove(vertex)
-            return False
-
-        return any(visit(str(f['name'])) for f in features)
-
-    assert not cyclic(features), "Cycle found in dependency graph"
-
-
-def origin_trials(features):
-    """
-    This function returns all features that are in origin trial.
-    The dependency is considered in origin trial if itself is in origin trial
-    or any of its dependencies are in origin trial. Propagate dependency
-    tag use DFS can find all features that are in origin trial.
-
-    @param features: a List[Dict]. Each Dict much has key named 'depends_on'
-    @returns Set[str(runtime feature name)]
-    """
-    _runtime_features_graph_sanity_check(features)
-
-    origin_trials_set = set()
-
-    graph = defaultdict(list)
+def init_graph(features):
+    graph = {}
     for feature in features:
-        for dependency in feature['depends_on']:
-            graph[dependency].append(str(feature['name']))
+        graph[str(feature['name'])] = []
+    return graph
+
+
+def check_if_dependency_graph_contains_cycle(graph):
+    state = {}
+    visited, done = 0, 1
 
     def dfs(node):
-        origin_trials_set.add(node)
-        for dependent in graph[node]:
-            if dependent not in origin_trials_set:
-                dfs(dependent)
+        state[node] = visited
+        for neighbor in graph.get(node, []):
+            neighbor_state = state.get(neighbor)
+            if neighbor_state == visited:
+                raise Exception('Detected cycle in feature dependencies.')
+            if neighbor_state == done:
+                continue
+            dfs(neighbor)
+        state[node] = done
+
+    for feature in graph:
+        if feature not in state:
+            dfs(feature)
+
+
+# Marks a feature to be in origin trials if
+# one of its dependencies is in origin trials.
+def set_origin_trials_features(features, graph):
+    in_origin_trial = set()
+
+    def dfs(node):
+        in_origin_trial.add(node)
+        for neighbor in graph[node]:
+            if neighbor not in in_origin_trial:
+                dfs(neighbor)
 
     for feature in features:
         if feature['origin_trial_feature_name']:
             dfs(str(feature['name']))
-
-    return origin_trials_set
+    # Set 'in_origin_trial' for each feature.
+    for feature in features:
+        feature['in_origin_trial'] = True if str(feature['name']) in in_origin_trial else False

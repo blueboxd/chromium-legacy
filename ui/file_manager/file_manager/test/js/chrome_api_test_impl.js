@@ -10,6 +10,7 @@
  */
 
 // All testing functions in namespace 'test'.
+// eslint-disable-next-line
 var test = test || {};
 
 test.Event = class {
@@ -30,7 +31,7 @@ test.Event = class {
   /** @param {...*} args */
   dispatchEvent(...args) {
     setTimeout(() => {
-      for (let listener of this.listeners_) {
+      for (const listener of this.listeners_) {
         listener(...args);
       }
     }, 0);
@@ -149,9 +150,9 @@ chrome = {
     state_: {},
     local: {
       get: (keys, callback) => {
-        var keys = keys instanceof Array ? keys : [keys];
-        var result = {};
-        keys.forEach(key => {
+        const inKeys = keys instanceof Array ? keys : [keys];
+        const result = {};
+        inKeys.forEach(key => {
           if (key in chrome.storage.state_) {
             result[key] = chrome.storage.state_[key];
           }
@@ -159,7 +160,7 @@ chrome = {
         setTimeout(callback, 0, result);
       },
       set: (items, opt_callback) => {
-        for (var key in items) {
+        for (const key in items) {
           chrome.storage.state_[key] = items[key];
         }
         if (opt_callback) {

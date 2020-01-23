@@ -66,6 +66,8 @@ idl::PrintJobSource PrintJobSourceProtoToIdl(
       return idl::PRINT_JOB_SOURCE_PRINT_PREVIEW;
     case proto::PrintJobInfo_PrintJobSource_ARC:
       return idl::PRINT_JOB_SOURCE_ANDROID_APP;
+    case proto::PrintJobInfo_PrintJobSource_EXTENSION:
+      return idl::PRINT_JOB_SOURCE_EXTENSION;
     default:
       NOTREACHED();
   }

@@ -76,7 +76,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputDeviceBufferQueue final
   // operation
   void DoFinishSwapBuffers(const gfx::Size& size,
                            std::vector<ui::LatencyInfo> latency_info,
-                           Image* image,
+                           const base::WeakPtr<Image>& image,
                            std::vector<OverlayData> overlays,
                            gfx::SwapResult result,
                            std::unique_ptr<gfx::GpuFence> gpu_fence);

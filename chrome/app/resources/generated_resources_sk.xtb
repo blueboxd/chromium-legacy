@@ -734,7 +734,7 @@
 <translation id="2018352199541442911">Je nám ľúto, ale vaše externé pamäťové zariadenie nie je momentálne podporované.</translation>
 <translation id="2019718679933488176">&amp;Otvoriť zvuk na novej karte</translation>
 <translation id="2020183425253392403">Zobraziť nastavenia sieťovej adresy</translation>
-<translation id="2020225359413970060">Skenovať súbor</translation>
+<translation id="2020225359413970060">Skontrolovať súbor</translation>
 <translation id="2022953316617983419">QR kód</translation>
 <translation id="2023167225947895179">PIN sa dá ľahko uhádnuť</translation>
 <translation id="202352106777823113">Sťahovanie trvalo príliš dlho a bolo zastavené sieťou.</translation>
@@ -1371,7 +1371,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2875698561019555027">(Chybové stránky prehliadača Chrome)</translation>
 <translation id="2876336351874743617">2. prst</translation>
 <translation id="2876369937070532032">Pri ohrození zabezpečenia odosiela Googlu webové adresy niektorých navštívených stránok</translation>
-<translation id="2877030408509021795">Skenovanie je dokončené, všetko je v poriadku.</translation>
+<translation id="2877030408509021795">Kontrola je dokončená, všetko je v poriadku.</translation>
 <translation id="2878782256107578644">Prebieha kontrola, chcete ho otvoriť?</translation>
 <translation id="288042212351694283">Prístup k vašim zariadeniam so štandardom Universal 2nd Factor</translation>
 <translation id="2881076733170862447">Keď kliknete na rozšírenie</translation>
@@ -5022,7 +5022,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8101987792947961127">Pri ďalšom spustení sa bude vyžadovať funkcia Powerwash</translation>
 <translation id="8102159139658438129">Ak si chcete zobraziť možnosti pre pripojený telefón, prejdite do časti <ph name="LINK_BEGIN" />Nastavenia<ph name="LINK_END" /></translation>
 <translation id="8104696615244072556">Vykonajte obnovenie Powerwash na svojom zariadení <ph name="IDS_SHORT_PRODUCT_NAME" /> a obnovte na ňom predchádzajúcu verziu.</translation>
-<translation id="8106661353233173262">Vyskytol sa problém. Časový limit kontroly súboru vypršal.</translation>
 <translation id="8107015733319732394">Inštaluje sa Obchod Google Play na zariadení <ph name="DEVICE_TYPE" />. Môžete to chvíľu trvať.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Žiadne súbory cookie tretích strán}=1{Je blokovaný 1 súbor cookie tretej strany}few{Sú blokované # súbory cookie tretích strán}many{# third-party cookies are blocked}other{Je blokovaných # súborov cookie tretích strán}}</translation>
 <translation id="810875025413331850">Nenašli sa žiadne zariadenia nablízku.</translation>
@@ -5106,7 +5105,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8227119283605456246">Pripojiť súbor</translation>
 <translation id="8230134520748321204">Chcete uložiť heslo pre web <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Pomôžte našim programátorom vyriešiť tento problém. Povedzte nám, čo sa stalo presne predtým, než sa zobrazilo chybové hlásenie profilu:</translation>
-<translation id="8236123533334037984">Vaša organizácia skenuje tento nahraný súbor na bezpečnostné schválenie.</translation>
+<translation id="8236123533334037984">Vaša organizácia kontroluje tento nahraný súbor kvôli bezpečnostnému schváleniu.</translation>
 <translation id="8236917170563564587">Zdieľať radšej túto kartu</translation>
 <translation id="8237647586961940482">Tmavoružová a červená</translation>
 <translation id="8241040075392580210">Polojasný</translation>

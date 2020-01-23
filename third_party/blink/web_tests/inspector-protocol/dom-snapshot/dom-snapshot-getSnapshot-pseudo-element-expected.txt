@@ -53,7 +53,7 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
     {
       "nodeType": 3,
       "nodeName": "#text",
-      "nodeValue": "\n    p {\n      position: absolute;\n      height: 200px;\n      width: 200px;\n      font: 10px Ahem;\n    }\n    .c1::first-letter { font-weight: lighter; color: green; }\n    .c2::first-letter { font-weight: bold; color: blue; }\n    .c2::before { counter-increment: square; content: 'square: ' counter(square) url(square.png) '! '; }\n  ",
+      "nodeValue": "\n    p {\n      position: absolute;\n      height: 200px;\n      width: 200px;\n      font: 10px Ahem;\n    }\n    .c1::first-letter { font-weight: lighter; color: green; }\n    .c2::first-letter { font-weight: bold; color: blue; }\n    .c2::before { counter-increment: square; content: 'square: ' counter(square) url(square.png) '! '; }\n    ul { font: 10px Ahem; }\n  ",
       "backendNodeId": "<number>"
     },
     {
@@ -92,7 +92,9 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
         14,
         18,
         19,
-        23
+        23,
+        24,
+        33
       ],
       "layoutNodeIndex": 2
     },
@@ -238,6 +240,93 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
     {
       "nodeType": 3,
       "nodeName": "#text",
+      "nodeValue": "\n    ",
+      "backendNodeId": "<number>"
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "UL",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        25,
+        27,
+        29,
+        31
+      ],
+      "layoutNodeIndex": 21
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "LI",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        26
+      ],
+      "layoutNodeIndex": 22
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "water",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 23
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "LI",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        28
+      ],
+      "layoutNodeIndex": 24
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "malt",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 25
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "LI",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        30
+      ],
+      "layoutNodeIndex": 26
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "hops",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 27
+    },
+    {
+      "nodeType": 1,
+      "nodeName": "LI",
+      "nodeValue": "",
+      "backendNodeId": "<number>",
+      "childNodeIndexes": [
+        32
+      ],
+      "layoutNodeIndex": 28
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
+      "nodeValue": "yeast",
+      "backendNodeId": "<number>",
+      "layoutNodeIndex": 29
+    },
+    {
+      "nodeType": 3,
+      "nodeName": "#text",
       "nodeValue": "\n  \n\n",
       "backendNodeId": "<number>"
     }
@@ -270,7 +359,7 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
         "x": 8,
         "y": 8,
         "width": 784,
-        "height": 584
+        "height": 582
       },
       "styleIndex": 0
     },
@@ -617,6 +706,148 @@ Tests DOMSnapshot.getSnapshot exports layout tree nodes associated with pseudo e
           },
           "startCharacterIndex": 37,
           "numCharacters": 13
+        }
+      ],
+      "styleIndex": 0
+    },
+    {
+      "domNodeIndex": 24,
+      "boundingBox": {
+        "x": 8,
+        "y": 8,
+        "width": 784,
+        "height": 40
+      },
+      "styleIndex": 0
+    },
+    {
+      "domNodeIndex": 25,
+      "boundingBox": {
+        "x": 48,
+        "y": 8,
+        "width": 744,
+        "height": 10
+      },
+      "styleIndex": 0
+    },
+    {
+      "domNodeIndex": 26,
+      "boundingBox": {
+        "x": 48,
+        "y": 8,
+        "width": 50,
+        "height": 10
+      },
+      "layoutText": "water",
+      "inlineTextNodes": [
+        {
+          "boundingBox": {
+            "x": 48,
+            "y": 8,
+            "width": 50,
+            "height": 10
+          },
+          "startCharacterIndex": 0,
+          "numCharacters": 5
+        }
+      ],
+      "styleIndex": 0
+    },
+    {
+      "domNodeIndex": 27,
+      "boundingBox": {
+        "x": 48,
+        "y": 18,
+        "width": 744,
+        "height": 10
+      },
+      "styleIndex": 0
+    },
+    {
+      "domNodeIndex": 28,
+      "boundingBox": {
+        "x": 48,
+        "y": 18,
+        "width": 40,
+        "height": 10
+      },
+      "layoutText": "malt",
+      "inlineTextNodes": [
+        {
+          "boundingBox": {
+            "x": 48,
+            "y": 18,
+            "width": 40,
+            "height": 10
+          },
+          "startCharacterIndex": 0,
+          "numCharacters": 4
+        }
+      ],
+      "styleIndex": 0
+    },
+    {
+      "domNodeIndex": 29,
+      "boundingBox": {
+        "x": 48,
+        "y": 28,
+        "width": 744,
+        "height": 10
+      },
+      "styleIndex": 0
+    },
+    {
+      "domNodeIndex": 30,
+      "boundingBox": {
+        "x": 48,
+        "y": 28,
+        "width": 40,
+        "height": 10
+      },
+      "layoutText": "hops",
+      "inlineTextNodes": [
+        {
+          "boundingBox": {
+            "x": 48,
+            "y": 28,
+            "width": 40,
+            "height": 10
+          },
+          "startCharacterIndex": 0,
+          "numCharacters": 4
+        }
+      ],
+      "styleIndex": 0
+    },
+    {
+      "domNodeIndex": 31,
+      "boundingBox": {
+        "x": 48,
+        "y": 38,
+        "width": 744,
+        "height": 10
+      },
+      "styleIndex": 0
+    },
+    {
+      "domNodeIndex": 32,
+      "boundingBox": {
+        "x": 48,
+        "y": 38,
+        "width": 50,
+        "height": 10
+      },
+      "layoutText": "yeast",
+      "inlineTextNodes": [
+        {
+          "boundingBox": {
+            "x": 48,
+            "y": 38,
+            "width": 50,
+            "height": 10
+          },
+          "startCharacterIndex": 0,
+          "numCharacters": 5
         }
       ],
       "styleIndex": 0

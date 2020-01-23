@@ -313,6 +313,7 @@ content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
 
   _currentRVH = NULL;
 
+  _webContents->Focus();
   targetRWH->DragTargetDrop(*_dropDataFiltered, transformedPt,
                             info->location_in_screen, GetModifierFlags());
 

@@ -40,6 +40,8 @@ source_set("declarative_net_request") {
     "ruleset_source.h",
     "utils.cc",
     "utils.h",
+    "web_contents_helper.cc",
+    "web_contents_helper.h",
   ]
 
   public_deps = [

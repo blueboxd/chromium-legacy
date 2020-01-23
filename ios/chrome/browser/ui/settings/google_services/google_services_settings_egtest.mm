@@ -60,6 +60,30 @@ using chrome_test_util::SettingsDoneButton;
   [self assertNonPersonalizedServices];
 }
 
+// Tests that the Google Services settings reloads without crashing when the
+// primary account is removed.
+// Regression test for crbug.com/1033901
+- (void)testRemovePrimaryAccount {
+  // Signin.
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+  // Open "Google Services" settings.
+  [self openGoogleServicesSettings];
+  // Remove the primary account.
+  [SigninEarlGreyUtils forgetFakeIdentity:fakeIdentity];
+  // Assert the UI has been reloaded by testing for the signin cell being
+  // visible.
+  id<GREYMatcher> signinCellMatcher =
+      [self cellMatcherWithTitleID:IDS_IOS_SIGN_IN_TO_CHROME_SETTING_TITLE
+                      detailTextID:
+                          IDS_IOS_GOOGLE_SERVICES_SETTINGS_SIGN_IN_DETAIL_TEXT];
+  [[EarlGrey selectElementWithMatcher:signinCellMatcher]
+      assertWithMatcher:grey_notNil()];
+  // Close settings.
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+}
+
 // Tests the following steps:
 //  + Opens sign-in from Google services
 //  + Taps on the settings link to open the advanced sign-in settings
@@ -67,7 +91,7 @@ using chrome_test_util::SettingsDoneButton;
 - (void)testInterruptSigninFromGoogleServicesSettings {
   [GoogleServicesSettingsAppInterface
       blockAllNavigationRequestsForCurrentWebState];
-  // Adds default identity.
+  // Add default identity.
   [self setTearDownHandler:^{
     [GoogleServicesSettingsAppInterface
         unblockAllNavigationRequestsForCurrentWebState];

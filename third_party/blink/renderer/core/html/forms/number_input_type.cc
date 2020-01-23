@@ -246,10 +246,7 @@ void NumberInputType::WarnIfValueIsInvalid(const String& value) const {
   if (value.IsEmpty() || !GetElement().SanitizeValue(value).IsEmpty())
     return;
   AddWarningToConsole(
-      "The specified value %s is not a valid number. The value must match to "
-      "the following regular expression: "
-      "-?(\\d+|\\d+\\.\\d+|\\.\\d+)([eE][-+]?\\d+)?",
-      value);
+      "The specified value %s cannot be parsed, or is out of range.", value);
 }
 
 bool NumberInputType::HasBadInput() const {

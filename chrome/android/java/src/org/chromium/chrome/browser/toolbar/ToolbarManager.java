@@ -36,7 +36,6 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.ThemeColorObserver;
@@ -50,8 +49,6 @@ import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
-import org.chromium.chrome.browser.download.DownloadUtils;
-import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
@@ -61,13 +58,11 @@ import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibil
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.metrics.OmniboxStartupMetrics;
-import org.chromium.chrome.browser.native_page.NativePage;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
@@ -106,8 +101,6 @@ import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
 import org.chromium.chrome.browser.toolbar.top.ToolbarLayout;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.toolbar.top.ViewShiftingActionBarDelegate;
-import org.chromium.chrome.browser.translate.TranslateBridge;
-import org.chromium.chrome.browser.translate.TranslateUtils;
 import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuCoordinator;
@@ -115,7 +108,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuObserver;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.ui.appmenu.MenuButtonDelegate;
-import org.chromium.chrome.browser.ui.widget.highlight.ViewHighlighter;
+import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -123,7 +116,6 @@ import org.chromium.chrome.browser.widget.ScrimView.ScrimObserver;
 import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.feature_engagement.EventConstants;
-import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
@@ -138,7 +130,6 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.util.TokenHolder;
 import org.chromium.ui.widget.Toast;
-import org.chromium.ui.widget.ViewRectProvider;
 
 import java.util.List;
 
@@ -468,11 +459,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
             @Override
             public void onPageLoadFinished(Tab tab, String url) {
-                if (tab.isShowingErrorPage()) {
-                    handleIPHForErrorPageShown(tab);
-                    return;
-                }
-
                 // TODO(crbug.com/896476): Remove this.
                 if (Previews.isPreview(tab)) {
                     // Some previews (like Client LoFi) are not fully decided until the page
@@ -484,8 +470,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                             PreviewsAndroidBridge.getInstance().getPreviewsType(
                                     tab.getWebContents()));
                 }
-
-                handleIPHForSuccessfulPageLoad(tab);
             }
 
             @Override
@@ -651,34 +635,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 // Controls need to be offset to match the composited layer, which is
                 // anchored at the bottom of the controls container.
                 setControlContainerTopMargin(getToolbarExtraYOffset());
-            }
-
-            private void handleIPHForSuccessfulPageLoad(final Tab tab) {
-                if (mTextBubble != null) {
-                    mTextBubble.dismiss();
-                    mTextBubble = null;
-                    return;
-                }
-
-                showDownloadPageTextBubble(tab, FeatureConstants.DOWNLOAD_PAGE_FEATURE);
-                showTranslateMenuButtonTextBubble(
-                        tab, FeatureConstants.TRANSLATE_MENU_BUTTON_FEATURE);
-            }
-
-            private void handleIPHForErrorPageShown(Tab tab) {
-                if (!(mActivity instanceof ChromeTabbedActivity) || mActivity.isTablet()) {
-                    return;
-                }
-
-                OfflinePageBridge bridge =
-                        OfflinePageBridge.getForProfile(((TabImpl) tab).getProfile());
-                if (bridge == null
-                        || !bridge.isShowingDownloadButtonInErrorPage(tab.getWebContents())) {
-                    return;
-                }
-
-                Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
-                tracker.notifyEvent(EventConstants.USER_HAS_SEEN_DINO);
             }
         };
 
@@ -944,84 +900,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      */
     public BottomControlsCoordinator getBottomToolbarCoordinator() {
         return mBottomControlsCoordinator;
-    }
-
-    // TODO(https://crbug.com/865801): Remove this IPH code from toolbar manager.
-    private void showMenuIPHTextBubble(ChromeActivity activity, Tracker tracker, String featureName,
-            @StringRes int stringId, @StringRes int accessibilityStringId, Integer highlightItemId,
-            boolean circleHighlight) {
-        ViewRectProvider rectProvider = new ViewRectProvider(getMenuButtonView());
-        int yInsetPx = mActivity.getResources().getDimensionPixelOffset(
-                R.dimen.text_bubble_menu_anchor_y_inset);
-        rectProvider.setInsetPx(0, 0, 0, yInsetPx);
-        mTextBubble = new TextBubble(
-                mActivity, getMenuButtonView(), stringId, accessibilityStringId, rectProvider);
-        mTextBubble.setDismissOnTouchInteraction(true);
-        mTextBubble.addOnDismissListener(() -> {
-            mHandler.postDelayed(() -> {
-                tracker.dismissed(featureName);
-                mAppMenuHandler.clearMenuHighlight();
-            }, ViewHighlighter.IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS);
-        });
-        mAppMenuHandler.setMenuHighlight(highlightItemId, circleHighlight);
-        mTextBubble.show();
-    }
-
-    /**
-     * Show the download page in-product-help bubble. Also used by download page screenshot IPH.
-     * @param tab The current tab.
-     * @param featureName The associated feature name.
-     */
-    // TODO(https://crbug.com/865801): Remove feature specific IPH from toolbar manager.
-    public void showDownloadPageTextBubble(final Tab tab, String featureName) {
-        if (tab == null) return;
-
-        // TODO(shaktisahu): Find out if the download menu button is enabled (crbug/712438).
-        ChromeActivity activity = ((TabImpl) tab).getActivity();
-        if (!(activity instanceof ChromeTabbedActivity) || activity.isTablet()
-                || activity.isInOverviewMode() || !DownloadUtils.isAllowedToDownloadPage(tab)) {
-            return;
-        }
-
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
-        if (!tracker.shouldTriggerHelpUI(featureName)) return;
-
-        showMenuIPHTextBubble(activity, tracker, featureName,
-                R.string.iph_download_page_for_offline_usage_text,
-                R.string.iph_download_page_for_offline_usage_accessibility_text,
-                R.id.offline_page_id, true);
-
-        // Record metrics if we show Download IPH after a screenshot of the page.
-        ChromeTabbedActivity chromeActivity = ((ChromeTabbedActivity) activity);
-        ScreenshotTabObserver tabObserver =
-                ScreenshotTabObserver.from(chromeActivity.getActivityTab());
-        if (tabObserver != null) {
-            tabObserver.onActionPerformedAfterScreenshot(
-                    ScreenshotTabObserver.SCREENSHOT_ACTION_DOWNLOAD_IPH);
-        }
-    }
-
-    /**
-     * Show the translate manual trigger in-product-help bubble.
-     * @param tab The current tab.
-     * @param featureName The associated feature name.
-     */
-    // TODO(https://crbug.com/865801): Remove feature specific IPH from toolbar manager.
-    public void showTranslateMenuButtonTextBubble(final Tab tab, String featureName) {
-        if (tab == null) return;
-        ChromeActivity activity = ((TabImpl) tab).getActivity();
-
-        if (mAppMenuPropertiesDelegate == null || !TranslateUtils.canTranslateCurrentTab(tab)
-                || !TranslateBridge.shouldShowManualTranslateIPH(tab)) {
-            return;
-        }
-        // Find out if the help UI should appear.
-        final Tracker tracker = TrackerFactory.getTrackerForProfile(((TabImpl) tab).getProfile());
-        if (!tracker.shouldTriggerHelpUI(featureName)) return;
-
-        showMenuIPHTextBubble(activity, tracker, featureName,
-                R.string.iph_translate_menu_button_text,
-                R.string.iph_translate_menu_button_accessibility_text, R.id.translate_id, false);
     }
 
     /**

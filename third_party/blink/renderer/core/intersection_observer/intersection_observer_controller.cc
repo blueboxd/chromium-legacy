@@ -66,23 +66,30 @@ bool IntersectionObserverController::ComputeIntersections(unsigned flags) {
     TRACE_EVENT0("blink",
                  "IntersectionObserverController::"
                  "computeIntersections");
-    HeapVector<Member<Element>> elements_to_process;
-    CopyToVector(tracked_elements_, elements_to_process);
-    for (auto& element : elements_to_process) {
-      needs_occlusion_tracking_ |=
-          element->ComputeIntersectionsForLifecycleUpdate(flags);
+    HeapVector<Member<IntersectionObserver>> observers_to_process;
+    CopyToVector(explicit_root_observers_, observers_to_process);
+    for (auto& observer : observers_to_process) {
+      needs_occlusion_tracking_ |= observer->ComputeIntersections(flags);
+    }
+    HeapVector<Member<IntersectionObservation>> observations_to_process;
+    CopyToVector(implicit_root_observations_, observations_to_process);
+    for (auto& observation : observations_to_process) {
+      observation->ComputeIntersection(flags);
+      needs_occlusion_tracking_ |= observation->Observer()->trackVisibility();
     }
   }
   return needs_occlusion_tracking_;
 }
 
-void IntersectionObserverController::AddTrackedElement(Element& element,
-                                                       bool track_occlusion) {
-  tracked_elements_.insert(&element);
+void IntersectionObserverController::AddTrackedObserver(
+    IntersectionObserver& observer,
+    bool track_occlusion) {
+  DCHECK(!observer.RootIsImplicit());
+  explicit_root_observers_.insert(&observer);
   if (!track_occlusion)
     return;
   needs_occlusion_tracking_ = true;
-  if (LocalFrameView* frame_view = element.GetDocument().View()) {
+  if (LocalFrameView* frame_view = observer.root()->GetDocument().View()) {
     if (FrameOwner* frame_owner = frame_view->GetFrame().Owner()) {
       // Set this bit as early as possible, rather than waiting for a lifecycle
       // update to recompute it.
@@ -91,17 +98,41 @@ void IntersectionObserverController::AddTrackedElement(Element& element,
   }
 }
 
-void IntersectionObserverController::RemoveTrackedElement(Element& target) {
+void IntersectionObserverController::RemoveTrackedObserver(
+    IntersectionObserver& observer) {
+  DCHECK(!observer.RootIsImplicit());
   // Note that we don't try to opportunistically turn off the 'needs occlusion
-  // tracking' bit here, like the way we turn it on in AddTrackedTarget. The
+  // tracking' bit here, like the way we turn it on in AddTrackedObserver. The
   // bit will get recomputed on the next lifecycle update; there's no
-  // compelling reason to do it here, so we avoid the iteration through targets
-  // and observations here.
-  tracked_elements_.erase(&target);
+  // compelling reason to do it here, so we avoid the iteration through
+  // observers and observations here.
+  explicit_root_observers_.erase(&observer);
+}
+
+void IntersectionObserverController::AddTrackedObservation(
+    IntersectionObservation& observation,
+    bool track_occlusion) {
+  DCHECK(observation.Observer()->RootIsImplicit());
+  implicit_root_observations_.insert(&observation);
+  if (!track_occlusion)
+    return;
+  needs_occlusion_tracking_ = true;
+  if (LocalFrameView* frame_view = observation.Target()->GetDocument().View()) {
+    if (FrameOwner* frame_owner = frame_view->GetFrame().Owner()) {
+      frame_owner->SetNeedsOcclusionTracking(true);
+    }
+  }
+}
+
+void IntersectionObserverController::RemoveTrackedObservation(
+    IntersectionObservation& observation) {
+  DCHECK(observation.Observer()->RootIsImplicit());
+  implicit_root_observations_.erase(&observation);
 }
 
 void IntersectionObserverController::Trace(blink::Visitor* visitor) {
-  visitor->Trace(tracked_elements_);
+  visitor->Trace(explicit_root_observers_);
+  visitor->Trace(implicit_root_observations_);
   visitor->Trace(pending_intersection_observers_);
   ContextClient::Trace(visitor);
 }

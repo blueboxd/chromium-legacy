@@ -146,6 +146,8 @@ void AppCacheUpdateJob::URLFetcher::AddConditionalHeaders(
     const net::HttpResponseHeaders* headers) {
   DCHECK(request_);
   DCHECK(headers);
+  DCHECK_NE(fetch_type_, FetchType::kNewMasterEntry);
+
   net::HttpRequestHeaders extra_headers;
 
   // Add If-Modified-Since header if response info has Last-Modified header.

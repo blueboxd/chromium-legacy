@@ -217,7 +217,7 @@ void LogoViewImpl::OnBoundsChanged(const gfx::Rect& previous_bounds) {
 
 void LogoViewImpl::VisibilityChanged(views::View* starting_from,
                                      bool is_visible) {
-  if (is_visible)
+  if (IsDrawn())
     state_animator_.StartAnimator();
   else
     state_animator_.StopAnimator();

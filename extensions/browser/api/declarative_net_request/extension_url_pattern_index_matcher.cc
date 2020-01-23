@@ -90,37 +90,6 @@ ExtensionUrlPatternIndexMatcher::ExtensionUrlPatternIndexMatcher(
 
 ExtensionUrlPatternIndexMatcher::~ExtensionUrlPatternIndexMatcher() = default;
 
-base::Optional<RequestAction>
-ExtensionUrlPatternIndexMatcher::GetBeforeRequestAction(
-    const RequestParams& params) const {
-  const flat_rule::UrlRule* rule = GetMatchingRule(
-      params, flat::IndexType_before_request_except_allow_all_requests,
-      FindRuleStrategy::kHighestPriority);
-  if (!rule)
-    return base::nullopt;
-
-  const flat::UrlRuleMetadata* metadata =
-      metadata_list_->LookupByKey(rule->id());
-  DCHECK(metadata);
-  DCHECK_EQ(metadata->id(), rule->id());
-  switch (metadata->action()) {
-    case flat::ActionType_block:
-      return CreateBlockOrCollapseRequestAction(params, *rule);
-    case flat::ActionType_allow:
-      return CreateAllowAction(params, *rule);
-    case flat::ActionType_redirect:
-      return CreateRedirectActionFromMetadata(params, *rule, *metadata_list_);
-    case flat::ActionType_upgrade_scheme:
-      return CreateUpgradeAction(params, *rule);
-    case flat::ActionType_allow_all_requests:
-    case flat::ActionType_remove_headers:
-    case flat::ActionType_count:
-      NOTREACHED();
-  }
-
-  return base::nullopt;
-}
-
 uint8_t ExtensionUrlPatternIndexMatcher::GetRemoveHeadersMask(
     const RequestParams& params,
     uint8_t excluded_remove_headers_mask,
@@ -175,6 +144,56 @@ uint8_t ExtensionUrlPatternIndexMatcher::GetRemoveHeadersMask(
 
   DCHECK(!(mask & excluded_remove_headers_mask));
   return mask;
+}
+
+base::Optional<RequestAction>
+ExtensionUrlPatternIndexMatcher::GetAllowAllRequestsAction(
+    const RequestParams& params) const {
+  const flat_rule::UrlRule* rule =
+      GetMatchingRule(params, flat::IndexType_allow_all_requests,
+                      FindRuleStrategy::kHighestPriority);
+  if (!rule)
+    return base::nullopt;
+
+  return CreateAllowAllRequestsAction(params, *rule);
+}
+
+base::Optional<RequestAction>
+ExtensionUrlPatternIndexMatcher::GetBeforeRequestActionIgnoringAncestors(
+    const RequestParams& params) const {
+  return GetMaxPriorityAction(GetBeforeRequestActionHelper(params),
+                              GetAllowAllRequestsAction(params));
+}
+
+base::Optional<RequestAction>
+ExtensionUrlPatternIndexMatcher::GetBeforeRequestActionHelper(
+    const RequestParams& params) const {
+  const flat_rule::UrlRule* rule = GetMatchingRule(
+      params, flat::IndexType_before_request_except_allow_all_requests,
+      FindRuleStrategy::kHighestPriority);
+  if (!rule)
+    return base::nullopt;
+
+  const flat::UrlRuleMetadata* metadata =
+      metadata_list_->LookupByKey(rule->id());
+  DCHECK(metadata);
+  DCHECK_EQ(metadata->id(), rule->id());
+  switch (metadata->action()) {
+    case flat::ActionType_block:
+      return CreateBlockOrCollapseRequestAction(params, *rule);
+    case flat::ActionType_allow:
+      return CreateAllowAction(params, *rule);
+    case flat::ActionType_redirect:
+      return CreateRedirectActionFromMetadata(params, *rule, *metadata_list_);
+    case flat::ActionType_upgrade_scheme:
+      return CreateUpgradeAction(params, *rule);
+    case flat::ActionType_allow_all_requests:
+    case flat::ActionType_remove_headers:
+    case flat::ActionType_count:
+      NOTREACHED();
+  }
+
+  return base::nullopt;
 }
 
 const flat_rule::UrlRule* ExtensionUrlPatternIndexMatcher::GetMatchingRule(

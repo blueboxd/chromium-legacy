@@ -36,14 +36,15 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantButton
   ~AssistantButton() override;
 
   // Creates a button with the default Assistant styles.
-  static AssistantButton* Create(AssistantButtonListener* listener,
-                                 const gfx::VectorIcon& icon,
-                                 int size_in_dip,
-                                 int icon_size_in_dip,
-                                 int accessible_name_id,
-                                 AssistantButtonId button_id,
-                                 base::Optional<int> tooltip_id = base::nullopt,
-                                 SkColor icon_color = gfx::kGoogleGrey700);
+  static std::unique_ptr<AssistantButton> Create(
+      AssistantButtonListener* listener,
+      const gfx::VectorIcon& icon,
+      int size_in_dip,
+      int icon_size_in_dip,
+      int accessible_name_id,
+      AssistantButtonId button_id,
+      base::Optional<int> tooltip_id = base::nullopt,
+      SkColor icon_color = gfx::kGoogleGrey700);
 
   AssistantButtonId GetAssistantButtonId() const { return id_; }
 

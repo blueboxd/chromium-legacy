@@ -68,6 +68,10 @@ template("system_webview_apk_or_module_tmpl") {
 
     _use_trichrome_library =
         defined(use_trichrome_library) && use_trichrome_library
+    assert(
+        _use_trichrome_library == defined(invoker.static_library_provider),
+        "If trichrome library is used, static_library_provider must be set " +
+            "so that a dep can be added on the library APK.")
 
     # Pure 32-bit implies a 32-bit only Webview built on a 64-bit configuration.
     _pure_32_bit =

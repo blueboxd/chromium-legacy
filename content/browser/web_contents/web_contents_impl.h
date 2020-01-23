@@ -750,8 +750,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
   void DidFailLoadWithError(RenderFrameHostImpl* render_frame_host,
                             const GURL& url,
-                            int error_code,
-                            const base::string16& error_description) override;
+                            int error_code) override;
   void DidNavigateMainFramePreCommit(bool navigation_is_within_page) override;
   void DidNavigateMainFramePostCommit(
       RenderFrameHostImpl* render_frame_host,

@@ -530,7 +530,7 @@ class NavigationListModel extends cr.EventTarget {
       for (const removable of removableVolumes) {
         // Partitions on the same physical device share device path and drive
         // label. Create keys using these two identifiers.
-        let key = removable.volumeInfo.devicePath + '/' +
+        const key = removable.volumeInfo.devicePath + '/' +
             removable.volumeInfo.driveLabel;
         if (!removableGroups.has(key)) {
           // New key, so create a new array to hold partitions.

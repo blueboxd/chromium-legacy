@@ -276,10 +276,4 @@ void FeedLoggingBridge::ReportScrolledAfterOpen(
   feed_logging_metrics_->ReportScrolledAfterOpen();
 }
 
-void FeedLoggingBridge::OnManageInterestsClicked(JNIEnv* j_env,
-                                                 const JavaRef<jobject>& j_this,
-                                                 const jint j_position) {
-  feed_logging_metrics_->OnManageInterestsClicked(j_position);
-}
-
 }  // namespace feed

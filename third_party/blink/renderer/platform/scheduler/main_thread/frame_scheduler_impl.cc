@@ -958,16 +958,12 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
   // and add a range of new priorities less than low.
   if (task_queue->web_scheduling_priority()) {
     switch (task_queue->web_scheduling_priority().value()) {
-      case WebSchedulingPriority::kImmediatePriority:
-        return TaskQueue::QueuePriority::kHighestPriority;
-      case WebSchedulingPriority::kHighPriority:
+      case WebSchedulingPriority::kUserBlockingPriority:
         return TaskQueue::QueuePriority::kHighPriority;
-      case WebSchedulingPriority::kDefaultPriority:
+      case WebSchedulingPriority::kUserVisiblePriority:
         return TaskQueue::QueuePriority::kNormalPriority;
-      case WebSchedulingPriority::kLowPriority:
+      case WebSchedulingPriority::kBackgroundPriority:
         return TaskQueue::QueuePriority::kLowPriority;
-      case WebSchedulingPriority::kIdlePriority:
-        return TaskQueue::QueuePriority::kBestEffortPriority;
     }
   }
 

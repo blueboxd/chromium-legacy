@@ -60,7 +60,7 @@ class WallClockTimer : public base::PowerObserver {
 
   void Stop();
 
-  bool IsRunning();
+  bool IsRunning() const;
 
   // base::PowerObserver:
   void OnResume() override;

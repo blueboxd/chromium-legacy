@@ -1577,10 +1577,7 @@ This file contains the strings for ash.
         Night Light turns on automatically at sunset
       </message>
       <message name="IDS_ASH_AUTO_NIGHT_LIGHT_NOTIFY_BODY" desc="The body of the notification shown when Night Light turns on automatically when the auto-night-light feature is enabled.">
-        Night Light makes it easier to look at your screen or read in dim light. Tap to change this.
-      </message>
-      <message name="IDS_ASH_AUTO_NIGHT_LIGHT_NOTIFY_BUTTON_TEXT" desc="The text of the button on the notification shown when Night Light turns on automatically when the auto-night-light feature is enabled.">
-        Turn off for tonight
+        Night Light makes it easier to look at your screen or read in dim light. Tap to change what time Night Light turns on or turn it off completely.
       </message>
 
       <message name="IDS_ASH_IME_MENU_ACCESSIBLE_NAME" desc="The accessible text for opt-in IME menu icon in status tray.">

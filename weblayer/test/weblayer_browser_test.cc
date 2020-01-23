@@ -45,4 +45,8 @@ void WebLayerBrowserTest::PostRunTestOnMainThread() {
   Shell::CloseAllWindows();
 }
 
+ProfileImpl* WebLayerBrowserTest::GetProfile() {
+  return static_cast<TabImpl*>(shell_->tab())->profile();
+}
+
 }  // namespace weblayer

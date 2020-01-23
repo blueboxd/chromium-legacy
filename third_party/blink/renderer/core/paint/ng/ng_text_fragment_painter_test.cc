@@ -65,4 +65,21 @@ TEST_P(NGTextFragmentPainterTest, LineBreak) {
   EXPECT_EQ(6u, RootPaintController().GetDisplayItemList().size());
 }
 
+TEST_P(NGTextFragmentPainterTest, DegenerateUnderlineIntercepts) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      span {
+        font-size: 20px;
+        text-decoration: underline;
+      }
+    </style>
+    <span style="letter-spacing: -1e9999em;">a|b|c d{e{f{</span>
+    <span style="letter-spacing: 1e9999em;">a|b|c d{e{f{</span>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+  // Test for https://crbug.com/1043753: the underline intercepts are infinite
+  // due to letter spacing and this test passes if that does not cause a crash.
+}
+
 }  // namespace blink

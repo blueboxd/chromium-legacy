@@ -61,10 +61,11 @@ class EventRewriterChromeOS : public ui::EventRewriter {
     kKbdTopRowLayout2 = 2,
     // Keyboard layout and handling for Wilco.
     kKbdTopRowLayoutWilco = 3,
+    kKbdTopRowLayoutDrallion = 4,
 
     kKbdTopRowLayoutDefault = kKbdTopRowLayout1,
     kKbdTopRowLayoutMin = kKbdTopRowLayout1,
-    kKbdTopRowLayoutMax = kKbdTopRowLayoutWilco
+    kKbdTopRowLayoutMax = kKbdTopRowLayoutDrallion
   };
 
   // Things that keyboard-related rewriter phases can change about an Event.
@@ -248,7 +249,8 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   bool RewriteTopRowKeysForLayoutWilco(
       const ui::KeyEvent& key_event,
       bool search_is_pressed,
-      ui::EventRewriterChromeOS::MutableKeyState* state);
+      ui::EventRewriterChromeOS::MutableKeyState* state,
+      KeyboardTopRowLayout layout);
 
   // Take the keys being pressed into consideration, in contrast to
   // RewriteKeyEvent which computes the rewritten event and event rewrite

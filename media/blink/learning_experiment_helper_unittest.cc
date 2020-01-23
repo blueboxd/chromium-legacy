@@ -23,13 +23,14 @@ namespace media {
 
 class MockLearningTaskController : public LearningTaskController {
  public:
-  MockLearningTaskController(const LearningTask& task) : task_(task) {}
+  explicit MockLearningTaskController(const LearningTask& task) : task_(task) {}
   ~MockLearningTaskController() override = default;
 
-  MOCK_METHOD3(BeginObservation,
+  MOCK_METHOD4(BeginObservation,
                void(base::UnguessableToken id,
                     const FeatureVector& features,
-                    const base::Optional<TargetValue>& default_value));
+                    const base::Optional<TargetValue>& default_value,
+                    const base::Optional<ukm::SourceId>& source_id));
   MOCK_METHOD2(CompleteObservation,
                void(base::UnguessableToken id,
                     const ObservationCompletion& completion));
@@ -37,8 +38,10 @@ class MockLearningTaskController : public LearningTaskController {
   MOCK_METHOD2(UpdateDefaultTarget,
                void(base::UnguessableToken id,
                     const base::Optional<TargetValue>& default_target));
+  MOCK_METHOD2(PredictDistribution,
+               void(const FeatureVector& features, PredictionCB callback));
 
-  const LearningTask& GetLearningTask() { return task_; }
+  const LearningTask& GetLearningTask() override { return task_; }
 
  private:
   LearningTask task_;
@@ -79,7 +82,7 @@ class LearningExperimentHelperTest : public testing::Test {
 };
 
 TEST_F(LearningExperimentHelperTest, BeginComplete) {
-  EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _));
+  EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _, _));
   helper_->BeginObservation(dict_);
   TargetValue target(123);
   EXPECT_CALL(*controller_raw_,
@@ -96,21 +99,21 @@ TEST_F(LearningExperimentHelperTest, BeginComplete) {
 }
 
 TEST_F(LearningExperimentHelperTest, BeginCancel) {
-  EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _));
+  EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _, _));
   helper_->BeginObservation(dict_);
   EXPECT_CALL(*controller_raw_, CancelObservation(_));
   helper_->CancelObservationIfNeeded();
 }
 
 TEST_F(LearningExperimentHelperTest, CompleteWithoutBeginDoesNothing) {
-  EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _)).Times(0);
+  EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _, _)).Times(0);
   EXPECT_CALL(*controller_raw_, CompleteObservation(_, _)).Times(0);
   EXPECT_CALL(*controller_raw_, CancelObservation(_)).Times(0);
   helper_->CompleteObservationIfNeeded(TargetValue(123));
 }
 
 TEST_F(LearningExperimentHelperTest, CancelWithoutBeginDoesNothing) {
-  EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _)).Times(0);
+  EXPECT_CALL(*controller_raw_, BeginObservation(_, _, _, _)).Times(0);
   EXPECT_CALL(*controller_raw_, CompleteObservation(_, _)).Times(0);
   EXPECT_CALL(*controller_raw_, CancelObservation(_)).Times(0);
   helper_->CancelObservationIfNeeded();

@@ -7,12 +7,9 @@
 
 #import <UIKit/UIKit.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
-
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
 
 namespace sync_encryption_passphrase {
 typedef NS_ENUM(NSInteger, SectionIdentifier) {

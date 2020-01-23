@@ -60,7 +60,11 @@ namespace previews {
 
 namespace {
 
-const GURL kTestUrl("https://google.com/path");
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL TestUrl() {
+  return GURL("https://google.com/path");
+}
 
 class PreviewsLitePageRedirectURLLoaderInterceptorTest : public testing::Test {
  public:
@@ -131,7 +135,7 @@ TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
   base::HistogramTester histogram_tester;
 
   network::ResourceRequest request;
-  request.url = kTestUrl;
+  request.url = TestUrl();
   request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
 
@@ -159,7 +163,7 @@ TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
   base::HistogramTester histogram_tester;
 
   network::ResourceRequest request;
-  request.url = kTestUrl;
+  request.url = TestUrl();
   request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
 
@@ -189,7 +193,7 @@ TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
   base::HistogramTester histogram_tester;
 
   network::ResourceRequest request;
-  request.url = kTestUrl;
+  request.url = TestUrl();
   request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
 
@@ -217,7 +221,7 @@ TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
        InterceptRequestRedirect) {
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
-  request.url = kTestUrl;
+  request.url = TestUrl();
   request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;
@@ -242,7 +246,7 @@ TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
        InterceptRequestServerOverloaded) {
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
-  request.url = kTestUrl;
+  request.url = TestUrl();
   request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;
@@ -268,7 +272,7 @@ TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
        InterceptRequestServerNotHandling) {
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
-  request.url = kTestUrl;
+  request.url = TestUrl();
   request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;
@@ -293,7 +297,7 @@ TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest,
 TEST_F(PreviewsLitePageRedirectURLLoaderInterceptorTest, NetStackError) {
   base::HistogramTester histogram_tester;
   network::ResourceRequest request;
-  request.url = kTestUrl;
+  request.url = TestUrl();
   request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
   request.previews_state = content::LITE_PAGE_REDIRECT_ON;

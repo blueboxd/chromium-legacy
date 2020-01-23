@@ -16,8 +16,13 @@
 
 namespace {
 
-const GURL callback_url("http://example.com");
 const std::string callback_title("test title");
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL CallbackUrl() {
+  return GURL("http://example.com");
+}
 
 base::Time AdvanceAndGetTime(base::SimpleTestClock* clock) {
   clock->Advance(base::TimeDelta::FromMilliseconds(10));
@@ -275,7 +280,7 @@ class ReadingListModelTest : public ReadingListModelObserver,
   }
 
   void Callback(const ReadingListEntry& entry) {
-    EXPECT_EQ(callback_url, entry.URL());
+    EXPECT_EQ(CallbackUrl(), entry.URL());
     EXPECT_EQ(callback_title, entry.Title());
     callback_called_ = true;
   }

@@ -563,7 +563,7 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ErrorLoadFailSubFrames) {
   content::RenderFrameHost* sub_frame = *it;
   ASSERT_NE(nullptr, sub_frame);
   cast_web_contents_->DidFailLoad(sub_frame, sub_frame->GetLastCommittedURL(),
-                                  net::ERR_FAILED, base::string16());
+                                  net::ERR_FAILED);
 
   // ===========================================================================
   // Test: Ignore main frame load failures with net::ERR_ABORTED.
@@ -572,8 +572,7 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ErrorLoadFailSubFrames) {
   EXPECT_CALL(mock_cast_wc_observer_, OnPageStopped(_, _)).Times(0);
   cast_web_contents_->DidFailLoad(
       web_contents_->GetMainFrame(),
-      web_contents_->GetMainFrame()->GetLastCommittedURL(), net::ERR_ABORTED,
-      base::string16());
+      web_contents_->GetMainFrame()->GetLastCommittedURL(), net::ERR_ABORTED);
 
   // ===========================================================================
   // Test: If main frame fails to load, page should enter ERROR state.
@@ -584,8 +583,7 @@ IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ErrorLoadFailSubFrames) {
                             net::ERR_FAILED));
   cast_web_contents_->DidFailLoad(
       web_contents_->GetMainFrame(),
-      web_contents_->GetMainFrame()->GetLastCommittedURL(), net::ERR_FAILED,
-      base::string16());
+      web_contents_->GetMainFrame()->GetLastCommittedURL(), net::ERR_FAILED);
 }
 
 IN_PROC_BROWSER_TEST_F(CastWebContentsBrowserTest, ErrorHttp4XX) {

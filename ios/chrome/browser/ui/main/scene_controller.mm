@@ -619,9 +619,9 @@ enum class EnterTabSwitcherSnapshotResult {
 #pragma mark - TabSwitcherDelegate
 
 - (void)tabSwitcher:(id<TabSwitcher>)tabSwitcher
-    shouldFinishWithActiveModel:(TabModel*)tabModel
-                   focusOmnibox:(BOOL)focusOmnibox {
-  [self beginDismissingTabSwitcherWithCurrentModel:tabModel
+    shouldFinishWithBrowser:(Browser*)browser
+               focusOmnibox:(BOOL)focusOmnibox {
+  [self beginDismissingTabSwitcherWithCurrentModel:browser->GetTabModel()
                                       focusOmnibox:focusOmnibox];
 }
 
@@ -1282,9 +1282,9 @@ enum class EnterTabSwitcherSnapshotResult {
   // Tab switcher implementations may need to rebuild state before being
   // displayed.
   [self.mainController.tabSwitcher
-      restoreInternalStateWithMainTabModel:self.mainInterface.tabModel
-                               otrTabModel:self.incognitoInterface.tabModel
-                            activeTabModel:self.currentTabModel];
+      restoreInternalStateWithMainBrowser:self.mainInterface.browser
+                               otrBrowser:self.incognitoInterface.browser
+                            activeBrowser:self.currentInterface.browser];
   self.mainController.tabSwitcherIsActive = YES;
   [self.mainController.tabSwitcher setDelegate:self];
 

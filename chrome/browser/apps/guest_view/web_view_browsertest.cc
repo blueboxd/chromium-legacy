@@ -529,7 +529,6 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
 
     extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/base64.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
@@ -72,6 +73,10 @@ BinaryFCMService::BinaryFCMService()
 BinaryFCMService::~BinaryFCMService() {
   if (gcm_driver_ != nullptr)
     gcm_driver_->RemoveAppHandler(kBinaryFCMServiceAppId);
+  for (const auto& token_to_callback : message_token_map_) {
+    const std::string& token = token_to_callback.first;
+    UnregisterInstanceID(token, base::DoNothing());
+  }
 }
 
 void BinaryFCMService::GetInstanceID(GetInstanceIDCallback callback) {
@@ -92,6 +97,16 @@ void BinaryFCMService::SetCallbackForToken(
 
 void BinaryFCMService::ClearCallbackForToken(const std::string& token) {
   message_token_map_.erase(token);
+}
+
+void BinaryFCMService::UnregisterInstanceID(
+    const std::string& token,
+    UnregisterInstanceIDCallback callback) {
+  instance_id_driver_->GetInstanceID(kBinaryFCMServiceAppId)
+      ->DeleteToken(kBinaryFCMServiceSenderId, instance_id::kGCMScope,
+                    base::BindOnce(&BinaryFCMService::OnInstanceIDUnregistered,
+                                   weakptr_factory_.GetWeakPtr(), token,
+                                   std::move(callback)));
 }
 
 void BinaryFCMService::OnGetInstanceID(GetInstanceIDCallback callback,
@@ -152,6 +167,27 @@ void BinaryFCMService::OnSendAcknowledged(const std::string& app_id,
 
 bool BinaryFCMService::CanHandle(const std::string& app_id) const {
   return app_id == kBinaryFCMServiceAppId;
+}
+
+void BinaryFCMService::OnInstanceIDUnregistered(
+    const std::string& token,
+    UnregisterInstanceIDCallback callback,
+    instance_id::InstanceID::Result result) {
+  switch (result) {
+    case instance_id::InstanceID::Result::SUCCESS:
+      std::move(callback).Run(true);
+      break;
+    case instance_id::InstanceID::Result::INVALID_PARAMETER:
+    case instance_id::InstanceID::Result::DISABLED:
+    case instance_id::InstanceID::Result::UNKNOWN_ERROR:
+      std::move(callback).Run(false);
+      break;
+    case instance_id::InstanceID::Result::ASYNC_OPERATION_PENDING:
+    case instance_id::InstanceID::Result::NETWORK_ERROR:
+    case instance_id::InstanceID::Result::SERVER_ERROR:
+      UnregisterInstanceID(token, std::move(callback));
+      break;
+  }
 }
 
 }  // namespace safe_browsing

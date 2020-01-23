@@ -668,8 +668,9 @@ class RenderFrameHostImplBeforeUnloadBrowserTest
 // cross-site subframe is able to execute a beforeunload handler and put up a
 // dialog to cancel or allow the navigation. This matters especially in
 // --site-per-process mode; see https://crbug.com/853021.
+// Disabled, test is flaky on all platforms. crbug.com/1044599
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBeforeUnloadBrowserTest,
-                       SubframeShowsDialogWhenMainFrameNavigates) {
+                       DISABLED_SubframeShowsDialogWhenMainFrameNavigates) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

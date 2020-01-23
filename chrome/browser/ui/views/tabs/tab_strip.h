@@ -192,6 +192,12 @@ class TabStrip : public views::AccessiblePaneView,
   // associated view mappings are erased in OnGroupCloseAnimationCompleted().
   void OnGroupClosed(const tab_groups::TabGroupId& group);
 
+  // Attempts to move the specified group to the left.
+  void ShiftGroupLeft(const tab_groups::TabGroupId& group);
+
+  // Attempts to move the specified group to the right.
+  void ShiftGroupRight(const tab_groups::TabGroupId& group);
+
   // Returns true if the tab is not partly or fully clipped (due to overflow),
   // and the tab couldn't become partly clipped due to changing the selected tab
   // (for example, if currently the strip has the last tab selected, and
@@ -266,8 +272,8 @@ class TabStrip : public views::AccessiblePaneView,
   void ToggleSelected(Tab* tab) override;
   void AddSelectionFromAnchorTo(Tab* tab) override;
   void CloseTab(Tab* tab, CloseTabSource source) override;
-  void MoveTabLeft(Tab* tab) override;
-  void MoveTabRight(Tab* tab) override;
+  void ShiftTabLeft(Tab* tab) override;
+  void ShiftTabRight(Tab* tab) override;
   void MoveTabFirst(Tab* tab) override;
   void MoveTabLast(Tab* tab) override;
   void ShowContextMenuForTab(Tab* tab,
@@ -525,9 +531,13 @@ class TabStrip : public views::AccessiblePaneView,
   // Computes and stores values derived from contrast ratios.
   void UpdateContrastRatioValues();
 
-  // Determines whether a tab can be moved by |offset| positions and moves it if
-  // possible.
-  void MoveTabRelative(Tab* tab, int offset);
+  // Determines whether a tab can be shifted by one in the direction of |offset|
+  // and moves it if possible.
+  void ShiftTabRelative(Tab* tab, int offset);
+
+  // Determines whether a group can be shifted by one in the direction of
+  // |offset| and moves it if possible.
+  void ShiftGroupRelative(const tab_groups::TabGroupId& group, int offset);
 
   // -- Tab Resize Layout -----------------------------------------------------
 

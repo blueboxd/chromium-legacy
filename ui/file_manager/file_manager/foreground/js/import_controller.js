@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // Namespace
+// eslint-disable-next-line
 var importer = importer || {};
 
 /** @private @enum {string} */

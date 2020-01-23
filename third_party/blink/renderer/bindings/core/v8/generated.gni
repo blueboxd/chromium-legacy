@@ -40,6 +40,8 @@ bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/double_or_string.h",
   "$bindings_core_v8_output_dir/double_or_string_or_string_sequence.cc",
   "$bindings_core_v8_output_dir/double_or_string_or_string_sequence.h",
+  "$bindings_core_v8_output_dir/element_or_document.cc",
+  "$bindings_core_v8_output_dir/element_or_document.h",
   "$bindings_core_v8_output_dir/event_listener_options_or_boolean.cc",
   "$bindings_core_v8_output_dir/event_listener_options_or_boolean.h",
   "$bindings_core_v8_output_dir/file_or_usv_string.cc",

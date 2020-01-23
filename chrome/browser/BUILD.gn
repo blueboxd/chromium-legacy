@@ -1971,6 +1971,7 @@ jumbo_static_library("browser") {
     "//chrome/browser/touch_to_fill",
     "//chrome/browser/ui",
     "//chrome/browser/ui/webui/bluetooth_internals",
+    "//chrome/browser/updates/announcement_notification",
     "//chrome/common:channel_info",
     "//chrome/common/net",
     "//chrome/installer/util:with_no_strings",
@@ -3143,8 +3144,6 @@ jumbo_static_library("browser") {
       "enterprise_reporting/report_scheduler.h",
       "enterprise_reporting/report_uploader.cc",
       "enterprise_reporting/report_uploader.h",
-      "enterprise_reporting/request_timer.cc",
-      "enterprise_reporting/request_timer.h",
       "feedback/feedback_dialog_utils.cc",
       "feedback/feedback_dialog_utils.h",
       "feedback/feedback_uploader_chrome.cc",
@@ -4334,7 +4333,7 @@ jumbo_static_library("browser") {
       "//ui/snapshot",
     ]
     if (use_gtk) {
-      deps += [ "//chrome/browser/ui/libgtkui" ]
+      deps += [ "//chrome/browser/ui/gtk" ]
     }
   }
 

@@ -43,7 +43,6 @@ class WebRtcVideoCaptureBrowserTest : public ContentBrowserTest {
   ~WebRtcVideoCaptureBrowserTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kEnableBlinkFeatures, "GetUserMedia");

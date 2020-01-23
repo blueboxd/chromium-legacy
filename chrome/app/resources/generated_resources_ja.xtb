@@ -5023,7 +5023,6 @@
 <translation id="8101987792947961127">次回の再起動時に Powerwash が必要</translation>
 <translation id="8102159139658438129">接続しているスマートフォン用のオプションを表示するには [<ph name="LINK_BEGIN" />設定<ph name="LINK_END" />] に移動してください</translation>
 <translation id="8104696615244072556"><ph name="IDS_SHORT_PRODUCT_NAME" /> デバイスで Powerwash を実行し、以前のバージョンに戻します。</translation>
-<translation id="8106661353233173262">エラーが発生しました。ファイルのスキャンがタイムアウトしました。</translation>
 <translation id="8107015733319732394"><ph name="DEVICE_TYPE" /> に Google Play ストアをインストールしています。この処理には数分かかる可能性があります。</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{サードパーティの Cookie はありません}=1{1 個のサードパーティ Cookie がブロックされています}other{# 個のサードパーティ Cookie がブロックされています}}</translation>
 <translation id="810875025413331850">近くにデバイスは見つかりませんでした。</translation>

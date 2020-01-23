@@ -2,10 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("cpp") {
+component("cpp") {
   visibility = [
     "//media/learning/mojo:impl",
     "//media/learning/mojo/public/cpp:unit_tests",
+    "//media/blink",
   ]
 
   sources = [

@@ -19,6 +19,8 @@ component("gl_in_process_context") {
     "in_process_command_buffer.h",
     "scheduler_sequence.cc",
     "scheduler_sequence.h",
+    "shared_image_interface_in_process.cc",
+    "shared_image_interface_in_process.h",
     "single_task_sequence.h",
   ]
 
@@ -66,9 +68,7 @@ component("gpu_thread_holder") {
 
   defines = [ "IS_GPU_THREAD_HOLDER_IMPL" ]
 
-  public_deps = [
-    "//gpu/config",
-  ]
+  public_deps = [ "//gpu/config" ]
 
   deps = [
     ":gl_in_process_context",

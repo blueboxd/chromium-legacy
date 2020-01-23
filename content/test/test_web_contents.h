@@ -112,10 +112,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   void SetIsCurrentlyAudible(bool audible) override;
   void TestDidReceiveInputEvent(blink::WebInputEvent::Type type) override;
   void TestDidFinishLoad(const GURL& url) override;
-  void TestDidFailLoadWithError(
-      const GURL& url,
-      int error_code,
-      const base::string16& error_description) override;
+  void TestDidFailLoadWithError(const GURL& url, int error_code) override;
 
   // True if a cross-site navigation is pending.
   bool CrossProcessNavigationPending();

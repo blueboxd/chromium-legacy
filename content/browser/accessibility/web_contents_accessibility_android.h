@@ -137,8 +137,8 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   // of our own selection in BrowserAccessibilityManager.java for static
   // text, but if this is an editable text node, updates the selected text
   // in Blink, too, and either way calls
-  // Java_BrowserAccessibilityManager_finishGranularityMove with the
-  // result.
+  // Java_BrowserAccessibilityManager_finishGranularityMove[NEXT/PREVIOUS]
+  // with the result.
   jboolean NextAtGranularity(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
                              jint granularity,

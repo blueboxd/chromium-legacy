@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/gfx/root_frame_sink.h"
 
+#include "android_webview/browser/gfx/display_scheduler_webview.h"
 #include "android_webview/browser/gfx/viz_compositor_thread_runner_webview.h"
 #include "base/no_destructor.h"
 #include "base/trace_event/trace_event.h"
@@ -22,9 +23,11 @@ viz::FrameSinkId AllocateParentSinkId() {
 
 }  // namespace
 
-RootFrameSink::RootFrameSink(SetNeedsBeginFrameCallback set_needs_begin_frame)
+RootFrameSink::RootFrameSink(SetNeedsBeginFrameCallback set_needs_begin_frame,
+                             base::RepeatingClosure invalidate)
     : root_frame_sink_id_(AllocateParentSinkId()),
-      set_needs_begin_frame_(set_needs_begin_frame) {
+      set_needs_begin_frame_(set_needs_begin_frame),
+      invalidate_(invalidate) {
   constexpr bool is_root = true;
   GetFrameSinkManager()->RegisterFrameSinkId(root_frame_sink_id_,
                                              false /* report_activationa */);
@@ -74,6 +77,7 @@ void RootFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {
 
 void RootFrameSink::AddChildFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  child_frame_sink_ids_.insert(frame_sink_id);
   GetFrameSinkManager()->RegisterFrameSinkHierarchy(root_frame_sink_id_,
                                                     frame_sink_id);
 }
@@ -81,6 +85,7 @@ void RootFrameSink::AddChildFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
 void RootFrameSink::RemoveChildFrameSinkId(
     const viz::FrameSinkId& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  child_frame_sink_ids_.erase(frame_sink_id);
   GetFrameSinkManager()->UnregisterFrameSinkHierarchy(root_frame_sink_id_,
                                                       frame_sink_id);
 }
@@ -88,9 +93,33 @@ void RootFrameSink::RemoveChildFrameSinkId(
 bool RootFrameSink::BeginFrame(const viz::BeginFrameArgs& args,
                                bool had_input_event) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  begin_frame_source_->OnBeginFrame(args);
-  // TODO(vasilyt): Implement new Android.View invalidation heuristics
-  return needs_begin_frames_;
+  if (needs_begin_frames_) {
+    begin_frame_source_->OnBeginFrame(args);
+  }
+
+  // This handles only invalidation of sub clients, root client invalidation is
+  // handled by Invalidate() from cc to |SynchronousLayerTreeFrameSink|. So we
+  // return false unless there is scheduler and we already have damage.
+  return had_input_event || needs_draw_;
+}
+
+void RootFrameSink::SetBeginFrameSourcePaused(bool paused) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  begin_frame_source_->OnSetBeginFrameSourcePaused(paused);
+}
+
+void RootFrameSink::SetNeedsDraw(bool needs_draw) {
+  needs_draw_ = needs_draw;
+
+  // It's possible that client submitted last frame and unsubscribed from
+  // BeginFrames, but we haven't draw it yet.
+  if (!needs_begin_frames_ && needs_draw) {
+    invalidate_.Run();
+  }
+}
+
+bool RootFrameSink::IsChildSurface(const viz::FrameSinkId& frame_sink_id) {
+  return child_frame_sink_ids_.contains(frame_sink_id);
 }
 
 }  // namespace android_webview

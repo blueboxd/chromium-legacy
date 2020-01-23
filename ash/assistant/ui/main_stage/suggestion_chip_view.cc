@@ -44,9 +44,7 @@ SuggestionChipView::Params::~Params() = default;
 
 SuggestionChipView::SuggestionChipView(const Params& params,
                                        views::ButtonListener* listener)
-    : Button(listener),
-      icon_view_(new views::ImageView()),
-      text_view_(new views::Label()) {
+    : Button(listener) {
   // Configure focus. Note that we don't install the default focus ring as we
   // use custom highlighting instead.
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -89,6 +87,7 @@ void SuggestionChipView::InitLayout(const Params& params) {
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Icon.
+  icon_view_ = AddChildView(std::make_unique<views::ImageView>());
   const int icon_size =
       AppListConfig::instance().suggestion_chip_icon_dimension();
   icon_view_->SetImageSize(gfx::Size(icon_size, icon_size));
@@ -99,16 +98,14 @@ void SuggestionChipView::InitLayout(const Params& params) {
   else
     icon_view_->SetVisible(false);
 
-  AddChildView(icon_view_);
-
   // Text.
+  text_view_ = AddChildView(std::make_unique<views::Label>());
   text_view_->SetAutoColorReadabilityEnabled(false);
   text_view_->SetEnabledColor(kTextColor);
   text_view_->SetSubpixelRenderingEnabled(false);
   text_view_->SetFontList(
       assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(1));
   SetText(params.text);
-  AddChildView(text_view_);
 }
 
 void SuggestionChipView::OnPaintBackground(gfx::Canvas* canvas) {

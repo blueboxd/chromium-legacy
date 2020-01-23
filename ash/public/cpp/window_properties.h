@@ -16,7 +16,7 @@ namespace aura {
 class Window;
 template <typename T>
 using WindowProperty = ui::ClassProperty<T>;
-}
+}  // namespace aura
 
 namespace gfx {
 class Rect;
@@ -27,13 +27,7 @@ namespace ash {
 enum class WindowPinType;
 enum class WindowStateType;
 
-enum class BackdropWindowMode {
-  kEnabled,     // The window needs a backdrop shown behind it.
-  kDisabled,    // The window should never have a backdrop.
-  kAutoOpaque,  // The window manager decides if the window should have a fully
-                // opaque backdrop.
-  kAutoSemiOpaque,  // The window needs a semi-opaque backdrop shown behind it.
-};
+class WindowBackdrop;
 
 // Shell-specific window property keys for use by ash and its clients.
 
@@ -48,10 +42,11 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
     kArcPackageNameKey;
 
-// A property key to specify if the window should (or should not) have a
-// backdrop window (typically black) that covers the desktop behind the window.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<BackdropWindowMode>* const
-    kBackdropWindowMode;
+// A property key to specify whether the window should have backdrop and if
+// it has backdrop, the backdrop's mode and type. The backdrop is typically a
+// black window that covers the entire workspace placed behind the window.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowBackdrop*>* const
+    kWindowBackdropKey;
 
 // If set to true, the window will be replaced by a black rectangle when taking
 // screenshot for assistant. Used to preserve privacy for incognito windows.

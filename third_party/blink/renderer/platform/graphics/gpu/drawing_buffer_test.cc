@@ -203,9 +203,8 @@ TEST_F(DrawingBufferTest, VerifyResizingProperlyAffectsResources) {
   drawing_buffer_->BeginDestruction();
 }
 
-TEST_F(DrawingBufferTest, VerifyDestructionCompleteAfterAllResourceReleased) {
-  bool live = true;
-  drawing_buffer_->live_ = &live;
+TEST_F(DrawingBufferTest, VerifySharedImagesReleasedAfterReleaseCallback) {
+  auto* sii = drawing_buffer_->SharedImageInterfaceForTests();
 
   viz::TransferableResource resource1;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback1;
@@ -231,67 +230,20 @@ TEST_F(DrawingBufferTest, VerifyDestructionCompleteAfterAllResourceReleased) {
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource3,
                                                            &release_callback3));
 
-  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  release_callback1->Run(gpu::SyncToken(), false /* lostResource */);
-
-  drawing_buffer_->BeginDestruction();
-  ASSERT_EQ(live, true);
-
-  DrawingBufferForTests* raw_pointer = drawing_buffer_.get();
-  drawing_buffer_ = nullptr;
-  ASSERT_EQ(live, true);
-
-  EXPECT_FALSE(raw_pointer->MarkContentsChanged());
-  release_callback2->Run(gpu::SyncToken(), false /* lostResource */);
-  ASSERT_EQ(live, true);
-
-  EXPECT_FALSE(raw_pointer->MarkContentsChanged());
-  release_callback3->Run(gpu::SyncToken(), false /* lostResource */);
-  ASSERT_EQ(live, false);
-}
-
-TEST_F(DrawingBufferTest, verifyDrawingBufferStaysAliveIfResourcesAreLost) {
-  bool live = true;
-  drawing_buffer_->live_ = &live;
-
-  viz::TransferableResource resource1;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback1;
-  viz::TransferableResource resource2;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback2;
-  viz::TransferableResource resource3;
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback3;
-
-  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource1,
-                                                           &release_callback1));
-  VerifyStateWasRestored();
-  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource2,
-                                                           &release_callback2));
-  VerifyStateWasRestored();
-  EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource3,
-                                                           &release_callback3));
-  VerifyStateWasRestored();
+  EXPECT_EQ(sii->shared_image_count(), 4u);
 
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   release_callback1->Run(gpu::SyncToken(), true /* lostResource */);
-  EXPECT_EQ(live, true);
+  EXPECT_EQ(sii->shared_image_count(), 3u);
+
+  release_callback2->Run(gpu::SyncToken(), true /* lostResource */);
+  EXPECT_EQ(sii->shared_image_count(), 2u);
+
+  // The resource is not marked lost so it's recycled after the callback.
+  release_callback3->Run(gpu::SyncToken(), false /* lostResource */);
+  EXPECT_EQ(sii->shared_image_count(), 2u);
 
   drawing_buffer_->BeginDestruction();
-  EXPECT_EQ(live, true);
-
-  EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
-  release_callback2->Run(gpu::SyncToken(), false /* lostResource */);
-  EXPECT_EQ(live, true);
-
-  DrawingBufferForTests* raw_ptr = drawing_buffer_.get();
-  drawing_buffer_ = nullptr;
-  EXPECT_EQ(live, true);
-
-  EXPECT_FALSE(raw_ptr->MarkContentsChanged());
-  release_callback3->Run(gpu::SyncToken(), true /* lostResource */);
-  EXPECT_EQ(live, false);
 }
 
 TEST_F(DrawingBufferTest, VerifyOnlyOneRecycledResourceMustBeKept) {

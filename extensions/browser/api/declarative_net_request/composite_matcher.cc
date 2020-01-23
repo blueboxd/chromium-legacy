@@ -117,7 +117,7 @@ ActionInfo CompositeMatcher::GetBeforeRequestAction(
     base::Optional<RequestAction> action =
         matcher->GetBeforeRequestAction(params);
     params.allow_rule_cache[matcher.get()] =
-        action && action->type == RequestAction::Type::ALLOW;
+        action && action->IsAllowOrAllowAllRequests();
 
     if (action && action->type == RequestAction::Type::REDIRECT) {
       // Redirecting requires host permissions.
@@ -152,7 +152,7 @@ uint8_t CompositeMatcher::GetRemoveHeadersMask(
       base::Optional<RequestAction> action =
           matcher->GetBeforeRequestAction(params);
       params.allow_rule_cache[matcher.get()] =
-          action && action->type == RequestAction::Type::ALLOW;
+          action && action->IsAllowOrAllowAllRequests();
     }
     if (params.allow_rule_cache[matcher.get()])
       return mask;
@@ -169,6 +169,16 @@ bool CompositeMatcher::HasAnyExtraHeadersMatcher() const {
   if (!has_any_extra_headers_matcher_.has_value())
     has_any_extra_headers_matcher_ = ComputeHasAnyExtraHeadersMatcher();
   return has_any_extra_headers_matcher_.value();
+}
+
+void CompositeMatcher::OnRenderFrameDeleted(content::RenderFrameHost* host) {
+  for (auto& matcher : matchers_)
+    matcher->OnRenderFrameDeleted(host);
+}
+
+void CompositeMatcher::OnDidFinishNavigation(content::RenderFrameHost* host) {
+  for (auto& matcher : matchers_)
+    matcher->OnDidFinishNavigation(host);
 }
 
 bool CompositeMatcher::ComputeHasAnyExtraHeadersMatcher() const {

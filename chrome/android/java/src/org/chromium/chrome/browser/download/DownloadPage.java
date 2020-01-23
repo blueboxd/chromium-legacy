@@ -13,8 +13,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinatorFactory;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
-import org.chromium.chrome.browser.native_page.BasicNativePage;
-import org.chromium.chrome.browser.native_page.NativePageHost;
+import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
+import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.chrome.browser.util.UrlConstants;
 
 /**

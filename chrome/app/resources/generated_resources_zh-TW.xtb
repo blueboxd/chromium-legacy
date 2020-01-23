@@ -4469,7 +4469,7 @@
 <translation id="7352651011704765696">發生錯誤</translation>
 <translation id="735361434055555355">正在安裝 Linux...</translation>
 <translation id="7353887511974462734">新增到現有群組</translation>
-<translation id="7354341762311560488">指紋感應器位於鍵盤左下方，請以任何一隻手指輕觸這個按鍵。</translation>
+<translation id="7354341762311560488">指紋感應器位於鍵盤左下方，請單指輕觸這個按鍵。</translation>
 <translation id="735745346212279324">已中斷 VPN 連線</translation>
 <translation id="7359588939039777303">已封鎖廣告。</translation>
 <translation id="7360183604634508679">書籤選單</translation>
@@ -5021,7 +5021,6 @@
 <translation id="8101987792947961127">必須在下次重新啟動時執行 Powerwash</translation>
 <translation id="8102159139658438129">如要查看已連結手機的相關選項，請前往「<ph name="LINK_BEGIN" />設定<ph name="LINK_END" />」</translation>
 <translation id="8104696615244072556">為你的 <ph name="IDS_SHORT_PRODUCT_NAME" /> 裝置執行 Powerwash 並還原至上一個版本。</translation>
-<translation id="8106661353233173262">發生錯誤，檔案掃描作業已逾時。</translation>
 <translation id="8107015733319732394">正在為 <ph name="DEVICE_TYPE" /> 安裝 Google Play 商店。這可能需要幾分鐘時間。</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{沒有第三方 Cookie}=1{已封鎖 1 組第三方 Cookie}other{已封鎖 # 組第三方 Cookie}}</translation>
 <translation id="810875025413331850">找不到附近的裝置。</translation>

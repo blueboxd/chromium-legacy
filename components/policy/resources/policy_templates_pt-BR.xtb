@@ -456,8 +456,8 @@ Cada item da lista da política é uma string que contém um código de extensã
         As autorizações configuradas só podem ser aplicadas para contas de crianças e entram em vigor quando a política <ph name="PER_APP_TIME_LIMITS_POLICY_NAME" /> é definida.
         As autorizações configuradas são aplicadas em apps e URLs para que eles não sejam bloqueados por limites de tempo por app.
         Os acessos a URLs autorizados não serão contabilizados no limite de tempo do Chrome.
-        Adicionar expressões regulares de URL a |url_list| para autorizar URLs que correspondam a qualquer expressão regular na lista.
-        Adicionar um app com o |app_id| e |app_type| dele na |app_list| para autorizar o aplicativo.
+        Adicione expressões regulares de URL a |url_list| para autorizar URLs que correspondam a qualquer expressão regular na lista.
+        Adicione um app com o |app_id| e |app_type| dele à |app_list| para autorizar o aplicativo.
        </translation>
 <translation id="1715151459541210849">Ativar recurso de acessibilidade de ditado</translation>
 <translation id="1717817358640580294">Se ela não for definida, e o recurso “Varredura do Chrome” detectar um software indesejado, os metadados sobre a verificação poderão ser enviados ao Google, de acordo com a política definida por SafeBrowsingExtendedReportingEnabled. Depois, será perguntado ao usuário se ele quer limpar o software indesejado na “Varredura do Chrome”. O usuário poderá optar por compartilhar resultados da limpeza com o Google para ajudar na detecção de softwares indesejados no futuro. Esses resultados contêm metadados de arquivos, extensões instaladas automaticamente e chaves de registro, conforme descrito no Relatório de Privacidade do Google Chrome.
@@ -752,6 +752,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
           <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> tem prioridade sobre esta política. Ou seja, uma extensão da lista de proibições não será instalada, mesmo se a instalação for feita a partir de um site presente nesta lista.</translation>
 <translation id="214901426630414675">Restringir o modo duplex de impressão</translation>
 <translation id="2149330464730004005">Ativar a impressão colorida</translation>
+<translation id="2151831603578119302">Ativar atalhos de recursos de acessibilidade</translation>
 <translation id="2156132677421487971">"Configurar políticas para o <ph name="PRODUCT_NAME" />", um recurso que permite que os usuários enviem o conteúdo de guias, sites ou a área de trabalho do navegador para telas e sistemas de som remotos.</translation>
 <translation id="2156755242840687300">Servidores de impressão externos ativados</translation>
 <translation id="2160336427036785721">Configura a quantidade de memória que uma única instância do <ph name="PRODUCT_NAME" /> pode usar antes que as guias comecem a ser descartadas para economizar memória. Isto é, a memória usada por uma guia será liberada, e a guia terá que ser atualizada ao ser aberta novamente.
@@ -860,6 +861,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="2294382669900758280">A reprodução de vídeos em apps Android não é levada em consideração, mesmo se esta política estiver definida como <ph name="TRUE" />.</translation>
 <translation id="2299220924812062390">Especifica uma lista de plug-ins ativados</translation>
 <translation id="2303795211377219696">Ativar o preenchimento automático para cartões de crédito</translation>
+<translation id="2307496301287881990">Informar status de tela e gráficos</translation>
 <translation id="2309390639296060546">Configuração padrão de geolocalização</translation>
 <translation id="2327252517317514801">Definir os domínios autorizados a acessar o G Suite</translation>
 <translation id="2328573323851533589">Esta política pode ser usada para ativar ou desativar forçadamente a verificação de vazamento de credenciais no <ph name="PRODUCT_NAME" />.
@@ -981,7 +983,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Quando esta política não for configurada ou for definida como verdadeira, as informações sobre versão serão coletadas.
       Quando esta política for definida como falsa, as informações sobre versão não serão coletadas.
 
-      Essa política só é eficaz quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada, e quando a máquina está inscrita na política <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+      Essa política só é eficaz quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e quando a máquina está inscrita na política <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2480971699591919564">Ativar o recurso "Clique para ligar", que permite que os usuários enviem números de telefone de computadores com Chrome para um dispositivo Android quando o usuário está conectado. Para mais informações, acesse o artigo de Central de Ajuda: https://support.google.com/chrome/answer/9430554?hl=pt-BR.
 
       Se esta política estiver ativada, a capacidade de enviar números de telefone para dispositivos Android estará ativada para o usuário do Chrome.
@@ -1113,6 +1115,7 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
       Se a política não for configurada ou estiver desativada, as configurações padrão de "isolamento de sites" da plataforma serão usadas para a tela de login.
       </translation>
 <translation id="2587719089023392205">Definir o <ph name="PRODUCT_NAME" /> como meu navegador padrão</translation>
+<translation id="2588071938417715443">Esta política controla o acesso a recursos controláveis na IU de descobertas locais (<ph name="CHROME_DEVICES_LINK" />), que mostra dispositivos detectáveis próximos do usuário, assim como dispositivos na nuvem registrados neles. Em todos os sistemas operacionais, exceto no<ph name="PRODUCT_OS_NAME" />, a IU de descobertas locais também permite que os usuários adicionem à <ph name="CLOUD_PRINT_NAME" /> impressoras clássicas conectadas aos computadores deles.</translation>
 <translation id="2592091433672667839">Duração da inatividade antes do protetor de tela ser mostrado na tela de login no modo de varejo</translation>
 <translation id="2592162121850992309">Se esta política for definida como verdadeira ou não for definida, a aceleração de hardware será ativada, a menos que um determinado recurso de GPU seja incluído na lista de proibições.
 
@@ -1353,19 +1356,6 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 <translation id="2960691910306063964">Ativar ou desativar autenticação sem PIN para hosts de acesso remoto</translation>
 <translation id="2987155890997901449">Ativar ARC</translation>
 <translation id="2987227569419001736">Controla o uso da API Web Bluetooth</translation>
-<translation id="3011301228198307065">Configura o URL padrão da página inicial no <ph name="PRODUCT_NAME" /> e impede os usuários de alterá-lo.
-
-          A página inicial é aquela aberta pelo botão "Página inicial". As páginas que são abertas na inicialização são controladas pelas políticas RestoreOnStartup.
-
-          O tipo da página inicial pode ser configurado como um URL que você especifica aqui ou como a página nova guia. Se você selecionar a página nova guia, esta política não terá efeito.
-
-          Se você ativar essa configuração, os usuários não poderão alterar o URL da página inicial deles no <ph name="PRODUCT_NAME" />, mas eles ainda poderão escolher a página nova guia como página inicial.
-
-          Se esta política não for definida, o usuário poderá escolher a própria página inicial caso HomepageIsNewTabPage também não esteja definida.
-
-          O URL precisa ter um esquema padrão, como "http://example.com" ou "https://example.com".
-
-          Esta política está disponível apenas em instâncias do Windows associadas a um domínio do <ph name="MS_AD_NAME" /> ou instâncias do Windows 10 Pro ou Enterprise inscritas no gerenciamento de dispositivos.</translation>
 <translation id="3016255526521614822">Colocar na lista de permissões os apps de anotação permitidos na tela de bloqueio do <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3020064401262077616">Controla as políticas de supervisão dos pais, que são aplicadas apenas às contas de crianças.</translation>
 <translation id="3021562480854470924">Número de marcos em que a reversão é permitida</translation>
@@ -2790,7 +2780,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
       Configurar essa política como falsa faz com que não haja coleta ou envio dos registros.
 
-      Se a política for deixada definição em versões até a M76, o <ph name="PRODUCT_NAME" /> terá como padrão não coletar esses registros nem fazer upload deles. A partir da versão M77, o <ph name="PRODUCT_NAME" /> terá como padrão coletar os registros e fazer upload deles da maioria dos perfis afetados por políticas de empresas no nível de usuário baseadas em nuvem. A partir da versão M77 até a M80, o <ph name="PRODUCT_NAME" /> também pode coletar esses registros e fazer upload deles por padrão a partir de perfis afetados pelo gerenciamento local do <ph name="PRODUCT_NAME" />.</translation>
+      Se a política não for definida em versões até a M76, o <ph name="PRODUCT_NAME" /> terá como padrão não coletar esses registros nem fazer upload deles. A partir da versão M77, o <ph name="PRODUCT_NAME" /> terá como padrão coletar os registros e fazer upload deles da maioria dos perfis afetados por políticas de empresas no nível de usuário baseadas em nuvem. A partir da versão M77 até a M80, o <ph name="PRODUCT_NAME" /> também pode coletar esses registros e fazer upload deles por padrão a partir de perfis afetados pelo gerenciamento local do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5331746669335642668">A política de nuvem do <ph name="PRODUCT_NAME" /> substitui a política da plataforma.</translation>
 <translation id="5362531528507578966">Modifica o modo de impressão de gráficos de segundo plano padrão.</translation>
 <translation id="5365476955714838841">Parâmetros de linha de comando para o navegador alternativo.</translation>
@@ -2842,6 +2832,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
       Se a conexão VPN for criada por meio de um app de VPN, a IU dentro do app não será afetada pela política. Portanto, o usuário ainda poderá usar o app para modificar a conexão VPN.
 
       Esta política precisa ser usada em conjunto com o recurso "VPN sempre ativa", que permite ao administrador optar por estabelecer uma conexão VPN na inicialização.</translation>
+<translation id="5401696449591951427">Ativar <ph name="CHROME_DEVICES_LINK" /></translation>
 <translation id="5405289061476885481">Configura quais layouts de teclado são permitidos na tela de login do <ph name="PRODUCT_OS_NAME" />.
 
       Se esta política for definida como uma lista de identificadores de método de entrada, os métodos de entrada fornecidos ficarão disponíveis na tela de login. O primeiro método de entrada fornecido será pré-selecionado. Enquanto um grupo de usuários estiver focado na tela de login, o último método de entrada usado pelo usuário ficará disponível juntamente com os métodos de entrada fornecidos por esta política. Se esta política não for definida, os métodos de entrada na tela de login serão derivados da localidade em que a tela de login é exibida. Os valores que não forem identificadores de método de entrada válidos serão ignorados.</translation>
@@ -3099,6 +3090,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
           Quando esta política não for definida, a ação padrão de suspender o dispositivo será tomada.
 
           Se a ação for de suspender, o <ph name="PRODUCT_OS_NAME" /> poderá ser configurado separadamente para bloquear ou não a tela antes da suspensão.</translation>
+<translation id="574983287620584622">Ativar atalhos de recursos de acessibilidade na tela de login</translation>
 <translation id="5755002458331714762"> As APIs Web Components v0 (Shadow DOM v0, Custom Elements v0 e HTML Imports) se tornaram obsoletas em 2018 e estão desativadas por padrão desde o M80. Esta política permite que esses recursos sejam seletivamente reativados até o M84.
 
       Se esta política for definida como verdadeira, os recursos da Web Components v0 serão ativados para todos os sites.
@@ -4232,12 +4224,21 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 <translation id="7763614521440615342">Mostrar sugestões de conteúdo na página "Nova guia"</translation>
 <translation id="7765879851993224640">Permitir que o login do Smart Lock seja usado.</translation>
 <translation id="7774768074957326919">Usar configurações de proxy do sistema</translation>
-<translation id="7775902646576367944">Esta política controla a permissão de fornecimento de informações sobre o "Navegação segura", incluindo o número do aviso e do clique de aviso.
+<translation id="7775902646576367944">Esta política controla a permissão de fornecimento de informações sobre o "Navegação segura", incluindo o número de avisos e de cliques no aviso.
 
       Quando esta política não for configurada ou for definida como verdadeira, os dados do "Navegação segura" serão coletados.
       Quando esta política for definida como falsa, os dados do "Navegação segura" não serão coletados.
 
       Esta política só é eficaz quando a <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está ativada e quando a máquina está inscrita na política <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
+<translation id="777734450201217641">Ative atalhos de recursos de acessibilidade na tela de login.
+
+          Se esta política for definida como verdadeira, os atalhos de recursos de acessibilidade sempre estarão ativados na tela de login.
+
+          Se esta política for definida como falsa, os atalhos de recursos de acessibilidade sempre estarão desativados na tela de login.
+
+          Se você definir esta política, o usuário não poderá mudá-la ou substituí-la.
+
+          Se esta política não for definida, os atalhos de recursos de acessibilidade serão ativados por padrão na tela de login.</translation>
 <translation id="7777535871204167559">Tratar dispositivos de armazenamento externo como somente leitura</translation>
 <translation id="7788511847830146438">Por perfil</translation>
 <translation id="7792973482799545782">Não permitir que nenhum site carregue conteúdo combinado bloqueável</translation>
@@ -4644,6 +4645,15 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 
       Aviso: não é recomendável configurar restrições de versão, porque elas podem impedir que os usuários recebam atualizações de software e correções de segurança críticas. Restringir as atualizações para um prefixo de versão específico pode colocar os usuários em risco.</translation>
 <translation id="8519264904050090490">URLs de exceção manual do usuário gerenciado</translation>
+<translation id="8519516251436131647">Ative os atalhos de recursos de acessibilidade.
+
+          Se esta política for definida como verdadeira, os atalhos de recursos de acessibilidade sempre estarão ativados.
+
+          Se esta política for definida como falsa, os atalhos de recursos de acessibilidade sempre estarão desativados.
+
+          Se você definir esta política, o usuário não poderá mudá-la ou substituí-la.
+
+          Se esta política não for definida, os atalhos de recursos de acessibilidade serão ativados por padrão.</translation>
 <translation id="8525526490824335042">Contêiner Linux</translation>
 <translation id="8538235451413605457">Configura o requisito da versão mínima permitida de <ph name="PRODUCT_NAME" />. As versões abaixo são tratadas como obsoletas, e o dispositivo não permitiria o login do usuário antes que o SO fosse atualizado.
       Se a versão atual se tornar obsoleta durante a sessão, o usuário será forçadamente desconectado.
@@ -4880,6 +4890,9 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
 
       Se esta política não for definida, será usado "PromptOnAccess", e o usuário poderá  fazer alterações.</translation>
 <translation id="8911348623012274122">Definir um limite de memória para instâncias do Chrome</translation>
+<translation id="8911736066340032670">Informe os dados relacionados à tela, como a taxa de atualização, e os relacionados a gráficos, como versão do driver.
+
+      Se a política for definida como falsa ou não for definida, os status de tela e gráficos não serão informados. Se ela for definida como verdadeira, os status de tela e gráficos serão informados.</translation>
 <translation id="891435090623616439">codificado como um string JSON, para ver mais detalhes consulte <ph name="COMPLEX_POLICIES_URL" /></translation>
 <translation id="8917070657147922192">Permite que o usuário gerencie os certificados de CA instalados.</translation>
 <translation id="8926275581598789324">Observe que esta política está obsoleta e será removida na versão 82 do <ph name="PRODUCT_OS_NAME" />. Sendo assim, passe a usar <ph name="POWER_MANAGEMENT_IDLE_SETTINGS_POLICY_NAME" />.

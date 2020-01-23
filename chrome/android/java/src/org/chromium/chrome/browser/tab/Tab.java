@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.UserDataHost;
-import org.chromium.chrome.browser.native_page.NativePage;
+import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;

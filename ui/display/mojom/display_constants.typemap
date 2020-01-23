@@ -14,4 +14,5 @@ public_deps = [
 type_mappings = [
   "display.mojom.DisplayConnectionType=::display::DisplayConnectionType",
   "display.mojom.HDCPState=::display::HDCPState",
+  "display.mojom.PrivacyScreenState=::display::PrivacyScreenState",
 ]

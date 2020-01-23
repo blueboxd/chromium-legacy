@@ -98,8 +98,16 @@ void WebSocket::Connect(net::CompletionOnceCallback callback) {
     VLOG(0) << "resolved " << url_.HostNoBracketsPiece() << " to " << json;
   }
 
+  if (url_.host() == "localhost") {
+    // ensure that both localhost addresses are included
+    // see https://bugs.chromium.org/p/chromedriver/issues/detail?id=3316
+    addresses.push_back(net::IPEndPoint(net::IPAddress::IPv4Localhost(), port));
+    addresses.push_back(net::IPEndPoint(net::IPAddress::IPv6Localhost(), port));
+    addresses.Deduplicate();
+  }
+
   net::NetLogSource source;
-  socket_.reset(new net::TCPClientSocket(addresses, NULL, NULL, source));
+  socket_.reset(new net::TCPClientSocket(addresses, nullptr, nullptr, source));
 
   state_ = CONNECTING;
   connect_callback_ = std::move(callback);

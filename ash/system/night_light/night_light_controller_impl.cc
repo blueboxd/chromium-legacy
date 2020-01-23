@@ -58,8 +58,8 @@ namespace {
 enum class AutoNightLightNotificationState {
   kClosedByUser = 0,
   kBodyClicked = 1,
-  kButtonClicked = 2,
-  kMaxValue = kButtonClicked,
+  kButtonClickedDeprecated = 2,
+  kMaxValue = kButtonClickedDeprecated,
 };
 
 // The name of the histogram reporting the state of the user's interaction with
@@ -695,22 +695,15 @@ void NightLightControllerImpl::Click(
     const base::Optional<base::string16>& reply) {
   auto* shell = Shell::Get();
 
-  const bool body_clicked = !button_index.has_value();
-  if (body_clicked) {
-    // Body has been clicked.
-    SystemTrayClient* tray_client = shell->system_tray_model()->client();
-    auto* session_controller = shell->session_controller();
-    if (session_controller->ShouldEnableSettings() && tray_client)
-      tray_client->ShowDisplaySettings();
-  } else {
-    DCHECK_EQ(0, *button_index);
-    SetEnabled(false, AnimationDuration::kShort);
-  }
+  DCHECK(!button_index.has_value());
+  // Body has been clicked.
+  SystemTrayClient* tray_client = shell->system_tray_model()->client();
+  auto* session_controller = shell->session_controller();
+  if (session_controller->ShouldEnableSettings() && tray_client)
+    tray_client->ShowDisplaySettings();
 
-  UMA_HISTOGRAM_ENUMERATION(
-      kAutoNightLightNotificationStateHistogram,
-      body_clicked ? AutoNightLightNotificationState::kBodyClicked
-                   : AutoNightLightNotificationState::kButtonClicked);
+  UMA_HISTOGRAM_ENUMERATION(kAutoNightLightNotificationStateHistogram,
+                            AutoNightLightNotificationState::kBodyClicked);
 
   message_center::MessageCenter::Get()->RemoveNotification(kNotificationId,
                                                            /*by_user=*/false);
@@ -774,10 +767,6 @@ void NightLightControllerImpl::ShowAutoNightLightNotification() {
   DCHECK(!UserHasEverDismissedAutoNightLightNotification());
   DCHECK_EQ(ScheduleType::kSunsetToSunrise, GetScheduleType());
 
-  message_center::RichNotificationData data;
-  data.buttons.push_back(message_center::ButtonInfo(
-      l10n_util::GetStringUTF16(IDS_ASH_AUTO_NIGHT_LIGHT_NOTIFY_BUTTON_TEXT)));
-
   std::unique_ptr<message_center::Notification> notification =
       CreateSystemNotification(
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
@@ -786,7 +775,7 @@ void NightLightControllerImpl::ShowAutoNightLightNotification() {
           base::string16(), GURL(),
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId),
-          data,
+          message_center::RichNotificationData{},
           base::MakeRefCounted<message_center::ThunkNotificationDelegate>(
               weak_ptr_factory_.GetWeakPtr()),
           kUnifiedMenuNightLightIcon,

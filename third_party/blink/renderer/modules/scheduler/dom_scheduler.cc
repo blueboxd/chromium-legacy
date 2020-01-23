@@ -93,7 +93,7 @@ ScriptPromise DOMScheduler::postTask(ScriptState* script_state,
     if (!task_runner)
       return RejectPromiseImmediately(exception_state);
   } else {
-    task_runner = GetTaskRunnerFor(WebSchedulingPriority::kDefaultPriority);
+    task_runner = GetTaskRunnerFor(WebSchedulingPriority::kUserVisiblePriority);
   }
 
   // TODO(shaseley): We need to figure out the behavior we want for delay. For

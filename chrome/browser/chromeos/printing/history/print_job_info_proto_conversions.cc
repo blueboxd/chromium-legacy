@@ -49,6 +49,8 @@ proto::PrintJobInfo_PrintJobSource PrintJobSourceToProto(
       return proto::PrintJobInfo_PrintJobSource_PRINT_PREVIEW;
     case ::printing::PrintJob::Source::ARC:
       return proto::PrintJobInfo_PrintJobSource_ARC;
+    case ::printing::PrintJob::Source::EXTENSION:
+      return proto::PrintJobInfo_PrintJobSource_EXTENSION;
     default:
       NOTREACHED();
   }

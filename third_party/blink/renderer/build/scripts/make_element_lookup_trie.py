@@ -43,6 +43,7 @@ class ElementLookupTrieWriter(json5_generator.Writer):
         'interfaceHeaderDir': {},
         'interfaceName': {},
         'noConstructor': {},
+        'noTypeHelpers': {},
         'runtimeEnabled': {},
     }
     default_metadata = {

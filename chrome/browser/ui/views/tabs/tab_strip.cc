@@ -124,6 +124,9 @@ constexpr int kStackedPadding = 6;
 int g_drop_indicator_width = 0;
 int g_drop_indicator_height = 0;
 
+// The offset in indices when shifting a tab or group in the given direction.
+enum ShiftOffset { kLeft = -1, kRight = 1 };
+
 // Listens in on the browser event stream (as a pre target event handler) and
 // hides an associated hover card on any keypress.
 class TabHoverCardEventSniffer : public ui::EventHandler {
@@ -1303,6 +1306,14 @@ void TabStrip::OnGroupClosed(const tab_groups::TabGroupId& group) {
   // The group_views_ mapping is erased in OnGroupCloseAnimationCompleted().
 }
 
+void TabStrip::ShiftGroupLeft(const tab_groups::TabGroupId& group) {
+  ShiftGroupRelative(group, -1);
+}
+
+void TabStrip::ShiftGroupRight(const tab_groups::TabGroupId& group) {
+  ShiftGroupRelative(group, 1);
+}
+
 bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
   // Detached tabs should always be invisible (as they close).
   if (tab->detached())
@@ -1606,12 +1617,12 @@ void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
   controller_->CloseTab(model_index, source);
 }
 
-void TabStrip::MoveTabLeft(Tab* tab) {
-  MoveTabRelative(tab, -1);
+void TabStrip::ShiftTabLeft(Tab* tab) {
+  ShiftTabRelative(tab, ShiftOffset::kLeft);
 }
 
-void TabStrip::MoveTabRight(Tab* tab) {
-  MoveTabRelative(tab, 1);
+void TabStrip::ShiftTabRight(Tab* tab) {
+  ShiftTabRelative(tab, ShiftOffset::kRight);
 }
 
 void TabStrip::MoveTabFirst(Tab* tab) {
@@ -1628,10 +1639,23 @@ void TabStrip::MoveTabFirst(Tab* tab) {
       ++target_index;
   }
 
-  if (target_index == start_index || !IsValidModelIndex(target_index))
+  if (!IsValidModelIndex(target_index))
     return;
 
+  if (target_index == start_index) {
+    // Even if the tab is already at the front, it may be able to "move" out of
+    // its current group.
+    if (tab->group().has_value())
+      controller_->RemoveTabFromGroup(target_index);
+    return;
+  }
+
   controller_->MoveTab(start_index, target_index);
+
+  // The tab may unintentionally land in the first group in the tab strip, so we
+  // remove the group to ensure consistent behavior.
+  if (tab->group().has_value())
+    controller_->RemoveTabFromGroup(target_index);
 }
 
 void TabStrip::MoveTabLast(Tab* tab) {
@@ -1652,10 +1676,23 @@ void TabStrip::MoveTabLast(Tab* tab) {
     target_index = tab_count() - 1;
   }
 
-  if (target_index == start_index || !IsValidModelIndex(target_index))
+  if (!IsValidModelIndex(target_index))
     return;
 
+  if (target_index == start_index) {
+    // Even if the tab is already at the back, it may be able to "move" out of
+    // its current group.
+    if (tab->group().has_value())
+      controller_->RemoveTabFromGroup(target_index);
+    return;
+  }
+
   controller_->MoveTab(start_index, target_index);
+
+  // The tab may unintentionally land in the last group in the tab strip, so we
+  // remove the group to ensure consistent behavior.
+  if (tab->group().has_value())
+    controller_->RemoveTabFromGroup(target_index);
 }
 
 void TabStrip::ShowContextMenuForTab(Tab* tab,
@@ -2898,22 +2935,74 @@ void TabStrip::UpdateContrastRatioValues() {
   separator_color_ = get_blend(inactive_fg, kTabSeparatorContrast).color;
 }
 
-void TabStrip::MoveTabRelative(Tab* tab, int offset) {
-  DCHECK_NE(offset, 0);
+void TabStrip::ShiftTabRelative(Tab* tab, int offset) {
+  DCHECK(offset == ShiftOffset::kLeft || offset == ShiftOffset::kRight);
   const int start_index = GetModelIndexOf(tab);
   const int target_index = start_index + offset;
+
+  if (!IsValidModelIndex(start_index))
+    return;
 
   if (tab->closing())
     return;
 
+  if (!IsValidModelIndex(target_index) ||
+      controller_->IsTabPinned(start_index) !=
+          controller_->IsTabPinned(target_index)) {
+    // Even if we've reached the boundary of where the tab could go, it may
+    // still be able to "move" out of its current group.
+    if (tab->group().has_value())
+      controller_->RemoveTabFromGroup(start_index);
+    return;
+  }
+
+  // If the tab is at a group boundary, instead of actually moving the tab just
+  // change its group membership.
+  base::Optional<tab_groups::TabGroupId> target_group =
+      tab_at(target_index)->group();
+  if (tab->group() != target_group) {
+    if (tab->group().has_value())
+      controller_->RemoveTabFromGroup(start_index);
+    else if (target_group.has_value())
+      controller_->AddTabToGroup(start_index, target_group.value());
+
+    return;
+  }
+
+  controller_->MoveTab(start_index, target_index);
+}
+
+void TabStrip::ShiftGroupRelative(const tab_groups::TabGroupId& group,
+                                  int offset) {
+  DCHECK(offset == ShiftOffset::kLeft || offset == ShiftOffset::kRight);
+  std::vector<int> tabs_in_group = controller_->ListTabsInGroup(group);
+
+  const int start_index = tabs_in_group.front();
+  int target_index = start_index + offset;
+
+  if (offset > 0)
+    target_index += tabs_in_group.size() - 1;
+
   if (!IsValidModelIndex(start_index) || !IsValidModelIndex(target_index))
+    return;
+
+  // Avoid moving into the middle of another group by accounting for its size.
+  base::Optional<tab_groups::TabGroupId> target_group =
+      tab_at(target_index)->group();
+  if (target_group.has_value()) {
+    target_index +=
+        offset *
+        (controller_->ListTabsInGroup(target_group.value()).size() - 1);
+  }
+
+  if (!IsValidModelIndex(target_index))
     return;
 
   if (controller_->IsTabPinned(start_index) !=
       controller_->IsTabPinned(target_index))
     return;
 
-  controller_->MoveTab(start_index, target_index);
+  controller_->MoveGroup(group, target_index);
 }
 
 void TabStrip::ResizeLayoutTabs() {

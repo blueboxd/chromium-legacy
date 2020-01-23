@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
-import android.support.test.filters.SmallTest;
 import android.support.test.uiautomator.UiDevice;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.preference.Preference;
@@ -58,8 +57,8 @@ public class SyncAndServicesSettingsTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Sync"})
+    @LargeTest
+    @Feature({"Sync", "Preferences"})
     public void testSyncSwitch() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
@@ -80,8 +79,8 @@ public class SyncAndServicesSettingsTest {
      * This is a regression test for http://crbug.com/454939.
      */
     @Test
-    @SmallTest
-    @Feature({"Sync"})
+    @LargeTest
+    @Feature({"Sync", "Preferences"})
     public void testOpeningSettingsDoesntEnableSync() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         mSyncTestRule.stopSync();
@@ -94,8 +93,8 @@ public class SyncAndServicesSettingsTest {
      * This is a regression test for http://crbug.com/467600.
      */
     @Test
-    @SmallTest
-    @Feature({"Sync"})
+    @LargeTest
+    @Feature({"Sync", "Preferences"})
     public void testOpeningSettingsDoesntStartEngine() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         mSyncTestRule.stopSync();
@@ -106,8 +105,8 @@ public class SyncAndServicesSettingsTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Sync"})
+    @LargeTest
+    @Feature({"Sync", "Preferences"})
     public void testDefaultControlStatesWithSyncOffThenOn() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         mSyncTestRule.stopSync();
@@ -119,8 +118,8 @@ public class SyncAndServicesSettingsTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Sync"})
+    @LargeTest
+    @Feature({"Sync", "Preferences"})
     public void testDefaultControlStatesWithSyncOnThenOff() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         SyncTestUtil.waitForSyncActive();
@@ -131,8 +130,8 @@ public class SyncAndServicesSettingsTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Sync"})
+    @LargeTest
+    @Feature({"Sync", "Preferences"})
     @DisabledTest(message = "https://crbug.com/991135")
     public void testSyncSwitchClearsServerAutofillCreditCards() {
         mSyncTestRule.setUpTestAccountAndSignIn();
@@ -161,8 +160,8 @@ public class SyncAndServicesSettingsTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Sync"})
+    @LargeTest
+    @Feature({"Sync", "Preferences"})
     public void testDismissedSettingsDoesNotSetFirstSetupComplete() throws Exception {
         mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
         startPreferencesForAdvancedSyncFlowAndInterruptIt();
@@ -172,8 +171,8 @@ public class SyncAndServicesSettingsTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Sync"})
+    @LargeTest
+    @Feature({"Sync", "Preferences"})
     public void testDismissedSettingsShowsSyncSwitchOffByDefault() throws Exception {
         mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
         startPreferencesForAdvancedSyncFlowAndInterruptIt();
@@ -182,8 +181,8 @@ public class SyncAndServicesSettingsTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Sync"})
+    @LargeTest
+    @Feature({"Sync", "Preferences"})
     public void testDismissedSettingsShowsSyncErrorCard() throws Exception {
         mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
         startPreferencesForAdvancedSyncFlowAndInterruptIt();
@@ -192,8 +191,8 @@ public class SyncAndServicesSettingsTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Sync"})
+    @LargeTest
+    @Feature({"Sync", "Preferences"})
     public void testFirstSetupCompleteIsSetAfterSettingsOpenedAndBackPressed() throws Exception {
         mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
         startPreferencesForAdvancedSyncFlowAndInterruptIt();
@@ -210,8 +209,8 @@ public class SyncAndServicesSettingsTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Sync"})
+    @LargeTest
+    @Feature({"Sync", "Preferences"})
     public void testFirstSetupCompleteIsSetAfterSettingsOpenedAndDismissed() throws Exception {
         mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
         startPreferencesForAdvancedSyncFlowAndInterruptIt();
@@ -228,8 +227,8 @@ public class SyncAndServicesSettingsTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Sync"})
+    @LargeTest
+    @Feature({"Sync", "Preferences"})
     public void testFirstSetupCompleteIsSetAfterSyncTurnedOn() throws Exception {
         mSyncTestRule.setUpTestAccountAndSignInWithSyncSetupAsIncomplete();
         startPreferencesForAdvancedSyncFlowAndInterruptIt();
@@ -246,8 +245,8 @@ public class SyncAndServicesSettingsTest {
     }
 
     @Test
-    @SmallTest
-    @Feature({"Sync"})
+    @LargeTest
+    @Feature({"Sync", "Preferences"})
     public void testTrustedVaultKeyRequiredShowsSyncErrorCard() throws Exception {
         final FakeProfileSyncService pss = overrideProfileSyncService();
         mSyncTestRule.setUpTestAccountAndSignIn();

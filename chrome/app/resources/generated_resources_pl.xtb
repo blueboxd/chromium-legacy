@@ -5023,7 +5023,6 @@ Przechowuj plik klucza w bezpiecznym miejscu. Będzie on potrzebny do utworzenia
 <translation id="8101987792947961127">Przy następnym uruchomieniu trzeba wykonać Powerwash</translation>
 <translation id="8102159139658438129">Otwórz <ph name="LINK_BEGIN" />Ustawienia<ph name="LINK_END" />, by zobaczyć opcje połączenia z telefonem</translation>
 <translation id="8104696615244072556">Wykonaj Powerwash na urządzeniu z <ph name="IDS_SHORT_PRODUCT_NAME" /> i przywróć poprzednią wersję.</translation>
-<translation id="8106661353233173262">Coś poszło nie tak. Przekroczono limit czasu skanowania pliku.</translation>
 <translation id="8107015733319732394">Instaluję Sklep Google Play na urządzeniu <ph name="DEVICE_TYPE" />. Może to potrwać kilka minut.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Brak plików cookie innych firm}=1{Zablokowano 1 plik cookie innej firmy}few{Zablokowano # pliki cookie innych firm}many{Zablokowano # plików cookie innych firm}other{Zablokowano # pliku cookie innych firm}}</translation>
 <translation id="810875025413331850">Nie znaleziono żadnych urządzeń w pobliżu.</translation>

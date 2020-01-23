@@ -22,7 +22,12 @@
 namespace {
 
 const gfx::Size kSize(640, 480);
-const GURL kTestUrl("https://test.com/path");
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL TestURL() {
+  return GURL("https://test.com/path");
+}
 
 }  // namespace
 
@@ -89,7 +94,8 @@ TEST_F(IsolatedPrerenderURLLoaderInterceptorTest, DISABLE_ASAN(WantIntercept)) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kIsolatePrerenders);
 
-  std::unique_ptr<prerender::PrerenderHandle> handle = StartPrerender(kTestUrl);
+  std::unique_ptr<prerender::PrerenderHandle> handle =
+      StartPrerender(TestURL());
 
   std::unique_ptr<IsolatedPrerenderURLLoaderInterceptor> interceptor =
       std::make_unique<IsolatedPrerenderURLLoaderInterceptor>(
@@ -99,7 +105,7 @@ TEST_F(IsolatedPrerenderURLLoaderInterceptorTest, DISABLE_ASAN(WantIntercept)) {
               ->GetFrameTreeNodeId());
 
   network::ResourceRequest request;
-  request.url = kTestUrl;
+  request.url = TestURL();
   request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
 
@@ -118,7 +124,8 @@ TEST_F(IsolatedPrerenderURLLoaderInterceptorTest, DISABLE_ASAN(FeatureOff)) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(features::kIsolatePrerenders);
 
-  std::unique_ptr<prerender::PrerenderHandle> handle = StartPrerender(kTestUrl);
+  std::unique_ptr<prerender::PrerenderHandle> handle =
+      StartPrerender(TestURL());
 
   std::unique_ptr<IsolatedPrerenderURLLoaderInterceptor> interceptor =
       std::make_unique<IsolatedPrerenderURLLoaderInterceptor>(
@@ -128,7 +135,7 @@ TEST_F(IsolatedPrerenderURLLoaderInterceptorTest, DISABLE_ASAN(FeatureOff)) {
               ->GetFrameTreeNodeId());
 
   network::ResourceRequest request;
-  request.url = kTestUrl;
+  request.url = TestURL();
   request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
 
@@ -152,7 +159,7 @@ TEST_F(IsolatedPrerenderURLLoaderInterceptorTest, DISABLE_ASAN(NotAPrerender)) {
           web_contents()->GetMainFrame()->GetFrameTreeNodeId());
 
   network::ResourceRequest request;
-  request.url = kTestUrl;
+  request.url = TestURL();
   request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
 
@@ -175,7 +182,7 @@ TEST_F(IsolatedPrerenderURLLoaderInterceptorTest, DISABLE_ASAN(NotAFrame)) {
       std::make_unique<IsolatedPrerenderURLLoaderInterceptor>(1337);
 
   network::ResourceRequest request;
-  request.url = kTestUrl;
+  request.url = TestURL();
   request.resource_type = static_cast<int>(content::ResourceType::kMainFrame);
   request.method = "GET";
 

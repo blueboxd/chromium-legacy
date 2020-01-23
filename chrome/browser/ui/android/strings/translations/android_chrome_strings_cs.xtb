@@ -668,7 +668,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="605721222689873409">RR</translation>
 <translation id="6064125863973209585">Dokončená stahování</translation>
 <translation id="6075798973483050474">Upravit domovskou stránku</translation>
-<translation id="6092062101542170135">Chcete-li pokračovat, zapněte NFC v nstavení zařízení Android</translation>
+<translation id="6092062101542170135">Chcete-li pokračovat, zapněte NFC v nastavení zařízení Android</translation>
 <translation id="60923314841986378">Zbývá: <ph name="HOURS" /> h</translation>
 <translation id="6108923351542677676">Probíhá nastavování…</translation>
 <translation id="6111020039983847643">využitá data</translation>
@@ -757,6 +757,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6659594942844771486">Karta</translation>
 <translation id="666731172850799929">Otevřít v aplikaci <ph name="APP_NAME" /></translation>
 <translation id="666981079809192359">Ochrana soukromí v Chromu</translation>
+<translation id="6671495933530132209">Zkopírovat obrázek</translation>
 <translation id="6676840375528380067">Vymazat z tohoto zařízení data prohlížeče Chrome?</translation>
 <translation id="6689172468748959065">Profilové fotky</translation>
 <translation id="6697492270171225480">Zobrazovat návrhy podobných stránek, když stránku nelze najít</translation>

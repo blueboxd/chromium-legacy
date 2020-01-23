@@ -3037,7 +3037,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5310281978693206542">Kirim Link ke Perangkat Anda</translation>
 <translation id="5311304534597152726">Login sebagai</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Coba lagi.</translation>
-<translation id="5313628438272378649">File yang diupload ini melanggar kebijakan keamanan organisasi Anda dan tidak dapat diselesaikan.</translation>
+<translation id="5313628438272378649">Upload ini melanggar kebijakan keamanan organisasi Anda dan tidak dapat diselesaikan.</translation>
 <translation id="5315738755890845852">Kurung kurawal tambahan: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">identitas</translation>
 <translation id="5317780077021120954">Simpan</translation>
@@ -3131,7 +3131,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5449588825071916739">Bookmark Semua Tab</translation>
 <translation id="5449716055534515760">Tutup Jen&amp;dela</translation>
 <translation id="5454166040603940656">dengan <ph name="PROVIDER" /></translation>
-<translation id="5454360575035671759">Menghapus Plugin VM akan menghapus VM Anda. Termasuk juga aplikasi, setelan, dan datanya. Yakin ingin melanjutkan?</translation>
+<translation id="5454360575035671759">Menghapus Plugin VM akan menghapus VM Anda. Ini termasuk juga aplikasi, setelan, dan datanya. Yakin ingin melanjutkan?</translation>
 <translation id="5457113250005438886">Tidak valid</translation>
 <translation id="5457459357461771897">Membaca dan menghapus foto, musik, serta media lain dari komputer Anda</translation>
 <translation id="5457599981699367932">Login sebagai Tamu</translation>
@@ -5021,7 +5021,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8101987792947961127">Perlu Powerwash saat mulai ulang berikutnya</translation>
 <translation id="8102159139658438129">Buka <ph name="LINK_BEGIN" />Setelan<ph name="LINK_END" /> guna melihat opsi untuk ponsel yang terhubung</translation>
 <translation id="8104696615244072556">Powerwash perangkat <ph name="IDS_SHORT_PRODUCT_NAME" /> dan kembalikan ke versi sebelumnya.</translation>
-<translation id="8106661353233173262">Terjadi error. Batas waktu file yang dipindai telah habis.</translation>
 <translation id="8107015733319732394">Menginstal Google Play Store di <ph name="DEVICE_TYPE" />. Tindakan ini dapat memakan waktu beberapa menit.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Tidak ada cookie pihak ketiga}=1{1 cookie pihak ketiga diblokir}other{# cookie pihak ketiga diblokir}}</translation>
 <translation id="810875025413331850">Tidak ditemukan perangkat di sekitar.</translation>

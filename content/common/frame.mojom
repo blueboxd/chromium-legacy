@@ -493,8 +493,7 @@ interface FrameHost {
   // Sent when the renderer fails to load with an error.
   DidFailLoadWithError(
       url.mojom.Url url,
-      int32 error_code,
-      mojo_base.mojom.String16 error_description);
+      int32 error_code);
 
   // Sent to the browser process to transfer the user activation state from the
   // source frame to the frame sending this IPC. The browser will update the

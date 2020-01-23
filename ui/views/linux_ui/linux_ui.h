@@ -14,6 +14,7 @@
 #include "ui/base/cursor/cursor_theme_manager_linux.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/base/ime/linux/text_edit_key_bindings_delegate_auralinux.h"
+#include "ui/gfx/animation/animation_settings_provider_linux.h"
 #include "ui/gfx/skia_font_delegate.h"
 #include "ui/shell_dialogs/shell_dialog_linux.h"
 #include "ui/views/buildflags.h"
@@ -58,7 +59,8 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
                              public gfx::SkiaFontDelegate,
                              public ui::ShellDialogLinux,
                              public ui::TextEditKeyBindingsDelegateAuraLinux,
-                             public ui::CursorThemeManagerLinux {
+                             public ui::CursorThemeManagerLinux,
+                             public gfx::AnimationSettingsProviderLinux {
  public:
   using UseSystemThemeCallback =
       base::RepeatingCallback<bool(aura::Window* window)>;

@@ -311,10 +311,9 @@ void WebNavigationTabObserver::DidFinishLoad(
 void WebNavigationTabObserver::DidFailLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description) {
+    int error_code) {
   // When showing replacement content, we might get load signals for frames
-  // that weren't reguarly loaded.
+  // that weren't regularly loaded.
   if (!navigation_state_.IsValidFrame(render_frame_host))
     return;
 

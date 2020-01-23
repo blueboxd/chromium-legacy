@@ -20,6 +20,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "extensions/browser/api/declarative_net_request/web_contents_helper.h"
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -152,6 +153,8 @@ class TabHelper : public content::WebContentsObserver,
   std::unique_ptr<ScriptExecutor> script_executor_;
 
   std::unique_ptr<ExtensionActionRunner> extension_action_runner_;
+
+  declarative_net_request::WebContentsHelper declarative_net_request_helper_;
 
   std::unique_ptr<ActiveTabPermissionGranter> active_tab_permission_granter_;
 

@@ -187,6 +187,8 @@ void CreditCardAccessManager::PrepareToFetchCreditCard() {
   if (is_user_verifiable_.has_value()) {
     GetUnmaskDetailsIfUserIsVerifiable(is_user_verifiable_.value());
   } else {
+    is_user_verifiable_called_timestamp_ = AutofillTickClock::NowTicks();
+
     GetOrCreateFIDOAuthenticator()->IsUserVerifiable(base::BindOnce(
         &CreditCardAccessManager::GetUnmaskDetailsIfUserIsVerifiable,
         weak_ptr_factory_.GetWeakPtr()));
@@ -197,6 +199,12 @@ void CreditCardAccessManager::PrepareToFetchCreditCard() {
 void CreditCardAccessManager::GetUnmaskDetailsIfUserIsVerifiable(
     bool is_user_verifiable) {
   is_user_verifiable_ = is_user_verifiable;
+
+  if (is_user_verifiable_called_timestamp_.has_value()) {
+    AutofillMetrics::LogUserVerifiabilityCheckDuration(
+        AutofillTickClock::NowTicks() -
+        is_user_verifiable_called_timestamp_.value());
+  }
 
   // If user is verifiable, then make preflight call to payments to fetch unmask
   // details, otherwise the only option is to perform CVC Auth, which does not

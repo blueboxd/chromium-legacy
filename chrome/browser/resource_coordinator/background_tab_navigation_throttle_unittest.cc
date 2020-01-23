@@ -35,20 +35,22 @@ class BackgroundTabNavigationThrottleTest
     : public ChromeRenderViewHostTestHarness,
       public testing::WithParamInterface<
           std::tuple<ExpectInstantiationResult,
-                     bool,  // enable_feature
-                     bool,  // is_in_main_frame
-                     bool,  // is_background_tab
-                     bool,  // no_opener
-                     bool,  // is_initial_navigation
-                     bool,  // has_tab_ui_helper
-                     GURL>> {
+                     bool,            // enable_feature
+                     bool,            // is_in_main_frame
+                     bool,            // is_background_tab
+                     bool,            // no_opener
+                     bool,            // is_initial_navigation
+                     bool,            // has_tab_ui_helper
+                     std::string>> {  // url
  public:
   BackgroundTabNavigationThrottleTest() {}
 
   void SetUp() override {
+    std::string url;
     std::tie(expected_instantiation_result_, enable_feature_, is_in_main_frame_,
              is_background_tab_, no_opener_, is_initial_navigation_,
-             has_tab_ui_helper_, url_) = GetParam();
+             has_tab_ui_helper_, url) = GetParam();
+    url_ = GURL(url);
 
     if (enable_feature_) {
       scoped_feature_list_.InitAndEnableFeature(
@@ -125,7 +127,7 @@ INSTANTIATE_TEST_SUITE_P(
                                       true,  // No opener
                                       true,  // Is initial navigation
                                       true,  // Has tab UI helper
-                                      GURL(kTestUrl)),
+                                      kTestUrl),
                       std::make_tuple(EXPECT_NO_INSTANTIATION,
                                       false,  // Disable feature
                                       true,
@@ -133,7 +135,7 @@ INSTANTIATE_TEST_SUITE_P(
                                       true,
                                       true,
                                       true,
-                                      GURL(kTestUrl)),
+                                      kTestUrl),
                       std::make_tuple(EXPECT_NO_INSTANTIATION,
                                       true,
                                       false,  // Is in child frame
@@ -141,7 +143,7 @@ INSTANTIATE_TEST_SUITE_P(
                                       true,
                                       true,
                                       true,
-                                      GURL(kTestUrl)),
+                                      kTestUrl),
                       std::make_tuple(EXPECT_NO_INSTANTIATION,
                                       true,
                                       true,
@@ -149,7 +151,7 @@ INSTANTIATE_TEST_SUITE_P(
                                       true,
                                       true,
                                       true,
-                                      GURL(kTestUrl)),
+                                      kTestUrl),
                       std::make_tuple(EXPECT_NO_INSTANTIATION,
                                       true,
                                       true,
@@ -157,7 +159,7 @@ INSTANTIATE_TEST_SUITE_P(
                                       false,  // Has opener
                                       true,
                                       true,
-                                      GURL(kTestUrl)),
+                                      kTestUrl),
                       std::make_tuple(EXPECT_NO_INSTANTIATION,
                                       true,
                                       true,
@@ -165,7 +167,7 @@ INSTANTIATE_TEST_SUITE_P(
                                       true,
                                       false,  // Is not initial navigation
                                       true,
-                                      GURL(kTestUrl)),
+                                      kTestUrl),
                       std::make_tuple(EXPECT_NO_INSTANTIATION,
                                       true,
                                       true,
@@ -173,6 +175,6 @@ INSTANTIATE_TEST_SUITE_P(
                                       true,
                                       true,
                                       false,  // Do not have tab UI helper
-                                      GURL(kTestUrl))));
+                                      kTestUrl)));
 
 }  // namespace resource_coordinator

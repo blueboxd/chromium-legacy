@@ -82,6 +82,7 @@ component("blink") {
     "//media",
     "//media:shared_memory_support",
     "//media/learning/common",
+    "//media/learning/mojo/public/cpp:cpp",
     "//media/mojo/mojom",
     "//net",
     "//services/network/public/cpp:cpp",

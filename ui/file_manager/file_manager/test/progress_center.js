@@ -10,7 +10,7 @@ const progressCenter = {};
  * @return {!ProgressCenterItem}
  */
 progressCenter.createItem = function(id, message) {
-  let item = new ProgressCenterItem();
+  const item = new ProgressCenterItem();
   item.id = id;
   item.message = message;
   return item;

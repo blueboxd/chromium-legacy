@@ -51,6 +51,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     command_line->AppendSwitch(switches::kUseGpuInTests);
     // This test fails on some Mac bots if no default devices are specified on
     // the command line.
+    command_line->RemoveSwitch(switches::kUseFakeDeviceForMediaStream);
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kUseFakeDeviceForMediaStream,
         "audio-input-default-id=default,video-input-default-id=default");

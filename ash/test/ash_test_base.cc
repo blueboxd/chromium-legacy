@@ -482,12 +482,25 @@ void AshTestBase::UnblockUserSession() {
   GetSessionControllerClient()->UnlockScreen();
 }
 
-void AshTestBase::SetTouchKeyboardEnabled(bool enabled) {
-  auto flag = keyboard::KeyboardEnableFlag::kTouchEnabled;
-  if (enabled)
-    Shell::Get()->keyboard_controller()->SetEnableFlag(flag);
-  else
-    Shell::Get()->keyboard_controller()->ClearEnableFlag(flag);
+void AshTestBase::SetVirtualKeyboardEnabled(bool enabled) {
+  // Note there are a lot of flags that can be set to control whether the
+  // keyboard is shown or not. You can see the logic in
+  // |KeyboardUIController::IsKeyboardEnableRequested|.
+  // The |kTouchEnabled| flag seems like a logical candidate to pick, but it
+  // does not work because the flag will automatically be toggled off once the
+  // |DeviceDataManager| detects there is a physical keyboard present. That's
+  // why I picked the |kPolicyEnabled| and |kPolicyDisabled| flags instead.
+  auto enable_flag = keyboard::KeyboardEnableFlag::kPolicyEnabled;
+  auto disable_flag = keyboard::KeyboardEnableFlag::kPolicyDisabled;
+  auto* keyboard_controller = Shell::Get()->keyboard_controller();
+
+  if (enabled) {
+    keyboard_controller->SetEnableFlag(enable_flag);
+    keyboard_controller->ClearEnableFlag(disable_flag);
+  } else {
+    keyboard_controller->ClearEnableFlag(enable_flag);
+    keyboard_controller->SetEnableFlag(disable_flag);
+  }
   // Ensure that observer methods and mojo calls between KeyboardControllerImpl,
   // keyboard::KeyboardUIController*, and AshKeyboardUI complete.
   base::RunLoop().RunUntilIdle();

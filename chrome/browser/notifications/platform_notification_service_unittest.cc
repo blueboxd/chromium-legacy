@@ -67,7 +67,11 @@ const char kRequireInteraction[] = "RequireInteraction";
 const char kTimeUntilCloseMillis[] = "TimeUntilClose";
 const char kTimeUntilFirstClickMillis[] = "TimeUntilFirstClick";
 const char kTimeUntilLastClickMillis[] = "TimeUntilLastClick";
-const GURL kOrigin = GURL("https://example.com");
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL Origin() {
+  return GURL("https://example.com");
+}
 
 }  // namespace
 
@@ -250,11 +254,12 @@ TEST_F(PlatformNotificationServiceTest, RecordNotificationUkmEvent) {
                                             /* no_db= */ false));
   auto* history_service = HistoryServiceFactory::GetForProfile(
       &profile_, ServiceAccessType::EXPLICIT_ACCESS);
-  history_service->AddPage(kOrigin, base::Time::Now(), history::SOURCE_BROWSED);
+  history_service->AddPage(Origin(), base::Time::Now(),
+                           history::SOURCE_BROWSED);
 
   NotificationDatabaseData data;
   data.notification_id = "notification1";
-  data.origin = kOrigin;
+  data.origin = Origin();
   data.closed_reason = NotificationDatabaseData::ClosedReason::USER;
   data.replaced_existing_notification = true;
   data.notification_data.icon = GURL("https://icon.com");

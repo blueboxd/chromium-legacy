@@ -29,10 +29,11 @@ constexpr int kVectorIconSizeDip = 12;
 
 // CaptionButton ---------------------------------------------------------------
 
-AssistantButton* CreateCaptionButton(const gfx::VectorIcon& icon,
-                                     int accessible_name_id,
-                                     AssistantButtonId button_id,
-                                     AssistantButtonListener* listener) {
+std::unique_ptr<AssistantButton> CreateCaptionButton(
+    const gfx::VectorIcon& icon,
+    int accessible_name_id,
+    AssistantButtonId button_id,
+    AssistantButtonListener* listener) {
   return AssistantButton::Create(listener, icon, kCaptionButtonSizeDip,
                                  kVectorIconSizeDip, accessible_name_id,
                                  button_id);
@@ -123,10 +124,8 @@ void CaptionBar::InitLayout() {
                                 AssistantButtonId::kBack, this));
 
   // Spacer.
-  views::View* spacer = new views::View();
-  AddChildView(spacer);
-
-  layout_manager->SetFlexForView(spacer, 1);
+  auto spacer = std::make_unique<views::View>();
+  layout_manager->SetFlexForView(AddChildView(std::move(spacer)), 1);
 
   // Minimize.
   AddButton(CreateCaptionButton(views::kWindowControlMinimizeIcon,
@@ -139,9 +138,9 @@ void CaptionBar::InitLayout() {
                                 AssistantButtonId::kClose, this));
 }
 
-void CaptionBar::AddButton(AssistantButton* button) {
-  buttons_.push_back(button);
-  AddChildView(button);
+void CaptionBar::AddButton(std::unique_ptr<AssistantButton> button) {
+  buttons_.push_back(button.get());
+  AddChildView(std::move(button));
 }
 
 void CaptionBar::HandleButton(AssistantButtonId id) {

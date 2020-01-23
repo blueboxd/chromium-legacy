@@ -17,6 +17,32 @@
 #include "components/sessions/core/command_storage_manager_delegate.h"
 
 namespace sessions {
+namespace {
+
+// Helper used by ScheduleGetLastSessionCommands. It runs callback on TaskRunner
+// thread if it's not canceled.
+void RunIfNotCanceled(
+    const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
+    CommandStorageManager::GetCommandsCallback callback,
+    std::vector<std::unique_ptr<SessionCommand>> commands) {
+  if (is_canceled.Run())
+    return;
+  std::move(callback).Run(std::move(commands));
+}
+
+void PostOrRunInternalGetCommandsCallback(
+    base::SequencedTaskRunner* task_runner,
+    CommandStorageManager::GetCommandsCallback callback,
+    std::vector<std::unique_ptr<SessionCommand>> commands) {
+  if (task_runner->RunsTasksInCurrentSequence()) {
+    std::move(callback).Run(std::move(commands));
+  } else {
+    task_runner->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), std::move(commands)));
+  }
+}
+
+}  // namespace
 
 // Delay between when a command is received, and when we save it to the
 // backend.
@@ -75,11 +101,11 @@ void CommandStorageManager::ClearPendingCommands() {
 void CommandStorageManager::StartSaveTimer() {
   // Don't start a timer when testing.
   if (delegate_->ShouldUseDelayedSave() &&
-      base::ThreadTaskRunnerHandle::IsSet() && !weak_factory_.HasWeakPtrs()) {
+      base::ThreadTaskRunnerHandle::IsSet() && !HasPendingSave()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&CommandStorageManager::Save,
-                       weak_factory_.GetWeakPtr()),
+                       weak_factory_for_timer_.GetWeakPtr()),
         kSaveDelay);
   }
 }
@@ -105,6 +131,26 @@ void CommandStorageManager::Save() {
   }
 }
 
+bool CommandStorageManager::HasPendingSave() const {
+  return weak_factory_for_timer_.HasWeakPtrs();
+}
+
+base::CancelableTaskTracker::TaskId
+CommandStorageManager::ScheduleGetCurrentSessionCommands(
+    GetCommandsCallback callback,
+    base::CancelableTaskTracker* tracker) {
+  base::CancelableTaskTracker::IsCanceledCallback is_canceled;
+  GetCommandsCallback backend_callback;
+  const base::CancelableTaskTracker::TaskId id = CreateCallbackForGetCommands(
+      tracker, std::move(callback), &is_canceled, &backend_callback);
+
+  backend_task_runner()->PostNonNestableTask(
+      FROM_HERE,
+      base::BindOnce(&CommandStorageBackend::ReadCurrentSessionCommands,
+                     backend_.get(), is_canceled, std::move(backend_callback)));
+  return id;
+}
+
 CommandStorageManager::CommandStorageManager(
     scoped_refptr<CommandStorageBackend> backend,
     CommandStorageManagerDelegate* delegate)
@@ -118,6 +164,25 @@ CommandStorageManager::CreateDefaultBackendTaskRunner() {
   return base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::MayBlock(),
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
+}
+
+base::CancelableTaskTracker::TaskId
+CommandStorageManager::CreateCallbackForGetCommands(
+    base::CancelableTaskTracker* tracker,
+    GetCommandsCallback callback,
+    base::CancelableTaskTracker::IsCanceledCallback* is_canceled,
+    GetCommandsCallback* backend_callback) {
+  const base::CancelableTaskTracker::TaskId id =
+      tracker->NewTrackedTaskId(is_canceled);
+
+  GetCommandsCallback run_if_not_canceled =
+      base::BindOnce(&RunIfNotCanceled, *is_canceled, std::move(callback));
+
+  *backend_callback =
+      base::BindOnce(&PostOrRunInternalGetCommandsCallback,
+                     base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+                     std::move(run_if_not_canceled));
+  return id;
 }
 
 }  // namespace sessions

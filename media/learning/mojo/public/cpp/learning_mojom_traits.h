@@ -15,9 +15,8 @@
 namespace mojo {
 
 template <>
-class StructTraits<media::learning::mojom::LabelledExampleDataView,
-                   media::learning::LabelledExample> {
- public:
+struct StructTraits<media::learning::mojom::LabelledExampleDataView,
+                    media::learning::LabelledExample> {
   static const std::vector<media::learning::FeatureValue>& features(
       const media::learning::LabelledExample& e) {
     return e.features;
@@ -32,9 +31,8 @@ class StructTraits<media::learning::mojom::LabelledExampleDataView,
 };
 
 template <>
-class StructTraits<media::learning::mojom::FeatureValueDataView,
-                   media::learning::FeatureValue> {
- public:
+struct StructTraits<media::learning::mojom::FeatureValueDataView,
+                    media::learning::FeatureValue> {
   static int64_t value(const media::learning::FeatureValue& e) {
     return e.value();
   }
@@ -43,9 +41,8 @@ class StructTraits<media::learning::mojom::FeatureValueDataView,
 };
 
 template <>
-class StructTraits<media::learning::mojom::TargetValueDataView,
-                   media::learning::TargetValue> {
- public:
+struct StructTraits<media::learning::mojom::TargetValueDataView,
+                    media::learning::TargetValue> {
   static int64_t value(const media::learning::TargetValue& e) {
     return e.value();
   }
@@ -54,9 +51,8 @@ class StructTraits<media::learning::mojom::TargetValueDataView,
 };
 
 template <>
-class StructTraits<media::learning::mojom::ObservationCompletionDataView,
-                   media::learning::ObservationCompletion> {
- public:
+struct StructTraits<media::learning::mojom::ObservationCompletionDataView,
+                    media::learning::ObservationCompletion> {
   static media::learning::TargetValue target_value(
       const media::learning::ObservationCompletion& e) {
     return e.target_value;
@@ -68,6 +64,18 @@ class StructTraits<media::learning::mojom::ObservationCompletionDataView,
   static bool Read(
       media::learning::mojom::ObservationCompletionDataView data,
       media::learning::ObservationCompletion* out_observation_completion);
+};
+
+template <>
+struct StructTraits<media::learning::mojom::TargetHistogramDataView,
+                    media::learning::TargetHistogram> {
+  static media::learning::TargetHistogram::CountMap counts(
+      const media::learning::TargetHistogram& e) {
+    return e.counts();
+  }
+
+  static bool Read(media::learning::mojom::TargetHistogramDataView data,
+                   media::learning::TargetHistogram* out_target_histogram);
 };
 
 }  // namespace mojo

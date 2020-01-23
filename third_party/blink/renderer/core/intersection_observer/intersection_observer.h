@@ -24,6 +24,7 @@ class ExceptionState;
 class IntersectionObserverDelegate;
 class IntersectionObserverEntry;
 class IntersectionObserverInit;
+class Node;
 class ScriptState;
 class V8IntersectionObserverCallback;
 
@@ -72,11 +73,11 @@ class CORE_EXPORT IntersectionObserver final
 
   static IntersectionObserver* Create(const IntersectionObserverInit*,
                                       IntersectionObserverDelegate&,
-                                      ExceptionState&);
+                                      ExceptionState& = ASSERT_NO_EXCEPTION);
   static IntersectionObserver* Create(ScriptState*,
                                       V8IntersectionObserverCallback*,
                                       const IntersectionObserverInit*,
-                                      ExceptionState&);
+                                      ExceptionState& = ASSERT_NO_EXCEPTION);
 
   // Creates an IntersectionObserver that monitors changes to the intersection
   // between its target element relative to its implicit root and notifies via
@@ -98,7 +99,7 @@ class CORE_EXPORT IntersectionObserver final
   static void ResumeSuspendedObservers();
 
   explicit IntersectionObserver(IntersectionObserverDelegate&,
-                                Element*,
+                                Node*,
                                 const Vector<Length>& root_margin,
                                 const Vector<float>& thresholds,
                                 ThresholdInterpretation semantics,
@@ -110,17 +111,18 @@ class CORE_EXPORT IntersectionObserver final
   void observe(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
   void unobserve(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
   void disconnect(ExceptionState& = ASSERT_NO_EXCEPTION);
-  HeapVector<Member<IntersectionObserverEntry>> takeRecords(ExceptionState&);
+  HeapVector<Member<IntersectionObserverEntry>> takeRecords(
+      ExceptionState& = ASSERT_NO_EXCEPTION);
 
   // API attributes.
-  Element* root() const { return root_.Get(); }
+  Node* root() const { return root_.Get(); }
   String rootMargin() const;
   const Vector<float>& thresholds() const { return thresholds_; }
   DOMHighResTimeStamp delay() const { return delay_; }
   bool trackVisibility() const { return track_visibility_; }
   bool trackFractionOfRoot() const { return track_fraction_of_root_; }
 
-  // An observer can either track intersections with an explicit root Element,
+  // An observer can either track intersections with an explicit root Node,
   // or with the the top-level frame's viewport (the "implicit root").  When
   // tracking the implicit root, root_ will be null, but because root_ is a
   // weak pointer, we cannot surmise that this observer tracks the implicit
@@ -146,7 +148,7 @@ class CORE_EXPORT IntersectionObserver final
   DeliveryBehavior GetDeliveryBehavior() const;
   void Deliver();
 
-  // Returns false if this observer has an explicit root element which has been
+  // Returns false if this observer has an explicit root node which has been
   // deleted; true otherwise.
   bool RootIsValid() const;
   bool CanUseCachedRects() const { return can_use_cached_rects_; }
@@ -165,7 +167,7 @@ class CORE_EXPORT IntersectionObserver final
   void ProcessCustomWeakness(const WeakCallbackInfo&);
 
   const Member<IntersectionObserverDelegate> delegate_;
-  UntracedMember<Element> root_;
+  UntracedMember<Node> root_;
   HeapLinkedHashSet<WeakMember<IntersectionObservation>> observations_;
   Vector<float> thresholds_;
   DOMHighResTimeStamp delay_;

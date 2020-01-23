@@ -841,6 +841,11 @@
   INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(                 \
       TRACE_EVENT_PHASE_NESTABLE_ASYNC_END, category_group, name, id, \
       TRACE_EVENT_API_CURRENT_THREAD_ID, timestamp, TRACE_EVENT_FLAG_COPY)
+#define TRACE_EVENT_COPY_NESTABLE_ASYNC_END1(category_group, name, id,   \
+                                             arg1_name, arg1_val)        \
+  INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_NESTABLE_ASYNC_END, \
+                                   category_group, name, id,             \
+                                   TRACE_EVENT_FLAG_COPY, arg1_name, arg1_val)
 
 // Records a single FLOW_BEGIN event called "name" immediately, with 0, 1 or 2
 // associated arguments. If the category is not enabled, then this

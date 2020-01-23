@@ -67,6 +67,24 @@ bool MigrateMakeAndModel(sync_pb::PrinterSpecifics* specifics) {
   return true;
 }
 
+// If |specifics|'s PPD reference has both autoconf and another option selected,
+// we strip the autoconf flag and return true, false otherwise.
+bool ResolveInvalidPpdReference(sync_pb::PrinterSpecifics* specifics) {
+  auto* ppd_ref = specifics->mutable_ppd_reference();
+
+  if (!ppd_ref->autoconf()) {
+    return false;
+  }
+
+  if (!ppd_ref->has_user_supplied_ppd_url() &&
+      !ppd_ref->has_effective_make_and_model()) {
+    return false;
+  }
+
+  ppd_ref->clear_autoconf();
+  return true;
+}
+
 }  // namespace
 
 // Delegate class which helps to manage the ModelTypeStore.
@@ -218,7 +236,13 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::MergeSyncData(
       // TODO(crbug.com/737809): Remove when all data is expected to have been
       // migrated.
       bool migrated = MigrateMakeAndModel(entry.second.get());
-      if (!base::Contains(sync_entity_ids, local_entity_id) || migrated) {
+
+      // TODO(crbug.com/987869): Remove when all data is expected to have been
+      // resolved.
+      bool resolved = ResolveInvalidPpdReference(entry.second.get());
+
+      if (migrated || resolved ||
+          !base::Contains(sync_entity_ids, local_entity_id)) {
         // Only local objects which were not updated are uploaded.  Objects for
         // which there was a remote copy are overwritten.
         change_processor()->Put(local_entity_id,

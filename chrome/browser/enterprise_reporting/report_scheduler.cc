@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise_reporting/prefs.h"
-#include "chrome/browser/enterprise_reporting/request_timer.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -29,8 +28,9 @@ namespace em = enterprise_management;
 
 namespace enterprise_reporting {
 namespace {
-const int kDefaultUploadIntervalHours =
-    24;  // Default upload interval is 24 hours.
+
+constexpr base::TimeDelta kDefaultUploadInterval =
+    base::TimeDelta::FromHours(24);  // Default upload interval is 24 hours.
 const int kMaximumRetry = 10;  // Retry 10 times takes about 15 to 19 hours.
 const int kMaximumTrackedProfiles = 21;
 
@@ -44,10 +44,8 @@ bool IsReportingEnabled() {
 
 ReportScheduler::ReportScheduler(
     policy::CloudPolicyClient* client,
-    std::unique_ptr<RequestTimer> request_timer,
     std::unique_ptr<ReportGenerator> report_generator)
     : cloud_policy_client_(std::move(client)),
-      request_timer_(std::move(request_timer)),
       report_generator_(std::move(report_generator)) {
   RegisterPrefObserver();
 }
@@ -60,13 +58,13 @@ ReportScheduler::~ReportScheduler() {
   }
 }
 
+bool ReportScheduler::IsNextReportScheduledForTesting() const {
+  return request_timer_.IsRunning();
+}
+
 void ReportScheduler::SetReportUploaderForTesting(
     std::unique_ptr<ReportUploader> uploader) {
   report_uploader_ = std::move(uploader);
-}
-
-RequestTimer* ReportScheduler::GetRequestTimerForTesting() const {
-  return request_timer_.get();
 }
 
 void ReportScheduler::OnDMTokenUpdated() {
@@ -103,8 +101,7 @@ void ReportScheduler::OnReportEnabledPrefChanged() {
 }
 
 void ReportScheduler::StopRequestTimer() {
-  if (request_timer_)
-    request_timer_->Stop();
+  request_timer_.Stop();
 }
 
 bool ReportScheduler::SetupBrowserPolicyClientRegistration() {
@@ -128,19 +125,19 @@ bool ReportScheduler::SetupBrowserPolicyClientRegistration() {
 }
 
 void ReportScheduler::Start() {
-  base::TimeDelta upload_interval =
-      base::TimeDelta::FromHours(kDefaultUploadIntervalHours);
-  base::TimeDelta first_request_delay =
-      upload_interval -
-      (base::Time::Now() -
-       g_browser_process->local_state()->GetTime(kLastUploadTimestamp));
-  // The first report delay is based on the |lastUploadTimestamp| in the
+  // The |next_upload_time| is based on the |lastUploadTimestamp| in the
   // |local_state|, after that, it's 24 hours for each succeeded upload.
-  VLOG(1) << "Schedule the first report in about "
-          << first_request_delay.InHours() << " hour(s) and "
-          << first_request_delay.InMinutes() % 60 << " minute(s).";
-  request_timer_->Start(
-      FROM_HERE, first_request_delay, upload_interval,
+  base::Time next_upload_time =
+      g_browser_process->local_state()->GetTime(kLastUploadTimestamp) +
+      kDefaultUploadInterval;
+  if (VLOG_IS_ON(1)) {
+    base::TimeDelta first_request_delay = next_upload_time - base::Time::Now();
+    VLOG(1) << "Schedule the first report in about "
+            << first_request_delay.InHours() << " hour(s) and "
+            << first_request_delay.InMinutes() % 60 << " minute(s).";
+  }
+  request_timer_.Start(
+      FROM_HERE, next_upload_time,
       base::BindRepeating(&ReportScheduler::GenerateAndUploadReport,
                           base::Unretained(this)));
 }
@@ -182,10 +179,16 @@ void ReportScheduler::OnReportUploaded(ReportUploader::ReportStatus status) {
     case ReportUploader::kTransientError:
       // Stop retrying and schedule the next report to avoid stale report.
       // Failure count is not reset so retry delay remains.
-      g_browser_process->local_state()->SetTime(kLastUploadTimestamp,
-                                                base::Time::Now());
-      if (IsReportingEnabled())
-        request_timer_->Reset();
+      {
+        base::Time now = base::Time::Now();
+        g_browser_process->local_state()->SetTime(kLastUploadTimestamp, now);
+        if (IsReportingEnabled()) {
+          request_timer_.Start(
+              FROM_HERE, now + kDefaultUploadInterval,
+              base::BindRepeating(&ReportScheduler::GenerateAndUploadReport,
+                                  base::Unretained(this)));
+        }
+      }
       break;
     case ReportUploader::kPersistentError:
       // No future upload until Chrome relaunch or pref change event.

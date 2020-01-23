@@ -23,8 +23,14 @@ namespace performance_manager {
 
 namespace {
 
-const url::Origin kTestOrigin = url::Origin::Create(GURL("http://www.a.com"));
-const url::Origin kTestOrigin2 = url::Origin::Create(GURL("http://www.b.com"));
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+url::Origin TestOrigin() {
+  return url::Origin::Create(GURL("http://www.a.com"));
+}
+url::Origin TestOrigin2() {
+  return url::Origin::Create(GURL("http://www.b.com"));
+}
 
 // Mock version of a SiteDataCacheImpl. In practice instances of this object
 // live on the Performance Manager sequence and all the mocked methods will be
@@ -173,13 +179,13 @@ TEST_F(SiteDataCacheFacadeTest, IsDataCacheRecordingForTesting) {
 // when there are no more references to it in the history, after the history is
 // partially cleared.
 TEST_F(SiteDataCacheFacadeTest, OnURLsDeleted_Partial_OriginNotReferenced) {
-  history::URLRows urls_to_delete = {history::URLRow(kTestOrigin.GetURL()),
-                                     history::URLRow(kTestOrigin2.GetURL())};
+  history::URLRows urls_to_delete = {history::URLRow(TestOrigin().GetURL()),
+                                     history::URLRow(TestOrigin2().GetURL())};
   history::DeletionInfo deletion_info =
       history::DeletionInfo::ForUrls(urls_to_delete, std::set<GURL>());
   deletion_info.set_deleted_urls_origin_map({
-      {kTestOrigin.GetURL(), {0, base::Time::Now()}},
-      {kTestOrigin2.GetURL(), {0, base::Time::Now()}},
+      {TestOrigin().GetURL(), {0, base::Time::Now()}},
+      {TestOrigin2().GetURL(), {0, base::Time::Now()}},
   });
 
   SiteDataCacheFacade data_cache_facade(profile());
@@ -187,7 +193,7 @@ TEST_F(SiteDataCacheFacadeTest, OnURLsDeleted_Partial_OriginNotReferenced) {
 
   auto* mock_cache_raw = SetUpMockCache();
   mock_cache_raw->SetClearSiteDataForOriginsExpectations(
-      {kTestOrigin, kTestOrigin2});
+      {TestOrigin(), TestOrigin2()});
   data_cache_facade.OnURLsDeleted(nullptr, deletion_info);
   mock_cache_raw->WaitForExpectations();
 }
@@ -196,22 +202,22 @@ TEST_F(SiteDataCacheFacadeTest, OnURLsDeleted_Partial_OriginNotReferenced) {
 // disk) when there remain references to it in the history, after the history is
 // partially cleared.
 TEST_F(SiteDataCacheFacadeTest, OnURLsDeleted_Partial_OriginStillReferenced) {
-  history::URLRows urls_to_delete = {history::URLRow(kTestOrigin.GetURL()),
-                                     history::URLRow(kTestOrigin2.GetURL())};
+  history::URLRows urls_to_delete = {history::URLRow(TestOrigin().GetURL()),
+                                     history::URLRow(TestOrigin2().GetURL())};
   history::DeletionInfo deletion_info =
       history::DeletionInfo::ForUrls(urls_to_delete, std::set<GURL>());
   deletion_info.set_deleted_urls_origin_map({
-      {kTestOrigin.GetURL(), {0, base::Time::Now()}},
-      {kTestOrigin2.GetURL(), {3, base::Time::Now()}},
+      {TestOrigin().GetURL(), {0, base::Time::Now()}},
+      {TestOrigin2().GetURL(), {3, base::Time::Now()}},
   });
 
   SiteDataCacheFacade data_cache_facade(profile());
   data_cache_facade.WaitUntilCacheInitializedForTesting();
 
   auto* mock_cache_raw = SetUpMockCache();
-  // |kTestOrigin2| shouldn't be removed as there's still some references to it
+  // |TestOrigin2()| shouldn't be removed as there's still some references to it
   // in the history.
-  mock_cache_raw->SetClearSiteDataForOriginsExpectations({kTestOrigin});
+  mock_cache_raw->SetClearSiteDataForOriginsExpectations({TestOrigin()});
   data_cache_facade.OnURLsDeleted(nullptr, deletion_info);
   mock_cache_raw->WaitForExpectations();
 }

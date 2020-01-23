@@ -2949,7 +2949,7 @@
 <translation id="51918995459521422"><ph name="ORIGIN" />এ একাধিক ফাইল ডাউনল'ড কৰিব খোজে</translation>
 <translation id="5192062846343383368">আপোনাৰ তদাৰকী কৰা ছেটিংসমূহ Family Link এপ্‌টো খোলক</translation>
 <translation id="5193988420012215838">আপোনাৰ ক্লিপব'ৰ্ডলৈ প্ৰতিলিপি কৰা হৈছে</translation>
-<translation id="5203920255089865054">{NUM_EXTENSIONS,plural, =1{এক্সটেনশ্বনটো চাবলৈ ক্লিক কৰক}one{এক্সটেনশ্বনসমূহ চাবলৈ ক্লিক কৰক}other{এক্সটেনশ্বনসমূহ চাবলৈ ক্লিক কৰক}}</translation>
+<translation id="5203920255089865054">{NUM_EXTENSIONS,plural, =1{এক্সটেনশ্বনটো চাবলৈ ক্লিক কৰক}one{এই এক্সটেনশ্বনসমূহ চাবলৈ ক্লিক কৰক}other{এই এক্সটেনশ্বনসমূহ চাবলৈ ক্লিক কৰক}}</translation>
 <translation id="5204673965307125349">অনুগ্ৰহ কৰি ডিভাইচটো পাৱাৰৱাশ্ব কৰি আকৌ চেষ্টা কৰক।</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />"ক মচিবনে?</translation>
 <translation id="520621735928254154">প্ৰমাণপত্ৰ আমদানি কৰাত আসোঁৱাহ</translation>
@@ -5007,7 +5007,6 @@
 <translation id="8101987792947961127">পৰৱর্তী ৰিবুটৰ বাবে পাৱাৰৱাশ্বৰ আৱশ্যক</translation>
 <translation id="8102159139658438129">আপুনি সংযোগ কৰি থোৱা ফ’নটোৰ বিকল্পসমূহ চাবলৈ <ph name="LINK_BEGIN" />ছেটিংসমূহ<ph name="LINK_END" />লৈ যাওক</translation>
 <translation id="8104696615244072556">আপোনাৰ <ph name="IDS_SHORT_PRODUCT_NAME" /> ডিভাইচ পাৱাৰৱাশ্ব কৰক আৰু পূৰ্বৰ সংস্কৰণলৈ উভটি যাওক</translation>
-<translation id="8106661353233173262">কিবা ভুল হ’ল। ফাইল স্কেন কৰাৰ সময় উকলিল।</translation>
 <translation id="8107015733319732394">আপোনাৰ <ph name="DEVICE_TYPE" />ত Google Play Store ইনষ্টল কৰি থকা হৈছে। ইয়াৰ বাবে কিছু সময়ৰ প্ৰয়োজন হ'ব পাৰে।</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{তৃতীয় পক্ষৰ কুকিসমূহ নাই}=1{১টা তৃতীয় পক্ষৰ কুকি অৱৰোধ কৰা হৈছে}one{#টা তৃতীয় পক্ষৰ কুকীসমূহ অৱৰোধ কৰা হৈছে}other{#টা তৃতীয় পক্ষৰ কুকীসমূহ অৱৰোধ কৰা হৈছে}}</translation>
 <translation id="810875025413331850">কোনো নিকটৱৰ্তী ডিভাইচ বিচাৰি পোৱা নগ’ল।</translation>

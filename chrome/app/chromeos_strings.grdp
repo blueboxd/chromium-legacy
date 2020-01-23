@@ -4205,13 +4205,13 @@
     Contact the device admin for your organization
   </message>
   <message name="IDS_PLUGIN_VM_REMOVING_NOTIFICATION_IN_PROGRESS_MESSAGE" desc="Message in the notification shown when removing the 'Plugin VM' app.">
-    Removing Plugin VM...
+    Uninstalling Plugin VM...
   </message>
   <message name="IDS_PLUGIN_VM_REMOVING_NOTIFICATION_COMPLETE_MESSAGE" desc="Message in the notification shown when removing the 'Plugin VM' app has completed successfully.">
-    Plugin VM has been removed
+    Plugin VM has been uninstalled
   </message>
   <message name="IDS_PLUGIN_VM_REMOVING_NOTIFICATION_FAILED_MESSAGE" desc="Message in the notification shown when removing the 'Plugin VM' app failed.">
-    Failed to remove Plugin VM
+    Couldn't uninstall Plugin VM
   </message>
 
   <!-- Strings for Account Manager error screen -->

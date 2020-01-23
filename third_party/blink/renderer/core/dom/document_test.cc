@@ -1203,9 +1203,10 @@ TEST_F(DocumentTest, PrefersColorSchemeChanged) {
 
 TEST_F(DocumentTest, DocumentPolicyFeaturePolicyCoexist) {
   blink::ScopedDocumentPolicyForTest sdp(true);
-  const auto test_feature = blink::mojom::FeaturePolicyFeature::kFontDisplay;
+  const auto test_feature =
+      blink::mojom::blink::FeaturePolicyFeature::kFontDisplay;
   const auto unsupported_feature =
-      blink::mojom::FeaturePolicyFeature::kSyncScript;
+      blink::mojom::blink::FeaturePolicyFeature::kSyncScript;
   const auto report_option = blink::ReportOptions::kReportOnFailure;
 
   // When document_policy is not specified in response header, default values

@@ -79,9 +79,9 @@ class TabStripUIHandlerTest : public BrowserWithTestWindowTest {
 
     std::string group_color;
     ASSERT_TRUE(visual_data_dict->GetString("color", &group_color));
-    EXPECT_EQ(color_utils::SkColorToRgbaString(tab_groups::GetTabGroupColorSet()
-                                                   .at(visual_data.color())
-                                                   .light_theme_color),
+    EXPECT_EQ(color_utils::SkColorToRgbString(tab_groups::GetTabGroupColorSet()
+                                                  .at(visual_data.color())
+                                                  .light_theme_color),
               group_color);
   }
 

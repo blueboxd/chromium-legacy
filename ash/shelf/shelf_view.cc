@@ -872,11 +872,13 @@ void ShelfView::ShowContextMenuForViewImpl(views::View* source,
   }
 
   item_awaiting_response_ = item->id;
+  context_menu_callback_.Reset(base::BindOnce(
+      &ShelfView::ShowShelfContextMenu, weak_factory_.GetWeakPtr(), item->id,
+      point, source, source_type));
+
   const int64_t display_id = GetDisplayIdForView(this);
   model_->GetShelfItemDelegate(item->id)->GetContextMenu(
-      display_id, base::BindOnce(&ShelfView::ShowShelfContextMenu,
-                                 weak_factory_.GetWeakPtr(), item->id, point,
-                                 source, source_type));
+      display_id, context_menu_callback_.callback());
 }
 
 void ShelfView::OnTabletModeStarted() {
@@ -1573,6 +1575,14 @@ void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
   if (start_drag_index_ == -1) {
     CancelDrag(-1);
     return;
+  }
+
+  // Cancel in-flight request for app item context menu model (made when app
+  // context menu is requested), to prevent the pending callback from showing
+  // a context menu just after drag starts.
+  if (!context_menu_callback_.IsCancelled()) {
+    context_menu_callback_.Cancel();
+    item_awaiting_response_ = ShelfID();
   }
 
   // Move the view to the front so that it appears on top of other views.
@@ -2438,9 +2448,12 @@ void ShelfView::AfterItemSelected(const ShelfItem& item,
   if (action == SHELF_ACTION_APP_LIST_DISMISSED) {
     ink_drop->SnapToActivated();
     ink_drop->AnimateToState(views::InkDropState::HIDDEN);
-  } else if (action != SHELF_ACTION_APP_LIST_SHOWN) {
-    if (action != SHELF_ACTION_NEW_WINDOW_CREATED && menu_items.size() > 1) {
-      // Show the app menu with 2 or more items, if no window was created.
+  } else if (action != SHELF_ACTION_APP_LIST_SHOWN && !dragging()) {
+    if (action != SHELF_ACTION_NEW_WINDOW_CREATED && menu_items.size() > 1 &&
+        !dragging()) {
+      // Show the app menu with 2 or more items, if no window was created. The
+      // menu is not shown in case item drag started while the selection request
+      // was in progress.
       ink_drop->AnimateToState(views::InkDropState::ACTIVATED);
       context_menu_id_ = item.id;
       ShowMenu(std::make_unique<ShelfApplicationMenuModel>(

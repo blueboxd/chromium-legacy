@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/mojo_utils.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_network_context.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -17,9 +18,12 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "url/url_constants.h"
 
 namespace chromeos {
@@ -57,9 +61,9 @@ bool IsHttpOkCode(int code) {
 }  //  namespace
 
 WilcoDtcSupportdWebRequestService::WilcoDtcSupportdWebRequestService(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(std::move(url_loader_factory)) {
-  DCHECK(url_loader_factory_);
+    std::unique_ptr<WilcoDtcSupportdNetworkContext> network_context)
+    : network_context_(std::move(network_context)) {
+  DCHECK(network_context_);
 }
 
 WilcoDtcSupportdWebRequestService::~WilcoDtcSupportdWebRequestService() {
@@ -148,7 +152,7 @@ void WilcoDtcSupportdWebRequestService::PerformRequest(
   }
 
   // Do not allow local requests.
-  if (net::IsLocalhost(url)) {
+  if (!allow_local_requests_ && net::IsLocalhost(url)) {
     LOG(ERROR) << "Local requests are not allowed.";
     std::move(callback).Run(wilco_dtc_supportd::mojom::
                                 WilcoDtcSupportdWebRequestStatus::kNetworkError,
@@ -223,7 +227,7 @@ void WilcoDtcSupportdWebRequestService::MaybeStartNextRequest() {
   // Do not retry.
   url_loader_->SetRetryOptions(0, network::SimpleURLLoader::RETRY_NEVER);
   url_loader_->DownloadToString(
-      url_loader_factory_.get(),
+      network_context_->GetURLLoaderFactory(),
       base::BindOnce(&WilcoDtcSupportdWebRequestService::OnRequestComplete,
                      base::Unretained(this)),
       kWilcoDtcSupportdWebResponseMaxSizeInBytes);

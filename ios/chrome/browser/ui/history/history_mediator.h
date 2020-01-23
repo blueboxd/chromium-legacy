@@ -7,11 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
-
-namespace ios {
-class ChromeBrowserState;
-}
 
 @interface HistoryMediator : NSObject<TableViewFaviconDataSource>
 

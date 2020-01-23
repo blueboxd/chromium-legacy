@@ -544,7 +544,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   gpu::SyncToken UpdateReleaseSyncToken(SyncTokenClient* client);
 
   // Returns a human-readable string describing |*this|.
-  std::string AsHumanReadableString();
+  std::string AsHumanReadableString() const;
 
   // Unique identifier for this video frame; generated at construction time and
   // guaranteed to be unique within a single process.

@@ -7,10 +7,12 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_activity_registry.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_service_wrapper.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_wrapper.h"
+#include "chrome/browser/chromeos/child_accounts/time_limits/app_time_policy_helpers.h"
 #include "chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -21,6 +23,15 @@
 
 namespace chromeos {
 namespace app_time {
+
+AppTimeController::TestApi::TestApi(AppTimeController* controller)
+    : controller_(controller) {}
+
+AppTimeController::TestApi::~TestApi() = default;
+
+AppActivityRegistry* AppTimeController::TestApi::app_registry() {
+  return controller_->app_registry_.get();
+}
 
 // static
 bool AppTimeController::ArePerAppTimeLimitsEnabled() {
@@ -77,7 +88,21 @@ void AppTimeController::RegisterProfilePrefObservers(
 }
 
 void AppTimeController::TimeLimitsPolicyUpdated(const std::string& pref_name) {
-  NOTIMPLEMENTED();
+  const base::Value* policy =
+      pref_registrar_->prefs()->GetDictionary(prefs::kPerAppTimeLimitsPolicy);
+
+  if (!policy || !policy->is_dict()) {
+    LOG(WARNING) << "Invalid PerAppTimeLimits policy.";
+    return;
+  }
+
+  app_registry_->UpdateAppLimits(policy::AppLimitsFromDict(*policy));
+
+  base::Optional<base::TimeDelta> new_reset_time =
+      policy::ResetTimeFromDict(*policy);
+  // TODO(agawronska): Propagate the information about reset time change.
+  if (new_reset_time && *new_reset_time != limits_reset_time_)
+    limits_reset_time_ = *new_reset_time;
 }
 
 void AppTimeController::TimeLimitsWhitelistPolicyUpdated(

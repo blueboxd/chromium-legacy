@@ -12,6 +12,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_bridge.h"
+#include "chrome/browser/chromeos/wilco_dtc_supportd/wilco_dtc_supportd_network_context.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
 #include "components/session_manager/core/session_manager.h"
@@ -49,8 +50,7 @@ WilcoDtcSupportdManagerDelegateImpl::~WilcoDtcSupportdManagerDelegateImpl() =
 std::unique_ptr<WilcoDtcSupportdBridge>
 WilcoDtcSupportdManagerDelegateImpl::CreateWilcoDtcSupportdBridge() {
   return std::make_unique<WilcoDtcSupportdBridge>(
-      g_browser_process->system_network_context_manager()
-          ->GetSharedURLLoaderFactory());
+      std::make_unique<WilcoDtcSupportdNetworkContextImpl>());
 }
 
 // Returns true if only affiliated users are logged-in.

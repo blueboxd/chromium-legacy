@@ -1231,6 +1231,16 @@ const IDNTestCase kIdnCases[] = {
     {"xn--rmdcmef.com", L"႐႑႕႖႗.com", kUnsafe},
     {"xn--rmdcmef.mm", L"႐႑႕႖႗.mm", kSafe},
     {"xn--rmdcmef.xn--7idjb0f4ck", L"႐႑႕႖႗.မြန်မာ", kSafe},
+// Thai:
+#if defined(OS_LINUX)
+    {"xn--o3cedqz2c.com", L"ทนบพรห.com", kUnsafe},
+    {"xn--o3cedqz2c.th", L"ทนบพรห.th", kSafe},
+    {"xn--o3cedqz2c.xn--o3cw4h", L"ทนบพรห.ไทย", kSafe},
+#else
+    {"xn--r3ch7hsc.com", L"พบเ๐.com", kUnsafe},
+    {"xn--r3ch7hsc.th", L"พบเ๐.th", kSafe},
+    {"xn--r3ch7hsc.xn--o3cw4h", L"พบเ๐.ไทย", kSafe},
+#endif
 
     // Indic scripts:
     // Bengali:

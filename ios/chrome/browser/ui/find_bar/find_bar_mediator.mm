@@ -43,6 +43,10 @@
   return self;
 }
 
+- (void)dealloc {
+  _forwarder = nullptr;
+}
+
 #pragma mark - CRWWebStateObserver
 
 - (void)webState:(web::WebState*)webState

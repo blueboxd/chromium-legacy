@@ -1277,7 +1277,9 @@ TEST_PPAPI_NACL_DISALLOWED_SOCKETS(UDPSocketPrivateDisallowed)
 // is present in the DNS cache with the NetworkIsolationKey associated with the
 // foreground WebContents - this is needed so as not to leak what hostnames were
 // looked up across tabs with different first party origins.
-void CheckTestHostNameUsedWithCorrectNetworkIsolationKey(Browser* browser) {
+void CheckTestHostNameUsedWithCorrectNetworkIsolationKey(
+    Browser* browser,
+    bool include_canonical_name) {
   network::mojom::NetworkContext* network_context =
       content::BrowserContext::GetDefaultStoragePartition(browser->profile())
           ->GetNetworkContext();
@@ -1289,7 +1291,7 @@ void CheckTestHostNameUsedWithCorrectNetworkIsolationKey(Browser* browser) {
   // Cache only lookup.
   params->source = net::HostResolverSource::LOCAL_ONLY;
   // Match the parameters used by the test.
-  params->include_canonical_name = true;
+  params->include_canonical_name = include_canonical_name;
   net::NetworkIsolationKey network_isolation_key =
       browser->tab_strip_model()
           ->GetActiveWebContents()
@@ -1321,7 +1323,8 @@ void CheckTestHostNameUsedWithCorrectNetworkIsolationKey(Browser* browser) {
 #define RUN_HOST_RESOLVER_SUBTESTS                                             \
   RunTestViaHTTP(LIST_TEST(HostResolver_Empty) LIST_TEST(HostResolver_Resolve) \
                      LIST_TEST(HostResolver_ResolveIPv4));                     \
-  CheckTestHostNameUsedWithCorrectNetworkIsolationKey(browser())
+  CheckTestHostNameUsedWithCorrectNetworkIsolationKey(                         \
+      browser(), true /* include_canonical_name */)
 
 IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, HostResolverCrash_Basic) {
   if (content::IsInProcessNetworkService())
@@ -2166,7 +2169,33 @@ TEST_PPAPI_NACL(MAYBE_MediaStreamVideoTrack)
 
 TEST_PPAPI_NACL(MouseCursor)
 
-TEST_PPAPI_NACL(NetworkProxy)
+// Proxy configuration test. The PPAPI code used by these tests is in
+// ppapi/tests/test_network_proxy.cc.
+
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, NetworkProxy) {
+  RunTestViaHTTP(STRIP_PREFIXES(NetworkProxy));
+  CheckTestHostNameUsedWithCorrectNetworkIsolationKey(
+      browser(), false /* include_canonical_name */);
+}
+
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, NetworkProxy) {
+  RunTestViaHTTP(STRIP_PREFIXES(NetworkProxy));
+  CheckTestHostNameUsedWithCorrectNetworkIsolationKey(
+      browser(), false /* include_canonical_name */);
+}
+
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_NACL(NetworkProxy)) {
+  RunTestViaHTTP(STRIP_PREFIXES(NetworkProxy));
+  CheckTestHostNameUsedWithCorrectNetworkIsolationKey(
+      browser(), false /* include_canonical_name */);
+}
+
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,
+                       MAYBE_PNACL_NONSFI(NetworkProxy)) {
+  RunTestViaHTTP(STRIP_PREFIXES(NetworkProxy));
+  CheckTestHostNameUsedWithCorrectNetworkIsolationKey(
+      browser(), false /* include_canonical_name */);
+}
 
 // TODO(crbug.com/619765): get working on CrOS build.
 #if defined(OS_CHROMEOS)

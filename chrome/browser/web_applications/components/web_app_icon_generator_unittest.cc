@@ -21,10 +21,6 @@ namespace web_app {
 
 namespace {
 
-const GURL kAppIconURL1("http://foo.com/1.png");
-const GURL kAppIconURL2("http://foo.com/2.png");
-const GURL kAppIconURL3("http://foo.com/3.png");
-
 const int kIconSizeSmallBetweenMediumAndLarge = 63;
 const int kIconSizeLargeBetweenMediumAndLarge = 96;
 

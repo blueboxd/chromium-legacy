@@ -37,9 +37,6 @@ class WebRtcDisableEncryptionFlagBrowserTest : public WebRtcTestBase {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    // This test should run with fake devices.
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
-
     // Disable encryption with the command line flag.
     command_line->AppendSwitch(switches::kDisableWebRtcEncryption);
   }

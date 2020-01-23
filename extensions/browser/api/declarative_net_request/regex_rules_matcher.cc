@@ -96,45 +96,6 @@ RegexRulesMatcher::RegexRulesMatcher(
 
 RegexRulesMatcher::~RegexRulesMatcher() = default;
 
-base::Optional<RequestAction> RegexRulesMatcher::GetBeforeRequestAction(
-    const RequestParams& params) const {
-  const std::vector<RegexRuleInfo>& potential_matches =
-      GetPotentialMatches(params);
-  auto info = std::find_if(
-      potential_matches.begin(), potential_matches.end(),
-      [&params](const RegexRuleInfo& info) {
-        return IsBeforeRequestAction(info.regex_rule->action_type()) &&
-               re2::RE2::PartialMatch(params.url->spec(), *info.regex);
-      });
-  if (info == potential_matches.end())
-    return base::nullopt;
-
-  const flat_rule::UrlRule& rule = *info->regex_rule->url_rule();
-  switch (info->regex_rule->action_type()) {
-    case flat::ActionType_block:
-      return CreateBlockOrCollapseRequestAction(params, rule);
-    case flat::ActionType_allow:
-      return CreateAllowAction(params, rule);
-    case flat::ActionType_redirect:
-      // If this is a regex substitution rule, handle the substitution. Else
-      // create the redirect action from the information in |metadata_list_|
-      // below.
-      return info->regex_rule->regex_substitution()
-                 ? CreateRegexSubstitutionRedirectAction(params, *info)
-                 : CreateRedirectActionFromMetadata(params, rule,
-                                                    *metadata_list_);
-    case flat::ActionType_upgrade_scheme:
-      return CreateUpgradeAction(params, rule);
-    case flat::ActionType_allow_all_requests:
-      // TODO(crbug.com/1038831): Handle allowAllRequests case.
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  return base::nullopt;
-}
-
 uint8_t RegexRulesMatcher::GetRemoveHeadersMask(
     const RequestParams& params,
     uint8_t excluded_remove_headers_mask,
@@ -172,6 +133,64 @@ uint8_t RegexRulesMatcher::GetRemoveHeadersMask(
 
   DCHECK(!(mask & excluded_remove_headers_mask));
   return mask;
+}
+
+base::Optional<RequestAction> RegexRulesMatcher::GetAllowAllRequestsAction(
+    const RequestParams& params) const {
+  const std::vector<RegexRuleInfo>& potential_matches =
+      GetPotentialMatches(params);
+  auto info = std::find_if(potential_matches.begin(), potential_matches.end(),
+                           [&params](const RegexRuleInfo& info) {
+                             return info.regex_rule->action_type() ==
+                                        flat::ActionType_allow_all_requests &&
+                                    re2::RE2::PartialMatch(params.url->spec(),
+                                                           *info.regex);
+                           });
+  if (info == potential_matches.end())
+    return base::nullopt;
+
+  return CreateAllowAllRequestsAction(params, *info->regex_rule->url_rule());
+}
+
+base::Optional<RequestAction>
+RegexRulesMatcher::GetBeforeRequestActionIgnoringAncestors(
+    const RequestParams& params) const {
+  const std::vector<RegexRuleInfo>& potential_matches =
+      GetPotentialMatches(params);
+  auto info = std::find_if(
+      potential_matches.begin(), potential_matches.end(),
+      [&params](const RegexRuleInfo& info) {
+        return IsBeforeRequestAction(info.regex_rule->action_type()) &&
+               re2::RE2::PartialMatch(params.url->spec(), *info.regex);
+      });
+  if (info == potential_matches.end())
+    return base::nullopt;
+
+  const flat_rule::UrlRule& rule = *info->regex_rule->url_rule();
+  switch (info->regex_rule->action_type()) {
+    case flat::ActionType_block:
+      return CreateBlockOrCollapseRequestAction(params, rule);
+    case flat::ActionType_allow:
+      return CreateAllowAction(params, rule);
+    case flat::ActionType_redirect:
+      // If this is a regex substitution rule, handle the substitution. Else
+      // create the redirect action from the information in |metadata_list_|
+      // below.
+      return info->regex_rule->regex_substitution()
+                 ? CreateRegexSubstitutionRedirectAction(params, *info)
+                 : CreateRedirectActionFromMetadata(params, rule,
+                                                    *metadata_list_);
+    case flat::ActionType_upgrade_scheme:
+      return CreateUpgradeAction(params, rule);
+    case flat::ActionType_allow_all_requests:
+      return CreateAllowAllRequestsAction(params, rule);
+    case flat::ActionType_remove_headers:
+    case flat::ActionType_count:
+      NOTREACHED();
+      break;
+  }
+
+  return base::nullopt;
 }
 
 void RegexRulesMatcher::InitializeMatcher() {

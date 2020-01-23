@@ -219,6 +219,17 @@ class ShillServiceClientImpl : public ShillServiceClient {
                            service_path, callback_adapted));
   }
 
+  void GetWiFiPassphrase(const dbus::ObjectPath& service_path,
+                         StringCallback callback,
+                         ErrorCallback error_callback) override {
+    dbus::MethodCall method_call(shill::kFlimflamServiceInterface,
+                                 shill::kGetWiFiPassphraseFunction);
+
+    GetHelper(service_path)
+        ->CallStringMethodWithErrorCallback(&method_call, std::move(callback),
+                                            std::move(error_callback));
+  }
+
   ShillServiceClient::TestInterface* GetTestInterface() override {
     return nullptr;
   }

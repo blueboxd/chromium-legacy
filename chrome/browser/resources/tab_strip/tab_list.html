@@ -34,8 +34,10 @@
     grid-auto-flow: column;
     grid-gap: 10px;
     grid-template-rows: repeat(3, var(--tabstrip-pinned-tab-size));
-    padding: var(--tabstrip-tab-spacing);
+    padding-block-end: var(--tabstrip-tab-list-vertical-padding);
+    padding-block-start: var(--tabstrip-tab-list-vertical-padding);
     padding-inline-end: 0;
+    padding-inline-start: var(--tabstrip-tab-spacing);
   }
 
   #pinnedTabs:empty {
@@ -45,16 +47,34 @@
   #unpinnedTabs {
     display: flex;
     min-width: fit-content;
-    padding: var(--tabstrip-tab-spacing);
+    padding-block-end: var(--tabstrip-tab-list-vertical-padding);
+    padding-block-start: var(--tabstrip-tab-list-vertical-padding);
     padding-inline-end: 0;
+    padding-inline-start: var(--tabstrip-tab-spacing);
+  }
+
+  tabstrip-tab-group {
+    --tabstrip-tab-spacing: 8px;
+    margin-block-end: calc(-1 * var(--tabstrip-tab-spacing));
+    margin-block-start: calc(-1 * var(--tabstrip-tab-spacing));
+    margin-inline-end: var(--tabstrip-tab-spacing);
+    margin-inline-start: 0;
+  }
+
+  tabstrip-tab-group tabstrip-tab:last-child {
+    --tabstrip-tab-spacing: 0px;
+  }
+
+  tabstrip-tab + tabstrip-tab-group {
+    margin-inline-start: calc(-1 * var(--tabstrip-tab-spacing));
   }
 
   #newTabButton {
     --cr-icon-button-size: var(--tabstrip-new-tab-button-width);
     --cr-icon-button-icon-size: 32px;
     --cr-icon-button-fill-color: var(--tabstrip-tab-text-color);
-    --cr-icon-button-margin-end: var(--new-tab-button-margin);
-    --cr-icon-button-margin-start: 0;
+    --cr-icon-button-margin-end: var(--tabstrip-new-tab-button-margin);
+    --cr-icon-button-margin-start: 0px;
     background: var(--tabstrip-tab-background-color);
     border-radius: 50%;
     box-shadow: 0 1px 3px 0 rgba(var(--google-grey-800-rgb), .3),

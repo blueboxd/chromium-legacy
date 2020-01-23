@@ -12,7 +12,6 @@
 #include "url/gurl.h"
 
 class Browser;
-@class TabModel;
 @protocol TabSwitcher;
 struct UrlLoadParams;
 
@@ -22,10 +21,10 @@ struct UrlLoadParams;
 @protocol TabSwitcherDelegate <NSObject>
 
 // Informs the delegate the tab switcher should be dismissed with the given
-// active model.
+// active browser.
 - (void)tabSwitcher:(id<TabSwitcher>)tabSwitcher
-    shouldFinishWithActiveModel:(TabModel*)tabModel
-                   focusOmnibox:(BOOL)focusOmnibox;
+    shouldFinishWithBrowser:(Browser*)browser
+               focusOmnibox:(BOOL)focusOmnibox;
 
 // Informs the delegate that the tab switcher is done and should be
 // dismissed.
@@ -42,22 +41,22 @@ struct UrlLoadParams;
 // switcher.
 @property(nonatomic, weak) id<TabSwitcherDelegate> delegate;
 
-// Restores the internal state of the tab switcher with the given tab models,
-// which must not be nil. |activeTabModel| is the model which starts active,
-// and must be one of the other two models. Should only be called when the
+// Restores the internal state of the tab switcher with the given browser,
+// which must not be nil. |activeBrowser| is the browser which starts active,
+// and must be one of the other two browsers. Should only be called when the
 // object is not being shown.
-- (void)restoreInternalStateWithMainTabModel:(TabModel*)mainModel
-                                 otrTabModel:(TabModel*)otrModel
-                              activeTabModel:(TabModel*)activeModel;
+- (void)restoreInternalStateWithMainBrowser:(Browser*)mainBrowser
+                                 otrBrowser:(Browser*)otrBrowser
+                              activeBrowser:(Browser*)activeBrowser;
 
 // Returns the view controller that displays the tab switcher.
 - (UIViewController*)viewController;
 
-// Create a new tab in |targetModel|. Implementors are expected to also perform
-// an animation from the selected tab in the tab switcher to the newly created
-// tab in the content area. Objects adopting this protocol should call the
-// following delegate methods:
-//   |-tabSwitcher:shouldFinishWithActiveModel:|
+// Create a new tab in |browser|. Implementors are expected to also perform an
+// animation from the selected tab in the tab switcher to the newly created tab
+// in the content area. Objects adopting this protocol should call the following
+// delegate methods:
+//   |-tabSwitcher:shouldFinishWithBrowser:|
 //   |-tabSwitcherDismissTransitionDidEnd:|
 // to inform the delegate when this animation begins and ends.
 - (void)dismissWithNewTabAnimationToBrowser:(Browser*)browser
@@ -66,8 +65,8 @@ struct UrlLoadParams;
 
 // Updates the OTR (Off The Record) browser. Should only be called when both
 // the current OTR browser and the new OTR browser are either nil or contain no
-// tabs. This must be called after the otr tab model has been deleted because
-// the incognito browser state is deleted.
+// tabs. This must be called after the otr browser has been deleted because the
+// incognito browser state is deleted.
 - (void)setOtrBrowser:(Browser*)otrBrowser;
 
 @end

@@ -5,6 +5,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
 
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/public/cpp/window_backdrop.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
@@ -149,9 +150,7 @@ void TabletModeWindowDragDelegate::StartWindowDrag(
       ->UpdateVisibilityState();
 
   // Disable the backdrop on the dragged window.
-  original_backdrop_mode_ = dragged_window_->GetProperty(kBackdropWindowMode);
-  dragged_window_->SetProperty(kBackdropWindowMode,
-                               BackdropWindowMode::kDisabled);
+  WindowBackdrop::Get(dragged_window_)->DisableBackdrop();
 
   OverviewController* controller = Shell::Get()->overview_controller();
   bool was_overview_open = controller->InOverviewSession();
@@ -264,7 +263,7 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
     const gfx::PointF& location_in_screen) {
   EndingWindowDrag(result, location_in_screen);
 
-  dragged_window_->SetProperty(kBackdropWindowMode, original_backdrop_mode_);
+  WindowBackdrop::Get(dragged_window_)->RestoreBackdrop();
   SplitViewController::SnapPosition snap_position = SplitViewController::NONE;
   if (result == ToplevelWindowEventHandler::DragResult::SUCCESS &&
       split_view_controller_->CanSnapWindow(dragged_window_)) {

@@ -601,6 +601,9 @@ public final class ChromePreferenceKeys {
 
     public static final String VERIFIED_DIGITAL_ASSET_LINKS = "verified_digital_asset_links";
 
+    public static final String VR_EXIT_TO_2D_COUNT = "VR_EXIT_TO_2D_COUNT";
+    public static final String VR_FEEDBACK_OPT_OUT = "VR_FEEDBACK_OPT_OUT";
+
     /**
      * Whether VR assets component should be registered on startup.
      * Default value is false.
@@ -864,6 +867,8 @@ public final class ChromePreferenceKeys {
                 UI_THEME_SETTING,
                 VARIATION_CACHED_BOTTOM_TOOLBAR,
                 VERIFIED_DIGITAL_ASSET_LINKS,
+                VR_EXIT_TO_2D_COUNT,
+                VR_FEEDBACK_OPT_OUT,
                 VR_SHOULD_REGISTER_ASSETS_COMPONENT_ON_STARTUP,
                 WEBAPK_EXTRACTED_DEX_VERSION,
                 WEBAPK_LAST_SDK_VERSION,

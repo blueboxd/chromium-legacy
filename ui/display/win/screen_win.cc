@@ -211,14 +211,13 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
   display.set_display_frequency(display_info.display_frequency());
   if (!Display::HasForceDisplayColorProfile()) {
     if (hdr_enabled) {
-      // Using RGBA F16 backbuffers required by SCRGB linear causes stuttering
-      // on Windows RS3, but RGB10A2 with HDR10 color space works fine.
-      gfx::ColorSpace hdr_color_space =
-          base::win::GetVersion() > base::win::Version::WIN10_RS3
-              ? gfx::ColorSpace::CreateSCRGBLinear()
-              : gfx::ColorSpace::CreateHDR10();
-      display.SetColorSpaceAndDepth(hdr_color_space,
-                                    display_info.sdr_white_level());
+      gfx::DisplayColorSpaces color_spaces;
+      color_spaces.hdr_opaque = gfx::ColorSpace::CreateHDR10();
+      color_spaces.hdr_transparent = gfx::ColorSpace::CreateSCRGBLinear();
+      color_spaces.sdr_white_level = display_info.sdr_white_level();
+      display.set_color_spaces(color_spaces);
+      display.set_color_depth(Display::kHDR10BitsPerPixel);
+      display.set_depth_per_component(Display::kHDR10BitsPerComponent);
     } else {
       display.SetColorSpaceAndDepth(
           color_profile_reader->GetDisplayColorSpace(display_info.id()));

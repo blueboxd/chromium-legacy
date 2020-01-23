@@ -10,8 +10,12 @@ namespace gpu {
 // What the GPU process is running for.
 enum class GpuMode {
   UNKNOWN,
-  // The GPU process is running with hardare acceleration.
-  HARDWARE_ACCELERATED,
+  // The GPU process is running with hardware acceleration, using only GL.
+  HARDWARE_GL,
+  // The GPU process is running with hardware acceleration, using Metal and GL.
+  HARDWARE_METAL,
+  // The GPU process is running with hardware acceleration, using Vulkan and GL.
+  HARDWARE_VULKAN,
   // The GPU process is running for SwiftShader WebGL.
   SWIFTSHADER,
   // The GPU process is running for the display compositor (OOP-D only).

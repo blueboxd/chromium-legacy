@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "media/learning/common/learning_task_controller.h"
 #include "media/learning/mojo/public/mojom/learning_task_controller.mojom.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace media {
@@ -25,14 +24,15 @@ class COMPONENT_EXPORT(MEDIA_LEARNING_MOJO) MojoLearningTaskController
   // whatever |controller| uses.
   MojoLearningTaskController(
       const LearningTask& task,
-      mojo::PendingRemote<mojom::LearningTaskController> controller);
+      mojo::Remote<mojom::LearningTaskController> controller);
   ~MojoLearningTaskController() override;
 
   // LearningTaskController
   void BeginObservation(
       base::UnguessableToken id,
       const FeatureVector& features,
-      const base::Optional<TargetValue>& default_target) override;
+      const base::Optional<TargetValue>& default_target,
+      const base::Optional<ukm::SourceId>& source_id) override;
   void CompleteObservation(base::UnguessableToken id,
                            const ObservationCompletion& completion) override;
   void CancelObservation(base::UnguessableToken id) override;
@@ -40,6 +40,8 @@ class COMPONENT_EXPORT(MEDIA_LEARNING_MOJO) MojoLearningTaskController
       base::UnguessableToken id,
       const base::Optional<TargetValue>& default_target) override;
   const LearningTask& GetLearningTask() override;
+  void PredictDistribution(const FeatureVector& features,
+                           PredictionCB callback) override;
 
  private:
   LearningTask task_;

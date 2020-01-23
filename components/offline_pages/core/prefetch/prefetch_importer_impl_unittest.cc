@@ -20,12 +20,21 @@ namespace {
 
 const int64_t kTestOfflineID = 111;
 const int64_t kTestOfflineIDFailedToAdd = 223344;
-const GURL kTestURL("http://sample.org");
-const GURL kTestFinalURL("https://sample.org/foo");
+
 const ClientId kTestClientID("Foo", "C56A4180-65AA-42EC-A945-5FD21DEC0538");
 const base::string16 kTestTitle = base::UTF8ToUTF16("Hello");
 const base::FilePath kTestFilePath(FILE_PATH_LITERAL("foo"));
 const int64_t kTestFileSize = 88888;
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL TestURL() {
+  return GURL("http://sample.org");
+}
+GURL TestFinalURL() {
+  return GURL("https://sample.org/foo");
+}
+
 GURL TestFaviconURL() {
   return GURL("http://sample.org/favicon.png");
 }
@@ -81,8 +90,8 @@ class PrefetchImporterImplTest : public testing::Test {
     PrefetchArchiveInfo archive;
     archive.offline_id = offline_id;
     archive.client_id = kTestClientID;
-    archive.url = kTestURL;
-    archive.final_archived_url = kTestFinalURL;
+    archive.url = TestURL();
+    archive.final_archived_url = TestFinalURL();
     archive.title = kTestTitle;
     archive.file_path = file_path;
     archive.file_size = kTestFileSize;
@@ -121,8 +130,8 @@ TEST_F(PrefetchImporterImplTest, ImportSuccess) {
   EXPECT_TRUE(offline_page_model()->page_added());
   EXPECT_EQ(kTestOfflineID, offline_page_model()->last_added_page().offline_id);
   EXPECT_EQ(kTestClientID, offline_page_model()->last_added_page().client_id);
-  EXPECT_EQ(kTestFinalURL, offline_page_model()->last_added_page().url);
-  EXPECT_EQ(kTestURL,
+  EXPECT_EQ(TestFinalURL(), offline_page_model()->last_added_page().url);
+  EXPECT_EQ(TestURL(),
             offline_page_model()->last_added_page().original_url_if_different);
   EXPECT_EQ(kTestTitle, offline_page_model()->last_added_page().title);
   EXPECT_EQ(kTestFileSize, offline_page_model()->last_added_page().file_size);

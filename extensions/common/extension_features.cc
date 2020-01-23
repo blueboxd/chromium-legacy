@@ -36,6 +36,8 @@ const char kNeutralMessage[] = "2";
 // https://www.chromium.org/Home/chromium-security/extension-content-script-fetches
 const base::Feature kCorbAllowlistAlsoAppliesToOorCors{
     "CorbAllowlistAlsoAppliesToOorCors", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kCorbAllowlistAlsoAppliesToOorCorsParamName[] =
+    "AllowlistForCorbAndCors";
 
 // Forces requests to go through WebRequestProxyingURLLoaderFactory.
 const base::Feature kForceWebRequestProxyForTest{

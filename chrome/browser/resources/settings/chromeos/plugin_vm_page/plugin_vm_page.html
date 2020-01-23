@@ -1,13 +1,16 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/cr_link_row/cr_link_row.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="../../i18n_setup.html">
+<link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../../settings_page/settings_animated_pages.html">
 <link rel="import" href="../../settings_page/settings_subpage.html">
 <link rel="import" href="../../settings_shared_css.html">
+<link rel="import" href="plugin_vm_browser_proxy.html">
 <link rel="import" href="plugin_vm_shared_paths.html">
 <link rel="import" href="plugin_vm_subpage.html">
 
@@ -18,11 +21,30 @@
     <settings-animated-pages id="pages" section="pluginVm"
         focus-config="[[focusConfig_]]">
       <div route-path="default">
-        <cr-link-row id="plugin-vm"
-            label="$i18n{pluginVmPageLabel}"
-            sub-label="$i18n{pluginVmPageSubtext}"
-            on-click="onSubpageClick_"
-            role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
+        <div id="pluginVm" class="settings-box two-line first"
+            on-click="onSubpageClick_">
+          <div class="start">
+            $i18n{pluginVmPageLabel}
+            <div class="secondary" id="secondaryText">
+              $i18n{pluginVmPageSubtext}
+            </div>
+          </div>
+          <template is="dom-if" if="[[prefs.plugin_vm.image_exists.value]]">
+            <cr-icon-button class="subpage-arrow"
+                aria-label="i18n{pluginVmPageLabel}"
+                aria-describedby="secondaryText"
+                aria-roledescription="$i18n{subpageArrowRoleDescription}">
+            </cr-icon-button>
+          </template>
+          <template is="dom-if" if="[[!prefs.plugin_vm.image_exists.value]]">
+            <div class="separator"></div>
+            <cr-button id="enable"
+                on-click="onEnableClick_"
+                aria-describedby="secondaryText">
+              $i18n{pluginVmPageEnable}
+            </cr-button>
+          </template>
+        </div>
       </div>
 
       <template is="dom-if" route-path="/pluginVm/details">

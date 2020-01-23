@@ -147,4 +147,39 @@ bool EnumTraits<display::mojom::PanelOrientation, display::PanelOrientation>::
   return false;
 }
 
+// static
+display::mojom::PrivacyScreenState EnumTraits<
+    display::mojom::PrivacyScreenState,
+    display::PrivacyScreenState>::ToMojom(display::PrivacyScreenState state) {
+  switch (state) {
+    case display::PrivacyScreenState::kDisabled:
+      return display::mojom::PrivacyScreenState::DISABLED;
+    case display::PrivacyScreenState::kEnabled:
+      return display::mojom::PrivacyScreenState::ENABLED;
+    case display::PrivacyScreenState::kNotSupported:
+      return display::mojom::PrivacyScreenState::NOT_SUPPORTED;
+  }
+  NOTREACHED();
+  return display::mojom::PrivacyScreenState::NOT_SUPPORTED;
+}
+
+// static
+bool EnumTraits<display::mojom::PrivacyScreenState,
+                display::PrivacyScreenState>::
+    FromMojom(display::mojom::PrivacyScreenState state,
+              display::PrivacyScreenState* out) {
+  switch (state) {
+    case display::mojom::PrivacyScreenState::DISABLED:
+      *out = display::PrivacyScreenState::kDisabled;
+      return true;
+    case display::mojom::PrivacyScreenState::ENABLED:
+      *out = display::PrivacyScreenState::kEnabled;
+      return true;
+    case display::mojom::PrivacyScreenState::NOT_SUPPORTED:
+      *out = display::PrivacyScreenState::kNotSupported;
+      return true;
+  }
+  return false;
+}
+
 }  // namespace mojo

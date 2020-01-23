@@ -51,9 +51,10 @@ enum JSONParserOptions {
   // Allows commas to exist after the last element in structures.
   JSON_ALLOW_TRAILING_COMMAS = 1 << 0,
 
-  // If set the parser replaces invalid characters with the Unicode replacement
-  // character (U+FFFD). If not set, invalid characters trigger a hard error and
-  // parsing fails.
+  // If set the parser replaces invalid code points (i.e. lone
+  // surrogates) with the Unicode replacement character (U+FFFD). If
+  // not set, invalid code points trigger a hard error and parsing
+  // fails.
   JSON_REPLACE_INVALID_CHARACTERS = 1 << 1,
 };
 

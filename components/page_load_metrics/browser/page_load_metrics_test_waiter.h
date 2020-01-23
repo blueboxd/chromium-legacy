@@ -52,6 +52,9 @@ class PageLoadMetricsTestWaiter
   // Wait for the subframe to navigate at least once.
   void AddSubframeNavigationExpectation();
 
+  // Wait for the subframe to load at least one byte.
+  void AddSubframeDataExpectation();
+
   // Add a minimum completed resource expectation.
   void AddMinimumCompleteResourcesExpectation(
       int expected_minimum_complete_resources);
@@ -216,6 +219,8 @@ class PageLoadMetricsTestWaiter
 
   bool SubframeNavigationExpectationsSatisfied() const;
 
+  bool SubframeDataExpectationsSatisfied() const;
+
   std::unique_ptr<base::RunLoop> run_loop_;
 
   TimingFieldBitSet page_expected_fields_;
@@ -223,6 +228,7 @@ class PageLoadMetricsTestWaiter
   std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>
       expected_web_features_;
   size_t expected_subframe_navigation_ = false;
+  bool expected_subframe_data_ = false;
 
   TimingFieldBitSet observed_page_fields_;
   std::bitset<static_cast<size_t>(blink::mojom::WebFeature::kNumberOfFeatures)>

@@ -29,12 +29,13 @@
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 using SandboxFlagFeaturePolicyPairs =
-    Vector<std::pair<WebSandboxFlags, mojom::FeaturePolicyFeature>>;
+    Vector<std::pair<WebSandboxFlags, mojom::blink::FeaturePolicyFeature>>;
 
 // Returns a vector of pairs of sandbox flags and the corresponding feature
 // policies. This includes most but not all sandbox flags as some flags have not

@@ -10,14 +10,17 @@
     <link rel="stylesheet" href="assistant_shared_styles.css">
     <oobe-dialog id="get-more-dialog" role="dialog" has-buttons hide-shadow
         no-footer-padding no-header
-        i18n-values="aria-label:assistantReadyTitle">
+        aria-label$="[[i18nDynamic(locale, 'assistantReadyTitle')]]">
       <div slot="footer">
         <div class="container">
           <img id="logo" src="assistant_logo.png"
-              i18n-values="aria-label:assistantLogo">
-          <div class="title" i18n-content="assistantReadyTitle"></div>
-          <div class="content" id="intro-text"
-              i18n-content="assistantReadyMessage"></div>
+              aria-label$="[[i18nDynamic(locale, 'assistantLogo')]]">
+          <div class="title">
+            [[i18nDynamic(locale, 'assistantReadyTitle')]]
+          </div>
+          <div class="content" id="intro-text">
+            [[i18nDynamic(locale, 'assistantReadyMessage')]]
+          </div>
           <div class="flex layout horizontal center">
             <div id="ready-image-container">
               <img id="ready-img" class="oobe-illustration"

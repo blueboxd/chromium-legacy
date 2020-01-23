@@ -49,4 +49,16 @@ bool StructTraits<media::learning::mojom::ObservationCompletionDataView,
   out_observation_completion->weight = data.weight();
   return true;
 }
+
+// static
+bool StructTraits<media::learning::mojom::TargetHistogramDataView,
+                  media::learning::TargetHistogram>::
+    Read(media::learning::mojom::TargetHistogramDataView data,
+         media::learning::TargetHistogram* out_target_histogram) {
+  if (!data.ReadCounts(&out_target_histogram->counts_))
+    return false;
+
+  return true;
+}
+
 }  // namespace mojo

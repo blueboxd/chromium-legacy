@@ -71,8 +71,8 @@ class GpuChannelManagerDelegate;
 class GpuProcessActivityFlags;
 class GpuMemoryBufferManager;
 class ImageFactory;
-class SharedImageFactory;
 class SharedImageInterface;
+class SharedImageInterfaceInProcess;
 class SyncPointClientState;
 struct ContextCreationAttribs;
 struct SwapBuffersCompleteParams;
@@ -207,6 +207,22 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   gpu::SharedImageInterface* GetSharedImageInterface() const;
 
+  // This is wrapper for VizSharedImageInterface implementation that is only
+  // used in InProcessCommandBuffer.
+  class SharedImageInterfaceHelper {
+   public:
+    explicit SharedImageInterfaceHelper(InProcessCommandBuffer* command_buffer);
+    ~SharedImageInterfaceHelper() = default;
+
+    void SetError();
+    void WrapTaskWithGpuCheck(base::OnceClosure task);
+
+    bool EnableWrappedSkImage() const;
+
+   private:
+    InProcessCommandBuffer* command_buffer_;
+  };
+
   // Provides a callback that can be used to preserve the back buffer for the
   // GLSurface associated with the command buffer, even after the command buffer
   // has been destroyed. The back buffer is evicted once the callback is
@@ -220,8 +236,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   }
 
  private:
-  class SharedImageInterface;
-
   struct InitializeOnGpuThreadParams {
     SurfaceHandle surface_handle;
     const ContextCreationAttribs& attribs;
@@ -297,30 +311,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void GetGpuFenceOnGpuThread(
       uint32_t gpu_fence_id,
       base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback);
-  void LazyCreateSharedImageFactory();
-  void CreateSharedImageOnGpuThread(const Mailbox& mailbox,
-                                    viz::ResourceFormat format,
-                                    const gfx::Size& size,
-                                    const gfx::ColorSpace& color_space,
-                                    uint32_t usage,
-                                    const SyncToken& sync_token);
-  void CreateSharedImageWithDataOnGpuThread(const Mailbox& mailbox,
-                                            viz::ResourceFormat format,
-                                            const gfx::Size& size,
-                                            const gfx::ColorSpace& color_space,
-                                            uint32_t usage,
-                                            const SyncToken& sync_token,
-                                            std::vector<uint8_t> pixel_data);
-  void CreateGMBSharedImageOnGpuThread(const Mailbox& mailbox,
-                                       gfx::GpuMemoryBufferHandle handle,
-                                       gfx::BufferFormat format,
-                                       const gfx::Size& size,
-                                       const gfx::ColorSpace& color_space,
-                                       uint32_t usage,
-                                       const SyncToken& sync_token);
-  void UpdateSharedImageOnGpuThread(const Mailbox& mailbox,
-                                    const SyncToken& sync_token);
-  void DestroySharedImageOnGpuThread(const Mailbox& mailbox);
   void SetDisplayTransformOnGpuThread(gfx::OverlayTransform transform);
 
   // Sets |active_url_| as the active GPU process URL. Should be called on GPU
@@ -357,8 +347,6 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<SyncPointClientState> sync_point_client_state_;
-  scoped_refptr<SyncPointClientState> shared_image_client_state_;
-  std::unique_ptr<SharedImageFactory> shared_image_factory_;
 
   // Used to throttle PerformDelayedWorkOnGpuThread.
   bool delayed_work_pending_ = false;
@@ -393,7 +381,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   // Pointer to the SingleTaskSequence that actually does the scheduling.
   SingleTaskSequence* task_sequence_;
-  std::unique_ptr<SharedImageInterface> shared_image_interface_;
+  std::unique_ptr<SharedImageInterfaceInProcess> shared_image_interface_;
 
   // The group of contexts that share namespaces with this context.
   scoped_refptr<gles2::ContextGroup> context_group_;

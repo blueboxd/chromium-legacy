@@ -20,17 +20,32 @@
         </span>
       </div>
     </div>
-    <div class="settings-box continuation">
-      <h2 class="start">$i18n{crostiniSharedPathsListHeading}</h2>
+    <div id="crostiniListEmpty" class="settings-box secondary continuation"
+        hidden="[[sharedPaths_.length]]" >
+       $i18n{crostiniSharedPathsListEmptyMessage}
     </div>
-    <div class="list-frame vertical-list">
-      <template is="dom-repeat" items="[[sharedPaths_]]">
-        <div class="list-item">
-          <div class="start">[[item.pathDisplayText]]</div>
-          <cr-icon-button class="icon-clear" on-click="onRemoveSharedPathTap_"
-              title="$i18n{crostiniSharedPathsRemoveSharing}"></cr-icon-button>
-        </div>
-      </template>
+    <div id="crostiniList" hidden="[[!sharedPaths_.length]]">
+      <div class="settings-box continuation">
+        <h2 id="crostiniListHeading" class="start">
+          $i18n{crostiniSharedPathsListHeading}
+        </h2>
+      </div>
+      <div class="list-frame vertical-list" role="list"
+          aria-labeledby="crostiniListHeading">
+        <template is="dom-repeat" items="[[sharedPaths_]]">
+          <div class="list-item" role=listitem">
+            <div class="start" aria-hidden="true"
+                id="[[generatePathDisplayTextId_(index)]]">
+              [[item.pathDisplayText]]
+            </div>
+            <cr-icon-button class="icon-clear"
+                on-click="onRemoveSharedPathTap_"
+                title="$i18n{crostiniSharedPathsRemoveSharing}"
+                aria-labeledby$="[[generatePathDisplayTextId_(index)]]">
+            </cr-icon-button>
+          </div>
+        </template>
+      </div>
     </div>
   </template>
   <script src="crostini_shared_paths.js"></script>

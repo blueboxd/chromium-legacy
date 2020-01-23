@@ -29,6 +29,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"
 #include "ui/views/test/widget_test.h"
@@ -38,8 +39,10 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
  protected:
   Profile* profile() { return browser()->profile(); }
 
-  void LoadTestExtension(const std::string& extension) {
+  void LoadTestExtension(const std::string& extension,
+                         bool allow_incognito = false) {
     extensions::ChromeTestExtensionLoader loader(profile());
+    loader.set_allow_incognito_access(allow_incognito);
     base::FilePath test_data_dir;
     base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
     extensions_.push_back(
@@ -49,6 +52,10 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kExtensionsToolbarMenu);
     DialogBrowserTest::SetUp();
+  }
+
+  void SetUpIncognitoBrowser() {
+    incognito_browser_ = CreateIncognitoBrowser();
   }
 
   void SetUpOnMainThread() override {
@@ -192,14 +199,16 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
     }
   }
 
-  void ClickExtensionsMenuButton() {
+  void ClickExtensionsMenuButton(Browser* browser) {
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
                                base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, 0);
-    BrowserView::GetBrowserViewForBrowser(browser())
+    BrowserView::GetBrowserViewForBrowser(browser)
         ->toolbar()
         ->GetExtensionsButton()
         ->OnMousePressed(click_event);
   }
+
+  void ClickExtensionsMenuButton() { ClickExtensionsMenuButton(browser()); }
 
   ExtensionsToolbarContainer* GetExtensionsToolbarContainer() const {
     return BrowserView::GetBrowserViewForBrowser(browser())
@@ -244,6 +253,7 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
 
   std::string ui_test_name_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  Browser* incognito_browser_ = nullptr;
   std::vector<scoped_refptr<const extensions::Extension>> extensions_;
 };
 
@@ -369,6 +379,32 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   VerifyUi();
   EXPECT_EQ(2u, extensions_.size());
   EXPECT_EQ(extensions_.size(), GetExtensionsMenuItemView().size());
+  DismissUi();
+}
+
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
+                       PinningDisabledInIncognito) {
+  LoadTestExtension("extensions/uitest/window_open", true);
+  SetUpIncognitoBrowser();
+
+  // Make sure the pinning item is disabled for context menus in the Incognito
+  // browser.
+  extensions::ExtensionContextMenuModel menu(
+      extensions_[0].get(), incognito_browser_,
+      extensions::ExtensionContextMenuModel::VISIBLE, nullptr,
+      true /* can_show_icon_in_toolbar */);
+  EXPECT_FALSE(menu.IsCommandIdEnabled(
+      extensions::ExtensionContextMenuModel::TOGGLE_VISIBILITY));
+
+  // Show menu and verify that the in-menu pin button is disabled too.
+  ClickExtensionsMenuButton(incognito_browser_);
+
+  ASSERT_TRUE(VerifyUi());
+  ASSERT_EQ(1u, GetExtensionsMenuItemView().size());
+  EXPECT_EQ(
+      views::Button::STATE_DISABLED,
+      GetExtensionsMenuItemView().front()->pin_button_for_testing()->state());
+
   DismissUi();
 }
 

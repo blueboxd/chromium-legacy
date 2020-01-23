@@ -72,7 +72,6 @@
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
-#include "third_party/blink/public/platform/web_url_load_timing.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -89,7 +88,6 @@ using blink::WebSecurityPolicy;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebURLError;
-using blink::WebURLLoadTiming;
 using blink::WebURLLoader;
 using blink::WebURLLoaderClient;
 using blink::WebURLRequest;
@@ -107,27 +105,20 @@ constexpr char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";
 
 using HeadersVector = network::HttpRawRequestResponseInfo::HeadersVector;
 
-// Converts timing data from |load_timing| to the format used by WebKit.
-void PopulateURLLoadTiming(const net::LoadTimingInfo& load_timing,
-                           WebURLLoadTiming* url_timing) {
+// Converts timing data from |load_timing| to the mojo type.
+network::mojom::LoadTimingInfo ToMojoLoadTiming(
+    const net::LoadTimingInfo& load_timing) {
   DCHECK(!load_timing.request_start.is_null());
 
-  url_timing->Initialize();
-  url_timing->SetRequestTime(load_timing.request_start);
-  url_timing->SetProxyStart(load_timing.proxy_resolve_start);
-  url_timing->SetProxyEnd(load_timing.proxy_resolve_end);
-  url_timing->SetDNSStart(load_timing.connect_timing.dns_start);
-  url_timing->SetDNSEnd(load_timing.connect_timing.dns_end);
-  url_timing->SetConnectStart(load_timing.connect_timing.connect_start);
-  url_timing->SetConnectEnd(load_timing.connect_timing.connect_end);
-  url_timing->SetSSLStart(load_timing.connect_timing.ssl_start);
-  url_timing->SetSSLEnd(load_timing.connect_timing.ssl_end);
-  url_timing->SetSendStart(load_timing.send_start);
-  url_timing->SetSendEnd(load_timing.send_end);
-  url_timing->SetReceiveHeadersStart(load_timing.receive_headers_start);
-  url_timing->SetReceiveHeadersEnd(load_timing.receive_headers_end);
-  url_timing->SetPushStart(load_timing.push_start);
-  url_timing->SetPushEnd(load_timing.push_end);
+  return network::mojom::LoadTimingInfo(
+      load_timing.socket_reused, load_timing.socket_log_id,
+      load_timing.request_start_time, load_timing.request_start,
+      load_timing.proxy_resolve_start, load_timing.proxy_resolve_end,
+      load_timing.connect_timing, load_timing.send_start, load_timing.send_end,
+      load_timing.receive_headers_start, load_timing.receive_headers_end,
+      load_timing.push_start, load_timing.push_end,
+      load_timing.service_worker_start_time,
+      load_timing.service_worker_ready_time);
 }
 
 // This is complementary to ConvertNetPriorityToWebKitPriority, defined in
@@ -1073,11 +1064,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
   // the case for non-HTTP requests, requests that don't go over the wire, and
   // certain error cases.
   if (!head.load_timing.receive_headers_end.is_null()) {
-    WebURLLoadTiming timing;
-    PopulateURLLoadTiming(head.load_timing, &timing);
-    timing.SetWorkerStart(head.load_timing.service_worker_start_time);
-    timing.SetWorkerReady(head.load_timing.service_worker_ready_time);
-    response->SetLoadTiming(timing);
+    response->SetLoadTiming(ToMojoLoadTiming(head.load_timing));
   }
 
   if (head.raw_request_response_info.get()) {

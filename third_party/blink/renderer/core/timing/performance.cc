@@ -484,32 +484,40 @@ void Performance::GenerateAndAddResourceTiming(
       info.TakeWorkerTimingReceiver());
 }
 
-WebResourceTimingInfo Performance::GenerateResourceTiming(
+mojom::blink::ResourceTimingInfoPtr Performance::GenerateResourceTiming(
     const SecurityOrigin& destination_origin,
     const ResourceTimingInfo& info,
     ExecutionContext& context_for_use_counter) {
   // TODO(dcheng): It would be nicer if the performance entries simply held this
   // data internally, rather than requiring it be marshalled back and forth.
   const ResourceResponse& final_response = info.FinalResponse();
-  WebResourceTimingInfo result;
-  result.name = info.InitialURL().GetString();
-  result.start_time = info.InitialTime();
-  result.alpn_negotiated_protocol = final_response.AlpnNegotiatedProtocol();
-  result.connection_info = final_response.ConnectionInfoString();
-  result.timing = final_response.GetResourceLoadTiming();
-  result.response_end = info.LoadResponseEnd();
-  result.context_type = info.ContextType();
+  mojom::blink::ResourceTimingInfoPtr result =
+      mojom::blink::ResourceTimingInfo::New();
+  result->name = info.InitialURL().GetString();
+  result->start_time = info.InitialTime();
+  result->alpn_negotiated_protocol =
+      final_response.AlpnNegotiatedProtocol().IsNull()
+          ? g_empty_string
+          : final_response.AlpnNegotiatedProtocol();
+  result->connection_info = final_response.ConnectionInfoString().IsNull()
+                                ? g_empty_string
+                                : final_response.ConnectionInfoString();
+  result->timing = final_response.GetResourceLoadTiming()
+                       ? final_response.GetResourceLoadTiming()->ToMojo()
+                       : nullptr;
+  result->response_end = info.LoadResponseEnd();
+  result->context_type = info.ContextType();
 
   bool response_tainting_not_basic = false;
   bool tainted_origin_flag = false;
-  result.allow_timing_details = PassesTimingAllowCheck(
+  result->allow_timing_details = PassesTimingAllowCheck(
       final_response, final_response, destination_origin,
       &context_for_use_counter, &response_tainting_not_basic,
       &tainted_origin_flag);
 
   const Vector<ResourceResponse>& redirect_chain = info.RedirectChain();
   if (!redirect_chain.IsEmpty()) {
-    result.allow_redirect_details =
+    result->allow_redirect_details =
         AllowsTimingRedirect(redirect_chain, final_response, destination_origin,
                              &context_for_use_counter);
 
@@ -517,38 +525,39 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
     // or is this if statement reasonable?
     if (ResourceLoadTiming* last_chained_timing =
             redirect_chain.back().GetResourceLoadTiming()) {
-      result.last_redirect_end_time = last_chained_timing->ReceiveHeadersEnd();
+      result->last_redirect_end_time = last_chained_timing->ReceiveHeadersEnd();
     } else {
-      result.allow_redirect_details = false;
-      result.last_redirect_end_time = base::TimeTicks();
+      result->allow_redirect_details = false;
+      result->last_redirect_end_time = base::TimeTicks();
     }
-    if (!result.allow_redirect_details) {
+    if (!result->allow_redirect_details) {
       // TODO(https://crbug.com/817691): There was previously a DCHECK that
       // |final_timing| is non-null. However, it clearly can be null: removing
       // this check caused https://crbug.com/803811. Figure out how this can
       // happen so test coverage can be added.
       if (ResourceLoadTiming* final_timing =
               final_response.GetResourceLoadTiming()) {
-        result.start_time = final_timing->RequestTime();
+        result->start_time = final_timing->RequestTime();
       }
     }
   } else {
-    result.allow_redirect_details = false;
-    result.last_redirect_end_time = base::TimeTicks();
+    result->allow_redirect_details = false;
+    result->last_redirect_end_time = base::TimeTicks();
   }
 
-  result.transfer_size = info.TransferSize();
-  result.encoded_body_size = final_response.EncodedBodyLength();
-  result.decoded_body_size = final_response.DecodedBodyLength();
-  result.did_reuse_connection = final_response.ConnectionReused();
-  result.is_secure_context =
+  result->transfer_size = info.TransferSize();
+  result->encoded_body_size = final_response.EncodedBodyLength();
+  result->decoded_body_size = final_response.DecodedBodyLength();
+  result->did_reuse_connection = final_response.ConnectionReused();
+  result->is_secure_context =
       SecurityOrigin::IsSecure(final_response.ResponseUrl());
-  result.allow_negative_values = info.NegativeAllowed();
+  result->allow_negative_values = info.NegativeAllowed();
 
-  if (result.allow_timing_details) {
-    result.server_timing = PerformanceServerTiming::ParseServerTiming(info);
+  if (result->allow_timing_details) {
+    result->server_timing =
+        PerformanceServerTiming::ParseServerTimingToMojo(info);
   }
-  if (!result.server_timing.empty()) {
+  if (!result->server_timing.IsEmpty()) {
     UseCounter::Count(&context_for_use_counter,
                       WebFeature::kPerformanceServerTiming);
   }
@@ -557,12 +566,12 @@ WebResourceTimingInfo Performance::GenerateResourceTiming(
 }
 
 void Performance::AddResourceTiming(
-    const WebResourceTimingInfo& info,
+    mojom::blink::ResourceTimingInfoPtr info,
     const AtomicString& initiator_type,
     mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
         worker_timing_receiver) {
   auto* entry = MakeGarbageCollected<PerformanceResourceTiming>(
-      info, time_origin_, initiator_type, std::move(worker_timing_receiver));
+      *info, time_origin_, initiator_type, std::move(worker_timing_receiver));
   NotifyObserversOfEntry(*entry);
   // https://w3c.github.io/resource-timing/#dfn-add-a-performanceresourcetiming-entry
   if (CanAddResourceTimingEntry() &&

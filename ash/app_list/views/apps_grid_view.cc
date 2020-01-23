@@ -845,15 +845,15 @@ void AppsGridView::InitiateDragFromReparentItemInRootLevelGridView(
 
   // Create a new AppListItemView to duplicate the original_drag_view in the
   // folder's grid view.
-  AppListItemView* view =
-      new AppListItemView(this, original_drag_view->item(),
-                          contents_view_->GetAppListMainView()->view_delegate(),
-                          false /* is_in_folder */);
-  items_container_->AddChildView(view);
+  auto view = std::make_unique<AppListItemView>(
+      this, original_drag_view->item(),
+      contents_view_->GetAppListMainView()->view_delegate(),
+      false /* is_in_folder */);
+  auto* view_ptr = items_container_->AddChildView(std::move(view));
   for (const auto& entry : view_model_.entries())
     static_cast<AppListItemView*>(entry.view)->EnsureLayer();
-  view->EnsureLayer();
-  drag_view_ = view;
+  view_ptr->EnsureLayer();
+  drag_view_ = view_ptr;
 
   // Dragged view should have focus. This also fixed the issue
   // https://crbug.com/834682.
@@ -1204,9 +1204,9 @@ void AppsGridView::Update() {
     // Skip "page break" items.
     if (item_list_->item_at(i)->is_page_break())
       continue;
-    AppListItemView* view = CreateViewForItemAtIndex(i);
-    view_model_.Add(view, view_model_.view_size());
-    items_container_->AddChildView(view);
+    std::unique_ptr<AppListItemView> view = CreateViewForItemAtIndex(i);
+    view_model_.Add(view.get(), view_model_.view_size());
+    items_container_->AddChildView(std::move(view));
   }
   if (!folder_delegate_)
     view_structure_.LoadFromMetadata();
@@ -1268,17 +1268,18 @@ void AppsGridView::UpdatePulsingBlockViews() {
   }
 
   while (pulsing_blocks_model_.view_size() < desired) {
-    PulsingBlockView* view = new PulsingBlockView(GetTotalTileSize(), true);
-    pulsing_blocks_model_.Add(view, 0);
-    items_container_->AddChildView(view);
+    auto view = std::make_unique<PulsingBlockView>(GetTotalTileSize(), true);
+    pulsing_blocks_model_.Add(view.get(), 0);
+    items_container_->AddChildView(std::move(view));
   }
 }
 
-AppListItemView* AppsGridView::CreateViewForItemAtIndex(size_t index) {
+std::unique_ptr<AppListItemView> AppsGridView::CreateViewForItemAtIndex(
+    size_t index) {
   // The |drag_view_| might be pending for deletion, therefore |view_model_|
   // may have one more item than |item_list_|.
   DCHECK_LE(index, item_list_->item_count());
-  AppListItemView* view = new AppListItemView(
+  std::unique_ptr<AppListItemView> view = std::make_unique<AppListItemView>(
       this, item_list_->item_at(index),
       contents_view_->GetAppListMainView()->view_delegate());
   return view;
@@ -2056,14 +2057,15 @@ void AppsGridView::HandleKeyboardReparent(AppListItemView* reparented_view,
   DCHECK(!folder_delegate_);
   DCHECK(activated_folder_item_view_);
 
-  AppListItemView* reparented_view_in_root_grid =
-      new AppListItemView(this, reparented_view->item(),
-                          contents_view_->GetAppListMainView()->view_delegate(),
-                          false /* is_in_folder */);
+  auto reparented_view_in_root_grid = std::make_unique<AppListItemView>(
+      this, reparented_view->item(),
+      contents_view_->GetAppListMainView()->view_delegate(),
+      false /* is_in_folder */);
 
-  items_container_->AddChildView(reparented_view_in_root_grid);
-  view_model_.Add(reparented_view_in_root_grid, view_model_.view_size());
-  view_structure_.Add(reparented_view_in_root_grid, GetLastTargetIndex());
+  auto* reparented_view_in_root_grid_ptr =
+      items_container_->AddChildView(std::move(reparented_view_in_root_grid));
+  view_model_.Add(reparented_view_in_root_grid_ptr, view_model_.view_size());
+  view_structure_.Add(reparented_view_in_root_grid_ptr, GetLastTargetIndex());
 
   // Set |activated_folder_item_view_| selected so |target_index| will be
   // computed relative to the open folder.
@@ -2071,7 +2073,7 @@ void AppsGridView::HandleKeyboardReparent(AppListItemView* reparented_view,
   const GridIndex target_index =
       GetTargetGridIndexForKeyboardReparent(key_code);
   AnnounceReorder(target_index);
-  ReparentItemForReorder(reparented_view_in_root_grid, target_index);
+  ReparentItemForReorder(reparented_view_in_root_grid_ptr, target_index);
 
   GetViewAtIndex(target_index)->RequestFocus();
   Layout();
@@ -2282,11 +2284,12 @@ AppListItemView* AppsGridView::MoveItemToFolder(AppListItemView* item_view,
       GridIndex target_index = GetIndexOfView(target_view);
       gfx::Rect target_view_bounds = target_view->bounds();
       DeleteItemViewAtIndex(target_model_index, false /* sanitize */);
-      target_view = CreateViewForItemAtIndex(folder_item_index);
-      target_view->SetBoundsRect(target_view_bounds);
-      view_model_.Add(target_view, target_model_index);
+      std::unique_ptr<AppListItemView> new_target_view =
+          CreateViewForItemAtIndex(folder_item_index);
+      new_target_view->SetBoundsRect(target_view_bounds);
+      view_model_.Add(new_target_view.get(), target_model_index);
       if (!folder_delegate_)
-        view_structure_.Add(target_view, target_index);
+        view_structure_.Add(new_target_view.get(), target_index);
 
       // If drag view is in front of the position where it will be moved to, we
       // should skip it.
@@ -2294,8 +2297,8 @@ AppListItemView* AppsGridView::MoveItemToFolder(AppListItemView* item_view,
                                             target_model_index)
                              ? 1
                              : 0;
-      items_container_->AddChildViewAt(target_view,
-                                       target_model_index - offset);
+      target_view = items_container_->AddChildViewAt(
+          std::move(new_target_view), target_model_index - offset);
     } else {
       LOG(ERROR) << "Folder no longer in item_list: " << folder_item_id;
     }
@@ -2437,13 +2440,14 @@ bool AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
       int target_model_index = view_model_.GetIndexOfView(target_view);
       GridIndex target_index = GetIndexOfView(target_view);
       DeleteItemViewAtIndex(target_model_index, false /* sanitize */);
-      AppListItemView* new_folder_view =
+      std::unique_ptr<AppListItemView> new_folder_view =
           CreateViewForItemAtIndex(new_folder_index);
       new_folder_view->SetBoundsRect(target_rect);
-      view_model_.Add(new_folder_view, target_model_index);
+      view_model_.Add(new_folder_view.get(), target_model_index);
       if (!folder_delegate_)
-        view_structure_.Add(new_folder_view, target_index);
-      items_container_->AddChildViewAt(new_folder_view, target_model_index);
+        view_structure_.Add(new_folder_view.get(), target_index);
+      items_container_->AddChildViewAt(std::move(new_folder_view),
+                                       target_model_index);
     } else {
       LOG(ERROR) << "Folder no longer in item_list: " << new_folder_id;
     }
@@ -2508,12 +2512,14 @@ void AppsGridView::RemoveLastItemFromReparentItemFolderIfNecessary(
     NOTREACHED();
     return;
   }
-  AppListItemView* last_item_view = CreateViewForItemAtIndex(last_item_index);
+  std::unique_ptr<AppListItemView> last_item_view =
+      CreateViewForItemAtIndex(last_item_index);
   last_item_view->SetBoundsRect(folder_rect);
-  view_model_.Add(last_item_view, target_model_index);
+  view_model_.Add(last_item_view.get(), target_model_index);
   if (!folder_delegate_)
-    view_structure_.Add(last_item_view, target_index);
-  items_container_->AddChildViewAt(last_item_view, target_model_index);
+    view_structure_.Add(last_item_view.get(), target_index);
+  items_container_->AddChildViewAt(std::move(last_item_view),
+                                   target_model_index);
 }
 
 void AppsGridView::CancelContextMenusOnCurrentPage() {
@@ -2601,10 +2607,10 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
   EndDrag(true);
 
   if (!item->is_page_break()) {
-    AppListItemView* view = CreateViewForItemAtIndex(index);
+    std::unique_ptr<AppListItemView> view = CreateViewForItemAtIndex(index);
     int model_index = GetTargetModelIndexFromItemIndex(index);
-    view_model_.Add(view, model_index);
-    items_container_->AddChildViewAt(view, model_index);
+    view_model_.Add(view.get(), model_index);
+    items_container_->AddChildViewAt(std::move(view), model_index);
   }
 
   if (!folder_delegate_)
@@ -3363,14 +3369,15 @@ void AppsGridView::StartFolderDroppingAnimation(
   folder_item->NotifyOfDraggedItem(drag_item);
 
   // Start animation.
-  TopIconAnimationView* animation_view = new TopIconAnimationView(
+  auto animation_view = std::make_unique<TopIconAnimationView>(
       this, drag_item->GetIcon(GetAppListConfig().type()), base::string16(),
       target_bounds, false, true);
-  items_container_->AddChildView(animation_view);
-  animation_view->SetBoundsRect(source_bounds);
-  animation_view->AddObserver(
+  auto* animation_view_ptr =
+      items_container_->AddChildView(std::move(animation_view));
+  animation_view_ptr->SetBoundsRect(source_bounds);
+  animation_view_ptr->AddObserver(
       new FolderDroppingAnimationObserver(model_, folder_item->id()));
-  animation_view->TransformView();
+  animation_view_ptr->TransformView();
 }
 
 void AppsGridView::MaybeCreateFolderDroppingAccessibilityEvent() {
@@ -3491,14 +3498,15 @@ void AppsGridView::CreateGhostImageView() {
   // GhostImageView that will fade in.
   last_ghost_view_ = current_ghost_view_;
 
-  current_ghost_view_ =
-      new GhostImageView(IsFolderItem(drag_view_->item()) /* is_folder */,
-                         folder_delegate_, reorder_placeholder_.page);
+  auto current_ghost_view = std::make_unique<GhostImageView>(
+      IsFolderItem(drag_view_->item()) /* is_folder */, folder_delegate_,
+      reorder_placeholder_.page);
   gfx::Rect ghost_view_bounds = GetExpectedTileBounds(reorder_placeholder_);
   ghost_view_bounds.Offset(
       CalculateTransitionOffset(reorder_placeholder_.page));
-  current_ghost_view_->Init(drag_view_, ghost_view_bounds);
-  items_container_->AddChildView(current_ghost_view_);
+  current_ghost_view->Init(drag_view_, ghost_view_bounds);
+  current_ghost_view_ =
+      items_container_->AddChildView(std::move(current_ghost_view));
   current_ghost_view_->FadeIn();
 }
 

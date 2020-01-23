@@ -108,13 +108,17 @@ class ThemeService : public content::NotificationObserver,
   // this platform.
   virtual bool IsSystemThemeDistinctFromDefaultTheme() const;
 
-  // Whether we're using the chrome default theme. Virtual so linux can check
-  // if we're using the GTK theme.
+  // Whether we're using the chrome default theme.
+  // Virtual for testing.
   virtual bool UsingDefaultTheme() const;
 
-  // Whether we are using the system theme. On GTK, the system theme is the GTK
-  // theme, not the "Classic" theme.
+  // Whether we are using the system theme.
+  // Virtual for testing.
   virtual bool UsingSystemTheme() const;
+
+  // Whether |theme_supplier| is the system theme. On GTK, the system theme is
+  // the GTK theme, not the "Classic" theme
+  virtual bool IsSystemTheme(const CustomThemeSupplier* theme_supplier) const;
 
   // Whether we are using theme installed through extensions.
   // |UsingExtensionTheme| and |UsingDefaultTheme| are not mutually exclusive as

@@ -161,6 +161,20 @@ function applyIFrameOptions(element, options) {
 }
 
 /**
+ * Determines whether or not text should be rendered by checking whether
+ * "no-text-render" is among the list of attributes.
+ */
+function shouldRenderText(attributes) {
+  for (var attribute of attributes) {
+    if (attribute == "no-text-render") {
+      return false;
+    }
+  }
+  return true;
+}
+
+
+/**
  * Simple recursive layout heuristic, since frames can't size themselves.
  * This scribbles .layoutX and .layoutY properties into |tree|.
  */
@@ -203,9 +217,15 @@ function main() {
   var frameTree = TreeParserUtil.parse(queryString);
   var currentSite = canonicalizeSiteAndPort(frameTree.value, "");
 
+  // Render text unless the attribute "no-text-render" is specified, in which
+  // case load some bytes anyway in order to trigger histogram recording for
+  // ad metrics tests.
+  if (shouldRenderText(frameTree.attributes)) {
+      document.getElementById('siteNameHeading').appendChild(
+          document.createTextNode(currentSite));
+  }
+
   // Apply style to the current document.
-  document.getElementById('siteNameHeading').appendChild(
-      document.createTextNode(currentSite));
   document.body.style.backgroundColor = backgroundColorForSite(currentSite);
 
   // Determine how big the children should be (using a very rough heuristic).
@@ -228,6 +248,7 @@ function main() {
     iframe.style.borderColor = borderColorForSite(siteAndPort);
     iframe.width = frameTree.children[i].layoutX;
     iframe.height = frameTree.children[i].layoutY;
+
     // Apply any additional attributes.
     applyIFrameOptions(iframe, frameTree.children[i].attributes);
 

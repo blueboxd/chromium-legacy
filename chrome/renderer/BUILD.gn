@@ -391,6 +391,13 @@ jumbo_static_library("renderer") {
       "extensions/platform_keys_natives.cc",
       "extensions/platform_keys_natives.h",
     ]
+    if (use_cups) {
+      configs += [ "//printing:cups" ]
+      sources += [
+        "extensions/printing_hooks_delegate.cc",
+        "extensions/printing_hooks_delegate.h",
+      ]
+    }
   }
 
   if (!is_android) {

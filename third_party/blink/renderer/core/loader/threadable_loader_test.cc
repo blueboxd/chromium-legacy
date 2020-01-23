@@ -8,10 +8,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "services/network/public/mojom/load_timing_info.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_url_load_timing.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -105,13 +105,13 @@ void SetUpErrorURL() {
 void SetUpRedirectURL() {
   KURL url = RedirectURL();
 
-  WebURLLoadTiming timing;
-  timing.Initialize();
+  network::mojom::LoadTimingInfoPtr timing =
+      network::mojom::LoadTimingInfo::New();
 
   WebURLResponse response;
   response.SetCurrentRequestUrl(url);
   response.SetHttpStatusCode(301);
-  response.SetLoadTiming(timing);
+  response.SetLoadTiming(*timing);
   response.AddHttpHeaderField("Location", SuccessURL().GetString());
   response.AddHttpHeaderField("Access-Control-Allow-Origin", "http://fake.url");
 
@@ -124,13 +124,13 @@ void SetUpRedirectURL() {
 void SetUpRedirectLoopURL() {
   KURL url = RedirectLoopURL();
 
-  WebURLLoadTiming timing;
-  timing.Initialize();
+  network::mojom::LoadTimingInfoPtr timing =
+      network::mojom::LoadTimingInfo::New();
 
   WebURLResponse response;
   response.SetCurrentRequestUrl(url);
   response.SetHttpStatusCode(301);
-  response.SetLoadTiming(timing);
+  response.SetLoadTiming(*timing);
   response.AddHttpHeaderField("Location", RedirectLoopURL().GetString());
   response.AddHttpHeaderField("Access-Control-Allow-Origin", "http://fake.url");
 

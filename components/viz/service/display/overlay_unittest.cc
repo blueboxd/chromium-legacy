@@ -468,7 +468,7 @@ SkMatrix GetNonIdentityColorMatrix() {
   SkMatrix44 matrix = GetIdentityColorMatrix();
   matrix.set(1, 1, 0.5f);
   matrix.set(2, 2, 0.5f);
-  return matrix;
+  return SkMatrix(matrix);
 }
 
 template <typename OverlayProcessorType>

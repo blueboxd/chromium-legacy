@@ -531,6 +531,8 @@ TEST_F(CreditCardAccessManagerTest, FetchServerCardCVCTryAgainFailure) {
 
 // Ensures that CardUnmaskPreflightCalled metrics are logged correctly.
 TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
+  std::string verifiability_check_metric =
+      "Autofill.BetterAuth.UserVerifiabilityCheckDuration";
   std::string preflight_call_metric =
       "Autofill.BetterAuth.CardUnmaskPreflightCalled";
   std::string preflight_latency_metric =
@@ -550,7 +552,9 @@ TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
     InvokeUnmaskDetailsTimeout();
     WaitForCallbacks();
 
-    // If only local cards are available, then no preflight call is made.
+    // If only local cards are available, then no preflight call nor check for
+    // verifiability is made.
+    histogram_tester.ExpectTotalCount(verifiability_check_metric, 0);
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
     histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
   }
@@ -569,7 +573,13 @@ TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
     InvokeUnmaskDetailsTimeout();
     WaitForCallbacks();
 
-    // If user is not verifiable, then no preflight call is made.
+    // Server cards are available, check for verifiability is made.
+    // But since user is not verifiable, no preflight call is made.
+#if defined(OS_IOS)
+    histogram_tester.ExpectTotalCount(verifiability_check_metric, 0);
+#else
+    histogram_tester.ExpectTotalCount(verifiability_check_metric, 1);
+#endif
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
     histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
   }
@@ -591,9 +601,11 @@ TEST_F(CreditCardAccessManagerTest, CardUnmaskPreflightCalledMetric) {
     // Preflight call is made only if a server card is available and the user is
     // eligible for FIDO authentication, except on iOS.
 #if defined(OS_IOS)
+    histogram_tester.ExpectTotalCount(verifiability_check_metric, 0);
     histogram_tester.ExpectTotalCount(preflight_call_metric, 0);
     histogram_tester.ExpectTotalCount(preflight_latency_metric, 0);
 #else
+    histogram_tester.ExpectTotalCount(verifiability_check_metric, 1);
     histogram_tester.ExpectTotalCount(preflight_call_metric, 1);
     histogram_tester.ExpectTotalCount(preflight_latency_metric, 1);
 #endif

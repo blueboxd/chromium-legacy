@@ -17,8 +17,11 @@
 
 namespace {
 
-const url::Origin kVisitedOrigin =
-    url::Origin::Create(GURL("https://foobar.com"));
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+url::Origin VisitedOrigin() {
+  return url::Origin::Create(GURL("https://foobar.com"));
+}
 
 void DidGetRecordResult(base::OnceClosure quit_closure,
                         base::Optional<ukm::SourceId>* out_result,
@@ -42,7 +45,7 @@ class UkmBackgroundRecorderBrowserTest : public InProcessBrowserTest {
     // Adds the URL to the history so that UKM events for this origin are
     // recorded.
     background_recorder_service_->history_service_->AddPage(
-        GURL(kVisitedOrigin.GetURL().spec() + "baz"), base::Time::Now(),
+        GURL(VisitedOrigin().GetURL().spec() + "baz"), base::Time::Now(),
         history::SOURCE_BROWSED);
   }
 
@@ -69,7 +72,7 @@ IN_PROC_BROWSER_TEST_F(UkmBackgroundRecorderBrowserTest,
                        SourceIdReturnedWhenOriginInHistory) {
   // Check visited origin.
   {
-    auto source_id = GetSourceId(kVisitedOrigin);
+    auto source_id = GetSourceId(VisitedOrigin());
     ASSERT_TRUE(source_id);
     EXPECT_NE(*source_id, ukm::kInvalidSourceId);
     EXPECT_EQ(ukm::GetSourceIdType(*source_id), ukm::SourceIdType::HISTORY_ID);

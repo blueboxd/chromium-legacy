@@ -39,6 +39,9 @@ IPC_ENUM_TRAITS_MAX_VALUE(display::HDCPState, display::HDCP_STATE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(display::PanelOrientation,
                           display::PanelOrientation::kLast)
 
+IPC_ENUM_TRAITS_MAX_VALUE(display::PrivacyScreenState,
+                          display::PrivacyScreenState::kPrivacyScreenStateLast)
+
 // clang-format off
 IPC_STRUCT_TRAITS_BEGIN(ui::DisplayMode_Params)
   IPC_STRUCT_TRAITS_MEMBER(size)
@@ -53,7 +56,7 @@ IPC_STRUCT_TRAITS_BEGIN(ui::DisplaySnapshot_Params)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(is_aspect_preserving_scaling)
   IPC_STRUCT_TRAITS_MEMBER(has_overscan)
-  IPC_STRUCT_TRAITS_MEMBER(has_privacy_screen)
+  IPC_STRUCT_TRAITS_MEMBER(privacy_screen_state)
   IPC_STRUCT_TRAITS_MEMBER(has_color_correction_matrix)
   IPC_STRUCT_TRAITS_MEMBER(color_correction_in_linear_space)
   IPC_STRUCT_TRAITS_MEMBER(color_space)

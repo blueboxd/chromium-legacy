@@ -262,8 +262,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // cancelled, e.g. window.stop() is invoked.
   virtual void DidFailLoad(RenderFrameHost* render_frame_host,
                            const GURL& validated_url,
-                           int error_code,
-                           const base::string16& error_description) {}
+                           int error_code) {}
 
   // This method is invoked when the visible security state of the page changes.
   virtual void DidChangeVisibleSecurityState() {}

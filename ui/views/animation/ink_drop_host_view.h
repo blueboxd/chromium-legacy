@@ -77,9 +77,9 @@ class VIEWS_EXPORT InkDropHostView : public View {
   virtual std::unique_ptr<InkDropHighlight> CreateInkDropHighlight() const;
 
   // Subclasses can override to return a mask for the ink drop. By default,
-  // returns nullptr (i.e no mask).
-  // TODO(bruthig): InkDropMasks do not currently work on Windows. See
-  // https://crbug.com/713359.
+  // this generates a mask based on HighlightPathGenerator.
+  // TODO(pbos): Replace overrides with HighlightPathGenerator usage and remove
+  // this function.
   virtual std::unique_ptr<views::InkDropMask> CreateInkDropMask() const;
 
   // Returns the base color for the ink drop.

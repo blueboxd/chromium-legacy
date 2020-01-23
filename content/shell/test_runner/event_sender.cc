@@ -2791,7 +2791,7 @@ WebInputEventResult EventSender::HandleInputEventOnViewOrPopup(
   std::unique_ptr<WebInputEvent> widget_event =
       TransformScreenToWidgetCoordinates(raw_event);
   const WebInputEvent* event =
-      widget_event.get() ? static_cast<WebMouseEvent*>(widget_event.get())
+      widget_event.get() ? static_cast<WebInputEvent*>(widget_event.get())
                          : &raw_event;
   return widget()->HandleInputEvent(blink::WebCoalescedInputEvent(*event));
 }

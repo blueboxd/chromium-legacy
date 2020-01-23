@@ -24,8 +24,8 @@
 @implementation TestTabSwitcherDelegate
 @synthesize didEndCalled = _didEndCalled;
 - (void)tabSwitcher:(id<TabSwitcher>)tabSwitcher
-    shouldFinishWithActiveModel:(TabModel*)tabModel
-                   focusOmnibox:(BOOL)focusOmnibox {
+    shouldFinishWithBrowser:(Browser*)browser
+               focusOmnibox:(BOOL)focusOmnibox {
   // No-op.
 }
 

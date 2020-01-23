@@ -28,8 +28,6 @@ class WebRTCInternalsIntegrationBrowserTest : public WebRtcTestBase {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
 
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
-
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
       ASSERT_TRUE(local_logs_dir_.CreateUniqueTempDir());

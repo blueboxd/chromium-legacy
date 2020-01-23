@@ -535,9 +535,9 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   blink::UserAgentMetadata ua = GetUserAgentMetadata();
   bool use_full_ua =
       (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() ||
-       (policy &&
-        policy->IsFeatureEnabledForOrigin(
-            mojom::FeaturePolicyFeature::kClientHintUA, resource_origin))) &&
+       (policy && policy->IsFeatureEnabledForOrigin(
+                      mojom::blink::FeaturePolicyFeature::kClientHintUA,
+                      resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kUA, hints_preferences,
                            enabled_hints);
   if (RuntimeEnabledFeatures::UserAgentClientHintEnabled()) {
@@ -577,7 +577,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   // parties, or if FeaturePolicy delegation says they are allowed.
   if ((base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) ||
        policy->IsFeatureEnabledForOrigin(
-           mojom::FeaturePolicyFeature::kClientHintDeviceMemory,
+           mojom::blink::FeaturePolicyFeature::kClientHintDeviceMemory,
            resource_origin)) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kDeviceMemory,
                            hints_preferences, enabled_hints)) {
@@ -590,7 +590,8 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   float dpr = GetDevicePixelRatio();
   if ((base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) ||
        policy->IsFeatureEnabledForOrigin(
-           mojom::FeaturePolicyFeature::kClientHintDPR, resource_origin)) &&
+           mojom::blink::FeaturePolicyFeature::kClientHintDPR,
+           resource_origin)) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kDpr, hints_preferences,
                            enabled_hints)) {
     request.SetHttpHeaderField("DPR", AtomicString(String::Number(dpr)));
@@ -598,7 +599,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if ((base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) ||
        policy->IsFeatureEnabledForOrigin(
-           mojom::FeaturePolicyFeature::kClientHintViewportWidth,
+           mojom::blink::FeaturePolicyFeature::kClientHintViewportWidth,
            resource_origin)) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kViewportWidth,
                            hints_preferences, enabled_hints) &&
@@ -610,7 +611,8 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if ((base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) ||
        policy->IsFeatureEnabledForOrigin(
-           mojom::FeaturePolicyFeature::kClientHintWidth, resource_origin)) &&
+           mojom::blink::FeaturePolicyFeature::kClientHintWidth,
+           resource_origin)) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kResourceWidth,
                            hints_preferences, enabled_hints)) {
     if (resource_width.is_set) {
@@ -639,7 +641,8 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if ((can_always_send_hints ||
        (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
         policy->IsFeatureEnabledForOrigin(
-            mojom::FeaturePolicyFeature::kClientHintRTT, resource_origin))) &&
+            mojom::blink::FeaturePolicyFeature::kClientHintRTT,
+            resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kRtt, hints_preferences,
                            enabled_hints)) {
     base::Optional<base::TimeDelta> http_rtt =
@@ -659,7 +662,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if ((can_always_send_hints ||
        (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
         policy->IsFeatureEnabledForOrigin(
-            mojom::FeaturePolicyFeature::kClientHintDownlink,
+            mojom::blink::FeaturePolicyFeature::kClientHintDownlink,
             resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kDownlink,
                            hints_preferences, enabled_hints)) {
@@ -680,7 +683,8 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if ((can_always_send_hints ||
        (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
         policy->IsFeatureEnabledForOrigin(
-            mojom::FeaturePolicyFeature::kClientHintECT, resource_origin))) &&
+            mojom::blink::FeaturePolicyFeature::kClientHintECT,
+            resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kEct, hints_preferences,
                            enabled_hints)) {
     base::Optional<WebEffectiveConnectionType> holdback_ect =
@@ -698,7 +702,8 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if ((can_always_send_hints ||
        (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
         policy->IsFeatureEnabledForOrigin(
-            mojom::FeaturePolicyFeature::kClientHintLang, resource_origin))) &&
+            mojom::blink::FeaturePolicyFeature::kClientHintLang,
+            resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kLang, hints_preferences,
                            enabled_hints)) {
     request.SetHttpHeaderField(
@@ -713,7 +718,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if ((can_always_send_hints ||
        (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
         policy->IsFeatureEnabledForOrigin(
-            mojom::FeaturePolicyFeature::kClientHintUAArch,
+            mojom::blink::FeaturePolicyFeature::kClientHintUAArch,
             resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kUAArch,
                            hints_preferences, enabled_hints)) {
@@ -726,7 +731,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if ((can_always_send_hints ||
        (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
         policy->IsFeatureEnabledForOrigin(
-            mojom::FeaturePolicyFeature::kClientHintUAPlatform,
+            mojom::blink::FeaturePolicyFeature::kClientHintUAPlatform,
             resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kUAPlatform,
                            hints_preferences, enabled_hints)) {
@@ -739,7 +744,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if ((can_always_send_hints ||
        (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
         policy->IsFeatureEnabledForOrigin(
-            mojom::FeaturePolicyFeature::kClientHintUAModel,
+            mojom::blink::FeaturePolicyFeature::kClientHintUAModel,
             resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kUAModel,
                            hints_preferences, enabled_hints)) {
@@ -752,7 +757,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if ((can_always_send_hints ||
        (RuntimeEnabledFeatures::FeaturePolicyForClientHintsEnabled() &&
         policy->IsFeatureEnabledForOrigin(
-            mojom::FeaturePolicyFeature::kClientHintUAMobile,
+            mojom::blink::FeaturePolicyFeature::kClientHintUAMobile,
             resource_origin))) &&
       ShouldSendClientHint(mojom::WebClientHintsType::kUAMobile,
                            hints_preferences, enabled_hints)) {

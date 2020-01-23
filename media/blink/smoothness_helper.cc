@@ -12,7 +12,7 @@
 
 namespace {
 static constexpr base::TimeDelta kSegmentSize =
-    base::TimeDelta::FromSeconds(60);
+    base::TimeDelta::FromSeconds(5);
 
 // Max proportion of dropped frames in a window before we call it "not smooth".
 static constexpr float kMaxDroppedFramesPerWindow = 0.2;
@@ -67,14 +67,19 @@ class SmoothnessWindowMonitor {
   int64_t segment_dropped_frames_;
 };
 
+SmoothnessHelper::SmoothnessHelper(const learning::FeatureVector& features)
+    : features_(features) {}
+
+SmoothnessHelper::~SmoothnessHelper() = default;
+
 class SmoothnessHelperImpl : public SmoothnessHelper {
  public:
   SmoothnessHelperImpl(
       std::unique_ptr<LearningTaskController> consecutive_controller,
       const FeatureVector& features,
       Client* player)
-      : consecutive_bad_(std::move(consecutive_controller)),
-        features_(features),
+      : SmoothnessHelper(features),
+        consecutive_bad_(std::move(consecutive_controller)),
         player_(player) {
     monitor_ = std::make_unique<SmoothnessWindowMonitor>(
         player_, base::BindRepeating(&SmoothnessHelperImpl::OnWindow,
@@ -95,7 +100,7 @@ class SmoothnessHelperImpl : public SmoothnessHelper {
     // Once we get one full window, default to 0 for the consecutive windows
     // prediction task.
     if (!consecutive_bad_.is_started())
-      consecutive_bad_.UpdateObservation(features_, TargetValue(0));
+      consecutive_bad_.UpdateObservation(features(), TargetValue(0));
 
     // If this is a bad window, extend the run of consecutive bad windows, and
     // update the target value if this is a new longest run.
@@ -104,7 +109,7 @@ class SmoothnessHelperImpl : public SmoothnessHelper {
       if (consecutive_bad_windows_ > max_consecutive_bad_windows_) {
         max_consecutive_bad_windows_ = consecutive_bad_windows_;
         consecutive_bad_.UpdateObservation(
-            features_, TargetValue(max_consecutive_bad_windows_));
+            features(), TargetValue(max_consecutive_bad_windows_));
       }
     } else {
       consecutive_bad_windows_ = 0;
@@ -150,8 +155,6 @@ class SmoothnessHelperImpl : public SmoothnessHelper {
 
   int consecutive_bad_windows_ = 0;
   int max_consecutive_bad_windows_ = 0;
-
-  FeatureVector features_;
 
   // WebMediaPlayer which will tell us about the decoded / dropped frame counts.
   Client* player_;

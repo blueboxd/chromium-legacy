@@ -3609,6 +3609,67 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
+TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacityWithAlpha) {
+  gfx::Rect viewport(this->device_viewport_size_);
+  bool needs_blending = true;
+  ResourceFormat texture_format = RGBA_8888;
+  bool nearest_neighbor = false;
+
+  int id = 1;
+  gfx::Transform transform_to_root;
+  std::unique_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, viewport, transform_to_root);
+
+  // One viewport-filling 0.5-opacity transparent quad.
+  std::unique_ptr<cc::FakeRecordingSource> transparent_recording =
+      cc::FakeRecordingSource::CreateFilledRecordingSource(viewport.size());
+  cc::PaintFlags transparent_flags;
+  transparent_flags.setColor(SK_ColorTRANSPARENT);
+  transparent_recording->add_draw_rect_with_flags(viewport, transparent_flags);
+  transparent_recording->Rerecord();
+  scoped_refptr<cc::RasterSource> transparent_raster_source =
+      transparent_recording->CreateRasterSource();
+
+  gfx::Transform transparent_quad_to_target_transform;
+  SharedQuadState* transparent_shared_state =
+      CreateTestSharedQuadState(transparent_quad_to_target_transform, viewport,
+                                pass.get(), gfx::RRectF());
+  transparent_shared_state->opacity = 0.5f;
+
+  auto* transparent_quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
+  transparent_quad->SetNew(
+      transparent_shared_state, viewport, viewport, needs_blending,
+      gfx::RectF(0, 0, 1, 1), viewport.size(), nearest_neighbor, texture_format,
+      viewport, 1.f, {}, transparent_raster_source->GetDisplayItemList());
+
+  // One viewport-filling white quad.
+  std::unique_ptr<cc::FakeRecordingSource> white_recording =
+      cc::FakeRecordingSource::CreateFilledRecordingSource(viewport.size());
+  cc::PaintFlags white_flags;
+  white_flags.setColor(SK_ColorWHITE);
+  white_recording->add_draw_rect_with_flags(viewport, white_flags);
+  white_recording->Rerecord();
+  scoped_refptr<cc::RasterSource> white_raster_source =
+      white_recording->CreateRasterSource();
+
+  gfx::Transform white_quad_to_target_transform;
+  SharedQuadState* white_shared_state = CreateTestSharedQuadState(
+      white_quad_to_target_transform, viewport, pass.get(), gfx::RRectF());
+
+  auto* white_quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
+  white_quad->SetNew(white_shared_state, viewport, viewport, needs_blending,
+                     gfx::RectF(0, 0, 1, 1), viewport.size(), nearest_neighbor,
+                     texture_format, viewport, 1.f, {},
+                     white_raster_source->GetDisplayItemList());
+
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+
+  EXPECT_TRUE(this->RunPixelTest(&pass_list,
+                                 base::FilePath(FILE_PATH_LITERAL("white.png")),
+                                 cc::FuzzyPixelOffByOneComparator(true)));
+}
+
 template <typename TypeParam>
 bool IsSoftwareRenderer() {
   return false;

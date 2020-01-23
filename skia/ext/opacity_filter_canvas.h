@@ -29,7 +29,7 @@ class SK_API OpacityFilterCanvas : public SkPaintFilterCanvas {
  private:
   typedef SkPaintFilterCanvas INHERITED;
 
-  int alpha_;
+  float opacity_;
   bool disable_image_filtering_;
 };
 

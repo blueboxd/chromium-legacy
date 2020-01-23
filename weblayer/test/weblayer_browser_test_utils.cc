@@ -18,24 +18,29 @@ namespace weblayer {
 
 namespace {
 
-// Navigates to |url| in |shell| and waits for |event| to occur.
+// Navigates to |url| in |tab| and waits for |event| to occur.
 void NavigateAndWaitForEvent(const GURL& url,
-                             Shell* shell,
+                             Tab* tab,
                              TestNavigationObserver::NavigationEvent event) {
-  TestNavigationObserver test_observer(url, event, shell);
-  shell->tab()->GetNavigationController()->Navigate(url);
+  TestNavigationObserver test_observer(url, event, tab);
+  tab->GetNavigationController()->Navigate(url);
   test_observer.Wait();
 }
 
 }  // namespace
 
 void NavigateAndWaitForCompletion(const GURL& url, Shell* shell) {
-  NavigateAndWaitForEvent(url, shell,
+  NavigateAndWaitForEvent(url, shell->tab(),
+                          TestNavigationObserver::NavigationEvent::Completion);
+}
+
+void NavigateAndWaitForCompletion(const GURL& url, Tab* tab) {
+  NavigateAndWaitForEvent(url, tab,
                           TestNavigationObserver::NavigationEvent::Completion);
 }
 
 void NavigateAndWaitForFailure(const GURL& url, Shell* shell) {
-  NavigateAndWaitForEvent(url, shell,
+  NavigateAndWaitForEvent(url, shell->tab(),
                           TestNavigationObserver::NavigationEvent::Failure);
 }
 

@@ -30,23 +30,10 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
  public:
   ~AcceleratedStaticBitmapImage() override;
 
-  // Can specify the GrContext that created the texture backing. Ideally all
-  // callers would use this option.
-  // The |mailbox| is a name for the texture backing, allowing other contexts to
-  // use the same backing.
-  static scoped_refptr<AcceleratedStaticBitmapImage>
-  CreateFromWebGLContextImage(
-      const gpu::Mailbox&,
-      const gpu::SyncToken&,
-      unsigned texture_id,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
-      IntSize mailbox_size,
-      bool is_origin_top_left);
-
-  // Creates an image wrapping a shared image mailbox. |release_callback| is a
-  // callback to be invoked when this mailbox/texture can be safely destroyed.
-  // It can be invoked on any thread. Note that it is assumed that the mailbox
-  // can only be used for read operations, no writes are allowed.
+  // Creates an image wrapping a shared image mailbox.
+  //
+  // |sync_token| is the token that must be waited on before reading the
+  // contents of this mailbox.
   //
   // |shared_image_texture_id| is an optional texture bound to the shared image
   // mailbox imported into the provided context. If provided the caller must
@@ -54,18 +41,35 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   // and has a read lock on the shared image until the |release_callback| is
   // invoked.
   //
-  // If the image is created on a different thread than |context_thread_id| then
-  // the provided sync_token must be verified and no |shared_image_texture_id|
-  // should be provided.
+  // |sk_image_info| provides the metadata associated with the backing.
+  //
+  // |texture_target| is the target that the texture should be bound to if the
+  // backing is used with GL.
+  //
+  // |is_origin_top_left| indicates whether the origin in texture space
+  // corresponds to the top-left content pixel.
+  //
+  // |context_provider| is the context that the mailbox was created with.
+  // |context_thread_ref| and |context_task_runner| refer to the thread the
+  // context is bound to. If the image is created on a different thread than
+  // |context_thread_ref| then the provided sync_token must be verified and no
+  // |shared_image_texture_id| should be provided.
+  //
+  // |release_callback| is a callback to be invoked when this mailbox can be
+  // safely destroyed. It is guaranteed to be invoked on the context thread.
+  //
+  // Note that it is assumed that the mailbox can only be used for read
+  // operations, no writes are allowed.
   static scoped_refptr<AcceleratedStaticBitmapImage> CreateFromCanvasMailbox(
       const gpu::Mailbox&,
       const gpu::SyncToken&,
       GLuint shared_image_texture_id,
       const SkImageInfo& sk_image_info,
       GLenum texture_target,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      PlatformThreadId context_thread_id,
       bool is_origin_top_left,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+      base::PlatformThreadRef context_thread_ref,
+      scoped_refptr<base::SingleThreadTaskRunner> context_task_runner,
       std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
   bool CurrentFrameKnownToBeOpaque() override;
@@ -98,20 +102,27 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
                      const IntRect& source_sub_rectangle) override;
 
   bool HasMailbox() const final { return !!mailbox_texture_holder_; }
-  // To be called on sender thread before performing a transfer
+
+  // To be called on sender thread before performing a transfer to a different
+  // thread.
   void Transfer() final;
 
   void EnsureMailbox(MailboxSyncMode, GLenum filter) final;
 
+  // Provides the mailbox backing for this image. The caller must wait on the
+  // sync token from GetSyncToken before accessing this mailbox.
   const gpu::Mailbox& GetMailbox() const final {
-    static const gpu::Mailbox mailbox;
-    return mailbox_texture_holder_ ? mailbox_texture_holder_->GetMailbox()
-                                   : mailbox;
+    return mailbox_texture_holder_->GetMailbox();
   }
   const gpu::SyncToken& GetSyncToken() const final {
-    static const gpu::SyncToken sync_token;
-    return mailbox_texture_holder_ ? mailbox_texture_holder_->GetSyncToken()
-                                   : sync_token;
+    return mailbox_texture_holder_->GetSyncToken();
+  }
+
+  // Updates the sync token that must be waited on before recycling or deleting
+  // the mailbox for this image. This must be set by callers using the mailbox
+  // externally to this class.
+  void UpdateSyncToken(const gpu::SyncToken& sync_token) final {
+    mailbox_texture_holder_->UpdateSyncToken(sync_token);
   }
   bool IsOriginTopLeft() const final {
     return texture_holder()->IsOriginTopLeft();
@@ -123,19 +134,13 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
   AcceleratedStaticBitmapImage(
       const gpu::Mailbox&,
       const gpu::SyncToken&,
-      unsigned texture_id,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
-      IntSize mailbox_size,
-      bool is_origin_top_left);
-  AcceleratedStaticBitmapImage(
-      const gpu::Mailbox&,
-      const gpu::SyncToken&,
       GLuint shared_image_texture_id,
       const SkImageInfo& sk_image_info,
       GLenum texture_target,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>&&,
-      PlatformThreadId context_thread_id,
       bool is_origin_top_left,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+      base::PlatformThreadRef context_thread_ref,
+      scoped_refptr<base::SingleThreadTaskRunner> context_task_runner,
       std::unique_ptr<viz::SingleReleaseCallback> release_callback);
 
   void CreateImageFromMailboxIfNeeded();

@@ -27,8 +27,6 @@ namespace offline_pages {
 namespace {
 
 const char kTestNamespace[] = "default";
-const GURL kTestUrl1("http://example.com");
-const GURL kTestUrl2("http://other.page.com");
 const int64_t kTestOfflineId1 = 1234LL;
 const ClientId kTestClientId1(kTestNamespace, "1234");
 const base::FilePath kTestFilePath(FILE_PATH_LITERAL("/test/path/file"));
@@ -39,6 +37,15 @@ const int64_t kTestDownloadId = 767574LL;
 const std::string kTestDigest("TesTIngDigEst==");
 const std::string kTestAttribution = "attribution";
 const std::string kTestSnippet = "snippet";
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL TestUrl1() {
+  return GURL("http://example.com");
+}
+GURL TestUrl2() {
+  return GURL("http://other.page.com");
+}
 
 }  // namespace
 
@@ -93,11 +100,11 @@ TEST_F(AddPageTaskTest, AddPage) {
 }
 
 TEST_F(AddPageTaskTest, AddPageWithAllFieldsSet) {
-  OfflinePageItem page(kTestUrl1, kTestOfflineId1, kTestClientId1,
+  OfflinePageItem page(TestUrl1(), kTestOfflineId1, kTestClientId1,
                        kTestFilePath, kTestFileSize, base::Time::Now());
   page.request_origin = kTestOrigin;
   page.title = kTestTitle;
-  page.original_url_if_different = kTestUrl2;
+  page.original_url_if_different = TestUrl2();
   page.system_download_id = kTestDownloadId;
   page.file_missing_time = base::Time::Now();
   page.digest = kTestDigest;

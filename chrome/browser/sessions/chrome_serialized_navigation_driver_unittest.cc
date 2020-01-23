@@ -39,29 +39,29 @@ TEST_F(ChromeSerializedNavigationDriverTest, SanitizeWithReferrerPolicyAlways) {
       static_cast<int>(network::mojom::ReferrerPolicy::kAlways), &navigation);
 
   content::PageState page_state =
-      content::PageState::CreateFromURL(sessions::test_data::kVirtualURL);
+      content::PageState::CreateFromURL(sessions::test_data::VirtualUrl());
   sessions::SerializedNavigationEntryTestHelper::SetEncodedPageState(
       page_state.ToEncodedData(), &navigation);
 
   driver->Sanitize(&navigation);
   EXPECT_EQ(sessions::test_data::kIndex, navigation.index());
   EXPECT_EQ(sessions::test_data::kUniqueID, navigation.unique_id());
-  EXPECT_EQ(sessions::test_data::kReferrerURL, navigation.referrer_url());
+  EXPECT_EQ(sessions::test_data::ReferrerUrl(), navigation.referrer_url());
   EXPECT_EQ(static_cast<int>(network::mojom::ReferrerPolicy::kAlways),
             navigation.referrer_policy());
-  EXPECT_EQ(sessions::test_data::kVirtualURL, navigation.virtual_url());
+  EXPECT_EQ(sessions::test_data::VirtualUrl(), navigation.virtual_url());
   EXPECT_EQ(sessions::test_data::kTitle, navigation.title());
   EXPECT_EQ(page_state.ToEncodedData(), navigation.encoded_page_state());
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       navigation.transition_type(), sessions::test_data::kTransitionType));
   EXPECT_EQ(sessions::test_data::kHasPostData, navigation.has_post_data());
   EXPECT_EQ(sessions::test_data::kPostID, navigation.post_id());
-  EXPECT_EQ(sessions::test_data::kOriginalRequestURL,
+  EXPECT_EQ(sessions::test_data::OriginalRequestUrl(),
             navigation.original_request_url());
   EXPECT_EQ(sessions::test_data::kIsOverridingUserAgent,
             navigation.is_overriding_user_agent());
   EXPECT_EQ(sessions::test_data::kTimestamp, navigation.timestamp());
-  EXPECT_EQ(sessions::test_data::kFaviconURL, navigation.favicon_url());
+  EXPECT_EQ(sessions::test_data::FaviconUrl(), navigation.favicon_url());
   EXPECT_EQ(sessions::test_data::kHttpStatusCode,
             navigation.http_status_code());
 }
@@ -77,7 +77,7 @@ TEST_F(ChromeSerializedNavigationDriverTest, SanitizeWithReferrerPolicyNever) {
       static_cast<int>(network::mojom::ReferrerPolicy::kNever), &navigation);
 
   content::PageState page_state =
-      content::PageState::CreateFromURL(sessions::test_data::kVirtualURL);
+      content::PageState::CreateFromURL(sessions::test_data::VirtualUrl());
   sessions::SerializedNavigationEntryTestHelper::SetEncodedPageState(
       page_state.ToEncodedData(), &navigation);
 
@@ -86,18 +86,18 @@ TEST_F(ChromeSerializedNavigationDriverTest, SanitizeWithReferrerPolicyNever) {
   // Fields that should remain untouched.
   EXPECT_EQ(sessions::test_data::kIndex, navigation.index());
   EXPECT_EQ(sessions::test_data::kUniqueID, navigation.unique_id());
-  EXPECT_EQ(sessions::test_data::kVirtualURL, navigation.virtual_url());
+  EXPECT_EQ(sessions::test_data::VirtualUrl(), navigation.virtual_url());
   EXPECT_EQ(sessions::test_data::kTitle, navigation.title());
   EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
       navigation.transition_type(), sessions::test_data::kTransitionType));
   EXPECT_EQ(sessions::test_data::kHasPostData, navigation.has_post_data());
   EXPECT_EQ(sessions::test_data::kPostID, navigation.post_id());
-  EXPECT_EQ(sessions::test_data::kOriginalRequestURL,
+  EXPECT_EQ(sessions::test_data::OriginalRequestUrl(),
             navigation.original_request_url());
   EXPECT_EQ(sessions::test_data::kIsOverridingUserAgent,
             navigation.is_overriding_user_agent());
   EXPECT_EQ(sessions::test_data::kTimestamp, navigation.timestamp());
-  EXPECT_EQ(sessions::test_data::kFaviconURL, navigation.favicon_url());
+  EXPECT_EQ(sessions::test_data::FaviconUrl(), navigation.favicon_url());
   EXPECT_EQ(sessions::test_data::kHttpStatusCode,
             navigation.http_status_code());
 

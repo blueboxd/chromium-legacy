@@ -46,10 +46,13 @@ class SSLClientAuthObserver {
   // Cancels the certificate selection and aborts the request.
   void CancelCertificateSelection();
 
-  // Begins observing notifications from other SSLClientAuthHandler instances.
+  // Begins observing notifications from other SSLClientAuthObserver instances.
   // If another instance chooses a cert for a matching SSLCertRequestInfo, we
   // will also use the same cert and OnCertSelectedByNotification will be called
   // so that the cert selection UI can be closed.
+  //
+  // The caller must call CertificateSelected(), CancelCertificateSelection(),
+  // or StopObserving() before the SSLClientAuthObserver is destroyed.
   void StartObserving();
 
   // Stops observing notifications.  We will no longer act on client auth

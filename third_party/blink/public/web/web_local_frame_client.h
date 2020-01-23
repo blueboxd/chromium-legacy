@@ -119,7 +119,6 @@ struct WebContextMenuData;
 struct WebPluginParams;
 struct WebPopupMenuInfo;
 struct WebRect;
-struct WebResourceTimingInfo;
 struct WebScrollIntoViewParams;
 struct WebURLError;
 
@@ -450,10 +449,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // non-navigational events related to the data held by WebHistoryItem.
   // WARNING: This method may be called very frequently.
   virtual void DidUpdateCurrentHistoryItem() {}
-
-  // Called to report resource timing information for this frame to the parent.
-  // Only used when the parent frame is remote.
-  virtual void ForwardResourceTimingToParent(const WebResourceTimingInfo&) {}
 
   // Returns the effective connection type when the frame was fetched.
   virtual WebEffectiveConnectionType GetEffectiveConnectionType() {

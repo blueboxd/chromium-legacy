@@ -1352,12 +1352,9 @@ void NavigationSimulatorImpl::StopLoading() {
   render_frame_host_->SimulateLoadingCompleted(loading_scenario_);
 }
 
-void NavigationSimulatorImpl::FailLoading(
-    const GURL& url,
-    int error_code,
-    const base::string16& error_description) {
+void NavigationSimulatorImpl::FailLoading(const GURL& url, int error_code) {
   CHECK(render_frame_host_);
-  render_frame_host_->DidFailLoadWithError(url, error_code, error_description);
+  render_frame_host_->DidFailLoadWithError(url, error_code);
 }
 
 void NavigationSimulatorImpl::SimulateUnloadACKForPreviousFrameIfNeeded(

@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -36,6 +37,10 @@ void PluginVmHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "removePluginVm",
       base::BindRepeating(&PluginVmHandler::HandleRemovePluginVm,
+                          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "requestPluginVmInstallerView",
+      base::BindRepeating(&PluginVmHandler::HandleRequestPluginVmInstallerView,
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -82,6 +87,18 @@ void PluginVmHandler::HandleRemovePluginVm(const base::ListValue* args) {
     return;
   }
   manager->UninstallPluginVm();
+}
+
+void PluginVmHandler::HandleRequestPluginVmInstallerView(
+    const base::ListValue* args) {
+  CHECK(args->empty());
+
+  if (plugin_vm::IsPluginVmEnabled(profile_)) {
+    LOG(ERROR) << "requestPluginVmInstallerView called from a profile which "
+                  "already has Plugin VM installed.";
+    return;
+  }
+  plugin_vm::ShowPluginVmInstallerView(profile_);
 }
 
 }  // namespace settings

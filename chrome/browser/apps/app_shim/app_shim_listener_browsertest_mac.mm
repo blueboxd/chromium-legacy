@@ -40,7 +40,12 @@ using OnShimConnectedCallback =
     chrome::mojom::AppShimHostBootstrap::OnShimConnectedCallback;
 
 const char kTestAppMode[] = "test_app";
-const GURL kTestAppUrl("https://example.com");
+
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL TestAppUrl() {
+  return GURL("https://example.com");
+}
 
 // A test version of the AppShimController mojo client in chrome_main_app_mode.
 class TestShimClient : public chrome::mojom::AppShim {
@@ -183,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(AppShimListenerBrowserTest, LaunchNormal) {
   auto app_shim_info = chrome::mojom::AppShimInfo::New();
   app_shim_info->profile_path = browser()->profile()->GetPath();
   app_shim_info->app_id = kTestAppMode;
-  app_shim_info->app_url = kTestAppUrl;
+  app_shim_info->app_url = TestAppUrl();
   app_shim_info->launch_type = chrome::mojom::AppShimLaunchType::kNormal;
   test_client_->host_bootstrap()->OnShimConnected(
       test_client_->GetHostReceiver(), std::move(app_shim_info),
@@ -199,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(AppShimListenerBrowserTest, LaunchRegisterOnly) {
   auto app_shim_info = chrome::mojom::AppShimInfo::New();
   app_shim_info->profile_path = browser()->profile()->GetPath();
   app_shim_info->app_id = kTestAppMode;
-  app_shim_info->app_url = kTestAppUrl;
+  app_shim_info->app_url = TestAppUrl();
   app_shim_info->launch_type = chrome::mojom::AppShimLaunchType::kRegisterOnly;
   test_client_->host_bootstrap()->OnShimConnected(
       test_client_->GetHostReceiver(), std::move(app_shim_info),

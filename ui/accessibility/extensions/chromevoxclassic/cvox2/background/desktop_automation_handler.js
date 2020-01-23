@@ -205,7 +205,8 @@ DesktopAutomationHandler.prototype = {
     var node = evt.target;
 
     // Discard focus events on embeddedObject and client nodes.
-    if (node.role == RoleType.EMBEDDED_OBJECT || node.role == RoleType.CLIENT)
+    if (node.role == RoleType.EMBEDDED_OBJECT || node.role == RoleType.CLIENT ||
+        node.role == RoleType.PLUGIN_OBJECT)
       return;
 
     this.createTextEditHandlerIfNeeded_(evt.target);

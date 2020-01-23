@@ -1914,6 +1914,29 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.DeleteAllCookies()
     self.assertEquals(0, len(self._driver.GetCookies()))
 
+  def testCookieForFrame(self):
+    # Frame must have separate url than outer context for Cookies to be distinct
+    # the cross_domain_iframe with site-per-process fakes the needed setup
+    self._driver = self.CreateDriver(chrome_switches=['--site-per-process'])
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/cross_domain_iframe.html'))
+    self._driver.AddCookie({'name': 'outer', 'value': 'main context'})
+
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame)
+    self.assertTrue(self.WaitForCondition(
+        lambda: 'outer.html' in
+                self._driver.ExecuteScript('return window.location.href')))
+    self._driver.AddCookie({'name': 'inner', 'value': 'frame context'})
+    cookies = self._driver.GetCookies()
+    self.assertEquals(1, len(cookies))
+    self.assertEquals('inner', cookies[0]['name'])
+
+    self._driver.SwitchToMainFrame()
+    cookies = self._driver.GetCookies()
+    self.assertEquals(1, len(cookies))
+    self.assertEquals('outer', cookies[0]['name'])
+
   def testGetUrlOnInvalidUrl(self):
     # Make sure we don't return 'chrome-error://chromewebdata/' (see
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1272). RFC 6761

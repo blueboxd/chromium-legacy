@@ -51,15 +51,16 @@ AssistantButton::AssistantButton(AssistantButtonListener* listener,
 AssistantButton::~AssistantButton() = default;
 
 // static
-AssistantButton* AssistantButton::Create(AssistantButtonListener* listener,
-                                         const gfx::VectorIcon& icon,
-                                         int size_in_dip,
-                                         int icon_size_in_dip,
-                                         int accessible_name_id,
-                                         AssistantButtonId button_id,
-                                         base::Optional<int> tooltip_id,
-                                         SkColor icon_color) {
-  auto* button = new AssistantButton(listener, button_id);
+std::unique_ptr<AssistantButton> AssistantButton::Create(
+    AssistantButtonListener* listener,
+    const gfx::VectorIcon& icon,
+    int size_in_dip,
+    int icon_size_in_dip,
+    int accessible_name_id,
+    AssistantButtonId button_id,
+    base::Optional<int> tooltip_id,
+    SkColor icon_color) {
+  auto button = std::make_unique<AssistantButton>(listener, button_id);
   button->SetAccessibleName(l10n_util::GetStringUTF16(accessible_name_id));
 
   if (tooltip_id)

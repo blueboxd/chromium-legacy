@@ -161,17 +161,12 @@ static_library("test_support") {
     "//url",
   ]
 
-  if (!is_android && !is_ios) {
-    sources += [
-      "core/command_storage_manager_test_helper.cc",
-      "core/command_storage_manager_test_helper.h",
-    ]
-  }
-
   if (!is_ios) {
     sources += [
       "content/content_test_helper.cc",
       "content/content_test_helper.h",
+      "core/command_storage_manager_test_helper.cc",
+      "core/command_storage_manager_test_helper.h",
     ]
     deps += [
       "//base/test:test_support",

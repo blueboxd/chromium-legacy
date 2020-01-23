@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutButton BUTTON",
-          "rect": [4, 4, 58, 30],
+          "rect": [6, 6, 54, 26],
           "reason": "subtree"
         },
         {

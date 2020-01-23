@@ -19,6 +19,8 @@ extern const char kPrivacyMessage[];
 extern const char kNeutralMessage[];
 
 extern const base::Feature kCorbAllowlistAlsoAppliesToOorCors;
+extern const char kCorbAllowlistAlsoAppliesToOorCorsParamName[];
+
 extern const base::Feature kForceWebRequestProxyForTest;
 
 }  // namespace extensions_features

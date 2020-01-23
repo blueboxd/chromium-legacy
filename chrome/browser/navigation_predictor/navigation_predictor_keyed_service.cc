@@ -7,17 +7,15 @@
 #include "base/compiler_specific.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 
 NavigationPredictorKeyedService::Prediction::Prediction(
-    const content::RenderFrameHost* render_frame_host,
+    const content::WebContents* web_contents,
     const GURL& source_document_url,
     const std::vector<GURL>& sorted_predicted_urls)
-    : render_frame_host_(render_frame_host),
+    : web_contents_(web_contents),
       source_document_url_(source_document_url),
-      sorted_predicted_urls_(sorted_predicted_urls) {
-  // |render_frame_host_| will be used by consumers in future.
-  ALLOW_UNUSED_LOCAL(render_frame_host_);
-}
+      sorted_predicted_urls_(sorted_predicted_urls) {}
 
 NavigationPredictorKeyedService::Prediction::Prediction(
     const NavigationPredictorKeyedService::Prediction& other) = default;
@@ -37,6 +35,11 @@ NavigationPredictorKeyedService::Prediction::sorted_predicted_urls() const {
   return sorted_predicted_urls_;
 }
 
+const content::WebContents*
+NavigationPredictorKeyedService::Prediction::web_contents() const {
+  return web_contents_;
+}
+
 NavigationPredictorKeyedService::NavigationPredictorKeyedService(
     content::BrowserContext* browser_context)
     : search_engine_preconnector_(browser_context) {
@@ -52,12 +55,12 @@ NavigationPredictorKeyedService::~NavigationPredictorKeyedService() {
 }
 
 void NavigationPredictorKeyedService::OnPredictionUpdated(
-    const content::RenderFrameHost* render_frame_host,
+    const content::WebContents* web_contents,
     const GURL& document_url,
     const std::vector<GURL>& sorted_predicted_urls) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   last_prediction_ =
-      Prediction(render_frame_host, document_url, sorted_predicted_urls);
+      Prediction(web_contents, document_url, sorted_predicted_urls);
   for (auto& observer : observer_list_) {
     observer.OnPredictionUpdated(last_prediction_);
   }

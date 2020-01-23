@@ -42,8 +42,14 @@ using testing::_;
 
 constexpr int64_t kServiceWorkerRegistrationId = 42;
 constexpr double kEngagementScore = 42.0;
-const GURL kLaunchURL = GURL("https://example.com/foo");
-const url::Origin kOrigin = url::Origin::Create(kLaunchURL.GetOrigin());
+// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
+// function.
+GURL LaunchURL() {
+  return GURL("https://example.com/foo");
+}
+url::Origin Origin() {
+  return url::Origin::Create(LaunchURL().GetOrigin());
+}
 
 // Hosts the test profile. Global to be accessible from
 // |BuildTestHistoryService|.
@@ -62,7 +68,7 @@ std::unique_ptr<KeyedService> BuildTestSiteEngagementService(
   Profile* profile = static_cast<Profile*>(context);
   std::unique_ptr<SiteEngagementService> service(
       std::make_unique<SiteEngagementService>(profile));
-  service->ResetBaseScoreForURL(kOrigin.GetURL(), kEngagementScore);
+  service->ResetBaseScoreForURL(Origin().GetURL(), kEngagementScore);
   return std::move(service);
 }
 
@@ -105,7 +111,7 @@ class ContentIndexProviderImplTest : public testing::Test,
         id, "title", "description", blink::mojom::ContentCategory::ARTICLE,
         std::vector<blink::mojom::ContentIconDefinitionPtr>(), "launch_url");
     return content::ContentIndexEntry(kServiceWorkerRegistrationId,
-                                      std::move(description), kLaunchURL,
+                                      std::move(description), LaunchURL(),
                                       base::Time::Now());
   }
 
@@ -132,7 +138,7 @@ TEST_F(ContentIndexProviderImplTest, OfflineItemCreation) {
   EXPECT_FALSE(item.is_transient);
   EXPECT_TRUE(item.is_suggested);
   EXPECT_TRUE(item.is_openable);
-  EXPECT_EQ(item.page_url, kLaunchURL);
+  EXPECT_EQ(item.page_url, LaunchURL());
   EXPECT_EQ(item.content_quality_score, kEngagementScore / 100.0);
 }
 
@@ -151,6 +157,6 @@ TEST_F(ContentIndexProviderImplTest, ObserverUpdates) {
 
   {
     EXPECT_CALL(*this, OnItemRemoved(_));
-    provider_->OnContentDeleted(kServiceWorkerRegistrationId, kOrigin, "id");
+    provider_->OnContentDeleted(kServiceWorkerRegistrationId, Origin(), "id");
   }
 }

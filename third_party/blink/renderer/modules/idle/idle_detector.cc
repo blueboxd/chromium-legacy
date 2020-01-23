@@ -84,8 +84,9 @@ ScriptPromise IdleDetector::start(ScriptState* script_state,
   ExecutionContext* context = ExecutionContext::From(script_state);
   DCHECK(context->IsContextThread());
 
-  if (!context->IsFeatureEnabled(mojom::FeaturePolicyFeature::kIdleDetection,
-                                 ReportOptions::kReportOnFailure)) {
+  if (!context->IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kIdleDetection,
+          ReportOptions::kReportOnFailure)) {
     exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
     return ScriptPromise();
   }

@@ -7,6 +7,7 @@
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_ui_delegate.h"
@@ -21,9 +22,6 @@
 @class InfobarModalTransitionDriver;
 @class InfobarModalViewController;
 
-namespace ios {
-class ChromeBrowserState;
-}
 namespace infobars {
 class InfoBarDelegate;
 }

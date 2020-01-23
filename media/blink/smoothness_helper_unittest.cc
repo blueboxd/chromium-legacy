@@ -45,10 +45,11 @@ using testing::Return;
 class SmoothnessHelperTest : public testing::Test {
   class MockLearningTaskController : public LearningTaskController {
    public:
-    MOCK_METHOD3(BeginObservation,
+    MOCK_METHOD4(BeginObservation,
                  void(base::UnguessableToken id,
                       const FeatureVector& features,
-                      const base::Optional<TargetValue>& default_target));
+                      const base::Optional<TargetValue>& default_target,
+                      const base::Optional<ukm::SourceId>& source_id));
 
     MOCK_METHOD2(CompleteObservation,
                  void(base::UnguessableToken id,
@@ -61,6 +62,8 @@ class SmoothnessHelperTest : public testing::Test {
                       const base::Optional<TargetValue>& default_target));
 
     MOCK_METHOD0(GetLearningTask, const LearningTask&());
+    MOCK_METHOD2(PredictDistribution,
+                 void(const FeatureVector& features, PredictionCB callback));
   };
 
   class MockClient : public SmoothnessHelper::Client {
@@ -116,7 +119,7 @@ TEST_F(SmoothnessHelperTest, MaxBadWindowsRecordsTrue) {
   int total_frames = 0;
 
   // First segment has no dropped frames.  Should record 0.
-  EXPECT_CALL(*consecutive_ltc_, BeginObservation(_, _, OPT_TARGET(0.0)))
+  EXPECT_CALL(*consecutive_ltc_, BeginObservation(_, _, OPT_TARGET(0.0), _))
       .Times(1);
   SetFrameCounters(dropped_frames += 0, total_frames += 1000);
   FastForwardBy(segment_size_);

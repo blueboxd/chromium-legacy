@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL Grow with exported-function argument WebAssembly.Module(): Compiling function #0:"fn" failed: trailing code after function end @+32
+FAIL Grow with non-function argument assert_throws: function "() => table.grow(2, {})" did not throw
+FAIL Grow with JS-function argument assert_throws: function "() => table.grow(2, () => true)" did not throw
+Harness: the test ran to completion.
+

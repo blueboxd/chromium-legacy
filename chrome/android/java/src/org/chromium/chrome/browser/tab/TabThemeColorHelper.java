@@ -233,8 +233,7 @@ public class TabThemeColorHelper extends EmptyTabObserver implements UserData {
     }
 
     @Override
-    public void onDidFailLoad(
-            Tab tab, boolean isMainFrame, int errorCode, String description, String failingUrl) {
+    public void onDidFailLoad(Tab tab, boolean isMainFrame, int errorCode, String failingUrl) {
         updateIfNeeded(true);
     }
 

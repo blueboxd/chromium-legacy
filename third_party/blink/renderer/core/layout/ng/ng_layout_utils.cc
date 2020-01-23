@@ -84,6 +84,8 @@ bool SizeMayChange(const NGBlockNode& node,
 
   DCHECK_EQ(new_space.IsFixedInlineSize(), old_space.IsFixedInlineSize());
   DCHECK_EQ(new_space.IsFixedBlockSize(), old_space.IsFixedBlockSize());
+  DCHECK_EQ(new_space.IsFixedBlockSizeIndefinite(),
+            old_space.IsFixedBlockSizeIndefinite());
   DCHECK_EQ(new_space.IsShrinkToFit(), old_space.IsShrinkToFit());
   DCHECK_EQ(new_space.TableCellChildLayoutMode(),
             old_space.TableCellChildLayoutMode());

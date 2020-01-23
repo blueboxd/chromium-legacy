@@ -310,13 +310,16 @@ Node::InsertionNotificationRequest SVGElement::InsertedInto(
 
 void SVGElement::RemovedFrom(ContainerNode& root_parent) {
   bool was_in_document = root_parent.isConnected();
-  auto* root_parent_svg_element = DynamicTo<SVGElement>(root_parent);
+  auto* root_parent_svg_element = DynamicTo<SVGElement>(
+      root_parent.IsShadowRoot() ? root_parent.ParentOrShadowHostElement()
+                                 : &root_parent);
+
   if (was_in_document && HasRelativeLengths()) {
     // The root of the subtree being removed should take itself out from its
     // parent's relative length set. For the other nodes in the subtree we don't
     // need to do anything: they will get their own removedFrom() notification
     // and just clear their sets.
-    if (root_parent_svg_element && !parentNode()) {
+    if (root_parent_svg_element && !ParentOrShadowHostElement()) {
       DCHECK(root_parent_svg_element->elements_with_relative_lengths_.Contains(
           this));
       root_parent_svg_element->UpdateRelativeLengthsInformation(false, this);
@@ -325,7 +328,7 @@ void SVGElement::RemovedFrom(ContainerNode& root_parent) {
     elements_with_relative_lengths_.clear();
   }
 
-  SECURITY_DCHECK(
+  DCHECK(
       !root_parent_svg_element ||
       !root_parent_svg_element->elements_with_relative_lengths_.Contains(this));
 

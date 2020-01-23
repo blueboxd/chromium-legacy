@@ -256,11 +256,8 @@ int LegacyDOMSnapshotAgent::VisitNode(Node* node,
       value->setOptionSelected(option_element->Selected());
 
     if (element->GetPseudoId()) {
-      protocol::DOM::PseudoType pseudo_type;
-      if (InspectorDOMAgent::GetPseudoElementType(element->GetPseudoId(),
-                                                  &pseudo_type)) {
-        value->setPseudoType(pseudo_type);
-      }
+      value->setPseudoType(
+          InspectorDOMAgent::ProtocolPseudoElementType(element->GetPseudoId()));
     }
     value->setPseudoElementIndexes(
         VisitPseudoElements(element, index, include_event_listeners,

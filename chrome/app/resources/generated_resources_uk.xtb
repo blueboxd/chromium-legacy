@@ -5023,7 +5023,6 @@
 <translation id="8101987792947961127">Під час наступного перезавантаження потрібно виконати Powerwash</translation>
 <translation id="8102159139658438129">Перейдіть у <ph name="LINK_BEGIN" />Налаштування<ph name="LINK_END" />, щоб переглянути параметри для підключеного телефона</translation>
 <translation id="8104696615244072556">Виконати Powerwash на вашому пристрої <ph name="IDS_SHORT_PRODUCT_NAME" /> і повернутися до попередньої версії.</translation>
-<translation id="8106661353233173262">Сталася помилка. Час очікування для зісканованого файлу минув.</translation>
 <translation id="8107015733319732394">Встановлення додатка Google Play Store на ваш <ph name="DEVICE_TYPE" />. Це може зайняти кілька хвилин.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Немає файлів cookie третіх сторін}=1{Заблоковано 1 файл cookie третіх сторін}one{Заблоковано # файл cookie третіх сторін}few{Заблоковано # файли cookie третіх сторін}many{Заблоковано # файлів cookie третіх сторін}other{Заблоковано # файлу cookie третіх сторін}}</translation>
 <translation id="810875025413331850">Пристроїв поблизу не знайдено.</translation>

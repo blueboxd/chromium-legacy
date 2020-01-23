@@ -367,6 +367,8 @@ void CaptivePortalService::OnResult(CaptivePortalResult result,
       chrome::NOTIFICATION_CAPTIVE_PORTAL_CHECK_RESULT,
       content::Source<content::BrowserContext>(browser_context_),
       content::Details<Results>(&results));
+
+  callback_list_.Notify(results);
 }
 
 void CaptivePortalService::ResetBackoffEntry(CaptivePortalResult result) {

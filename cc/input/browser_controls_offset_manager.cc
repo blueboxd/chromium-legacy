@@ -152,12 +152,12 @@ void BrowserControlsOffsetManager::UpdateBrowserControlsState(
   // Don't do anything if there is no change in offset.
   float final_top_shown_ratio = 1.f;
   float final_bottom_shown_ratio = 1.f;
-  AnimationDirection direction = SHOWING_CONTROLS;
+  AnimationDirection direction = AnimationDirection::SHOWING_CONTROLS;
   if (constraints == BrowserControlsState::kHidden ||
       current == BrowserControlsState::kHidden) {
     final_top_shown_ratio = TopControlsMinShownRatio();
     final_bottom_shown_ratio = BottomControlsMinShownRatio();
-    direction = HIDING_CONTROLS;
+    direction = AnimationDirection::HIDING_CONTROLS;
   }
   if (final_top_shown_ratio == TopControlsShownRatio() &&
       final_bottom_shown_ratio == BottomControlsShownRatio()) {
@@ -438,9 +438,11 @@ void BrowserControlsOffsetManager::ResetAnimations() {
 
 void BrowserControlsOffsetManager::SetupAnimation(
     AnimationDirection direction) {
-  DCHECK_NE(NO_ANIMATION, direction);
-  DCHECK(direction != HIDING_CONTROLS || TopControlsShownRatio() > 0.f);
-  DCHECK(direction != SHOWING_CONTROLS || TopControlsShownRatio() < 1.f);
+  DCHECK_NE(AnimationDirection::NO_ANIMATION, direction);
+  DCHECK(direction != AnimationDirection::HIDING_CONTROLS ||
+         TopControlsShownRatio() > 0.f);
+  DCHECK(direction != AnimationDirection::SHOWING_CONTROLS ||
+         TopControlsShownRatio() < 1.f);
 
   if (top_controls_animation_.IsInitialized() &&
       top_controls_animation_.Direction() == direction &&
@@ -449,14 +451,15 @@ void BrowserControlsOffsetManager::SetupAnimation(
     return;
 
   if (!TopControlsHeight() && !BottomControlsHeight()) {
-    float ratio = direction == HIDING_CONTROLS ? 0.f : 1.f;
+    float ratio = direction == AnimationDirection::HIDING_CONTROLS ? 0.f : 1.f;
     client_->SetCurrentBrowserControlsShownRatio(ratio, ratio);
     return;
   }
 
   // Providing artificially larger/smaller stop ratios to make the animation
   // faster if the start ratio is closer to stop ratio.
-  const float max_stop_ratio = direction == SHOWING_CONTROLS ? 1 : -1;
+  const float max_stop_ratio =
+      direction == AnimationDirection::SHOWING_CONTROLS ? 1 : -1;
   float top_start_ratio = TopControlsShownRatio();
   float top_stop_ratio = top_start_ratio + max_stop_ratio;
   top_controls_animation_.Initialize(direction, top_start_ratio, top_stop_ratio,
@@ -486,16 +489,17 @@ void BrowserControlsOffsetManager::StartAnimationIfNecessary() {
       (1.f - TopControlsMinShownRatio());
   if (normalized_top_ratio >= 1.f - controls_hide_threshold_) {
     // If we're showing so much that the hide threshold won't trigger, show.
-    SetupAnimation(SHOWING_CONTROLS);
+    SetupAnimation(AnimationDirection::SHOWING_CONTROLS);
   } else if (normalized_top_ratio <= controls_show_threshold_) {
     // If we're showing so little that the show threshold won't trigger, hide.
-    SetupAnimation(HIDING_CONTROLS);
+    SetupAnimation(AnimationDirection::HIDING_CONTROLS);
   } else {
     // If we could be either showing or hiding, we determine which one to
     // do based on whether or not the total scroll delta was moving up or
     // down.
-    SetupAnimation(accumulated_scroll_delta_ <= 0.f ? SHOWING_CONTROLS
-                                                    : HIDING_CONTROLS);
+    SetupAnimation(accumulated_scroll_delta_ <= 0.f
+                       ? AnimationDirection::SHOWING_CONTROLS
+                       : AnimationDirection::HIDING_CONTROLS);
   }
 }
 
@@ -509,8 +513,9 @@ void BrowserControlsOffsetManager::InitAnimationForHeightChange(
     Animation* animation,
     float start_ratio,
     float stop_ratio) {
-  AnimationDirection direction =
-      start_ratio < stop_ratio ? SHOWING_CONTROLS : HIDING_CONTROLS;
+  AnimationDirection direction = start_ratio < stop_ratio
+                                     ? AnimationDirection::SHOWING_CONTROLS
+                                     : AnimationDirection::HIDING_CONTROLS;
   animation->Initialize(direction, start_ratio, stop_ratio,
                         kHeightChangeDurationMs, /*jump_to_end_on_reset=*/true);
 }
@@ -597,7 +602,7 @@ base::Optional<float> BrowserControlsOffsetManager::Animation::Reset() {
   start_value_ = 0.f;
   stop_time_ = base::TimeTicks();
   stop_value_ = 0.f;
-  direction_ = NO_ANIMATION;
+  direction_ = AnimationDirection::NO_ANIMATION;
   duration_ = base::TimeDelta();
   min_value_ = 0.f;
   max_value_ = 1.f;
@@ -607,9 +612,9 @@ base::Optional<float> BrowserControlsOffsetManager::Animation::Reset() {
 }
 
 bool BrowserControlsOffsetManager::Animation::IsComplete(float value) {
-  return (direction_ == SHOWING_CONTROLS &&
+  return (direction_ == AnimationDirection::SHOWING_CONTROLS &&
           (value >= stop_value_ || value >= max_value_)) ||
-         (direction_ == HIDING_CONTROLS &&
+         (direction_ == AnimationDirection::HIDING_CONTROLS &&
           (value <= stop_value_ || value <= min_value_));
 }
 

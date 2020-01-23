@@ -4,6 +4,8 @@
 
 #include "content/public/test/fake_remote_frame.h"
 
+#include "third_party/blink/public/mojom/timing/resource_timing.mojom.h"
+
 namespace content {
 
 FakeRemoteFrame::FakeRemoteFrame() = default;
@@ -54,6 +56,9 @@ void FakeRemoteFrame::SetEmbeddingToken(
 void FakeRemoteFrame::SetPageFocus(bool is_focused) {}
 
 void FakeRemoteFrame::RenderFallbackContent() {}
+
+void FakeRemoteFrame::AddResourceTimingFromChild(
+    blink::mojom::ResourceTimingInfoPtr timing) {}
 
 void FakeRemoteFrame::FakeRemoteFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

@@ -1535,6 +1535,8 @@ void WebContentsViewAura::CompleteDrop(RenderWidgetHostImpl* target_rwh,
                                        const gfx::PointF& client_pt,
                                        const gfx::PointF& screen_pt,
                                        int key_modifiers) {
+  web_contents_->Focus();
+
   target_rwh->DragTargetDrop(drop_data, client_pt, screen_pt, key_modifiers);
   if (drag_dest_delegate_)
     drag_dest_delegate_->OnDrop();

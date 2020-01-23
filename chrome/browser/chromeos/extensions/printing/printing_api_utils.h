@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_PRINTING_PRINTING_API_UTILS_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_PRINTING_PRINTING_API_UTILS_H_
 
+#include <memory>
 #include <string>
 
 #include "base/containers/flat_map.h"
@@ -12,9 +13,18 @@
 #include "chrome/browser/chromeos/printing/printer_error_codes.h"
 #include "chrome/common/extensions/api/printing.h"
 
+namespace base {
+class Value;
+}  // namespace base
+
 namespace chromeos {
 class Printer;
 }  // namespace chromeos
+
+namespace printing {
+class PrintSettings;
+struct PrinterSemanticCapsAndDefaults;
+}  // namespace printing
 
 namespace extensions {
 
@@ -37,6 +47,17 @@ api::printing::Printer PrinterToIdl(
 
 api::printing::PrinterStatus PrinterStatusToIdl(
     chromeos::PrinterErrorCode status);
+
+// Converts print ticket in CJT
+// (https://developers.google.com/cloud-print/docs/cdd#cjt) format to
+// printing::PrintSettings.
+// Returns nullptr in case of invalid ticket.
+std::unique_ptr<printing::PrintSettings> ParsePrintTicket(base::Value ticket);
+
+// Checks if given print job settings are compatible with printer capabilities.
+bool CheckSettingsAndCapabilitiesCompatibility(
+    const printing::PrintSettings& settings,
+    const printing::PrinterSemanticCapsAndDefaults& capabilities);
 
 }  // namespace extensions
 

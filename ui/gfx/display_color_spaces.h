@@ -27,16 +27,18 @@ struct COLOR_SPACE_EXPORT DisplayColorSpaces {
   // should be performed). This space may not (on Windows) be suitable for
   // output.
   // TODO: This will take arguments regarding the presence of WCG and HDR
-  // content, and whether or not an alpha channel will be needed.
-  gfx::ColorSpace GetCompositingColorSpace() const;
+  // content. For now it assumes all inputs could have HDR content.
+  gfx::ColorSpace GetCompositingColorSpace(bool needs_alpha) const;
 
   // Return the color space to use for output.
+  // TODO: This will take arguments regarding the presence of WCG and HDR
+  // content. For now it assumes all inputs could have HDR content.
   gfx::ColorSpace GetOutputColorSpace(bool needs_alpha) const;
 
-  // Return true if |color_space| is a valid output color space. If it is not,
-  // and is the color space for the root RenderPass, then an additional pass
-  // will be added to a color space from GetOutputColorSpace.
-  bool IsSuitableForOutput(const gfx::ColorSpace& color_space) const;
+  // Return true if |color_space| is an HDR space, but is not equal to either
+  // |hdr_opaque| or |hdr_transparent|. In this case, output will need to be
+  // converted from |color_space| to either |hdr_opaque| or |hdr_transparent|.
+  bool NeedsHDRColorConversionPass(const gfx::ColorSpace& color_space) const;
 
   // Return true if the HDR color spaces are, indeed, HDR.
   bool SupportsHDR() const;

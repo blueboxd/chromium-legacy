@@ -43,7 +43,7 @@ TEST_F(TranslationResultParserTest, Success) {
   EXPECT_TRUE(parser_->Parse(&result, &quick_answer));
   EXPECT_EQ(ResultType::kTranslationResult, quick_answer.result_type);
   EXPECT_EQ("ox\\xC3\\xADgeno", quick_answer.primary_answer);
-  EXPECT_EQ("oxygen (English)", quick_answer.secondary_answer);
+  EXPECT_EQ("oxygen · English", quick_answer.secondary_answer);
 }
 
 TEST_F(TranslationResultParserTest, MissingSourceText) {

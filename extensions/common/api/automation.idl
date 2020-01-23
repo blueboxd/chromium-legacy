@@ -222,6 +222,7 @@
     note,
     pane,
     paragraph,
+    pluginObject,
     popUpButton,
     pre,
     presentational,

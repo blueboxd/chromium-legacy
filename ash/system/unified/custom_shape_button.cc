@@ -41,6 +41,7 @@ CustomShapeButton::CustomShapeButton(views::ButtonListener* listener)
   TrayPopupUtils::ConfigureTrayPopupButton(this);
   views::HighlightPathGenerator::Install(
       this, std::make_unique<CustomShapeButtonHighlightPathGenerator>());
+  focus_ring()->SetColor(UnifiedSystemTrayView::GetFocusRingColor());
 }
 
 CustomShapeButton::~CustomShapeButton() = default;

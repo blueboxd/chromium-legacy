@@ -57,9 +57,8 @@ public class TestWebContentsObserver extends WebContentsObserver {
     }
 
     @Override
-    public void didFailLoad(
-            boolean isMainFrame, int errorCode, String description, String failingUrl) {
-        super.didFailLoad(isMainFrame, errorCode, description, failingUrl);
-        mOnReceivedErrorHelper.notifyCalled(errorCode, description, failingUrl);
+    public void didFailLoad(boolean isMainFrame, int errorCode, String failingUrl) {
+        super.didFailLoad(isMainFrame, errorCode, failingUrl);
+        mOnReceivedErrorHelper.notifyCalled(errorCode, "Error " + errorCode, failingUrl);
     }
 }

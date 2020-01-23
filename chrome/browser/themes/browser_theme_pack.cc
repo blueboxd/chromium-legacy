@@ -701,6 +701,7 @@ void BrowserThemePack::BuildFromExtension(
   DCHECK(!pack->is_valid());
 
   pack->InitEmptyPack();
+  pack->set_extension_id(extension->id());
   pack->SetHeaderId(extension);
   pack->SetTintsFromJSON(extensions::ThemeInfo::GetTints(extension));
   pack->SetColorsFromJSON(extensions::ThemeInfo::GetColors(extension));
@@ -733,6 +734,7 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   // For now data pack can only have extension type.
   scoped_refptr<BrowserThemePack> pack(
       new BrowserThemePack(ThemeType::EXTENSION));
+  pack->set_extension_id(expected_id);
   // Scale factor parameter is moot as data pack has image resources for all
   // supported scale factors.
   pack->data_pack_.reset(

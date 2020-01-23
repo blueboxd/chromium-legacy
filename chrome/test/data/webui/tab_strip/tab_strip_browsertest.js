@@ -75,3 +75,13 @@ var TabStripTabSwiperTest = class extends TabStripBrowserTest {
 TEST_F('TabStripTabSwiperTest', 'All', function() {
   mocha.run();
 });
+
+var TabStripTabGroupTest = class extends TabStripBrowserTest {
+  get browsePreload() {
+    return 'chrome://tab-strip/test_loader.html?module=tab_strip/tab_group_test.js';
+  }
+};
+
+TEST_F('TabStripTabGroupTest', 'All', function() {
+  mocha.run();
+});

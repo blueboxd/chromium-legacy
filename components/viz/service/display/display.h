@@ -31,7 +31,7 @@
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
-#include "ui/gfx/color_space.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/latency/latency_info.h"
@@ -126,9 +126,8 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   // display. This is only supported for GPU compositing.
   void SetColorMatrix(const SkMatrix44& matrix);
 
-  void SetColorSpace(
-      const gfx::ColorSpace& device_color_space,
-      float sdr_white_level = gfx::ColorSpace::kDefaultSDRWhiteLevel);
+  void SetDisplayColorSpaces(
+      const gfx::DisplayColorSpaces& display_color_spaces);
   void SetOutputIsSecure(bool secure);
 
   const SurfaceId& CurrentSurfaceId();
@@ -224,8 +223,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   SurfaceId current_surface_id_;
   gfx::Size current_surface_size_;
   float device_scale_factor_ = 1.f;
-  gfx::ColorSpace device_color_space_ = gfx::ColorSpace::CreateSRGB();
-  float sdr_white_level_ = gfx::ColorSpace::kDefaultSDRWhiteLevel;
+  gfx::DisplayColorSpaces display_color_spaces_;
   bool visible_ = false;
   bool swapped_since_resize_ = false;
   bool output_is_secure_ = false;

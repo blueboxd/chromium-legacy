@@ -9,6 +9,7 @@
 
 #include "base/stl_util.h"
 #include "base/time/clock.h"
+#include "base/timer/timer.h"
 #include "base/values.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
 #include "extensions/browser/api/declarative_net_request/rules_monitor_service.h"
@@ -69,9 +70,13 @@ base::Time GetNow() {
 
 }  // namespace
 
+// static
+constexpr base::TimeDelta ActionTracker::kNonActiveTabRuleLifespan;
+
 ActionTracker::ActionTracker(content::BrowserContext* browser_context)
     : browser_context_(browser_context) {
   extension_prefs_ = ExtensionPrefs::Get(browser_context_);
+  StartTrimRulesTask();
 }
 
 ActionTracker::~ActionTracker() {
@@ -85,9 +90,16 @@ ActionTracker::~ActionTracker() {
   DCHECK(pending_navigation_actions_.empty());
 }
 
-// static
 void ActionTracker::SetClockForTests(const base::Clock* clock) {
   g_test_clock = clock;
+}
+
+void ActionTracker::SetTimerForTest(
+    std::unique_ptr<base::RetainingOneShotTimer> injected_trim_rules_timer) {
+  DCHECK(injected_trim_rules_timer);
+
+  trim_rules_timer_ = std::move(injected_trim_rules_timer);
+  StartTrimRulesTask();
 }
 
 void ActionTracker::OnRuleMatched(const RequestAction& request_action,
@@ -100,11 +112,15 @@ void ActionTracker::OnRuleMatched(const RequestAction& request_action,
   const bool should_record_rule =
       ShouldRecordMatchedRule(browser_context_, extension_id, tab_id);
 
-  auto add_matched_rule_if_needed = [should_record_rule](
+  auto add_matched_rule_if_needed = [this, should_record_rule](
                                         TrackedInfo* tracked_info,
                                         const RequestAction& request_action) {
     if (!should_record_rule)
       return;
+
+    // Restart the timer if it is not running and a matched rule is being added.
+    if (!trim_rules_timer_->IsRunning())
+      trim_rules_timer_->Reset();
 
     tracked_info->matched_rules.emplace_back(request_action.rule_id,
                                              request_action.source_type);
@@ -114,7 +130,7 @@ void ActionTracker::OnRuleMatched(const RequestAction& request_action,
   // badge text should only be set for valid tab IDs.
   const bool increment_action_count =
       tab_id != extension_misc::kUnknownTabId &&
-      request_action.type != RequestAction::Type::ALLOW;
+      !request_action.IsAllowOrAllowAllRequests();
 
   if (IsMainFrameNavigationRequest(request_info)) {
     DCHECK(request_info.navigation_id);
@@ -168,6 +184,10 @@ void ActionTracker::ClearExtensionData(const ExtensionId& extension_id) {
 
   base::EraseIf(rules_tracked_, compare_by_extension_id);
   base::EraseIf(pending_navigation_actions_, compare_by_extension_id);
+
+  // Stop the timer if there are no more matched rules or pending actions.
+  if (rules_tracked_.empty() && pending_navigation_actions_.empty())
+    trim_rules_timer_->Stop();
 }
 
 void ActionTracker::ClearTabData(int tab_id) {
@@ -243,8 +263,9 @@ std::vector<dnr_api::MatchedRuleInfo> ActionTracker::GetMatchedRules(
     const ExtensionId& extension_id,
     const base::Optional<int>& tab_id,
     const base::Time& min_time_stamp) {
-  std::vector<dnr_api::MatchedRuleInfo> matched_rules;
+  TrimRulesFromNonActiveTabs();
 
+  std::vector<dnr_api::MatchedRuleInfo> matched_rules;
   auto add_to_matched_rules = [this, &matched_rules, &min_time_stamp](
                                   const std::list<TrackedRule>& tracked_rules,
                                   int tab_id) {
@@ -279,7 +300,11 @@ std::vector<dnr_api::MatchedRuleInfo> ActionTracker::GetMatchedRules(
 }
 
 int ActionTracker::GetMatchedRuleCountForTest(const ExtensionId& extension_id,
-                                              int tab_id) {
+                                              int tab_id,
+                                              bool trim_non_active_rules) {
+  if (trim_non_active_rules)
+    TrimRulesFromNonActiveTabs();
+
   ExtensionTabIdKey key(extension_id, tab_id);
   auto tracked_info = rules_tracked_.find(key);
 
@@ -389,6 +414,37 @@ void ActionTracker::TransferRulesOnTabInvalid(int tab_id) {
     unknown_tab_info.matched_rules.splice(unknown_tab_info.matched_rules.end(),
                                           value.matched_rules);
   }
+}
+
+void ActionTracker::TrimRulesFromNonActiveTabs() {
+  const base::Time now = GetNow();
+
+  auto older_than_lifespan = [&now](const TrackedRule& tracked_rule) {
+    return tracked_rule.time_stamp <= now - kNonActiveTabRuleLifespan;
+  };
+
+  for (auto it = rules_tracked_.begin(); it != rules_tracked_.end();) {
+    const ExtensionTabIdKey& key = it->first;
+    if (key.secondary_id != extension_misc::kUnknownTabId) {
+      ++it;
+      continue;
+    }
+
+    TrackedInfo& tracked_info = it->second;
+    base::EraseIf(tracked_info.matched_rules, older_than_lifespan);
+
+    if (tracked_info.matched_rules.empty())
+      it = rules_tracked_.erase(it);
+    else
+      ++it;
+  }
+
+  trim_rules_timer_->Reset();
+}
+
+void ActionTracker::StartTrimRulesTask() {
+  trim_rules_timer_->Start(FROM_HERE, kNonActiveTabRuleLifespan, this,
+                           &ActionTracker::TrimRulesFromNonActiveTabs);
 }
 
 dnr_api::MatchedRuleInfo ActionTracker::CreateMatchedRuleInfo(

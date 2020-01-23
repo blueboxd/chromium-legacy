@@ -264,9 +264,9 @@ class AshTestBase : public testing::Test {
   void BlockUserSession(UserSessionBlockReason block_reason);
   void UnblockUserSession();
 
-  // Enable or disable the keyboard for touch and run the message loop to
-  // allow observer operations to complete.
-  void SetTouchKeyboardEnabled(bool enabled);
+  // Enable or disable the virtual on-screen keyboard and run the message loop
+  // to allow observer operations to complete.
+  void SetVirtualKeyboardEnabled(bool enabled);
 
   void DisableIME();
 

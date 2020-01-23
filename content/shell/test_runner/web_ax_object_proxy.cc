@@ -282,6 +282,8 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("Note");
     case ax::mojom::Role::kParagraph:
       return result.append("Paragraph");
+    case ax::mojom::Role::kPluginObject:
+      return result.append("PluginObject");
     case ax::mojom::Role::kPopUpButton:
       return result.append("PopUpButton");
     case ax::mojom::Role::kPre:

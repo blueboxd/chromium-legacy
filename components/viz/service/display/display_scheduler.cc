@@ -82,7 +82,7 @@ void DisplayScheduler::OnRootFrameMissing(bool missing) {
   ScheduleBeginFrameDeadline();
 }
 
-void DisplayScheduler::OnDisplayDamaged() {
+void DisplayScheduler::OnDisplayDamaged(SurfaceId surface_id) {
   // We may cause a new BeginFrame to be run inside this method, but to help
   // avoid being reentrant to the caller of SurfaceDamaged, track when this is
   // happening with |inside_surface_damaged_|.

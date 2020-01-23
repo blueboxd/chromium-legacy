@@ -116,6 +116,9 @@ const base::FilePath::CharType kRemovableMediaPath[] =
 const base::FilePath::CharType kAndroidFilesPath[] =
     FILE_PATH_LITERAL("/run/arc/sdcard/write/emulated/0");
 
+const base::FilePath::CharType kSystemFontsPath[] =
+    FILE_PATH_LITERAL("/usr/share/fonts");
+
 base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
   // Check if FilesApp has a registered path already.  This happens for tests.
   const std::string mount_point_name =

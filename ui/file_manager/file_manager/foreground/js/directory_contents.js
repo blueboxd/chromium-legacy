@@ -796,7 +796,7 @@ class DirectoryContents extends cr.EventTarget {
     }
 
     const addedList = [];
-    for (let url in updatedMap) {
+    for (const url in updatedMap) {
       addedList.push(updatedMap[url]);
     }
 

@@ -716,6 +716,12 @@ if (enable_java_templates) {
             invoker.version_number,
           ]
         }
+        if (defined(invoker.main_component_library)) {
+          args += [
+            "--main-component-library",
+            invoker.main_component_library,
+          ]
+        }
         if (defined(invoker.enable_chromium_linker) &&
             invoker.enable_chromium_linker) {
           args += [ "--enable-chromium-linker" ]
@@ -2113,6 +2119,9 @@ if (enable_java_templates) {
   #     compiling sources given to this target (optional).
   #   bundles_supported: Enable Java code to treat this target as a bundle
   #     whether (by default determined by the target type).
+  #   main_component_library: Specifies the name of the base component's library
+  #     in a component build. If given, the system will find dependent native
+  #     libraries at runtime by inspecting this library (optional).
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
     assert(defined(invoker.android_manifest))
@@ -2620,7 +2629,11 @@ if (enable_java_templates) {
         !_uses_static_library_synchronized_proguard
     if (_generate_native_libraries_java) {
       write_native_libraries_java("${_template_name}__native_libraries") {
-        forward_variables_from(invoker, [ "enable_chromium_linker_tests" ])
+        forward_variables_from(invoker,
+                               [
+                                 "enable_chromium_linker_tests",
+                                 "main_component_library",
+                               ])
         deps = [
           ":${_template_name}__secondary_abi_shared_library_list",
           ":${_template_name}__shared_library_list",
@@ -3412,6 +3425,7 @@ if (enable_java_templates) {
                                "manifest_package",
                                "max_sdk_version",
                                "product_config_java_packages",
+                               "main_component_library",
                                "min_sdk_version",
                                "native_lib_placeholders",
                                "native_lib_version_arg",

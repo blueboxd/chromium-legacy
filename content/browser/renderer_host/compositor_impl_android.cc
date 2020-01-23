@@ -600,9 +600,9 @@ void CompositorImpl::OnGpuChannelEstablished(
   constexpr bool support_locking = false;
   constexpr bool automatic_flushes = false;
   constexpr bool support_grcontext = true;
-  display_color_space_ = display::Screen::GetScreen()
-                             ->GetDisplayNearestWindow(root_window_)
-                             .color_space();
+  display_color_spaces_ = display::Screen::GetScreen()
+                              ->GetDisplayNearestWindow(root_window_)
+                              .color_spaces();
   auto context_provider =
       base::MakeRefCounted<viz::ContextProviderCommandBuffer>(
           std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
@@ -611,8 +611,9 @@ void CompositorImpl::OnGpuChannelEstablished(
                std::string("CompositorContextProvider")),
           automatic_flushes, support_locking, support_grcontext,
           GetCompositorContextSharedMemoryLimits(root_window_),
-          GetCompositorContextAttributes(display_color_space_,
-                                         requires_alpha_channel_),
+          GetCompositorContextAttributes(
+              display_color_spaces_.GetRasterColorSpace(),
+              requires_alpha_channel_),
           viz::command_buffer_metrics::ContextType::BROWSER_COMPOSITOR);
   auto result = context_provider->BindToCurrentThread();
 
@@ -809,7 +810,8 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   renderer_settings.requires_alpha_channel = requires_alpha_channel_;
   renderer_settings.initial_screen_size = display_props.GetSizeInPixel();
   renderer_settings.use_skia_renderer = features::IsUsingSkiaRenderer();
-  renderer_settings.color_space = display_color_space_;
+  renderer_settings.color_space =
+      display_color_spaces_.GetOutputColorSpace(requires_alpha_channel_);
 
   root_params->frame_sink_id = frame_sink_id_;
   root_params->widget = surface_handle_;
@@ -835,8 +837,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
   display_private_->SetDisplayVisible(true);
   display_private_->Resize(size_);
-  display_private_->SetDisplayColorSpace(
-      display_color_space_, gfx::ColorSpace::kDefaultSDRWhiteLevel);
+  display_private_->SetDisplayColorSpaces(display_color_spaces_);
   display_private_->SetVSyncPaused(vsync_paused_);
   display_private_->SetSupportedRefreshRates(
       root_window_->GetSupportedRefreshRates());

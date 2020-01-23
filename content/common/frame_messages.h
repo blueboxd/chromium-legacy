@@ -32,7 +32,6 @@
 #include "content/common/frame_visual_properties.h"
 #include "content/common/navigation_gesture.h"
 #include "content/common/navigation_params.h"
-#include "content/common/resource_timing_info.h"
 #include "content/common/savable_subframe.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/context_menu_params.h"
@@ -283,51 +282,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::ViewportIntersectionState)
   IPC_STRUCT_TRAITS_MEMBER(main_frame_document_intersection)
   IPC_STRUCT_TRAITS_MEMBER(compositor_visible_rect)
   IPC_STRUCT_TRAITS_MEMBER(occlusion_state)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::ResourceLoadTiming)
-  IPC_STRUCT_TRAITS_MEMBER(request_time)
-  IPC_STRUCT_TRAITS_MEMBER(proxy_start)
-  IPC_STRUCT_TRAITS_MEMBER(proxy_end)
-  IPC_STRUCT_TRAITS_MEMBER(dns_start)
-  IPC_STRUCT_TRAITS_MEMBER(dns_end)
-  IPC_STRUCT_TRAITS_MEMBER(connect_start)
-  IPC_STRUCT_TRAITS_MEMBER(connect_end)
-  IPC_STRUCT_TRAITS_MEMBER(worker_start)
-  IPC_STRUCT_TRAITS_MEMBER(worker_ready)
-  IPC_STRUCT_TRAITS_MEMBER(send_start)
-  IPC_STRUCT_TRAITS_MEMBER(send_end)
-  IPC_STRUCT_TRAITS_MEMBER(receive_headers_end)
-  IPC_STRUCT_TRAITS_MEMBER(ssl_start)
-  IPC_STRUCT_TRAITS_MEMBER(ssl_end)
-  IPC_STRUCT_TRAITS_MEMBER(push_start)
-  IPC_STRUCT_TRAITS_MEMBER(push_end)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::ResourceTimingInfo)
-  IPC_STRUCT_TRAITS_MEMBER(name)
-  IPC_STRUCT_TRAITS_MEMBER(start_time)
-  IPC_STRUCT_TRAITS_MEMBER(initiator_type)
-  IPC_STRUCT_TRAITS_MEMBER(alpn_negotiated_protocol)
-  IPC_STRUCT_TRAITS_MEMBER(connection_info)
-  IPC_STRUCT_TRAITS_MEMBER(timing)
-  IPC_STRUCT_TRAITS_MEMBER(last_redirect_end_time)
-  IPC_STRUCT_TRAITS_MEMBER(response_end)
-  IPC_STRUCT_TRAITS_MEMBER(context_type)
-  IPC_STRUCT_TRAITS_MEMBER(transfer_size)
-  IPC_STRUCT_TRAITS_MEMBER(encoded_body_size)
-  IPC_STRUCT_TRAITS_MEMBER(decoded_body_size)
-  IPC_STRUCT_TRAITS_MEMBER(did_reuse_connection)
-  IPC_STRUCT_TRAITS_MEMBER(allow_timing_details)
-  IPC_STRUCT_TRAITS_MEMBER(allow_redirect_details)
-  IPC_STRUCT_TRAITS_MEMBER(allow_negative_values)
-  IPC_STRUCT_TRAITS_MEMBER(server_timing)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::ServerTimingInfo)
-  IPC_STRUCT_TRAITS_MEMBER(name)
-  IPC_STRUCT_TRAITS_MEMBER(duration)
-  IPC_STRUCT_TRAITS_MEMBER(description)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)
@@ -684,11 +638,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_Reload)
 // Change the accessibility mode in the renderer process.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode, ui::AXMode)
 
-// Sent to a proxy to record the resource timing info for this frame in the
-// parent frame.
-IPC_MESSAGE_ROUTED1(FrameMsg_ForwardResourceTimingToParent,
-                    content::ResourceTimingInfo)
-
 // Notifies the frame that its parent has changed the frame's sandbox flags or
 // container policy.
 IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateFramePolicy, blink::FramePolicy)
@@ -832,10 +781,6 @@ IPC_SYNC_MESSAGE_CONTROL1_1(FrameHostMsg_CreateChildFrame,
 // Sent by the renderer to the parent RenderFrameHost when a child frame is
 // detached from the DOM.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_Detach)
-
-// Notifies the browser that a document has been loaded.
-IPC_MESSAGE_ROUTED0(FrameHostMsg_DidFinishDocumentLoad)
-
 
 // Sent when the renderer is done loading a page.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_DidStopLoading)
@@ -1133,11 +1078,6 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_DidLoadResourceFromMemoryCache,
 // Sent as a response to FrameMsg_VisualStateRequest.
 // The message is delivered using RenderWidget::QueueMessage.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64_t /* id */)
-
-// Requests that the resource timing info be added to the performance entries of
-// a remote parent frame.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_ForwardResourceTimingToParent,
-                    content::ResourceTimingInfo)
 
 // Sent to the browser from a frame proxy to post a message to the frame's
 // active renderer.

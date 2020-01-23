@@ -653,8 +653,7 @@ void CastWebContentsImpl::DidFinishLoad(
 void CastWebContentsImpl::DidFailLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    int error_code,
-    const base::string16& error_description) {
+    int error_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Only report an error if we are the main frame.  See b/8433611.
   if (render_frame_host->GetParent()) {

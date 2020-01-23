@@ -74,8 +74,8 @@ struct NonRemovableBlockDeviceInfo {
 
 // Cached VPD read from sysfs.
 struct CachedVpdInfo {
-  // Contents of /sys/firmware/vpd/ro/sku_number.
-  string sku_number;
+  // Contents of /sys/firmware/vpd/ro/sku_number, if the device supports it.
+  string? sku_number;
 };
 
 // Information related to a device's CPU.

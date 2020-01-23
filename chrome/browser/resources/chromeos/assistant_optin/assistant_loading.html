@@ -16,14 +16,19 @@
       <div slot="footer">
         <div class="container" id="error-container">
           <img id="logo" src="assistant_logo.png"
-              i18n-values="aria-label:assistantLogo">
-          <div class="title" i18n-content="assistantOptinLoadErrorTitle"></div>
-          <div class="sub-title" i18n-content="assistantOptinLoadErrorMessage">
+              aria-label$="[[i18nDynamic(locale, 'assistantLogo')]]">
+          <div class="title">
+            [[i18nDynamic(locale, 'assistantOptinLoadErrorTitle')]]
+          </div>
+          <div class="sub-title">
+            [[i18nDynamic(locale, 'assistantOptinLoadErrorMessage')]]
           </div>
         </div>
         <div class="container" id="loading-container">
           <div id="loading-content" class="content">
-            <div i18n-content="assistantOptinLoading"></div>
+            <div>
+              [[i18nDynamic(locale, 'assistantOptinLoading')]]
+            </div>
             <paper-progress class="slow" indeterminate></paper-progress>
           </div>
         </div>

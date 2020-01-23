@@ -248,7 +248,6 @@ void LocalFrameUkmAggregator::DidReachFirstContentfulPaint(
       CASE_FOR_ID(IntersectionObservation);
       CASE_FOR_ID(Paint);
       CASE_FOR_ID(PrePaint);
-      CASE_FOR_ID(StyleAndLayout);
       CASE_FOR_ID(Style);
       CASE_FOR_ID(Layout);
       CASE_FOR_ID(ForcedStyleAndLayout);
@@ -389,7 +388,6 @@ void LocalFrameUkmAggregator::RecordEvent() {
       CASE_FOR_ID(IntersectionObservation);
       CASE_FOR_ID(Paint);
       CASE_FOR_ID(PrePaint);
-      CASE_FOR_ID(StyleAndLayout);
       CASE_FOR_ID(Style);
       CASE_FOR_ID(Layout);
       CASE_FOR_ID(ForcedStyleAndLayout);

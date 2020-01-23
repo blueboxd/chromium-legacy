@@ -9,6 +9,7 @@
 #include "base/files/file.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/handle.h"
@@ -27,7 +28,12 @@ base::StringPiece GetStringPieceFromMojoHandle(
     return base::StringPiece();
 
   base::File file(platform_file);
-  const size_t file_size = file.GetLength();
+  size_t file_size = 0;
+  {
+    // TODO(b/146119375): Remove blocking operation from production code.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    file_size = file.GetLength();
+  }
   if (file_size <= 0)
     return base::StringPiece();
 

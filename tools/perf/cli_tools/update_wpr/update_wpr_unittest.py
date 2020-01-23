@@ -181,12 +181,12 @@ class UpdateWprTest(unittest.TestCase):
     # Check correct arguments when running benchmark.
     self._check_log.assert_called_once_with(
         [
-          '.../run_benchmark', 'run', '--browser=system',
-          'system_health.memory_desktop', '--output-format=html',
-          '--show-stdout', '--reset-results', '--story-filter=^\\<story\\>$',
-          '--browser-logging-verbosity=verbose', '--pageset-repeat=1',
-          '--output-dir', '/tmp/dir', '--also-run-disabled-tests',
-          '--use-live-sites'
+            '.../run_benchmark', 'run', '--browser=system',
+            'system_health.memory_desktop', '--output-format=html',
+            '--show-stdout', '--reset-results', '--story-filter=^\\<story\\>$',
+            '--browser-logging-verbosity=verbose', '--pageset-repeat=1',
+            '--output-dir', '/tmp/dir', '--also-run-disabled-tests',
+            '--legacy-json-trace-format', '--use-live-sites'
         ],
         env={'LC_ALL': 'en_US.UTF-8'},
         log_path='/tmp/dir/<log_name>_<tstamp>')

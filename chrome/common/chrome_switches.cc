@@ -321,11 +321,6 @@ const char kExtensionsInstallVerification[] = "extensions-install-verification";
 // be treated as not from the webstore when doing install verification.
 const char kExtensionsNotWebstore[] = "extensions-not-webstore";
 
-// If this flag is present then this command line is being delegated to an
-// already running chrome process via the fast path, ie: before chrome.dll is
-// loaded. It is useful to tell the difference for tracking purposes.
-const char kFastStart[]            = "fast-start";
-
 // Forces Android application mode. This hides certain system UI elements and
 // forces the app to be installed if it hasn't been already.
 const char kForceAndroidAppMode[] = "force-android-app-mode";
@@ -452,10 +447,6 @@ const char kOnTheFlyMhtmlHashComputation[] =
 
 // Launches URL in new browser window.
 const char kOpenInNewWindow[]               = "new-window";
-
-// The time that a new chrome process which is delegating to an already running
-// chrome process started. (See ProcessSingleton for more details.)
-const char kOriginalProcessStartTime[]      = "original-process-start-time";
 
 // Contains a list of feature names for which origin trial experiments should
 // be disabled. Names should be separated by "|" characters.

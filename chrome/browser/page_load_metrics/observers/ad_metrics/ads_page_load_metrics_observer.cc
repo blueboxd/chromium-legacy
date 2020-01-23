@@ -225,6 +225,20 @@ void AdsPageLoadMetricsObserver::OnTimingUpdate(
   if (ancestor_data && ancestor_data->root_frame_tree_node_id() ==
                            subframe_rfh->GetFrameTreeNodeId())
     ancestor_data->set_timing(timing.Clone());
+
+  // Set creative origin status if this is the first FCP for any frame in the
+  // root ad frame's subtree.
+  if (ancestor_data && timing.paint_timing->first_contentful_paint &&
+      ancestor_data->creative_origin_status() ==
+          FrameData::OriginStatus::kUnknown) {
+    FrameData::OriginStatus origin_status =
+        AdsPageLoadMetricsObserver::IsSubframeSameOriginToMainFrame(
+            subframe_rfh,
+            !ancestor_data->frame_navigated() /* use_parent_origin */)
+            ? FrameData::OriginStatus::kSame
+            : FrameData::OriginStatus::kCross;
+    ancestor_data->set_creative_origin_status(origin_status);
+  }
 }
 
 void AdsPageLoadMetricsObserver::OnCpuTimingUpdate(
@@ -902,6 +916,11 @@ void AdsPageLoadMetricsObserver::RecordPerFrameHistogramsForAdTagging(
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.OriginStatus",
                   UMA_HISTOGRAM_ENUMERATION, visibility,
                   ad_frame_data.origin_status());
+
+    ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.CreativeOriginStatus",
+                  UMA_HISTOGRAM_ENUMERATION, visibility,
+                  ad_frame_data.creative_origin_status());
+
     ADS_HISTOGRAM("FrameCounts.AdFrames.PerFrame.UserActivation",
                   UMA_HISTOGRAM_ENUMERATION, visibility,
                   ad_frame_data.user_activation_status());

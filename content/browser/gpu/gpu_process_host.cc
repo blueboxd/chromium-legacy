@@ -123,7 +123,10 @@ constexpr char kProcessLifetimeEventsDisplayCompositor[] =
 // Returns the UMA histogram name for the given GPU mode.
 const char* GetProcessLifetimeUmaName(gpu::GpuMode gpu_mode) {
   switch (gpu_mode) {
-    case gpu::GpuMode::HARDWARE_ACCELERATED:
+    // TODO(sgilhuly): Add separate histograms for the different hardware modes.
+    case gpu::GpuMode::HARDWARE_GL:
+    case gpu::GpuMode::HARDWARE_METAL:
+    case gpu::GpuMode::HARDWARE_VULKAN:
       return kProcessLifetimeEventsHardwareAccelerated;
     case gpu::GpuMode::SWIFTSHADER:
       return kProcessLifetimeEventsSwiftShader;

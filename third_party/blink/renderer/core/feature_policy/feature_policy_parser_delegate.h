@@ -15,7 +15,7 @@ class FeaturePolicyParserDelegate : public FeatureContext {
  public:
   virtual void CountFeaturePolicyUsage(mojom::WebFeature feature) = 0;
   virtual bool FeaturePolicyFeatureObserved(
-      mojom::FeaturePolicyFeature feature) = 0;
+      mojom::blink::FeaturePolicyFeature feature) = 0;
 };
 
 }  // namespace blink

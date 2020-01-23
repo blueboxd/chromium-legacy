@@ -735,8 +735,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                        blink::WebHistoryCommitType commit_type,
                                        bool content_initiated) override;
   void DidUpdateCurrentHistoryItem() override;
-  void ForwardResourceTimingToParent(
-      const blink::WebResourceTimingInfo& info) override;
   base::UnguessableToken GetDevToolsFrameToken() override;
   void AbortClientNavigation() override;
   void DidChangeSelection(bool is_empty_selection) override;

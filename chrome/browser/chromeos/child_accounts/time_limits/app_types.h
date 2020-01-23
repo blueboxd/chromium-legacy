@@ -85,6 +85,7 @@ class AppLimit {
   ~AppLimit();
 
   AppRestriction restriction() const { return restriction_; }
+  base::Time last_updated() const { return last_updated_; }
   const base::Optional<base::TimeDelta>& daily_limit() const {
     return daily_limit_;
   }

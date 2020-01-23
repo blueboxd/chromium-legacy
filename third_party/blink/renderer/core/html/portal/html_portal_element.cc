@@ -97,6 +97,34 @@ void HTMLPortalElement::PortalContentsWillBeDestroyed(PortalContents* portal) {
   portal_ = nullptr;
 }
 
+bool HTMLPortalElement::CheckPortalsEnabledOrWarn() const {
+  Document& document = GetDocument();
+  if (RuntimeEnabledFeatures::PortalsEnabled(&document))
+    return true;
+
+  // TODO(jbroman): Consider linking to origin trial info if applicable.
+  document.AddConsoleMessage(ConsoleMessage::Create(
+      mojom::blink::ConsoleMessageSource::kRendering,
+      mojom::blink::ConsoleMessageLevel::kWarning,
+      "An operation was prevented because a <portal> was moved to a document "
+      "where it is not enabled."));
+  return false;
+}
+
+bool HTMLPortalElement::CheckPortalsEnabledOrThrow(
+    ExceptionState& exception_state) const {
+  Document& document = GetDocument();
+  if (RuntimeEnabledFeatures::PortalsEnabled(&document))
+    return true;
+
+  // TODO(jbroman): Consider linking to origin trial info if applicable.
+  exception_state.ThrowDOMException(
+      DOMExceptionCode::kNotSupportedError,
+      "An operation was prevented because a <portal> was moved to a document "
+      "where it is not enabled.");
+  return false;
+}
+
 // https://wicg.github.io/portals/#htmlportalelement-may-have-a-guest-browsing-context
 HTMLPortalElement::GuestContentsEligibility
 HTMLPortalElement::GetGuestContentsEligibility() const {
@@ -120,6 +148,9 @@ HTMLPortalElement::GetGuestContentsEligibility() const {
 }
 
 void HTMLPortalElement::Navigate() {
+  if (!CheckPortalsEnabledOrWarn())
+    return;
+
   if (portal_) {
     portal_->Navigate(GetNonEmptyURLAttribute(html_names::kSrcAttr),
                       ReferrerPolicyAttribute());
@@ -186,6 +217,8 @@ BlinkTransferableMessage ActivateDataAsMessage(
 ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
                                           PortalActivateOptions* options,
                                           ExceptionState& exception_state) {
+  if (!CheckPortalsEnabledOrThrow(exception_state))
+    return ScriptPromise();
   if (!portal_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -231,6 +264,9 @@ void HTMLPortalElement::postMessage(ScriptState* script_state,
                                     const ScriptValue& message,
                                     const WindowPostMessageOptions* options,
                                     ExceptionState& exception_state) {
+  if (!CheckPortalsEnabledOrThrow(exception_state))
+    return;
+
   if (!portal_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -277,6 +313,9 @@ const base::UnguessableToken& HTMLPortalElement::GetToken() const {
 HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
     ContainerNode& node) {
   auto result = HTMLFrameOwnerElement::InsertedInto(node);
+
+  if (!CheckPortalsEnabledOrWarn())
+    return result;
 
   switch (GetGuestContentsEligibility()) {
     case GuestContentsEligibility::kIneligible:

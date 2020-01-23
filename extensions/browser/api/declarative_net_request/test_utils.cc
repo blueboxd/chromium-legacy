@@ -80,6 +80,9 @@ std::ostream& operator<<(std::ostream& output, RequestAction::Type type) {
     case RequestAction::Type::REMOVE_HEADERS:
       output << "REMOVE_HEADERS";
       break;
+    case RequestAction::Type::ALLOW_ALL_REQUESTS:
+      output << "ALLOW_ALL_REQUESTS";
+      break;
   }
   return output;
 }

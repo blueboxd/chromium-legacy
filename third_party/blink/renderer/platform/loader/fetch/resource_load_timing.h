@@ -27,6 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_LOAD_TIMING_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "services/network/public/mojom/load_timing_info.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
@@ -37,9 +38,12 @@ class PLATFORM_EXPORT ResourceLoadTiming
  public:
   static scoped_refptr<ResourceLoadTiming> Create();
 
-  scoped_refptr<ResourceLoadTiming> DeepCopy();
   bool operator==(const ResourceLoadTiming&) const;
   bool operator!=(const ResourceLoadTiming&) const;
+
+  static scoped_refptr<ResourceLoadTiming> FromMojo(
+      const network::mojom::blink::LoadTimingInfo*);
+  network::mojom::blink::LoadTimingInfoPtr ToMojo() const;
 
   void SetDnsStart(base::TimeTicks);
   void SetRequestTime(base::TimeTicks);
@@ -81,6 +85,23 @@ class PLATFORM_EXPORT ResourceLoadTiming
 
  private:
   ResourceLoadTiming();
+  ResourceLoadTiming(base::TimeTicks request_time,
+                     base::TimeTicks proxy_start,
+                     base::TimeTicks proxy_end,
+                     base::TimeTicks dns_start,
+                     base::TimeTicks dns_end,
+                     base::TimeTicks connect_start,
+                     base::TimeTicks connect_end,
+                     base::TimeTicks worker_start,
+                     base::TimeTicks worker_ready,
+                     base::TimeTicks send_start,
+                     base::TimeTicks send_end,
+                     base::TimeTicks receive_headers_start,
+                     base::TimeTicks receive_headers_end,
+                     base::TimeTicks ssl_start,
+                     base::TimeTicks ssl_end,
+                     base::TimeTicks push_start,
+                     base::TimeTicks push_end);
 
   // We want to present a unified timeline to Javascript. Using walltime is
   // problematic, because the clock may skew while resources load. To prevent

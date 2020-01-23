@@ -763,9 +763,14 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
       !disable_mask_ && !is_shutting_down &&
       !overview_controller->IsInStartAnimation();
 
-  transform_window_.UpdateRoundedCorners(
-      should_show_rounded_corners,
-      /*update_clip=*/should_show_rounded_corners);
+  if (transform_window_.IsMinimized()) {
+    overview_item_view_->UpdatePreviewRoundedCorners(
+        should_show_rounded_corners);
+  } else {
+    transform_window_.UpdateRoundedCorners(
+        should_show_rounded_corners,
+        /*update_clip=*/should_show_rounded_corners);
+  }
 
   // In addition, the shadow should be hidden if
   // 1) this overview item is the drop target window or
@@ -777,14 +782,15 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
            ->layer()
            ->GetAnimator()
            ->is_animating();
-
-  SetShadowBounds(
-      should_show_shadow
-          ? base::make_optional(transform_window_.GetTransformedBounds())
-          : base::nullopt);
-  if (transform_window_.IsMinimized()) {
-    overview_item_view_->UpdatePreviewRoundedCorners(
-        should_show_rounded_corners);
+  if (should_show_shadow) {
+    const gfx::RectF shadow_bounds =
+        transform_window_.IsMinimized()
+            ? gfx::RectF(
+                  overview_item_view_->preview_view()->GetBoundsInScreen())
+            : transform_window_.GetTransformedBounds();
+    SetShadowBounds(base::make_optional(shadow_bounds));
+  } else {
+    SetShadowBounds(base::nullopt);
   }
 }
 

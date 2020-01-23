@@ -206,6 +206,7 @@
 #include "third_party/blink/public/mojom/loader/url_loader_factory_bundle.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
+#include "third_party/blink/public/mojom/timing/resource_timing.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 #include "ui/accessibility/ax_tree.h"
@@ -1681,8 +1682,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFrameOwnerProperties,
                         OnDidChangeFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateTitle, OnUpdateTitle)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_ForwardResourceTimingToParent,
-                        OnForwardResourceTimingToParent)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_EventBundle, OnAccessibilityEvents)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_LocationChanges,
                         OnAccessibilityLocationChanges)
@@ -1690,8 +1689,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnAccessibilityChildFrameHitTestResult)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_SnapshotResponse,
                         OnAccessibilitySnapshotResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
-                        OnDidFinishDocumentLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeLoadProgress,
                         OnDidChangeLoadProgress)
@@ -2623,10 +2620,8 @@ bool RenderFrameHostImpl::IsFrozen() {
   return frame_lifecycle_state_ != blink::mojom::FrameLifecycleState::kRunning;
 }
 
-void RenderFrameHostImpl::DidFailLoadWithError(
-    const GURL& url,
-    int error_code,
-    const base::string16& error_description) {
+void RenderFrameHostImpl::DidFailLoadWithError(const GURL& url,
+                                               int error_code) {
   TRACE_EVENT2("navigation",
                "RenderFrameHostImpl::DidFailProvisionalLoadWithError",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(),
@@ -2635,8 +2630,8 @@ void RenderFrameHostImpl::DidFailLoadWithError(
   GURL validated_url(url);
   GetProcess()->FilterURL(false, &validated_url);
 
-  frame_tree_node_->navigator()->DidFailLoadWithError(
-      this, validated_url, error_code, error_description);
+  frame_tree_node_->navigator()->DidFailLoadWithError(this, validated_url,
+                                                      error_code);
 }
 
 void RenderFrameHostImpl::DidCommitProvisionalLoad(
@@ -3667,8 +3662,8 @@ void RenderFrameHostImpl::DocumentOnLoadCompleted() {
   delegate_->DocumentOnLoadCompleted(this);
 }
 
-void RenderFrameHostImpl::OnForwardResourceTimingToParent(
-    const ResourceTimingInfo& resource_timing) {
+void RenderFrameHostImpl::ForwardResourceTimingToParent(
+    blink::mojom::ResourceTimingInfoPtr timing) {
   // Don't forward the resource timing if this RFH is pending deletion. This can
   // happen in a race where this RenderFrameHost finishes loading just after
   // the frame navigates away. See https://crbug.com/626802.
@@ -3685,8 +3680,8 @@ void RenderFrameHostImpl::OnForwardResourceTimingToParent(
                                     bad_message::RFH_NO_PROXY_TO_PARENT);
     return;
   }
-  proxy->Send(new FrameMsg_ForwardResourceTimingToParent(proxy->GetRoutingID(),
-                                                         resource_timing));
+  proxy->GetAssociatedRemoteFrame()->AddResourceTimingFromChild(
+      std::move(timing));
 }
 
 RenderWidgetHostViewBase* RenderFrameHostImpl::GetViewForAccessibility() {
@@ -4057,7 +4052,7 @@ bool RenderFrameHostImpl::InsidePortal() {
   return GetRenderViewHost()->GetDelegate()->IsPortal();
 }
 
-void RenderFrameHostImpl::OnDidFinishDocumentLoad() {
+void RenderFrameHostImpl::DidFinishDocumentLoad() {
   dom_content_loaded_ = true;
   delegate_->DOMContentLoaded(this);
 }
@@ -4445,13 +4440,15 @@ void RenderFrameHostImpl::CreateNewWindow(
         dom_storage_context, params->session_storage_namespace_id);
   }
 
-  // On popup creation, if the opener and the openers's top-level document
-  // are same origin, then the popup's initial empty document inherits its COOP
-  // policy from the opener's top-level document.
-  // See https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#model
   network::mojom::CrossOriginOpenerPolicy popup_coop =
       network::mojom::CrossOriginOpenerPolicy::kUnsafeNone;
+  network::mojom::CrossOriginEmbedderPolicy popup_coep =
+      network::mojom::CrossOriginEmbedderPolicy::kNone;
   if (base::FeatureList::IsEnabled(network::features::kCrossOriginIsolation)) {
+    // On popup creation, if the opener and the openers's top-level document
+    // are same origin, then the popup's initial empty document inherits its
+    // COOP policy from the opener's top-level document. See
+    // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#model
     RenderFrameHostImpl* top_level_opener = this;
     while (top_level_opener->GetParent()) {
       top_level_opener = top_level_opener->GetParent();
@@ -4470,6 +4467,11 @@ void RenderFrameHostImpl::CreateNewWindow(
       }
     }
   }
+
+  // The initial empty document in the popup inherits the COEP of its opener (if
+  // any).
+  if (!params->opener_suppressed)
+    popup_coep = cross_origin_embedder_policy();
 
   // If the opener is suppressed or script access is disallowed, we should
   // open the window in a new BrowsingInstance, and thus a new process. That
@@ -4509,6 +4511,7 @@ void RenderFrameHostImpl::CreateNewWindow(
   main_frame->SetOriginAndNetworkIsolationKeyOfNewFrame(
       GetLastCommittedOrigin());
   main_frame->cross_origin_opener_policy_ = popup_coop;
+  main_frame->cross_origin_embedder_policy_ = popup_coep;
 
   if (main_frame->waiting_for_init_) {
     // Need to check |waiting_for_init_| as some paths inside CreateNewWindow

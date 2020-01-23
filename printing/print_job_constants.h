@@ -142,6 +142,8 @@ enum ColorModel {
   BROTHER_CUPS_MONO,            // Used in Brother color laser printer PPDs.
   BROTHER_BRSCRIPT3_COLOR,      // Used in Brother BRScript3 color printer PPDs.
   BROTHER_BRSCRIPT3_BLACK,      // Used in Brother BRScript3 color printer PPDs.
+  EPSON_INK_COLOR,              // Used in Epson printer PPDs.
+  EPSON_INK_MONO,               // Used in Epson printer PPDs.
 };
 
 // What kind of margins to use.

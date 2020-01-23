@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.feed.library.api.client.stream.Stream;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
-import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
@@ -33,6 +32,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.ui.base.DeviceFormFactor;
 
 /**

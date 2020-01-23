@@ -30,6 +30,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.ui.native_page.NativePage;
+import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -44,8 +46,8 @@ public class NativePageFactory {
 
     @VisibleForTesting
     static class NativePageBuilder {
-        protected NativePage buildNewTabPage(ChromeActivity activity, Tab tab,
-                TabModelSelector tabModelSelector) {
+        protected NativePage buildNewTabPage(
+                ChromeActivity activity, Tab tab, TabModelSelector tabModelSelector) {
             ActivityTabProvider activityTabProvider = activity.getActivityTabProvider();
             ActivityLifecycleDispatcher activityLifecycleDispatcher =
                     activity.getLifecycleDispatcher();

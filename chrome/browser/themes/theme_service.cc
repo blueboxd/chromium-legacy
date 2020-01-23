@@ -75,6 +75,17 @@ namespace {
 // unpacked on the filesystem.)
 const char kDefaultThemeGalleryID[] = "hkacjpbfdknhflllbcmjibkdeoafencn";
 
+bool IsDefaultTheme(const CustomThemeSupplier* theme_supplier) {
+  if (!theme_supplier)
+    return true;
+  if (theme_supplier->get_theme_type() !=
+      CustomThemeSupplier::ThemeType::EXTENSION) {
+    return false;
+  }
+  const std::string& id = theme_supplier->extension_id();
+  return id == ThemeService::kDefaultThemeID || id == kDefaultThemeGalleryID;
+}
+
 // Wait this many seconds after startup to garbage collect unused themes.
 // Removing unused themes is done after a delay because there is no
 // reason to do it at startup.
@@ -444,12 +455,16 @@ bool ThemeService::IsSystemThemeDistinctFromDefaultTheme() const {
 }
 
 bool ThemeService::UsingDefaultTheme() const {
-  std::string id = GetThemeID();
-  return id == kDefaultThemeID || id == kDefaultThemeGalleryID;
+  return IsDefaultTheme(get_theme_supplier());
 }
 
 bool ThemeService::UsingSystemTheme() const {
-  return UsingDefaultTheme();
+  return IsSystemTheme(get_theme_supplier());
+}
+
+bool ThemeService::IsSystemTheme(
+    const CustomThemeSupplier* theme_supplier) const {
+  return IsDefaultTheme(theme_supplier);
 }
 
 bool ThemeService::UsingExtensionTheme() const {

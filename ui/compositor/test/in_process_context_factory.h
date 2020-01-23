@@ -81,9 +81,9 @@ class InProcessContextFactory : public ContextFactory,
   void DisableSwapUntilResize(ui::Compositor* compositor) override;
   void SetDisplayColorMatrix(ui::Compositor* compositor,
                              const SkMatrix44& matrix) override;
-  void SetDisplayColorSpace(ui::Compositor* compositor,
-                            const gfx::ColorSpace& output_color_space,
-                            float sdr_white_level) override;
+  void SetDisplayColorSpaces(
+      ui::Compositor* compositor,
+      const gfx::DisplayColorSpaces& display_color_spaces) override;
   void SetDisplayVSyncParameters(ui::Compositor* compositor,
                                  base::TimeTicks timebase,
                                  base::TimeDelta interval) override;
@@ -101,7 +101,8 @@ class InProcessContextFactory : public ContextFactory,
   void RemoveObserver(ContextFactoryObserver* observer) override;
 
   SkMatrix44 GetOutputColorMatrix(Compositor* compositor) const;
-  gfx::ColorSpace GetDisplayColorSpace(ui::Compositor* compositor) const;
+  gfx::DisplayColorSpaces GetDisplayColorSpaces(
+      ui::Compositor* compositor) const;
   float GetSDRWhiteLevel(ui::Compositor* compositor) const;
   base::TimeTicks GetDisplayVSyncTimeBase(ui::Compositor* compositor) const;
   base::TimeDelta GetDisplayVSyncTimeInterval(ui::Compositor* compositor) const;

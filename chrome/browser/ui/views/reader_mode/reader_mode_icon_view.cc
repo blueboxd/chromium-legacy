@@ -23,6 +23,13 @@ ReaderModeIconView::ReaderModeIconView(
                          icon_label_bubble_delegate,
                          page_action_icon_delegate) {}
 
+ReaderModeIconView::~ReaderModeIconView() {
+  content::WebContents* contents = web_contents();
+  if (contents)
+    dom_distiller::RemoveObserver(contents, this);
+  DCHECK(!DistillabilityObserver::IsInObserverList());
+}
+
 void ReaderModeIconView::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (GetVisible())
@@ -36,20 +43,29 @@ void ReaderModeIconView::UpdateImpl() {
     return;
   }
 
-  // Notify the icon when navigation to and from a distilled page occurs so that
-  // it can hide the inkdrop.
-  Observe(contents);
-
   if (IsDistilledPage(contents->GetLastCommittedURL())) {
     SetVisible(true);
     SetActive(true);
   } else {
-    dom_distiller::AddObserver(contents, this);
+    // If the currently active web contents has changed since last time, stop
+    // observing the old web contents and start observing the new one.
+    // (WebContentsObserver::web_contents() is not updated until the call to
+    // Observe() below, so it should still contain the old contents.)
+    content::WebContents* old_contents = web_contents();
+    if (old_contents != contents) {
+      if (old_contents)
+        dom_distiller::RemoveObserver(old_contents, this);
+      dom_distiller::AddObserver(contents, this);
+    }
     base::Optional<dom_distiller::DistillabilityResult> distillability =
         dom_distiller::GetLatestResult(contents);
     SetVisible(distillability && distillability.value().is_distillable);
     SetActive(false);
   }
+
+  // Notify the icon when navigation to and from a distilled page occurs so that
+  // it can hide the inkdrop.
+  Observe(contents);
 }
 
 const gfx::VectorIcon& ReaderModeIconView::GetVectorIcon() const {

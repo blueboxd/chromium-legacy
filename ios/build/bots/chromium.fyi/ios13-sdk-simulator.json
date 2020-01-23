@@ -2,7 +2,7 @@
   "comments": [
     "Runs tests with Xcode11 Beta SDK on iOS 13 beta simulators."
   ],
-  "xcode build version": "11b500",
+  "xcode build version": "11c29",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
@@ -21,7 +21,7 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s Plus",
-      "os": "13.2.2",
+      "os": "13.3",
       "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30
@@ -29,7 +29,7 @@
     {
       "include": "screen_size_dependent_tests.json",
       "device type": "iPhone 6s",
-      "os": "13.2.2",
+      "os": "13.3",
       "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30
@@ -37,7 +37,7 @@
     {
       "include": "common_tests.json",
       "device type": "iPhone 6s",
-      "os": "13.2.2",
+      "os": "13.3",
       "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30
@@ -45,7 +45,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone 7",
-      "os": "13.2.2",
+      "os": "13.3",
       "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30,
@@ -54,7 +54,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPad Air 2",
-      "os": "13.2.2",
+      "os": "13.3",
       "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30,
@@ -63,7 +63,7 @@
     {
       "include": "eg_tests.json",
       "device type": "iPhone X",
-      "os": "13.2.2",
+      "os": "13.3",
       "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30,
@@ -72,7 +72,7 @@
     {
       "include": "eg_cq_tests.json",
       "device type": "iPhone X",
-      "os": "13.2.2",
+      "os": "13.3",
       "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30,
@@ -81,7 +81,7 @@
     {
       "include": "eg_cq_tests.json",
       "device type": "iPad Air 2",
-      "os": "13.2.2",
+      "os": "13.3",
       "pool":"chromium.tests",
       "host os": "Mac-10.14.6",
       "priority": 30,

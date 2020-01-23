@@ -9,15 +9,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/refcounted_browser_state_keyed_service_factory.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 namespace history {
 class TopSites;
 }
 
 namespace ios {
-
-class ChromeBrowserState;
-
 // TopSitesFactory is a singleton that associates history::TopSites instance to
 // ChromeBrowserState.
 class TopSitesFactory : public RefcountedBrowserStateKeyedServiceFactory {

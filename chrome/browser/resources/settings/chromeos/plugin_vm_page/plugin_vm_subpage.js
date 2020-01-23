@@ -10,6 +10,8 @@
 Polymer({
   is: 'settings-plugin-vm-subpage',
 
+  behaviors: [PrefsBehavior],
+
   properties: {
     /** Preferences state. */
     prefs: {
@@ -24,7 +26,19 @@ Polymer({
     },
   },
 
-  // TODO(juwa@google.com): Navigate back if plugin vm uninstalled.
+  observers: [
+    'onPluginVmImageExistsChanged_(prefs.plugin_vm.image_exists.value)',
+  ],
+
+  /**
+   * @param {boolean} exists
+   * @private
+   */
+  onPluginVmImageExistsChanged_(exists) {
+    if (!exists) {
+      settings.Router.getInstance().navigateTo(settings.routes.PLUGIN_VM);
+    }
+  },
 
   /** @private */
   onSharedPathsClick_() {

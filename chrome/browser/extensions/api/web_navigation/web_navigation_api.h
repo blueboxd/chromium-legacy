@@ -56,8 +56,7 @@ class WebNavigationTabObserver
                      const GURL& validated_url) override;
   void DidFailLoad(content::RenderFrameHost* render_frame_host,
                    const GURL& validated_url,
-                   int error_code,
-                   const base::string16& error_description) override;
+                   int error_code) override;
   void DidOpenRequestedURL(content::WebContents* new_contents,
                            content::RenderFrameHost* source_render_frame_host,
                            const GURL& url,

@@ -466,8 +466,7 @@ void Transform::TransformRect(RectF* rect) const {
     return;
 
   SkRect src = RectFToSkRect(*rect);
-  const SkMatrix& matrix = matrix_;
-  matrix.mapRect(&src);
+  SkMatrix(matrix_).mapRect(&src);
   *rect = SkRectToRectF(src);
 }
 
@@ -479,16 +478,15 @@ bool Transform::TransformRectReverse(RectF* rect) const {
   if (!matrix_.invert(&inverse))
     return false;
 
-  const SkMatrix& matrix = inverse;
   SkRect src = RectFToSkRect(*rect);
-  matrix.mapRect(&src);
+  SkMatrix(inverse).mapRect(&src);
   *rect = SkRectToRectF(src);
   return true;
 }
 
 bool Transform::TransformRRectF(RRectF* rrect) const {
   SkRRect result;
-  if (!SkRRect(*rrect).transform(matrix_, &result))
+  if (!SkRRect(*rrect).transform(SkMatrix(matrix_), &result))
     return false;
   *rrect = gfx::RRectF(result);
   return true;

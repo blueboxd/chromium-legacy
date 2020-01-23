@@ -52,6 +52,8 @@
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/memory_data_source.h"
+#include "media/learning/common/media_learning_tasks.h"
+#include "media/learning/mojo/public/cpp/mojo_learning_task_controller.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/data_url.h"
@@ -750,6 +752,9 @@ void WebMediaPlayerImpl::Play() {
   if (observer_)
     observer_->OnPlaying();
 
+  // Try to create the smoothness helper, in case we were paused before.
+  UpdateSmoothnessHelper();
+
   watch_time_reporter_->SetAutoplayInitiated(client_->WasAutoplayInitiated());
 
   // If we're seeking we'll trigger the watch time reporter upon seek completed;
@@ -785,6 +790,8 @@ void WebMediaPlayerImpl::Pause() {
 
   // No longer paused because it was hidden.
   paused_when_hidden_ = false;
+
+  UpdateSmoothnessHelper();
 
   // User initiated pause locks background videos.
   if (frame_->HasTransientUserActivation())
@@ -2221,6 +2228,9 @@ void WebMediaPlayerImpl::OnVideoNaturalSizeChange(const gfx::Size& size) {
     CreateVideoDecodeStatsReporter();
   }
 
+  // Create or replace the smoothness helper now that we have a size.
+  UpdateSmoothnessHelper();
+
   client_->SizeChanged();
 
   if (observer_)
@@ -2244,6 +2254,9 @@ void WebMediaPlayerImpl::OnVideoFrameRateChange(base::Optional<int> fps) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   if (power_status_helper_)
     power_status_helper_->SetAverageFrameRate(fps);
+
+  last_reported_fps_ = fps;
+  UpdateSmoothnessHelper();
 }
 
 void WebMediaPlayerImpl::OnAudioConfigChange(const AudioDecoderConfig& config) {
@@ -3660,6 +3673,52 @@ GURL WebMediaPlayerImpl::GetSrcAfterRedirects() {
 void WebMediaPlayerImpl::SetCurrentFrameOverrideForTesting(
     scoped_refptr<VideoFrame> current_frame_override) {
   current_frame_override_ = current_frame_override;
+}
+
+void WebMediaPlayerImpl::UpdateSmoothnessHelper() {
+  // If the experiment flag is off, then do nothing.
+  if (!base::FeatureList::IsEnabled(kMediaLearningSmoothnessExperiment))
+    return;
+
+  // If we're paused, or if we can't get all the features, then clear any
+  // smoothness helper and stop.  We'll try to create it later when we're
+  // playing and have all the features.
+  if (paused_ || !HasVideo() || pipeline_metadata_.natural_size.IsEmpty() ||
+      !last_reported_fps_) {
+    smoothness_helper_.reset();
+    return;
+  }
+
+  // Fill in features.
+  // NOTE: this is a very bad way to do this, since it memorizes the order of
+  // features in the task.  However, it'll do for now.
+  learning::FeatureVector features;
+  features.push_back(
+      learning::FeatureValue(pipeline_metadata_.video_decoder_config.codec()));
+  features.push_back(learning::FeatureValue(
+      pipeline_metadata_.video_decoder_config.profile()));
+  features.push_back(
+      learning::FeatureValue(pipeline_metadata_.natural_size.width()));
+  features.push_back(learning::FeatureValue(*last_reported_fps_));
+
+  // If we have a smoothness helper, and we're not changing the features, then
+  // do nothing.  This prevents restarting the helper for no reason.
+  if (smoothness_helper_ && features == smoothness_helper_->features())
+    return;
+
+  // Create or restart the smoothness helper with |features|.
+  // Get the LearningTaskController for |task|.
+  learning::LearningTask task = learning::MediaLearningTasks::Get(
+      learning::MediaLearningTasks::Id::kConsecutiveBadWindows);
+
+  mojo::Remote<media::learning::mojom::LearningTaskController> remote_ltc;
+  media_metrics_provider_->AcquireLearningTaskController(
+      task.name, remote_ltc.BindNewPipeAndPassReceiver());
+  auto mojo_ltc = std::make_unique<learning::MojoLearningTaskController>(
+      task, std::move(remote_ltc));
+
+  smoothness_helper_ =
+      SmoothnessHelper::Create(std::move(mojo_ltc), features, this);
 }
 
 }  // namespace media

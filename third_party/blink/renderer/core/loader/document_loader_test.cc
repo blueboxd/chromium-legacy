@@ -254,7 +254,7 @@ TEST_F(DocumentLoaderSimTest, FramePolicyIntegrityOnNavigationCommit) {
   auto* child_document = child_frame->GetFrame()->GetDocument();
 
   EXPECT_TRUE(child_document->IsFeatureEnabled(
-      blink::mojom::FeaturePolicyFeature::kPayment));
+      blink::mojom::blink::FeaturePolicyFeature::kPayment));
 }
 
 TEST_F(DocumentLoaderSimTest, ReportErrorWhenDocumentPolicyIncompatible) {

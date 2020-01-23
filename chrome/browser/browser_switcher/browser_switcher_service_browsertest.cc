@@ -554,7 +554,9 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
   run_loop.Run();
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, IeemIgnoresFailedDownload) {
+// Disabled test due to flaky failures on Win 7: crbug.com/1044619
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
+                       DISABLED_IeemIgnoresFailedDownload) {
   SetUseIeSitelist(true);
   BrowserSwitcherServiceWin::SetIeemSitelistUrlForTesting(kAValidUrl);
 

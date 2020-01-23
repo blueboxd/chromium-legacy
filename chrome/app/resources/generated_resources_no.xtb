@@ -648,7 +648,7 @@
 <translation id="1879000426787380528">Logg på som</translation>
 <translation id="1880905663253319515">Vil du slette sertifikatet «<ph name="CERTIFICATE_NAME" />»?</translation>
 <translation id="1884013283844450420">Nettverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" /> – <ph name="NETWORK_NAME" /> – koble til</translation>
-<translation id="1884930769492918228">Spor kameraposisjonen, og kartlegg rommet ditt</translation>
+<translation id="1884930769492918228">spore kameraposisjonen og kartlegge rommet ditt</translation>
 <translation id="1886996562706621347">Tillat at nettsteder kan be om å bli standardbehandlere for protokoller (anbefales)</translation>
 <translation id="1887442540531652736">Påloggingsfeil</translation>
 <translation id="1887597546629269384">Si «Hey Google» igjen</translation>
@@ -1701,7 +1701,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3382073616108123819">Beklager. Systemet kunne ikke fastslå enhetsidentifikatorer for denne enheten.</translation>
 <translation id="3382086682569279540">Kontoen du administrerer, fjernes snart</translation>
 <translation id="3382200254148930874">Avslutter tilsynet …</translation>
-<translation id="3383210070657133526"><ph name="URL" /> vil kunne starte virtuell virkelighet-økter</translation>
+<translation id="3383210070657133526"><ph name="URL" /> ønsker å kunne starte virtuell virkelighet-økter</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Skillelinje</translation>
 <translation id="338691029516748599">Nettverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" /> – <ph name="NETWORK_NAME" /> – <ph name="SECURITY_STATUS" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /> % – administreres av administratoren din – koble til</translation>
@@ -5018,7 +5018,6 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8101987792947961127">Powerwash kreves ved neste omstart</translation>
 <translation id="8102159139658438129">Gå til <ph name="LINK_BEGIN" />Innstillinger<ph name="LINK_END" /> for å se alternativer for den tilkoblede telefonen</translation>
 <translation id="8104696615244072556">Kjør Powerwash på <ph name="IDS_SHORT_PRODUCT_NAME" />-enheten din og gå tilbake til forrige versjon.</translation>
-<translation id="8106661353233173262">Noe gikk galt. Den skannede filen ble tidsavbrutt.</translation>
 <translation id="8107015733319732394">Installerer Google Play-butikken på <ph name="DEVICE_TYPE" />-enheten din. Dette kan ta noen minutter.</translation>
 <translation id="8108526232944491552">{COUNT,plural, =0{Ingen informasjonskapsler fra tredjeparter}=1{1 informasjonskapsel fra en tredjepart er blokkert}other{# informasjonskapsler fra tredjeparter er blokkert}}</translation>
 <translation id="810875025413331850">Fant ingen enheter i nærheten.</translation>

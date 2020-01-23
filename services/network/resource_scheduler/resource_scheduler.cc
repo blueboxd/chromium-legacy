@@ -1579,6 +1579,10 @@ bool ResourceScheduler::IsLongQueuedRequestsDispatchTimerRunning() const {
   return long_queued_requests_dispatch_timer_.IsRunning();
 }
 
+base::SequencedTaskRunner* ResourceScheduler::task_runner() {
+  return task_runner_.get();
+}
+
 void ResourceScheduler::SetResourceSchedulerParamsManagerForTests(
     const ResourceSchedulerParamsManager& resource_scheduler_params_manager) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

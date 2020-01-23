@@ -260,6 +260,7 @@ void CommandStorageBackend::InitIfNecessary() {
     return;
 
   inited_ = true;
+  base::CreateDirectory(path_.DirName());
   DoInit();
 }
 

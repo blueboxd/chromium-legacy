@@ -913,11 +913,11 @@ class FileTasks {
    * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
    */
   updateShareMenuButton_(shareMenuButton, tasks) {
-    let driveShareCommand =
+    const driveShareCommand =
         shareMenuButton.menu.querySelector('cr-menu-item[command="#share"]');
-    let driveShareCommandSeparator =
+    const driveShareCommandSeparator =
         shareMenuButton.menu.querySelector('#drive-share-separator');
-    let moreActionsSeparator =
+    const moreActionsSeparator =
         shareMenuButton.menu.querySelector('#more-actions-separator');
 
     // Update share command.
@@ -938,7 +938,7 @@ class FileTasks {
     // Temporarily remove the more actions item while the rest of the menu
     // items are being cleared out so we don't lose it and make it hidden for
     // now
-    let moreActions = shareMenuButton.menu.querySelector(
+    const moreActions = shareMenuButton.menu.querySelector(
         'cr-menu-item[command="#show-submenu"]');
     moreActions.remove();
     moreActions.setAttribute('hidden', '');

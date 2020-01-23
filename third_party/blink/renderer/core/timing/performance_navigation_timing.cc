@@ -49,14 +49,14 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
     LocalFrame* frame,
     ResourceTimingInfo* info,
     base::TimeTicks time_origin,
-    const WebVector<WebServerTimingInfo>& server_timing)
+    HeapVector<Member<PerformanceServerTiming>> server_timing)
     : PerformanceResourceTiming(
           info ? AtomicString(
                      info->FinalResponse().CurrentRequestUrl().GetString())
                : g_empty_atom,
           time_origin,
           SecurityOrigin::IsSecure(frame->GetDocument()->Url()),
-          server_timing),
+          std::move(server_timing)),
       ContextClient(frame),
       resource_timing_info_(info) {
   DCHECK(frame);

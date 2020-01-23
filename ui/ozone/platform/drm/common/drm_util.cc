@@ -151,9 +151,24 @@ ScopedDrmPropertyBlobPtr GetDrmPropertyBlob(int fd,
   return nullptr;
 }
 
-bool HasPrivacyScreen(int fd, drmModeConnector* connector) {
+display::PrivacyScreenState GetPrivacyScreenState(int fd,
+                                                  drmModeConnector* connector) {
   ScopedDrmPropertyPtr property;
-  return GetDrmProperty(fd, connector, "privacy-screen", &property) >= 0;
+  int index = GetDrmProperty(fd, connector, "privacy-screen", &property);
+  if (index < 0)
+    return display::PrivacyScreenState::kNotSupported;
+
+  DCHECK_LT(connector->prop_values[index],
+            display::PrivacyScreenState::kPrivacyScreenStateLast);
+  if (connector->prop_values[index] >=
+      display::PrivacyScreenState::kPrivacyScreenStateLast) {
+    LOG(ERROR) << "Invalid privacy-screen property value: Expected < "
+               << display::PrivacyScreenState::kPrivacyScreenStateLast
+               << ", but got: " << connector->prop_values[index];
+  }
+
+  return static_cast<display::PrivacyScreenState>(
+      connector->prop_values[index]);
 }
 
 bool IsAspectPreserving(int fd, drmModeConnector* connector) {
@@ -445,7 +460,8 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
       IsAspectPreserving(fd, info->connector());
   const display::PanelOrientation panel_orientation =
       GetPanelOrientation(fd, info->connector());
-  const bool has_privacy_screen = HasPrivacyScreen(fd, info->connector());
+  const display::PrivacyScreenState privacy_screen_state =
+      GetPrivacyScreenState(fd, info->connector());
   const bool has_color_correction_matrix =
       HasColorCorrectionMatrix(fd, info->crtc()) ||
       HasPerPlaneColorCorrectionMatrix(fd, info->crtc());
@@ -501,7 +517,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
 
   return std::make_unique<display::DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-      has_overscan, has_privacy_screen, has_color_correction_matrix,
+      has_overscan, privacy_screen_state, has_color_correction_matrix,
       color_correction_in_linear_space, display_color_space, bits_per_channel,
       display_name, sys_path, std::move(modes), panel_orientation, edid,
       current_mode, native_mode, product_code, year_of_manufacture,
@@ -521,7 +537,7 @@ std::vector<DisplaySnapshot_Params> CreateDisplaySnapshotParams(
     p.type = d->type();
     p.is_aspect_preserving_scaling = d->is_aspect_preserving_scaling();
     p.has_overscan = d->has_overscan();
-    p.has_privacy_screen = d->has_privacy_screen();
+    p.privacy_screen_state = d->privacy_screen_state();
     p.has_color_correction_matrix = d->has_color_correction_matrix();
     p.color_correction_in_linear_space = d->color_correction_in_linear_space();
     p.color_space = d->color_space();
@@ -570,7 +586,7 @@ std::unique_ptr<display::DisplaySnapshot> CreateDisplaySnapshot(
   return std::make_unique<display::DisplaySnapshot>(
       params.display_id, params.origin, params.physical_size, params.type,
       params.is_aspect_preserving_scaling, params.has_overscan,
-      params.has_privacy_screen, params.has_color_correction_matrix,
+      params.privacy_screen_state, params.has_color_correction_matrix,
       params.color_correction_in_linear_space, params.color_space,
       params.bits_per_channel, params.display_name, params.sys_path,
       std::move(modes), params.panel_orientation, params.edid, current_mode,

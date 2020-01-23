@@ -110,7 +110,7 @@ class CC_EXPORT FrameSequenceMetrics {
   bool HasEnoughDataForReporting() const;
   bool HasDataLeftForReporting() const;
   // Report related metrics: throughput, checkboarding...
-  void ReportMetrics(const std::string& debug_trace = std::string());
+  void ReportMetrics(std::string debug_trace = std::string());
 
   ThroughputData& impl_throughput() { return impl_throughput_; }
   ThroughputData& main_throughput() { return main_throughput_; }
@@ -430,6 +430,11 @@ class CC_EXPORT FrameSequenceTracker {
   // Note that |frame_sequence_trace_| is only defined and populated
   // when DCHECK is on.
   std::stringstream frame_sequence_trace_;
+
+  // |frame_sequence_trace_| can be very long, in some cases we just need a
+  // substring of it. This var tells us how many chars can be ignored from the
+  // beginning of that debug string.
+  unsigned ignored_trace_char_count_ = 0;
 
   // If ReportBeginImplFrame is never called on a arg, then ReportBeginMainFrame
   // should ignore that arg.

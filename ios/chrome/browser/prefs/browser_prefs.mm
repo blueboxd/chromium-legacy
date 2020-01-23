@@ -60,6 +60,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
+#import "ios/chrome/browser/web/font_size_tab_helper.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -121,6 +122,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   gcm::GCMChannelStatusSyncer::RegisterProfilePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
   language::LanguagePrefs::RegisterProfilePrefs(registry);
+  FontSizeTabHelper::RegisterBrowserStatePrefs(registry);
   ntp_snippets::ClickBasedCategoryRanker::RegisterProfilePrefs(registry);
   ntp_snippets::ContentSuggestionsService::RegisterProfilePrefs(registry);
   ntp_snippets::RemoteSuggestionsProviderImpl::RegisterProfilePrefs(registry);

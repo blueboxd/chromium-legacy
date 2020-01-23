@@ -44,7 +44,6 @@ class RenderViewImpl;
 class RenderWidget;
 struct FrameOwnerProperties;
 struct FrameReplicationState;
-struct ResourceTimingInfo;
 
 // When a page's frames are rendered by multiple processes, each renderer has a
 // full copy of the frame tree. It has full RenderFrames for the frames it is
@@ -236,8 +235,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnDidSetFramePolicyHeaders(
       blink::WebSandboxFlags active_sandbox_flags,
       blink::ParsedFeaturePolicy parsed_feature_policy);
-  void OnForwardResourceTimingToParent(
-      const ResourceTimingInfo& resource_timing);
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnSetFrameOwnerProperties(const FrameOwnerProperties& properties);

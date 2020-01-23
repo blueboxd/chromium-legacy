@@ -21,6 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
@@ -272,6 +273,29 @@ gfx::Rect OverviewItemView::GetHeaderBounds() const {
   return gfx::Rect(margin, margin,
                    GetLocalBounds().width() - (2 * margin) + right_padding,
                    kHeaderHeightDp);
+}
+
+gfx::Size OverviewItemView::GetPreviewViewSize() const {
+  // The preview should expand to fit the bounds allocated for the content,
+  // except if it is letterboxed or pillarboxed.
+  const gfx::SizeF preview_pref_size(preview_view()->GetPreferredSize());
+  const float aspect_ratio =
+      preview_pref_size.width() / preview_pref_size.height();
+  gfx::SizeF target_size(GetContentAreaBounds().size());
+  ScopedOverviewTransformWindow::GridWindowFillMode fill_mode =
+      overview_item_->GetWindowDimensionsType();
+  switch (fill_mode) {
+    case ScopedOverviewTransformWindow::GridWindowFillMode::kNormal:
+      break;
+    case ScopedOverviewTransformWindow::GridWindowFillMode::kLetterBoxed:
+      target_size.set_height(target_size.width() / aspect_ratio);
+      break;
+    case ScopedOverviewTransformWindow::GridWindowFillMode::kPillarBoxed:
+      target_size.set_width(target_size.height() * aspect_ratio);
+      break;
+  }
+
+  return gfx::ToRoundedSize(target_size);
 }
 
 views::View* OverviewItemView::GetView() {

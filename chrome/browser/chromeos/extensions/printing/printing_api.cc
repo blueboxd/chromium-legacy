@@ -4,11 +4,42 @@
 
 #include "chrome/browser/chromeos/extensions/printing/printing_api.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/printing/printing_api_handler.h"
 
 namespace extensions {
+
+PrintingSubmitJobFunction::~PrintingSubmitJobFunction() = default;
+
+ExtensionFunction::ResponseAction PrintingSubmitJobFunction::Run() {
+  std::unique_ptr<api::printing::SubmitJob::Params> params(
+      api::printing::SubmitJob::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  PrintingAPIHandler::Get(browser_context())
+      ->SubmitJob(extension_id(), std::move(params),
+                  base::BindOnce(
+                      &PrintingSubmitJobFunction::OnPrintJobSubmitted, this));
+
+  return RespondLater();
+}
+
+void PrintingSubmitJobFunction::OnPrintJobSubmitted(
+    base::Optional<api::printing::SubmitJobStatus> status,
+    std::unique_ptr<std::string> job_id,
+    base::Optional<std::string> error) {
+  if (error.has_value()) {
+    Respond(Error(error.value()));
+    return;
+  }
+  api::printing::SubmitJobResponse response;
+  DCHECK(status.has_value());
+  response.status = status.value();
+  response.job_id = std::move(job_id);
+  Respond(OneArgument(response.ToValue()));
+}
 
 PrintingGetPrintersFunction::~PrintingGetPrintersFunction() = default;
 

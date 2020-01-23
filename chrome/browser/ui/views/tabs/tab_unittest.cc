@@ -57,8 +57,8 @@ class FakeTabController : public TabController {
   void ToggleSelected(Tab* tab) override {}
   void AddSelectionFromAnchorTo(Tab* tab) override {}
   void CloseTab(Tab* tab, CloseTabSource source) override {}
-  void MoveTabRight(Tab* tab) override {}
-  void MoveTabLeft(Tab* tab) override {}
+  void ShiftTabRight(Tab* tab) override {}
+  void ShiftTabLeft(Tab* tab) override {}
   void MoveTabFirst(Tab* tab) override {}
   void MoveTabLast(Tab* tab) override {}
   void ShowContextMenuForTab(Tab* tab,

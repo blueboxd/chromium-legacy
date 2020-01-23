@@ -40,6 +40,7 @@
 #include "media/blink/media_blink_export.h"
 #include "media/blink/multibuffer_data_source.h"
 #include "media/blink/power_status_helper.h"
+#include "media/blink/smoothness_helper.h"
 #include "media/blink/video_frame_compositor.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/filters/pipeline_controller.h"
@@ -93,7 +94,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       public blink::WebMediaPlayerDelegate::Observer,
       public Pipeline::Client,
       public MediaObserverClient,
-      public blink::WebSurfaceLayerBridgeObserver {
+      public blink::WebSurfaceLayerBridgeObserver,
+      public SmoothnessHelper::Client {
  public:
   // Constructs a WebMediaPlayer implementation using Chromium's media stack.
   // |delegate| and |renderer_factory_selector| must not be null.
@@ -629,6 +631,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void SetCurrentFrameOverrideForTesting(
       scoped_refptr<VideoFrame> current_frame_override);
 
+  // Create / recreate |smoothness_helper_|, with current features.  Will take
+  // no action if we already have a smoothness helper with the same features
+  // that we want now.  Will destroy the helper if we shouldn't be measuring
+  // smoothness right now.
+  void UpdateSmoothnessHelper();
+
   blink::WebLocalFrame* const frame_;
 
   // The playback state last reported to |delegate_|, to avoid setting duplicate
@@ -1018,6 +1026,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   LearningExperimentHelper will_play_helper_;
 
   std::unique_ptr<PowerStatusHelper> power_status_helper_;
+
+  // Created while playing, deleted otherwise.
+  std::unique_ptr<SmoothnessHelper> smoothness_helper_;
+  base::Optional<int> last_reported_fps_;
 
   base::WeakPtr<WebMediaPlayerImpl> weak_this_;
   base::WeakPtrFactory<WebMediaPlayerImpl> weak_factory_{this};

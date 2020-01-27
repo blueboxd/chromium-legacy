@@ -2790,8 +2790,12 @@ TEST_P(VisualViewportTest, SetLocationBeforePrePaint) {
   EXPECT_EQ(FloatPoint(12, 34), visual_viewport.ScrollPosition());
   // When we create the scrolling layer, we should update its scroll offset.
   ASSERT_TRUE(visual_viewport.LayerForScrolling());
-  EXPECT_EQ(gfx::ScrollOffset(12, 34),
-            visual_viewport.LayerForScrolling()->CurrentScrollOffset());
+
+  auto* layer_tree_host = GetFrame()->View()->RootCcLayer()->layer_tree_host();
+  EXPECT_EQ(
+      gfx::ScrollOffset(12, 34),
+      layer_tree_host->property_trees()->scroll_tree.current_scroll_offset(
+          visual_viewport.GetScrollElementId()));
 }
 
 TEST_P(VisualViewportTest, ScrollbarGeometryOnSizeChange) {

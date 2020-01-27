@@ -62,12 +62,8 @@ class ContentTestLauncherDelegate : public TestLauncherDelegate {
     return ContentBrowserTestSuite(argc, argv).Run();
   }
 
-  bool AdjustChildProcessCommandLine(
-      base::CommandLine* command_line,
-      const base::FilePath& temp_data_dir) override {
-    command_line->AppendSwitchPath(switches::kContentShellDataPath,
-                                   temp_data_dir);
-    return true;
+  std::string GetUserDataDirectoryCommandLineSwitch() override {
+    return switches::kContentShellDataPath;
   }
 
  protected:

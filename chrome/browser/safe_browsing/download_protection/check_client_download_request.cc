@@ -59,7 +59,6 @@ CheckClientDownloadRequest::CheckClientDownloadRequest(
           item->GetTargetFilePath(),
           item->GetFullPath(),
           {item->GetTabUrl(), item->GetTabReferrerUrl()},
-          item->GetReceivedBytes(),
           item->GetMimeType(),
           item->GetHash(),
           content::DownloadItemUtils::GetBrowserContext(item),

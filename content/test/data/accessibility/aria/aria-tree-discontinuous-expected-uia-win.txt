@@ -1,7 +1,7 @@
 document PositionInSet=0 SizeOfSet=0
 ++tree PositionInSet=0 SizeOfSet=2 Selection.CanSelectMultiple=false Selection.IsSelectionRequired=false
-++++treeitem Name='card content' PositionInSet=1 SizeOfSet=2 ExpandCollapse.ExpandCollapseState='LeafNode' SelectionItem.IsSelected=false
+++++treeitem Name='card content' PositionInSet=1 SizeOfSet=2 ExpandCollapse.ExpandCollapseState='LeafNode'
 ++++++description Name='card content' IsControlElement=false PositionInSet=0 SizeOfSet=0
 ++++group PositionInSet=0 SizeOfSet=0
-++++treeitem Name='card content' PositionInSet=2 SizeOfSet=2 ExpandCollapse.ExpandCollapseState='LeafNode' SelectionItem.IsSelected=false
+++++treeitem Name='card content' PositionInSet=2 SizeOfSet=2 ExpandCollapse.ExpandCollapseState='LeafNode'
 ++++++description Name='card content' IsControlElement=false PositionInSet=0 SizeOfSet=0

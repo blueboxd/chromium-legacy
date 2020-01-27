@@ -23,7 +23,7 @@ TEST(PaintPreviewSerialUtils, TestMakeEmptyPicture) {
 TEST(PaintPreviewSerialUtils, TestPictureProcs) {
   auto pic = MakeEmptyPicture();
   uint32_t content_id = pic->uniqueID();
-  const uint64_t kFrameGuid = 2;
+  const base::UnguessableToken kFrameGuid = base::UnguessableToken::Create();
   PictureSerializationContext picture_ctx;
   EXPECT_TRUE(
       picture_ctx.insert(std::make_pair(content_id, kFrameGuid)).second);

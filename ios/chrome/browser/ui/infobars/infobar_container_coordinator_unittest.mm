@@ -209,7 +209,7 @@ class InfobarContainerCoordinatorTest : public PlatformTest {
   }
 
   base::test::TaskEnvironment environment_;
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   InfobarContainerCoordinator* infobar_container_coordinator_;
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<WebStateList> web_state_list_;

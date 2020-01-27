@@ -33,6 +33,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.chrome.browser.feed.library.sharedstream.contextmenumanager.ContextMenuManager.ContextMenuClickHandler;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.menumeasurer.MenuMeasurer;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.menumeasurer.Size;
+import org.chromium.chrome.feed.R;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;

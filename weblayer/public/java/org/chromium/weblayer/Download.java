@@ -26,6 +26,18 @@ public final class Download extends IClientDownload.Stub {
         mDownloadImpl = impl;
     }
 
+    /**
+     * By default downloads will show a system notification. Call this to disable it.
+     */
+    public void disableNotification() {
+        ThreadCheck.ensureOnUiThread();
+        try {
+            mDownloadImpl.disableNotification();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     @DownloadState
     public int getState() {
         ThreadCheck.ensureOnUiThread();
@@ -106,6 +118,19 @@ public final class Download extends IClientDownload.Stub {
         ThreadCheck.ensureOnUiThread();
         try {
             return new File(mDownloadImpl.getLocation());
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Returns the effective MIME type of downloaded content.
+     */
+    @NonNull
+    public String getMimeType() {
+        ThreadCheck.ensureOnUiThread();
+        try {
+            return mDownloadImpl.getMimeType();
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

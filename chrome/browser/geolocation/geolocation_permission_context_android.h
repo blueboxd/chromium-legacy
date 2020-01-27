@@ -27,9 +27,9 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/location_settings.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "components/location/android/location_settings_dialog_context.h"
 #include "components/location/android/location_settings_dialog_outcome.h"
+#include "components/permissions/permission_request_id.h"
 
 namespace content {
 class WebContents;
@@ -69,22 +69,22 @@ class GeolocationPermissionContextAndroid
 
   // GeolocationPermissionContext:
   void RequestPermission(content::WebContents* web_contents,
-                         const PermissionRequestID& id,
+                         const permissions::PermissionRequestID& id,
                          const GURL& requesting_frame_origin,
                          bool user_gesture,
                          BrowserPermissionCallback callback) override;
-  void UserMadePermissionDecision(const PermissionRequestID& id,
+  void UserMadePermissionDecision(const permissions::PermissionRequestID& id,
                                   const GURL& requesting_origin,
                                   const GURL& embedding_origin,
                                   ContentSetting content_setting) override;
-  void NotifyPermissionSet(const PermissionRequestID& id,
+  void NotifyPermissionSet(const permissions::PermissionRequestID& id,
                            const GURL& requesting_origin,
                            const GURL& embedding_origin,
                            BrowserPermissionCallback callback,
                            bool persist,
                            ContentSetting content_setting) override;
-  PermissionResult UpdatePermissionStatusWithDeviceStatus(
-      PermissionResult result,
+  permissions::PermissionResult UpdatePermissionStatusWithDeviceStatus(
+      permissions::PermissionResult result,
       const GURL& requesting_origin,
       const GURL& embedding_origin) const override;
 
@@ -106,11 +106,12 @@ class GeolocationPermissionContextAndroid
 
   bool IsRequestingOriginDSE(const GURL& requesting_origin) const;
 
-  void HandleUpdateAndroidPermissions(const PermissionRequestID& id,
-                                      const GURL& requesting_frame_origin,
-                                      const GURL& embedding_origin,
-                                      BrowserPermissionCallback callback,
-                                      bool permissions_updated);
+  void HandleUpdateAndroidPermissions(
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_frame_origin,
+      const GURL& embedding_origin,
+      BrowserPermissionCallback callback,
+      bool permissions_updated);
 
   // Will return true if the location settings dialog will be shown for the
   // given origins. This is true if the location setting is off, the dialog can
@@ -127,7 +128,7 @@ class GeolocationPermissionContextAndroid
       ContentSetting content_setting,
       LocationSettingsDialogOutcome prompt_outcome);
 
-  void FinishNotifyPermissionSet(const PermissionRequestID& id,
+  void FinishNotifyPermissionSet(const permissions::PermissionRequestID& id,
                                  const GURL& requesting_origin,
                                  const GURL& embedding_origin,
                                  BrowserPermissionCallback callback,
@@ -141,7 +142,7 @@ class GeolocationPermissionContextAndroid
 
   std::unique_ptr<LocationSettings> location_settings_;
 
-  PermissionRequestID location_settings_dialog_request_id_;
+  permissions::PermissionRequestID location_settings_dialog_request_id_;
   BrowserPermissionCallback location_settings_dialog_callback_;
 
   // Must be the last member, to ensure that it will be destroyed first, which

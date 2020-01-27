@@ -22,7 +22,8 @@ DownloadPermissionRequest::DownloadPermissionRequest(
 
 DownloadPermissionRequest::~DownloadPermissionRequest() {}
 
-PermissionRequest::IconId DownloadPermissionRequest::GetIconId() const {
+permissions::PermissionRequest::IconId DownloadPermissionRequest::GetIconId()
+    const {
 #if defined(OS_ANDROID)
   return IDR_ANDROID_INFOBAR_MULTIPLE_DOWNLOADS;
 #else
@@ -77,7 +78,7 @@ void DownloadPermissionRequest::RequestFinished() {
   delete this;
 }
 
-PermissionRequestType DownloadPermissionRequest::GetPermissionRequestType()
-    const {
-  return PermissionRequestType::DOWNLOAD;
+permissions::PermissionRequestType
+DownloadPermissionRequest::GetPermissionRequestType() const {
+  return permissions::PermissionRequestType::DOWNLOAD;
 }

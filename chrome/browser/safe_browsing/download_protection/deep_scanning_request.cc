@@ -224,6 +224,26 @@ void DeepScanningRequest::OnScanComplete(BinaryUploadService::Result result,
                  base::BindOnce(&DeepScanningRequest::OpenDownload,
                                 weak_ptr_factory_.GetWeakPtr()))) {
     return;
+  } else if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
+    int block_large_file_transfer =
+        g_browser_process->local_state()->GetInteger(
+            prefs::kBlockLargeFileTransfer);
+    if (block_large_file_transfer ==
+            BlockLargeFileTransferValues::BLOCK_LARGE_DOWNLOADS ||
+        block_large_file_transfer ==
+            BlockLargeFileTransferValues::BLOCK_LARGE_UPLOADS_AND_DOWNLOADS) {
+      download_result = DownloadCheckResult::BLOCKED_TOO_LARGE;
+    }
+  } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
+    int password_protected_allowed_policy =
+        g_browser_process->local_state()->GetInteger(
+            prefs::kAllowPasswordProtectedFiles);
+    if (password_protected_allowed_policy ==
+            AllowPasswordProtectedFilesValues::ALLOW_NONE ||
+        password_protected_allowed_policy ==
+            AllowPasswordProtectedFilesValues::ALLOW_UPLOADS) {
+      download_result = DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED;
+    }
   }
 
   FinishRequest(download_result);

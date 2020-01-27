@@ -431,8 +431,7 @@ void BrowserAccessibilityManagerAndroid::OnAtomicUpdateFinished(
 
 bool BrowserAccessibilityManagerAndroid::
     UseRootScrollOffsetsWhenComputingBounds() {
-  // The Java layer handles the root scroll offset.
-  return false;
+  return true;
 }
 
 WebContentsAccessibilityAndroid*

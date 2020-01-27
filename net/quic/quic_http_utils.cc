@@ -65,7 +65,8 @@ quic::ParsedQuicVersionVector FilterSupportedAltSvcVersions(
 
   for (uint32_t quic_version : quic_alt_svc.version) {
     for (quic::ParsedQuicVersion supported : supported_versions) {
-      if (static_cast<uint32_t>(supported.transport_version) == quic_version) {
+      if (supported.handshake_protocol == quic::PROTOCOL_QUIC_CRYPTO &&
+          static_cast<uint32_t>(supported.transport_version) == quic_version) {
         supported_alt_svc_versions.push_back(supported);
         RecordAltSvcFormat(GOOGLE_FORMAT);
       }

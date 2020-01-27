@@ -200,12 +200,23 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
           ::switches::kEnableExperimentalAccessibilitySwitchAccessText));
 }
 
+void AddPersonalizationStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"changePictureTitle", IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE},
+      {"openWallpaperApp", IDS_OS_SETTINGS_OPEN_WALLPAPER_APP},
+      {"personalizationPageTitle", IDS_OS_SETTINGS_PERSONALIZATION},
+      {"setWallpaper", IDS_OS_SETTINGS_SET_WALLPAPER},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+}
+
 }  // namespace
 
 void AddOsLocalizedStrings(content::WebUIDataSource* html_source,
                            Profile* profile,
                            content::WebContents* web_contents) {
   AddA11yStrings(html_source);
+  AddPersonalizationStrings(html_source);
 }
 
 }  // namespace settings

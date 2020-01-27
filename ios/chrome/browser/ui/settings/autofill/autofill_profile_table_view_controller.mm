@@ -56,7 +56,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @interface AutofillProfileTableViewController () <PersonalDataManagerObserver> {
   autofill::PersonalDataManager* _personalDataManager;
 
-  ios::ChromeBrowserState* _browserState;
+  ChromeBrowserState* _browserState;
   std::unique_ptr<autofill::PersonalDataManagerObserverBridge> _observer;
 
   // Deleting profiles updates PersonalDataManager resulting in an observer
@@ -74,7 +74,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @implementation AutofillProfileTableViewController
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
   DCHECK(browserState);
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain

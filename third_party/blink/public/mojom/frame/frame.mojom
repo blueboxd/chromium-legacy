@@ -14,6 +14,7 @@ import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom";
 import "third_party/blink/public/mojom/frame/fullscreen.mojom";
 import "third_party/blink/public/mojom/frame/lifecycle.mojom";
+import "third_party/blink/public/mojom/frame/media_player_action.mojom";
 import "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mojom";
 import "third_party/blink/public/mojom/frame/user_activation_update_types.mojom";
 import "third_party/blink/public/mojom/input/scroll_direction.mojom";
@@ -192,6 +193,33 @@ interface LocalFrameHost {
 
   // Notifies the browser that a document has been loaded.
   DidFinishDocumentLoad();
+
+  // A request to run a JavaScript dialog displaying |alert_message|.
+  [Sync]
+  RunModalAlertDialog(mojo_base.mojom.String16 alert_message) => ();
+
+  // A request to run a JavaScript dialog displaying |alert_message|.
+  // |success| will be true if the user clicked 'OK', false if the
+  // dialog was canceled.
+  [Sync]
+  RunModalConfirmDialog(mojo_base.mojom.String16 alert_message) =>
+                        (bool success);
+
+  // A request to run a confirm JavaScript dialog displaying
+  // |alert_message| with an editable text area with |default_value|.
+  // |success| will be true if the user clicked 'OK', false if the
+  // dialog was canceled. |result| will contain the result of
+  // the editable text area.
+  [Sync]
+  RunModalPromptDialog(mojo_base.mojom.String16 alert_message,
+                       mojo_base.mojom.String16 default_value) =>
+                       (bool success, mojo_base.mojom.String16 result);
+
+  // A request to run a confirmation JavaScript dialog. |is_reload|
+  // contains it the navigation causing the unload is a reload event.
+  // |success| contains whether the page should be unloaded or not.
+  [Sync]
+  RunBeforeUnloadConfirm(bool is_reload) => (bool success);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -271,6 +299,10 @@ interface LocalFrame {
   BeforeUnload(bool is_reload)
       => (bool proceed, mojo_base.mojom.TimeTicks before_unload_start_time,
           mojo_base.mojom.TimeTicks before_unload_end_time);
+
+  // Tells the renderer to perform the given action on the media player location
+  // at the given point in the view coordinate space.
+  MediaPlayerActionAt(gfx.mojom.Point location, blink.mojom.MediaPlayerAction action);
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that

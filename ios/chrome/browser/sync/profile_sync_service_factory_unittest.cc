@@ -101,7 +101,7 @@ class ProfileSyncServiceFactoryTest : public PlatformTest {
         syncer::ModelTypeSetToString(disabled_types));
   }
 
-  ios::ChromeBrowserState* chrome_browser_state() {
+  ChromeBrowserState* chrome_browser_state() {
     return chrome_browser_state_.get();
   }
 

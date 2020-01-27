@@ -48,12 +48,6 @@ class HeadlessTestLauncherDelegate : public content::TestLauncherDelegate {
     return test_suite.Run();
   }
 
-  bool AdjustChildProcessCommandLine(
-      base::CommandLine* command_line,
-      const base::FilePath& temp_data_dir) override {
-    return true;
-  }
-
  protected:
   content::ContentMainDelegate* CreateContentMainDelegate() override {
     // Use HeadlessBrowserTest::options() or HeadlessBrowserContextOptions to

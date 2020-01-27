@@ -447,7 +447,8 @@ class ScopedSurfaceToTexture {
 // no-oped when they are run.
 class ContextCurrentTaskRunner : public base::SingleThreadTaskRunner {
  public:
-  explicit ContextCurrentTaskRunner(SkiaOutputSurfaceImplOnGpu* impl_on_gpu)
+  explicit ContextCurrentTaskRunner(
+      base::WeakPtr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu)
       : real_task_runner_(base::ThreadTaskRunnerHandle::Get()),
         impl_on_gpu_(impl_on_gpu) {}
 
@@ -483,13 +484,13 @@ class ContextCurrentTaskRunner : public base::SingleThreadTaskRunner {
 
           std::move(task).Run();
         },
-        impl_on_gpu_->weak_ptr(), std::move(task));
+        impl_on_gpu_, std::move(task));
   }
 
   ~ContextCurrentTaskRunner() override = default;
 
   scoped_refptr<base::SingleThreadTaskRunner> real_task_runner_;
-  SkiaOutputSurfaceImplOnGpu* const impl_on_gpu_;
+  base::WeakPtr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextCurrentTaskRunner);
 };
@@ -1159,7 +1160,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
       return;
     }
     context_current_task_runner_ =
-        base::MakeRefCounted<ContextCurrentTaskRunner>(this);
+        base::MakeRefCounted<ContextCurrentTaskRunner>(weak_ptr_);
     texture_deleter_ =
         std::make_unique<TextureDeleter>(context_current_task_runner_);
     copier_ = std::make_unique<GLRendererCopier>(context_provider_,
@@ -1432,7 +1433,8 @@ bool SkiaOutputSurfaceImplOnGpu::Initialize() {
     if (!InitializeForGL())
       return false;
   }
-  max_resource_cache_bytes_ = context_state_->max_resource_cache_bytes();
+  max_resource_cache_bytes_ =
+      context_state_->gr_context()->getResourceCacheLimit();
   return true;
 }
 

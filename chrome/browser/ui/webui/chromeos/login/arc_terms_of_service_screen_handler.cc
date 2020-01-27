@@ -328,8 +328,10 @@ void ArcTermsOfServiceScreenHandler::RecordConsents(
   consent_auditor::ConsentAuditor* consent_auditor =
       ConsentAuditorFactory::GetForProfile(profile);
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
-  DCHECK(identity_manager->HasPrimaryAccount());
-  const CoreAccountId account_id = identity_manager->GetPrimaryAccountId();
+  // The account may or may not have consented to browser sync.
+  DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
+  const CoreAccountId account_id =
+      identity_manager->GetUnconsentedPrimaryAccountId();
 
   ArcPlayTermsOfServiceConsent play_consent;
   play_consent.set_status(tos_accepted ? UserConsentTypes::GIVEN

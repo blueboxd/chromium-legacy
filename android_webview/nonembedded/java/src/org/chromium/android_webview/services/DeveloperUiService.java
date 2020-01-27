@@ -17,6 +17,7 @@ import android.os.Build;
 import android.os.IBinder;
 import android.os.Process;
 
+import org.chromium.android_webview.common.DeveloperModeUtils;
 import org.chromium.android_webview.common.services.IDeveloperUiService;
 
 import java.util.HashMap;
@@ -130,9 +131,9 @@ public final class DeveloperUiService extends Service {
             startService(new Intent(this, DeveloperUiService.class));
             markAsForegroundService();
 
-            ComponentName developerModeContentProvider =
-                    new ComponentName(this, DeveloperModeContentProvider.class.getName());
-            getPackageManager().setComponentEnabledSetting(developerModeContentProvider,
+            ComponentName developerModeState =
+                    new ComponentName(this, DeveloperModeUtils.DEVELOPER_MODE_STATE_COMPONENT);
+            getPackageManager().setComponentEnabledSetting(developerModeState,
                     PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
 
             mDeveloperModeEnabled = true;
@@ -144,10 +145,10 @@ public final class DeveloperUiService extends Service {
             if (!mDeveloperModeEnabled) return;
             mDeveloperModeEnabled = false;
 
-            ComponentName developerModeContentProvider =
-                    new ComponentName(this, DeveloperModeContentProvider.class.getName());
-            getPackageManager().setComponentEnabledSetting(developerModeContentProvider,
-                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+            ComponentName developerModeState =
+                    new ComponentName(this, DeveloperModeUtils.DEVELOPER_MODE_STATE_COMPONENT);
+            getPackageManager().setComponentEnabledSetting(developerModeState,
+                    PackageManager.COMPONENT_ENABLED_STATE_DEFAULT, PackageManager.DONT_KILL_APP);
 
             // Finally, stop the service explicitly. Do this last to make sure we do the other
             // necessary cleanup.

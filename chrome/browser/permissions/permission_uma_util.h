@@ -9,17 +9,20 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/permissions/permission_request.h"
-#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_util.h"
+#include "components/permissions/permission_request.h"
+#include "components/permissions/permission_result.h"
 
 namespace content {
 class WebContents;
 }
 
+namespace permissions {
 enum class PermissionRequestGestureType;
-class GURL;
 class PermissionRequest;
+}  // namespace permissions
+
+class GURL;
 class Profile;
 
 // Any new values should be inserted immediately prior to NUM.
@@ -116,7 +119,7 @@ class PermissionUmaUtil {
       PermissionEmbargoStatus embargo_status);
 
   static void RecordEmbargoPromptSuppressionFromSource(
-      PermissionStatusSource source);
+      permissions::PermissionStatusSource source);
 
   static void RecordEmbargoStatus(PermissionEmbargoStatus embargo_status);
 
@@ -130,10 +133,10 @@ class PermissionUmaUtil {
   //   granted+denied+dismissed+ignored is not equal to requested), so it is
   //   unclear from those metrics alone how many prompts are seen by users.
   static void PermissionPromptShown(
-      const std::vector<PermissionRequest*>& requests);
+      const std::vector<permissions::PermissionRequest*>& requests);
 
   static void PermissionPromptResolved(
-      const std::vector<PermissionRequest*>& requests,
+      const std::vector<permissions::PermissionRequest*>& requests,
       content::WebContents* web_contents,
       PermissionAction permission_action,
       PermissionPromptDisposition ui_disposition);
@@ -146,14 +149,15 @@ class PermissionUmaUtil {
   friend class PermissionUmaUtilTest;
 
   // web_contents may be null when for recording non-prompt actions.
-  static void RecordPermissionAction(ContentSettingsType permission,
-                                     PermissionAction action,
-                                     PermissionSourceUI source_ui,
-                                     PermissionRequestGestureType gesture_type,
-                                     PermissionPromptDisposition ui_disposition,
-                                     const GURL& requesting_origin,
-                                     const content::WebContents* web_contents,
-                                     Profile* profile);
+  static void RecordPermissionAction(
+      ContentSettingsType permission,
+      PermissionAction action,
+      PermissionSourceUI source_ui,
+      permissions::PermissionRequestGestureType gesture_type,
+      PermissionPromptDisposition ui_disposition,
+      const GURL& requesting_origin,
+      const content::WebContents* web_contents,
+      Profile* profile);
 
   // Records |count| total prior actions for a prompt of type |permission|
   // for a single origin using |prefix| for the metric.
@@ -163,7 +167,7 @@ class PermissionUmaUtil {
       int count);
 
   static void RecordPromptDecided(
-      const std::vector<PermissionRequest*>& requests,
+      const std::vector<permissions::PermissionRequest*>& requests,
       bool accepted);
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionUmaUtil);

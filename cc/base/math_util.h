@@ -41,7 +41,7 @@ class Vector3dF;
 namespace cc {
 
 struct HomogeneousCoordinate {
-  HomogeneousCoordinate(SkMScalar x, SkMScalar y, SkMScalar z, SkMScalar w) {
+  HomogeneousCoordinate(SkScalar x, SkScalar y, SkScalar z, SkScalar w) {
     vec[0] = x;
     vec[1] = y;
     vec[2] = z;
@@ -51,33 +51,33 @@ struct HomogeneousCoordinate {
   bool ShouldBeClipped() const { return w() <= 0.0; }
 
   gfx::PointF CartesianPoint2d() const {
-    if (w() == SK_MScalar1)
+    if (w() == SK_Scalar1)
       return gfx::PointF(x(), y());
 
     // For now, because this code is used privately only by MathUtil, it should
     // never be called when w == 0, and we do not yet need to handle that case.
     DCHECK(w());
-    SkMScalar inv_w = SK_MScalar1 / w();
+    SkScalar inv_w = SK_Scalar1 / w();
     return gfx::PointF(x() * inv_w, y() * inv_w);
   }
 
   gfx::Point3F CartesianPoint3d() const {
-    if (w() == SK_MScalar1)
+    if (w() == SK_Scalar1)
       return gfx::Point3F(x(), y(), z());
 
     // For now, because this code is used privately only by MathUtil, it should
     // never be called when w == 0, and we do not yet need to handle that case.
     DCHECK(w());
-    SkMScalar inv_w = SK_MScalar1 / w();
+    SkScalar inv_w = SK_Scalar1 / w();
     return gfx::Point3F(x() * inv_w, y() * inv_w, z() * inv_w);
   }
 
-  SkMScalar x() const { return vec[0]; }
-  SkMScalar y() const { return vec[1]; }
-  SkMScalar z() const { return vec[2]; }
-  SkMScalar w() const { return vec[3]; }
+  SkScalar x() const { return vec[0]; }
+  SkScalar y() const { return vec[1]; }
+  SkScalar z() const { return vec[2]; }
+  SkScalar w() const { return vec[3]; }
 
-  SkMScalar vec[4];
+  SkScalar vec[4];
 };
 
 class CC_BASE_EXPORT MathUtil {

@@ -193,8 +193,10 @@ base::CommandLine WrapperTestLauncherDelegate::GetCommandLine(
   CreateDirectory(user_data_dir);
   base::CommandLine cmd_line(*base::CommandLine::ForCurrentProcess());
   launcher_delegate_->PreRunTest();
-  CHECK(launcher_delegate_->AdjustChildProcessCommandLine(&cmd_line,
-                                                          user_data_dir));
+  const std::string user_data_dir_switch =
+      launcher_delegate_->GetUserDataDirectoryCommandLineSwitch();
+  if (!user_data_dir_switch.empty())
+    cmd_line.AppendSwitchPath(user_data_dir_switch, user_data_dir);
   base::CommandLine new_cmd_line(cmd_line.GetProgram());
   base::CommandLine::SwitchMap switches = cmd_line.GetSwitches();
   // Strip out gtest_output flag because otherwise we would overwrite results
@@ -260,8 +262,6 @@ bool WrapperTestLauncherDelegate::ShouldRunTest(
                            base::CompareCase::SENSITIVE);
 }
 
-}  // namespace
-
 void AppendCommandLineSwitches() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
@@ -270,6 +270,12 @@ void AppendCommandLineSwitches() {
   // seconds after chrome starts.
   command_line->AppendSwitch(
       switches::kDisableGpuProcessForDX12VulkanInfoCollection);
+}
+
+}  // namespace
+
+std::string TestLauncherDelegate::GetUserDataDirectoryCommandLineSwitch() {
+  return std::string();
 }
 
 int LaunchTests(TestLauncherDelegate* launcher_delegate,
@@ -281,8 +287,7 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
   base::CommandLine::Init(argc, argv);
   AppendCommandLineSwitches();
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // TODO(tluk) Remove deprecation warning after a few releases. Deprecation
   // warning issued version 79.
@@ -340,6 +345,18 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
       command_line->HasSwitch(base::kGTestHelpFlag)) {
 #if !defined(OS_ANDROID)
     g_params = &params;
+    // The call to RunTestSuite() below bypasses TestLauncher, which creates
+    // a temporary directory that is used as the user-data-dir. Create a
+    // temporary directory now so that the test doesn't use the users home
+    // directory as it's data dir.
+    base::ScopedTempDir tmp_dir;
+    const std::string user_data_dir_switch =
+        launcher_delegate->GetUserDataDirectoryCommandLineSwitch();
+    if (!user_data_dir_switch.empty() &&
+        !command_line->HasSwitch(user_data_dir_switch)) {
+      CHECK(tmp_dir.CreateUniqueTempDir());
+      command_line->AppendSwitchPath(user_data_dir_switch, tmp_dir.GetPath());
+    }
 #endif
     return launcher_delegate->RunTestSuite(argc, argv);
   }

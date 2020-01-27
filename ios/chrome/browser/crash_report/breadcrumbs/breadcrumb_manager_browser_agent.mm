@@ -61,7 +61,7 @@ void BreadcrumbManagerBrowserAgent::WebStateInsertedAt(
   int web_state_id =
       BreadcrumbManagerTabHelper::FromWebState(web_state)->GetUniqueId();
   const char* activating_string = activating ? "active" : "inactive";
-  LogEvent(base::StringPrintf("Insert %s WebState_%d at %d", activating_string,
+  LogEvent(base::StringPrintf("Insert %s Tab%d at %d", activating_string,
                               web_state_id, index));
 }
 void BreadcrumbManagerBrowserAgent::WebStateMoved(WebStateList* web_state_list,
@@ -70,7 +70,7 @@ void BreadcrumbManagerBrowserAgent::WebStateMoved(WebStateList* web_state_list,
                                                   int to_index) {
   int web_state_id =
       BreadcrumbManagerTabHelper::FromWebState(web_state)->GetUniqueId();
-  LogEvent(base::StringPrintf("Moved WebState_%d from %d to %d", web_state_id,
+  LogEvent(base::StringPrintf("Moved Tab%d from %d to %d", web_state_id,
                               from_index, to_index));
 }
 void BreadcrumbManagerBrowserAgent::WebStateReplacedAt(
@@ -82,7 +82,7 @@ void BreadcrumbManagerBrowserAgent::WebStateReplacedAt(
       BreadcrumbManagerTabHelper::FromWebState(old_web_state)->GetUniqueId();
   int new_web_state_id =
       BreadcrumbManagerTabHelper::FromWebState(new_web_state)->GetUniqueId();
-  LogEvent(base::StringPrintf("Replaced WebState_%d with WebState_%d at %d",
+  LogEvent(base::StringPrintf("Replaced Tab%d with Tab%d at %d",
                               old_web_state_id, new_web_state_id, index));
 }
 void BreadcrumbManagerBrowserAgent::WillDetachWebStateAt(
@@ -91,8 +91,7 @@ void BreadcrumbManagerBrowserAgent::WillDetachWebStateAt(
     int index) {
   int web_state_id =
       BreadcrumbManagerTabHelper::FromWebState(web_state)->GetUniqueId();
-  LogEvent(base::StringPrintf("Will Detatch WebState_%d at %d", web_state_id,
-                              index));
+  LogEvent(base::StringPrintf("Will Detatch Tab%d at %d", web_state_id, index));
 }
 void BreadcrumbManagerBrowserAgent::WebStateDetachedAt(
     WebStateList* web_state_list,
@@ -100,8 +99,7 @@ void BreadcrumbManagerBrowserAgent::WebStateDetachedAt(
     int index) {
   int web_state_id =
       BreadcrumbManagerTabHelper::FromWebState(web_state)->GetUniqueId();
-  LogEvent(
-      base::StringPrintf("WebState_%d detached at %d", web_state_id, index));
+  LogEvent(base::StringPrintf("Tab%d detached at %d", web_state_id, index));
 }
 void BreadcrumbManagerBrowserAgent::WillCloseWebStateAt(
     WebStateList* web_state_list,
@@ -111,8 +109,8 @@ void BreadcrumbManagerBrowserAgent::WillCloseWebStateAt(
   int web_state_id =
       BreadcrumbManagerTabHelper::FromWebState(web_state)->GetUniqueId();
   const char* user_action_string = user_action ? " by user action" : "";
-  LogEvent(base::StringPrintf("WebState_%d will close at %d%s", web_state_id,
-                              index, user_action_string));
+  LogEvent(base::StringPrintf("Tab%d will close at %d%s", web_state_id, index,
+                              user_action_string));
 }
 void BreadcrumbManagerBrowserAgent::WebStateActivatedAt(
     WebStateList* web_state_list,
@@ -143,7 +141,7 @@ void BreadcrumbManagerBrowserAgent::WebStateActivatedAt(
       change_reason_string = "for user action";
       break;
   }
-  LogEvent(base::StringPrintf("Activated WebState_%d %s WebState_%d at %d",
+  LogEvent(base::StringPrintf("Activated Tab%d %s Tab%d at %d",
                               old_web_state_id, change_reason_string,
                               new_web_state_id, active_index));
 }

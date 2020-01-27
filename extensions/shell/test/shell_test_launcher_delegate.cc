@@ -20,12 +20,9 @@ int AppShellTestLauncherDelegate::RunTestSuite(int argc, char** argv) {
   return test_suite.Run();
 }
 
-bool AppShellTestLauncherDelegate::AdjustChildProcessCommandLine(
-    base::CommandLine* command_line,
-    const base::FilePath& temp_data_dir) {
-  command_line->AppendSwitchPath(switches::kContentShellDataPath,
-                                 temp_data_dir);
-  return true;
+std::string
+AppShellTestLauncherDelegate::GetUserDataDirectoryCommandLineSwitch() {
+  return switches::kContentShellDataPath;
 }
 
 content::ContentMainDelegate*

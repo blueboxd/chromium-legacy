@@ -16,4 +16,6 @@ interface IDownload {
   void cancel() = 5;
   String getLocation() = 6;
   int getError() = 7;
+  String getMimeType() = 8;
+  void disableNotification() = 9;
 }

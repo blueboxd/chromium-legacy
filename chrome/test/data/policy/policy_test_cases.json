@@ -4828,6 +4828,8 @@
 
   "ReportDeviceGraphicsStatus": {},
 
+  "ReportDeviceCrashReportInfo": {},
+
   "ReportDevicePowerStatus": {},
 
   "ReportDeviceStorageStatus": {},

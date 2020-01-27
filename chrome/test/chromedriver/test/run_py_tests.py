@@ -2510,6 +2510,14 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.SwitchToWindow(different_domain)
     self.CheckPermission(self.GetPermission('geolocation'), 'denied')
 
+  # Tests that the webauthn:virtualAuthenticators capability is true on desktop
+  # and false on android.
+  def testWebauthnVirtualAuthenticatorsCapability(self):
+    is_desktop = _ANDROID_PACKAGE_KEY is None
+    self.assertEqual(
+        is_desktop,
+        self._driver.capabilities['webauthn:virtualAuthenticators'])
+
 # Tests that require a secure context.
 class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
   # The example attestation private key from the U2F spec at

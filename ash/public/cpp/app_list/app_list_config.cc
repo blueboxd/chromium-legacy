@@ -488,10 +488,10 @@ AppListConfig& AppListConfig::instance() {
 int AppListConfig::GetPreferredIconDimension(
     SearchResultDisplayType display_type) const {
   switch (display_type) {
-    case SearchResultDisplayType::kRecommendation:
-      FALLTHROUGH;
     case SearchResultDisplayType::kTile:
       return search_tile_icon_dimension_;
+    case SearchResultDisplayType::kChip:
+      return suggestion_chip_icon_dimension_;
     case SearchResultDisplayType::kList:
       return search_list_icon_dimension_;
     case SearchResultDisplayType::kNone:  // Falls through.

@@ -376,6 +376,22 @@ TEST(SessionCommandsTest, MatchCapabilities) {
   ASSERT_TRUE(MatchCapabilities(&merged));
 }
 
+TEST(SessionCommandsTest, MatchCapabilitiesVirtualAuthenticators) {
+  // Match webauthn:virtualAuthenticators on desktop.
+  base::DictionaryValue merged;
+  merged.SetBoolean("webauthn:virtualAuthenticators", true);
+  EXPECT_TRUE(MatchCapabilities(&merged));
+
+  // Don't match webauthn:virtualAuthenticators on android.
+  merged.SetStringPath("goog:chromeOptions.androidPackage", "packageName");
+  EXPECT_FALSE(MatchCapabilities(&merged));
+
+  // Don't match values other than bools.
+  merged.Clear();
+  merged.SetString("webauthn:virtualAuthenticators", "not a bool");
+  EXPECT_FALSE(MatchCapabilities(&merged));
+}
+
 TEST(SessionCommandsTest, Quit) {
   DetachChrome* chrome = new DetachChrome();
   Session session("id", std::unique_ptr<Chrome>(chrome));

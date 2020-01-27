@@ -26,10 +26,10 @@ struct GEOMETRY_SKIA_EXPORT DecomposedTransform {
   // if used with Compose below, will produce the identity transform.
   DecomposedTransform();
 
-  SkMScalar translate[3];
-  SkMScalar scale[3];
-  SkMScalar skew[3];
-  SkMScalar perspective[4];
+  SkScalar translate[3];
+  SkScalar scale[3];
+  SkScalar skew[3];
+  SkScalar perspective[4];
   Quaternion quaternion;
 
   std::string ToString() const;

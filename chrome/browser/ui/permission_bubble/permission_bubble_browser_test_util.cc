@@ -24,7 +24,7 @@ TestPermissionBubbleViewDelegate::TestPermissionBubbleViewDelegate()
 
 TestPermissionBubbleViewDelegate::~TestPermissionBubbleViewDelegate() {}
 
-const std::vector<PermissionRequest*>&
+const std::vector<permissions::PermissionRequest*>&
 TestPermissionBubbleViewDelegate::Requests() {
   return requests_;
 }
@@ -48,7 +48,7 @@ void PermissionBubbleBrowserTest::SetUpOnMainThread() {
       "Request 1", l10n_util::GetStringUTF8(IDS_PERMISSION_ALLOW),
       l10n_util::GetStringUTF8(IDS_PERMISSION_DENY)));
 
-  std::vector<PermissionRequest*> raw_requests;
+  std::vector<permissions::PermissionRequest*> raw_requests;
   raw_requests.push_back(requests_[0].get());
   test_delegate_.set_requests(raw_requests);
 }

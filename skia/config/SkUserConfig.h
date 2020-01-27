@@ -145,9 +145,6 @@
 #define SK_REF_CNT_MIXIN_INCLUDE "skia/config/sk_ref_cnt_ext_release.h"
 #endif
 
-#define SK_MSCALAR_IS_FLOAT
-#undef SK_MSCALAR_IS_DOUBLE
-
 // Log the file and line number for assertions.
 #define SkDebugf(...) SkDebugf_FileLine(__FILE__, __LINE__, __VA_ARGS__)
 SK_API void SkDebugf_FileLine(const char* file,
@@ -220,10 +217,6 @@ SK_API void SkDebugf_FileLine(const char* file,
 
 #ifndef SK_SUPPORT_LEGACY_AAA_CHOICE
 #define SK_SUPPORT_LEGACY_AAA_CHOICE
-#endif
-
-#ifndef SK_SUPPORT_LEGACY_MSCALAR
-#define SK_SUPPORT_LEGACY_MSCALAR
 #endif
 
 #ifndef SK_SUPPORT_LEGACY_COLORSPACE_INCLUDES_MATRIX44

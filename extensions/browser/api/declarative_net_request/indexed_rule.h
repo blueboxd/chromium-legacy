@@ -71,6 +71,12 @@ struct IndexedRule {
   DISALLOW_COPY_AND_ASSIGN(IndexedRule);
 };
 
+// Compute the rule priority for indexing, by combining the priority from
+// the JSON rule and the priority of the action type. Exposed for testing.
+uint64_t ComputeIndexedRulePriority(
+    int parsed_rule_priority,
+    api::declarative_net_request::RuleActionType action_type);
+
 }  // namespace declarative_net_request
 }  // namespace extensions
 

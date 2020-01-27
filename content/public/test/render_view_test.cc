@@ -246,13 +246,14 @@ void RenderViewTest::RendererBlinkPlatformImplTestOverride::Shutdown() {
   blink_platform_impl_->Shutdown();
 }
 
-RenderViewTest::RenderViewTest() {
-  // Overrides creation of RenderFrameImpl.
-  RenderFrameImpl::InstallCreateHook(&TestRenderFrame::CreateTestRenderFrame);
+RenderViewTest::RenderViewTest(bool hook_render_frame_creation) {
+  // Overrides creation of RenderFrameImpl. Subclasses may wish to do this
+  // themselves and it can only be done once.
+  if (hook_render_frame_creation)
+    RenderFrameImpl::InstallCreateHook(&TestRenderFrame::CreateTestRenderFrame);
 }
 
-RenderViewTest::~RenderViewTest() {
-}
+RenderViewTest::~RenderViewTest() = default;
 
 WebLocalFrame* RenderViewTest::GetMainFrame() {
   return view_->GetWebView()->MainFrame()->ToWebLocalFrame();

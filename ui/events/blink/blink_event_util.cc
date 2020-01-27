@@ -613,11 +613,11 @@ std::pair<WebGestureEvent, WebGestureEvent> CoalesceScrollAndPinch(
   combined_scroll_pinch.ConcatTransform(GetTransformForEvent(new_event));
 
   float combined_scale =
-      SkMScalarToFloat(combined_scroll_pinch.matrix().get(0, 0));
+      SkScalarToFloat(combined_scroll_pinch.matrix().get(0, 0));
   float combined_scroll_pinch_x =
-      SkMScalarToFloat(combined_scroll_pinch.matrix().get(0, 3));
+      SkScalarToFloat(combined_scroll_pinch.matrix().get(0, 3));
   float combined_scroll_pinch_y =
-      SkMScalarToFloat(combined_scroll_pinch.matrix().get(1, 3));
+      SkScalarToFloat(combined_scroll_pinch.matrix().get(1, 3));
   scroll_event.data.scroll_update.delta_x =
       (combined_scroll_pinch_x + pinch_event.PositionInWidget().x()) /
           combined_scale -

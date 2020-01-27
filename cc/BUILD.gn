@@ -742,6 +742,7 @@ cc_test("cc_unittests") {
 
   if (!is_android) {
     data = [ "//components/viz/test/data/" ]
+    sources += [ "paint/skottie_transfer_cache_entry_unittest.cc" ]
   }
 
   if (is_win) {

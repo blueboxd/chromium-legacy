@@ -36,9 +36,10 @@ constexpr char kPermissionRequestTitle[] = "test";
 class MockPermissionPromptDelegate : public PermissionPrompt::Delegate {
  public:
   MockPermissionPromptDelegate()
-      : permission_request_(kPermissionRequestTitle,
-                            PermissionRequestType::PERMISSION_NOTIFICATIONS,
-                            GURL(kExampleUrl)) {
+      : permission_request_(
+            kPermissionRequestTitle,
+            permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
+            GURL(kExampleUrl)) {
     requests_.push_back(&permission_request_);
   }
 
@@ -47,13 +48,13 @@ class MockPermissionPromptDelegate : public PermissionPrompt::Delegate {
   MOCK_METHOD0(Deny, void());
   MOCK_METHOD0(GetDisplayNameOrOrigin, PermissionPrompt::DisplayNameOrOrigin());
 
-  const std::vector<PermissionRequest*>& Requests() override {
+  const std::vector<permissions::PermissionRequest*>& Requests() override {
     return requests_;
   }
 
  private:
   MockPermissionRequest permission_request_;
-  std::vector<PermissionRequest*> requests_;
+  std::vector<permissions::PermissionRequest*> requests_;
 };
 
 class PermissionRequestNotificationAndroidTest : public testing::Test {

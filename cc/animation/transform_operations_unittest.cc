@@ -225,9 +225,9 @@ TEST(TransformOperationTest, NoneAlwaysMatches) {
 }
 
 TEST(TransformOperationTest, ApplyTranslate) {
-  SkMScalar x = 1;
-  SkMScalar y = 2;
-  SkMScalar z = 3;
+  SkScalar x = 1;
+  SkScalar y = 2;
+  SkScalar z = 3;
   TransformOperations operations;
   operations.AppendTranslate(x, y, z);
   gfx::Transform expected;
@@ -236,10 +236,10 @@ TEST(TransformOperationTest, ApplyTranslate) {
 }
 
 TEST(TransformOperationTest, ApplyRotate) {
-  SkMScalar x = 1;
-  SkMScalar y = 2;
-  SkMScalar z = 3;
-  SkMScalar degrees = 80;
+  SkScalar x = 1;
+  SkScalar y = 2;
+  SkScalar z = 3;
+  SkScalar degrees = 80;
   TransformOperations operations;
   operations.AppendRotate(x, y, z, degrees);
   gfx::Transform expected;
@@ -248,9 +248,9 @@ TEST(TransformOperationTest, ApplyRotate) {
 }
 
 TEST(TransformOperationTest, ApplyScale) {
-  SkMScalar x = 1;
-  SkMScalar y = 2;
-  SkMScalar z = 3;
+  SkScalar x = 1;
+  SkScalar y = 2;
+  SkScalar z = 3;
   TransformOperations operations;
   operations.AppendScale(x, y, z);
   gfx::Transform expected;
@@ -259,8 +259,8 @@ TEST(TransformOperationTest, ApplyScale) {
 }
 
 TEST(TransformOperationTest, ApplySkew) {
-  SkMScalar x = 1;
-  SkMScalar y = 2;
+  SkScalar x = 1;
+  SkScalar y = 2;
   TransformOperations operations;
   operations.AppendSkew(x, y);
   gfx::Transform expected;
@@ -269,7 +269,7 @@ TEST(TransformOperationTest, ApplySkew) {
 }
 
 TEST(TransformOperationTest, ApplyPerspective) {
-  SkMScalar depth = 800;
+  SkScalar depth = 800;
   TransformOperations operations;
   operations.AppendPerspective(depth);
   gfx::Transform expected;
@@ -278,9 +278,9 @@ TEST(TransformOperationTest, ApplyPerspective) {
 }
 
 TEST(TransformOperationTest, ApplyMatrix) {
-  SkMScalar dx = 1;
-  SkMScalar dy = 2;
-  SkMScalar dz = 3;
+  SkScalar dx = 1;
+  SkScalar dy = 2;
+  SkScalar dz = 3;
   gfx::Transform expected_matrix;
   expected_matrix.Translate3d(dx, dy, dz);
   TransformOperations matrix_transform;
@@ -289,13 +289,13 @@ TEST(TransformOperationTest, ApplyMatrix) {
 }
 
 TEST(TransformOperationTest, ApplyOrder) {
-  SkMScalar sx = 2;
-  SkMScalar sy = 4;
-  SkMScalar sz = 8;
+  SkScalar sx = 2;
+  SkScalar sy = 4;
+  SkScalar sz = 8;
 
-  SkMScalar dx = 1;
-  SkMScalar dy = 2;
-  SkMScalar dz = 3;
+  SkScalar dx = 1;
+  SkScalar dy = 2;
+  SkScalar dz = 3;
 
   TransformOperations operations;
   operations.AppendScale(sx, sy, sz);
@@ -314,25 +314,25 @@ TEST(TransformOperationTest, ApplyOrder) {
 }
 
 TEST(TransformOperationTest, BlendOrder) {
-  SkMScalar sx1 = 2;
-  SkMScalar sy1 = 4;
-  SkMScalar sz1 = 8;
+  SkScalar sx1 = 2;
+  SkScalar sy1 = 4;
+  SkScalar sz1 = 8;
 
-  SkMScalar dx1 = 1;
-  SkMScalar dy1 = 2;
-  SkMScalar dz1 = 3;
+  SkScalar dx1 = 1;
+  SkScalar dy1 = 2;
+  SkScalar dz1 = 3;
 
-  SkMScalar sx2 = 4;
-  SkMScalar sy2 = 8;
-  SkMScalar sz2 = 16;
+  SkScalar sx2 = 4;
+  SkScalar sy2 = 8;
+  SkScalar sz2 = 16;
 
-  SkMScalar dx2 = 10;
-  SkMScalar dy2 = 20;
-  SkMScalar dz2 = 30;
+  SkScalar dx2 = 10;
+  SkScalar dy2 = 20;
+  SkScalar dz2 = 30;
 
-  SkMScalar sx3 = 2;
-  SkMScalar sy3 = 1;
-  SkMScalar sz3 = 1;
+  SkScalar sx3 = 2;
+  SkScalar sy3 = 1;
+  SkScalar sz3 = 1;
 
   TransformOperations operations_from;
   operations_from.AppendScale(sx1, sy1, sz1);
@@ -352,7 +352,7 @@ TEST(TransformOperationTest, BlendOrder) {
   gfx::Transform translate_to;
   translate_to.Translate3d(dx2, dy2, dz2);
 
-  SkMScalar progress = 0.25f;
+  SkScalar progress = 0.25f;
 
   TransformOperations operations_expected;
   operations_expected.AppendScale(
@@ -446,7 +446,7 @@ TEST(TransformOperationTest, BlendOrder) {
   }
 }
 
-static void CheckProgress(SkMScalar progress,
+static void CheckProgress(SkScalar progress,
                           const gfx::Transform& from_matrix,
                           const gfx::Transform& to_matrix,
                           const TransformOperations& from_transform,
@@ -458,9 +458,9 @@ static void CheckProgress(SkMScalar progress,
 }
 
 TEST(TransformOperationTest, BlendProgress) {
-  SkMScalar sx = 2;
-  SkMScalar sy = 4;
-  SkMScalar sz = 8;
+  SkScalar sx = 2;
+  SkScalar sy = 4;
+  SkScalar sz = 8;
   TransformOperations operations_from;
   operations_from.AppendScale(sx, sy, sz);
 
@@ -485,21 +485,21 @@ TEST(TransformOperationTest, BlendProgress) {
 }
 
 TEST(TransformOperationTest, BlendWhenTypesDoNotMatch) {
-  SkMScalar sx1 = 2;
-  SkMScalar sy1 = 4;
-  SkMScalar sz1 = 8;
+  SkScalar sx1 = 2;
+  SkScalar sy1 = 4;
+  SkScalar sz1 = 8;
 
-  SkMScalar dx1 = 1;
-  SkMScalar dy1 = 2;
-  SkMScalar dz1 = 3;
+  SkScalar dx1 = 1;
+  SkScalar dy1 = 2;
+  SkScalar dz1 = 3;
 
-  SkMScalar sx2 = 4;
-  SkMScalar sy2 = 8;
-  SkMScalar sz2 = 16;
+  SkScalar sx2 = 4;
+  SkScalar sy2 = 8;
+  SkScalar sz2 = 16;
 
-  SkMScalar dx2 = 10;
-  SkMScalar dy2 = 20;
-  SkMScalar dz2 = 30;
+  SkScalar dx2 = 10;
+  SkScalar dy2 = 20;
+  SkScalar dz2 = 30;
 
   TransformOperations operations_from;
   operations_from.AppendScale(sx1, sy1, sz1);
@@ -517,7 +517,7 @@ TEST(TransformOperationTest, BlendWhenTypesDoNotMatch) {
   to.Translate3d(dx2, dy2, dz2);
   to.Scale3d(sx2, sy2, sz2);
 
-  SkMScalar progress = 0.25f;
+  SkScalar progress = 0.25f;
 
   gfx::Transform expected = to;
   expected.Blend(from, progress);
@@ -533,7 +533,7 @@ TEST(TransformOperationTest, LargeRotationsWithSameAxis) {
   TransformOperations operations_to;
   operations_to.AppendRotate(0, 0, 2, 360);
 
-  SkMScalar progress = 0.5f;
+  SkScalar progress = 0.5f;
 
   gfx::Transform expected;
   expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 180);
@@ -549,7 +549,7 @@ TEST(TransformOperationTest, LargeRotationsWithSameAxisInDifferentDirection) {
   TransformOperations operations_to;
   operations_to.AppendRotate(0, 0, -1, 180);
 
-  SkMScalar progress = 0.5f;
+  SkScalar progress = 0.5f;
 
   gfx::Transform expected;
 
@@ -564,7 +564,7 @@ TEST(TransformOperationTest, LargeRotationsWithDifferentAxes) {
   TransformOperations operations_to;
   operations_to.AppendRotate(0, 1, 0, 175);
 
-  SkMScalar progress = 0.5f;
+  SkScalar progress = 0.5f;
   gfx::Transform matrix_from;
   matrix_from.RotateAbout(gfx::Vector3dF(0, 0, 1), 175);
 
@@ -585,7 +585,7 @@ TEST(TransformOperationTest, RotationFromZeroDegDifferentAxes) {
   TransformOperations operations_to;
   operations_to.AppendRotate(0, 1, 0, 450);
 
-  SkMScalar progress = 0.5f;
+  SkScalar progress = 0.5f;
   gfx::Transform expected;
   expected.RotateAbout(gfx::Vector3dF(0, 1, 0), 225);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -599,7 +599,7 @@ TEST(TransformOperationTest, RotationFromZeroDegSameAxes) {
   TransformOperations operations_to;
   operations_to.AppendRotate(0, 0, 1, 450);
 
-  SkMScalar progress = 0.5f;
+  SkScalar progress = 0.5f;
   gfx::Transform expected;
   expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 225);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -613,7 +613,7 @@ TEST(TransformOperationTest, RotationToZeroDegDifferentAxes) {
   TransformOperations operations_to;
   operations_to.AppendRotate(0, 0, 1, 0);
 
-  SkMScalar progress = 0.5f;
+  SkScalar progress = 0.5f;
   gfx::Transform expected;
   expected.RotateAbout(gfx::Vector3dF(0, 1, 0), 225);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -627,7 +627,7 @@ TEST(TransformOperationTest, RotationToZeroDegSameAxes) {
   TransformOperations operations_to;
   operations_to.AppendRotate(0, 0, 1, 0);
 
-  SkMScalar progress = 0.5f;
+  SkScalar progress = 0.5f;
   gfx::Transform expected;
   expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 225);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
@@ -642,7 +642,7 @@ TEST(TransformOperationTest, BlendRotationFromIdentity) {
     TransformOperations operations;
     operations.AppendRotate(0, 0, 1, 90);
 
-    SkMScalar progress = 0.5f;
+    SkScalar progress = 0.5f;
 
     gfx::Transform expected;
     expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 45);
@@ -676,7 +676,7 @@ TEST(TransformOperationTest, BlendTranslationFromIdentity) {
     TransformOperations operations;
     operations.AppendTranslate(2, 2, 2);
 
-    SkMScalar progress = 0.5f;
+    SkScalar progress = 0.5f;
 
     gfx::Transform expected;
     expected.Translate3d(1, 1, 1);
@@ -710,7 +710,7 @@ TEST(TransformOperationTest, BlendScaleFromIdentity) {
     TransformOperations operations;
     operations.AppendScale(3, 3, 3);
 
-    SkMScalar progress = 0.5f;
+    SkScalar progress = 0.5f;
 
     gfx::Transform expected;
     expected.Scale3d(2, 2, 2);
@@ -742,7 +742,7 @@ TEST(TransformOperationTest, BlendSkewFromEmpty) {
   TransformOperations operations;
   operations.AppendSkew(2, 2);
 
-  SkMScalar progress = 0.5f;
+  SkScalar progress = 0.5f;
 
   gfx::Transform expected;
   expected.Skew(1, 1);
@@ -775,7 +775,7 @@ TEST(TransformOperationTest, BlendPerspectiveFromIdentity) {
     TransformOperations operations;
     operations.AppendPerspective(1000);
 
-    SkMScalar progress = 0.5f;
+    SkScalar progress = 0.5f;
 
     gfx::Transform expected;
     expected.ApplyPerspectiveDepth(2000);
@@ -793,7 +793,7 @@ TEST(TransformOperationTest, BlendRotationToIdentity) {
     TransformOperations operations;
     operations.AppendRotate(0, 0, 1, 90);
 
-    SkMScalar progress = 0.5f;
+    SkScalar progress = 0.5f;
 
     gfx::Transform expected;
     expected.RotateAbout(gfx::Vector3dF(0, 0, 1), 45);
@@ -811,7 +811,7 @@ TEST(TransformOperationTest, BlendTranslationToIdentity) {
     TransformOperations operations;
     operations.AppendTranslate(2, 2, 2);
 
-    SkMScalar progress = 0.5f;
+    SkScalar progress = 0.5f;
 
     gfx::Transform expected;
     expected.Translate3d(1, 1, 1);
@@ -829,7 +829,7 @@ TEST(TransformOperationTest, BlendScaleToIdentity) {
     TransformOperations operations;
     operations.AppendScale(3, 3, 3);
 
-    SkMScalar progress = 0.5f;
+    SkScalar progress = 0.5f;
 
     gfx::Transform expected;
     expected.Scale3d(2, 2, 2);
@@ -845,7 +845,7 @@ TEST(TransformOperationTest, BlendSkewToEmpty) {
   TransformOperations operations;
   operations.AppendSkew(2, 2);
 
-  SkMScalar progress = 0.5f;
+  SkScalar progress = 0.5f;
 
   gfx::Transform expected;
   expected.Skew(1, 1);
@@ -862,7 +862,7 @@ TEST(TransformOperationTest, BlendPerspectiveToIdentity) {
     TransformOperations operations;
     operations.AppendPerspective(1000);
 
-    SkMScalar progress = 0.5f;
+    SkScalar progress = 0.5f;
 
     gfx::Transform expected;
     expected.ApplyPerspectiveDepth(2000);
@@ -950,8 +950,8 @@ TEST(TransformOperationTest, BlendedBoundsWhenTypesDoNotMatch) {
   gfx::BoxF box(1.f, 1.f, 1.f);
   gfx::BoxF bounds;
 
-  SkMScalar min_progress = 0.f;
-  SkMScalar max_progress = 1.f;
+  SkScalar min_progress = 0.f;
+  SkScalar max_progress = 1.f;
 
   EXPECT_FALSE(operations_to.BlendedBoundsForBox(
       box, operations_from, min_progress, max_progress, &bounds));
@@ -966,8 +966,8 @@ TEST(TransformOperationTest, BlendedBoundsForIdentity) {
   gfx::BoxF box(1.f, 2.f, 3.f);
   gfx::BoxF bounds;
 
-  SkMScalar min_progress = 0.f;
-  SkMScalar max_progress = 1.f;
+  SkScalar min_progress = 0.f;
+  SkScalar max_progress = 1.f;
 
   EXPECT_TRUE(operations_to.BlendedBoundsForBox(
       box, operations_from, min_progress, max_progress, &bounds));
@@ -983,8 +983,8 @@ TEST(TransformOperationTest, BlendedBoundsForTranslate) {
   gfx::BoxF box(1.f, 2.f, 3.f, 4.f, 4.f, 4.f);
   gfx::BoxF bounds;
 
-  SkMScalar min_progress = -0.5f;
-  SkMScalar max_progress = 1.5f;
+  SkScalar min_progress = -0.5f;
+  SkScalar max_progress = 1.5f;
   EXPECT_TRUE(operations_to.BlendedBoundsForBox(
       box, operations_from, min_progress, max_progress, &bounds));
   EXPECT_EQ(gfx::BoxF(2.f, -6.f, -1.f, 12.f, 20.f, 12.f).ToString(),
@@ -1018,8 +1018,8 @@ TEST(TransformOperationTest, BlendedBoundsForScale) {
   gfx::BoxF box(1.f, 2.f, 3.f, 4.f, 4.f, 4.f);
   gfx::BoxF bounds;
 
-  SkMScalar min_progress = -0.5f;
-  SkMScalar max_progress = 1.5f;
+  SkScalar min_progress = -0.5f;
+  SkScalar max_progress = 1.5f;
   EXPECT_TRUE(operations_to.BlendedBoundsForBox(
       box, operations_from, min_progress, max_progress, &bounds));
   EXPECT_EQ(gfx::BoxF(1.f, -7.5f, -28.f, 44.f, 42.f, 56.f).ToString(),
@@ -1053,8 +1053,8 @@ TEST(TransformOperationTest, BlendedBoundsWithZeroScale) {
   gfx::BoxF box(1.f, 2.f, 3.f, 4.f, 4.f, 4.f);
   gfx::BoxF bounds;
 
-  SkMScalar min_progress = 0.f;
-  SkMScalar max_progress = 1.f;
+  SkScalar min_progress = 0.f;
+  SkScalar max_progress = 1.f;
   EXPECT_TRUE(zero_scale.BlendedBoundsForBox(
       box, non_zero_scale, min_progress, max_progress, &bounds));
   EXPECT_EQ(gfx::BoxF(0.f, -24.f, 0.f, 10.f, 24.f, 35.f).ToString(),
@@ -1086,8 +1086,8 @@ TEST(TransformOperationTest, BlendedBoundsForRotationTrivial) {
   float sizes[] = { 0.f, 0.1f, sqrt_2, 2.f * sqrt_2 };
   for (size_t i = 0; i < base::size(sizes); ++i) {
     box.set_size(sizes[i], sizes[i], 0.f);
-    SkMScalar min_progress = 0.f;
-    SkMScalar max_progress = 1.f;
+    SkScalar min_progress = 0.f;
+    SkScalar max_progress = 1.f;
     EXPECT_TRUE(operations_to.BlendedBoundsForBox(
         box, operations_from, min_progress, max_progress, &bounds));
     EXPECT_EQ(gfx::BoxF(-2.f, -2.f, 0.f, 4.f, 4.f, 0.f).ToString(),
@@ -1209,8 +1209,8 @@ static void ExpectBoxesApproximatelyEqual(const gfx::BoxF& lhs,
 
 static void EmpiricallyTestBounds(const TransformOperations& from,
                                   const TransformOperations& to,
-                                  SkMScalar min_progress,
-                                  SkMScalar max_progress,
+                                  SkScalar min_progress,
+                                  SkScalar max_progress,
                                   bool test_containment_only) {
   gfx::BoxF box(200.f, 500.f, 100.f, 100.f, 300.f, 200.f);
   gfx::BoxF bounds;
@@ -1257,15 +1257,15 @@ static void EmpiricallyTestBounds(const TransformOperations& from,
 
 static void EmpiricallyTestBoundsEquality(const TransformOperations& from,
                                           const TransformOperations& to,
-                                          SkMScalar min_progress,
-                                          SkMScalar max_progress) {
+                                          SkScalar min_progress,
+                                          SkScalar max_progress) {
   EmpiricallyTestBounds(from, to, min_progress, max_progress, false);
 }
 
 static void EmpiricallyTestBoundsContainment(const TransformOperations& from,
                                              const TransformOperations& to,
-                                             SkMScalar min_progress,
-                                             SkMScalar max_progress) {
+                                             SkScalar min_progress,
+                                             SkScalar max_progress) {
   EmpiricallyTestBounds(from, to, min_progress, max_progress, true);
 }
 
@@ -1437,8 +1437,8 @@ TEST(TransformOperationTest, NonCommutativeRotations) {
   gfx::BoxF box(0, 0, 0, 1, 1, 1);
   gfx::BoxF bounds;
 
-  SkMScalar min_progress = 0.0f;
-  SkMScalar max_progress = 1.0f;
+  SkScalar min_progress = 0.0f;
+  SkScalar max_progress = 1.0f;
   EXPECT_TRUE(operations_to.BlendedBoundsForBox(
       box, operations_from, min_progress, max_progress, &bounds));
   gfx::Transform blended_transform =
@@ -1463,8 +1463,8 @@ TEST(TransformOperationTest, BlendedBoundsForSequence) {
   gfx::BoxF box(1.f, 2.f, 3.f, 4.f, 4.f, 4.f);
   gfx::BoxF bounds;
 
-  SkMScalar min_progress = -0.5f;
-  SkMScalar max_progress = 1.5f;
+  SkScalar min_progress = -0.5f;
+  SkScalar max_progress = 1.5f;
   EXPECT_TRUE(operations_to.BlendedBoundsForBox(
       box, operations_from, min_progress, max_progress, &bounds));
   EXPECT_EQ(gfx::BoxF(-57.f, -59.f, -1.f, 76.f, 112.f, 80.f).ToString(),
@@ -1551,7 +1551,7 @@ TEST(TransformOperationTest, IsTranslationWithMultipleOperations) {
 }
 
 TEST(TransformOperationTest, ScaleComponent) {
-  SkMScalar scale;
+  SkScalar scale;
 
   // Scale.
   TransformOperations operations1;

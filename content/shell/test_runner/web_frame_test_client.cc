@@ -157,40 +157,6 @@ void WebFrameTestClient::PrintFrameDescription(WebTestDelegate* delegate,
   delegate->PrintMessage(std::string("frame \"") + name + "\"");
 }
 
-void WebFrameTestClient::RunModalAlertDialog(const blink::WebString& message) {
-  if (!test_runner()->ShouldDumpJavaScriptDialogs())
-    return;
-  delegate_->PrintMessage(std::string("ALERT: ") + message.Utf8().data() +
-                          "\n");
-}
-
-bool WebFrameTestClient::RunModalConfirmDialog(
-    const blink::WebString& message) {
-  if (!test_runner()->ShouldDumpJavaScriptDialogs())
-    return true;
-  delegate_->PrintMessage(std::string("CONFIRM: ") + message.Utf8().data() +
-                          "\n");
-  return true;
-}
-
-bool WebFrameTestClient::RunModalPromptDialog(
-    const blink::WebString& message,
-    const blink::WebString& default_value,
-    blink::WebString* actual_value) {
-  if (!test_runner()->ShouldDumpJavaScriptDialogs())
-    return true;
-  delegate_->PrintMessage(std::string("PROMPT: ") + message.Utf8().data() +
-                          ", default text: " + default_value.Utf8().data() +
-                          "\n");
-  return true;
-}
-
-bool WebFrameTestClient::RunModalBeforeUnloadDialog(bool is_reload) {
-  if (test_runner()->ShouldDumpJavaScriptDialogs())
-    delegate_->PrintMessage(std::string("CONFIRM NAVIGATION\n"));
-  return !test_runner()->ShouldStayOnPageAfterHandlingBeforeUnload();
-}
-
 void WebFrameTestClient::PostAccessibilityEvent(
     const blink::WebAXObject& obj,
     ax::mojom::Event event,

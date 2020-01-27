@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL RequestInit's window is not null assert_throws: Expect TypeError exception function "() => new Request(...args)" did not throw
+FAIL RequestInit's window is not null assert_throws_js: Expect TypeError exception function "() => new Request(...args)" did not throw
 PASS Input URL is not valid
 PASS Input URL has credentials
 PASS RequestInit's mode is navigate

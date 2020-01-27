@@ -181,7 +181,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // Map containing duplicates of blocked passwords.
   password_manager::DuplicatesMap _blockedPasswordDuplicates;
   // The current Chrome browser state.
-  ios::ChromeBrowserState* _browserState;
+  ChromeBrowserState* _browserState;
   // Authentication Service Observer.
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
   // Object storing the time of the previous successful re-authentication.
@@ -220,7 +220,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 #pragma mark - Initialization
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
   DCHECK(browserState);
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain

@@ -2502,6 +2502,8 @@ enum WebFeature {
   kCSPWithBetterThanReasonableRestrictions = 3137,
   kCSPROWithBetterThanReasonableRestrictions = 3138,
   kMeasureMemory = 3139,
+  kV8Animation_ReplaceState_AttributeGetter = 3140,
+  kV8Animation_Persist_Method = 3141,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -9,6 +9,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "components/paint_preview/browser/paint_preview_base_service.h"
 #include "components/paint_preview/public/paint_preview_compositor_client.h"
 #include "components/paint_preview/public/paint_preview_compositor_service.h"
@@ -36,14 +37,14 @@ class PlayerCompositorDelegate {
   // Called when there is a request for a new bitmap. When the bitmap
   // is ready, it will be passed to callback.
   void RequestBitmap(
-      uint64_t frame_guid,
+      const base::UnguessableToken& frame_guid,
       const gfx::Rect& clip_rect,
       float scale_factor,
       base::OnceCallback<void(mojom::PaintPreviewCompositor::Status,
                               const SkBitmap&)> callback);
 
   // Called on touch event on a frame.
-  void OnClick(uint64_t frame_guid, int x, int y);
+  void OnClick(const base::UnguessableToken& frame_guid, int x, int y);
 
  protected:
   virtual ~PlayerCompositorDelegate();

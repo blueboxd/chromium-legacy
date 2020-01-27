@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
+class ChromeBrowserState;
 class GURL;
 
 namespace sync_sessions {
@@ -19,11 +19,11 @@ class SessionSyncService;
 }  // namespace sync_sessions
 
 // Singleton that owns all SessionSyncService and associates them with
-// ios::ChromeBrowserState.
+// ChromeBrowserState.
 class SessionSyncServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   static sync_sessions::SessionSyncService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   static SessionSyncServiceFactory* GetInstance();
 

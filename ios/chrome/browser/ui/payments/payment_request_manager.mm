@@ -143,8 +143,8 @@ struct PendingPaymentResponse {
 // YES if Payment Request is enabled on the active web state.
 @property(readonly) BOOL enabled;
 
-// The ios::ChromeBrowserState instance passed to the initializer.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+// The ChromeBrowserState instance passed to the initializer.
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 
 // Coordinator used to create and present the PaymentRequest view controller.
 @property(nonatomic, strong)
@@ -282,8 +282,7 @@ struct PendingPaymentResponse {
 @synthesize dispatcher = _dispatcher;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+                              browserState:(ChromeBrowserState*)browserState
                                 dispatcher:(id<ApplicationCommands>)dispatcher {
   if ((self = [super init])) {
     _baseViewController = viewController;

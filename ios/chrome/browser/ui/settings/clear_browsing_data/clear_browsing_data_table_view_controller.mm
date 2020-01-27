@@ -48,7 +48,7 @@
 @property(nonatomic, readonly, strong) ClearBrowsingDataManager* dataManager;
 
 // Browser state.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 
 // Coordinator that managers a UIAlertController to clear browsing data.
 @property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
@@ -83,7 +83,7 @@
 
 #pragma mark - ViewController Lifecycle.
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
   self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
     _browserState = browserState;
@@ -304,7 +304,7 @@
            withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
-- (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
+- (void)removeBrowsingDataForBrowserState:(ChromeBrowserState*)browserState
                                timePeriod:(browsing_data::TimePeriod)timePeriod
                                removeMask:(BrowsingDataRemoveMask)removeMask
                           completionBlock:(ProceduralBlock)completionBlock {

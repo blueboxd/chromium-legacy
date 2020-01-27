@@ -60,7 +60,7 @@ void MouseCursorMonitorAura::Capture() {
     if (position != last_mouse_location_) {
       last_mouse_location_ = position;
       callback_->OnMouseCursorPosition(
-          INSIDE, webrtc::DesktopVector(position.x(), position.y()));
+          webrtc::DesktopVector(position.x(), position.y()));
     }
   }
 }

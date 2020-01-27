@@ -69,16 +69,8 @@ class FindTabHelper : public content::WebContentsObserver,
     find_ui_active_ = find_ui_active;
   }
 
-  // Setter for find_op_aborted_.
-  void set_find_op_aborted(bool find_op_aborted) {
-    find_op_aborted_ = find_op_aborted;
-  }
-
-  // Used _only_ by testing to get or set the current request ID.
+  // Used _only_ by testing to get the current request ID.
   int current_find_request_id() { return current_find_request_id_; }
-  void set_current_find_request_id(int current_find_request_id) {
-    current_find_request_id_ = current_find_request_id;
-  }
 
   // Accessor for find_text_. Used to determine if this WebContents has any
   // active searches.

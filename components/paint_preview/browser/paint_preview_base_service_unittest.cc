@@ -7,6 +7,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
+#include "base/strings/strcat.h"
 #include "build/build_config.h"
 #include "components/paint_preview/browser/paint_preview_base_service_test_factory.h"
 #include "components/paint_preview/common/mojom/paint_preview_recorder.mojom.h"
@@ -45,12 +46,6 @@ std::unique_ptr<KeyedService> BuildServiceWithRejectionPolicy(
   return std::make_unique<PaintPreviewBaseService>(
       key->GetPath(), kTestFeatureDir,
       std::make_unique<RejectionPaintPreviewPolicy>(), key->IsOffTheRecord());
-}
-
-// Returns the GUID corresponding to |rfh|.
-uint64_t FrameGuid(content::RenderFrameHost* rfh) {
-  return static_cast<uint64_t>(rfh->GetProcess()->GetID()) << 32 |
-         rfh->GetRoutingID();
 }
 
 }  // namespace
@@ -158,7 +153,7 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureMainFrame) {
   params->is_main_frame = true;
   recorder.SetExpectedParams(std::move(params));
   auto response = mojom::PaintPreviewCaptureResponse::New();
-  response->id = main_rfh()->GetRoutingID();
+  response->embedding_token = base::nullopt;
   recorder.SetResponse(mojom::PaintPreviewStatus::kOk, std::move(response));
   OverrideInterface(&recorder);
 
@@ -174,26 +169,32 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureMainFrame) {
       base::BindOnce(
           [](base::OnceClosure quit_closure,
              PaintPreviewBaseService::CaptureStatus expected_status,
-             const base::FilePath& expected_path, uint64_t expected_guid,
+             const base::FilePath& expected_path,
              PaintPreviewBaseService::CaptureStatus status,
              std::unique_ptr<PaintPreviewProto> proto) {
             EXPECT_EQ(status, expected_status);
             EXPECT_TRUE(proto->has_root_frame());
             EXPECT_EQ(proto->subframes_size(), 0);
             EXPECT_TRUE(proto->root_frame().is_main_frame());
+            auto token = base::UnguessableToken::Deserialize(
+                proto->root_frame().embedding_token_high(),
+                proto->root_frame().embedding_token_low());
 #if defined(OS_WIN)
             base::FilePath path = base::FilePath(
                 base::UTF8ToUTF16(proto->root_frame().file_path()));
+            base::FilePath name(
+                base::UTF8ToUTF16(base::StrCat({token.ToString(), ".skp"})));
 #else
             base::FilePath path =
                 base::FilePath(proto->root_frame().file_path());
+            base::FilePath name(base::StrCat({token.ToString(), ".skp"}));
 #endif
             EXPECT_EQ(path.DirName(), expected_path);
-            EXPECT_EQ(proto->root_frame().id(), expected_guid);
+            EXPECT_EQ(path.BaseName(), name);
             std::move(quit_closure).Run();
           },
-          loop.QuitClosure(), PaintPreviewBaseService::CaptureStatus::kOk, path,
-          FrameGuid(main_rfh())));
+          loop.QuitClosure(), PaintPreviewBaseService::CaptureStatus::kOk,
+          path));
   loop.Run();
 }
 
@@ -204,7 +205,7 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureFailed) {
   params->is_main_frame = true;
   recorder.SetExpectedParams(std::move(params));
   auto response = mojom::PaintPreviewCaptureResponse::New();
-  response->id = main_rfh()->GetRoutingID();
+  response->embedding_token = base::nullopt;
   recorder.SetResponse(mojom::PaintPreviewStatus::kFailed, std::move(response));
   OverrideInterface(&recorder);
 
@@ -238,7 +239,7 @@ TEST_F(PaintPreviewBaseServiceTest, CaptureDisallowed) {
   params->is_main_frame = true;
   recorder.SetExpectedParams(std::move(params));
   auto response = mojom::PaintPreviewCaptureResponse::New();
-  response->id = main_rfh()->GetRoutingID();
+  response->embedding_token = base::nullopt;
   recorder.SetResponse(mojom::PaintPreviewStatus::kFailed, std::move(response));
   OverrideInterface(&recorder);
 

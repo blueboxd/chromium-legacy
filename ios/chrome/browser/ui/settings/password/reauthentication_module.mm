@@ -15,6 +15,9 @@
 
 constexpr char kPasscodeArticleURL[] = "https://support.apple.com/HT204060";
 
+using password_manager::metrics_util::LogPasswordSettingsReauthResult;
+using password_manager::metrics_util::ReauthResult;
+
 @implementation ReauthenticationModule {
   // Block that creates a new |LAContext| object everytime one is required,
   // meant to make testing with a mock object possible.
@@ -51,10 +54,7 @@ constexpr char kPasscodeArticleURL[] = "https://support.apple.com/HT204060";
                                  handler:(void (^)(BOOL success))handler {
   if (canReusePreviousAuth && [self isPreviousAuthValid]) {
     handler(YES);
-    UMA_HISTOGRAM_ENUMERATION(
-        "PasswordManager.ReauthToAccessPasswordInSettings",
-        password_manager::metrics_util::REAUTH_SKIPPED,
-        password_manager::metrics_util::REAUTH_COUNT);
+    LogPasswordSettingsReauthResult(ReauthResult::kSkipped);
     return;
   }
 
@@ -70,11 +70,9 @@ constexpr char kPasscodeArticleURL[] = "https://support.apple.com/HT204060";
         [strongSelf->_successfulReauthTimeAccessor updateSuccessfulReauthTime];
       }
       handler(success);
-      UMA_HISTOGRAM_ENUMERATION(
-          "PasswordManager.ReauthToAccessPasswordInSettings",
-          success ? password_manager::metrics_util::REAUTH_SUCCESS
-                  : password_manager::metrics_util::REAUTH_FAILURE,
-          password_manager::metrics_util::REAUTH_COUNT);
+
+      LogPasswordSettingsReauthResult(success ? ReauthResult::kSuccess
+                                              : ReauthResult::kFailure);
     });
   };
 

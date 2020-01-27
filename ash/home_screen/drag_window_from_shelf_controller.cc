@@ -671,6 +671,7 @@ void DragWindowFromShelfController::ScaleUpToRestoreWindowAfterDrag() {
 
 void DragWindowFromShelfController::OnWindowRestoredToOrignalBounds(
     bool end_overview) {
+  base::AutoReset<bool> auto_reset(&during_window_restoration_callback_, true);
   if (end_overview) {
     Shell::Get()->overview_controller()->EndOverview(
         OverviewSession::EnterExitOverviewType::kImmediateExit);

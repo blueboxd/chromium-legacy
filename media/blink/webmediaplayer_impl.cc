@@ -366,8 +366,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   delegate_id_ = delegate_->AddObserver(this);
   delegate_->SetIdle(delegate_id_, true);
 
-  media_log_->AddLogRecord(media_log_->CreateCreatedEvent(
-      url::Origin(frame_->GetSecurityOrigin()).GetURL().spec()));
+  media_log_->AddEvent<MediaLogEvent::kWebMediaPlayerCreated>(
+      url::Origin(frame_->GetSecurityOrigin()).GetURL().spec());
 
   media_log_->SetProperty<MediaLogProperty::kFrameUrl>(
       SanitizeUserStringProperty(frame_->GetDocument().Url().GetString()));
@@ -684,7 +684,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
 
   SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
   SetReadyState(WebMediaPlayer::kReadyStateHaveNothing);
-  media_log_->AddLogRecord(media_log_->CreateLoadEvent(url.GetString().Utf8()));
+  media_log_->AddEvent<MediaLogEvent::kLoad>(url.GetString().Utf8());
   load_start_time_ = base::TimeTicks::Now();
 
   media_metrics_provider_->Initialize(
@@ -770,7 +770,7 @@ void WebMediaPlayerImpl::Play() {
 
   simple_watch_timer_.Start();
   media_metrics_provider_->SetHasPlayed();
-  media_log_->AddLogRecord(media_log_->CreateRecord(MediaLogRecord::PLAY));
+  media_log_->AddEvent<MediaLogEvent::kPlay>();
 
   MaybeUpdateBufferSizesForPlayback();
   UpdatePlayState();
@@ -813,7 +813,7 @@ void WebMediaPlayerImpl::Pause() {
     video_decode_stats_reporter_->OnPaused();
 
   simple_watch_timer_.Stop();
-  media_log_->AddLogRecord(media_log_->CreateRecord(MediaLogRecord::PAUSE));
+  media_log_->AddEvent<MediaLogEvent::kPause>();
 
   // Paused changed so we should update media position state.
   UpdateMediaPositionState();
@@ -824,8 +824,7 @@ void WebMediaPlayerImpl::Pause() {
 void WebMediaPlayerImpl::Seek(double seconds) {
   DVLOG(1) << __func__ << "(" << seconds << "s)";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  media_log_->AddLogRecord(media_log_->CreateTimeEvent(MediaLogRecord::SEEK,
-                                                       "seek_target", seconds));
+  media_log_->AddEvent<MediaLogEvent::kSeek>(seconds);
   DoSeek(base::TimeDelta::FromSecondsD(seconds), true);
 }
 
@@ -1598,7 +1597,7 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
 
 void WebMediaPlayerImpl::OnPipelineSuspended() {
   // Add a log event so the player shows up as "SUSPENDED" in media-internals.
-  media_log_->AddLogRecord(media_log_->CreateRecord(MediaLogRecord::SUSPENDED));
+  media_log_->AddEvent<MediaLogEvent::kSuspended>();
 
   if (attempting_suspended_start_) {
     DCHECK(pipeline_controller_->IsSuspended());
@@ -1784,7 +1783,7 @@ void WebMediaPlayerImpl::OnError(PipelineStatus status) {
 
   MaybeSetContainerName();
   simple_watch_timer_.Stop();
-  media_log_->AddLogRecord(media_log_->CreatePipelineErrorEvent(status));
+  media_log_->NotifyError(status);
   media_metrics_provider_->OnError(status);
   if (watch_time_reporter_)
     watch_time_reporter_->OnError(status);
@@ -2046,10 +2045,9 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
   if (pipeline_controller_->IsPendingSeek())
     return;
 
-  auto log_event = media_log_->CreateBufferingStateChangedEvent(
-      "pipeline_buffering_state", state, reason);
-  log_event->params.SetBoolean("for_suspended_start", for_suspended_start);
-  media_log_->AddLogRecord(std::move(log_event));
+  media_log_->AddEvent<MediaLogEvent::kBufferingStateChanged>(
+      SerializableBufferingState<SerializableBufferingStateType::kPipeline>{
+          state, reason, for_suspended_start});
 
   if (state == BUFFERING_HAVE_ENOUGH && !for_suspended_start)
     media_metrics_provider_->SetHaveEnough();
@@ -3551,8 +3549,7 @@ void WebMediaPlayerImpl::RecordUnderflowDuration(base::TimeDelta duration) {
 
 void WebMediaPlayerImpl::RecordVideoNaturalSize(const gfx::Size& natural_size) {
   // Always report video natural size to MediaLog.
-  media_log_->AddLogRecord(media_log_->CreateVideoSizeSetEvent(
-      natural_size.width(), natural_size.height()));
+  media_log_->AddEvent<MediaLogEvent::kVideoSizeChanged>(natural_size);
   media_log_->SetProperty<MediaLogProperty::kResolution>(natural_size);
 
   if (initial_video_height_recorded_)

@@ -84,7 +84,7 @@ class GaiaAuthFetcherIOSTest : public PlatformTest {
     return gaia_auth_fetcher_->bridge_.get();
   }
 
-  ios::ChromeBrowserState* browser_state() { return browser_state_.get(); }
+  ChromeBrowserState* browser_state() { return browser_state_.get(); }
 
   id GetMockWKWebView() {
     GaiaAuthFetcherIOSWKWebViewBridge* wkWebviewBridge =
@@ -95,7 +95,7 @@ class GaiaAuthFetcherIOSTest : public PlatformTest {
 
   web::WebTaskEnvironment task_environment_;
   // BrowserState, required for WKWebView creation.
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   MockGaiaConsumer consumer_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<GaiaAuthFetcherIOS> gaia_auth_fetcher_;

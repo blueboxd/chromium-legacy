@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/common/form_data.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/service.pb.h"
@@ -90,6 +91,17 @@ class MockActionDelegate : public ActionDelegate {
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&)> callback) override {
     OnFillCardForm(card.get(), cvc, selector, callback);
+  }
+
+  void RetrieveElementFormAndFieldData(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&,
+                              const autofill::FormData&,
+                              const autofill::FormFieldData&)> callback)
+      override {
+    autofill::FormData form_data;
+    autofill::FormFieldData field_data;
+    std::move(callback).Run(OkClientStatus(), form_data, field_data);
   }
 
   MOCK_METHOD4(OnFillCardForm,

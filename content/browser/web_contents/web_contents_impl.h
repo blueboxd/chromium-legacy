@@ -537,10 +537,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                            const base::string16& message,
                            const base::string16& default_prompt,
                            JavaScriptDialogType dialog_type,
-                           IPC::Message* reply_msg) override;
-  void RunBeforeUnloadConfirm(RenderFrameHost* render_frame_host,
-                              bool is_reload,
-                              IPC::Message* reply_msg) override;
+                           JavaScriptDialogCallback response_callback) override;
+  void RunBeforeUnloadConfirm(
+      RenderFrameHost* render_frame_host,
+      bool is_reload,
+      JavaScriptDialogCallback response_callback) override;
   void RunFileChooser(RenderFrameHost* render_frame_host,
                       std::unique_ptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
@@ -1333,7 +1334,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // possible for the RenderFrameHost to be deleted by the time this is called.
   void OnDialogClosed(int render_process_id,
                       int render_frame_id,
-                      IPC::Message* reply_msg,
+                      JavaScriptDialogCallback response_callback,
                       bool dialog_was_suppressed,
                       bool success,
                       const base::string16& user_input);

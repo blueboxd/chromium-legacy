@@ -142,6 +142,27 @@ class StartSurfaceToolbarView extends RelativeLayout {
         mMenuButton.setClickable(isClickable);
     }
 
+    /**
+     * @param isVisible Whether the Incognito switcher is visible.
+     */
+    void setIncognitoSwitcherVisibility(boolean isVisible) {
+        mIncognitoSwitch.setVisibility(isVisible ? VISIBLE : GONE);
+    }
+
+    /**
+     * @param isAtLeft Whether the new tab button is at left.
+     */
+    void setNewTabButtonAtLeft(boolean isAtLeft) {
+        assert isAtLeft;
+        if (isAtLeft) {
+            ((LayoutParams) mNewTabButton.getLayoutParams()).removeRule(RelativeLayout.START_OF);
+
+            LayoutParams params = (LayoutParams) mIncognitoSwitch.getLayoutParams();
+            params.removeRule(RelativeLayout.ALIGN_PARENT_START);
+            params.addRule(RelativeLayout.CENTER_HORIZONTAL);
+        }
+    }
+
     /** Called when incognito mode changes. */
     void updateIncognito(boolean isIncognito) {
         updatePrimaryColorAndTint(isIncognito);

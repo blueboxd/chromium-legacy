@@ -36,6 +36,12 @@ InternalAuthenticatorImpl::InternalAuthenticatorImpl(
   DCHECK(render_frame_host_);
   DCHECK(authenticator_common_);
   DCHECK(!effective_origin.opaque());
+  // Disabling WebAuthn modal dialogs to avoid conflict with Autofill's own
+  // modal dialogs. Since WebAuthn is designed for websites, rather than browser
+  // components, the UI can be confusing for users in the case for Autofill.
+  // Autofill only ever uses platform authenticators and can take place
+  // on any webpage.
+  authenticator_common_->DisableUI();
 }
 
 InternalAuthenticatorImpl::~InternalAuthenticatorImpl() {

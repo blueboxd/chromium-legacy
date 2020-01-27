@@ -5,7 +5,7 @@
 #include "chrome/browser/nfc/nfc_permission_context.h"
 
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/permissions/permission_request_id.h"
+#include "components/permissions/permission_request_id.h"
 
 NfcPermissionContext::NfcPermissionContext(Profile* profile)
     : PermissionContextBase(profile,
@@ -25,7 +25,7 @@ ContentSetting NfcPermissionContext::GetPermissionStatusInternal(
 
 void NfcPermissionContext::DecidePermission(
     content::WebContents* web_contents,
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_gesture,
@@ -39,9 +39,10 @@ void NfcPermissionContext::DecidePermission(
                                           std::move(callback));
 }
 
-void NfcPermissionContext::UpdateTabContext(const PermissionRequestID& id,
-                                            const GURL& requesting_frame,
-                                            bool allowed) {
+void NfcPermissionContext::UpdateTabContext(
+    const permissions::PermissionRequestID& id,
+    const GURL& requesting_frame,
+    bool allowed) {
   auto* content_settings = TabSpecificContentSettings::GetForFrame(
       id.render_process_id(), id.render_frame_id());
   if (!content_settings)

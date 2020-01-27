@@ -23,7 +23,7 @@
 @implementation SettingsAppInterface : NSObject
 
 + (void)restoreClearBrowsingDataCheckmarksToDefault {
-  ios::ChromeBrowserState* browserState =
+  ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   PrefService* preferences = browserState->GetPrefs();
   preferences->SetBoolean(browsing_data::prefs::kDeleteBrowsingHistory, true);

@@ -18,8 +18,6 @@ namespace paint_preview {
 
 namespace {
 
-constexpr int32_t kRoutingId = 1;
-
 struct TestContext {
   const gfx::Rect* rect;
   bool was_called;
@@ -28,23 +26,30 @@ struct TestContext {
 }  // namespace
 
 TEST(PaintPreviewTrackerTest, TestGetters) {
-  auto token = base::UnguessableToken::Create();
-  PaintPreviewTracker tracker(token, kRoutingId, true);
-  EXPECT_EQ(tracker.Guid(), token);
-  EXPECT_EQ(tracker.RoutingId(), kRoutingId);
+  const base::UnguessableToken kDocToken = base::UnguessableToken::Create();
+  const base::UnguessableToken kEmbeddingToken =
+      base::UnguessableToken::Create();
+  PaintPreviewTracker tracker(kDocToken, kEmbeddingToken, true);
+  EXPECT_EQ(tracker.Guid(), kDocToken);
+  EXPECT_EQ(tracker.EmbeddingToken(), kEmbeddingToken);
   EXPECT_TRUE(tracker.IsMainFrame());
 }
 
 TEST(PaintPreviewTrackerTest, TestRemoteFramePlaceholderPicture) {
-  PaintPreviewTracker tracker(base::UnguessableToken::Create(), kRoutingId,
-                              true);
-  const int kRoutingId = 50;
+  const base::UnguessableToken kDocToken = base::UnguessableToken::Create();
+  const base::UnguessableToken kEmbeddingToken =
+      base::UnguessableToken::Create();
+  PaintPreviewTracker tracker(kDocToken, kEmbeddingToken, true);
+
+  const base::UnguessableToken kEmbeddingTokenChild =
+      base::UnguessableToken::Create();
   gfx::Rect rect(50, 40, 30, 20);
-  uint32_t content_id = tracker.CreateContentForRemoteFrame(rect, kRoutingId);
+  uint32_t content_id =
+      tracker.CreateContentForRemoteFrame(rect, kEmbeddingTokenChild);
   PictureSerializationContext* context =
       tracker.GetPictureSerializationContext();
   EXPECT_TRUE(context->count(content_id));
-  EXPECT_EQ((*context)[content_id], static_cast<uint32_t>(kRoutingId));
+  EXPECT_EQ((*context)[content_id], kEmbeddingTokenChild);
 
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(100, 100);
@@ -57,7 +62,9 @@ TEST(PaintPreviewTrackerTest, TestRemoteFramePlaceholderPicture) {
 }
 
 TEST(PaintPreviewTrackerTest, TestGlyphRunList) {
-  PaintPreviewTracker tracker(base::UnguessableToken::Create(), kRoutingId,
+  const base::UnguessableToken kEmbeddingToken =
+      base::UnguessableToken::Create();
+  PaintPreviewTracker tracker(base::UnguessableToken::Create(), kEmbeddingToken,
                               true);
   std::string unichars = "abc";
   auto typeface = SkTypeface::MakeDefault();
@@ -75,7 +82,9 @@ TEST(PaintPreviewTrackerTest, TestGlyphRunList) {
 }
 
 TEST(PaintPreviewTrackerTest, TestAnnotateLinks) {
-  PaintPreviewTracker tracker(base::UnguessableToken::Create(), kRoutingId,
+  const base::UnguessableToken kEmbeddingToken =
+      base::UnguessableToken::Create();
+  PaintPreviewTracker tracker(base::UnguessableToken::Create(), kEmbeddingToken,
                               true);
   const GURL url_1("https://www.chromium.org");
   const gfx::Rect rect_1(10, 20, 30, 40);

@@ -9,7 +9,7 @@ index a39e62787862..c6053fd1c7ea 100644
 +    /* Avoid use of uninitialized value, see:
 +     * https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=11360
 +     */
-+    memset(s->prev, 0, s->w_size * sizeof(Pos));
++    zmemzero(s->prev, s->w_size * sizeof(Pos));
      s->head   = (Posf *)  ZALLOC(strm, s->hash_size, sizeof(Pos));
  
      s->high_water = 0;      /* nothing written to s->window yet */

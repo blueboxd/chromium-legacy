@@ -16,7 +16,10 @@ namespace content {
 class WebContents;
 }
 
+namespace permissions {
 class PermissionRequestID;
+}
+
 class Profile;
 
 class GeolocationPermissionContext  : public PermissionContextBase {
@@ -28,14 +31,14 @@ class GeolocationPermissionContext  : public PermissionContextBase {
   // checks that it is only code from valid iframes.
   // It also adds special logic when called through an extension.
   void DecidePermission(content::WebContents* web_contents,
-                        const PermissionRequestID& id,
+                        const permissions::PermissionRequestID& id,
                         const GURL& requesting_origin,
                         const GURL& embedding_origin,
                         bool user_gesture,
                         BrowserPermissionCallback callback) override;
 
  private:
-  void UpdateTabContext(const PermissionRequestID& id,
+  void UpdateTabContext(const permissions::PermissionRequestID& id,
                         const GURL& requesting_frame,
                         bool allowed) override;
   bool IsRestrictedToSecureOrigins() const override;

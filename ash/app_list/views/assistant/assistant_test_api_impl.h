@@ -33,6 +33,7 @@ class AssistantTestApiImpl : public AssistantTestApi {
   void SetTabletMode(bool enable) override;
   void SetPreferVoice(bool value) override;
   AssistantState* GetAssistantState() override;
+  void WaitUntilIdle() override;
   views::View* page_view() override;
   views::View* main_view() override;
   views::View* ui_element_container() override;

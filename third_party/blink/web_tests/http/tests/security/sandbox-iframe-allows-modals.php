@@ -32,7 +32,7 @@ header("Content-Security-Policy: sandbox allow-scripts allow-modals");
 
         test(function () {
             var result = prompt("Question?");
-            assert_equals(result, null);
+            assert_equals(result, "");
         }, "prompt() returns a result.");
     </script>
 </body>

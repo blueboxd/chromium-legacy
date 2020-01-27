@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 143 tests; 133 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 143 tests; 137 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -51,7 +51,7 @@ PASS Animation interface: attribute startTime
 PASS Animation interface: attribute currentTime
 PASS Animation interface: attribute playbackRate
 PASS Animation interface: attribute playState
-FAIL Animation interface: attribute replaceState assert_true: The prototype object must have a property "replaceState" expected true got false
+PASS Animation interface: attribute replaceState
 PASS Animation interface: attribute pending
 PASS Animation interface: attribute ready
 PASS Animation interface: attribute finished
@@ -64,7 +64,7 @@ PASS Animation interface: operation play()
 PASS Animation interface: operation pause()
 PASS Animation interface: operation updatePlaybackRate(double)
 PASS Animation interface: operation reverse()
-FAIL Animation interface: operation persist() assert_own_property: interface prototype object missing non-static operation expected property "persist" missing
+PASS Animation interface: operation persist()
 FAIL Animation interface: operation commitStyles() assert_own_property: interface prototype object missing non-static operation expected property "commitStyles" missing
 PASS Animation must be primary interface of new Animation()
 PASS Stringification of new Animation()
@@ -75,7 +75,7 @@ PASS Animation interface: new Animation() must inherit property "startTime" with
 PASS Animation interface: new Animation() must inherit property "currentTime" with the proper type
 PASS Animation interface: new Animation() must inherit property "playbackRate" with the proper type
 PASS Animation interface: new Animation() must inherit property "playState" with the proper type
-FAIL Animation interface: new Animation() must inherit property "replaceState" with the proper type assert_inherits: property "replaceState" not found in prototype chain
+PASS Animation interface: new Animation() must inherit property "replaceState" with the proper type
 PASS Animation interface: new Animation() must inherit property "pending" with the proper type
 PASS Animation interface: new Animation() must inherit property "ready" with the proper type
 PASS Animation interface: new Animation() must inherit property "finished" with the proper type
@@ -89,7 +89,7 @@ PASS Animation interface: new Animation() must inherit property "pause()" with t
 PASS Animation interface: new Animation() must inherit property "updatePlaybackRate(double)" with the proper type
 PASS Animation interface: calling updatePlaybackRate(double) on new Animation() with too few arguments must throw TypeError
 PASS Animation interface: new Animation() must inherit property "reverse()" with the proper type
-FAIL Animation interface: new Animation() must inherit property "persist()" with the proper type assert_inherits: property "persist" not found in prototype chain
+PASS Animation interface: new Animation() must inherit property "persist()" with the proper type
 FAIL Animation interface: new Animation() must inherit property "commitStyles()" with the proper type assert_inherits: property "commitStyles" not found in prototype chain
 PASS AnimationEffect interface: existence and properties of interface object
 PASS AnimationEffect interface object length

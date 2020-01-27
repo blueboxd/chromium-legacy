@@ -143,7 +143,7 @@ class CastActivityManagerTest : public testing::Test,
         }));
     activities_.push_back(activity_ptr);
     activity_record_callback_.Run(activity_ptr);
-    return std::move(activity);
+    return activity;
   }
 
   // Run any pending events and verify expectations associated with them.  This
@@ -164,18 +164,18 @@ class CastActivityManagerTest : public testing::Test,
     route_ = std::make_unique<MediaRoute>(*route);
   }
 
-  void CallLaunchSession(const std::string& source_id = MakeSourceId(kAppId1)) {
+  void CallLaunchSession(const std::string& app_id = kAppId1) {
     // MediaRouter is notified of new route.
     ExpectSingleRouteUpdate();
 
     // A launch session request is sent to the sink.
     EXPECT_CALL(message_handler_,
-                LaunchSession(kChannelId, "ABCDEFGH", kDefaultLaunchTimeout, _))
+                LaunchSession(kChannelId, app_id, kDefaultLaunchTimeout, _))
         .WillOnce(WithArg<3>([this](auto callback) {
           launch_session_callback_ = std::move(callback);
         }));
 
-    auto source = CastMediaSource::FromMediaSourceId(source_id);
+    auto source = CastMediaSource::FromMediaSourceId(MakeSourceId(app_id));
     ASSERT_TRUE(source);
 
     activity_record_callback_ =
@@ -203,8 +203,8 @@ class CastActivityManagerTest : public testing::Test,
     return response;
   }
 
-  void LaunchSession(const std::string& source_id = MakeSourceId(kAppId1)) {
-    CallLaunchSession(source_id);
+  void LaunchCastAppSession(const std::string& app_id = kAppId1) {
+    CallLaunchSession(app_id);
 
     // 3 things will happen:
     // (1) SDK client receives new_session message.
@@ -325,8 +325,14 @@ class CastActivityManagerTest : public testing::Test,
   cast_channel::ResultCallback result_callback_;
 };
 
-TEST_F(CastActivityManagerTest, LaunchSession) {
-  LaunchSession();
+TEST_F(CastActivityManagerTest, LaunchCastAppSession) {
+  LaunchCastAppSession();
+  EXPECT_EQ(RouteControllerType::kGeneric, route_->controller_type());
+}
+
+TEST_F(CastActivityManagerTest, LaunchMirroringSession) {
+  CallLaunchSession(kCastStreamingAppId);
+  EXPECT_EQ(RouteControllerType::kMirroring, route_->controller_type());
 }
 
 TEST_F(CastActivityManagerTest, LaunchSessionFails) {
@@ -353,7 +359,7 @@ TEST_F(CastActivityManagerTest, LaunchSessionFails) {
 }
 
 TEST_F(CastActivityManagerTest, LaunchSessionTerminatesExistingSessionOnSink) {
-  LaunchSession();
+  LaunchCastAppSession();
 
   EXPECT_CALL(*activities_[0], SendStopSessionMessageToClients);
 
@@ -396,7 +402,7 @@ TEST_F(CastActivityManagerTest, AddRemoveNonLocalActivity) {
 }
 
 TEST_F(CastActivityManagerTest, UpdateNewlyCreatedSession) {
-  LaunchSession();
+  LaunchCastAppSession();
 
   EXPECT_CALL(*activities_[0], SetOrUpdateSession(_, sink_, _));
   auto session = MakeSession(kAppId1);
@@ -408,7 +414,7 @@ TEST_F(CastActivityManagerTest, UpdateNewlyCreatedSession) {
 }
 
 TEST_F(CastActivityManagerTest, OnSessionAddedOrUpdated) {
-  LaunchSession();
+  LaunchCastAppSession();
   auto session = MakeSession(kAppId1);
   ExpectSingleRouteUpdate();
   EXPECT_CALL(*activities_[0], SetOrUpdateSession(_, _, "theHashToken"));
@@ -416,12 +422,12 @@ TEST_F(CastActivityManagerTest, OnSessionAddedOrUpdated) {
 }
 
 TEST_F(CastActivityManagerTest, TerminateSession) {
-  LaunchSession();
+  LaunchCastAppSession();
   TerminateSession(true);
 }
 
 TEST_F(CastActivityManagerTest, TerminateSessionFails) {
-  LaunchSession();
+  LaunchCastAppSession();
   TerminateSession(false);
 }
 
@@ -433,7 +439,7 @@ TEST_F(CastActivityManagerTest, TerminateSessionBeforeLaunchResponse) {
 }
 
 TEST_F(CastActivityManagerTest, AppMessageFromReceiver) {
-  LaunchSession();
+  LaunchCastAppSession();
 
   // Destination ID matches client ID.
   cast::channel::CastMessage message = cast_channel::CreateCastMessage(
@@ -445,7 +451,7 @@ TEST_F(CastActivityManagerTest, AppMessageFromReceiver) {
 }
 
 TEST_F(CastActivityManagerTest, OnMediaStatusUpdated) {
-  LaunchSession();
+  LaunchCastAppSession();
 
   const char status[] = R"({"foo": "bar"})";
   base::Optional<int> request_id(345);

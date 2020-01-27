@@ -207,7 +207,7 @@ ArcAppReinstallSearchProvider::ArcAppReinstallSearchProvider(
     : profile_(profile),
       max_result_count_(max_result_count),
       icon_dimension_(ash::AppListConfig::instance().GetPreferredIconDimension(
-          ash::SearchResultDisplayType::kRecommendation)),
+          ash::SearchResultDisplayType::kTile)),
       app_fetch_timer_(std::make_unique<base::RepeatingTimer>()) {
   DCHECK(profile_ != nullptr);
   ArcAppListPrefs::Get(profile_)->AddObserver(this);

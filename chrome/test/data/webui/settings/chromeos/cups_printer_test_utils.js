@@ -30,6 +30,7 @@ cr.define('cups_printer_test_util', function() {
       printerProtocol: 'ipp',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
     return printer;
   }
@@ -64,6 +65,7 @@ cr.define('cups_printer_test_util', function() {
         printerProtocol: 'ipp',
         printerQueue: 'moreinfohere',
         printerStatus: '',
+        printServerUri: '',
       },
       printerType: printerType,
     };

@@ -257,7 +257,7 @@ TrayBubbleView::TrayBubbleView(const InitParams& init_params)
     // Create a layer so that the layer for FocusRing stays in this view's
     // layer. Without it, the layer for FocusRing goes above the
     // NativeViewHost and may steal events.
-    SetPaintToLayer(ui::LAYER_NOT_DRAWN);
+    SetPaintToLayer();
   }
 
   auto layout = std::make_unique<BottomAlignedBoxLayout>(this);

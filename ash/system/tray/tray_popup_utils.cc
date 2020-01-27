@@ -162,6 +162,26 @@ class HighlightPathGenerator : public views::HighlightPathGenerator {
   DISALLOW_COPY_AND_ASSIGN(HighlightPathGenerator);
 };
 
+class TrayToggleButton : public views::ToggleButton {
+ public:
+  explicit TrayToggleButton(views::ButtonListener* listener)
+      : views::ToggleButton(listener) {
+    SetThumbColors(GetTrackBaseColor(true /*is_on*/),
+                   GetTrackBaseColor(false /*is_on*/));
+  }
+
+ private:
+  // views::ToggleButton:
+  SkColor GetTrackBaseColor(bool is_on) const override {
+    AshColorProvider::ContentLayerType type =
+        is_on ? AshColorProvider::ContentLayerType::kProminentIconButton
+              : AshColorProvider::ContentLayerType::kTextPrimary;
+
+    return AshColorProvider::Get()->GetContentLayerColor(
+        type, AshColorProvider::AshColorMode::kDark);
+  }
+};
+
 }  // namespace
 
 TriView* TrayPopupUtils::CreateDefaultRowView() {
@@ -241,7 +261,7 @@ views::Slider* TrayPopupUtils::CreateSlider(views::SliderListener* listener) {
 views::ToggleButton* TrayPopupUtils::CreateToggleButton(
     views::ButtonListener* listener,
     int accessible_name_id) {
-  views::ToggleButton* toggle = new views::ToggleButton(listener);
+  views::ToggleButton* toggle = new TrayToggleButton(listener);
   const gfx::Size toggle_size(toggle->GetPreferredSize());
   const int vertical_padding = (kMenuButtonSize - toggle_size.height()) / 2;
   const int horizontal_padding =

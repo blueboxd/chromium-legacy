@@ -601,6 +601,12 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChangeTabSwitcherPositionName,
      flag_descriptions::kChangeTabSwitcherPositionDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kChangeTabSwitcherPosition)},
+    {"fullscreen-controller-browser-scoped",
+     flag_descriptions::kFullscreenControllerBrowserScopedName,
+     flag_descriptions::kFullscreenControllerBrowserScopedDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         fullscreen::features::kFullscreenControllerBrowserScoped)},
 };
 
 // Add all switches from experimental flags to |command_line|.

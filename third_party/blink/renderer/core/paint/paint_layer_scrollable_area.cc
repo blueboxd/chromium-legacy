@@ -530,7 +530,17 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
     else
       frame_view->SetNeedsUpdateGeometries();
   }
-  UpdateCompositingLayersAfterScroll();
+
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    if (auto* scrolling_coordinator = GetScrollingCoordinator())
+      scrolling_coordinator->UpdateCompositorScrollOffset(*frame, *this);
+  } else {
+    UpdateCompositingLayersAfterScroll();
+  }
+
+  // The ScrollOffsetTranslation paint property depends on the scroll offset.
+  // (see: PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation).
+  GetLayoutBox()->SetNeedsPaintPropertyUpdatePreservingCachedRects();
 
   GetLayoutBox()->MayUpdateHoverWhenContentUnderMouseChanged(
       frame->GetEventHandler());
@@ -542,10 +552,6 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
   }
 
   InvalidatePaintForScrollOffsetChange();
-
-  // The scrollOffsetTranslation paint property depends on the scroll offset.
-  // (see: PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation).
-  GetLayoutBox()->SetNeedsPaintPropertyUpdatePreservingCachedRects();
 
   // Don't enqueue a scroll event yet for scroll reasons that are not about
   // explicit changes to scroll. Instead, only do so at the time of the next
@@ -1767,10 +1773,12 @@ bool PaintLayerScrollableArea::SnapContainerDataNeedsUpdate() const {
 void PaintLayerScrollableArea::SetSnapContainerDataNeedsUpdate(
     bool needs_update) {
   EnsureRareData().snap_container_data_needs_update_ = needs_update;
+  if (!needs_update)
+    return;
   GetLayoutBox()
       ->GetDocument()
       .GetSnapCoordinator()
-      .SetSnapContainerDataNeedsUpdate(needs_update);
+      .SetAnySnapContainerDataNeedsUpdate(true);
 }
 
 bool PaintLayerScrollableArea::NeedsResnap() const {
@@ -2333,16 +2341,18 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
 }
 
 void PaintLayerScrollableArea::UpdateCompositingLayersAfterScroll() {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+
   PaintLayerCompositor* compositor = GetLayoutBox()->View()->Compositor();
-  if (!compositor->InCompositingMode())
+  if (!compositor || !compositor->InCompositingMode())
     return;
 
   if (UsesCompositedScrolling()) {
     DCHECK(Layer()->HasCompositedLayerMapping());
     ScrollingCoordinator* scrolling_coordinator = GetScrollingCoordinator();
-    bool handled_scroll =
-        scrolling_coordinator &&
-        scrolling_coordinator->UpdateCompositedScrollOffset(this);
+    bool handled_scroll = scrolling_coordinator &&
+                          scrolling_coordinator->UpdateCompositorScrollOffset(
+                              *GetLayoutBox()->GetFrame(), *this);
 
     if (!handled_scroll) {
       compositor->SetNeedsCompositingUpdate(
@@ -2473,7 +2483,9 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
       !layer_->CompositesWithTransform() && !layer_->CompositesWithOpacity();
 
   if (!force_prefer_compositing_to_lcd_text &&
-      !layer_->Compositor()->PreferCompositingToLCDTextEnabled() &&
+      !box->GetDocument()
+           .GetSettings()
+           ->GetPreferCompositingToLCDTextEnabled() &&
       !background_supports_lcd_text) {
     if (layer_->CompositesWithOpacity()) {
       non_composited_main_thread_scrolling_reasons_ |=

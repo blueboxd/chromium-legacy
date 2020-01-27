@@ -49,10 +49,9 @@ const char kExportInProgress[] = "in-progress";
 const char kReauthenticationFailed[] = "reauth-failed";
 
 #if defined(OS_CHROMEOS)
-constexpr static base::TimeDelta kShowPasswordAuthTokenLifetime =
-    base::TimeDelta::FromSeconds(
-        PasswordAccessAuthenticator::kAuthValidityPeriodSeconds);
-constexpr static base::TimeDelta kExportPasswordsAuthTokenLifetime =
+constexpr base::TimeDelta kShowPasswordAuthTokenLifetime =
+    password_manager::PasswordAccessAuthenticator::kAuthValidityPeriod;
+constexpr base::TimeDelta kExportPasswordsAuthTokenLifetime =
     base::TimeDelta::FromSeconds(5);
 #endif
 
@@ -365,12 +364,6 @@ void PasswordsPrivateDelegateImpl::Shutdown() {
 SortKeyIdGenerator&
 PasswordsPrivateDelegateImpl::GetPasswordIdGeneratorForTesting() {
   return password_id_generator_;
-}
-
-void PasswordsPrivateDelegateImpl::SetOsReauthCallForTesting(
-    PasswordAccessAuthenticator::ReauthCallback os_reauth_call) {
-  password_access_authenticator_.SetOsReauthCallForTesting(
-      std::move(os_reauth_call));
 }
 
 void PasswordsPrivateDelegateImpl::ExecuteFunction(

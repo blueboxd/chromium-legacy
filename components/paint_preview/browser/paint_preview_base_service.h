@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -119,7 +120,8 @@ class PaintPreviewBaseService : public KeyedService {
 #endif  // defined(OS_ANDROID)
 
  private:
-  void OnCaptured(OnCapturedCallback callback,
+  void OnCaptured(base::TimeTicks start_time,
+                  OnCapturedCallback callback,
                   base::UnguessableToken guid,
                   mojom::PaintPreviewStatus status,
                   std::unique_ptr<PaintPreviewProto> proto);

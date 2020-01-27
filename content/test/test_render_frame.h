@@ -84,9 +84,10 @@ class TestRenderFrame : public RenderFrameImpl {
 
   void SimulateBeforeUnload(bool is_reload);
 
- private:
+ protected:
   explicit TestRenderFrame(RenderFrameImpl::CreateParams params);
 
+ private:
   mojom::FrameHost* GetFrameHost() override;
 
   mojom::FrameInputHandler* GetFrameInputHandler();

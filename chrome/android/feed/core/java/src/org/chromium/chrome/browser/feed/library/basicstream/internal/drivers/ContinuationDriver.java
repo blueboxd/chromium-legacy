@@ -14,6 +14,7 @@ import android.view.View.OnClickListener;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
@@ -31,7 +32,6 @@ import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.Token
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.TokenCompletedObserver;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.ContinuationViewHolder;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.FeedViewHolder;
-import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.R;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.ViewHolderType;
 import org.chromium.chrome.browser.feed.library.common.logging.Logger;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
@@ -221,8 +221,8 @@ public class ContinuationDriver extends LeafFeatureDriver
                 && (modelChildren.isEmpty()
                         || (modelChildren.size() == 1
                                 && modelChildren.get(0).getType() == Type.TOKEN))) {
-            mSnackbarApi.show(
-                    mContext.getResources().getString(R.string.snackbar_fetch_no_new_suggestions));
+            mSnackbarApi.show(mContext.getResources().getString(
+                    R.string.ntp_suggestions_fetch_no_new_suggestions));
         }
 
         mCursorChangedListener.onNewChildren(mModelChild, modelChildren, mModelToken.isSynthetic());
@@ -244,7 +244,7 @@ public class ContinuationDriver extends LeafFeatureDriver
             mContinuationViewHolder.setShowSpinner(false);
         }
 
-        mSnackbarApi.show(mContext.getString(R.string.snackbar_fetch_failed));
+        mSnackbarApi.show(mContext.getString(R.string.ntp_suggestions_fetch_failed));
     }
 
     @Override

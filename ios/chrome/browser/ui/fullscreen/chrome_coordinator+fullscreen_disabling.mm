@@ -56,7 +56,7 @@ const void* const kFullscreenDisablerKey = &kFullscreenDisablerKey;
 + (instancetype)wrapperForCoordinator:(ChromeCoordinator*)coordinator {
   // ChromeCoordinators that need to disable fullscreen must be initialized with
   // a ChromeBrowserState.
-  ios::ChromeBrowserState* browserState = coordinator.browserState;
+  ChromeBrowserState* browserState = coordinator.browserState;
   DCHECK(browserState);
   // Fetch the associated wrapper.
   ScopedFullscreenDisablerWrapper* wrapper =

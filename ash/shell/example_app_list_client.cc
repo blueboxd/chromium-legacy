@@ -148,7 +148,7 @@ class ExampleSearchResult : public SearchResult {
     set_title(title);
 
     if (query.empty()) {
-      set_display_type(ash::SearchResultDisplayType::kRecommendation);
+      set_is_recommendation(true);
       SetChipIcon(WindowTypeShelfItem::GetIcon(type_));
     } else {
       Tags title_tags;

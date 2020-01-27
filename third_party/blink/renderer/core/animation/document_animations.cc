@@ -125,6 +125,8 @@ HeapVector<Member<Animation>> DocumentAnimations::getAnimations() {
   HeapVector<Member<Animation>> animations;
   for (auto& timeline : timelines_) {
     for (const auto& animation : timeline->GetAnimations()) {
+      if (animation->ReplaceStateRemoved())
+        continue;
       if (!animation->effect() || (!animation->effect()->IsCurrent() &&
                                    !animation->effect()->IsInEffect())) {
         continue;

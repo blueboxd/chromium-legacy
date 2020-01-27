@@ -50,7 +50,7 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
 
     constexpr bool allow_placeholder_icon = true;
     CallLoadIcon(false, allow_placeholder_icon);
-    if (display_type() == ash::SearchResultDisplayType::kRecommendation) {
+    if (is_recommendation) {
       CallLoadIcon(true, allow_placeholder_icon);
     }
   }
@@ -82,9 +82,9 @@ AppServiceAppResult::~AppServiceAppResult() = default;
 
 void AppServiceAppResult::Open(int event_flags) {
   Launch(event_flags,
-         (display_type() == ash::SearchResultDisplayType::kRecommendation)
-             ? apps::mojom::LaunchSource::kFromAppListRecommendation
-             : apps::mojom::LaunchSource::kFromAppListQuery);
+         (is_recommendation()
+              ? apps::mojom::LaunchSource::kFromAppListRecommendation
+              : apps::mojom::LaunchSource::kFromAppListQuery));
 }
 
 void AppServiceAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
@@ -222,8 +222,7 @@ void AppServiceAppResult::HandleSuggestionChip(Profile* profile) {
   // Set these values to make sure that the chip will show up
   // in the proper position.
   SetDisplayIndex(ash::SearchResultDisplayIndex::kFirstIndex);
-  SetDisplayLocation(
-      ash::SearchResultDisplayLocation::kSuggestionChipContainer);
+  SetDisplayType(ash::SearchResultDisplayType::kChip);
 
   if (id() == ash::kReleaseNotesAppId) {
     SetNotifyVisibilityChange(true);

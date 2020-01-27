@@ -16,10 +16,9 @@ AppResult::AppResult(Profile* profile,
     : profile_(profile),
       app_id_(app_id),
       controller_(controller) {
-  SetDisplayType(is_recommendation
-                     ? ash::SearchResultDisplayType::kRecommendation
-                     : ash::SearchResultDisplayType::kTile);
+  SetDisplayType(ash::SearchResultDisplayType::kTile);
   SetResultType(ash::AppListSearchResultType::kInstalledApp);
+  SetIsRecommendation(is_recommendation);
 }
 
 AppResult::~AppResult() {

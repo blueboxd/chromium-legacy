@@ -101,6 +101,11 @@
          use_base_dir="false"
          type="BINDATA"
          compress="gzip" />
+  <include name="IDR_CR_ELEMENTS_CR_SCROLLABLE_BEHAVIOR_M_JS"
+         file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_scrollable_behavior.m.js"
+         use_base_dir="false"
+         type="BINDATA"
+         compress="gzip" />
   <include name="IDR_CR_ELEMENTS_CR_SEARCH_FIELD_M_JS"
          file="${root_gen_dir}/ui/webui/resources/cr_elements/cr_search_field/cr_search_field.m.js"
          use_base_dir="false"

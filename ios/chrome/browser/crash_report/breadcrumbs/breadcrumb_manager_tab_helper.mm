@@ -28,7 +28,7 @@ void BreadcrumbManagerTabHelper::LogEvent(const std::string& event) {
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   std::string event_log =
-      base::StringPrintf("WebState_%d %s", unique_id_, event.c_str());
+      base::StringPrintf("Tab%d %s", unique_id_, event.c_str());
   BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(chrome_browser_state)
       ->AddEvent(event_log);
 }
@@ -86,12 +86,6 @@ void BreadcrumbManagerTabHelper::TitleWasSet(web::WebState* web_state) {
 void BreadcrumbManagerTabHelper::DidChangeVisibleSecurityState(
     web::WebState* web_state) {
   LogEvent("DidChangeVisibleSecurityState");
-}
-
-void BreadcrumbManagerTabHelper::FaviconUrlUpdated(
-    web::WebState* web_state,
-    const std::vector<web::FaviconURL>& candidates) {
-  LogEvent(base::StringPrintf("FaviconUrlUpdated %lu", candidates.size()));
 }
 
 void BreadcrumbManagerTabHelper::RenderProcessGone(web::WebState* web_state) {

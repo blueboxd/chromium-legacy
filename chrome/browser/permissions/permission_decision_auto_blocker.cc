@@ -225,7 +225,7 @@ PermissionDecisionAutoBlocker* PermissionDecisionAutoBlocker::GetForProfile(
 }
 
 // static
-PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
+permissions::PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
     HostContentSettingsMap* settings_map,
     const GURL& request_origin,
     ContentSettingsType permission,
@@ -239,19 +239,21 @@ PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
   if (IsUnderEmbargo(permission_dict, features::kBlockPromptsIfDismissedOften,
                      kPermissionDismissalEmbargoKey, current_time,
                      base::TimeDelta::FromDays(g_dismissal_embargo_days))) {
-    return PermissionResult(CONTENT_SETTING_BLOCK,
-                            PermissionStatusSource::MULTIPLE_DISMISSALS);
+    return permissions::PermissionResult(
+        CONTENT_SETTING_BLOCK,
+        permissions::PermissionStatusSource::MULTIPLE_DISMISSALS);
   }
 
   if (IsUnderEmbargo(permission_dict, features::kBlockPromptsIfIgnoredOften,
                      kPermissionIgnoreEmbargoKey, current_time,
                      base::TimeDelta::FromDays(g_ignore_embargo_days))) {
-    return PermissionResult(CONTENT_SETTING_BLOCK,
-                            PermissionStatusSource::MULTIPLE_IGNORES);
+    return permissions::PermissionResult(
+        CONTENT_SETTING_BLOCK,
+        permissions::PermissionStatusSource::MULTIPLE_IGNORES);
   }
 
-  return PermissionResult(CONTENT_SETTING_ASK,
-                          PermissionStatusSource::UNSPECIFIED);
+  return permissions::PermissionResult(
+      CONTENT_SETTING_ASK, permissions::PermissionStatusSource::UNSPECIFIED);
 }
 
 // static
@@ -296,7 +298,7 @@ void PermissionDecisionAutoBlocker::UpdateFromVariations() {
                            kDefaultEmbargoDays);
 }
 
-PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
+permissions::PermissionResult PermissionDecisionAutoBlocker::GetEmbargoResult(
     const GURL& request_origin,
     ContentSettingsType permission) {
   return GetEmbargoResult(
@@ -417,9 +419,10 @@ void PermissionDecisionAutoBlocker::RemoveEmbargoByUrl(
     return;
 
   // Don't proceed if |permission| was not under embargo for |url|.
-  PermissionResult result = GetEmbargoResult(url, permission);
-  if (result.source != PermissionStatusSource::MULTIPLE_DISMISSALS &&
-      result.source != PermissionStatusSource::MULTIPLE_IGNORES) {
+  permissions::PermissionResult result = GetEmbargoResult(url, permission);
+  if (result.source !=
+          permissions::PermissionStatusSource::MULTIPLE_DISMISSALS &&
+      result.source != permissions::PermissionStatusSource::MULTIPLE_IGNORES) {
     return;
   }
 
@@ -430,12 +433,14 @@ void PermissionDecisionAutoBlocker::RemoveEmbargoByUrl(
   base::Value* permission_dict = GetOrCreatePermissionDict(
       dict.get(), PermissionUtil::GetPermissionString(permission));
 
-  if (result.source == PermissionStatusSource::MULTIPLE_DISMISSALS) {
+  if (result.source ==
+      permissions::PermissionStatusSource::MULTIPLE_DISMISSALS) {
     const bool dismissal_key_deleted =
         permission_dict->RemoveKey(kPermissionDismissalEmbargoKey);
     DCHECK(dismissal_key_deleted);
   } else {
-    DCHECK_EQ(result.source, PermissionStatusSource::MULTIPLE_IGNORES);
+    DCHECK_EQ(result.source,
+              permissions::PermissionStatusSource::MULTIPLE_IGNORES);
     const bool ignores_key_deleted =
         permission_dict->RemoveKey(kPermissionIgnoreEmbargoKey);
     DCHECK(ignores_key_deleted);

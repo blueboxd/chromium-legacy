@@ -22,6 +22,7 @@ import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
  */
 public class BrowserFragmentImpl extends RemoteFragmentImpl {
     private final ProfileImpl mProfile;
+    private final String mPersistenceId;
 
     private BrowserImpl mBrowser;
     private Context mContext;
@@ -29,6 +30,7 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
     public BrowserFragmentImpl(
             ProfileManager profileManager, IRemoteFragmentClient client, Bundle fragmentArgs) {
         super(client);
+        mPersistenceId = fragmentArgs.getString(BrowserFragmentArgs.PERSISTENCE_ID);
         mProfile =
                 profileManager.getProfile(fragmentArgs.getString(BrowserFragmentArgs.PROFILE_NAME));
     }
@@ -47,7 +49,7 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
     public void onCreate(Bundle savedInstanceState) {
         StrictModeWorkaround.apply();
         super.onCreate(savedInstanceState);
-        mBrowser = new BrowserImpl(mProfile, savedInstanceState);
+        mBrowser = new BrowserImpl(mProfile, mPersistenceId, savedInstanceState);
         if (mContext != null) {
             mBrowser.onFragmentAttached(mContext, new FragmentWindowAndroid(mContext, this));
         }

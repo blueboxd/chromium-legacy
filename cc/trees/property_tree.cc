@@ -251,7 +251,7 @@ void TransformTree::CombineTransformsBetween(int source_id,
     DCHECK(IsDescendant(dest_id, current->id));
     CombineInversesBetween(current->id, dest_id, &combined_transform);
     DCHECK(combined_transform.IsApproximatelyIdentityOrTranslation(
-        SkDoubleToMScalar(1e-4)));
+        SkDoubleToScalar(1e-4)));
   }
 
   size_t source_to_destination_size = source_to_destination.size();
@@ -498,7 +498,7 @@ void TransformTree::UpdateSnapping(TransformNode* node) {
   gfx::Transform delta = FromScreen(node->id);
   delta *= rounded;
 
-  DCHECK(delta.IsApproximatelyIdentityOrTranslation(SkDoubleToMScalar(1e-4)))
+  DCHECK(delta.IsApproximatelyIdentityOrTranslation(SkDoubleToScalar(1e-4)))
       << delta.ToString();
 
   gfx::Vector2dF translation = delta.To2dTranslation();

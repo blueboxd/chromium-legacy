@@ -5,6 +5,7 @@
 package org.chromium.chrome.test_support;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -165,6 +166,12 @@ public class PaymentRequestTestBridge {
                         onHasEnrolledInstrumentReturnedPtr, onShowAppsReadyPtr,
                         onNotSupportedErrorPtr, onConnectionTerminatedPtr, onAbortCalledPtr,
                         onCompleteCalledPtr);
+    }
+
+    @CalledByNative
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public static WebContents getPaymentHandlerWebContentsForTest() {
+        return PaymentRequestImpl.getPaymentHandlerWebContentsForTest();
     }
 
     /**

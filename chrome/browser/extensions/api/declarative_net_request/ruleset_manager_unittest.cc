@@ -164,8 +164,9 @@ TEST_P(RulesetManagerTest, MultipleRulesets) {
     manager()->EvaluateRequest(request, false /*is_incognito_context*/);
     return !request.dnr_actions->empty() &&
            ((*request.dnr_actions)[0] ==
-            RequestAction(RequestActionType::BLOCK, rule_id, kDefaultPriority,
-                          dnr_api::SOURCE_TYPE_MANIFEST, extension_id));
+            CreateRequestActionForTesting(
+                RequestActionType::BLOCK, rule_id, kDefaultPriority,
+                dnr_api::SOURCE_TYPE_MANIFEST, extension_id));
   };
 
   for (int mask = 0; mask < 4; mask++) {
@@ -245,9 +246,9 @@ TEST_P(RulesetManagerTest, IncognitoRequests) {
 
   manager()->EvaluateRequest(request_info, false /*is_incognito_context*/);
   ASSERT_EQ(1u, request_info.dnr_actions->size());
-  EXPECT_EQ(RequestAction(RequestActionType::BLOCK, *rule_one.id,
-                          kDefaultPriority, dnr_api::SOURCE_TYPE_MANIFEST,
-                          last_loaded_extension()->id()),
+  EXPECT_EQ(CreateRequestActionForTesting(
+                RequestActionType::BLOCK, *rule_one.id, kDefaultPriority,
+                dnr_api::SOURCE_TYPE_MANIFEST, last_loaded_extension()->id()),
             (*request_info.dnr_actions)[0]);
   request_info.dnr_actions.reset();
 
@@ -259,17 +260,17 @@ TEST_P(RulesetManagerTest, IncognitoRequests) {
 
   manager()->EvaluateRequest(request_info, true /*is_incognito_context*/);
   ASSERT_EQ(1u, request_info.dnr_actions->size());
-  EXPECT_EQ(RequestAction(RequestActionType::BLOCK, *rule_one.id,
-                          kDefaultPriority, dnr_api::SOURCE_TYPE_MANIFEST,
-                          last_loaded_extension()->id()),
+  EXPECT_EQ(CreateRequestActionForTesting(
+                RequestActionType::BLOCK, *rule_one.id, kDefaultPriority,
+                dnr_api::SOURCE_TYPE_MANIFEST, last_loaded_extension()->id()),
             (*request_info.dnr_actions)[0]);
   request_info.dnr_actions.reset();
 
   manager()->EvaluateRequest(request_info, false /*is_incognito_context*/);
   ASSERT_EQ(1u, request_info.dnr_actions->size());
-  EXPECT_EQ(RequestAction(RequestActionType::BLOCK, *rule_one.id,
-                          kDefaultPriority, dnr_api::SOURCE_TYPE_MANIFEST,
-                          last_loaded_extension()->id()),
+  EXPECT_EQ(CreateRequestActionForTesting(
+                RequestActionType::BLOCK, *rule_one.id, kDefaultPriority,
+                dnr_api::SOURCE_TYPE_MANIFEST, last_loaded_extension()->id()),
             (*request_info.dnr_actions)[0]);
   request_info.dnr_actions.reset();
 }
@@ -313,9 +314,9 @@ TEST_P(RulesetManagerTest, TotalEvaluationTimeHistogram) {
 
     manager()->EvaluateRequest(example_com_request, is_incognito_context);
     ASSERT_EQ(1u, example_com_request.dnr_actions->size());
-    EXPECT_EQ(RequestAction(RequestActionType::BLOCK, *rule.id,
-                            kDefaultPriority, dnr_api::SOURCE_TYPE_MANIFEST,
-                            last_loaded_extension()->id()),
+    EXPECT_EQ(CreateRequestActionForTesting(
+                  RequestActionType::BLOCK, *rule.id, kDefaultPriority,
+                  dnr_api::SOURCE_TYPE_MANIFEST, last_loaded_extension()->id()),
               (*example_com_request.dnr_actions)[0]);
 
     tester.ExpectTotalCount(kHistogramName, 1);
@@ -349,7 +350,7 @@ TEST_P(RulesetManagerTest, Redirect) {
   // redirected to "google.com".
   const bool is_incognito_context = false;
   const char* kExampleURL = "http://example.com";
-  RequestAction expected_redirect_action(
+  RequestAction expected_redirect_action = CreateRequestActionForTesting(
       RequestActionType::REDIRECT, *rule.id, *rule.priority,
       dnr_api::SOURCE_TYPE_MANIFEST, last_loaded_extension()->id());
   expected_redirect_action.redirect_url = GURL("http://google.com");
@@ -425,10 +426,10 @@ TEST_P(RulesetManagerTest, ExtensionScheme) {
   WebRequestInfo request_1(GetRequestParamsForURL("http://example.com"));
   manager()->EvaluateRequest(request_1, false /*is_incognito_context*/);
   ASSERT_EQ(1u, request_1.dnr_actions->size());
-  EXPECT_EQ(
-      RequestAction(RequestActionType::BLOCK, kMinValidID, kDefaultPriority,
-                    dnr_api::SOURCE_TYPE_MANIFEST, extension_1->id()),
-      (*request_1.dnr_actions)[0]);
+  EXPECT_EQ(CreateRequestActionForTesting(
+                RequestActionType::BLOCK, kMinValidID, kDefaultPriority,
+                dnr_api::SOURCE_TYPE_MANIFEST, extension_1->id()),
+            (*request_1.dnr_actions)[0]);
 
   // Ensure that the background page for |extension_1| won't be blocked or
   // redirected.
@@ -512,7 +513,7 @@ TEST_P(RulesetManagerTest, RemoveHeaders) {
 
   // Removal of the cookie header should be attributed to |extension_2| because
   // it was installed later than |extension_1| and thus has more priority.
-  RequestAction expected_action_1(
+  RequestAction expected_action_1 = CreateRequestActionForTesting(
       RequestActionType::REMOVE_HEADERS, kMinValidID, kDefaultPriority,
       dnr_api::SOURCE_TYPE_MANIFEST, extension_2->id());
   expected_action_1.request_headers_to_remove.push_back(
@@ -522,7 +523,7 @@ TEST_P(RulesetManagerTest, RemoveHeaders) {
   expected_action_1.request_headers_to_remove.push_back(
       net::HttpRequestHeaders::kReferer);
 
-  RequestAction expected_action_2(
+  RequestAction expected_action_2 = CreateRequestActionForTesting(
       RequestActionType::REMOVE_HEADERS, kMinValidID, kDefaultPriority,
       dnr_api::SOURCE_TYPE_MANIFEST, extension_1->id());
   expected_action_2.response_headers_to_remove.push_back("set-cookie");
@@ -689,11 +690,11 @@ TEST_P(RulesetManagerTest, PageAllowingAPI) {
 
     if (test_case.expect_blocked_with_allowed_pages) {
       ASSERT_EQ(1u, actions.size());
-      EXPECT_EQ(
-          RequestAction(RequestActionType::BLOCK, *test_case.matched_rule_id,
-                        kDefaultPriority, dnr_api::SOURCE_TYPE_MANIFEST,
-                        last_loaded_extension()->id()),
-          actions[0]);
+      EXPECT_EQ(CreateRequestActionForTesting(
+                    RequestActionType::BLOCK, *test_case.matched_rule_id,
+                    kDefaultPriority, dnr_api::SOURCE_TYPE_MANIFEST,
+                    last_loaded_extension()->id()),
+                actions[0]);
     } else {
       EXPECT_TRUE(actions.empty());
     }
@@ -783,7 +784,7 @@ TEST_P(RulesetManagerTest, HostPermissionForInitiator) {
     manager()->AddRuleset(redirect_extension_id, std::move(redirect_matcher),
                           URLPatternSet());
     for (const auto& test : cases) {
-      RequestAction redirect_action(
+      RequestAction redirect_action = CreateRequestActionForTesting(
           RequestActionType::REDIRECT, kMinValidID, kMinValidPriority,
           dnr_api::SOURCE_TYPE_MANIFEST, redirect_extension_id);
       redirect_action.redirect_url = GURL("https://foo.com/");
@@ -801,7 +802,7 @@ TEST_P(RulesetManagerTest, HostPermissionForInitiator) {
     manager()->AddRuleset(blocking_extension_id, std::move(blocking_matcher),
                           URLPatternSet());
     for (const auto& test : cases) {
-      RequestAction block_action(
+      RequestAction block_action = CreateRequestActionForTesting(
           RequestActionType::BLOCK, kMinValidID, kDefaultPriority,
           dnr_api::SOURCE_TYPE_MANIFEST, blocking_extension_id);
 

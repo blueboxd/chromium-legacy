@@ -31,6 +31,9 @@ class VIEWS_EXPORT ToggleButton : public Button {
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
 
+ protected:
+  void SetThumbColors(SkColor thumb_on_color, SkColor thumb_off_color);
+
  private:
   friend class TestToggleButton;
   class ThumbView;
@@ -45,6 +48,8 @@ class VIEWS_EXPORT ToggleButton : public Button {
   void UpdateThumb();
 
   SkColor GetTrackColor(bool is_on) const;
+
+  virtual SkColor GetTrackBaseColor(bool is_on) const;
 
   // views::View:
   bool CanAcceptEvent(const ui::Event& event) override;

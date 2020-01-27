@@ -25,6 +25,8 @@ class JsChannelBindings : public content::RenderFrameObserver,
   // content::RenderFrameObserver implementation:
   void DidClearWindowObject() final;
   void OnDestruct() final;
+  void DidCreateScriptContext(v8::Local<v8::Context> context,
+                              int32_t world_id) final;
 
   // mojom::JsChannelClient implementation:
   void CreateChannel(const std::string& channel,
@@ -35,6 +37,7 @@ class JsChannelBindings : public content::RenderFrameObserver,
 
   void Func(const std::string& channel, v8::Local<v8::Value> message);
 
+  bool did_create_script_context_ = false;
   std::vector<std::pair<std::string, mojo::Remote<mojom::JsChannel>>> channels_;
 
   mojo::Receiver<mojom::JsChannelClient> receiver_;

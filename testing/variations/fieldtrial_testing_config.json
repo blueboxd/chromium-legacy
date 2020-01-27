@@ -3496,21 +3496,6 @@
             ]
         }
     ],
-    "InterestFeedFeedback": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "FeedbackOnInterestFeed",
-                    "enable_features": [
-                        "InterestFeedFeedback"
-                    ]
-                }
-            ]
-        }
-    ],
     "InvalidationsGCMUpstream": [
         {
             "platforms": [
@@ -7430,14 +7415,14 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
-                    "enable_features": [
+                    "name": "Disabled",
+                    "disable_features": [
                         "V8ConcurrentInlining"
                     ]
                 },
                 {
-                    "name": "Disabled",
-                    "disable_features": [
+                    "name": "Enabled",
+                    "enable_features": [
                         "V8ConcurrentInlining"
                     ]
                 }

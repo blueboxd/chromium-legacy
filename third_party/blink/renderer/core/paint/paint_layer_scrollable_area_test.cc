@@ -10,6 +10,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
+#include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -1415,6 +1416,54 @@ TEST_P(PaintLayerScrollableAreaTest, LowEndCompositeWithTrivial3D) {
   )HTML");
 
   EXPECT_TRUE(UsesCompositedScrolling(GetLayoutObjectByElementId("scroller")));
+}
+
+TEST_P(PaintLayerScrollableAreaTest, SetSnapContainerDataNeedsUpdate) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    .scroller {
+      overflow: scroll;
+      height: 200px;
+      width: 200px;
+    }
+    </style>
+    <div id='first_scroller' class='scroller'>
+      <div style='height: 2000px;'></div>
+    </div>
+    <div id='second_scroller' class='scroller'>
+      <div style='height: 2000px;'></div>
+    </div>
+  )HTML");
+
+  auto* first_scroller = GetLayoutObjectByElementId("first_scroller");
+  auto* first_scrollable_area =
+      ToLayoutBoxModelObject(first_scroller)->GetScrollableArea();
+
+  auto* second_scroller = GetLayoutObjectByElementId("second_scroller");
+  auto* second_scrollable_area =
+      ToLayoutBoxModelObject(second_scroller)->GetScrollableArea();
+
+  EXPECT_EQ(&first_scroller->GetDocument().GetSnapCoordinator(),
+            &second_scroller->GetDocument().GetSnapCoordinator());
+
+  auto& snap_coordinator = first_scroller->GetDocument().GetSnapCoordinator();
+  EXPECT_FALSE(snap_coordinator.AnySnapContainerDataNeedsUpdate());
+
+  // SnapCoordinator needs to update all its snap containers if one of them asks
+  // for an update.
+  first_scrollable_area->SetSnapContainerDataNeedsUpdate(true);
+  EXPECT_TRUE(snap_coordinator.AnySnapContainerDataNeedsUpdate());
+
+  // SnapCoordinator still needs to update all its snap containers even if one
+  // of them asks not to.
+  second_scrollable_area->SetSnapContainerDataNeedsUpdate(false);
+  EXPECT_TRUE(snap_coordinator.AnySnapContainerDataNeedsUpdate());
+
+  first_scrollable_area->SetSnapContainerDataNeedsUpdate(false);
+  EXPECT_TRUE(snap_coordinator.AnySnapContainerDataNeedsUpdate());
+
+  snap_coordinator.UpdateAllSnapContainerDataIfNeeded();
+  EXPECT_FALSE(snap_coordinator.AnySnapContainerDataNeedsUpdate());
 }
 
 }  // namespace blink

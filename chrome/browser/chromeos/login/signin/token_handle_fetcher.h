@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
-#include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
 namespace signin {
@@ -27,7 +27,6 @@ class Profile;
 // It can be used in two ways. When user have just used GAIA signin there is
 // an OAuth2 token available. If there is profile already loaded, then
 // minting additional access token might be required.
-
 class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate {
  public:
   TokenHandleFetcher(TokenHandleUtil* util, const AccountId& account_id);
@@ -45,7 +44,7 @@ class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate {
   void BackfillToken(Profile* profile, const TokenFetchingCallback& callback);
 
  private:
-  // AccessTokenFetcher::TokenCallback for PrimaryAccountAccessTokenFetcher.
+  // Callback for the access token fetcher.
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
                                   signin::AccessTokenInfo token_info);
 
@@ -57,7 +56,7 @@ class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate {
 
   void FillForAccessToken(const std::string& access_token);
 
-  // This is called before profile is detroyed.
+  // This is called before profile is destroyed.
   void OnProfileDestroyed();
 
   TokenHandleUtil* token_handle_util_ = nullptr;
@@ -68,8 +67,7 @@ class TokenHandleFetcher : public gaia::GaiaOAuthClient::Delegate {
   base::TimeTicks tokeninfo_response_start_time_ = base::TimeTicks();
   TokenFetchingCallback callback_;
   std::unique_ptr<gaia::GaiaOAuthClient> gaia_client_;
-  std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
-      access_token_fetcher_;
+  std::unique_ptr<signin::AccessTokenFetcher> access_token_fetcher_;
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       profile_shutdown_notification_;
 

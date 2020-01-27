@@ -21,7 +21,7 @@ namespace paint_preview {
 
 class PaintPreviewCompositorImpl : public mojom::PaintPreviewCompositor {
  public:
-  using FileMap = base::flat_map<uint64_t, base::File>;
+  using FileMap = base::flat_map<base::UnguessableToken, base::File>;
 
   // Creates a new PaintPreviewCompositorImpl that receives mojo requests over
   // |receiver|. |receiver| should be created by the remote and
@@ -38,7 +38,7 @@ class PaintPreviewCompositorImpl : public mojom::PaintPreviewCompositor {
   // PaintPreviewCompositor implementation.
   void BeginComposite(mojom::PaintPreviewBeginCompositeRequestPtr request,
                       BeginCompositeCallback callback) override;
-  void BitmapForFrame(uint64_t frame_guid,
+  void BitmapForFrame(const base::UnguessableToken& frame_guid,
                       const gfx::Rect& clip_rect,
                       float scale_factor,
                       BitmapForFrameCallback callback) override;
@@ -60,7 +60,7 @@ class PaintPreviewCompositorImpl : public mojom::PaintPreviewCompositor {
 
   GURL url_;
   // A mapping from frame GUID to its associated data.
-  base::flat_map<int64_t, PaintPreviewFrame> frames_;
+  base::flat_map<base::UnguessableToken, PaintPreviewFrame> frames_;
 
   PaintPreviewCompositorImpl(const PaintPreviewCompositorImpl&) = delete;
   PaintPreviewCompositorImpl& operator=(const PaintPreviewCompositorImpl&) =

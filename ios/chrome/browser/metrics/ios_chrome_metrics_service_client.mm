@@ -335,12 +335,12 @@ bool IOSChromeMetricsServiceClient::RegisterForNotifications() {
           base::Bind(&IOSChromeMetricsServiceClient::OnURLOpenedFromOmnibox,
                      base::Unretained(this)));
 
-  std::vector<ios::ChromeBrowserState*> loaded_browser_states =
+  std::vector<ChromeBrowserState*> loaded_browser_states =
       GetApplicationContext()
           ->GetChromeBrowserStateManager()
           ->GetLoadedBrowserStates();
   bool all_profiles_succeeded = true;
-  for (ios::ChromeBrowserState* browser_state : loaded_browser_states) {
+  for (ChromeBrowserState* browser_state : loaded_browser_states) {
     if (!RegisterForBrowserStateEvents(browser_state)) {
       all_profiles_succeeded = false;
     }
@@ -349,7 +349,7 @@ bool IOSChromeMetricsServiceClient::RegisterForNotifications() {
 }
 
 bool IOSChromeMetricsServiceClient::RegisterForBrowserStateEvents(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   history::HistoryService* history_service =
       ios::HistoryServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::IMPLICIT_ACCESS);

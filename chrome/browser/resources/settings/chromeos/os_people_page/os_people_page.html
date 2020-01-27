@@ -172,23 +172,27 @@
       </template>
 
       <!-- Pre-SplitSettingsSync we show the browser's sync controls. -->
-      <template is="dom-if" route-path="/syncSetup/advanced">
-        <settings-subpage page-title="$i18n{syncAdvancedPageTitle}"
-            associated-control="[[$$('#sync-setup')]]"
-            learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
-          <settings-sync-controls sync-status="[[syncStatus]]">
-          </settings-sync-controls>
-        </settings-subpage>
+      <template is="dom-if" if="[[!splitSettingsSyncEnabled_]]">
+        <template is="dom-if" route-path="/syncSetup/advanced">
+          <settings-subpage page-title="$i18n{syncAdvancedPageTitle}"
+              associated-control="[[$$('#sync-setup')]]"
+              learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
+            <settings-sync-controls sync-status="[[syncStatus]]">
+            </settings-sync-controls>
+          </settings-subpage>
+        </template>
       </template>
 
       <!-- Post-SplitSettingsSync we have separate OS sync controls. -->
-      <template is="dom-if" route-path="/osSync">
-        <settings-subpage page-title="$i18n{osSyncPageTitle}"
-            associated-control="[[$$('#sync-setup')]]"
-            learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
-          <os-sync-controls sync-status="[[syncStatus]]">
-          </os-sync-controls>
-        </settings-subpage>
+      <template is="dom-if" if="[[splitSettingsSyncEnabled_]]">
+        <template is="dom-if" route-path="/osSync">
+          <settings-subpage page-title="$i18n{osSyncPageTitle}"
+              associated-control="[[$$('#sync-setup')]]"
+              learn-more-url="$i18n{syncAndGoogleServicesLearnMoreURL}">
+            <os-sync-controls sync-status="[[syncStatus]]">
+            </os-sync-controls>
+          </settings-subpage>
+        </template>
       </template>
 
       <template is="dom-if" route-path="/lockScreen">

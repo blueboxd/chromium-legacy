@@ -1402,6 +1402,19 @@ bool PaintArtifactCompositor::DirectlyUpdatePageScaleTransform(
   return false;
 }
 
+bool PaintArtifactCompositor::DirectlyUpdateScrollOffset(
+    CompositorElementId element_id,
+    const FloatPoint& scroll_offset) {
+  if (!root_layer_ || !root_layer_->layer_tree_host())
+    return false;
+  auto* property_trees = root_layer_->layer_tree_host()->property_trees();
+  if (!property_trees->element_id_to_scroll_node_index.contains(element_id))
+    return false;
+  property_trees->scroll_tree.SetScrollOffset(element_id,
+                                              gfx::ScrollOffset(scroll_offset));
+  return true;
+}
+
 static cc::RenderSurfaceReason GetRenderSurfaceCandidateReason(
     const cc::EffectNode& effect,
     const Vector<const EffectPaintPropertyNode*>& blink_effects) {

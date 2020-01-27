@@ -332,6 +332,7 @@ void ExecMe2MeScript(base::EnvironmentMap environment,
   if (!environment.count("PATH")) {
     environment["PATH"] = "/bin:/usr/bin";
   }
+  environment["CHROME_REMOTE_DESKTOP_SESSION"] = "1";
 
   std::vector<std::string> env_strings;
   for (const auto& env_var : environment) {

@@ -1225,12 +1225,12 @@ if (!is_android) {
       "../browser/tab_contents/view_source_browsertest.cc",
       "../browser/task_manager/mock_web_contents_task_manager.cc",
       "../browser/task_manager/mock_web_contents_task_manager.h",
-      "../browser/task_manager/providers/service_worker_task_provider_browsertest.cc",
       "../browser/task_manager/providers/web_contents/background_contents_tag_browsertest.cc",
       "../browser/task_manager/providers/web_contents/devtools_tag_browsertest.cc",
       "../browser/task_manager/providers/web_contents/extension_tag_browsertest.cc",
       "../browser/task_manager/providers/web_contents/subframe_task_browsertest.cc",
       "../browser/task_manager/providers/web_contents/tab_contents_tag_browsertest.cc",
+      "../browser/task_manager/providers/worker_task_provider_browsertest.cc",
       "../browser/task_manager/task_manager_browsertest.cc",
       "../browser/task_manager/task_manager_browsertest_util.cc",
       "../browser/task_manager/task_manager_browsertest_util.h",
@@ -2108,6 +2108,9 @@ if (!is_android) {
         "../browser/chromeos/child_accounts/parent_access_code/parent_access_test_utils.h",
         "../browser/chromeos/child_accounts/screen_time_controller_browsertest.cc",
         "../browser/chromeos/child_accounts/time_limit_test_utils.cc",
+        "../browser/chromeos/child_accounts/time_limits/app_time_browsertest.cc",
+        "../browser/chromeos/child_accounts/time_limits/app_time_limits_policy_builder.cc",
+        "../browser/chromeos/child_accounts/time_limits/app_time_limits_policy_builder.h",
         "../browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.cc",
         "../browser/chromeos/child_accounts/time_limits/app_time_limits_whitelist_policy_test_utils.h",
         "../browser/chromeos/child_accounts/time_limits/web_time_limit_enforcer_browsertest.cc",
@@ -3423,7 +3426,6 @@ test("unit_tests") {
     "../browser/ui/passwords/manage_passwords_state_unittest.cc",
     "../browser/ui/passwords/manage_passwords_view_utils_unittest.cc",
     "../browser/ui/passwords/password_generation_popup_controller_impl_unittest.cc",
-    "../browser/ui/passwords/settings/password_access_authenticator_unittest.cc",
     "../browser/ui/passwords/settings/password_manager_porter_unittest.cc",
     "../browser/ui/passwords/settings/password_manager_presenter_unittest.cc",
     "../browser/ui/search_engines/keyword_editor_controller_unittest.cc",
@@ -3786,7 +3788,6 @@ test("unit_tests") {
       "../browser/toolbar/toolbar_security_icon_unittest.cc",
       "../browser/touch_to_fill/touch_to_fill_controller_unittest.cc",
       "../browser/translate/translate_manager_render_view_host_android_unittest.cc",
-      "../browser/updates/update_notification_config_unittest.cc",
       "../browser/util/url_utilities_unittest.cc",
     ]
     deps += [
@@ -3797,6 +3798,7 @@ test("unit_tests") {
       "//chrome/android:native_j_unittests_jni_headers",
       "//chrome/android:native_java_unittests_java",
       "//chrome/android/features/media_router:java",
+      "//chrome/browser/updates:unit_tests",
       "//chrome/services/media_gallery_util:unit_tests",
       "//components/download/internal/common:internal_java",
       "//components/favicon/core/test:test_support",
@@ -5022,7 +5024,6 @@ test("unit_tests") {
 
   if (enable_captive_portal_detection) {
     sources += [
-      "../browser/captive_portal/captive_portal_service_unittest.cc",
       "../browser/captive_portal/captive_portal_tab_helper_unittest.cc",
       "../browser/captive_portal/captive_portal_tab_reloader_unittest.cc",
     ]

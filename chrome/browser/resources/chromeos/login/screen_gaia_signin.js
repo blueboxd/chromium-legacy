@@ -151,6 +151,16 @@ Polymer({
     },
 
     /**
+     * Whether the authenticator is or has been in the |SAML| AuthFlow during
+     * the current authentication attempt.
+     * @private
+     */
+    usedSaml_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * Management domain displayed on SAML interstitial page.
      * @private
      */
@@ -538,23 +548,9 @@ Polymer({
    * @private
    */
   isSigninFrameDialogVisible_(screenMode, pinDialogParameters) {
-    // See the comment in getSigninFrameContainerClass_() for the explanation on
-    // why our element shouldn't be hidden during loading.
+    // See the comment in the .css file for the explanation on why our element
+    // shouldn't be hidden during loading.
     return screenMode == AuthMode.DEFAULT && pinDialogParameters === null;
-  },
-
-  /**
-   * Calculates the dynamically updatable classes for the signin-frame-container
-   * element.
-   * @param {boolean} isLoadingUiShown
-   * @return {string}
-   * @private
-   */
-  getSigninFrameContainerClass_(isLoadingUiShown) {
-    // Use the CSS class in order to make the signin-frame webview invisible
-    // (completely transparent) during loading, since setting the "hidden"
-    // attribute would affect its loading events.
-    return isLoadingUiShown ? 'transparent' : 'non-transparent';
   },
 
   /**
@@ -801,6 +797,7 @@ Polymer({
 
     // Reset SAML
     this.isSaml_ = false;
+    this.usedSaml_ = false;
     this.samlPasswordConfirmAttempt_ = 0;
 
     // Reset the PIN dialog, in case it's shown.
@@ -921,6 +918,9 @@ Polymer({
    * @private
    */
   onSamlChanged_(newValue, oldValue) {
+    if (this.isSaml_)
+      this.usedSaml_ = true;
+
     chrome.send('samlStateChanged', [this.isSaml_]);
 
     this.classList.toggle('saml', this.isSaml_);

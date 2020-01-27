@@ -56,6 +56,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/feature_switch.h"
+#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
@@ -71,6 +72,7 @@
 #include "ui/gfx/skia_util.h"
 
 using content::WebContents;
+using ContextType = extensions::ExtensionBrowserTest::ContextType;
 
 namespace extensions {
 namespace {
@@ -161,6 +163,33 @@ class BrowserActionApiCanvasTest : public BrowserActionApiTest {
   }
 };
 
+class BrowserActionApiLazyTest
+    : public BrowserActionApiTest,
+      public testing::WithParamInterface<ContextType> {
+ public:
+  void SetUp() override {
+    BrowserActionApiTest::SetUp();
+    // Service Workers are currently only available on certain channels, so set
+    // the channel for those tests.
+    if (GetParam() == ContextType::kServiceWorker) {
+      current_channel_ =
+          std::make_unique<extensions::ScopedWorkerBasedExtensionsChannel>();
+    }
+  }
+
+  const extensions::Extension* LoadExtensionWithParamFlags(
+      const base::FilePath& path) {
+    int flags = kFlagEnableFileAccess;
+    if (GetParam() == ContextType::kServiceWorker)
+      flags |= ExtensionBrowserTest::kFlagRunAsServiceWorkerBasedExtension;
+    return LoadExtensionWithFlags(path, flags);
+  }
+
+ private:
+  std::unique_ptr<extensions::ScopedWorkerBasedExtensionsChannel>
+      current_channel_;
+};
+
 // Watches a frame is swapped with a new frame by e.g., navigation.
 class RenderFrameChangedWatcher : public content::WebContentsObserver {
  public:
@@ -183,11 +212,11 @@ class RenderFrameChangedWatcher : public content::WebContentsObserver {
   content::RenderFrameHost* created_frame_;
 };
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
+IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, Basic) {
   ExtensionTestMessageListener ready_listener("ready", false);
   ASSERT_TRUE(embedded_test_server()->Start());
-  const Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("browser_action/basics"));
+  const Extension* extension = LoadExtensionWithParamFlags(
+      test_data_dir_.AppendASCII("browser_action/basics"));
   ASSERT_TRUE(extension) << message_;
 
   // Test that there is a browser action in the toolbar.
@@ -207,11 +236,11 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Update) {
+IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, Update) {
   ExtensionTestMessageListener ready_listener("ready", true);
   ASSERT_TRUE(embedded_test_server()->Start());
-  const Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("browser_action/update"));
+  const Extension* extension = LoadExtensionWithParamFlags(
+      test_data_dir_.AppendASCII("browser_action/update"));
   ASSERT_TRUE(extension) << message_;
   // Test that there is a browser action in the toolbar.
   ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());
@@ -238,6 +267,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Update) {
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255),
             action->GetBadgeBackgroundColor(ExtensionAction::kDefaultTabId));
 }
+
+INSTANTIATE_TEST_SUITE_P(EventPage,
+                         BrowserActionApiLazyTest,
+                         ::testing::Values(ContextType::kEventPage));
+INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         BrowserActionApiLazyTest,
+                         ::testing::Values(ContextType::kServiceWorker));
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiCanvasTest, DynamicBrowserAction) {
   ASSERT_TRUE(RunExtensionTest("browser_action/no_icon")) << message_;
@@ -644,11 +680,11 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
       << "a specific tab id.";
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
+IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, IncognitoBasic) {
   ExtensionTestMessageListener ready_listener("ready", false);
   ASSERT_TRUE(embedded_test_server()->Start());
-  const Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("browser_action/basics"));
+  const Extension* extension = LoadExtensionWithParamFlags(
+      test_data_dir_.AppendASCII("browser_action/basics"));
   ASSERT_TRUE(extension) << message_;
 
   // Test that there is a browser action in the toolbar.
@@ -692,10 +728,14 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoBasic) {
   EXPECT_TRUE(catcher.GetNextResult());
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, IncognitoUpdate) {
+IN_PROC_BROWSER_TEST_P(BrowserActionApiLazyTest, IncognitoUpdate) {
+  // TODO(crbug.com/1015136): Investigate flakiness WRT Service Workers and
+  // incognito mode.
+  if (GetParam() == ContextType::kServiceWorker)
+    return;
   ASSERT_TRUE(embedded_test_server()->Start());
-  const Extension* extension =
-      LoadExtension(test_data_dir_.AppendASCII("browser_action/update"));
+  const Extension* extension = LoadExtensionWithParamFlags(
+      test_data_dir_.AppendASCII("browser_action/update"));
   ASSERT_TRUE(extension) << message_;
   // Test that there is a browser action in the toolbar.
   ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());

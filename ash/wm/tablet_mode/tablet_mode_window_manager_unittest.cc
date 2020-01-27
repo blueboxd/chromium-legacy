@@ -1828,8 +1828,8 @@ TEST_P(TabletModeWindowManagerTest, ClamshellTabletTransitionTest) {
   EXPECT_TRUE(manager);
   EXPECT_FALSE(overview_controller->InOverviewSession());
 
-  // 2. Tablet -> Clamshell. If overview is active, it should be ended after
-  // transition.
+  // 2. Tablet -> Clamshell. If overview is inactive, it should still be kept
+  // inactive after transition.
   DestroyTabletModeWindowManager();
   EXPECT_FALSE(overview_controller->InOverviewSession());
 

@@ -30,9 +30,13 @@ HTMLTypeMap CreateHTMLTypeMap() {
   return html_type_map;
 }
 
-HTMLElementType htmlElementTypeForTag(const AtomicString& tagName) {
+static const HTMLTypeMap& GetHTMLTypeMap() {
   DEFINE_STATIC_LOCAL(const HTMLTypeMap, html_type_map, (CreateHTMLTypeMap()));
+  return html_type_map;
+}
 
+HTMLElementType htmlElementTypeForTag(const AtomicString& tagName, const Document* document) {
+  const auto& html_type_map = GetHTMLTypeMap();
   auto it = html_type_map.find(tagName);
   if (it == html_type_map.end())
     return HTMLElementType::kHTMLUnknownElement;
@@ -40,13 +44,17 @@ HTMLElementType htmlElementTypeForTag(const AtomicString& tagName) {
   {% for tag in tags|sort %}
   {% if tag.runtimeEnabled %}
   if (tagName == "{{tag.name}}") {
-    if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled()) {
+    if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled(document)) {
       return HTMLElementType::kHTMLUnknownElement;
     }
   }
   {% endif %}
   {% endfor %}
   return it->value;
+}
+
+bool IsKnownBuiltinTagName(const AtomicString& tag_name) {
+  return GetHTMLTypeMap().Contains(tag_name);
 }
 {% endif %}
 }  // namespace blink

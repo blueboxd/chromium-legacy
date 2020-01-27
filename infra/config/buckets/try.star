@@ -677,66 +677,6 @@ gpu_android_builder(
     ),
 )
 
-gpu_android_builder(
-    name = 'gpu-fyi-try-android-l-nexus-5-32',
-)
-
-gpu_android_builder(
-    name = 'gpu-fyi-try-android-l-nexus-6-32',
-)
-
-gpu_android_builder(
-    name = 'gpu-fyi-try-android-m-nexus-5x-64',
-)
-
-gpu_android_builder(
-    name = 'gpu-fyi-try-android-m-nexus-5x-deqp-64',
-)
-
-gpu_android_builder(
-    name = 'gpu-fyi-try-android-m-nexus-5x-skgl-64',
-)
-
-gpu_android_builder(
-    name = 'gpu-fyi-try-android-m-nexus-6p-64',
-)
-
-gpu_android_builder(
-    name = 'gpu-fyi-try-android-m-nexus-9-64',
-)
-
-gpu_android_builder(
-    name = 'gpu-fyi-try-android-n-nvidia-shield-tv-64',
-)
-
-gpu_android_builder(
-    name = 'gpu-fyi-try-android-p-pixel-2-32',
-)
-
-gpu_android_builder(
-    name = 'gpu-fyi-try-android-p-pixel-2-skv-32',
-)
-
-gpu_android_builder(
-    name = 'gpu-fyi-try-android-q-pixel-2-deqp-vk-32',
-)
-
-gpu_android_builder(
-    name = 'gpu-fyi-try-android-q-pixel-2-deqp-vk-64',
-)
-
-gpu_android_builder(
-    name = 'gpu-fyi-try-android-q-pixel-2-vk-32',
-)
-
-gpu_android_builder(
-    name = 'gpu-fyi-try-android-q-pixel-2-vk-64',
-)
-
-gpu_android_builder(
-    name = 'gpu-try-android-m-nexus-5x-64',
-)
-
 
 def gpu_linux_builder(*, name, **kwargs):
   return gpu_builder(
@@ -745,58 +685,6 @@ def gpu_linux_builder(*, name, **kwargs):
       mastername = 'tryserver.chromium.linux',
       **kwargs
   )
-
-gpu_linux_builder(
-    name = 'gpu-fyi-try-linux-intel-dqp',
-)
-
-gpu_linux_builder(
-    name = 'gpu-fyi-try-linux-intel-exp',
-)
-
-gpu_linux_builder(
-    name = 'gpu-fyi-try-linux-intel-rel',
-)
-
-gpu_linux_builder(
-    name = 'gpu-fyi-try-linux-intel-sk-dawn-rel',
-)
-
-gpu_linux_builder(
-    name = 'gpu-fyi-try-linux-intel-skv',
-)
-
-gpu_linux_builder(
-    name = 'gpu-fyi-try-linux-nvidia-dbg',
-)
-
-gpu_linux_builder(
-    name = 'gpu-fyi-try-linux-nvidia-dqp',
-)
-
-gpu_linux_builder(
-    name = 'gpu-fyi-try-linux-nvidia-exp',
-)
-
-gpu_linux_builder(
-    name = 'gpu-fyi-try-linux-nvidia-rel',
-)
-
-gpu_linux_builder(
-    name = 'gpu-fyi-try-linux-nvidia-skv',
-)
-
-gpu_linux_builder(
-    name = 'gpu-fyi-try-linux-nvidia-tsn',
-)
-
-gpu_linux_builder(
-    name = 'gpu-try-linux-nvidia-dbg',
-)
-
-gpu_linux_builder(
-    name = 'gpu-try-linux-nvidia-rel',
-)
 
 gpu_linux_builder(
     name = 'linux_optional_gpu_tests_rel',
@@ -857,82 +745,6 @@ def gpu_win_builder(*, name, os=os.WINDOWS_ANY, **kwargs):
       os = os,
       **kwargs
   )
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win-xr-builder-64',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win10-intel-dqp-64',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win10-intel-exp-64',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win10-intel-rel-64',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win10-nvidia-dbg-64',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win10-nvidia-dqp-64',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win10-nvidia-dx12vk-dbg-64',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win10-nvidia-dx12vk-rel-64',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win10-nvidia-exp-64',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win10-nvidia-skgl-64',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win10-nvidia-rel-32',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win10-nvidia-rel-64',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win7-amd-dbg-32',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win7-amd-dqp-32',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win7-amd-rel-32',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win7-nvidia-dqp-64',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win7-nvidia-rel-32',
-)
-
-gpu_win_builder(
-    name = 'gpu-fyi-try-win7-nvidia-rel-64',
-)
-
-gpu_win_builder(
-    name = 'gpu-try-win10-nvidia-rel',
-)
 
 gpu_win_builder(
     name = 'win_optional_gpu_tests_rel',
@@ -1562,6 +1374,7 @@ win_builder(
     name = 'win10_chromium_x64_coverage_rel_ng',
     os = os.WINDOWS_10,
     use_clang_coverage = True,
+    goma_jobs = goma.jobs.J150,
     tryjob = tryjob(experiment_percentage = 3),
 )
 

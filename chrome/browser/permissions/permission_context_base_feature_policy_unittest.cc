@@ -7,11 +7,11 @@
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/media/midi_permission_context.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/permission_request_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
@@ -83,7 +83,7 @@ class PermissionContextBaseFeaturePolicyTest
 
   ContentSetting RequestPermissionForFrame(PermissionContextBase* pcb,
                                            content::RenderFrameHost* rfh) {
-    PermissionRequestID id(rfh, request_id_++);
+    permissions::PermissionRequestID id(rfh, request_id_++);
     pcb->RequestPermission(content::WebContents::FromRenderFrameHost(rfh), id,
                            rfh->GetLastCommittedURL(), /*user_gesture=*/true,
                            base::Bind(&PermissionContextBaseFeaturePolicyTest::

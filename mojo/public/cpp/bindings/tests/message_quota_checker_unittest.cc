@@ -6,6 +6,8 @@
 
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "mojo/public/c/system/quota.h"
 #include "mojo/public/cpp/bindings/features.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -30,23 +32,41 @@ class MessageQuotaCheckerTest : public testing::Test {
   using MessageQuotaChecker = internal::MessageQuotaChecker;
   using Configuration = MessageQuotaChecker::Configuration;
 
-  static void RecordDumpAttempt(
-      size_t total_quota_used,
-      base::Optional<size_t> message_pipe_quota_used) {
+  static constexpr base::TimeDelta kOneSamplingInterval =
+      base::TimeDelta::FromSeconds(MessageQuotaChecker::DecayingRateAverage::
+                                       kSecondsPerSamplingInterval);
+
+  void Advance(base::TimeDelta delta) {
+    task_environment_.FastForwardBy(delta);
+  }
+
+  static void RecordDumpAttempt(size_t total_quota_used,
+                                base::Optional<size_t> message_pipe_quota_used,
+                                int64_t seconds_since_construction,
+                                double average_write_rate) {
     ++instance_->num_dumps_;
     instance_->last_dump_total_quota_used_ = total_quota_used;
     instance_->last_dump_message_pipe_quota_used_ = message_pipe_quota_used;
+    instance_->last_seconds_since_construction_ = seconds_since_construction;
+    instance_->last_average_write_rate_ = average_write_rate;
   }
+
+  // Mock time to allow testing
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   size_t num_dumps_ = false;
   size_t last_dump_total_quota_used_ = 0u;
   base::Optional<size_t> last_dump_message_pipe_quota_used_;
+  int64_t last_seconds_since_construction_ = 0;
+  double last_average_write_rate_ = 0.0;
 
   static const Configuration enabled_config_;
 
   static MessageQuotaCheckerTest* instance_;
 };
 
+constexpr base::TimeDelta MessageQuotaCheckerTest::kOneSamplingInterval;
 const MessageQuotaCheckerTest::Configuration
     MessageQuotaCheckerTest::enabled_config_ = {true, 1, 100, 200,
                                                 &RecordDumpAttempt};
@@ -159,6 +179,9 @@ TEST_F(MessageQuotaCheckerTest, DumpsCoreOnOverrun) {
   scoped_refptr<MessageQuotaChecker> checker =
       MessageQuotaChecker::MaybeCreateForTesting(enabled_config_);
 
+  // Fast forward time by a few sampling intervals.
+  Advance(10 * kOneSamplingInterval);
+
   // Queue up 100 messages.
   checker->SetMessagePipe(pipe.handle0.get());
   const char kMessage[] = "hello";
@@ -177,24 +200,69 @@ TEST_F(MessageQuotaCheckerTest, DumpsCoreOnOverrun) {
   ASSERT_EQ(0u, num_dumps_);
 
   checker->BeforeMessagesEnqueued(50);
-  ASSERT_EQ(1u, num_dumps_);
-  ASSERT_EQ(200u, last_dump_total_quota_used_);
-  ASSERT_EQ(100u, last_dump_message_pipe_quota_used_);
+  EXPECT_EQ(1u, num_dumps_);
+  EXPECT_EQ(200u, last_dump_total_quota_used_);
+  EXPECT_EQ(100u, last_dump_message_pipe_quota_used_);
+  EXPECT_EQ((10 * kOneSamplingInterval).InSeconds(),
+            last_seconds_since_construction_);
+  EXPECT_EQ(50.0, last_average_write_rate_);
 
+  Advance(kOneSamplingInterval);
   checker->BeforeWrite();
   ASSERT_EQ(MOJO_RESULT_OK,
             WriteMessageRaw(pipe.handle0.get(), kMessage, sizeof(kMessage),
                             nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-  ASSERT_EQ(2u, num_dumps_);
-  ASSERT_EQ(201u, last_dump_total_quota_used_);
-  ASSERT_EQ(101u, last_dump_message_pipe_quota_used_);
+  EXPECT_EQ(2u, num_dumps_);
+  EXPECT_EQ(201u, last_dump_total_quota_used_);
+  EXPECT_EQ(101u, last_dump_message_pipe_quota_used_);
+  EXPECT_EQ((11 * kOneSamplingInterval).InSeconds(),
+            last_seconds_since_construction_);
+  EXPECT_EQ(25.5, last_average_write_rate_);
 
+  Advance(kOneSamplingInterval);
   checker->SetMessagePipe(mojo::MessagePipeHandle());
   checker->BeforeMessagesEnqueued(250);
-  ASSERT_EQ(3u, num_dumps_);
-  ASSERT_EQ(350u, last_dump_total_quota_used_);
-  ASSERT_FALSE(last_dump_message_pipe_quota_used_.has_value());
+  EXPECT_EQ(3u, num_dumps_);
+  EXPECT_EQ(350u, last_dump_total_quota_used_);
+  EXPECT_FALSE(last_dump_message_pipe_quota_used_.has_value());
+  EXPECT_EQ((12 * kOneSamplingInterval).InSeconds(),
+            last_seconds_since_construction_);
+  EXPECT_EQ(12.75, last_average_write_rate_);
+}
+
+TEST_F(MessageQuotaCheckerTest, DecayingRateAverage) {
+  MessageQuotaChecker::DecayingRateAverage avg;
+  base::TimeTicks t0 = base::TimeTicks::Now();
+  EXPECT_EQ(0.0, avg.GetDecayedRateAverage(t0));
+
+  // Tally two events in the same second.
+  avg.AccrueEvent(t0);
+  avg.AccrueEvent(t0);
+  // The decayed average rate is half of the rate this sampling interval.
+  EXPECT_EQ(1.0, avg.GetDecayedRateAverage(t0));
+
+  t0 += kOneSamplingInterval;
+  // Tally another two events in a subsequent sampling interval.
+  avg.AccrueEvent(t0);
+  avg.AccrueEvent(t0);
+  EXPECT_EQ(1.5, avg.GetDecayedRateAverage(t0));
+
+  t0 += kOneSamplingInterval;
+  // Tally another two events in a subsequent sampling interval.
+  avg.AccrueEvent(t0);
+  avg.AccrueEvent(t0);
+  EXPECT_EQ(1.75, avg.GetDecayedRateAverage(t0));
+
+  // Make sure the average is decayed with time.
+  EXPECT_EQ(0.875, avg.GetDecayedRateAverage(t0 + kOneSamplingInterval));
+  EXPECT_EQ(0.4375, avg.GetDecayedRateAverage(t0 + 2 * kOneSamplingInterval));
+
+  t0 += 10 * kOneSamplingInterval;
+  avg.AccrueEvent(t0);
+  avg.AccrueEvent(t0);
+  // The previous average should have decayed by 1/1024.
+  EXPECT_EQ(1.0 + 1.75 / 1024.0, avg.GetDecayedRateAverage(t0));
 }
 
 }  // namespace

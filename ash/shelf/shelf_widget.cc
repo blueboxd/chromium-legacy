@@ -736,6 +736,8 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
   } else {
     bool show_hotseat = (state == session_manager::SessionState::ACTIVE);
     hotseat_widget()->GetShelfView()->SetVisible(show_hotseat);
+    hotseat_transition_animator_->SetAnimationsEnabledInSessionState(
+        show_hotseat);
     login_shelf_view()->SetVisible(!show_hotseat);
     delegate_view_->SetLayoutManager(
         show_hotseat ? nullptr : std::make_unique<views::FillLayout>());

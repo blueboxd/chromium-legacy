@@ -5469,11 +5469,12 @@ base::string16 NormalizeLineBreaks(const base::string16& source) {
 }
 }  // namespace
 
-void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
-                                          const base::string16& message,
-                                          const base::string16& default_prompt,
-                                          JavaScriptDialogType dialog_type,
-                                          IPC::Message* reply_msg) {
+void WebContentsImpl::RunJavaScriptDialog(
+    RenderFrameHost* render_frame_host,
+    const base::string16& message,
+    const base::string16& default_prompt,
+    JavaScriptDialogType dialog_type,
+    JavaScriptDialogCallback response_callback) {
   // Ensure that if showing a dialog is the first thing that a page does, that
   // the contents of the previous page aren't shown behind it. This is required
   // because showing a dialog freezes the renderer, so no frames will be coming
@@ -5488,10 +5489,10 @@ void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
   // http://crbug.com/728276
   ForSecurityDropFullscreen();
 
-  auto callback =
-      base::BindOnce(&WebContentsImpl::OnDialogClosed, base::Unretained(this),
-                     render_frame_host->GetProcess()->GetID(),
-                     render_frame_host->GetRoutingID(), reply_msg);
+  auto callback = base::BindOnce(
+      &WebContentsImpl::OnDialogClosed, base::Unretained(this),
+      render_frame_host->GetProcess()->GetID(),
+      render_frame_host->GetRoutingID(), std::move(response_callback));
 
   std::vector<protocol::PageHandler*> page_handlers =
       protocol::PageHandler::EnabledForWebContents(this);
@@ -5549,7 +5550,7 @@ void WebContentsImpl::RunJavaScriptDialog(RenderFrameHost* render_frame_host,
 void WebContentsImpl::RunBeforeUnloadConfirm(
     RenderFrameHost* render_frame_host,
     bool is_reload,
-    IPC::Message* reply_msg) {
+    JavaScriptDialogCallback response_callback) {
   // Ensure that if showing a dialog is the first thing that a page does, that
   // the contents of the previous page aren't shown behind it. This is required
   // because showing a dialog freezes the renderer, so no frames will be coming
@@ -5569,10 +5570,10 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
   if (delegate_)
     delegate_->WillRunBeforeUnloadConfirm();
 
-  auto callback =
-      base::BindOnce(&WebContentsImpl::OnDialogClosed, base::Unretained(this),
-                     render_frame_host->GetProcess()->GetID(),
-                     render_frame_host->GetRoutingID(), reply_msg);
+  auto callback = base::BindOnce(
+      &WebContentsImpl::OnDialogClosed, base::Unretained(this),
+      render_frame_host->GetProcess()->GetID(),
+      render_frame_host->GetRoutingID(), std::move(response_callback));
 
   std::vector<protocol::PageHandler*> page_handlers =
       protocol::PageHandler::EnabledForWebContents(this);
@@ -6686,7 +6687,7 @@ void WebContentsImpl::OnDidDownloadImage(
 
 void WebContentsImpl::OnDialogClosed(int render_process_id,
                                      int render_frame_id,
-                                     IPC::Message* reply_msg,
+                                     JavaScriptDialogCallback response_callback,
                                      bool dialog_was_suppressed,
                                      bool success,
                                      const base::string16& user_input) {
@@ -6711,18 +6712,12 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
       observer.BeforeUnloadDialogCancelled();
   }
 
-  if (rfh) {
-    rfh->JavaScriptDialogClosed(reply_msg, success, user_input);
+  std::move(response_callback).Run(success, user_input);
 
-    std::vector<protocol::PageHandler*> page_handlers =
-        protocol::PageHandler::EnabledForWebContents(this);
-    for (auto* handler : page_handlers)
-      handler->DidCloseJavaScriptDialog(success, user_input);
-
-  } else {
-    // Don't leak the sync IPC reply if the RFH or process is gone.
-    delete reply_msg;
-  }
+  std::vector<protocol::PageHandler*> page_handlers =
+      protocol::PageHandler::EnabledForWebContents(this);
+  for (auto* handler : page_handlers)
+    handler->DidCloseJavaScriptDialog(success, user_input);
 
   is_showing_javascript_dialog_ = false;
   is_showing_before_unload_dialog_ = false;

@@ -149,10 +149,6 @@ class BinaryUploadService {
   // Sets |can_upload_data_| for tests.
   void SetAuthForTesting(bool authorized);
 
-  // Returns whether a download should be blocked based on file size alone. It
-  // checks the enterprise policy BlockLargeFileTransfer to decide this.
-  static bool ShouldBlockFileSize(size_t file_size);
-
   // Returns the URL that requests are uploaded to.
   static GURL GetUploadUrl();
 

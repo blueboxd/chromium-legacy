@@ -106,9 +106,9 @@ void QuotaLimitHeuristic::SingletonBucketMapper::GetBucketsForArgs(
 }
 
 QuotaLimitHeuristic::QuotaLimitHeuristic(const Config& config,
-                                         BucketMapper* map,
+                                         std::unique_ptr<BucketMapper> map,
                                          const std::string& name)
-    : config_(config), bucket_mapper_(map), name_(name) {}
+    : config_(config), bucket_mapper_(std::move(map)), name_(name) {}
 
 QuotaLimitHeuristic::~QuotaLimitHeuristic() {}
 

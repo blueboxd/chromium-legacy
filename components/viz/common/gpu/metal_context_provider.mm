@@ -25,10 +25,13 @@ namespace {
 struct API_AVAILABLE(macos(10.11)) MetalContextProviderImpl
     : public MetalContextProvider {
  public:
-  explicit MetalContextProviderImpl(id<MTLDevice> device) {
+  explicit MetalContextProviderImpl(id<MTLDevice> device,
+                                    const GrContextOptions& context_options) {
     device_.reset([[MTLDeviceProxy alloc] initWithDevice:device]);
     command_queue_.reset([device_ newCommandQueue]);
-    gr_context_ = GrContext::MakeMetal(device_, command_queue_);
+
+    gr_context_ =
+        GrContext::MakeMetal(device_, command_queue_, context_options);
     DCHECK(gr_context_);
   }
   ~MetalContextProviderImpl() override {
@@ -53,7 +56,8 @@ struct API_AVAILABLE(macos(10.11)) MetalContextProviderImpl
 }  // namespace
 
 // static
-std::unique_ptr<MetalContextProvider> MetalContextProvider::Create() {
+std::unique_ptr<MetalContextProvider> MetalContextProvider::Create(
+    const GrContextOptions& context_options) {
   if (@available(macOS 10.11, *)) {
     // First attempt to find a low power device to use.
     base::scoped_nsprotocol<id<MTLDevice>> device_to_use(
@@ -62,7 +66,8 @@ std::unique_ptr<MetalContextProvider> MetalContextProvider::Create() {
       DLOG(ERROR) << "Failed to find MTLDevice.";
       return nullptr;
     }
-    return std::make_unique<MetalContextProviderImpl>(device_to_use.get());
+    return std::make_unique<MetalContextProviderImpl>(device_to_use.get(),
+                                                      context_options);
   }
   // If no device was found, or if the macOS version is too old for Metal,
   // return no context provider.

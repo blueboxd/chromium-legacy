@@ -526,6 +526,11 @@ test("vr_common_unittests") {
       "//ui/android:ui_java",
     ]
   }
+  if (is_win) {
+    configs += [
+      "//build/config/win:delayloads",
+    ]
+  }
 }
 
 test("vr_pixeltests") {

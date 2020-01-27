@@ -363,7 +363,8 @@ viz_source_set("gpu_service_dependencies") {
 
   defines = [ "VIZ_SERVICE_IMPLEMENTATION" ]
 
-  deps = []
+  deps = [ "//gpu/config" ]
+
   if (is_chromeos) {
     deps += [
       "//components/arc/video_accelerator",

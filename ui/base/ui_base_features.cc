@@ -176,4 +176,12 @@ bool IsOzoneDrmMojo() {
 const base::Feature kHandwritingGesture = {"HandwritingGesture",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+const base::Feature kSynchronousPageFlipTesting{
+    "SynchronousPageFlipTesting", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsSynchronousPageFlipTestingEnabled() {
+  return base::FeatureList::IsEnabled(kSynchronousPageFlipTesting);
+}
+
 }  // namespace features

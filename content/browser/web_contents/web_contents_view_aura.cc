@@ -101,16 +101,13 @@ WebContentsViewAura::RenderWidgetHostViewCreateFunction
 
 RenderWidgetHostViewAura* ToRenderWidgetHostViewAura(
     RenderWidgetHostView* view) {
-  if (!view || (RenderViewHostFactory::has_factory() &&
-      !RenderViewHostFactory::is_real_render_view_host())) {
+  if (RenderViewHostFactory::has_factory() &&
+      !RenderViewHostFactory::is_real_render_view_host()) {
     return nullptr;  // Can't cast to RenderWidgetHostViewAura in unit tests.
   }
 
-  RenderViewHost* rvh = RenderViewHost::From(view->GetRenderWidgetHost());
-  WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
-      rvh ? WebContents::FromRenderViewHost(rvh) : nullptr);
-  if (BrowserPluginGuest::IsGuest(web_contents))
-    return nullptr;
+  DCHECK(!view || !static_cast<RenderWidgetHostViewBase*>(view)
+                       ->IsRenderWidgetHostViewChildFrame());
   return static_cast<RenderWidgetHostViewAura*>(view);
 }
 

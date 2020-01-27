@@ -701,12 +701,12 @@ void RendererImpl::OnBufferingStateChange(DemuxerStream::Type type,
 
   const auto* type_string = DemuxerStream::GetTypeName(type);
   DVLOG(1) << __func__ << " " << type_string << " "
-           << MediaLog::BufferingStateToString(*buffering_state) << " -> "
-           << MediaLog::BufferingStateToString(new_buffering_state, reason);
+           << BufferingStateToString(*buffering_state) << " -> "
+           << BufferingStateToString(new_buffering_state, reason);
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT2("media", "RendererImpl::OnBufferingStateChange", "type",
                type_string, "state",
-               MediaLog::BufferingStateToString(new_buffering_state, reason));
+               BufferingStateToString(new_buffering_state, reason));
 
   bool was_waiting_for_enough_data = WaitingForEnoughData();
 

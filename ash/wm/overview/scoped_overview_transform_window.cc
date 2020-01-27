@@ -20,7 +20,6 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/window_preview_view.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
 #include "ash/wm/window_util.h"
@@ -34,7 +33,6 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_observer.h"
-#include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/layout/layout_provider.h"
@@ -90,7 +88,6 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
     : overview_item_(overview_item),
       window_(window),
       original_opacity_(window->layer()->GetTargetOpacity()),
-      original_mask_layer_(window_->layer()->layer_mask_layer()),
       original_clip_rect_(window_->layer()->clip_rect()) {
   type_ = GetWindowDimensionsType(window->bounds().size());
 
@@ -221,7 +218,6 @@ void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform) {
   ScopedOverviewAnimationSettings animation_settings(
       overview_item_->GetExitOverviewAnimationType(), window_);
   SetOpacity(original_opacity_);
-  window_->layer()->SetMaskLayer(original_mask_layer_);
 }
 
 void ScopedOverviewTransformWindow::BeginScopedAnimation(
@@ -401,7 +397,7 @@ void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show,
   // Hide the corners if minimized, OverviewItemView will handle showing the
   // rounded corners on the UI.
   const bool show_corners = show && !IsMinimized();
-  // Add the mask which gives the overview item rounded corners, and add the
+  // Add the clipping which gives the overview item rounded corners, and add the
   // shadow around the window.
   ui::Layer* layer = window_->layer();
   const float scale = layer->transform().Scale2d().x();

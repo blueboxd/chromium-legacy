@@ -2475,8 +2475,9 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="NONE"/>
   <int value="1" label="LIST"/>
   <int value="2" label="TILE"/>
-  <int value="3" label="RECOMMENDATION"/>
+  <int value="3" label="RECOMMENDATION (Deprecated)"/>
   <int value="4" label="CARD"/>
+  <int value="5" label="CHIP"/>
 </enum>
 
 <enum name="ApplistSearchResultOpenedSource">
@@ -19214,6 +19215,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="662" label="LocalDiscoveryEnabled"/>
   <int value="663" label="ChromeVariations"/>
   <int value="664" label="PrintingAPIExtensionsWhitelist"/>
+  <int value="665" label="ReportDeviceCrashReportInfo"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -26036,6 +26038,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3137" label="CSPWithBetterThanReasonableRestrictions"/>
   <int value="3138" label="CSPROWithBetterThanReasonableRestrictions"/>
   <int value="3139" label="MeasureMemory"/>
+  <int value="3140" label="V8Animation_ReplaceState_AttributeGetter"/>
+  <int value="3141" label="V8Animation_Persist_Method"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38386,6 +38390,7 @@ from previous Chrome versions.
   <int value="351005753" label="enable-experimental-accessibility-autoclick"/>
   <int value="352191859" label="disabled-new-style-notification"/>
   <int value="352937987" label="OverflowIconsForMediaControls:disabled"/>
+  <int value="354631905" label="RecoverFromNeverSaveAndroid:disabled"/>
   <int value="357138275" label="enable-floating-virtual-keyboard:disabled"/>
   <int value="358399482" label="enable-high-dpi-fixed-position-compositing"/>
   <int value="358493847" label="BackgroundLoader:disabled"/>
@@ -39130,6 +39135,7 @@ from previous Chrome versions.
   <int value="1283960113" label="disable-fixed-position-compositing"/>
   <int value="1284910808" label="disable-checker-imaging"/>
   <int value="1285905715" label="WebXRHitTest:enabled"/>
+  <int value="1289433604" label="RecoverFromNeverSaveAndroid:enabled"/>
   <int value="1291257442" label="TabsInCBD:disabled"/>
   <int value="1291761696" label="CCTModuleDexLoading:disabled"/>
   <int value="1291966558" label="ScrollAnchoring:disabled"/>
@@ -48789,6 +48795,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Malformed response"/>
 </enum>
 
+<enum name="PasswordManager.ReauthResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
+  <int value="2" label="Skipped"/>
+</enum>
+
 <enum name="PasswordManagerActionsTaken">
   <obsolete>
     Deprecated as of Chrome 32. See PasswordManagerActionsTakenWithPsl
@@ -53770,12 +53782,6 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
   <int value="2" label="Will retry"/>
-</enum>
-
-<enum name="ReauthToAccessPasswordInSettingsEvent">
-  <int value="0" label="Success"/>
-  <int value="1" label="Failure"/>
-  <int value="2" label="Skipped"/>
 </enum>
 
 <enum name="RecentTabsAction">
@@ -61711,6 +61717,11 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Suspected to Confirmed"/>
   <int value="2" label="Confirmed to Suspected"/>
   <int value="3" label="Suspected to None"/>
+</enum>
+
+<enum name="SwipeHomeToOverviewResult">
+  <int value="0" label="Remained on the home screen"/>
+  <int value="1" label="Transitioned to overview"/>
 </enum>
 
 <enum name="SwReporterRunningTimeRegistryError">

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/test/fake_local_frame.h"
+#include "third_party/blink/public/mojom/frame/media_player_action.mojom.h"
 
 namespace content {
 
@@ -57,6 +58,10 @@ void FakeLocalFrame::BeforeUnload(bool is_reload,
   base::TimeTicks now = base::TimeTicks::Now();
   std::move(callback).Run(true /*leave the page*/, now, now);
 }
+
+void FakeLocalFrame::MediaPlayerActionAt(
+    const gfx::Point& location,
+    blink::mojom::MediaPlayerActionPtr action) {}
 
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

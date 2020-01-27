@@ -552,9 +552,19 @@ std::unique_ptr<HttpResponse> HandleServerRedirect(HttpStatusCode redirect_code,
   std::string dest = UnescapeBinaryURLComponent(request_url.query_piece());
   RequestQuery query = ParseQuery(request_url);
 
+  if (request.method == METHOD_OPTIONS) {
+    auto http_response = std::make_unique<BasicHttpResponse>();
+    http_response->set_code(HTTP_OK);
+    http_response->AddCustomHeader("Access-Control-Allow-Origin", "*");
+    http_response->AddCustomHeader("Access-Control-Allow-Methods", "*");
+    http_response->AddCustomHeader("Access-Control-Allow-Headers", "*");
+    return http_response;
+  }
+
   auto http_response = std::make_unique<BasicHttpResponse>();
   http_response->set_code(redirect_code);
   http_response->AddCustomHeader("Location", dest);
+  http_response->AddCustomHeader("Access-Control-Allow-Origin", "*");
   http_response->set_content_type("text/html");
   http_response->set_content(base::StringPrintf(
       "<html><head></head><body>Redirecting to %s</body></html>",

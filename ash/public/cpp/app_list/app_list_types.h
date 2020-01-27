@@ -150,24 +150,17 @@ enum class AppListSearchResultType {
   // Add new values here.
 };
 
-// How the result should be displayed. Do not change the order of these as
-// they are used for metrics.
+// Which UI container(s) the result should be displayed in.
+// Do not change the order of these as they are used for metrics.
 enum SearchResultDisplayType {
   kNone = 0,
-  kList,
-  kTile,
-  kRecommendation,
-  kCard,
-  // Add new values here.
-
+  kList = 1,  // Displays in search list
+  kTile = 2,  // Displays in search tiles and suggestion chips
+  // kRecommendation = 3  // No longer used, split between kTile and kChip
+  kCard = 4,  // Displays in answer cards
+  kChip = 5,  // Displays in suggestion chips only
+  // Add new values here
   kLast,  // Don't use over IPC
-};
-
-// Which UI container should the result be displayed in.
-enum SearchResultDisplayLocation {
-  kSuggestionChipContainer,
-  kTileListContainer,
-  kPlacementUndefined,
 };
 
 // Which index in the UI container should the result be placed in.
@@ -280,12 +273,8 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
   // indicates no subtype has been set.
   int result_subtype = -1;
 
-  // How this result is displayed.
+  // Which UI container(s) the result should be displayed in.
   SearchResultDisplayType display_type = SearchResultDisplayType::kList;
-
-  // Which UI container should the result be displayed in.
-  SearchResultDisplayLocation display_location =
-      SearchResultDisplayLocation::kPlacementUndefined;
 
   // Which index in the UI container should the result be placed in.
   SearchResultDisplayIndex display_index = SearchResultDisplayIndex::kUndefined;
@@ -302,6 +291,9 @@ struct ASH_PUBLIC_EXPORT SearchResultMetadata {
 
   // Whether this result is installing.
   bool is_installing = false;
+
+  // Whether this result is a recommendation.
+  bool is_recommendation = false;
 
   // A query URL associated with this result. The meaning and treatment of the
   // URL (e.g. displaying inline web contents) is dependent on the result type.

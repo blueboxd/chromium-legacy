@@ -96,8 +96,8 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
-#include "third_party/blink/public/common/media/media_player_action.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_double_size.h"
@@ -186,7 +186,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/pausable_script_executor.h"
-#include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
 #include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
@@ -205,8 +204,6 @@
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
-#include "third_party/blink/renderer/core/html/media/html_media_element.h"
-#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
 #include "third_party/blink/renderer/core/html/portal/dom_window_portal_host.h"
@@ -2497,48 +2494,6 @@ bool WebLocalFrameImpl::ShouldSuppressKeyboardForFocusedElement() {
       GetFrame()->GetDocument()->FocusedElement());
   return focused_form_control_element &&
          autofill_client_->ShouldSuppressKeyboard(focused_form_control_element);
-}
-
-void WebLocalFrameImpl::PerformMediaPlayerAction(
-    const gfx::Point& location,
-    const MediaPlayerAction& action) {
-  HitTestResult result = HitTestResultForVisualViewportPos(IntPoint(location));
-  Node* node = result.InnerNode();
-  if (!IsA<HTMLVideoElement>(*node) && !IsA<HTMLAudioElement>(*node))
-    return;
-
-  auto* media_element = To<HTMLMediaElement>(node);
-  switch (action.type) {
-    case MediaPlayerAction::Type::kPlay:
-      if (action.enable)
-        media_element->Play();
-      else
-        media_element->pause();
-      break;
-    case MediaPlayerAction::Type::kMute:
-      media_element->setMuted(action.enable);
-      break;
-    case MediaPlayerAction::Type::kLoop:
-      media_element->SetLoop(action.enable);
-      break;
-    case MediaPlayerAction::Type::kControls:
-      media_element->SetBooleanAttribute(html_names::kControlsAttr,
-                                         action.enable);
-      break;
-    case MediaPlayerAction::Type::kPictureInPicture:
-      DCHECK(IsA<HTMLVideoElement>(media_element));
-      if (action.enable) {
-        PictureInPictureController::From(node->GetDocument())
-            .EnterPictureInPicture(To<HTMLVideoElement>(media_element),
-                                   nullptr /* promise */,
-                                   nullptr /* options */);
-      } else {
-        PictureInPictureController::From(node->GetDocument())
-            .ExitPictureInPicture(To<HTMLVideoElement>(media_element), nullptr);
-      }
-
-      break;
-  }
 }
 
 void WebLocalFrameImpl::OnPortalActivated(

@@ -34,8 +34,13 @@
  * will not be sized correctly.
  */
 
+// clang-format off
+// #import {beforeNextRender, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+// clang-format on
+
 /** @polymerBehavior */
-const CrScrollableBehavior = {
+/* #export */ const CrScrollableBehavior = {
 
   /** @private {number|null} */
   intervalId_: null,

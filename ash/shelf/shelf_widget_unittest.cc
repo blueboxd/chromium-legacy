@@ -434,6 +434,102 @@ TEST_F(ShelfWidgetTest, OpaqueBackgroundAndDragHandleTransition) {
   ASSERT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
 }
 
+// Tests the shelf widget does not animate for hotseat transitions if the screen
+// is locked.
+TEST_F(ShelfWidgetTest, NoAnimatingBackgroundOnLockScreen) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  UpdateDisplay("800x800");
+
+  ASSERT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
+
+  // Create a window to transition to the in-app shelf.
+  auto window = AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 800, 800));
+
+  // At this point animations have zero duration, so the transition happens
+  // immediately.
+  ASSERT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_TRUE(GetShelfWidget()->GetOpaqueBackground()->visible());
+  ASSERT_FALSE(GetShelfWidget()->GetAnimatingBackground()->visible());
+
+  GetSessionControllerClient()->SetSessionState(SessionState::LOCKED);
+
+  ASSERT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
+  ASSERT_FALSE(GetShelfWidget()->GetAnimatingBackground()->visible());
+
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Hide the test window, and verify that does not start shelf animation.
+  window->Hide();
+
+  ASSERT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
+  ASSERT_FALSE(GetShelfWidget()->GetAnimatingBackground()->visible());
+  ASSERT_FALSE(GetShelfWidget()
+                   ->GetAnimatingBackground()
+                   ->GetAnimator()
+                   ->is_animating());
+
+  // Ensure the ShelfWidget and the drag handle are still hidden (i.e. in home
+  // screen state) when the screen is unlocked.
+  GetSessionControllerClient()->SetSessionState(SessionState::ACTIVE);
+  ASSERT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
+  ASSERT_FALSE(GetShelfWidget()->GetAnimatingBackground()->visible());
+  ASSERT_FALSE(GetShelfWidget()
+                   ->GetAnimatingBackground()
+                   ->GetAnimator()
+                   ->is_animating());
+}
+
+// Tests the shelf widget animations for hotseat transitions are stopped when
+// the screen is locked.
+TEST_F(ShelfWidgetTest, ScreenLockStopsHotseatTransitionAnimation) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  UpdateDisplay("800x800");
+
+  ASSERT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
+
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Create a window to transition to the in-app shelf.
+  auto window = AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 800, 800));
+
+  ASSERT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
+  ASSERT_TRUE(GetShelfWidget()->GetAnimatingBackground()->visible());
+  ASSERT_TRUE(GetShelfWidget()
+                  ->GetAnimatingBackground()
+                  ->GetAnimator()
+                  ->is_animating());
+
+  GetSessionControllerClient()->SetSessionState(SessionState::LOCKED);
+
+  ASSERT_FALSE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_FALSE(GetShelfWidget()->GetOpaqueBackground()->visible());
+  ASSERT_FALSE(GetShelfWidget()->GetAnimatingBackground()->visible());
+  ASSERT_FALSE(GetShelfWidget()
+                   ->GetAnimatingBackground()
+                   ->GetAnimator()
+                   ->is_animating());
+
+  GetSessionControllerClient()->SetSessionState(SessionState::ACTIVE);
+
+  // Ensure the ShelfWidget and the drag handle have the correct bounds and
+  // visibility for in-app shelf when the screen is unlocked.
+  ASSERT_TRUE(GetShelfWidget()->GetDragHandle()->GetVisible());
+  ASSERT_TRUE(GetShelfWidget()->GetOpaqueBackground()->visible());
+  ASSERT_FALSE(GetShelfWidget()->GetAnimatingBackground()->visible());
+  EXPECT_EQ(GetShelfWidget()->GetWindowBoundsInScreen(),
+            gfx::Rect(0, 760, 800, 40));
+  EXPECT_EQ(GetShelfWidget()->GetDragHandle()->bounds(),
+            gfx::Rect(360, 18, 80, 4));
+}
+
 class ShelfWidgetAfterLoginTest : public AshTestBase {
  public:
   ShelfWidgetAfterLoginTest() { set_start_session(false); }

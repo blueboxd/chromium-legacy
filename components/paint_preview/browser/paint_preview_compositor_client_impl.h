@@ -33,7 +33,7 @@ class PaintPreviewCompositorClientImpl : public PaintPreviewCompositorClient {
       mojom::PaintPreviewBeginCompositeRequestPtr request,
       mojom::PaintPreviewCompositor::BeginCompositeCallback callback) override;
   void BitmapForFrame(
-      uint64_t frame_guid,
+      const base::UnguessableToken& frame_guid,
       const gfx::Rect& clip_rect,
       float scale_factor,
       mojom::PaintPreviewCompositor::BitmapForFrameCallback callback) override;

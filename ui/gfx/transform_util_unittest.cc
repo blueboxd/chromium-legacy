@@ -81,8 +81,8 @@ TEST(TransformUtilTest, SnapTranslation) {
   Transform result(Transform::kSkipInitialization);
   Transform transform;
 
-  transform.Translate3d(SkDoubleToMScalar(1.01), SkDoubleToMScalar(1.99),
-                        SkDoubleToMScalar(3.0));
+  transform.Translate3d(SkDoubleToScalar(1.01), SkDoubleToScalar(1.99),
+                        SkDoubleToScalar(3.0));
 
   Rect viewport(1920, 1200);
   bool snapped = SnapTransform(&result, transform, viewport);
@@ -95,8 +95,8 @@ TEST(TransformUtilTest, SnapTranslationDistantViewport) {
   Transform transform;
   const int kOffset = 5000;
 
-  transform.Translate3d(SkDoubleToMScalar(1.01), SkDoubleToMScalar(1.99),
-                        SkDoubleToMScalar(3.0));
+  transform.Translate3d(SkDoubleToScalar(1.01), SkDoubleToScalar(1.99),
+                        SkDoubleToScalar(3.0));
 
   Rect viewport(kOffset, kOffset, 1920, 1200);
   bool snapped = SnapTransform(&result, transform, viewport);
@@ -109,8 +109,8 @@ TEST(TransformUtilTest, SnapScale) {
   Transform result(Transform::kSkipInitialization);
   Transform transform;
 
-  transform.Scale3d(SkDoubleToMScalar(5.0), SkDoubleToMScalar(2.00001),
-                    SkDoubleToMScalar(1.0));
+  transform.Scale3d(SkDoubleToScalar(5.0), SkDoubleToScalar(2.00001),
+                    SkDoubleToScalar(1.0));
   Rect viewport(1920, 1200);
   bool snapped = SnapTransform(&result, transform, viewport);
 
@@ -121,8 +121,8 @@ TEST(TransformUtilTest, NoSnapScale) {
   Transform result(Transform::kSkipInitialization);
   Transform transform;
 
-  transform.Scale3d(SkDoubleToMScalar(5.0), SkDoubleToMScalar(2.1),
-                    SkDoubleToMScalar(1.0));
+  transform.Scale3d(SkDoubleToScalar(5.0), SkDoubleToScalar(2.1),
+                    SkDoubleToScalar(1.0));
   Rect viewport(1920, 1200);
   bool snapped = SnapTransform(&result, transform, viewport);
 
@@ -133,11 +133,11 @@ TEST(TransformUtilTest, SnapCompositeTransform) {
   Transform result(Transform::kSkipInitialization);
   Transform transform;
 
-  transform.Translate3d(SkDoubleToMScalar(30.5), SkDoubleToMScalar(20.0),
-                        SkDoubleToMScalar(10.1));
+  transform.Translate3d(SkDoubleToScalar(30.5), SkDoubleToScalar(20.0),
+                        SkDoubleToScalar(10.1));
   transform.RotateAboutZAxis(89.99);
-  transform.Scale3d(SkDoubleToMScalar(1.0), SkDoubleToMScalar(3.00001),
-                    SkDoubleToMScalar(2.0));
+  transform.Scale3d(SkDoubleToScalar(1.0), SkDoubleToScalar(3.00001),
+                    SkDoubleToScalar(2.0));
 
   Rect viewport(1920, 1200);
   bool snapped = SnapTransform(&result, transform, viewport);
@@ -168,10 +168,10 @@ TEST(TransformUtilTest, NoSnapSkewedCompositeTransform) {
   Transform transform;
 
   transform.RotateAboutZAxis(89.99);
-  transform.Scale3d(SkDoubleToMScalar(1.0), SkDoubleToMScalar(3.00001),
-                    SkDoubleToMScalar(2.0));
-  transform.Translate3d(SkDoubleToMScalar(30.5), SkDoubleToMScalar(20.0),
-                        SkDoubleToMScalar(10.1));
+  transform.Scale3d(SkDoubleToScalar(1.0), SkDoubleToScalar(3.00001),
+                    SkDoubleToScalar(2.0));
+  transform.Translate3d(SkDoubleToScalar(30.5), SkDoubleToScalar(20.0),
+                        SkDoubleToScalar(10.1));
   transform.Skew(20.0, 0.0);
   Rect viewport(1920, 1200);
   bool snapped = SnapTransform(&result, transform, viewport);

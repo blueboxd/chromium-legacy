@@ -8,6 +8,8 @@ import android.graphics.Rect;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.UnguessableToken;
+
 import java.util.Arrays;
 
 /**
@@ -17,7 +19,7 @@ import java.util.Arrays;
  * Optionally, a frame can have other frames (iframes) as its children. or sub-frames.
  */
 class PaintPreviewFrame {
-    private long mGuid;
+    private UnguessableToken mGuid;
     // The content size of this frame. In native, this is represented as 'scroll extent'.
     private int mContentWidth;
     private int mContentHeight;
@@ -26,13 +28,13 @@ class PaintPreviewFrame {
     // The coordinates of the sub-frames relative to this frame.
     private Rect[] mSubFrameClips;
 
-    PaintPreviewFrame(long guid, int contentWidth, int contentHeight) {
+    PaintPreviewFrame(UnguessableToken guid, int contentWidth, int contentHeight) {
         mGuid = guid;
         mContentWidth = contentWidth;
         mContentHeight = contentHeight;
     }
 
-    private PaintPreviewFrame(long guid, int contentWidth, int contentHeight,
+    private PaintPreviewFrame(UnguessableToken guid, int contentWidth, int contentHeight,
             PaintPreviewFrame[] subFrames, Rect[] subFrameClips) {
         mGuid = guid;
         mContentWidth = contentWidth;
@@ -49,7 +51,7 @@ class PaintPreviewFrame {
         mSubFrameClips = subFrameClips;
     }
 
-    long getGuid() {
+    UnguessableToken getGuid() {
         return mGuid;
     }
 
@@ -104,8 +106,8 @@ class PaintPreviewFrame {
     }
 
     @VisibleForTesting
-    static PaintPreviewFrame createInstanceForTest(long guid, int contentWidth, int contentHeight,
-            PaintPreviewFrame[] subFrames, Rect[] subFrameClips) {
+    static PaintPreviewFrame createInstanceForTest(UnguessableToken guid, int contentWidth,
+            int contentHeight, PaintPreviewFrame[] subFrames, Rect[] subFrameClips) {
         return new PaintPreviewFrame(guid, contentWidth, contentHeight, subFrames, subFrameClips);
     }
 }

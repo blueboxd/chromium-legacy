@@ -57,10 +57,7 @@ class BreadcrumbManagerKeyedServiceTest : public PlatformTest {
 // seperately identifiable.
 TEST_F(BreadcrumbManagerKeyedServiceTest, EventsLabeledWithBrowserState) {
   breadcrumb_manager_service_->AddEvent("event");
-
   std::string event = breadcrumb_manager_service_->GetEvents(0).front();
-  // Event should indicate it was logged from a "Normal" browser state.
-  EXPECT_NE(std::string::npos, event.find(" N "));
 
   ios::ChromeBrowserState* off_the_record_browser_state =
       chrome_browser_state_->GetOffTheRecordChromeBrowserState();

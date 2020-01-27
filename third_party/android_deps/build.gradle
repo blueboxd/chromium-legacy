@@ -135,7 +135,7 @@ dependencies {
     buildCompile "com.google.auto.service:auto-service-annotations:1.0-rc6"
     buildCompile "com.google.auto.service:auto-service:1.0-rc6"
 
-    buildCompile "com.google.errorprone:error_prone_core:2.3.3"
+    buildCompile "com.google.errorprone:error_prone_core:2.3.4"
 
     // Jetify to androidx.
     buildCompile "com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta08"

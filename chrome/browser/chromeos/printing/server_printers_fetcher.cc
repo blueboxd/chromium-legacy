@@ -200,6 +200,9 @@ class ServerPrintersFetcher::PrivateImplementation
     url += server_url_.HostNoBrackets();
     url += ":";
     url += base::NumberToString(server_url_.EffectiveIntPort());
+    // Save the server URI.
+    printer->set_print_server_uri(url);
+    // Complete building the printer's URI.
     url += "/printers/" + name;
     printer->set_uri(url);
     printer->set_id(ServerPrinterId(url));

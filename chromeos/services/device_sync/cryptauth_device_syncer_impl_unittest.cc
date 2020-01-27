@@ -804,6 +804,42 @@ TEST_F(DeviceSyncCryptAuthDeviceSyncerImplTest,
       {GetLocalDeviceForTest()});
 }
 
+TEST_F(
+    DeviceSyncCryptAuthDeviceSyncerImplTest,
+    NonFatalError_InitialGroupKeyStale_GetNewGroupPublicKeyFromCryptAuth_WithEmptyGroupPrivateKey) {
+  AddInitialGroupKeyToRegistry(GetStaleGroupKey());
+
+  CallSync();
+
+  // The initial group key is stale, so CryptAuth provides us with the new
+  // unencrypted group public key but an unexpectedly empty encrypted group
+  // private key string. This is considered a non-fatal error.
+  VerifyMetadataSyncerInput(&GetStaleGroupKey());
+  FinishMetadataSyncerAttempt(
+      GetAllTestDeviceMetadataPackets(),
+      GetGroupKeyWithoutPrivateKey() /* new_group_key */,
+      std::string() /* encrypted_group_private_key */,
+      cryptauthv2::GetClientDirectiveForTest(),
+      CryptAuthDeviceSyncResult::ResultCode::kSuccess);
+
+  VerifyGroupKeyInRegistry(GetGroupKeyWithoutPrivateKey());
+
+  VerifyFeatureStatusGetterInput(GetAllTestDeviceIds());
+  FinishFeatureStatusGetterAttempt(
+      GetAllTestDeviceIds(), CryptAuthDeviceSyncResult::ResultCode::kSuccess);
+
+  // Only the local device has its BetterTogetherDeviceMetadata in the device
+  // registry since the other metadata cannot be decrypted without the group
+  // private key, and because the previous device registry did not have any
+  // existing metadata to draw from.
+  VerifyDeviceSyncResult(
+      CryptAuthDeviceSyncResult(
+          CryptAuthDeviceSyncResult::ResultCode::kFinishedWithNonFatalErrors,
+          true /* device_registry_changed */,
+          cryptauthv2::GetClientDirectiveForTest()),
+      GetAllTestDevicesWithoutRemoteMetadata());
+}
+
 TEST_F(DeviceSyncCryptAuthDeviceSyncerImplTest,
        NonFatalError_FromFeatureStatusGetter_MissingDeviceFeatureStatuses) {
   AddInitialGroupKeyToRegistry(GetGroupKey());

@@ -20,7 +20,7 @@ ModelTypeStoreServiceFactory* ModelTypeStoreServiceFactory::GetInstance() {
 
 // static
 syncer::ModelTypeStoreService* ModelTypeStoreServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<syncer::ModelTypeStoreService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -35,8 +35,8 @@ ModelTypeStoreServiceFactory::~ModelTypeStoreServiceFactory() {}
 std::unique_ptr<KeyedService>
 ModelTypeStoreServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<syncer::ModelTypeStoreServiceImpl>(
       browser_state->GetStatePath());
 }

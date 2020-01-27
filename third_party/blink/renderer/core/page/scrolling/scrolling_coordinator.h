@@ -100,9 +100,14 @@ class CORE_EXPORT ScrollingCoordinator final
 
   void WillDestroyScrollableArea(ScrollableArea*);
 
-  // Updates scroll offset, if the appropriate composited layers exist,
-  // and if successful, returns true. Otherwise returns false.
-  bool UpdateCompositedScrollOffset(ScrollableArea* scrollable_area);
+  // Updates scroll offset in cc scroll tree immediately. We don't wait for
+  // a full document lifecycle update to propagate the scroll offset from blink
+  // paint properties to cc paint properties because cc needs the scroll offset
+  // to apply the impl-side scroll delta correctly at the beginning of the next
+  // frame. The scroll offset in the transform node will still be updated
+  // in normal document lifecycle update instead of here.
+  // Returns whether the update is successful.
+  bool UpdateCompositorScrollOffset(const LocalFrame&, const ScrollableArea&);
 
   // Updates composited layers after changes to scrollable area  properties
   // like content and container sizes, scrollbar existence, scrollability, etc.

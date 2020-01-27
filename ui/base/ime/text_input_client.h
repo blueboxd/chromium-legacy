@@ -14,6 +14,7 @@
 
 #include "base/component_export.h"
 #include "base/i18n/rtl.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -217,10 +218,14 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
 #endif
 
 #if defined(OS_WIN)
-  // Returns false if the EditContext bounds are not available, else it returns
-  // true with the control and selection bounds for the active EditContext.
-  virtual bool GetEditContextLayoutBounds(gfx::Rect* control_bounds,
-                                          gfx::Rect* selection_bounds) = 0;
+  // Returns false if either the focused editable element or the EditContext
+  // bounds is not available, else it returns true with the control and
+  // selection bounds for the EditContext or control bounds of the active
+  // editable element. This is used to report the layout bounds of the text
+  // input control to TSF on Windows.
+  virtual void GetActiveTextInputControlLayoutBounds(
+      base::Optional<gfx::Rect>* control_bounds,
+      base::Optional<gfx::Rect>* selection_bounds) = 0;
   // Notifies accessibility about active composition. This API is currently
   // only defined for TSF which is available only on Windows
   // https://docs.microsoft.com/en-us/windows/desktop/api/UIAutomationCore/

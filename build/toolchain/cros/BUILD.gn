@@ -38,11 +38,8 @@ cros_toolchain("target") {
   ar = cros_target_ar
   cc = cros_target_cc
   cxx = cros_target_cxx
+  ld = cros_target_ld
 
-  ld = cxx
-  if (cros_target_ld != "") {
-    ld = cros_target_ld
-  }
   if (cros_target_nm != "") {
     nm = cros_target_nm
   }
@@ -74,11 +71,8 @@ cros_toolchain("nacl_bootstrap") {
   ar = cros_target_ar
   cc = cros_target_cc
   cxx = cros_target_cxx
+  ld = cros_target_ld
 
-  ld = cxx
-  if (cros_target_ld != "") {
-    ld = cros_target_ld
-  }
   if (cros_target_nm != "") {
     nm = cros_target_nm
   }
@@ -107,11 +101,8 @@ cros_toolchain("host") {
   ar = cros_host_ar
   cc = cros_host_cc
   cxx = cros_host_cxx
+  ld = cros_host_ld
 
-  ld = cxx
-  if (cros_host_ld != "") {
-    ld = cros_host_ld
-  }
   if (cros_host_nm != "") {
     nm = cros_host_nm
   }
@@ -138,11 +129,8 @@ cros_toolchain("v8_snapshot") {
   ar = cros_v8_snapshot_ar
   cc = cros_v8_snapshot_cc
   cxx = cros_v8_snapshot_cxx
+  ld = cros_v8_snapshot_ld
 
-  ld = cxx
-  if (cros_v8_snapshot_ld != "") {
-    ld = cros_v8_snapshot_ld
-  }
   if (cros_v8_snapshot_nm != "") {
     nm = cros_v8_snapshot_nm
   }

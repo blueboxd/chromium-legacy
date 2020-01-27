@@ -27,10 +27,8 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.homepage.HomepageTestRule;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
-import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.homepage.HomepageSettings;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -43,8 +41,8 @@ import org.chromium.ui.test.util.DummyUiActivityTestCase;
 /**
  * Test related to {@link HomeButton}.
  *
- * Currently the change only affects {@link
- * FeatureUtilities#isHomepageSettingsUIConversionEnabled()}.
+ * Currently the change only affects when {@link ChromeFeatureList#HOMEPAGE_SETTINGS_UI_CONVERSION}
+ * is enabled.
  * TODO: Add more test when features related has update.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -58,6 +56,8 @@ public class HomeButtonTest extends DummyUiActivityTestCase {
 
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
+    @Rule
+    public HomepageTestRule mHomepageTestRule = new HomepageTestRule();
 
     @Mock
     private SettingsLauncher mSettingsLauncher;
@@ -65,19 +65,6 @@ public class HomeButtonTest extends DummyUiActivityTestCase {
     private HomeButton mHomeButton;
     private int mIdHomeButton;
 
-    private boolean mIsHomepageEnabled;
-    private boolean mIsUsingDefaultHomepage;
-    private String mCustomizedHomepage;
-
-    public HomeButtonTest() {
-        super();
-
-        SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
-        mIsHomepageEnabled = manager.readBoolean(ChromePreferenceKeys.HOMEPAGE_ENABLED, true);
-        mIsUsingDefaultHomepage =
-                manager.readBoolean(ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, true);
-        mCustomizedHomepage = manager.readString(ChromePreferenceKeys.HOMEPAGE_CUSTOM_URI, "");
-    }
 
     @Override
     public void setUpTest() throws Exception {
@@ -86,7 +73,9 @@ public class HomeButtonTest extends DummyUiActivityTestCase {
         MockitoAnnotations.initMocks(this);
         SettingsLauncher.getInstance().setInstanceForTests(mSettingsLauncher);
 
-        setupDefaultHomepagePreferences();
+        // Set the default test status for homepage button tests.
+        // By default, the homepage is <b>enabled</b> and with customized URL.
+        mHomepageTestRule.useCustomizedHomepageForTest("https://www.chromium.org/");
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             FrameLayout content = new FrameLayout(getActivity());
@@ -99,12 +88,6 @@ public class HomeButtonTest extends DummyUiActivityTestCase {
 
             content.addView(mHomeButton);
         });
-    }
-
-    @Override
-    public void tearDownTest() throws Exception {
-        super.tearDownTest();
-        resetHomepageRelatedPreferenceAfterTest();
     }
 
     @Test
@@ -149,25 +132,5 @@ public class HomeButtonTest extends DummyUiActivityTestCase {
         onView(withText(R.string.homebutton_context_menu_settings)).perform(click());
         Mockito.verify(mSettingsLauncher)
                 .launchSettingsPage(mHomeButton.getContext(), HomepageSettings.class);
-    }
-
-    private void resetHomepageRelatedPreferenceAfterTest() {
-        SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
-        manager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_ENABLED, mIsHomepageEnabled);
-        manager.writeBoolean(
-                ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, mIsUsingDefaultHomepage);
-        manager.writeString(ChromePreferenceKeys.HOMEPAGE_CUSTOM_URI, mCustomizedHomepage);
-    }
-
-    /**
-     * Set the default test status for homepage button tests.
-     * By default, the homepage is <b>enabled</b> and with customized url
-     * <b>https://www.chromium.org/</b>.
-     */
-    private void setupDefaultHomepagePreferences() {
-        SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
-        manager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_ENABLED, true);
-        manager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, false);
-        manager.writeString(ChromePreferenceKeys.HOMEPAGE_CUSTOM_URI, "https://www.chromium.org/");
     }
 }

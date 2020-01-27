@@ -18,7 +18,7 @@
 
 // static
 FullscreenController* FullscreenControllerFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<FullscreenController*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }

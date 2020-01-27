@@ -152,7 +152,6 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge() {
     return;
 
   if (acceleration_mode_ != kDisableAcceleration) {
-    GraphicsLayer::UnregisterContentsLayer(layer_.get());
     layer_->ClearTexture();
     // Orphaning the layer is required to trigger the recreation of a new layer
     // in the case where destruction is caused by a canvas resize. Test:
@@ -364,7 +363,6 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
     layer_->SetBlendBackgroundColor(ColorParams().GetOpacityMode() != kOpaque);
     layer_->SetNearestNeighbor(resource_host_->FilterQuality() ==
                                kNone_SkFilterQuality);
-    GraphicsLayer::RegisterContentsLayer(layer_.get());
   }
 
   if (!IsHibernating())
@@ -641,8 +639,14 @@ void Canvas2DLayerBridge::FlushRecording() {
 
   // Sample one out of every kRasterMetricProbability frames to time
   // If the canvas is accelerated, we also need access to the raster_interface
-  bool measure_raster_metric = (raster_interface || !IsAccelerated()) &&
-                               bernoulli_distribution_(random_generator_);
+
+  // We are using @dont_use_idle_scheduling_for_testing_ temporarily to always
+  // measure while testing.
+  const bool will_measure = dont_use_idle_scheduling_for_testing_ ||
+                            bernoulli_distribution_(random_generator_);
+  const bool measure_raster_metric =
+      (raster_interface || !IsAccelerated()) && will_measure;
+
   RasterTimer rasterTimer;
   base::Optional<base::ElapsedTimer> timer;
   // Start Recording the raster duration
@@ -662,7 +666,9 @@ void Canvas2DLayerBridge::FlushRecording() {
     SkScalar canvas_height = canvas->getLocalClipBounds().height();
     DCHECK_GE(canvas_width, size_.Width());
     DCHECK_GE(canvas_height, size_.Height());
-    CalculateDirtyRegion(canvas_width, canvas_height);
+    if (will_measure) {
+      CalculateDirtyRegion(canvas_width, canvas_height);
+    }
 
     canvas->drawPicture(last_recording_);
     last_record_tainted_by_write_pixels_ = false;

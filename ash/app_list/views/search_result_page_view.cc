@@ -232,11 +232,8 @@ bool SearchResultPageView::IsFirstResultTile() const {
   if (!first_result_view_ || !first_result_view_->result())
     return false;
 
-  // |kRecommendation| result type refers to tiles in Zero State.
   return first_result_view_->result()->display_type() ==
-             SearchResultDisplayType::kTile ||
-         first_result_view_->result()->display_type() ==
-             SearchResultDisplayType::kRecommendation;
+         SearchResultDisplayType::kTile;
 }
 
 bool SearchResultPageView::IsFirstResultHighlighted() const {

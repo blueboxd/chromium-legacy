@@ -22,6 +22,10 @@ void RecordLoadingStatus(LoadStatus status, const base::TimeDelta duration);
 // Record loading result with result type and network latency.
 void RecordResult(ResultType result_type, const base::TimeDelta duration);
 
+// Record quick answers user clicks with result type and duration between result
+// fetch finish and user clicks.
+void RecordClick(ResultType result_type, const base::TimeDelta duration);
+
 }  // namespace quick_answers
 }  // namespace chromeos
 

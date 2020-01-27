@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
+#include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
@@ -186,6 +187,7 @@ Animation::Animation(ExecutionContext* execution_context,
       sequence_number_(NextSequenceNumber()),
       content_(content),
       timeline_(timeline),
+      replace_state_(kActive),
       is_paused_for_testing_(false),
       is_composited_animation_disabled_for_testing_(false),
       pending_pause_(false),
@@ -1310,18 +1312,25 @@ bool Animation::HasPendingActivity() const {
       finished_promise_ &&
       finished_promise_->GetState() == AnimationPromise::kPending;
 
-  return pending_finished_event_ || has_pending_promise ||
+  return pending_finished_event_ || pending_cancelled_event_ ||
+         pending_remove_event_ || has_pending_promise ||
          (!finished_ && HasEventListeners(event_type_names::kFinish));
 }
 
 void Animation::ContextDestroyed(ExecutionContext*) {
   finished_ = true;
   pending_finished_event_ = nullptr;
+  pending_cancelled_event_ = nullptr;
+  pending_remove_event_ = nullptr;
 }
 
 DispatchEventResult Animation::DispatchEventInternal(Event& event) {
   if (pending_finished_event_ == &event)
     pending_finished_event_ = nullptr;
+  if (pending_cancelled_event_ == &event)
+    pending_cancelled_event_ = nullptr;
+  if (pending_remove_event_ == &event)
+    pending_remove_event_ = nullptr;
   return EventTargetWithInlineData::DispatchEventInternal(event);
 }
 
@@ -1917,12 +1926,125 @@ void Animation::NotifyProbe() {
   }
 }
 
+// -------------------------------------
+// Replacement of animations
+// -------------------------------------
+
+// https://drafts.csswg.org/web-animations-1/#removing-replaced-animations
+bool Animation::IsReplaceable() {
+  // An animation is replaceable if all of the following conditions are true:
+
+  // 1. The existence of the animation is not prescribed by markup. That is, it
+  //    is not a CSS animation with an owning element, nor a CSS transition with
+  //    an owning element.
+  if (IsCSSAnimation() || IsCSSTransition()) {
+    // TODO(crbug.com/981905): Add OwningElement method to Animation and
+    // override in CssAnimations and CssTransitions. Only bail here if the
+    // animation has an owning element.
+    return false;
+  }
+
+  // 2. The animation's play state is finished.
+  if (CalculateAnimationPlayState() != kFinished)
+    return false;
+
+  // 3. The animation's replace state is not removed.
+  if (replace_state_ == kRemoved)
+    return false;
+
+  // 4. The animation is associated with a monotonically increasing timeline.
+  if (!timeline_ || timeline_->IsScrollTimeline())
+    return false;
+
+  // 5. The animation has an associated effect.
+  if (!content_ || !content_->IsKeyframeEffect())
+    return false;
+
+  // 6. The animation's associated effect is in effect.
+  if (!content_->IsInEffect())
+    return false;
+
+  // 7. The animation's associated effect has an effect target.
+  Element* target = To<KeyframeEffect>(content_.Get())->target();
+  if (!target)
+    return false;
+
+  return true;
+}
+
+// https://drafts.csswg.org/web-animations-1/#removing-replaced-animations
+void Animation::RemoveReplacedAnimation() {
+  DCHECK(IsReplaceable());
+
+  // To remove a replaced animation, perform the following steps:
+  // 1. Set animation’s replace state to removed.
+  // 2. Create an AnimationPlaybackEvent, removeEvent.
+  // 3. Set removeEvent’s type attribute to remove.
+  // 4. Set removeEvent’s currentTime attribute to the current time of
+  //    animation.
+  // 5. Set removeEvent’s timelineTime attribute to the current time of the
+  //    timeline with which animation is associated.
+  //
+  // If animation has a document for timing, then append removeEvent to its
+  // document for timing's pending animation event queue along with its target,
+  // animation. For the scheduled event time, use the result of applying the
+  // procedure to convert timeline time to origin-relative time to the current
+  // time of the timeline with which animation is associated.
+  replace_state_ = kRemoved;
+  const AtomicString& event_type = event_type_names::kRemove;
+  if (GetExecutionContext() && HasEventListeners(event_type)) {
+    base::Optional<double> event_current_time = CurrentTimeInternal();
+    if (event_current_time)
+      event_current_time = SecondsToMilliseconds(event_current_time.value());
+    pending_remove_event_ = MakeGarbageCollected<AnimationPlaybackEvent>(
+        event_type, event_current_time, TimelineTime());
+    pending_remove_event_->SetTarget(this);
+    pending_remove_event_->SetCurrentTarget(this);
+    document_->EnqueueAnimationFrameEvent(pending_remove_event_);
+  }
+
+  // Force timing update to clear the effect.
+  if (content_)
+    content_->Invalidate();
+  Update(kTimingUpdateOnDemand);
+}
+
+void Animation::persist() {
+  if (replace_state_ == kPersisted)
+    return;
+
+  replace_state_ = kPersisted;
+
+  // Force timing update to reapply the effect.
+  if (content_)
+    content_->Invalidate();
+  Update(kTimingUpdateOnDemand);
+}
+
+String Animation::replaceState() {
+  switch (replace_state_) {
+    case kActive:
+      return "active";
+
+    case kRemoved:
+      return "removed";
+
+    case kPersisted:
+      return "persisted";
+
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+
 void Animation::Trace(blink::Visitor* visitor) {
   visitor->Trace(content_);
   visitor->Trace(document_);
   visitor->Trace(timeline_);
   visitor->Trace(pending_finished_event_);
   visitor->Trace(pending_cancelled_event_);
+  visitor->Trace(pending_remove_event_);
   visitor->Trace(finished_promise_);
   visitor->Trace(ready_promise_);
   visitor->Trace(compositor_animation_);

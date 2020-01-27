@@ -72,6 +72,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
@@ -7310,33 +7311,62 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
 namespace {
 
-// A BrowserMessageFilter that delays the FrameHostMsg_RunJavaScriptDialog IPC
-// message until a commit happens on a given WebContents. This allows testing a
-// race condition.
-class AllowDialogIPCOnCommitFilter : public BrowserMessageFilter,
-                                     public WebContentsDelegate {
+class AllowDialogInterceptor
+    : public blink::mojom::LocalFrameHostInterceptorForTesting {
  public:
-  explicit AllowDialogIPCOnCommitFilter(WebContents* web_contents)
-      : BrowserMessageFilter(FrameMsgStart),
-        render_frame_host_(web_contents->GetMainFrame()) {
-    web_contents_observer_.Observe(web_contents);
+  AllowDialogInterceptor() = default;
+  ~AllowDialogInterceptor() override = default;
+
+  void Init(RenderFrameHostImpl* render_frame_host) {
+    render_frame_host_ = render_frame_host;
+    render_frame_host_->local_frame_host_receiver_for_testing()
+        .SwapImplForTesting(this);
   }
 
- protected:
-  ~AllowDialogIPCOnCommitFilter() override {}
+  blink::mojom::LocalFrameHost* GetForwardingInterface() override {
+    return render_frame_host_;
+  }
+
+  void RunModalAlertDialog(const base::string16& alert_message,
+                           RunModalAlertDialogCallback callback) override {
+    alert_callback_ = std::move(callback);
+    alert_message_ = alert_message;
+  }
+
+  void ResumeProcessingModalAlertDialogHandling() {
+    has_called_callback_ = true;
+    render_frame_host_->RunModalAlertDialog(alert_message_,
+                                            std::move(alert_callback_));
+  }
+
+  bool HasCalledAlertCallback() const { return has_called_callback_; }
 
  private:
-  // BrowserMessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    if (message.type() != FrameHostMsg_RunJavaScriptDialog::ID)
-      return false;
+  RenderFrameHostImpl* render_frame_host_;
+  base::string16 alert_message_;
+  RunModalAlertDialogCallback alert_callback_;
+  bool has_called_callback_ = false;
+};
 
-    // Suspend the message.
-    web_contents_observer_.SetCallback(
-        base::BindOnce(&RenderFrameHost::OnMessageReceived,
-                       base::Unretained(render_frame_host_), message));
-    return true;
+class NavigationControllerAlertDialogBrowserTest
+    : public NavigationControllerBrowserTest,
+      public WebContentsObserver,
+      public WebContentsDelegate {
+ public:
+  void BindWebContents(WebContents* web_contents) {
+    alert_interceptor_.Init(
+        static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame()));
+    Observe(web_contents);
+    web_contents->SetDelegate(this);
+  }
+
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    if (!navigation_handle->HasCommitted())
+      return;
+
+    // Continue handling the rest of the alert dialog handling.
+    alert_interceptor_.ResumeProcessingModalAlertDialogHandling();
   }
 
   // WebContentsDelegate:
@@ -7346,50 +7376,29 @@ class AllowDialogIPCOnCommitFilter : public BrowserMessageFilter,
     return nullptr;  // agh compiler
   }
 
-  // Separate because WebContentsObserver and BrowserMessageFilter each have an
-  // OnMessageReceived function; this is the simplest way to disambiguate.
-  class : public WebContentsObserver {
-   public:
-    using Callback = base::OnceCallback<bool()>;
+  bool HasCalledAlertCallback() const {
+    return alert_interceptor_.HasCalledAlertCallback();
+  }
 
-    using WebContentsObserver::Observe;
-
-    void SetCallback(Callback callback) { callback_ = std::move(callback); }
-
-   private:
-    void DidFinishNavigation(NavigationHandle* navigation_handle) override {
-      DCHECK_CURRENTLY_ON(BrowserThread::UI);
-      if (!navigation_handle->HasCommitted())
-        return;
-
-      // Resume the message.
-      std::move(callback_).Run();
-    }
-
-    Callback callback_;
-  } web_contents_observer_;
-
-  RenderFrameHost* render_frame_host_;
-
-  DISALLOW_COPY_AND_ASSIGN(AllowDialogIPCOnCommitFilter);
+ private:
+  AllowDialogInterceptor alert_interceptor_;
 };
 
 }  // namespace
 
 // Check that swapped out frames cannot spawn JavaScript dialogs.
-IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+IN_PROC_BROWSER_TEST_F(NavigationControllerAlertDialogBrowserTest,
                        NoDialogsFromSwappedOutFrames) {
   // Start on a normal page.
   GURL url1 = embedded_test_server()->GetURL(
       "/navigation_controller/beforeunload_dialog.html");
   EXPECT_TRUE(NavigateToURL(shell(), url1));
 
-  // Add a filter to allow us to force an IPC race.
+  // Bind the WebContents observer to start watching for the finished
+  // navigation callback. When the navigation is called we resume the
+  // suspended alert dialog handling.
   WebContents* web_contents = shell()->web_contents();
-  scoped_refptr<AllowDialogIPCOnCommitFilter> filter =
-      new AllowDialogIPCOnCommitFilter(web_contents);
-  web_contents->SetDelegate(filter.get());
-  web_contents->GetMainFrame()->GetProcess()->AddFilter(filter.get());
+  BindWebContents(web_contents);
 
   // Use a chrome:// url to force the second page to be in a different process.
   GURL url2(std::string(kChromeUIScheme) + url::kStandardSchemeSeparator +
@@ -7397,11 +7406,13 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), url2));
 
   // What happens now is that attempting to unload the first page will trigger a
-  // JavaScript alert but allow navigation. The alert IPC will be suspended by
-  // the message filter. The commit of the second page will unblock the IPC. If
-  // the dialog IPC is allowed to spawn a dialog, the call by the WebContents to
-  // its delegate to get the JavaScriptDialogManager will cause a CHECK and the
-  // test will fail.
+  // JavaScript alert but allow navigation. The alert mojo message will be
+  // suspended by the subclassed RenderFrameHostImplForAllowDialogInterceptor.
+  // The commit of the second page will cause the alert dialog message handling
+  // to resume. If the dialog mojo message is allowed to spawn a dialog, the
+  // call by the WebContents to its delegate to get the JavaScriptDialogManager
+  // will cause a CHECK and the test will fail.
+  EXPECT_TRUE(HasCalledAlertCallback());
 }
 
 // Check that the referrer is stored inside FrameNavigationEntry for subframes.

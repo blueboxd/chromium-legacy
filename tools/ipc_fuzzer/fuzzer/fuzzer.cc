@@ -892,7 +892,7 @@ struct FuzzTraits<gfx::SizeF> {
 template <>
 struct FuzzTraits<gfx::Transform> {
   static bool Fuzz(gfx::Transform* p, Fuzzer* fuzzer) {
-    SkMScalar matrix[16];
+    SkScalar matrix[16];
     for (size_t i = 0; i < base::size(matrix); i++) {
       matrix[i] = p->matrix().get(i / 4, i % 4);
     }

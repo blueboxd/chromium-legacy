@@ -215,7 +215,7 @@ void SaveSessionImmediately() {
 
 void EvictOtherTabModelTabs() {
   id<BrowserInterfaceProvider> provider = GetMainController().interfaceProvider;
-  ios::ChromeBrowserState* otherBrowserState =
+  ChromeBrowserState* otherBrowserState =
       IsIncognitoMode() ? provider.mainInterface.browserState
                         : provider.incognitoInterface.browserState;
   // Disabling and enabling web usage will evict all web views.

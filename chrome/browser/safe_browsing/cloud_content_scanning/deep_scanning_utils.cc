@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 
 namespace safe_browsing {
 
@@ -58,6 +59,11 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
         ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
                                mime_type, trigger, "scanTimedOut",
+                               content_size);
+  } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
+    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
+        ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
+                               mime_type, trigger, "filePasswordProtected",
                                content_size);
   }
 

@@ -72,6 +72,9 @@ public class Configuration {
             ConfigKey.MINIMUM_VALID_ACTION_RATIO,
             ConfigKey.NON_CACHED_MIN_PAGE_SIZE,
             ConfigKey.NON_CACHED_PAGE_SIZE,
+            // Boolean which if true, will ask the server for a menu option to allow the user to
+            // provide feedback on that article.
+            ConfigKey.SEND_FEEDBACK_ENABLED,
             ConfigKey.SESSION_LIFETIME_MS,
             // Boolean which if true, will ask the server for a snippet from the article.
             ConfigKey.SNIPPETS_ENABLED,
@@ -136,6 +139,7 @@ public class Configuration {
         String MINIMUM_VALID_ACTION_RATIO = "minimum_valid_action_ratio";
         String NON_CACHED_MIN_PAGE_SIZE = "non_cached_min_page_size";
         String NON_CACHED_PAGE_SIZE = "non_cached_page_size";
+        String SEND_FEEDBACK_ENABLED = "send_feedback_enabled";
         String SESSION_LIFETIME_MS = "session_lifetime_ms";
         String SNIPPETS_ENABLED = "snippets_enabled";
         String SPINNER_DELAY_MS = "spinner_delay";

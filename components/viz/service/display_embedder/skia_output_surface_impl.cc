@@ -156,8 +156,15 @@ void SkiaOutputSurfaceImpl::BindFramebuffer() {
 void SkiaOutputSurfaceImpl::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(capabilities().supports_dc_layers);
-  DCHECK(!draw_rectangle_);
+
+  if (has_set_draw_rectangle_for_frame_)
+    return;
+
+  // TODO(kylechar): Add a check that |draw_rectangle| is the full size of the
+  // framebuffer the next time this is called after Reshape().
+
   draw_rectangle_.emplace(draw_rectangle);
+  has_set_draw_rectangle_for_frame_ = true;
 }
 
 void SkiaOutputSurfaceImpl::EnsureBackbuffer() {
@@ -196,6 +203,9 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
     initialize_waitable_event_->Wait();
     initialize_waitable_event_.reset();
   }
+
+  // SetDrawRectangle() will need to be called at the new size.
+  has_set_draw_rectangle_for_frame_ = false;
 
   SkSurfaceCharacterization* characterization = nullptr;
   if (characterization_.isValid()) {
@@ -396,6 +406,8 @@ SkiaOutputSurfaceImpl::CreateImageContext(
 void SkiaOutputSurfaceImpl::SwapBuffers(OutputSurfaceFrame frame) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!current_paint_);
+
+  has_set_draw_rectangle_for_frame_ = false;
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.

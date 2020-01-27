@@ -37,7 +37,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   using Tags = ash::SearchResultTags;
   using Action = ash::SearchResultAction;
   using Actions = ash::SearchResultActions;
-  using DisplayLocation = ash::SearchResultDisplayLocation;
   using DisplayIndex = ash::SearchResultDisplayIndex;
 
   SearchResult();
@@ -108,13 +107,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
     metadata_->result_type = result_type;
   }
 
-  DisplayLocation display_location() const {
-    return metadata_->display_location;
-  }
-  void set_display_location(DisplayLocation display_location) {
-    metadata_->display_location = display_location;
-  }
-
   DisplayIndex display_index() const { return metadata_->display_index; }
   void set_display_index(DisplayIndex display_index) {
     metadata_->display_index = display_index;
@@ -160,6 +152,11 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   bool is_visible() const { return is_visible_; }
   void set_is_visible(bool is_visible) { is_visible_ = is_visible; }
 
+  bool is_recommendation() const { return is_recommendation_; }
+  void set_is_recommendation(bool is_recommendation) {
+    is_recommendation_ = is_recommendation;
+  }
+
   void NotifyItemInstalled();
 
   void AddObserver(SearchResultObserver* observer);
@@ -192,6 +189,7 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   bool is_installing_ = false;
   int percent_downloaded_ = 0;
   bool is_visible_ = true;
+  bool is_recommendation_ = false;
 
   std::unique_ptr<SearchResultMetadata> metadata_;
 

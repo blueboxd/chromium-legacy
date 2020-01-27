@@ -389,4 +389,11 @@ void LogNumberOfReuseBeforeSyncPasswordChange(size_t reuse_count) {
       reuse_count);
 }
 
+void LogModalWarningDialogLifetime(
+    base::TimeTicks modal_construction_start_time) {
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "PasswordProtection.ModalWarningDialogLifetime",
+      base::TimeTicks::Now() - modal_construction_start_time);
+}
+
 }  // namespace safe_browsing

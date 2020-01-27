@@ -5,6 +5,7 @@
 #include "ui/views/layout/animating_layout_manager_test_util.h"
 
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/view.h"
 
@@ -23,6 +24,16 @@ void WaitForAnimatingLayoutManager(AnimatingLayoutManager* layout_manager) {
 
 void WaitForAnimatingLayoutManager(View* view) {
   return WaitForAnimatingLayoutManager(GetAnimatingLayoutManager(view));
+}
+
+void ReduceAnimationDuration(AnimatingLayoutManager* layout_manager) {
+  static constexpr base::TimeDelta kSmallDuration =
+      base::TimeDelta::FromMilliseconds(1);
+  layout_manager->SetAnimationDuration(kSmallDuration);
+}
+
+void ReduceAnimationDuration(View* view) {
+  ReduceAnimationDuration(GetAnimatingLayoutManager(view));
 }
 
 }  // namespace test

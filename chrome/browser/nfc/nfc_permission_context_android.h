@@ -8,7 +8,9 @@
 #include "chrome/browser/android/nfc_system_level_setting.h"
 #include "chrome/browser/nfc/nfc_permission_context.h"
 
+namespace permissions {
 class PermissionRequestID;
+}
 
 class NfcPermissionContextAndroid : public NfcPermissionContext {
  public:
@@ -20,19 +22,20 @@ class NfcPermissionContextAndroid : public NfcPermissionContext {
   friend class PermissionManagerTest;
 
   // NfcPermissionContext:
-  void NotifyPermissionSet(const PermissionRequestID& id,
+  void NotifyPermissionSet(const permissions::PermissionRequestID& id,
                            const GURL& requesting_origin,
                            const GURL& embedding_origin,
                            BrowserPermissionCallback callback,
                            bool persist,
                            ContentSetting content_setting) override;
 
-  void OnNfcSystemLevelSettingPromptClosed(const PermissionRequestID& id,
-                                           const GURL& requesting_origin,
-                                           const GURL& embedding_origin,
-                                           BrowserPermissionCallback callback,
-                                           bool persist,
-                                           ContentSetting content_setting);
+  void OnNfcSystemLevelSettingPromptClosed(
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      BrowserPermissionCallback callback,
+      bool persist,
+      ContentSetting content_setting);
 
   // Overrides the NfcSystemLevelSetting object used to determine whether NFC is
   // enabled system-wide on the device.

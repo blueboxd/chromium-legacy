@@ -990,8 +990,6 @@ cc::Layer* DrawingBuffer::CcLayer() {
 
     if (opengl_flip_y_extension_)
       layer_->SetFlipped(false);
-
-    GraphicsLayer::RegisterContentsLayer(layer_.get());
   }
 
   return layer_.get();
@@ -1044,9 +1042,6 @@ void DrawingBuffer::BeginDestruction() {
   premultiplied_alpha_false_texture_ = 0;
   multisample_fbo_ = 0;
   fbo_ = 0;
-
-  if (layer_)
-    GraphicsLayer::UnregisterContentsLayer(layer_.get());
 
   client_ = nullptr;
 }

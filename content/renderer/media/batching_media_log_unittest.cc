@@ -41,9 +41,10 @@ class BatchingMediaLogTest : public testing::Test {
 
   ~BatchingMediaLogTest() override { task_runner_->ClearPendingTasks(); }
 
-  void AddLogRecord(media::MediaLogRecord::Type type) {
-    log_.AddLogRecord(log_.CreateRecord(type));
-    // AddLogRecord() could post. Run the task runner to make sure it's
+  template <media::MediaLogEvent T, typename... Opt>
+  void AddEvent(const Opt&... opts) {
+    log_.AddEvent<T, Opt...>(opts...);
+    // AddEvent() could post. Run the task runner to make sure it's
     // executed.
     task_runner_->RunUntilIdle();
   }
@@ -62,7 +63,7 @@ class BatchingMediaLogTest : public testing::Test {
 
  private:
   friend class TestEventHandler;
-  void AddLogRecordsForTesting(std::vector<media::MediaLogRecord> events) {
+  void AddEventsForTesting(std::vector<media::MediaLogRecord> events) {
     events_.insert(events_.end(), events.begin(), events.end());
     add_events_count_++;
   }
@@ -72,25 +73,28 @@ class BatchingMediaLogTest : public testing::Test {
   MockRenderThread render_thread_;
   base::SimpleTestTickClock tick_clock_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+
+ protected:
   BatchingMediaLog log_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(BatchingMediaLogTest);
 };
 
 void TestEventHandler::SendQueuedMediaEvents(
     std::vector<media::MediaLogRecord> events) {
-  test_cls_->AddLogRecordsForTesting(events);
+  test_cls_->AddEventsForTesting(events);
 }
 
 void TestEventHandler::OnWebMediaPlayerDestroyed() {}
 
 TEST_F(BatchingMediaLogTest, ThrottleSendingEvents) {
-  AddLogRecord(media::MediaLogRecord::LOAD);
+  AddEvent<media::MediaLogEvent::kPlay>();
   EXPECT_EQ(0, message_count());
 
   // Still shouldn't send anything.
   Advance(base::TimeDelta::FromMilliseconds(500));
-  AddLogRecord(media::MediaLogRecord::SEEK);
+  AddEvent<media::MediaLogEvent::kPause>();
   EXPECT_EQ(0, message_count());
 
   // Now we should expect an IPC.
@@ -100,35 +104,38 @@ TEST_F(BatchingMediaLogTest, ThrottleSendingEvents) {
   // Verify contents.
   std::vector<media::MediaLogRecord> events = GetMediaLogRecords();
   ASSERT_EQ(2u, events.size());
-  EXPECT_EQ(media::MediaLogRecord::LOAD, events[0].type);
-  EXPECT_EQ(media::MediaLogRecord::SEEK, events[1].type);
+  EXPECT_EQ(media::MediaLogRecord::Type::kMediaEventTriggered, events[0].type);
+  EXPECT_EQ(media::MediaLogRecord::Type::kMediaEventTriggered, events[1].type);
 
   // Adding another event shouldn't send anything.
-  AddLogRecord(media::MediaLogRecord::PIPELINE_ERROR);
+  log_.NotifyError(media::AUDIO_RENDERER_ERROR);
   EXPECT_EQ(1, message_count());
 }
 
 TEST_F(BatchingMediaLogTest, EventSentWithoutDelayAfterIpcInterval) {
-  AddLogRecord(media::MediaLogRecord::LOAD);
+  AddEvent<media::MediaLogEvent::kPlay>();
   Advance(base::TimeDelta::FromMilliseconds(1000));
   EXPECT_EQ(1, message_count());
 
   // After the ipc send interval passes, the next event should be sent
   // right away.
   Advance(base::TimeDelta::FromMilliseconds(2000));
-  AddLogRecord(media::MediaLogRecord::LOAD);
+  AddEvent<media::MediaLogEvent::kPlay>();
   EXPECT_EQ(2, message_count());
 }
 
 TEST_F(BatchingMediaLogTest, DurationChanged) {
-  AddLogRecord(media::MediaLogRecord::LOAD);
-  AddLogRecord(media::MediaLogRecord::SEEK);
+  AddEvent<media::MediaLogEvent::kPlay>();
+  AddEvent<media::MediaLogEvent::kPause>();
 
   // This event is handled separately and should always appear last regardless
   // of how many times we see it.
-  AddLogRecord(media::MediaLogRecord::DURATION_SET);
-  AddLogRecord(media::MediaLogRecord::DURATION_SET);
-  AddLogRecord(media::MediaLogRecord::DURATION_SET);
+  AddEvent<media::MediaLogEvent::kDurationChanged>(
+      base::TimeDelta::FromMilliseconds(1));
+  AddEvent<media::MediaLogEvent::kDurationChanged>(
+      base::TimeDelta::FromMilliseconds(2));
+  AddEvent<media::MediaLogEvent::kDurationChanged>(
+      base::TimeDelta::FromMilliseconds(3));
 
   EXPECT_EQ(0, message_count());
   Advance(base::TimeDelta::FromMilliseconds(1000));
@@ -138,9 +145,9 @@ TEST_F(BatchingMediaLogTest, DurationChanged) {
   // event.
   std::vector<media::MediaLogRecord> events = GetMediaLogRecords();
   ASSERT_EQ(3u, events.size());
-  EXPECT_EQ(media::MediaLogRecord::LOAD, events[0].type);
-  EXPECT_EQ(media::MediaLogRecord::SEEK, events[1].type);
-  EXPECT_EQ(media::MediaLogRecord::DURATION_SET, events[2].type);
+  EXPECT_EQ(media::MediaLogRecord::Type::kMediaEventTriggered, events[0].type);
+  EXPECT_EQ(media::MediaLogRecord::Type::kMediaEventTriggered, events[1].type);
+  EXPECT_EQ(media::MediaLogRecord::Type::kMediaEventTriggered, events[2].type);
 }
 
 }  // namespace content

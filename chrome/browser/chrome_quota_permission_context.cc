@@ -14,11 +14,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
-#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/permissions/permission_request.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,7 +42,7 @@ const int64_t kRequestLargeQuotaThreshold = 5 * 1024 * 1024;
 
 // QuotaPermissionRequest ---------------------------------------------
 
-class QuotaPermissionRequest : public PermissionRequest {
+class QuotaPermissionRequest : public permissions::PermissionRequest {
  public:
   QuotaPermissionRequest(
       ChromeQuotaPermissionContext* context,
@@ -53,7 +53,7 @@ class QuotaPermissionRequest : public PermissionRequest {
   ~QuotaPermissionRequest() override;
 
  private:
-  // PermissionRequest:
+  // permissions::PermissionRequest:
   IconId GetIconId() const override;
 #if defined(OS_ANDROID)
   base::string16 GetTitleText() const override;
@@ -65,7 +65,7 @@ class QuotaPermissionRequest : public PermissionRequest {
   void PermissionDenied() override;
   void Cancelled() override;
   void RequestFinished() override;
-  PermissionRequestType GetPermissionRequestType() const override;
+  permissions::PermissionRequestType GetPermissionRequestType() const override;
 
   const scoped_refptr<ChromeQuotaPermissionContext> context_;
   const GURL origin_url_;
@@ -90,7 +90,8 @@ QuotaPermissionRequest::QuotaPermissionRequest(
 
 QuotaPermissionRequest::~QuotaPermissionRequest() {}
 
-PermissionRequest::IconId QuotaPermissionRequest::GetIconId() const {
+permissions::PermissionRequest::IconId QuotaPermissionRequest::GetIconId()
+    const {
 #if defined(OS_ANDROID)
   return IDR_ANDROID_INFOBAR_FOLDER;
 #else
@@ -146,8 +147,9 @@ void QuotaPermissionRequest::RequestFinished() {
   delete this;
 }
 
-PermissionRequestType QuotaPermissionRequest::GetPermissionRequestType() const {
-  return PermissionRequestType::QUOTA;
+permissions::PermissionRequestType
+QuotaPermissionRequest::GetPermissionRequestType() const {
+  return permissions::PermissionRequestType::QUOTA;
 }
 
 }  // namespace

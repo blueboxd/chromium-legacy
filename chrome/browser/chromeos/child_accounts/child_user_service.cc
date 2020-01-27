@@ -77,9 +77,8 @@ void ChildUserService::AppActivityReportSubmitted(
 }
 
 bool ChildUserService::WebTimeLimitReached() const {
-  if (!app_time_controller_)
+  if (!app_time_controller_ || !app_time_controller_->web_time_enforcer())
     return false;
-  DCHECK(app_time_controller_->web_time_enforcer());
   return app_time_controller_->web_time_enforcer()->blocked();
 }
 

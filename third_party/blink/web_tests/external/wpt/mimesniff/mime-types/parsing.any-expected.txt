@@ -102,7 +102,7 @@ FAIL
 \r	  (Blob/File) assert_equals: Blob expected "x/x;x=x" but got ""
 FAIL 
 \r	 x/x;x=x
-\r	  (Request/Response) assert_throws: function "() => new Request("about:blank", { headers: [["Content-Type", val.input]] })" did not throw
+\r	  (Request/Response) assert_throws_js: function "() => new Request("about:blank", { headers: [["Content-Type", val.input]] })" did not throw
 FAIL x/x;
 \r	 x=x
 \r	 ;x=y (Blob/File) assert_equals: Blob expected "x/x;x=x" but got ""
@@ -252,11 +252,11 @@ FAIL x/x;	=x;bonus=x (Request/Response) assert_equals: expected "x/x;bonus=x" bu
 PASS 
 /x (Blob/File)
 FAIL 
-/x (Request/Response) assert_throws: function "() => new Request("about:blank", { headers: [["Content-Type", val.input]] })" did not throw
+/x (Request/Response) assert_throws_js: function "() => new Request("about:blank", { headers: [["Content-Type", val.input]] })" did not throw
 PASS x/
  (Blob/File)
 FAIL x/
- (Request/Response) assert_throws: function "() => new Request("about:blank", { headers: [["Content-Type", val.input]] })" did not throw
+ (Request/Response) assert_throws_js: function "() => new Request("about:blank", { headers: [["Content-Type", val.input]] })" did not throw
 FAIL x/x;
 =x;bonus=x (Blob/File) assert_equals: Blob expected "x/x;bonus=x" but got ""
 PASS x/x;
@@ -290,9 +290,9 @@ FAIL x/x;x=;bonus=x (Request/Response) assert_equals: expected "x/x;bonus=x" bu
 FAIL x/x;x="";bonus=x (Blob/File) assert_equals: Blob expected "x/x;bonus=x" but got ""
 FAIL x/x;x="";bonus=x (Request/Response) assert_equals: expected "x/x;bonus=x" but got ""
 PASS \r/x (Blob/File)
-FAIL \r/x (Request/Response) assert_throws: function "() => new Request("about:blank", { headers: [["Content-Type", val.input]] })" did not throw
+FAIL \r/x (Request/Response) assert_throws_js: function "() => new Request("about:blank", { headers: [["Content-Type", val.input]] })" did not throw
 PASS x/\r (Blob/File)
-FAIL x/\r (Request/Response) assert_throws: function "() => new Request("about:blank", { headers: [["Content-Type", val.input]] })" did not throw
+FAIL x/\r (Request/Response) assert_throws_js: function "() => new Request("about:blank", { headers: [["Content-Type", val.input]] })" did not throw
 FAIL x/x;\r=x;bonus=x (Blob/File) assert_equals: Blob expected "x/x;bonus=x" but got ""
 PASS x/x;\r=x;bonus=x (Request/Response)
 FAIL x/x;x=\r;bonus=x (Blob/File) assert_equals: Blob expected "x/x;bonus=x" but got ""

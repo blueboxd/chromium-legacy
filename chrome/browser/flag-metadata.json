@@ -206,11 +206,6 @@
     "expiry_milestone": 85
   },
   {
-    "name": "ash-enable-overview-rounded-corners",
-    "owners": [ "sammiequon" ],
-    "expiry_milestone": 78
-  },
-  {
     "name": "ash-enable-pip-rounded-corners",
     "owners": [ "edcourtney" ],
     "expiry_milestone": 74
@@ -2129,7 +2124,7 @@
   {
     "name": "enable-webrtc-hide-local-ips-with-mdns",
     "owners": [ "qingsi" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 85
   },
   {
     "name": "enable-webrtc-hybrid-agc",
@@ -2502,11 +2497,6 @@
     // isolation policy, as well as for diagnosing problems when site isolation
     // only applies to some sites.
     "expiry_milestone": 90
-  },
-  {
-    "name": "kids-management-url-classification",
-    "owners": [ "alanwink", "vtrmc", "unichromeos-eng" ],
-    "expiry_milestone": 80
   },
   {
     "name": "list-all-display-modes",
@@ -3120,6 +3110,11 @@
     // enabling the feature on every page.
     "expiry_milestone": -1
   },
+  {
+    "name": "recover-from-never-save-android",
+    "owners": ["ioanap"],
+    "expiry_milestone": 83
+  },
   { "name": "reduce-display-notifications",
     "owners": [ "baileyberro", "zentaro" ],
     "expiry_milestone": 82
@@ -3195,11 +3190,6 @@
      // This is required by test teams to verify functionality on devices which
     // have no access to commandline flags.
     "expiry_milestone": -1
-  },
-  {
-    "name": "shared-array-buffer",
-    "owners": [ "binji" ],
-    "expiry_milestone": 78
   },
   {
     "name": "shared-clipboard-receiver",

@@ -90,6 +90,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/layout/layout_media.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
@@ -1803,6 +1804,28 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
       web_media_player_) {
     current_src_after_redirects_ =
         KURL(web_media_player_->GetSrcAfterRedirects());
+
+    // Sometimes WebMediaPlayer may load a URL from an in memory cache, which
+    // skips notification of insecure content. Ensure we always notify the
+    // MixedContentChecker of what happened, even if the load was skipped.
+    if (LocalFrame* frame = GetDocument().GetFrame()) {
+      // We don't care about the return value here. The MixedContentChecker will
+      // internally notify for insecure content if it needs to regardless of
+      // what the return value ends up being for this call.
+      MixedContentChecker::ShouldBlockFetch(
+          frame,
+          HasVideo() ? mojom::blink::RequestContextType::VIDEO
+                     : mojom::blink::RequestContextType::AUDIO,
+          // Strictly speaking, this check is an approximation; a request could
+          // have have redirected back to its original URL, for example.
+          // However, the redirect status is only used to prevent leaking
+          // information cross-origin via CSP reports, so comparing URLs is
+          // sufficient for that purpose.
+          current_src_after_redirects_ == current_src_
+              ? ResourceRequest::RedirectStatus::kNoRedirect
+              : ResourceRequest::RedirectStatus::kFollowedRedirect,
+          current_src_after_redirects_);
+    }
 
     // Prior to kHaveMetadata |network_state_| may be inaccurate to avoid side
     // channel leaks. This be a no-op if nothing has changed.
@@ -3973,12 +3996,7 @@ void HTMLMediaElement::SetCcLayer(cc::Layer* cc_layer) {
 
   // We need to update the GraphicsLayer when the cc layer changes.
   SetNeedsCompositingUpdate();
-
-  if (cc_layer_)
-    GraphicsLayer::UnregisterContentsLayer(cc_layer_);
   cc_layer_ = cc_layer;
-  if (cc_layer_)
-    GraphicsLayer::RegisterContentsLayer(cc_layer_);
 }
 
 void HTMLMediaElement::MediaSourceOpened(WebMediaSource* web_media_source) {

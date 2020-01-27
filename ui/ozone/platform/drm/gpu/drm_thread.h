@@ -116,6 +116,13 @@ class DrmThread : public base::Thread,
       const std::vector<OverlaySurfaceCandidate>& candidates,
       OverlayCapabilitiesCallback callback);
 
+  // Similar to CheckOverlayCapabilities() but stores the result in |result|
+  // instead of running a callback.
+  void CheckOverlayCapabilitiesSync(
+      gfx::AcceleratedWidget widget,
+      const std::vector<OverlaySurfaceCandidate>& candidates,
+      std::vector<OverlayStatus>* result);
+
   // DrmWindowProxy (on GPU thread) is the client for these methods.
   void SchedulePageFlip(gfx::AcceleratedWidget widget,
                         std::vector<DrmOverlayPlane> planes,

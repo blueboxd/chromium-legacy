@@ -17,6 +17,9 @@ inline bool GetSpdyRestartFlagImpl(bool flag) {
   return flag;
 }
 
+#define SPDY_CODE_COUNT_N_IMPL(name, instance, total) \
+  do {                                                \
+  } while (0)
 }  // namespace spdy
 
 #endif  // NET_SPDY_PLATFORM_IMPL_SPDY_FLAGS_IMPL_H_

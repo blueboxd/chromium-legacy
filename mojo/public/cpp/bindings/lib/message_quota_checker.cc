@@ -38,7 +38,9 @@ const base::FeatureParam<int> kMojoRecordUnreadMessageCountCrashThreshold = {
 
 NOINLINE void MaybeDumpWithoutCrashing(
     size_t total_quota_used,
-    base::Optional<size_t> message_pipe_quota_used) {
+    base::Optional<size_t> message_pipe_quota_used,
+    int64_t seconds_since_construction,
+    double average_write_rate) {
   static bool have_crashed = false;
   if (have_crashed)
     return;
@@ -54,17 +56,32 @@ NOINLINE void MaybeDumpWithoutCrashing(
     local_quota_used -= message_pipe_quota_used.value();
   }
 
+  // Normalize the write rate to writes/second.
+  double average_write_rate_per_second =
+      average_write_rate /
+      MessageQuotaChecker::DecayingRateAverage::kSecondsPerSamplingInterval;
   base::debug::Alias(&total_quota_used);
   base::debug::Alias(&local_quota_used);
   base::debug::Alias(&had_message_pipe);
+  base::debug::Alias(&seconds_since_construction);
+  base::debug::Alias(&average_write_rate_per_second);
 
   // This is happening because the user of the interface implicated on the crash
   // stack has queued up an unreasonable number of messages, namely
-  // |quota_used|.
+  // |total_quota_used|.
   base::debug::DumpWithoutCrashing();
 }
 
+int64_t ToSamplingInterval(base::TimeTicks when) {
+  return (when - base::TimeTicks::UnixEpoch()).InSeconds() /
+         MessageQuotaChecker::DecayingRateAverage::kSecondsPerSamplingInterval;
+}
+
 }  // namespace
+
+constexpr size_t
+    MessageQuotaChecker::DecayingRateAverage::kSecondsPerSamplingInterval;
+constexpr double MessageQuotaChecker::DecayingRateAverage::kSampleWeight;
 
 // static
 scoped_refptr<MessageQuotaChecker> MessageQuotaChecker::MaybeCreate() {
@@ -73,11 +90,13 @@ scoped_refptr<MessageQuotaChecker> MessageQuotaChecker::MaybeCreate() {
 }
 
 void MessageQuotaChecker::BeforeWrite() {
+  ++messages_written_;
   QuotaCheckImpl(0u);
 }
 
 void MessageQuotaChecker::BeforeMessagesEnqueued(size_t num) {
   DCHECK_NE(num, 0u);
+  messages_enqueued_ += num;
   QuotaCheckImpl(num);
 }
 
@@ -85,7 +104,7 @@ void MessageQuotaChecker::AfterMessagesDequeued(size_t num) {
   base::AutoLock hold(lock_);
   DCHECK_LE(num, consumed_quota_);
   DCHECK_NE(num, 0u);
-
+  messages_dequeued_ += num;
   consumed_quota_ -= num;
 }
 
@@ -129,7 +148,7 @@ scoped_refptr<MessageQuotaChecker> MessageQuotaChecker::MaybeCreateForTesting(
 }
 
 MessageQuotaChecker::MessageQuotaChecker(const Configuration* config)
-    : config_(config) {}
+    : config_(config), creation_time_(base::TimeTicks::Now()) {}
 MessageQuotaChecker::~MessageQuotaChecker() = default;
 
 // static
@@ -185,12 +204,14 @@ void MessageQuotaChecker::QuotaCheckImpl(size_t num_enqueued) {
   // local and the message pipe queues into individual variables, then pass them
   // into the crashing function.
   size_t total_quota_used = 0u;
+  base::TimeTicks now;
+  double average_write_rate = 0.0;
   base::Optional<size_t> message_pipe_quota_used;
   {
     base::AutoLock hold(lock_);
 
     message_pipe_quota_used = GetCurrentMessagePipeQuota();
-
+    now = base::TimeTicks::Now();
     if (num_enqueued) {
       consumed_quota_ += num_enqueued;
     } else {
@@ -199,6 +220,9 @@ void MessageQuotaChecker::QuotaCheckImpl(size_t num_enqueued) {
       // play, and that the caller is keeping it alive somehow.
       DCHECK(message_pipe_);
       DCHECK(message_pipe_quota_used.has_value());
+
+      // Accrue this write event to the write rate average.
+      write_rate_average_.AccrueEvent(now);
 
       // Account for the message about to be written to the message pipe in the
       // the full tally.
@@ -212,13 +236,71 @@ void MessageQuotaChecker::QuotaCheckImpl(size_t num_enqueued) {
     if (total_quota_used > max_consumed_quota_) {
       max_consumed_quota_ = total_quota_used;
       new_max = true;
+      // Retrieve the average rate, in the case that a crash is imminent.
+      average_write_rate = write_rate_average_.GetDecayedRateAverage(now);
     }
   }
 
   if (new_max && config_->crash_threshold != 0 &&
       total_quota_used >= config_->crash_threshold) {
-    config_->maybe_crash_function(total_quota_used, message_pipe_quota_used);
+    DCHECK(!now.is_null());
+    int64_t seconds_since_construction = (now - creation_time_).InSeconds();
+    config_->maybe_crash_function(total_quota_used, message_pipe_quota_used,
+                                  seconds_since_construction,
+                                  average_write_rate);
   }
+}
+
+MessageQuotaChecker::DecayingRateAverage::DecayingRateAverage() {
+  events_sampling_interval_ = ToSamplingInterval(base::TimeTicks::Now());
+  // Pretend the current decayed average is one sampling interval old to
+  // maintain an easy invariant that
+  // |events_sampling_interval_| > |decayed_average_sampling_interval_|.
+  decayed_average_sampling_interval_ = events_sampling_interval_ - 1;
+}
+
+void MessageQuotaChecker::DecayingRateAverage::AccrueEvent(
+    base::TimeTicks when) {
+  DCHECK_GT(events_sampling_interval_, decayed_average_sampling_interval_);
+
+  const int64_t sampling_interval = ToSamplingInterval(when);
+  DCHECK_GE(sampling_interval, events_sampling_interval_);
+  if (sampling_interval == events_sampling_interval_) {
+    // The time is still in the sampling interval, just add the event.
+    ++events_;
+    return;
+  }
+  DCHECK_GT(sampling_interval, decayed_average_sampling_interval_);
+
+  // Add the new sample and decay it to the previous event sampling interval.
+  // A new sample is weighed at kSampleWeight into the average, whereas the old
+  // average is weighed at (1-kSampleWeight)^age;
+  const int64_t avg_age =
+      events_sampling_interval_ - decayed_average_sampling_interval_;
+  decayed_average_ = decayed_average_ * pow(1 - kSampleWeight, avg_age) +
+                     kSampleWeight * events_;
+  decayed_average_sampling_interval_ = events_sampling_interval_;
+
+  // Start a new event sampling interval.
+  events_ = 1;
+  events_sampling_interval_ = sampling_interval;
+}
+
+double MessageQuotaChecker::DecayingRateAverage::GetDecayedRateAverage(
+    base::TimeTicks when) const {
+  DCHECK_GT(events_sampling_interval_, decayed_average_sampling_interval_);
+
+  // Compute the current rate average as of |events_sampling_interval_|.
+  const int64_t avg_age =
+      events_sampling_interval_ - decayed_average_sampling_interval_;
+  double avg = decayed_average_ * pow(1 - kSampleWeight, avg_age) +
+               kSampleWeight * events_;
+
+  // Age the average to |when|.
+  const int64_t sampling_interval = ToSamplingInterval(when);
+  DCHECK_GE(sampling_interval, events_sampling_interval_);
+  return avg *
+         pow(1 - kSampleWeight, sampling_interval - events_sampling_interval_);
 }
 
 }  // namespace internal

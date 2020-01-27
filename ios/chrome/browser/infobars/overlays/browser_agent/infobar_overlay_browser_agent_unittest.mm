@@ -157,7 +157,7 @@ class InfobarOverlayBrowserAgentTest
  protected:
   web::WebTaskEnvironment task_environment_;
   TestChromeBrowserState::Builder browser_state_builder_;
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
   web::WebState* web_state_ = nullptr;

@@ -117,6 +117,13 @@ class JSChecker {
   void ExpectHasNoClass(const std::string& css_class,
                         std::initializer_list<base::StringPiece> element_ids);
 
+  // Expects that indicated UI element has particular attribute.
+  void ExpectHasAttribute(const std::string& attribute,
+                          std::initializer_list<base::StringPiece> element_ids);
+  void ExpectHasNoAttribute(
+      const std::string& attribute,
+      std::initializer_list<base::StringPiece> element_ids);
+
   // Fires a native 'click' event on the indicated UI element. Prefer using
   // native 'click' event as it works on both polymer and native UI elements.
   void ClickOnPath(std::initializer_list<base::StringPiece> element_ids);

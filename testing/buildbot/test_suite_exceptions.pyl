@@ -215,23 +215,9 @@
         ],
       },
       'mac-code-coverage': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
         'swarming': {
           'shards': 15,
         },
-      },
-      'mac-osxbeta-rel': {
-        # A subset of tests seem to cause WindowServer deaths on VMs.
-        # crbug.com/828031 et al.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mac_window_server_killers.browser_tests.filter',
-          '--gtest_shuffle',
-        ],
       },
       'win-asan': {
         # browser_tests shards were reaching a timeout limit of 60 minutes on win-asan

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/path_service.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
@@ -61,6 +62,7 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
   void SetUpOnMainThread() override {
     DialogBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
+    views::test::ReduceAnimationDuration(GetExtensionsToolbarContainer());
   }
 
   void ShowUi(const std::string& name) override {
@@ -90,9 +92,16 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
       menu_model.ExecuteCommand(
           extensions::ExtensionContextMenuModel::UNINSTALL, 0);
 
-      // Wait for animations to finish so that the dialog should be showing.
-      views::test::WaitForAnimatingLayoutManager(
-          GetExtensionsToolbarContainer());
+      // Executing UNINSTALL consists of two separate asynchronous processes:
+      // - the command itself, which is immediately queued for execution
+      // - the animation and display of the uninstall dialog, which is driven by
+      //   an animation in the layout
+      //
+      // Flush the task queue so the first asynchronous process has completed.
+      base::RunLoop run_loop;
+      base::PostTask(FROM_HERE, run_loop.QuitClosure());
+      run_loop.Run();
+
     } else if (ui_test_name_ == "InstallDialog") {
       LoadTestExtension("extensions/uitest/long_name");
       LoadTestExtension("extensions/uitest/window_open");
@@ -100,17 +109,17 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
       // Trigger post-install dialog.
       ExtensionInstalledBubble::ShowBubble(extensions_[0], browser(),
                                            SkBitmap());
-
-      // Wait for animations to finish so that the dialog should be showing.
-      views::test::WaitForAnimatingLayoutManager(
-          GetExtensionsToolbarContainer());
     } else {
       ClickExtensionsMenuButton();
     }
+
+    // Wait for any pending animations to finish so that correct pinned
+    // extensions and dialogs are actually showing.
+    views::test::WaitForAnimatingLayoutManager(GetExtensionsToolbarContainer());
   }
 
   bool VerifyUi() override {
-    DialogBrowserTest::VerifyUi();
+    EXPECT_TRUE(DialogBrowserTest::VerifyUi());
 
     if (ui_test_name_ == "ReloadPageBubble") {
       ExtensionsToolbarContainer* const container =
@@ -126,8 +135,6 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
                ui_test_name_ == "InstallDialog") {
       ExtensionsToolbarContainer* const container =
           GetExtensionsToolbarContainer();
-      // With the anchored install/uninstall dialog the icon should now be
-      // visible.
       EXPECT_TRUE(container->IsActionVisibleOnToolbar(
           container->GetActionForId(extensions_[0]->id())));
       EXPECT_TRUE(container->GetViewForId(extensions_[0]->id())->GetVisible());
@@ -216,7 +223,7 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
         ->extensions_container();
   }
 
-  static std::vector<ExtensionsMenuItemView*> GetExtensionsMenuItemView() {
+  static std::vector<ExtensionsMenuItemView*> GetExtensionsMenuItemViews() {
     return ExtensionsMenuView::GetExtensionsMenuViewForTesting()
         ->extensions_menu_items_for_testing();
   }
@@ -237,7 +244,7 @@ class ExtensionsMenuViewBrowserTest : public DialogBrowserTest {
   }
 
   void TriggerSingleExtensionButton() {
-    auto menu_items = GetExtensionsMenuItemView();
+    auto menu_items = GetExtensionsMenuItemViews();
     ASSERT_EQ(1u, menu_items.size());
     ui::MouseEvent click_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
                                gfx::Point(), base::TimeTicks(),
@@ -378,7 +385,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   ShowUi("");
   VerifyUi();
   EXPECT_EQ(2u, extensions_.size());
-  EXPECT_EQ(extensions_.size(), GetExtensionsMenuItemView().size());
+  EXPECT_EQ(extensions_.size(), GetExtensionsMenuItemViews().size());
   DismissUi();
 }
 
@@ -400,10 +407,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   ClickExtensionsMenuButton(incognito_browser_);
 
   ASSERT_TRUE(VerifyUi());
-  ASSERT_EQ(1u, GetExtensionsMenuItemView().size());
+  ASSERT_EQ(1u, GetExtensionsMenuItemViews().size());
   EXPECT_EQ(
       views::Button::STATE_DISABLED,
-      GetExtensionsMenuItemView().front()->pin_button_for_testing()->state());
+      GetExtensionsMenuItemViews().front()->pin_button_for_testing()->state());
 
   DismissUi();
 }

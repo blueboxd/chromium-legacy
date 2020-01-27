@@ -22,6 +22,7 @@ public class Validators {
      * @return the non-null reference that was validated
      * @throws NullPointerException if {@code reference} is null
      */
+    @SuppressWarnings("AnnotateFormatMethod")
     public static <T> T checkNotNull(
             @Nullable T reference, String debugString, Object... formatArgs) {
         if (reference == null) {
@@ -52,6 +53,7 @@ public class Validators {
      * @param formatArgs arguments to the format string
      * @throws IllegalStateException thrown if the expression is false
      */
+    @SuppressWarnings("AnnotateFormatMethod")
     public static void checkState(boolean expression, String formatString, Object... formatArgs) {
         if (!expression) {
             throw new IllegalStateException(String.format(formatString, formatArgs));

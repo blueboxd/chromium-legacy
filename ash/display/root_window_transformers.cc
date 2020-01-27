@@ -329,8 +329,8 @@ class PartialBoundsRootWindowTransformer : public RootWindowTransformer {
     const float scale = root_bounds_.height() / (dsf * row_logical_height);
 
     transform_.Scale(scale, scale);
-    transform_.Translate(-SkIntToMScalar(display.bounds().x()),
-                         -SkIntToMScalar(display.bounds().y()));
+    transform_.Translate(-SkIntToScalar(display.bounds().x()),
+                         -SkIntToScalar(display.bounds().y()));
   }
 
   // RootWindowTransformer:

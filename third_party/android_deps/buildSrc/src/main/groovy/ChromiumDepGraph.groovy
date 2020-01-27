@@ -39,6 +39,9 @@ class ChromiumDepGraph {
             licenseName: "Apache 2.0"),
         'com_google_code_findbugs_jFormatString': new PropertyOverride(
             licenseUrl: "https://raw.githubusercontent.com/spotbugs/spotbugs/master/spotbugs/licenses/LICENSE.txt"),
+        'com_google_errorprone_error_prone_annotation': new PropertyOverride(
+            url: "https://errorprone.info/",
+            licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt"),
         'com_google_errorprone_error_prone_annotations': new PropertyOverride(
             url: "https://errorprone.info/",
             licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
@@ -102,7 +105,13 @@ class ChromiumDepGraph {
             licenseUrl: "https://raw.githubusercontent.com/typetools/checker-framework/master/LICENSE.txt",
             licenseName: "GPL v2 with the classpath exception"),
         'org_pcollections_pcollections': new PropertyOverride(
-            licenseUrl: "https://raw.githubusercontent.com/hrldcpr/pcollections/master/LICENSE")
+            licenseUrl: "https://raw.githubusercontent.com/hrldcpr/pcollections/master/LICENSE"),
+        'org_plumelib_plume_util': new PropertyOverride(
+            licenseUrl: "https://raw.githubusercontent.com/plume-lib/plume-util/master/LICENSE"),
+        'org_plumelib_require_javadoc': new PropertyOverride(
+            licenseUrl: "https://raw.githubusercontent.com/plume-lib/require-javadoc/master/LICENSE"),
+        'org_plumelib_reflection_util': new PropertyOverride(
+            licenseUrl: "https://raw.githubusercontent.com/plume-lib/reflection-util/master/LICENSE"),
     ]
 
     Project project

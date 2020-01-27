@@ -185,6 +185,18 @@ TEST_F('CrElementsRadioGroupV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrElementsScrollableBehaviorV3Test = class extends CrElementsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test?module=cr_elements/cr_scrollable_behavior_tests.m.js';
+  }
+};
+
+TEST_F('CrElementsScrollableBehaviorV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrElementsSearchFieldV3Test = class extends CrElementsV3BrowserTest {
   /** @override */
   get browsePreload() {

@@ -4,15 +4,18 @@
 
 #include "components/exo/surface_tree_host.h"
 
-#include <algorithm>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/exo/shell_surface_base.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/shared_quad_state.h"
@@ -98,11 +101,16 @@ SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name)
   host_window_->SetEventTargeter(std::make_unique<CustomWindowTargeter>(this));
   layer_tree_frame_sink_holder_ = std::make_unique<LayerTreeFrameSinkHolder>(
       this, host_window_->CreateLayerTreeFrameSink());
-  aura::Env::GetInstance()->context_factory()->AddObserver(this);
+  context_provider_ = aura::Env::GetInstance()
+                          ->context_factory()
+                          ->SharedMainThreadContextProvider();
+  DCHECK(context_provider_);
+  context_provider_->AddObserver(this);
 }
 
 SurfaceTreeHost::~SurfaceTreeHost() {
-  aura::Env::GetInstance()->context_factory()->RemoveObserver(this);
+  context_provider_->RemoveObserver(this);
+
   SetRootSurface(nullptr);
   LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
       std::move(layer_tree_frame_sink_holder_));
@@ -200,13 +208,14 @@ bool SurfaceTreeHost::IsInputEnabled(Surface*) const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ui::ContextFactoryObserver overrides:
+// viz::ContextLostObserver overrides:
 
-void SurfaceTreeHost::OnLostSharedContext() {
-  if (!host_window_->GetSurfaceId().is_valid() || !root_surface_)
-    return;
-  root_surface_->SurfaceHierarchyResourcesLost();
-  SubmitCompositorFrame();
+void SurfaceTreeHost::OnContextLost() {
+  // Handle context loss in a new stack frame to avoid bugs from re-entrant
+  // code.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&SurfaceTreeHost::HandleContextLost,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -247,10 +256,7 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
   std::vector<GLbyte*> sync_tokens;
   for (auto& resource : frame.resource_list)
     sync_tokens.push_back(resource.mailbox_holder.sync_token.GetData());
-  ui::ContextFactory* context_factory =
-      aura::Env::GetInstance()->context_factory();
-  gpu::gles2::GLES2Interface* gles2 =
-      context_factory->SharedMainThreadContextProvider()->ContextGL();
+  gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
   gles2->VerifySyncTokensCHROMIUM(sync_tokens.data(), sync_tokens.size());
 
   layer_tree_frame_sink_holder_->SubmitCompositorFrame(std::move(frame));
@@ -342,6 +348,24 @@ viz::CompositorFrame SurfaceTreeHost::PrepareToSubmitCompositorFrame() {
       host_window()->GetLocalSurfaceIdAllocation().allocation_time();
 
   return frame;
+}
+
+void SurfaceTreeHost::HandleContextLost() {
+  // Stop observering the lost context.
+  context_provider_->RemoveObserver(this);
+
+  // Get new context and start observing it.
+  context_provider_ = aura::Env::GetInstance()
+                          ->context_factory()
+                          ->SharedMainThreadContextProvider();
+  DCHECK(context_provider_);
+  context_provider_->AddObserver(this);
+
+  if (!host_window_->GetSurfaceId().is_valid() || !root_surface_)
+    return;
+
+  root_surface_->SurfaceHierarchyResourcesLost();
+  SubmitCompositorFrame();
 }
 
 }  // namespace exo

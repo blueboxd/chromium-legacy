@@ -19,7 +19,7 @@ namespace first_run {
 TrayStep::TrayStep(FirstRunController* controller, FirstRunActor* actor)
     : Step(kTrayStep, controller, actor) {}
 
-void TrayStep::DoShow() {
+bool TrayStep::DoShow() {
   // FirstRunController owns this object, so use Unretained.
   gfx::Rect bounds =
       first_run_controller()->first_run_helper()->OpenTrayBubble();
@@ -37,6 +37,7 @@ void TrayStep::DoShow() {
     position.SetLeft(bounds.right());
   }
   actor()->ShowStepPositioned(name(), position);
+  return true;
 }
 
 }  // namespace first_run

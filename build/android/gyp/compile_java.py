@@ -41,6 +41,8 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
     'JUnitAmbiguousTestClass',
     # TODO(crbug.com/1027683): Follow steps in bug.
     'UnnecessaryParentheses',
+    # TODO(wnwen): Fix issue in JavaUploadDataSinkBase.java
+    'PrimitiveAtomicReference',
     # Android platform default is always UTF-8.
     # https://developer.android.com/reference/java/nio/charset/Charset.html#defaultCharset()
     'DefaultCharset',
@@ -119,6 +121,14 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
     'FunctionalInterfaceClash',
     # Nice to have.
     'InconsistentOverloads',
+    # Dagger generated code triggers this.
+    'SameNameButDifferent',
+    # Nice to have.
+    'UnnecessaryLambda',
+    # Nice to have.
+    'UnnecessaryAnonymousClass',
+    # Nice to have.
+    'LiteProtoToString',
 ]
 
 # Full list of checks: https://errorprone.info/bugpatterns

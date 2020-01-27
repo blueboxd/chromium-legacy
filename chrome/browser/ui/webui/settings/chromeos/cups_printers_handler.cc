@@ -167,6 +167,7 @@ std::unique_ptr<chromeos::Printer> DictToPrinter(
   std::string printer_make_and_model;
   std::string printer_address;
   std::string printer_protocol;
+  std::string print_server_uri;
 
   if (!printer_dict.GetString("printerId", &printer_id) ||
       !printer_dict.GetString("printerName", &printer_name) ||
@@ -175,7 +176,8 @@ std::unique_ptr<chromeos::Printer> DictToPrinter(
       !printer_dict.GetString("printerModel", &printer_model) ||
       !printer_dict.GetString("printerMakeAndModel", &printer_make_and_model) ||
       !printer_dict.GetString("printerAddress", &printer_address) ||
-      !printer_dict.GetString("printerProtocol", &printer_protocol)) {
+      !printer_dict.GetString("printerProtocol", &printer_protocol) ||
+      !printer_dict.GetString("printServerUri", &print_server_uri)) {
     return nullptr;
   }
 
@@ -194,6 +196,7 @@ std::unique_ptr<chromeos::Printer> DictToPrinter(
   printer->set_model(printer_model);
   printer->set_make_and_model(printer_make_and_model);
   printer->set_uri(printer_uri);
+  printer->set_print_server_uri(print_server_uri);
 
   return printer;
 }

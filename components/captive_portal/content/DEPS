@@ -1,0 +1,11 @@
+include_rules = [
+  "+components/captive_portal/core",
+  "+components/embedder_support",
+  "+components/keyed_service/core",
+  "+components/prefs",
+  "+content/public/browser",
+  "+content/public/test",
+  "+services/network/public/cpp",
+  "+net",
+  "+url",
+]

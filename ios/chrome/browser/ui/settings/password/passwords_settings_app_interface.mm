@@ -214,7 +214,7 @@ static MockReauthenticationModule* _mockReauthenticationModule;
 }
 
 + (BOOL)isCredentialsServiceEnabled {
-  ios::ChromeBrowserState* browserState =
+  ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
   return browserState->GetPrefs()->GetBoolean(
       password_manager::prefs::kCredentialsEnableService);

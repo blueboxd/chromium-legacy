@@ -17,6 +17,8 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.annotations.RemovableInRelease;
+
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.IllegalFormatException;
@@ -79,6 +81,7 @@ public final class Logger {
      *     has this restriction.
      * @param message the string message to log.
      */
+    @RemovableInRelease
     public static void v(String tag, String message) {
         internalLog(VERBOSE, tag, null, message, false);
     }
@@ -94,28 +97,33 @@ public final class Logger {
      * @param message the string format recognized by {@link String#format(String, Object...)}.
      * @param arg1 the formatting arg for the previous string.
      */
+    @RemovableInRelease
     public static void v(String tag, String message, @Nullable Object arg1) {
         internalLog(VERBOSE, tag, null, message, false, arg1);
     }
 
     /** @see #v(String, String, Object) */
+    @RemovableInRelease
     public static void v(String tag, String message, @Nullable Object arg1, @Nullable Object arg2) {
         internalLog(VERBOSE, tag, null, message, false, arg1, arg2);
     }
 
     /** @see #v(String, String, Object) */
+    @RemovableInRelease
     public static void v(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
             @Nullable Object arg3) {
         internalLog(VERBOSE, tag, null, message, false, arg1, arg2, arg3);
     }
 
     /** @see #v(String, String, Object) */
+    @RemovableInRelease
     public static void v(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
             @Nullable Object arg3, @Nullable Object arg4) {
         internalLog(VERBOSE, tag, null, message, false, arg1, arg2, arg3, arg4);
     }
 
     /** @see #v(String, String, Object) */
+    @RemovableInRelease
     public static void v(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
             @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5) {
         internalLog(VERBOSE, tag, null, message, false, arg1, arg2, arg3, arg4, arg5);
@@ -131,6 +139,7 @@ public final class Logger {
      *     has this restriction.
      * @param message the string message to log.
      */
+    @RemovableInRelease
     public static void vWithStackTrace(String tag, String message) {
         internalLog(VERBOSE, tag, null, message, true);
     }
@@ -146,29 +155,34 @@ public final class Logger {
      * @param message the string format recognized by {@link String#format(String, Object...)}.
      * @param arg1 the formatting arg for the previous string.
      */
+    @RemovableInRelease
     public static void vWithStackTrace(String tag, String message, @Nullable Object arg1) {
         internalLog(VERBOSE, tag, null, message, true, arg1);
     }
 
     /** @see #vWithStackTrace(String, String, Object) */
+    @RemovableInRelease
     public static void vWithStackTrace(
             String tag, String message, @Nullable Object arg1, @Nullable Object arg2) {
         internalLog(VERBOSE, tag, null, message, true, arg1, arg2);
     }
 
     /** @see #vWithStackTrace(String, String, Object) */
+    @RemovableInRelease
     public static void vWithStackTrace(String tag, String message, @Nullable Object arg1,
             @Nullable Object arg2, @Nullable Object arg3) {
         internalLog(VERBOSE, tag, null, message, true, arg1, arg2, arg3);
     }
 
     /** @see #vWithStackTrace(String, String, Object) */
+    @RemovableInRelease
     public static void vWithStackTrace(String tag, String message, @Nullable Object arg1,
             @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4) {
         internalLog(VERBOSE, tag, null, message, true, arg1, arg2, arg3, arg4);
     }
 
     /** @see #vWithStackTrace(String, String, Object) */
+    @RemovableInRelease
     public static void vWithStackTrace(String tag, String message, @Nullable Object arg1,
             @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4,
             @Nullable Object arg5) {
@@ -185,6 +199,7 @@ public final class Logger {
      *     has this restriction.
      * @param message the string message to log.
      */
+    @RemovableInRelease
     public static void d(String tag, String message) {
         internalLog(DEBUG, tag, null, message, false);
     }
@@ -200,34 +215,40 @@ public final class Logger {
      * @param message the string format recognized by {@link String#format(String, Object...)}.
      * @param arg1 the formatting arg for the previous string.
      */
+    @RemovableInRelease
     public static void d(String tag, String message, @Nullable Object arg1) {
         internalLog(DEBUG, tag, null, message, false, arg1);
     }
 
     /** @see #d(String, String, Object) */
+    @RemovableInRelease
     public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2) {
         internalLog(DEBUG, tag, null, message, false, arg1, arg2);
     }
 
     /** @see #d(String, String, Object) */
+    @RemovableInRelease
     public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
             @Nullable Object arg3) {
         internalLog(DEBUG, tag, null, message, false, arg1, arg2, arg3);
     }
 
     /** @see #d(String, String, Object) */
+    @RemovableInRelease
     public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
             @Nullable Object arg3, @Nullable Object arg4) {
         internalLog(DEBUG, tag, null, message, false, arg1, arg2, arg3, arg4);
     }
 
     /** @see #d(String, String, Object) */
+    @RemovableInRelease
     public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
             @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5) {
         internalLog(DEBUG, tag, null, message, false, arg1, arg2, arg3, arg4, arg5);
     }
 
     /** @see #d(String, String, Object) */
+    @RemovableInRelease
     public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
             @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5,
             @Nullable Object arg6) {
@@ -235,6 +256,7 @@ public final class Logger {
     }
 
     /** @see #d(String, String, Object) */
+    @RemovableInRelease
     public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
             @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5,
             @Nullable Object arg6, @Nullable Object arg7) {
@@ -242,6 +264,7 @@ public final class Logger {
     }
 
     /** @see #d(String, String, Object) */
+    @RemovableInRelease
     public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
             @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5,
             @Nullable Object arg6, @Nullable Object arg7, @Nullable Object arg8) {
@@ -250,6 +273,7 @@ public final class Logger {
     }
 
     /** @see #d(String, String, Object) */
+    @RemovableInRelease
     public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
             @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5,
             @Nullable Object arg6, @Nullable Object arg7, @Nullable Object arg8,
@@ -259,6 +283,7 @@ public final class Logger {
     }
 
     /** @see #d(String, String, Object) */
+    @RemovableInRelease
     public static void d(String tag, String message, @Nullable Object arg1, @Nullable Object arg2,
             @Nullable Object arg3, @Nullable Object arg4, @Nullable Object arg5,
             @Nullable Object arg6, @Nullable Object arg7, @Nullable Object arg8,
@@ -277,6 +302,7 @@ public final class Logger {
      *     has this restriction.
      * @param message the string message to log.
      */
+    @RemovableInRelease
     public static void dWithStackTrace(String tag, String message) {
         internalLog(DEBUG, tag, null, message, true);
     }
@@ -292,29 +318,34 @@ public final class Logger {
      * @param message the string format recognized by {@link String#format(String, Object...)}.
      * @param arg1 the formatting arg for the previous string.
      */
+    @RemovableInRelease
     public static void dWithStackTrace(String tag, String message, @Nullable Object arg1) {
         internalLog(DEBUG, tag, null, message, true, arg1);
     }
 
     /** @see #dWithStackTrace(String, String, Object) */
+    @RemovableInRelease
     public static void dWithStackTrace(
             String tag, String message, @Nullable Object arg1, @Nullable Object arg2) {
         internalLog(DEBUG, tag, null, message, true, arg1, arg2);
     }
 
     /** @see #dWithStackTrace(String, String, Object) */
+    @RemovableInRelease
     public static void dWithStackTrace(String tag, String message, @Nullable Object arg1,
             @Nullable Object arg2, @Nullable Object arg3) {
         internalLog(DEBUG, tag, null, message, true, arg1, arg2, arg3);
     }
 
     /** @see #dWithStackTrace(String, String, Object) */
+    @RemovableInRelease
     public static void dWithStackTrace(String tag, String message, @Nullable Object arg1,
             @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4) {
         internalLog(DEBUG, tag, null, message, true, arg1, arg2, arg3, arg4);
     }
 
     /** @see #dWithStackTrace(String, String, Object) */
+    @RemovableInRelease
     public static void dWithStackTrace(String tag, String message, @Nullable Object arg1,
             @Nullable Object arg2, @Nullable Object arg3, @Nullable Object arg4,
             @Nullable Object arg5) {
@@ -504,6 +535,7 @@ public final class Logger {
     }
 
     // TODO: this should be consistent across build types
+    @RemovableInRelease
     private static boolean shouldWtfCrash() {
         // L.wtf should crash for DEV and ALPHA builds.
         // Since Proguard is definitely being run for RELEASE builds, the method returns true by
@@ -518,6 +550,7 @@ public final class Logger {
      * @param tag The tag that we want to test
      * @return true if this tag is enabled for verbose logging, false otherwise
      */
+    @RemovableInRelease
     public static boolean isVerboseEnabled(String tag) {
         return isEnabled(tag, VERBOSE);
     }
@@ -529,6 +562,7 @@ public final class Logger {
      * @param tag The tag that we want to test
      * @return true if this tag is enabled for debug logging, false otherwise
      */
+    @RemovableInRelease
     public static boolean isDebugEnabled(String tag) {
         return isEnabled(tag, DEBUG);
     }
@@ -691,6 +725,7 @@ public final class Logger {
      * them to disk in /sdcard/, and allow developers to pull this out of dogfood devices. This
      * avoids spamming the log ringbuffer, and also persists beyond a reboot.
      */
+    @RemovableInRelease
     public static void debugLogRawProto(String tag, byte[] rawProto, String name) {
         // Create a string representation of the raw data.
         String request;

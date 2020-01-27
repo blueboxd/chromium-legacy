@@ -17,8 +17,15 @@ namespace features {
 const base::Feature kSmoothScrollingDefault{"FullscreenSmoothScrollingDefault",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kFullscreenControllerBrowserScoped{
+    "FullscreenControllerBrowserScoped", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool ShouldUseSmoothScrolling() {
   return base::FeatureList::IsEnabled(kSmoothScrollingDefault);
+}
+
+bool ShouldScopeFullscreenControllerToBrowser() {
+  return base::FeatureList::IsEnabled(kFullscreenControllerBrowserScoped);
 }
 
 }  // namespace features

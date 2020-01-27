@@ -6,7 +6,7 @@
 #define MEDIA_BASE_MEDIA_LOG_PROPERTIES_H_
 
 #include <string>
-#include <utility>
+#include <vector>
 
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media_export.h"

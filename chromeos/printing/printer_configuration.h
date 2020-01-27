@@ -141,6 +141,11 @@ class CHROMEOS_EXPORT Printer {
     supports_ippusb_ = supports_ippusb;
   }
 
+  const std::string& print_server_uri() const { return print_server_uri_; }
+  void set_print_server_uri(const std::string& print_server_uri) {
+    print_server_uri_ = print_server_uri;
+  }
+
   const std::string& uuid() const { return uuid_; }
   void set_uuid(const std::string& uuid) { uuid_ = uuid; }
 
@@ -218,6 +223,10 @@ class CHROMEOS_EXPORT Printer {
 
   // Represents whether or not the printer supports printing using ipp-over-usb.
   bool supports_ippusb_ = false;
+
+  // When non-empty, the uri of the print server the printer was added from. We
+  // use this to determine if a printer is a print server printer.
+  std::string print_server_uri_;
 
   // The UUID from an autoconf protocol for deduplication. Could be empty.
   std::string uuid_;

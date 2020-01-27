@@ -24,7 +24,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace ios {
 namespace {
 // All ChromeBrowserState will store a dummy base::SupportsUserData::Data
 // object with this key. It can be used to check that a web::BrowserState
@@ -95,5 +94,3 @@ void ChromeBrowserState::UpdateCorsExemptHeader(
     network::mojom::NetworkContextParams* params) {
   variations::UpdateCorsExemptHeaderForVariations(params);
 }
-
-}  // namespace ios

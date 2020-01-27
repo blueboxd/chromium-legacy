@@ -10,17 +10,20 @@ import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.hasDescendant;
+import static android.support.test.espresso.matcher.ViewMatchers.isChecked;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getElementValue;
@@ -30,6 +33,7 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
+import android.widget.RadioButton;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -86,7 +90,7 @@ public class AutofillAssistantPersonalDataManagerTest {
     }
 
     /**
-     * Add a contact and fill it into the form.
+     * Add a contact with Autofill Assistant UI and fill it into the form.
      */
     @Test
     @MediumTest
@@ -135,10 +139,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                                 ChipProto.newBuilder().setText("Address")))
                         .build(),
                 list);
-
-        AutofillAssistantTestService testService =
-                new AutofillAssistantTestService(Collections.singletonList(script));
-        startAutofillAssistant(mTestRule.getActivity(), testService);
+        runScript(script);
 
         waitUntilViewMatchesCondition(
                 allOf(withId(R.id.section_title_add_button_label), withText("Add contact info")),
@@ -162,11 +163,12 @@ public class AutofillAssistantPersonalDataManagerTest {
     }
 
     /**
-     * Catch live insert of a contact and fill it into the form.
+     * Catch the insert of a profile added outside of the Autofill Assistant, e.g. with the Chrome
+     * settings UI, and fill it into the form.
      */
     @Test
     @MediumTest
-    public void testLiveInsertAndEnterProfile() throws Exception {
+    public void testExternalAddAndEnterProfile() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add(
                 (ActionProto) ActionProto.newBuilder()
@@ -197,10 +199,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                                 ChipProto.newBuilder().setText("Address")))
                         .build(),
                 list);
-
-        AutofillAssistantTestService testService =
-                new AutofillAssistantTestService(Collections.singletonList(script));
-        startAutofillAssistant(mTestRule.getActivity(), testService);
+        runScript(script);
 
         waitUntilViewMatchesCondition(
                 allOf(withId(R.id.section_title_add_button_label), withText("Add contact info")),
@@ -216,7 +215,8 @@ public class AutofillAssistantPersonalDataManagerTest {
     }
 
     /**
-     * A new profile added externally should not overwrite the current selection.
+     * A new profile added outside of the Autofill Assistant, e.g. with the Chrome settings UI,
+     * should not overwrite the current selection.
      */
     @Test
     @MediumTest
@@ -253,10 +253,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                                 ChipProto.newBuilder().setText("Address")))
                         .build(),
                 list);
-
-        AutofillAssistantTestService testService =
-                new AutofillAssistantTestService(Collections.singletonList(script));
-        startAutofillAssistant(mTestRule.getActivity(), testService);
+        runScript(script);
 
         waitUntilViewMatchesCondition(
                 withId(R.id.contact_summary), allOf(withText("johndoe@google.com"), isDisplayed()));
@@ -277,7 +274,51 @@ public class AutofillAssistantPersonalDataManagerTest {
     }
 
     /**
-     * Editing the currently selected profile should keep selection.
+     * An existing profile deleted outside of the Autofill Assistant, e.g. with the Chrome settings
+     * UI, should be removed from the current list.
+     */
+    @Test
+    @MediumTest
+    public void testExternalDeleteProfile() throws Exception {
+        String profileIdA = mHelper.addDummyProfile("Adam Doe", "adamdoe@google.com");
+        String profileIdB = mHelper.addDummyProfile("Berta Doe", "bertadoe@google.com");
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setCollectUserData(
+                                CollectUserDataProto.newBuilder()
+                                        .setContactDetails(ContactDetailsProto.newBuilder()
+                                                                   .setContactDetailsName("contact")
+                                                                   .setRequestPayerName(true)
+                                                                   .setRequestPayerEmail(true)
+                                                                   .setRequestPayerPhone(false))
+                                        .setRequestTermsAndConditions(false))
+                        .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Address")))
+                        .build(),
+                list);
+        runScript(script);
+
+        waitUntilViewMatchesCondition(
+                withId(R.id.contact_summary), allOf(withText("adamdoe@google.com"), isDisplayed()));
+        // Delete first profile, expect second to be selected.
+        mHelper.deleteProfile(profileIdA);
+        waitUntilViewMatchesCondition(withId(R.id.contact_summary),
+                allOf(withText("bertadoe@google.com"), isDisplayed()));
+        // Delete second profile, expect nothing to be selected.
+        mHelper.deleteProfile(profileIdB);
+        waitUntilViewMatchesCondition(
+                allOf(withId(R.id.section_title_add_button_label), withText("Add contact info")),
+                isCompletelyDisplayed());
+    }
+
+    /**
+     * Editing the currently selected contact in the Assistant Autofill UI should keep selection.
      */
     @Test
     @MediumTest
@@ -315,10 +356,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                                 ChipProto.newBuilder().setText("Address")))
                         .build(),
                 list);
-
-        AutofillAssistantTestService testService =
-                new AutofillAssistantTestService(Collections.singletonList(script));
-        startAutofillAssistant(mTestRule.getActivity(), testService);
+        runScript(script);
 
         waitUntilViewMatchesCondition(withId(R.id.contact_summary),
                 allOf(withText("adamwest@google.com"), isDisplayed()));
@@ -357,16 +395,16 @@ public class AutofillAssistantPersonalDataManagerTest {
     // TODO(b/143265578): Add test where credit card is manually entered.
 
     /**
-     * Catch live insert of a credit card.
+     * Catch the insert of a credit card added outside of the Autofill Assistant, e.g. with the
+     * Chrome settings UI, and fill it into the form.
      */
     @Test
     @MediumTest
-    public void testLiveInsertCreditCard() throws Exception {
+    public void testExternalAddCreditCard() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setCollectUserData(CollectUserDataProto.newBuilder()
                                                      .setRequestPaymentMethod(true)
-                                                     .addSupportedBasicCardNetworks("visa")
                                                      .setRequestTermsAndConditions(false))
                          .build());
         // No UseCreditCardAction, that is tested in PaymentTest.
@@ -377,10 +415,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                                 ChipProto.newBuilder().setText("Payment")))
                         .build(),
                 list);
-
-        AutofillAssistantTestService testService =
-                new AutofillAssistantTestService(Collections.singletonList(script));
-        startAutofillAssistant(mTestRule.getActivity(), testService);
+        runScript(script);
 
         waitUntilViewMatchesCondition(
                 allOf(withId(R.id.section_title_add_button_label), withText("Add card")),
@@ -394,17 +429,18 @@ public class AutofillAssistantPersonalDataManagerTest {
     }
 
     /**
-     * Catch live insert of a credit card with billing address missing a postal code.
+     * Catch the insert of a credit card with a billing address missing the postal code added
+     * outside of the Autofill Assistant, e.g. with the Chrome settings UI, and fill it into the
+     * form.
      */
     @Test
     @MediumTest
-    public void testLiveInsertCreditCardWithoutBillingZip() throws Exception {
+    public void testExternalAddCreditCardWithoutBillingZip() throws Exception {
         ArrayList<ActionProto> list = new ArrayList<>();
         list.add((ActionProto) ActionProto.newBuilder()
                          .setCollectUserData(
                                  CollectUserDataProto.newBuilder()
                                          .setRequestPaymentMethod(true)
-                                         .addSupportedBasicCardNetworks("visa")
                                          .setRequireBillingPostalCode(true)
                                          .setBillingPostalCodeMissingText("Missing Billing Code")
                                          .setRequestTermsAndConditions(false))
@@ -416,10 +452,7 @@ public class AutofillAssistantPersonalDataManagerTest {
                                 ChipProto.newBuilder().setText("Payment")))
                         .build(),
                 list);
-
-        AutofillAssistantTestService testService =
-                new AutofillAssistantTestService(Collections.singletonList(script));
-        startAutofillAssistant(mTestRule.getActivity(), testService);
+        runScript(script);
 
         waitUntilViewMatchesCondition(
                 allOf(withId(R.id.section_title_add_button_label), withText("Add card")),
@@ -431,5 +464,74 @@ public class AutofillAssistantPersonalDataManagerTest {
                                               isDescendantOfA(withId(R.id.payment_method_summary))),
                 isDisplayed());
         waitUntilViewMatchesCondition(withText("Continue"), isEnabled());
+    }
+
+    /**
+     * An existing credit card deleted outside of the Autofill Assistant, e.g. with the Chrome
+     * settings UI, should be removed from the current list.
+     */
+    @Test
+    @MediumTest
+    public void testExternalDeleteCreditCard() throws Exception {
+        String profileId;
+
+        profileId = mHelper.addDummyProfile("Adam Doe", "adamdoe@google.com");
+        String cardIdA = mHelper.addDummyCreditCard(profileId, "4111111111111111");
+
+        profileId = mHelper.addDummyProfile("Berta Doe", "bertadoe@google.com");
+        String cardIdB = mHelper.addDummyCreditCard(profileId, "5555555555554444");
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                     .setRequestPaymentMethod(true)
+                                                     .setRequestTermsAndConditions(false))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Payment")))
+                        .build(),
+                list);
+        runScript(script);
+
+        waitUntilViewMatchesCondition(allOf(withId(R.id.credit_card_number),
+                                              isDescendantOfA(withId(R.id.payment_method_summary))),
+                allOf(withText(containsString("1111")), isDisplayed()));
+        onView(withText("Payment method")).perform(click());
+        waitUntilViewMatchesCondition(
+                allOf(withId(R.id.credit_card_name), withText("Adam Doe")), isDisplayed());
+        onView(allOf(withId(R.id.credit_card_name),
+                       withParent(allOf(withId(R.id.payment_method_full),
+                               isNextAfterSibling(
+                                       allOf(instanceOf(RadioButton.class), isChecked()))))))
+                .check(matches(withText("Adam Doe")));
+        onView(withText("Payment method")).perform(click());
+        // Delete first card, expect second card to be selected.
+        mHelper.deleteCreditCard(cardIdA);
+        waitUntilViewMatchesCondition(allOf(withId(R.id.credit_card_number),
+                                              isDescendantOfA(withId(R.id.payment_method_summary))),
+                allOf(withText(containsString("4444")), isDisplayed()));
+        onView(withText("Payment method")).perform(click());
+        waitUntilViewMatchesCondition(
+                allOf(withId(R.id.credit_card_name), withText("Berta Doe")), isDisplayed());
+        onView(allOf(withId(R.id.credit_card_name),
+                       withParent(allOf(withId(R.id.payment_method_full),
+                               isNextAfterSibling(
+                                       allOf(instanceOf(RadioButton.class), isChecked()))))))
+                .check(matches(withText("Berta Doe")));
+        onView(withText("Payment method")).perform(click());
+        // Delete second card, expect nothing to be selected.
+        mHelper.deleteCreditCard(cardIdB);
+        waitUntilViewMatchesCondition(
+                allOf(withId(R.id.section_title_add_button_label), withText("Add card")),
+                isCompletelyDisplayed());
+    }
+
+    private void runScript(AutofillAssistantTestScript script) {
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
     }
 }

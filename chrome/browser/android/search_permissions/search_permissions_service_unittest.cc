@@ -12,11 +12,11 @@
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
-#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/permissions/permission_result.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
@@ -482,16 +482,17 @@ TEST_F(SearchPermissionsServiceTest, Embargo) {
       google_aus_url, ContentSettingsType::GEOLOCATION, false);
   auto_blocker->RecordDismissAndEmbargo(
       google_aus_url, ContentSettingsType::GEOLOCATION, false);
-  PermissionResult result = auto_blocker->GetEmbargoResult(
+  permissions::PermissionResult result = auto_blocker->GetEmbargoResult(
       GURL(kGoogleAusURL), ContentSettingsType::GEOLOCATION);
-  EXPECT_EQ(result.source, PermissionStatusSource::MULTIPLE_DISMISSALS);
+  EXPECT_EQ(result.source,
+            permissions::PermissionStatusSource::MULTIPLE_DISMISSALS);
   EXPECT_EQ(result.content_setting, CONTENT_SETTING_BLOCK);
 
   // Now change the DSE to this origin and make sure the embargo is cleared.
   test_delegate()->ChangeDSEOrigin(kGoogleAusURL);
   result = auto_blocker->GetEmbargoResult(GURL(kGoogleAusURL),
                                           ContentSettingsType::GEOLOCATION);
-  EXPECT_EQ(result.source, PermissionStatusSource::UNSPECIFIED);
+  EXPECT_EQ(result.source, permissions::PermissionStatusSource::UNSPECIFIED);
   EXPECT_EQ(result.content_setting, CONTENT_SETTING_ASK);
 }
 

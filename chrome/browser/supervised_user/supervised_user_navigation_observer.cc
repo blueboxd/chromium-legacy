@@ -102,6 +102,9 @@ void SupervisedUserNavigationObserver::UpdateMainFrameFilteringStatus(
 
 void SupervisedUserNavigationObserver::DidFinishNavigation(
       content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->HasCommitted())
+    return;
+
   int frame_id = navigation_handle->GetFrameTreeNodeId();
   int64_t navigation_id = navigation_handle->GetNavigationId();
 
@@ -117,7 +120,7 @@ void SupervisedUserNavigationObserver::DidFinishNavigation(
   // have been filtered by the NavigationThrottle.
   if (navigation_handle->IsSameDocument() &&
       navigation_handle->IsInMainFrame()) {
-    auto* render_frame_host = navigation_handle->GetRenderFrameHost();
+    auto* render_frame_host = web_contents()->GetMainFrame();
     int process_id = render_frame_host->GetProcess()->GetID();
     int routing_id = render_frame_host->GetRoutingID();
 

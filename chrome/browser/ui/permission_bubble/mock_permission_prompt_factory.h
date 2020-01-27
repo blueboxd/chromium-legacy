@@ -8,9 +8,9 @@
 #include <memory>
 #include <vector>
 
-#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
+#include "components/permissions/permission_request.h"
 #include "url/gurl.h"
 
 class MockPermissionPrompt;
@@ -55,7 +55,7 @@ class MockPermissionPromptFactory {
   // Number of requests seen.
   int TotalRequestCount();
   // Whether the specified permission was shown in a prompt.
-  bool RequestTypeSeen(PermissionRequestType type);
+  bool RequestTypeSeen(permissions::PermissionRequestType type);
   // Whether a prompt with the given origin was shown.
   bool RequestOriginSeen(const GURL& origin);
 
@@ -74,7 +74,7 @@ class MockPermissionPromptFactory {
 
   int show_count_;
   int requests_count_;
-  std::vector<PermissionRequestType> request_types_seen_;
+  std::vector<permissions::PermissionRequestType> request_types_seen_;
   std::vector<GURL> request_origins_seen_;
 
   std::vector<MockPermissionPrompt*> prompts_;

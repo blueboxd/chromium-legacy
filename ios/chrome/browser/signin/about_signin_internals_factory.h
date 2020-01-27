@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 class AboutSigninInternals;
+class ChromeBrowserState;
 
 namespace ios {
 // Singleton that owns all AboutSigninInternals and associates them with browser
@@ -22,7 +22,7 @@ class AboutSigninInternalsFactory : public BrowserStateKeyedServiceFactory {
   // Returns the instance of AboutSigninInternals associated with this browser
   // state, creating one if none exists.
   static AboutSigninInternals* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   // Returns an instance of the AboutSigninInternalsFactory singleton.
   static AboutSigninInternalsFactory* GetInstance();

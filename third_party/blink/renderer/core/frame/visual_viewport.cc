@@ -538,7 +538,7 @@ bool VisualViewport::DidSetScaleOrLocation(float scale,
     // ScrollingCoordinator.
     if (auto* coordinator = GetPage().GetScrollingCoordinator()) {
       if (scroll_layer_)
-        coordinator->UpdateCompositedScrollOffset(this);
+        coordinator->UpdateCompositorScrollOffset(*MainFrame(), *this);
     }
 
     EnqueueScrollEvent();
@@ -590,7 +590,7 @@ void VisualViewport::CreateLayers() {
   LayerForScrollingDidChange(coordinator->GetCompositorAnimationTimeline());
 
   InitializeScrollbars();
-  coordinator->UpdateCompositedScrollOffset(this);
+  coordinator->UpdateCompositorScrollOffset(*MainFrame(), *this);
 }
 
 void VisualViewport::InitializeScrollbars() {

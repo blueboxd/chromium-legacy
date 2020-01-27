@@ -6,46 +6,75 @@ package org.chromium.base.metrics;
 
 import android.text.format.DateUtils;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
 
+import javax.annotation.concurrent.GuardedBy;
+
 /** Java API for recording UMA histograms. */
 @JNINamespace("base::android")
 @MainDex
 public class RecordHistogram {
     /** Underlying {@link UmaRecorder} used by methods in this class. */
-    private static UmaRecorder sRecorder = new NativeUmaRecorder();
+    private static final CachingUmaRecorder sRecorder = new CachingUmaRecorder();
 
     /**
-     * Null, unless recording of histograms is currently disabled for testing. Exposed for use in
-     * peer classes {e.g. AnimationFrameTimeHistogram}.
+     * {@code null}, unless recording of histograms is currently disabled for testing. Exposed for
+     * use in peer classes {e.g. AnimationFrameTimeHistogram}.
      * <p>
      * Use {@link #setDisabledForTests(boolean)} to set this value.
+     * <p>
+     * TODO(bttk@chromium.org): Rename to sDisabledForTestBy
      */
     @VisibleForTesting
+    @Nullable
     public static Throwable sDisabledBy;
+
+    /**
+     * The delegate disabled by {@link #setDisabledForTests(boolean)}.
+     */
+    @GuardedBy("sRecorder")
+    @Nullable
+    private static UmaRecorder sDisabledDelegateForTest;
 
     /**
      * Tests may not have native initialized, so they may need to disable metrics. The value should
      * be reset after the test done, to avoid carrying over state to unrelated tests.
      * <p>
      * In JUnit tests this can be done automatically using
-     * {@link org.chromium.chrome.browser.DisableHistogramsRule}.
+     * {@link org.chromium.base.metrics.test.DisableHistogramsRule}.
      */
     @VisibleForTesting
     public static void setDisabledForTests(boolean disabled) {
-        if (disabled) {
-            if (sDisabledBy != null) {
-                throw new IllegalStateException("Histograms are already disabled.", sDisabledBy);
+        synchronized (sRecorder) {
+            if (disabled) {
+                if (sDisabledBy != null) {
+                    throw new IllegalStateException(
+                            "Histograms are already disabled.", sDisabledBy);
+                }
+                sDisabledBy = new Throwable();
+                sDisabledDelegateForTest = sRecorder.setDelegate(new NoopUmaRecorder());
+            } else {
+                sDisabledBy = null;
+                sRecorder.setDelegate(sDisabledDelegateForTest);
+                sDisabledDelegateForTest = null;
             }
-            sDisabledBy = new Throwable();
-            sRecorder = new NoopUmaRecorder();
-        } else {
-            sDisabledBy = null;
-            sRecorder = new NativeUmaRecorder();
+        }
+    }
+
+    /** Starts forwarding metrics to the native code. Returns after the cache has been flushed. */
+    public static void onLibraryLoaded() {
+        synchronized (sRecorder) {
+            if (sDisabledBy == null) {
+                sRecorder.setDelegate(new NativeUmaRecorder());
+            } else {
+                // If metrics are disabled for test, use native when metrics get restored.
+                sDisabledDelegateForTest = new NativeUmaRecorder();
+            }
         }
     }
 

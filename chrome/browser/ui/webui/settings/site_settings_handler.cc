@@ -712,10 +712,12 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
       if (PermissionUtil::IsPermission(content_type)) {
         const GURL url(e.primary_pattern.ToString());
         // Add |url| to the set if there are any embargo settings.
-        PermissionResult result =
+        permissions::PermissionResult result =
             permission_manager->GetPermissionStatus(content_type, url, url);
-        if (result.source == PermissionStatusSource::MULTIPLE_DISMISSALS ||
-            result.source == PermissionStatusSource::MULTIPLE_IGNORES) {
+        if (result.source ==
+                permissions::PermissionStatusSource::MULTIPLE_DISMISSALS ||
+            result.source ==
+                permissions::PermissionStatusSource::MULTIPLE_IGNORES) {
           CreateOrAppendSiteGroupEntry(&all_sites_map_, url);
           origin_permission_set_.insert(url.spec());
           break;

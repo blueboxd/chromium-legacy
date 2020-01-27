@@ -13,45 +13,22 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
-#import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 
 @class BrowserViewController;
 @class BrowserViewWrangler;
-@class HistoryCoordinator;
 @class TabGridCoordinator;
 @protocol BrowserInterfaceProvider;
 @protocol TabSwitcher;
 class AppUrlLoadingService;
-
-// Used to update the current BVC mode if a new tab is added while the tab
-// switcher view is being dismissed.  This is different than ApplicationMode in
-// that it can be set to |NONE| when not in use.
-enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 
 // TODO(crbug.com/1012697): Remove this protocol when SceneController is
 // operational. Move the private internals back into MainController, and pass
 // ownership of Scene-related objects to SceneController.
 @protocol MainControllerGuts
 
-// Coordinator for displaying history.
-@property(nonatomic, strong) HistoryCoordinator* historyCoordinator;
-
 // The application level component for url loading. Is passed down to
 // browser state level UrlLoadingService instances.
 @property(nonatomic, assign) AppUrlLoadingService* appURLLoadingService;
-
-// The tab switcher command and the voice search commands can be sent by views
-// that reside in a different UIWindow leading to the fact that the exclusive
-// touch property will be ineffective and a command for processing both
-// commands may be sent in the same run of the runloop leading to
-// inconsistencies. Those two boolean indicate if one of those commands have
-// been processed in the last 200ms in order to only allow processing one at
-// a time.
-// TODO(crbug.com/560296):  Provide a general solution for handling mutually
-// exclusive chrome commands sent at nearly the same time.
-@property(nonatomic, assign) BOOL isProcessingTabSwitcherCommand;
-@property(nonatomic, assign) BOOL isProcessingVoiceSearchCommand;
 
 // If YES, the tab switcher is currently active.
 @property(nonatomic, assign, getter=isTabSwitcherActive)
@@ -60,23 +37,9 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 // YES while animating the dismissal of tab switcher.
 @property(nonatomic, assign) BOOL dismissingTabSwitcher;
 
-// If not NONE, the current BVC should be switched to this BVC on completion
-// of tab switcher dismissal.
-@property(nonatomic, assign)
-    TabSwitcherDismissalMode modeToDisplayOnTabSwitcherDismissal;
-
-// A property to track whether the QR Scanner should be started upon tab
-// switcher dismissal. It can only be YES if the QR Scanner experiment is
-// enabled.
-@property(nonatomic, readwrite)
-    NTPTabOpeningPostOpeningAction NTPActionAfterTabSwitcherDismissal;
-
 // Parameters received at startup time when the app is launched from another
 // app.
 @property(nonatomic, strong) AppStartupParameters* startupParameters;
-
-- (ProceduralBlock)completionBlockForTriggeringAction:
-    (NTPTabOpeningPostOpeningAction)action;
 
 // Keeps track of the restore state during startup.
 @property(nonatomic, strong) CrashRestoreHelper* restoreHelper;
@@ -91,10 +54,6 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 - (BrowserViewController*)otrBVC;
 - (TabGridCoordinator*)mainCoordinator;
 - (id<BrowserInterfaceProvider>)interfaceProvider;
-- (void)startVoiceSearchInCurrentBVC;
-
-// Sets |currentBVC| as the root view controller for the window.
-- (void)displayCurrentBVCAndFocusOmnibox:(BOOL)focusOmnibox;
 
 - (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
                                timePeriod:(browsing_data::TimePeriod)timePeriod

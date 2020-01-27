@@ -91,6 +91,8 @@ class PaintPreviewClient
     // Root directory to store artifacts to.
     base::FilePath root_dir;
 
+    base::UnguessableToken root_frame_token;
+
     // URL of the root frame.
     GURL root_url;
 
@@ -98,10 +100,10 @@ class PaintPreviewClient
     PaintPreviewCallback callback;
 
     // All the render frames that are still required.
-    base::flat_set<uint64_t> awaiting_subframes;
+    base::flat_set<base::UnguessableToken> awaiting_subframes;
 
     // All the render frames that have finished.
-    base::flat_set<uint64_t> finished_subframes;
+    base::flat_set<base::UnguessableToken> finished_subframes;
 
     // Data proto that is returned via callback.
     std::unique_ptr<PaintPreviewProto> proto;
@@ -149,7 +151,7 @@ class PaintPreviewClient
   // is the GUID associated with the frame. |path| is file path associated with
   // the File stored in |result| (base::File isn't aware of its file path).
   void RequestCaptureOnUIThread(const PaintPreviewParams& params,
-                                uint64_t frame_guid,
+                                const base::UnguessableToken& frame_guid,
                                 content::RenderFrameHost* render_frame_host,
                                 const base::FilePath& path,
                                 CreateResult result);
@@ -157,8 +159,8 @@ class PaintPreviewClient
   // Handles recording the frame and updating client state when capture is
   // complete.
   void OnPaintPreviewCapturedCallback(
-      base::UnguessableToken guid,
-      uint64_t frame_guid,
+      const base::UnguessableToken& guid,
+      const base::UnguessableToken& frame_guid,
       bool is_main_frame,
       const base::FilePath& filename,
       content::RenderFrameHost* render_frame_host,
@@ -167,12 +169,13 @@ class PaintPreviewClient
 
   // Marks a frame as having been processed, this should occur regardless of
   // whether the processed frame is valid as there is no retry.
-  void MarkFrameAsProcessed(base::UnguessableToken guid, uint64_t frame_guid);
+  void MarkFrameAsProcessed(base::UnguessableToken guid,
+                            const base::UnguessableToken& frame_guid);
 
   // Records the data from a processed frame if it was captured successfully.
   mojom::PaintPreviewStatus RecordFrame(
-      base::UnguessableToken guid,
-      uint64_t frame_guid,
+      const base::UnguessableToken& guid,
+      const base::UnguessableToken& frame_guid,
       bool is_main_frame,
       const base::FilePath& filename,
       content::RenderFrameHost* render_frame_host,
@@ -183,12 +186,17 @@ class PaintPreviewClient
 
   // Storage ------------------------------------------------------------------
 
+  // Mapping of Process ID || Routing ID to unguessable tokens for the main
+  // frame.
+  base::flat_map<uint64_t, base::UnguessableToken> main_frame_guids_;
+
   // Maps a RenderFrameHost and document to a remote interface.
-  base::flat_map<uint64_t, mojo::AssociatedRemote<mojom::PaintPreviewRecorder>>
+  base::flat_map<base::UnguessableToken,
+                 mojo::AssociatedRemote<mojom::PaintPreviewRecorder>>
       interface_ptrs_;
 
   // Maps render frame's GUID and document cookies that requested the frame.
-  base::flat_map<uint64_t, base::flat_set<base::UnguessableToken>>
+  base::flat_map<base::UnguessableToken, base::flat_set<base::UnguessableToken>>
       pending_previews_on_subframe_;
 
   // Maps a document GUID to its data.

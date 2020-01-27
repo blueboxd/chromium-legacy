@@ -491,33 +491,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // indicating that the default action should be suppressed.
   virtual bool HandleCurrentKeyboardEvent() { return false; }
 
-  // Dialogs -------------------------------------------------------------
-
-  // Displays a modal alert dialog containing the given message. Returns
-  // once the user dismisses the dialog.
-  virtual void RunModalAlertDialog(const WebString& message) {}
-
-  // Displays a modal confirmation dialog with the given message as
-  // description and OK/Cancel choices. Returns true if the user selects
-  // 'OK' or false otherwise.
-  virtual bool RunModalConfirmDialog(const WebString& message) { return false; }
-
-  // Displays a modal input dialog with the given message as description
-  // and OK/Cancel choices. The input field is pre-filled with
-  // defaultValue. Returns true if the user selects 'OK' or false
-  // otherwise. Upon returning true, actualValue contains the value of
-  // the input field.
-  virtual bool RunModalPromptDialog(const WebString& message,
-                                    const WebString& default_value,
-                                    WebString* actual_value) {
-    return false;
-  }
-
-  // Displays a modal confirmation dialog with OK/Cancel choices, where 'OK'
-  // means that it is okay to proceed with closing the view. Returns true if
-  // the user selects 'OK' or false otherwise.
-  virtual bool RunModalBeforeUnloadDialog(bool is_reload) { return true; }
-
   // UI ------------------------------------------------------------------
 
   // Shows a context menu with commands relevant to a specific element on

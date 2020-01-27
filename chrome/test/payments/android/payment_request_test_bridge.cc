@@ -6,6 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "chrome/test/test_support_jni_headers/PaymentRequestTestBridge_jni.h"
+#include "content/public/browser/web_contents.h"
 
 namespace payments {
 
@@ -19,6 +20,16 @@ void SetUseDelegateOnPaymentRequestForTesting(bool use_delegate,
   Java_PaymentRequestTestBridge_setUseDelegateForTest(
       env, use_delegate, is_incognito, is_valid_ssl, is_web_contents_active,
       prefs_can_make_payment, skip_ui_for_basic_card);
+}
+
+content::WebContents* GetPaymentHandlerWebContentsForTest() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  auto jweb_contents =
+      Java_PaymentRequestTestBridge_getPaymentHandlerWebContentsForTest(env);
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+  DCHECK(web_contents);
+  return web_contents;
 }
 
 struct NativeObserverCallbacks {

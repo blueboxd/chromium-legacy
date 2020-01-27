@@ -391,15 +391,6 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
                         }
                     }
                 }, forceWipeUserData);
-        SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT, mGaiaServiceType);
-    }
-
-    @Override
-    public void onSignOutDialogDismissed(boolean signOutClicked) {
-        // TODO(https://crbug.com/1038924): Signout is recorded twice when cancelled
-        if (!signOutClicked) {
-            SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_CANCEL, mGaiaServiceType);
-        }
     }
 
     // SignInStateObserver implementation:

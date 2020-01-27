@@ -26,6 +26,7 @@ void DidGetDisplays(
     ScriptPromiseResolver* resolver,
     mojo::Remote<mojom::blink::ScreenEnumeration>,
     WTF::Vector<display::mojom::blink::DisplayPtr> backend_displays,
+    int64_t internal_id,
     int64_t primary_id,
     bool success) {
   ScriptState* script_state = resolver->GetScriptState();
@@ -35,9 +36,10 @@ void DidGetDisplays(
   HeapVector<Member<Screen>> screens;
   screens.ReserveInitialCapacity(backend_displays.size());
   for (display::mojom::blink::DisplayPtr& backend_display : backend_displays) {
+    const bool internal = backend_display->id == internal_id;
     const bool primary = backend_display->id == primary_id;
-    screens.emplace_back(
-        MakeGarbageCollected<Screen>(std::move(backend_display), primary));
+    screens.emplace_back(MakeGarbageCollected<Screen>(
+        std::move(backend_display), internal, primary));
   }
   resolver->Resolve(std::move(screens));
 }

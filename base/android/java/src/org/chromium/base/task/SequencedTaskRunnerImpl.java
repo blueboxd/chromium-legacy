@@ -48,6 +48,7 @@ public class SequencedTaskRunnerImpl extends TaskRunnerImpl implements Sequenced
     }
 
     @Override
+    @SuppressWarnings("GuardedBy") // The GuardedBy check doesn't understand super.mLock == mLock.
     public void postDelayedTaskToNative(Runnable runnable, long delay) {
         synchronized (mLock) {
             if (mNumUnfinishedNativeTasks++ == 0) {

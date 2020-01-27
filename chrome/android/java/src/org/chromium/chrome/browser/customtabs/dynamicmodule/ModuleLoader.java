@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.customtabs.dynamicmodule;
 import android.content.ComponentCallbacks2;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -29,6 +28,8 @@ import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.customtabs.dynamicmodule.ModuleMetrics.DestructionReason;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.components.crash.CrashKeyIndex;
 import org.chromium.components.crash.CrashKeys;
 
@@ -46,8 +47,6 @@ public class ModuleLoader {
     private static final String TAG = "ModuleLoader";
 
     private static final String DEX_FILE_PREFIX = "custom_tabs_module_dex_";
-    private static final String DEX_LAST_UPDATE_TIME_PREF_PREFIX =
-            "pref_local_custom_tabs_module_dex_last_update_time_";
 
     /** Specifies the module package name and entry point class name. */
     private final ComponentName mComponentName;
@@ -340,10 +339,7 @@ public class ModuleLoader {
 
     @VisibleForTesting
     /* package */ void cleanUpLocalDex() {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .remove(getDexLastUpdateTimePrefName())
-                .apply();
+        SharedPreferencesManager.getInstance().removeKey(getDexLastUpdateTimePrefName());
         FileUtils.recursivelyDeleteFile(getDexDirectory());
     }
 
@@ -365,7 +361,8 @@ public class ModuleLoader {
 
     @VisibleForTesting
     /* package */ String getDexLastUpdateTimePrefName() {
-        return DEX_LAST_UPDATE_TIME_PREF_PREFIX + mComponentName.getPackageName();
+        return ChromePreferenceKeys.CUSTOM_TABS_DEX_LAST_UPDATE_TIME_PREF_PREFIX.createKey(
+                mComponentName.getPackageName());
     }
 
     private static String getDexDirectoryName(String packageName) {
@@ -413,9 +410,9 @@ public class ModuleLoader {
          * @return Whether the module code should be loaded from the dex file.
          */
         private boolean updateModuleDexInDiskIfNeeded() throws IOException {
-            SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
+            SharedPreferencesManager preferences = SharedPreferencesManager.getInstance();
             String dexLastUpdateTimePref = getDexLastUpdateTimePrefName();
-            long localDexLastUpdateTime = preferences.getLong(dexLastUpdateTimePref, -1);
+            long localDexLastUpdateTime = preferences.readLong(dexLastUpdateTimePref, -1);
 
             if (mDexAssetName == null) {
                 if (localDexLastUpdateTime != -1) {
@@ -426,9 +423,7 @@ public class ModuleLoader {
             } else if (localDexLastUpdateTime != mModuleApkVersion.mLastUpdateTime) {
                 try {
                     copyDexToDisk(mDexAssetName);
-                    preferences.edit()
-                            .putLong(dexLastUpdateTimePref, mModuleApkVersion.mLastUpdateTime)
-                            .apply();
+                    preferences.writeLong(dexLastUpdateTimePref, mModuleApkVersion.mLastUpdateTime);
                 } catch (IOException e) {
                     if (localDexLastUpdateTime != -1) {
                         cleanUpLocalDex();

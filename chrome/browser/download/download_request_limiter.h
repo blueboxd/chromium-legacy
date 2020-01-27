@@ -84,7 +84,8 @@ class DownloadRequestLimiter
   // TabDownloadState prompts the user with an infobar as necessary.
   // TabDownloadState deletes itself (by invoking
   // DownloadRequestLimiter::Remove) as necessary.
-  // TODO(gbillock): just make this class implement PermissionRequest.
+  // TODO(gbillock): just make this class implement
+  // permissions::PermissionRequest.
   class TabDownloadState : public content_settings::Observer,
                            public content::WebContentsObserver {
    public:

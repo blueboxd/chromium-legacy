@@ -4,5 +4,41 @@ Copyright 2020 The Chromium Authors. All rights reserved.
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file.
 -->
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
+<body>
+  <button onclick="confirm()">confirm</button>
+  <button onclick="cancel()">cancel</button>
+  <div>Messages:</div>
+  <pre id="log"></pre>
+</body>
 
-<script>navigator.serviceWorker.controller.postMessage('confirm');</script>
+<script>
+/**
+ * Insert a message to the widget called 'log'.
+ * @param {string} text - the text that is intended to be inserted
+ * into the log.
+ */
+function updateLogView(text) {
+  const messageElement = document.getElementById('log');
+  messageElement.innerText = text + '\n' + messageElement.innerText;
+}
+
+function confirm() {
+  navigator.serviceWorker.controller.postMessage('confirm');
+  updateLogView('confirm is invoked.');
+  return 'confirmed';
+}
+
+function cancel() {
+  navigator.serviceWorker.controller.postMessage('cancel');
+  updateLogView('cancel is invoked.');
+  return 'canceled';
+}
+
+window.onload = function() {
+  navigator.serviceWorker.controller.postMessage('app_is_ready');
+  updateLogView('app is ready.');
+}
+</script>

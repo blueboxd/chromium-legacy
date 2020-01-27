@@ -24,6 +24,7 @@ enum ProbeCategoryEnum {
   kNonRemovableBlockDevices,
   kCachedVpdData,
   kCpu,
+  kTimezone,
 };
 
 // Information related to the main battery.
@@ -84,8 +85,16 @@ struct CpuInfo {
   string model_name;
   // The CPU architecture.
   CpuArchitectureEnum architecture;
-  // The max CPU clock speed in khz.
+  // The max CPU clock speed in kHz.
   uint32 max_clock_speed_khz;
+};
+
+// Timezone information.
+struct TimezoneInfo {
+  // The timezone of the device in POSIX standard.
+  string posix;
+  // The timezone region of the device.
+  string region;
 };
 
 // A collection of all the device's telemetry information that cros_healthd is
@@ -107,4 +116,7 @@ struct TelemetryInfo {
   // Information about each of the device's CPUs. Only present when kCpu was
   // included in the categories input to ProbeTelemetryInfo.
   array<CpuInfo>? cpu_info;
+  // Information about the device's timezone. Only present when kTimezone was
+  // included in the categories input to ProbeTelemetryInfo.
+  TimezoneInfo? timezone_info;
 };

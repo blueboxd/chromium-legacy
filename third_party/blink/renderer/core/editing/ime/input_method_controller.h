@@ -28,6 +28,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -120,6 +121,10 @@ class CORE_EXPORT InputMethodController final
     active_edit_context_ = edit_context;
   }
 
+  // Returns either the focused editable element's control bounds or the
+  // EditContext's control and selection bounds if available.
+  void GetLayoutBounds(WebRect* control_bounds, WebRect* selection_bounds);
+
  private:
   friend class InputMethodControllerTest;
 
@@ -166,6 +171,12 @@ class CORE_EXPORT InputMethodController final
 
   // Returns false if the frame was destroyed, true otherwise.
   bool DeleteSelection() WARN_UNUSED_RESULT;
+
+  // Returns false if the frame was destroyed, true otherwise.
+  // The difference between this function and DeleteSelection() is that
+  // DeleteSelection() code path may modify the selection to visible units,
+  // which we don't want when deleting code point.
+  bool DeleteSelectionWithoutAdjustment() WARN_UNUSED_RESULT;
 
   // Returns true if moved caret successfully.
   bool MoveCaret(int new_caret_position);

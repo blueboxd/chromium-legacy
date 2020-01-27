@@ -15,9 +15,9 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
-#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/permissions/permission_request.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
@@ -46,15 +46,15 @@
 
 #define PERMISSION_BUBBLE_TYPE_UMA(metric_name, permission_bubble_type) \
   base::UmaHistogramEnumeration(metric_name, permission_bubble_type,    \
-                                PermissionRequestType::NUM)
+                                permissions::PermissionRequestType::NUM)
 
-#define PERMISSION_BUBBLE_GESTURE_TYPE_UMA(gesture_metric_name,              \
-                                           no_gesture_metric_name,           \
-                                           gesture_type,                     \
-                                           permission_bubble_type)           \
-  if (gesture_type == PermissionRequestGestureType::GESTURE) {               \
+#define PERMISSION_BUBBLE_GESTURE_TYPE_UMA(                                  \
+    gesture_metric_name, no_gesture_metric_name, gesture_type,               \
+    permission_bubble_type)                                                  \
+  if (gesture_type == permissions::PermissionRequestGestureType::GESTURE) {  \
     PERMISSION_BUBBLE_TYPE_UMA(gesture_metric_name, permission_bubble_type); \
-  } else if (gesture_type == PermissionRequestGestureType::NO_GESTURE) {     \
+  } else if (gesture_type ==                                                 \
+             permissions::PermissionRequestGestureType::NO_GESTURE) {        \
     PERMISSION_BUBBLE_TYPE_UMA(no_gesture_metric_name,                       \
                                permission_bubble_type);                      \
   }
@@ -65,41 +65,44 @@ namespace {
 
 const int kPriorCountCap = 10;
 
-std::string GetPermissionRequestString(PermissionRequestType type) {
+std::string GetPermissionRequestString(
+    permissions::PermissionRequestType type) {
   switch (type) {
-    case PermissionRequestType::MULTIPLE:
+    case permissions::PermissionRequestType::MULTIPLE:
       return "AudioAndVideoCapture";
-    case PermissionRequestType::QUOTA:
+    case permissions::PermissionRequestType::QUOTA:
       return "Quota";
-    case PermissionRequestType::DOWNLOAD:
+    case permissions::PermissionRequestType::DOWNLOAD:
       return "MultipleDownload";
-    case PermissionRequestType::REGISTER_PROTOCOL_HANDLER:
+    case permissions::PermissionRequestType::REGISTER_PROTOCOL_HANDLER:
       return "RegisterProtocolHandler";
-    case PermissionRequestType::PERMISSION_GEOLOCATION:
+    case permissions::PermissionRequestType::PERMISSION_GEOLOCATION:
       return "Geolocation";
-    case PermissionRequestType::PERMISSION_MIDI_SYSEX:
+    case permissions::PermissionRequestType::PERMISSION_MIDI_SYSEX:
       return "MidiSysEx";
-    case PermissionRequestType::PERMISSION_NOTIFICATIONS:
+    case permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS:
       return "Notifications";
-    case PermissionRequestType::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
+    case permissions::PermissionRequestType::
+        PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
       return "ProtectedMedia";
-    case PermissionRequestType::PERMISSION_FLASH:
+    case permissions::PermissionRequestType::PERMISSION_FLASH:
       return "Flash";
-    case PermissionRequestType::PERMISSION_MEDIASTREAM_MIC:
+    case permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC:
       return "AudioCapture";
-    case PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA:
+    case permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA:
       return "VideoCapture";
-    case PermissionRequestType::PERMISSION_SECURITY_KEY_ATTESTATION:
+    case permissions::PermissionRequestType::
+        PERMISSION_SECURITY_KEY_ATTESTATION:
       return "SecurityKeyAttestation";
-    case PermissionRequestType::PERMISSION_PAYMENT_HANDLER:
+    case permissions::PermissionRequestType::PERMISSION_PAYMENT_HANDLER:
       return "PaymentHandler";
-    case PermissionRequestType::PERMISSION_NFC:
+    case permissions::PermissionRequestType::PERMISSION_NFC:
       return "Nfc";
-    case PermissionRequestType::PERMISSION_CLIPBOARD_READ_WRITE:
+    case permissions::PermissionRequestType::PERMISSION_CLIPBOARD_READ_WRITE:
       return "ClipboardReadWrite";
-    case PermissionRequestType::PERMISSION_VR:
+    case permissions::PermissionRequestType::PERMISSION_VR:
       return "VR";
-    case PermissionRequestType::PERMISSION_AR:
+    case permissions::PermissionRequestType::PERMISSION_AR:
       return "AR";
     default:
       NOTREACHED();
@@ -107,12 +110,14 @@ std::string GetPermissionRequestString(PermissionRequestType type) {
   }
 }
 
-void RecordEngagementMetric(const std::vector<PermissionRequest*>& requests,
-                            content::WebContents* web_contents,
-                            const std::string& action) {
-  PermissionRequestType type = requests[0]->GetPermissionRequestType();
+void RecordEngagementMetric(
+    const std::vector<permissions::PermissionRequest*>& requests,
+    content::WebContents* web_contents,
+    const std::string& action) {
+  permissions::PermissionRequestType type =
+      requests[0]->GetPermissionRequestType();
   if (requests.size() > 1)
-    type = PermissionRequestType::MULTIPLE;
+    type = permissions::PermissionRequestType::MULTIPLE;
 
   DCHECK(action == "Accepted" || action == "Denied" || action == "Dismissed" ||
          action == "Ignored");
@@ -127,14 +132,15 @@ void RecordEngagementMetric(const std::vector<PermissionRequest*>& requests,
   base::UmaHistogramPercentage(name, engagement_score);
 }
 
-void RecordPermissionActionUkm(PermissionAction action,
-                               PermissionRequestGestureType gesture_type,
-                               ContentSettingsType permission,
-                               int dismiss_count,
-                               int ignore_count,
-                               PermissionSourceUI source_ui,
-                               PermissionPromptDisposition ui_disposition,
-                               base::Optional<ukm::SourceId> source_id) {
+void RecordPermissionActionUkm(
+    PermissionAction action,
+    permissions::PermissionRequestGestureType gesture_type,
+    ContentSettingsType permission,
+    int dismiss_count,
+    int ignore_count,
+    PermissionSourceUI source_ui,
+    PermissionPromptDisposition ui_disposition,
+    base::Optional<ukm::SourceId> source_id) {
   // Only record the permission change if the origin is in the history.
   if (!source_id.has_value())
     return;
@@ -229,7 +235,7 @@ void PermissionUmaUtil::PermissionRevoked(ContentSettingsType permission,
     // An unknown gesture type is passed in since gesture type is only
     // applicable in prompt UIs where revocations are not possible.
     RecordPermissionAction(permission, PermissionAction::REVOKED, source_ui,
-                           PermissionRequestGestureType::UNKNOWN,
+                           permissions::PermissionRequestGestureType::UNKNOWN,
                            PermissionPromptDisposition::NOT_APPLICABLE,
                            revoked_origin,
                            /*web_contents=*/nullptr, profile);
@@ -244,23 +250,23 @@ void PermissionUmaUtil::RecordEmbargoPromptSuppression(
 }
 
 void PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(
-    PermissionStatusSource source) {
-  // Explicitly switch to ensure that any new PermissionStatusSource values are
-  // dealt with appropriately.
+    permissions::PermissionStatusSource source) {
+  // Explicitly switch to ensure that any new
+  // permissions::PermissionStatusSource values are dealt with appropriately.
   switch (source) {
-    case PermissionStatusSource::MULTIPLE_DISMISSALS:
+    case permissions::PermissionStatusSource::MULTIPLE_DISMISSALS:
       PermissionUmaUtil::RecordEmbargoPromptSuppression(
           PermissionEmbargoStatus::REPEATED_DISMISSALS);
       break;
-    case PermissionStatusSource::MULTIPLE_IGNORES:
+    case permissions::PermissionStatusSource::MULTIPLE_IGNORES:
       PermissionUmaUtil::RecordEmbargoPromptSuppression(
           PermissionEmbargoStatus::REPEATED_IGNORES);
       break;
-    case PermissionStatusSource::UNSPECIFIED:
-    case PermissionStatusSource::KILL_SWITCH:
-    case PermissionStatusSource::INSECURE_ORIGIN:
-    case PermissionStatusSource::FEATURE_POLICY:
-    case PermissionStatusSource::VIRTUAL_URL_DIFFERENT_ORIGIN:
+    case permissions::PermissionStatusSource::UNSPECIFIED:
+    case permissions::PermissionStatusSource::KILL_SWITCH:
+    case permissions::PermissionStatusSource::INSECURE_ORIGIN:
+    case permissions::PermissionStatusSource::FEATURE_POLICY:
+    case permissions::PermissionStatusSource::VIRTUAL_URL_DIFFERENT_ORIGIN:
       // The permission wasn't under embargo, so don't record anything. We may
       // embargo it later.
       break;
@@ -274,12 +280,13 @@ void PermissionUmaUtil::RecordEmbargoStatus(
 }
 
 void PermissionUmaUtil::PermissionPromptShown(
-    const std::vector<PermissionRequest*>& requests) {
+    const std::vector<permissions::PermissionRequest*>& requests) {
   DCHECK(!requests.empty());
 
-  PermissionRequestType request_type = PermissionRequestType::MULTIPLE;
-  PermissionRequestGestureType gesture_type =
-      PermissionRequestGestureType::UNKNOWN;
+  permissions::PermissionRequestType request_type =
+      permissions::PermissionRequestType::MULTIPLE;
+  permissions::PermissionRequestGestureType gesture_type =
+      permissions::PermissionRequestGestureType::UNKNOWN;
   if (requests.size() == 1) {
     request_type = requests[0]->GetPermissionRequestType();
     gesture_type = requests[0]->GetGestureType();
@@ -292,7 +299,7 @@ void PermissionUmaUtil::PermissionPromptShown(
 }
 
 void PermissionUmaUtil::PermissionPromptResolved(
-    const std::vector<PermissionRequest*>& requests,
+    const std::vector<permissions::PermissionRequest*>& requests,
     content::WebContents* web_contents,
     PermissionAction permission_action,
     PermissionPromptDisposition ui_disposition) {
@@ -324,7 +331,7 @@ void PermissionUmaUtil::PermissionPromptResolved(
   PermissionDecisionAutoBlocker* autoblocker =
       PermissionDecisionAutoBlocker::GetForProfile(profile);
 
-  for (PermissionRequest* request : requests) {
+  for (permissions::PermissionRequest* request : requests) {
     ContentSettingsType permission = request->GetContentSettingsType();
     // TODO(timloh): We only record these metrics for permissions which use
     // PermissionRequestImpl as the other subclasses don't support
@@ -332,7 +339,8 @@ void PermissionUmaUtil::PermissionPromptResolved(
     if (permission == ContentSettingsType::DEFAULT)
       continue;
 
-    PermissionRequestGestureType gesture_type = request->GetGestureType();
+    permissions::PermissionRequestGestureType gesture_type =
+        request->GetGestureType();
     const GURL& requesting_origin = request->GetOrigin();
 
     RecordPermissionAction(
@@ -396,7 +404,7 @@ void PermissionUmaUtil::RecordPermissionAction(
     ContentSettingsType permission,
     PermissionAction action,
     PermissionSourceUI source_ui,
-    PermissionRequestGestureType gesture_type,
+    permissions::PermissionRequestGestureType gesture_type,
     PermissionPromptDisposition ui_disposition,
     const GURL& requesting_origin,
     const content::WebContents* web_contents,
@@ -494,13 +502,14 @@ void PermissionUmaUtil::RecordPermissionAction(
 
 // static
 void PermissionUmaUtil::RecordPromptDecided(
-    const std::vector<PermissionRequest*>& requests,
+    const std::vector<permissions::PermissionRequest*>& requests,
     bool accepted) {
   DCHECK(!requests.empty());
 
-  PermissionRequestType request_type = PermissionRequestType::MULTIPLE;
-  PermissionRequestGestureType gesture_type =
-      PermissionRequestGestureType::UNKNOWN;
+  permissions::PermissionRequestType request_type =
+      permissions::PermissionRequestType::MULTIPLE;
+  permissions::PermissionRequestGestureType gesture_type =
+      permissions::PermissionRequestGestureType::UNKNOWN;
   if (requests.size() == 1) {
     request_type = requests[0]->GetPermissionRequestType();
     gesture_type = requests[0]->GetGestureType();

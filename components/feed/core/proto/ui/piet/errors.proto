@@ -122,6 +122,17 @@ enum ErrorCode {
   // Fields start at ID 1.
   // ---------------------------------------------------------------------------
 
+  // When the client tries to reference a SharedState that is not found, the
+  // Frame cannot be rendered, and likely no frames can be rendered.
+  // This error code must be reported by the Piet host app, as the Piet
+  // implementation assumes that all shared states have been provided already.
+  ERR_MISSING_SHARED_STATE = 12 /* [
+    // Something is seriously wrong if a SharedState is missing
+    (server_error) = FATAL,
+    // Clients cannot render any Frame when SharedState is missing (no Template)
+    (client_error) = FATAL
+  ] */;
+
   // When a Template cannot be located, it only affects Frames that reference
   // it, so we can proceed to render other unaffected Frames, making this an
   // ERROR, not FATAL.

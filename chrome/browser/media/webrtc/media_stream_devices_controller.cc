@@ -20,12 +20,12 @@
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/permissions/permission_result.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/url_formatter/elide_url.h"
@@ -133,14 +133,15 @@ void MediaStreamDevicesController::RequestPermissions(
   bool will_prompt_for_video = false;
 
   if (controller->ShouldRequestAudio()) {
-    PermissionResult permission_status =
+    permissions::PermissionResult permission_status =
         permission_manager->GetPermissionStatusForFrame(
             ContentSettingsType::MEDIASTREAM_MIC, rfh, request.security_origin);
     if (permission_status.content_setting == CONTENT_SETTING_BLOCK) {
       controller->denial_reason_ =
           blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
-      controller->RunCallback(permission_status.source ==
-                              PermissionStatusSource::FEATURE_POLICY);
+      controller->RunCallback(
+          permission_status.source ==
+          permissions::PermissionStatusSource::FEATURE_POLICY);
       return;
     }
 
@@ -149,15 +150,16 @@ void MediaStreamDevicesController::RequestPermissions(
         permission_status.content_setting == CONTENT_SETTING_ASK;
   }
   if (controller->ShouldRequestVideo()) {
-    PermissionResult permission_status =
+    permissions::PermissionResult permission_status =
         permission_manager->GetPermissionStatusForFrame(
             ContentSettingsType::MEDIASTREAM_CAMERA, rfh,
             request.security_origin);
     if (permission_status.content_setting == CONTENT_SETTING_BLOCK) {
       controller->denial_reason_ =
           blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED;
-      controller->RunCallback(permission_status.source ==
-                              PermissionStatusSource::FEATURE_POLICY);
+      controller->RunCallback(
+          permission_status.source ==
+          permissions::PermissionStatusSource::FEATURE_POLICY);
       return;
     }
 
@@ -282,16 +284,18 @@ void MediaStreamDevicesController::PromptAnsweredGroupedRequest(
     audio_setting_ = responses.front();
     blocked_by_feature_policy &=
         audio_setting_ == CONTENT_SETTING_BLOCK &&
-        PermissionIsBlockedForReason(ContentSettingsType::MEDIASTREAM_MIC,
-                                     PermissionStatusSource::FEATURE_POLICY);
+        PermissionIsBlockedForReason(
+            ContentSettingsType::MEDIASTREAM_MIC,
+            permissions::PermissionStatusSource::FEATURE_POLICY);
   }
 
   if (ShouldRequestVideo()) {
     video_setting_ = responses.back();
     blocked_by_feature_policy &=
         video_setting_ == CONTENT_SETTING_BLOCK &&
-        PermissionIsBlockedForReason(ContentSettingsType::MEDIASTREAM_CAMERA,
-                                     PermissionStatusSource::FEATURE_POLICY);
+        PermissionIsBlockedForReason(
+            ContentSettingsType::MEDIASTREAM_CAMERA,
+            permissions::PermissionStatusSource::FEATURE_POLICY);
   }
 
   for (ContentSetting response : responses) {
@@ -551,8 +555,8 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
   }
 
   // Don't request if the kill switch is on.
-  if (PermissionIsBlockedForReason(content_type,
-                                   PermissionStatusSource::KILL_SWITCH)) {
+  if (PermissionIsBlockedForReason(
+          content_type, permissions::PermissionStatusSource::KILL_SWITCH)) {
     *denial_reason = blink::mojom::MediaStreamRequestResult::KILL_SWITCH_ON;
     return CONTENT_SETTING_BLOCK;
   }
@@ -588,12 +592,12 @@ bool MediaStreamDevicesController::IsUserAcceptAllowed(
 
 bool MediaStreamDevicesController::PermissionIsBlockedForReason(
     ContentSettingsType content_type,
-    PermissionStatusSource reason) const {
+    permissions::PermissionStatusSource reason) const {
   // TODO(raymes): This function wouldn't be needed if
   // PermissionManager::RequestPermissions returned a denial reason.
   content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
       request_.render_process_id, request_.render_frame_id);
-  PermissionResult result =
+  permissions::PermissionResult result =
       PermissionManager::Get(profile_)->GetPermissionStatusForFrame(
           content_type, rfh, request_.security_origin);
   if (result.source == reason) {

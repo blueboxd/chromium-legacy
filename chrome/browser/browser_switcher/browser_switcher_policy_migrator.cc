@@ -51,8 +51,6 @@ void BrowserSwitcherPolicyMigrator::Migrate(policy::PolicyBundle* bundle) {
       policy::POLICY_DOMAIN_EXTENSIONS, kLBSExtensionId));
   policy::PolicyMap& chrome_map =
       bundle->Get(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, ""));
-  if (extension_map.empty())
-    return;
 
   const auto* entry = chrome_map.Get("BrowserSwitcherEnabled");
   if (!entry || !entry->value || !entry->value->GetBool())

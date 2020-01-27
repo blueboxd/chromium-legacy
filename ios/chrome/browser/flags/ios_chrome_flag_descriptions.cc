@@ -245,6 +245,12 @@ const char kFullscreenSmoothScrollingDescription[] =
     "When enabled, the web view's insets are updated for scoll events. If "
     "disabled, the the web view's frame are updated.";
 
+const char kFullscreenControllerBrowserScopedName[] =
+    "Scope FullscreenController to Browser";
+const char kFullscreenControllerBrowserScopedDescription[] =
+    "When enabled, FullscreenController will be stored and retrieved using the "
+    "Browser.";
+
 const char kIgnoresViewportScaleLimitsName[] = "Ignore Viewport Scale Limits";
 const char kIgnoresViewportScaleLimitsDescription[] =
     "When enabled the page can always be scaled, regardless of author intent.";

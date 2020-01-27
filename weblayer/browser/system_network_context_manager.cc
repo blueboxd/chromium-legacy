@@ -4,6 +4,7 @@
 
 #include "weblayer/browser/system_network_context_manager.h"
 
+#include "build/build_config.h"
 #include "content/public/browser/network_service_instance.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -87,6 +88,7 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
     network::mojom::NetworkService* network_service) {
   // The system NetworkContext must be created first, since it sets
   // |primary_network_context| to true.
+  system_network_context_.reset();
   network_service->CreateNetworkContext(
       system_network_context_.BindNewPipeAndPassReceiver(),
       CreateSystemNetworkContextManagerParams());
@@ -100,6 +102,10 @@ SystemNetworkContextManager::CreateSystemNetworkContextManagerParams() {
 
   network_context_params->context_name = std::string("system");
   network_context_params->primary_network_context = true;
+#if defined(OS_LINUX) || defined(OS_WIN)
+  // We're not configuring the cookie encryption on these platforms yet.
+  network_context_params->enable_encrypted_cookies = false;
+#endif
 
   return network_context_params;
 }

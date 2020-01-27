@@ -267,6 +267,9 @@ void ChildAccountService::OnExtendedAccountInfoUpdated(
 
 void ChildAccountService::OnExtendedAccountInfoRemoved(
     const AccountInfo& info) {
+  if (info.account_id != identity_manager_->GetPrimaryAccountId())
+    return;
+
   SetIsChildAccount(false);
 }
 

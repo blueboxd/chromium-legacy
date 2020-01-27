@@ -15,6 +15,11 @@
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/string_conversions_util.h"
 
+namespace autofill {
+struct FormData;
+struct FormFieldData;
+}  // namespace autofill
+
 namespace autofill_assistant {
 
 // An action to set the value of a form input element.
@@ -33,16 +38,19 @@ class SetFormFieldValueAction : public Action {
   struct FieldInput {
     explicit FieldInput(std::unique_ptr<std::vector<UChar32>> keyboard_input);
     explicit FieldInput(std::string value);
-    explicit FieldInput(bool use_password);
+    explicit FieldInput(bool use_password, bool generate_password);
     FieldInput(FieldInput&& other);
     ~FieldInput();
 
     // The keys to press if either |keycode| or |keyboard_input| is set, else
     // nullptr.
     std::unique_ptr<std::vector<UChar32>> keyboard_input = nullptr;
-    // True if the value should be retrieved from the login details in client
-    // memory.
+    // True if the value should be a password. The value itself will be
+    // retrieved right before filling for security reasons.
     bool use_password = false;
+    // True, if the value should be a generated password. Otherwise, the value
+    // should be retrieved from the login details in client memory.
+    bool generate_password = false;
     // The string to input (for all other cases).
     std::string value;
   };
@@ -63,7 +71,13 @@ class SetFormFieldValueAction : public Action {
                                        const std::string& requested_value,
                                        const ClientStatus& status);
 
-  void OnGetPassword(int field_index, bool success, std::string password);
+  void OnGetStoredPassword(int field_index, bool success, std::string password);
+
+  void OnGetFormAndFieldDataForGeneration(
+      int field_index,
+      const ClientStatus& status,
+      const autofill::FormData& form_data,
+      const autofill::FormFieldData& field_data);
 
   void EndAction(const ClientStatus& status);
 

@@ -77,6 +77,7 @@ public class DownloadCallbackTest {
         @Override
         public void onDownloadStarted(Download download) {
             mSeenStarted = true;
+            download.disableNotification();
         }
 
         @Override
@@ -85,6 +86,7 @@ public class DownloadCallbackTest {
             mLocation = download.getLocation().toString();
             mState = download.getState();
             mError = download.getError();
+            mMimetype = download.getMimeType();
         }
 
         @Override
@@ -213,5 +215,6 @@ public class DownloadCallbackTest {
                 "org.chromium.weblayer.shell/cache/weblayer/Downloads/"));
         Assert.assertEquals(DownloadState.COMPLETE, mCallback.mState);
         Assert.assertEquals(DownloadError.NO_ERROR, mCallback.mError);
+        Assert.assertEquals("text/html", mCallback.mMimetype);
     }
 }

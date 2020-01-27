@@ -159,6 +159,7 @@ public class StartSurfaceCoordinator implements StartSurface {
             return SurfaceMode.NO_START_SURFACE;
         }
 
+        // TODO(crbug.com/982018): use cached variation.
         String feature = ChromeFeatureList.getFieldTrialParamByFeature(
                 ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation");
 
@@ -172,6 +173,8 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (feature.equals("single")) return SurfaceMode.SINGLE_PANE;
 
         if (feature.equals("tasksonly")) return SurfaceMode.TASKS_ONLY;
+
+        if (feature.equals("omniboxonly")) return SurfaceMode.OMNIBOX_ONLY;
 
         // Default to SurfaceMode.TASKS_ONLY. This could happen when the start surface has been
         // changed from enabled to disabled in native side, but the cached flag has not been updated
@@ -199,8 +202,8 @@ public class StartSurfaceCoordinator implements StartSurface {
                                 mActivity.getCompositorViewHolder(), mTasksSurface.getView()),
                         TasksSurfaceViewBinder::bind);
 
-        // There is nothing else to do for SurfaceMode.TASKS_ONLY.
-        if (mSurfaceMode == SurfaceMode.TASKS_ONLY) {
+        // There is nothing else to do for SurfaceMode.TASKS_ONLY and SurfaceMode.OMNIBOX_ONLY.
+        if (mSurfaceMode == SurfaceMode.TASKS_ONLY || mSurfaceMode == SurfaceMode.OMNIBOX_ONLY) {
             return;
         }
 

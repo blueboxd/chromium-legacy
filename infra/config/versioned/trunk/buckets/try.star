@@ -123,6 +123,7 @@ android_builder(
     name = 'android-kitkat-arm-rel',
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
+    should_exonerate_flaky_failures = True,
 )
 
 android_builder(
@@ -184,6 +185,7 @@ linux_builder(
     goma_jobs = goma.jobs.J150,
     tryjob = tryjob(),
     use_clang_coverage = True,
+    should_exonerate_flaky_failures = True,
 )
 
 
@@ -250,4 +252,5 @@ win_builder(
     os = os.WINDOWS_10,
     ssd = True,
     tryjob = tryjob(),
+    should_exonerate_flaky_failures = True,
 )

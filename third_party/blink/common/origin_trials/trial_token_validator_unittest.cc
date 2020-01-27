@@ -82,6 +82,9 @@ const uint8_t kSampleTokenSignature[] = {
     0xdf, 0xaa, 0xfe, 0x3b, 0x87, 0xcc, 0xdd, 0x26, 0xbe, 0x30, 0x47,
     0x7e, 0xe4, 0x97, 0x08, 0x81, 0x26, 0x5a, 0x7f, 0x0f};
 
+// The expiry time of the sample token (2033-05-18 03:33:20 UTC).
+const base::Time kSampleTokenExpiryTime = base::Time::FromJsTime(2000000000000);
+
 // This is a trial token signed with the corresponding private key
 // for kTestPublicKeys2
 // TODO(iclelland): This token expires in 2033. Update it or find a way
@@ -234,93 +237,107 @@ class TrialTokenValidatorTest : public testing::Test {
 
 TEST_F(TrialTokenValidatorTest, ValidateValidToken) {
   std::string feature;
+  base::Time expiry;
   EXPECT_EQ(blink::OriginTrialTokenStatus::kSuccess,
-            validator_.ValidateToken(kSampleToken, appropriate_origin_,
-                                     &feature, Now()));
+            validator_.ValidateToken(kSampleToken, appropriate_origin_, Now(),
+                                     &feature, &expiry));
   EXPECT_EQ(kAppropriateFeatureName, feature);
+  EXPECT_EQ(kSampleTokenExpiryTime, expiry);
 
   // All signing keys should be able to validate their tokens.
   EXPECT_EQ(blink::OriginTrialTokenStatus::kSuccess,
-            validator_.ValidateToken(kSampleToken2, appropriate_origin_,
-                                     &feature, Now()));
+            validator_.ValidateToken(kSampleToken2, appropriate_origin_, Now(),
+                                     &feature, &expiry));
   EXPECT_EQ(kAppropriateFeatureName, feature);
+  EXPECT_EQ(kSampleTokenExpiryTime, expiry);
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInappropriateOrigin) {
   std::string feature;
+  base::Time expiry;
   EXPECT_EQ(blink::OriginTrialTokenStatus::kWrongOrigin,
-            validator_.ValidateToken(kSampleToken, inappropriate_origin_,
-                                     &feature, Now()));
+            validator_.ValidateToken(kSampleToken, inappropriate_origin_, Now(),
+                                     &feature, &expiry));
   EXPECT_EQ(blink::OriginTrialTokenStatus::kWrongOrigin,
-            validator_.ValidateToken(kSampleToken, insecure_origin_, &feature,
-                                     Now()));
+            validator_.ValidateToken(kSampleToken, insecure_origin_, Now(),
+                                     &feature, &expiry));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateInvalidSignature) {
   std::string feature;
-  EXPECT_EQ(blink::OriginTrialTokenStatus::kInvalidSignature,
-            validator_.ValidateToken(kInvalidSignatureToken,
-                                     appropriate_origin_, &feature, Now()));
+  base::Time expiry;
+  EXPECT_EQ(
+      blink::OriginTrialTokenStatus::kInvalidSignature,
+      validator_.ValidateToken(kInvalidSignatureToken, appropriate_origin_,
+                               Now(), &feature, &expiry));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateUnparsableToken) {
   std::string feature;
+  base::Time expiry;
   EXPECT_EQ(blink::OriginTrialTokenStatus::kMalformed,
             validator_.ValidateToken(kUnparsableToken, appropriate_origin_,
-                                     &feature, Now()));
+                                     Now(), &feature, &expiry));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateExpiredToken) {
   std::string feature;
+  base::Time expiry;
   EXPECT_EQ(blink::OriginTrialTokenStatus::kExpired,
-            validator_.ValidateToken(kExpiredToken, appropriate_origin_,
-                                     &feature, Now()));
+            validator_.ValidateToken(kExpiredToken, appropriate_origin_, Now(),
+                                     &feature, &expiry));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateValidTokenWithIncorrectKey) {
   std::string feature;
+  base::Time expiry;
   SetPublicKeys(kTestPublicKeys2, kTestPublicKeys2Size);
   EXPECT_EQ(blink::OriginTrialTokenStatus::kInvalidSignature,
-            validator_.ValidateToken(kSampleToken, appropriate_origin_,
-                                     &feature, Now()));
+            validator_.ValidateToken(kSampleToken, appropriate_origin_, Now(),
+                                     &feature, &expiry));
 }
 
 TEST_F(TrialTokenValidatorTest, PublicKeyNotAvailable) {
   std::string feature;
+  base::Time expiry;
   SetPublicKeys({}, 0);
   EXPECT_EQ(blink::OriginTrialTokenStatus::kNotSupported,
-            validator_.ValidateToken(kSampleToken, appropriate_origin_,
-                                     &feature, Now()));
+            validator_.ValidateToken(kSampleToken, appropriate_origin_, Now(),
+                                     &feature, &expiry));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledFeatures) {
   std::string feature;
+  base::Time expiry;
   // Disable an irrelevant feature; token should still validate
   DisableFeature(kInappropriateFeatureName);
   EXPECT_EQ(blink::OriginTrialTokenStatus::kSuccess,
-            validator_.ValidateToken(kSampleToken, appropriate_origin_,
-                                     &feature, Now()));
+            validator_.ValidateToken(kSampleToken, appropriate_origin_, Now(),
+                                     &feature, &expiry));
   EXPECT_EQ(kAppropriateFeatureName, feature);
+  EXPECT_EQ(kSampleTokenExpiryTime, expiry);
   // Disable the token's feature; it should no longer be valid
   DisableFeature(kAppropriateFeatureName);
   EXPECT_EQ(blink::OriginTrialTokenStatus::kFeatureDisabled,
-            validator_.ValidateToken(kSampleToken, appropriate_origin_,
-                                     &feature, Now()));
+            validator_.ValidateToken(kSampleToken, appropriate_origin_, Now(),
+                                     &feature, &expiry));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidatorRespectsDisabledTokens) {
   std::string feature;
+  base::Time expiry;
   // Disable an irrelevant token; token should still validate
   DisableToken(expired_token_signature_);
   EXPECT_EQ(blink::OriginTrialTokenStatus::kSuccess,
-            validator_.ValidateToken(kSampleToken, appropriate_origin_,
-                                     &feature, Now()));
+            validator_.ValidateToken(kSampleToken, appropriate_origin_, Now(),
+                                     &feature, &expiry));
   EXPECT_EQ(kAppropriateFeatureName, feature);
+  EXPECT_EQ(kSampleTokenExpiryTime, expiry);
   // Disable the token; it should no longer be valid
   DisableToken(valid_token_signature_);
   EXPECT_EQ(blink::OriginTrialTokenStatus::kTokenDisabled,
-            validator_.ValidateToken(kSampleToken, appropriate_origin_,
-                                     &feature, Now()));
+            validator_.ValidateToken(kSampleToken, appropriate_origin_, Now(),
+                                     &feature, &expiry));
 }
 
 TEST_F(TrialTokenValidatorTest, ValidateRequestInsecure) {

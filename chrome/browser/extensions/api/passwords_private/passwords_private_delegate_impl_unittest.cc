@@ -16,6 +16,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/values.h"
+#include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate_impl.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
@@ -24,50 +25,27 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "components/password_manager/core/browser/reauth_purpose.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/test_event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using MockReauthCallback = base::MockCallback<
+    password_manager::PasswordAccessAuthenticator::ReauthCallback>;
 using PasswordFormList = std::vector<std::unique_ptr<autofill::PasswordForm>>;
+using password_manager::ReauthPurpose;
+using ::testing::Eq;
 using ::testing::Ne;
+using ::testing::Return;
 using ::testing::StrictMock;
 
 namespace extensions {
 
 namespace {
 
-template <typename T>
-base::OnceCallback<void(T)> GetCallbackArgument(T* arg) {
-  return base::BindOnce([](T* arg, T value) { *arg = std::move(value); },
-                        base::Unretained(arg));
-}
-
-template <typename T>
-class CallbackTracker {
- public:
-  CallbackTracker()
-      : callback_(base::BindRepeating(&CallbackTracker::Callback,
-                                      base::Unretained(this))) {}
-
-  using TypedCallback = base::RepeatingCallback<void(const T&)>;
-
-  const TypedCallback& callback() const { return callback_; }
-
-  size_t call_count() const { return call_count_; }
-
- private:
-  void Callback(const T& args) {
-    EXPECT_FALSE(args.empty());
-    ++call_count_;
-  }
-
-  size_t call_count_ = 0;
-
-  TypedCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(CallbackTracker);
-};
+using MockPlaintextPasswordCallback =
+    base::MockCallback<PasswordsPrivateDelegate::PlaintextPasswordCallback>;
 
 class PasswordEventObserver
     : public extensions::TestEventRouter::EventObserver {
@@ -107,15 +85,6 @@ void PasswordEventObserver::OnBroadcastEvent(const extensions::Event& event) {
     return;
   }
   event_args_ = event.event_args->Clone();
-}
-
-enum class ReauthResult { PASS, FAIL };
-
-bool FakeOsReauthCall(bool* reauth_called,
-                      ReauthResult result,
-                      password_manager::ReauthPurpose purpose) {
-  *reauth_called = true;
-  return result == ReauthResult::PASS;
 }
 
 std::unique_ptr<KeyedService> BuildPasswordsPrivateEventRouter(
@@ -187,37 +156,38 @@ void PasswordsPrivateDelegateImplTest::SetUpRouters() {
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, GetSavedPasswordsList) {
-  CallbackTracker<PasswordsPrivateDelegate::UiEntries> tracker;
-
   PasswordsPrivateDelegateImpl delegate(&profile_);
 
-  delegate.GetSavedPasswordsList(tracker.callback());
-  EXPECT_EQ(0u, tracker.call_count());
+  base::MockCallback<PasswordsPrivateDelegate::UiEntriesCallback> callback;
+  EXPECT_CALL(callback, Run).Times(0);
+  delegate.GetSavedPasswordsList(callback.Get());
 
   PasswordFormList list;
   list.push_back(std::make_unique<autofill::PasswordForm>());
-  delegate.SetPasswordList(list);
-  EXPECT_EQ(1u, tracker.call_count());
 
-  delegate.GetSavedPasswordsList(tracker.callback());
-  EXPECT_EQ(2u, tracker.call_count());
+  EXPECT_CALL(callback, Run);
+  delegate.SetPasswordList(list);
+
+  EXPECT_CALL(callback, Run);
+  delegate.GetSavedPasswordsList(callback.Get());
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, GetPasswordExceptionsList) {
-  CallbackTracker<PasswordsPrivateDelegate::ExceptionEntries> tracker;
-
   PasswordsPrivateDelegateImpl delegate(&profile_);
 
-  delegate.GetPasswordExceptionsList(tracker.callback());
-  EXPECT_EQ(0u, tracker.call_count());
+  base::MockCallback<PasswordsPrivateDelegate::ExceptionEntriesCallback>
+      callback;
+  EXPECT_CALL(callback, Run).Times(0);
+  delegate.GetPasswordExceptionsList(callback.Get());
 
   PasswordFormList list;
   list.push_back(std::make_unique<autofill::PasswordForm>());
-  delegate.SetPasswordExceptionList(list);
-  EXPECT_EQ(1u, tracker.call_count());
 
-  delegate.GetPasswordExceptionsList(tracker.callback());
-  EXPECT_EQ(2u, tracker.call_count());
+  EXPECT_CALL(callback, Run);
+  delegate.SetPasswordExceptionList(list);
+
+  EXPECT_CALL(callback, Run);
+  delegate.GetPasswordExceptionsList(callback.Get());
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {
@@ -274,16 +244,15 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestPassedReauthOnView) {
   // |delegate| to be completed.
   base::RunLoop().RunUntilIdle();
 
-  bool reauth_called = false;
-  delegate.SetOsReauthCallForTesting(base::BindRepeating(
-      &FakeOsReauthCall, &reauth_called, ReauthResult::PASS));
+  MockReauthCallback callback;
+  delegate.set_os_reauth_call(callback.Get());
 
-  base::Optional<base::string16> plaintext_password;
-  delegate.RequestShowPassword(0, GetCallbackArgument(&plaintext_password),
-                               nullptr);
-  EXPECT_TRUE(reauth_called);
-  EXPECT_TRUE(plaintext_password.has_value());
-  EXPECT_EQ(base::ASCIIToUTF16("test"), *plaintext_password);
+  EXPECT_CALL(callback, Run(ReauthPurpose::VIEW_PASSWORD))
+      .WillOnce(Return(true));
+
+  MockPlaintextPasswordCallback password_callback;
+  EXPECT_CALL(password_callback, Run(Eq(base::ASCIIToUTF16("test"))));
+  delegate.RequestShowPassword(0, password_callback.Get(), nullptr);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestFailedReauthOnView) {
@@ -294,15 +263,15 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestFailedReauthOnView) {
   // |delegate| to be completed.
   base::RunLoop().RunUntilIdle();
 
-  bool reauth_called = false;
-  delegate.SetOsReauthCallForTesting(base::BindRepeating(
-      &FakeOsReauthCall, &reauth_called, ReauthResult::FAIL));
+  MockReauthCallback callback;
+  delegate.set_os_reauth_call(callback.Get());
 
-  base::Optional<base::string16> plaintext_password;
-  delegate.RequestShowPassword(0, GetCallbackArgument(&plaintext_password),
-                               nullptr);
-  EXPECT_TRUE(reauth_called);
-  EXPECT_FALSE(plaintext_password.has_value());
+  EXPECT_CALL(callback, Run(ReauthPurpose::VIEW_PASSWORD))
+      .WillOnce(Return(false));
+
+  MockPlaintextPasswordCallback password_callback;
+  EXPECT_CALL(password_callback, Run(Eq(base::nullopt)));
+  delegate.RequestShowPassword(0, password_callback.Get(), nullptr);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestReauthOnExport) {
@@ -315,19 +284,17 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestReauthOnExport) {
   // |delegate| to be completed.
   base::RunLoop().RunUntilIdle();
 
-  bool reauth_called = false;
-  delegate.SetOsReauthCallForTesting(base::BindRepeating(
-      &FakeOsReauthCall, &reauth_called, ReauthResult::PASS));
+  MockReauthCallback callback;
+  delegate.set_os_reauth_call(callback.Get());
 
   EXPECT_CALL(mock_accepted, Run(std::string())).Times(2);
 
+  EXPECT_CALL(callback, Run(ReauthPurpose::EXPORT)).WillOnce(Return(true));
   delegate.ExportPasswords(mock_accepted.Get(), nullptr);
-  EXPECT_TRUE(reauth_called);
 
   // Export should ignore previous reauthentication results.
-  reauth_called = false;
+  EXPECT_CALL(callback, Run(ReauthPurpose::EXPORT)).WillOnce(Return(true));
   delegate.ExportPasswords(mock_accepted.Get(), nullptr);
-  EXPECT_TRUE(reauth_called);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestReauthFailedOnExport) {
@@ -342,12 +309,11 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestReauthFailedOnExport) {
 
   EXPECT_CALL(mock_accepted, Run(std::string("reauth-failed")));
 
-  bool reauth_called = false;
-  delegate.SetOsReauthCallForTesting(base::BindRepeating(
-      &FakeOsReauthCall, &reauth_called, ReauthResult::FAIL));
+  MockReauthCallback callback;
+  delegate.set_os_reauth_call(callback.Get());
 
+  EXPECT_CALL(callback, Run(ReauthPurpose::EXPORT)).WillOnce(Return(false));
   delegate.ExportPasswords(mock_accepted.Get(), nullptr);
-  EXPECT_TRUE(reauth_called);
 }
 
 }  // namespace extensions

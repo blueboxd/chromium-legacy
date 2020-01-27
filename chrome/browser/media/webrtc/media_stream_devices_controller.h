@@ -19,7 +19,10 @@
 class MediaStreamDevicesController;
 class Profile;
 class TabSpecificContentSettings;
+
+namespace permissions {
 enum class PermissionStatusSource;
+}
 
 namespace content {
 class WebContents;
@@ -104,8 +107,9 @@ class MediaStreamDevicesController {
   // requested devices.
   bool IsUserAcceptAllowed(ContentSettingsType content_type) const;
 
-  bool PermissionIsBlockedForReason(ContentSettingsType content_type,
-                                    PermissionStatusSource reason) const;
+  bool PermissionIsBlockedForReason(
+      ContentSettingsType content_type,
+      permissions::PermissionStatusSource reason) const;
 
   // The current state of the audio/video content settings which may be updated
   // through the lifetime of the request.

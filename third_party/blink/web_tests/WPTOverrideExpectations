@@ -848,6 +848,7 @@ external/wpt/xhr/send-accept-language.htm [ Failure ]
 # ---
 # Reftest with pixel diff. Fails locally. Fails on wpt.fyi
 external/wpt/compat/webkit-box-rtl-flex.html [ Failure ]
+external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-parent-element-overflow-scroll.html [ Failure ]
 external/wpt/css/css-fonts/font-display/font-display-change.html [ Failure ]
 external/wpt/css/css-layout-api/fallback-layout/constructor-error.https.html [ Failure ]
 external/wpt/mathml/presentation-markup/direction/direction-007.html [ Failure ]

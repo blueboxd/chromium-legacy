@@ -2133,7 +2133,7 @@ TEST_F(LayerTreeImplTest, SelectionBoundsWithLargeTransforms) {
   root->SetBounds(gfx::Size(100, 100));
 
   gfx::Transform large_transform;
-  large_transform.Scale(SkDoubleToMScalar(1e37), SkDoubleToMScalar(1e37));
+  large_transform.Scale(SkDoubleToScalar(1e37), SkDoubleToScalar(1e37));
   large_transform.RotateAboutYAxis(30);
 
   LayerImpl* child = AddLayer<LayerImpl>();

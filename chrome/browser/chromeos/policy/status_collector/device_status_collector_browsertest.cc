@@ -380,6 +380,7 @@ void GetFakeCrosHealthdData(
     const chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfo&
         storage_info,
     const chromeos::cros_healthd::mojom::CpuInfo& cpu_info,
+    const chromeos::cros_healthd::mojom::TimezoneInfo& timezone_info,
     const em::CPUTempInfo& cpu_sample,
     const em::BatterySample& battery_sample,
     policy::DeviceStatusCollector::CrosHealthdDataReceiver receiver) {
@@ -393,7 +394,7 @@ void GetFakeCrosHealthdData(
   cpu_vector.push_back(cpu_info.Clone());
   chromeos::cros_healthd::mojom::TelemetryInfo fake_info(
       battery_info.Clone(), std::move(block_device_info),
-      cached_vpd_info.Clone(), std::move(cpu_vector));
+      cached_vpd_info.Clone(), std::move(cpu_vector), timezone_info.Clone());
 
   auto sample = std::make_unique<policy::SampledData>();
   sample->cpu_samples[cpu_sample.cpu_label()] = cpu_sample;
@@ -2471,6 +2472,10 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   constexpr int kFakeCpuTemp = 91832;
   constexpr int kFakeCpuTimestamp = 912;
 
+  // Timezone test values.
+  constexpr char kPosixTimezone[] = "MST7MDT,M3.2.0,M11.1.0";
+  constexpr char kTimezoneRegion[] = "America/Denver";
+
   chromeos::cros_healthd::mojom::BatteryInfo battery_info(
       kFakeCycleCount, kFakeVoltageNow, kFakeBatteryVendor, kFakeBatterySerial,
       kFakeChargeFullDesign, kFakeChargeFull, kFakeVoltageMinDesign,
@@ -2482,6 +2487,8 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
       kFakeStorageName, kFakeStorageSerial);
   chromeos::cros_healthd::mojom::CpuInfo cpu_info(
       kFakeModelName, kFakeMojoArchitecture, kFakeMaxClockSpeed);
+  chromeos::cros_healthd::mojom::TimezoneInfo timezone_info(kPosixTimezone,
+                                                            kTimezoneRegion);
 
   // Create a fake sample to test with.
   em::CPUTempInfo fake_cpu_temp_sample;
@@ -2498,7 +2505,7 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   auto options = CreateEmptyDeviceStatusCollectorOptions();
   options->cros_healthd_data_fetcher = base::BindRepeating(
       &GetFakeCrosHealthdData, battery_info, cached_vpd_info, storage_info,
-      cpu_info, fake_cpu_temp_sample, fake_battery_sample);
+      cpu_info, timezone_info, fake_cpu_temp_sample, fake_battery_sample);
   RestartStatusCollector(std::move(options));
 
   // If kReportDeviceCpuInfo, kReportDevicePowerStatus, and

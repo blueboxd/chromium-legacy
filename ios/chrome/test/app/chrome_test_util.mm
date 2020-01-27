@@ -56,14 +56,14 @@
 namespace {
 // Returns the original ChromeBrowserState if |incognito| is false. If
 // |ingonito| is true, returns an off-the-record ChromeBrowserState.
-ios::ChromeBrowserState* GetBrowserState(bool incognito) {
-  std::vector<ios::ChromeBrowserState*> browser_states =
+ChromeBrowserState* GetBrowserState(bool incognito) {
+  std::vector<ChromeBrowserState*> browser_states =
       GetApplicationContext()
           ->GetChromeBrowserStateManager()
           ->GetLoadedBrowserStates();
   DCHECK(!browser_states.empty());
 
-  ios::ChromeBrowserState* browser_state = browser_states.front();
+  ChromeBrowserState* browser_state = browser_states.front();
   DCHECK(!browser_state->IsOffTheRecord());
 
   return incognito ? browser_state->GetOffTheRecordChromeBrowserState()
@@ -82,11 +82,11 @@ DeviceSharingManager* GetDeviceSharingManager() {
   return [GetMainController() deviceSharingManager];
 }
 
-ios::ChromeBrowserState* GetOriginalBrowserState() {
+ChromeBrowserState* GetOriginalBrowserState() {
   return GetBrowserState(false);
 }
 
-ios::ChromeBrowserState* GetCurrentIncognitoBrowserState() {
+ChromeBrowserState* GetCurrentIncognitoBrowserState() {
   return GetBrowserState(true);
 }
 
@@ -156,7 +156,7 @@ void SetBooleanLocalStatePref(const char* pref_name, bool value) {
   pref.SetValue(value);
 }
 
-void SetBooleanUserPref(ios::ChromeBrowserState* browser_state,
+void SetBooleanUserPref(ChromeBrowserState* browser_state,
                         const char* pref_name,
                         bool value) {
   DCHECK(browser_state);

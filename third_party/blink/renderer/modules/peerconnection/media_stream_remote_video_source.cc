@@ -284,9 +284,36 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
   video_frame->metadata()->SetTimeTicks(
       media::VideoFrameMetadata::DECODE_END_TIME, current_time);
 
+  // RTP_TIMESTAMP, PROCESSING_TIME, and CAPTURE_BEGIN_TIME are all exposed
+  // through the JavaScript callback mechanism video.requestAnimationFrame().
   video_frame->metadata()->SetDouble(
       media::VideoFrameMetadata::RTP_TIMESTAMP,
       static_cast<double>(incoming_frame.timestamp()));
+
+  if (incoming_frame.processing_time()) {
+    video_frame->metadata()->SetTimeDelta(
+        media::VideoFrameMetadata::PROCESSING_TIME,
+        base::TimeDelta::FromMicroseconds(
+            incoming_frame.processing_time()->Elapsed().us()));
+  }
+
+  // Set capture time to arrival of last packet.
+  if (!incoming_frame.packet_infos().empty()) {
+    int64_t last_packet_arrival_ms =
+        std::max_element(
+            incoming_frame.packet_infos().cbegin(),
+            incoming_frame.packet_infos().cend(),
+            [](const webrtc::RtpPacketInfo& a, const webrtc::RtpPacketInfo& b) {
+              return a.receive_time_ms() < b.receive_time_ms();
+            })
+            ->receive_time_ms();
+    const base::TimeTicks capture_time =
+        base::TimeTicks() +
+        base::TimeDelta::FromMilliseconds(last_packet_arrival_ms) + time_diff_;
+
+    video_frame->metadata()->SetTimeTicks(
+        media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, capture_time);
+  }
 
   PostCrossThreadTask(
       *io_task_runner_, FROM_HERE,

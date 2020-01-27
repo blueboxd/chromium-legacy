@@ -161,8 +161,8 @@ class OAuth2LoginManager : public KeyedService,
   // Retrieves IdentityManager for |user_profile_|.
   signin::IdentityManager* GetIdentityManager();
 
-  // Retrieves the primary account for |user_profile_|.
-  CoreAccountId GetPrimaryAccountId();
+  // Retrieves the primary account ID for |user_profile_|.
+  CoreAccountId GetUnconsentedPrimaryAccountId();
 
   // Records |refresh_token_| to token service. The associated account id is
   // assumed to be the primary account id of the user profile. If the primary

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "chrome/browser/updates/update_notification_service.h"
-#include "chrome/browser/updates/update_notification_service_bridge.h"
 
 namespace updates {
 
@@ -25,7 +24,6 @@ void UpdateNotificationClient::BeforeShowNotification(
     std::move(callback).Run(nullptr);
     return;
   }
-  updates::UpdateLastShownTimeStamp(base::Time::Now());
   // TODO(hesen): Record metrics, and add iHNR buttons.
   std::move(callback).Run(std::move(notification_data));
 }

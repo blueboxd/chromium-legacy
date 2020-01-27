@@ -436,8 +436,10 @@ void ChromePasswordManagerClient::ShowTouchToFill(
 password_manager::BiometricAuthenticator*
 ChromePasswordManagerClient::GetBiometricAuthenticator() {
 #if defined(OS_ANDROID)
-  if (!biometric_authenticator_)
-    biometric_authenticator_ = ChromeBiometricAuthenticator::Create();
+  if (!biometric_authenticator_) {
+    biometric_authenticator_ =
+        ChromeBiometricAuthenticator::Create(web_contents());
+  }
 #endif
   return biometric_authenticator_.get();
 }

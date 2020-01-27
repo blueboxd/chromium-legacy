@@ -498,23 +498,34 @@ AccessibilitySelectedState AXLayoutObject::IsSelected() const {
   if (!GetLayoutObject() || !GetNode() || !CanSetSelectedAttribute())
     return kSelectedStateUndefined;
 
-  // aria-selected overrides automatic behaviors
+  // The aria-selected attribute overrides automatic behaviors.
   bool is_selected;
   if (HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kSelected, is_selected))
     return is_selected ? kSelectedStateTrue : kSelectedStateFalse;
 
-  // Tab item with focus in the associated tab
-  if (IsTabItem() && IsTabItemSelected())
-    return kSelectedStateTrue;
+  // The selection should only follow the focus when the aria-selected attribute
+  // is marked as required or implied for this element in the ARIA specs.
+  // If this object can't follow the focus, then we can't say that it's selected
+  // nor that it's not.
+  if (!SelectionShouldFollowFocus())
+    return kSelectedStateUndefined;
 
-  // Selection follows focus, but ONLY in single selection containers,
-  // and only if aria-selected was not present to override
+  // Selection follows focus, but ONLY in single selection containers, and only
+  // if aria-selected was not present to override.
   return IsSelectedFromFocus() ? kSelectedStateTrue : kSelectedStateFalse;
 }
 
 // In single selection containers, selection follows focus unless aria_selected
-// is set to false.
+// is set to false. This is only valid for a subset of elements.
 bool AXLayoutObject::IsSelectedFromFocus() const {
+  if (!SelectionShouldFollowFocus())
+    return false;
+
+  // A tab item can also be selected if it is associated to a focused tabpanel
+  // via the aria-labelledby attribute.
+  if (IsTabItem() && IsTabItemSelected())
+    return kSelectedStateTrue;
+
   // If not a single selection container, selection does not follow focus.
   AXObject* container = ContainerWidget();
   if (!container || container->IsMultiSelectable())
@@ -532,6 +543,20 @@ bool AXLayoutObject::IsSelectedFromFocus() const {
   bool is_selected;
   return !HasAOMPropertyOrARIAAttribute(AOMBooleanProperty::kSelected,
                                         is_selected);
+}
+
+// Returns true if the node's aria-selected attribute should be set to true
+// when the node is focused. This is true for only a subset of roles.
+bool AXLayoutObject::SelectionShouldFollowFocus() const {
+  switch (RoleValue()) {
+    case ax::mojom::Role::kListBoxOption:
+    case ax::mojom::Role::kMenuListOption:
+    case ax::mojom::Role::kTab:
+      return true;
+    default:
+      break;
+  }
+  return false;
 }
 
 //

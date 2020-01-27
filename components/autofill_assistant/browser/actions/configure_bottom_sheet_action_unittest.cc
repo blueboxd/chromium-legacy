@@ -298,5 +298,25 @@ TEST_F(ConfigureBottomSheetActionTest, WaitIfResizeLayoutAfterVisualViewport) {
   ASSERT_TRUE(on_resize_cb_);
 }
 
+TEST_F(ConfigureBottomSheetActionTest, ExpandOrCollapseSheetNotSet) {
+  EXPECT_CALL(mock_action_delegate_, ExpandBottomSheet()).Times(0);
+  EXPECT_CALL(mock_action_delegate_, CollapseBottomSheet()).Times(0);
+  Run();
+}
+
+TEST_F(ConfigureBottomSheetActionTest, ExpectExpand) {
+  proto_.set_expand(true);
+  EXPECT_CALL(mock_action_delegate_, ExpandBottomSheet()).Times(1);
+  EXPECT_CALL(mock_action_delegate_, CollapseBottomSheet()).Times(0);
+  Run();
+}
+
+TEST_F(ConfigureBottomSheetActionTest, ExpectCollapse) {
+  proto_.set_collapse(true);
+  EXPECT_CALL(mock_action_delegate_, ExpandBottomSheet()).Times(0);
+  EXPECT_CALL(mock_action_delegate_, CollapseBottomSheet()).Times(1);
+  Run();
+}
+
 }  // namespace
 }  // namespace autofill_assistant

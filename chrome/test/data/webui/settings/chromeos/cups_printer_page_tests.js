@@ -591,6 +591,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: '',
       printerQueue: '',
       printerStatus: '',
+      printServerUri: '',
     };
 
     dialog.pendingPrinter_ = {
@@ -612,6 +613,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: '',
       printerQueue: '',
       printerStatus: '',
+      printServerUri: '',
     };
 
     dialog.isOnline_ = true;
@@ -647,6 +649,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: 'usb',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
 
     // Set pendingPrinter_.ppdManufactuer and pendingPrinter_.ppdModel to
@@ -689,6 +692,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: 'ipps',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
 
     assertTrue(!!dialog.$$('#printerName'));
@@ -737,6 +741,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: 'ipp',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
 
     dialog.activePrinter = Object.assign({}, expectedPrinter);
@@ -789,6 +794,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: 'usb',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
 
     const expectedName = 'editedName';
@@ -830,6 +836,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: 'ipp',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
 
     const expectedAddress = '9.9.9.9';
@@ -878,6 +885,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: 'ipp',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
 
     const expectedAddress = '9.9.9.9';
@@ -924,6 +932,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: 'ipp',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
 
     // Assert that the manufacturer and model drop-downs are shown.
@@ -950,6 +959,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: 'ipp',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
 
     // Assert that the manufacturer and model drop-downs are hidden.
@@ -976,6 +986,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: 'ipp',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
     setPpdManufacturerAndPpdModel('manufacture', 'model');
 
@@ -1011,6 +1022,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: 'ipp',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
     setPpdManufacturerAndPpdModel('manufacture', 'model');
 
@@ -1046,6 +1058,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: 'ipp',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
     setPpdManufacturerAndPpdModel('manufacture', 'model');
 
@@ -1081,6 +1094,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: 'ipp',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
     setPpdManufacturerAndPpdModel('manufacture', 'model');
     Polymer.dom.flush();
@@ -1116,6 +1130,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: 'ipp',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
     setPpdManufacturerAndPpdModel('manufacture', 'model');
     Polymer.dom.flush();
@@ -1218,6 +1233,7 @@ suite('EditPrinterDialog', function() {
       printerProtocol: 'usb',
       printerQueue: 'moreinfohere',
       printerStatus: '',
+      printServerUri: '',
     };
 
     const expectedName = 'editedName';

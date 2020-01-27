@@ -654,7 +654,8 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
 
   auto* identity_manager = IdentityManagerFactory::GetForProfile(user_profile);
   const bool account_id_valid =
-      identity_manager && !identity_manager->GetPrimaryAccountId().empty();
+      identity_manager &&
+      !identity_manager->GetUnconsentedPrimaryAccountId().empty();
   if (!account_id_valid)
     LOG(ERROR) << "No account is associated with sign-in manager on restore.";
   UMA_HISTOGRAM_BOOLEAN("UserSessionManager.RestoreOnCrash.AccountIdValid",
@@ -967,7 +968,7 @@ void UserSessionManager::OnSessionRestoreStateChanged(
       user_status =
           (identity_manager &&
            identity_manager->HasAccountWithRefreshTokenInPersistentErrorState(
-               identity_manager->GetPrimaryAccountInfo().account_id))
+               identity_manager->GetUnconsentedPrimaryAccountInfo().account_id))
               ? user_manager::User::OAUTH2_TOKEN_STATUS_INVALID
               : user_manager::User::OAUTH2_TOKEN_STATUS_VALID;
       break;
@@ -1303,7 +1304,9 @@ void UserSessionManager::InitProfilePreferences(
   // Set initial prefs if the user is new, or if the user was already present on
   // the device and the profile was re-created. This can happen e.g. in ext4
   // migration in wipe mode.
-  if (user_manager->IsCurrentUserNew() || profile->IsNewProfile()) {
+  const bool is_new_profile =
+      user_manager->IsCurrentUserNew() || profile->IsNewProfile();
+  if (is_new_profile) {
     SetFirstLoginPrefs(profile, user_context.GetPublicSessionLocale(),
                        user_context.GetPublicSessionInputMethod());
 
@@ -1420,10 +1423,24 @@ void UserSessionManager::InitProfilePreferences(
               ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
                   gaia_id);
       DCHECK(account_info.has_value());
-      if (user_manager->IsCurrentUserNew() || profile->IsNewProfile()) {
+      // TODO(jamescook): Replace switch with IsSplitSettingsSyncEnabled().
+      if (switches::UseUnconsentedPrimaryAccount()) {
+        if (is_new_profile) {
+          if (!identity_manager->HasPrimaryAccount()) {
+            // Set the account without recording browser sync consent.
+            identity_manager->GetPrimaryAccountMutator()
+                ->SetUnconsentedPrimaryAccount(account_info->account_id);
+          }
+        }
+        CHECK(identity_manager->HasUnconsentedPrimaryAccount());
+        CHECK_EQ(identity_manager->GetUnconsentedPrimaryAccountInfo().gaia,
+                 gaia_id);
+      } else {
+        // Set a primary account here because the profile might have been
+        // created with switches::UseUnconsentedPrimaryAccount set. Then the
+        // profile might only have an unconsented primary account.
         identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
             account_info->account_id);
-      } else {
         CHECK(identity_manager->HasPrimaryAccount());
         CHECK_EQ(identity_manager->GetPrimaryAccountInfo().gaia, gaia_id);
       }
@@ -1438,7 +1455,8 @@ void UserSessionManager::InitProfilePreferences(
               gaia_id, user_context.GetAccountId().GetUserEmail());
     }
 
-    CoreAccountId account_id = identity_manager->GetPrimaryAccountId();
+    CoreAccountId account_id =
+        identity_manager->GetUnconsentedPrimaryAccountId();
     VLOG(1) << "Seed IdentityManager with the authenticated account info, "
             << "success=" << !account_id.empty();
 

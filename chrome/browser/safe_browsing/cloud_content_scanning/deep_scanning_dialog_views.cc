@@ -90,16 +90,6 @@ DeepScanningDialogViews::DeepScanningDialogViews(
                         kInitialUIDelay);
 }
 
-int DeepScanningDialogViews::GetDialogButtons() const {
-  // TODO(domfc): Add "Learn more" button on scan failure.
-  if (!scan_success_.has_value())
-    return ui::DIALOG_BUTTON_CANCEL;
-  else if (scan_success_.value())
-    return ui::DIALOG_BUTTON_NONE;
-  else
-    return ui::DIALOG_BUTTON_CANCEL;
-}
-
 base::string16 DeepScanningDialogViews::GetWindowTitle() const {
   return base::string16();
 }
@@ -244,10 +234,14 @@ void DeepScanningDialogViews::Resize(int height_to_add) {
 }
 
 void DeepScanningDialogViews::SetupButtons() {
+  // TODO(domfc): Add "Learn more" button on scan failure.
   if (!scan_success_.has_value() || !scan_success_.value()) {
+    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_CANCEL);
     DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                      GetCancelButtonText());
     DialogDelegate::set_default_button(ui::DIALOG_BUTTON_NONE);
+  } else {
+    DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
   }
 
   // TODO(domfc): Add "Learn more" button setup for scan failures.

@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <string>
 
+#include "base/containers/span.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/draw_image.h"
@@ -221,8 +222,8 @@ scoped_refptr<SkottieWrapper> CreateSkottie(const gfx::Size& size,
                  base::NumberToString(duration_secs * kFps));
   }
 
-  return base::MakeRefCounted<SkottieWrapper>(
-      std::make_unique<SkMemoryStream>(json.c_str(), json.size()));
+  return SkottieWrapper::CreateNonSerializable(
+      base::as_bytes(base::make_span(json)));
 }
 
 PaintImage CreateNonDiscardablePaintImage(const gfx::Size& size) {

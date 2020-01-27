@@ -67,6 +67,7 @@ std::unique_ptr<Printer> SpecificsToPrinter(
   }
   printer->set_uri(specifics.uri());
   printer->set_uuid(specifics.uuid());
+  printer->set_print_server_uri(specifics.print_server_uri());
 
   *printer->mutable_ppd_reference() = SpecificsToPpd(specifics.ppd_reference());
 
@@ -108,6 +109,9 @@ void MergePrinterToSpecifics(const Printer& printer,
 
   if (!printer.uuid().empty())
     specifics->set_uuid(printer.uuid());
+
+  if (!printer.print_server_uri().empty())
+    specifics->set_print_server_uri(printer.print_server_uri());
 
   MergeReferenceToSpecifics(specifics->mutable_ppd_reference(),
                             printer.ppd_reference());

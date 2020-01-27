@@ -54,6 +54,11 @@ class ToggleButton::ThumbView : public InkDropHostView {
         .Offset(gfx::Vector2d(kShadowOffsetX, kShadowOffsetY));
   }
 
+  void SetThumbColors(SkColor thumb_on_color, SkColor thumb_off_color) {
+    thumb_on_color_ = thumb_on_color;
+    thumb_off_color_ = thumb_off_color;
+  }
+
  protected:
   // views::View:
   bool CanProcessEventsWithinSubtree() const override {
@@ -80,10 +85,12 @@ class ToggleButton::ThumbView : public InkDropHostView {
     cc::PaintFlags thumb_flags;
     thumb_flags.setLooper(gfx::CreateShadowDrawLooper(shadows));
     thumb_flags.setAntiAlias(true);
-    const SkColor thumb_on_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_ProminentButtonColor);
-    const SkColor thumb_off_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_DialogBackground);
+    const SkColor thumb_on_color =
+        thumb_on_color_.value_or(GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_ProminentButtonColor));
+    const SkColor thumb_off_color =
+        thumb_off_color_.value_or(GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_DialogBackground));
     thumb_flags.setColor(
         color_utils::AlphaBlend(thumb_on_color, thumb_off_color, color_ratio_));
 
@@ -101,6 +108,10 @@ class ToggleButton::ThumbView : public InkDropHostView {
   std::unique_ptr<InkDropMask> CreateInkDropMask() const override {
     return nullptr;
   }
+
+  // Colors used for the thumb, defaults to NativeTheme if not set explicitly.
+  base::Optional<SkColor> thumb_on_color_;
+  base::Optional<SkColor> thumb_off_color_;
 
   // Color ratio between 0 and 1 that controls the thumb color.
   float color_ratio_ = 0.0f;
@@ -168,6 +179,11 @@ gfx::Size ToggleButton::CalculatePreferredSize() const {
   return rect.size();
 }
 
+void ToggleButton::SetThumbColors(SkColor thumb_on_color,
+                                  SkColor thumb_off_color) {
+  thumb_view_->SetThumbColors(thumb_on_color, thumb_off_color);
+}
+
 gfx::Rect ToggleButton::GetTrackBounds() const {
   gfx::Rect track_bounds(GetContentsBounds());
   track_bounds.ClampToCenteredSize(kTrackSize);
@@ -193,10 +209,14 @@ void ToggleButton::UpdateThumb() {
 
 SkColor ToggleButton::GetTrackColor(bool is_on) const {
   const SkAlpha kTrackAlpha = 0x66;
+  return SkColorSetA(GetTrackBaseColor(is_on), kTrackAlpha);
+}
+
+SkColor ToggleButton::GetTrackBaseColor(bool is_on) const {
   ui::NativeTheme::ColorId color_id =
       is_on ? ui::NativeTheme::kColorId_ProminentButtonColor
             : ui::NativeTheme::kColorId_LabelEnabledColor;
-  return SkColorSetA(GetNativeTheme()->GetSystemColor(color_id), kTrackAlpha);
+  return GetNativeTheme()->GetSystemColor(color_id);
 }
 
 bool ToggleButton::CanAcceptEvent(const ui::Event& event) {

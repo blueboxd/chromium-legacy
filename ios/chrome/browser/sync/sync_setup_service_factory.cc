@@ -13,14 +13,14 @@
 
 // static
 SyncSetupService* SyncSetupServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<SyncSetupService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
 // static
 SyncSetupService* SyncSetupServiceFactory::GetForBrowserStateIfExists(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<SyncSetupService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, false));
 }
@@ -43,8 +43,8 @@ SyncSetupServiceFactory::~SyncSetupServiceFactory() {
 
 std::unique_ptr<KeyedService> SyncSetupServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<SyncSetupService>(
       ProfileSyncServiceFactory::GetForBrowserState(browser_state));
 }

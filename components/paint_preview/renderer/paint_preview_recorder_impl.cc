@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task_runner.h"
+#include "base/time/time.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
 #include "components/paint_preview/renderer/paint_preview_recorder_utils.h"
@@ -40,8 +42,7 @@ PaintPreviewRecorderImpl::PaintPreviewRecorderImpl(
     content::RenderFrame* render_frame)
     : content::RenderFrameObserver(render_frame),
       is_painting_preview_(false),
-      is_main_frame_(render_frame->IsMainFrame()),
-      routing_id_(render_frame->GetRoutingID()) {
+      is_main_frame_(render_frame->IsMainFrame()) {
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
       base::BindRepeating(&PaintPreviewRecorderImpl::BindPaintPreviewRecorder,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -88,6 +89,12 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
     mojom::PaintPreviewCaptureResponse* response,
     mojom::PaintPreviewStatus* status) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+  // Ensure the a frame actually exists to avoid a possible crash.
+  if (!frame) {
+    DVLOG(1) << "Error: renderer has no frame yet!";
+    return;
+  }
+
   // Warm up paint for an out-of-lifecycle paint phase.
   frame->DispatchBeforePrintEvent();
 
@@ -101,11 +108,40 @@ void PaintPreviewRecorderImpl::CapturePaintPreviewInternal(
   }
 
   cc::PaintRecorder recorder;
-  PaintPreviewTracker tracker(params->guid, routing_id_, is_main_frame_);
+  PaintPreviewTracker tracker(params->guid, frame->GetEmbeddingToken(),
+                              is_main_frame_);
   cc::PaintCanvas* canvas =
       recorder.beginRecording(bounds.width(), bounds.height());
   canvas->SetPaintPreviewTracker(&tracker);
+
+  // Use time ticks manually rather than a histogram macro so as to;
+  // 1. Account for main frames and subframes separately.
+  // 2. Mitigate binary size as this won't be used that often.
+  // 3. Record only on successes as failures are likely to be outliers (fast or
+  //    slow).
+  base::TimeTicks start_time = base::TimeTicks::Now();
   bool success = frame->CapturePaintPreview(bounds, canvas);
+  base::TimeDelta capture_time = base::TimeTicks::Now() - start_time;
+
+  if (is_main_frame_) {
+    base::UmaHistogramBoolean("Renderer.PaintPreview.Capture.MainFrameSuccess",
+                              success);
+    if (success) {
+      // Main frame should generally be the largest cost and will always run so
+      // it is tracked separately.
+      base::UmaHistogramTimes(
+          "Renderer.PaintPreview.Capture.MainFrameBlinkCaptureDuration",
+          capture_time);
+    }
+  } else {
+    base::UmaHistogramBoolean("Renderer.PaintPreview.Capture.SubframeSuccess",
+                              success);
+    if (success) {
+      base::UmaHistogramTimes(
+          "Renderer.PaintPreview.Capture.SubframeBlinkCaptureDuration",
+          capture_time);
+    }
+  }
 
   // Restore to before out-of-lifecycle paint phase.
   frame->DispatchAfterPrintEvent();

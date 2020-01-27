@@ -428,6 +428,10 @@ void TrayDetailedView::ShowProgress(double value, bool visible) {
         l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_NETWORK_PROGRESS_ACCESSIBLE_NAME));
     progress_bar_->SetVisible(false);
+    progress_bar_->SetForegroundColor(
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kProminentIconButton,
+            AshColorProvider::AshColorMode::kDark));
     AddChildViewAt(progress_bar_, kTitleRowSeparatorIndex + 1);
   }
 

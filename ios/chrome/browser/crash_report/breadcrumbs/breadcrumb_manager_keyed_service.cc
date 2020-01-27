@@ -10,7 +10,7 @@
 
 void BreadcrumbManagerKeyedService::AddEvent(const std::string& event) {
   std::string event_log =
-      base::StringPrintf("%s %s", browsing_mode_.c_str(), event.c_str());
+      base::StringPrintf("%s%s", browsing_mode_.c_str(), event.c_str());
   breadcrumb_manager_->AddEvent(event_log);
 }
 
@@ -32,8 +32,8 @@ const std::list<std::string> BreadcrumbManagerKeyedService::GetEvents(
 BreadcrumbManagerKeyedService::BreadcrumbManagerKeyedService(
     web::BrowserState* browser_state)
     // Set "I" for Incognito (Chrome branded OffTheRecord implementation) and
-    // "N" for Normal browsing mode.
-    : browsing_mode_(browser_state->IsOffTheRecord() ? "I" : "N"),
+    // empty string for Normal browsing mode.
+    : browsing_mode_(browser_state->IsOffTheRecord() ? "I " : ""),
       breadcrumb_manager_(std::make_unique<BreadcrumbManager>()) {}
 
 BreadcrumbManagerKeyedService::~BreadcrumbManagerKeyedService() = default;

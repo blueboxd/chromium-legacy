@@ -8,10 +8,10 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/permissions/permission_request_id.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
 
@@ -30,14 +30,14 @@ class NfcPermissionContextTests : public ChromeRenderViewHostTestHarness {
   void SetUp() override;
   void TearDown() override;
 
-  PermissionRequestID RequestID(int request_id);
+  permissions::PermissionRequestID RequestID(int request_id);
 
   void RequestNfcPermission(content::WebContents* web_contents,
-                            const PermissionRequestID& id,
+                            const permissions::PermissionRequestID& id,
                             const GURL& requesting_frame,
                             bool user_gesture);
 
-  void PermissionResponse(const PermissionRequestID& id,
+  void PermissionResponse(const permissions::PermissionRequestID& id,
                           ContentSetting content_setting);
   void CheckPermissionMessageSent(int request_id, bool allowed);
   void CheckPermissionMessageSentInternal(MockRenderProcessHost* process,
@@ -67,15 +67,16 @@ class NfcPermissionContextTests : public ChromeRenderViewHostTestHarness {
   std::map<int, std::pair<int, bool>> responses_;
 };
 
-PermissionRequestID NfcPermissionContextTests::RequestID(int request_id) {
-  return PermissionRequestID(
+permissions::PermissionRequestID NfcPermissionContextTests::RequestID(
+    int request_id) {
+  return permissions::PermissionRequestID(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
       web_contents()->GetMainFrame()->GetRoutingID(), request_id);
 }
 
 void NfcPermissionContextTests::RequestNfcPermission(
     content::WebContents* web_contents,
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_frame,
     bool user_gesture) {
   nfc_permission_context_->RequestPermission(
@@ -86,7 +87,7 @@ void NfcPermissionContextTests::RequestNfcPermission(
 }
 
 void NfcPermissionContextTests::PermissionResponse(
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     ContentSetting content_setting) {
   responses_[id.render_process_id()] =
       std::make_pair(id.request_id(), content_setting == CONTENT_SETTING_ALLOW);

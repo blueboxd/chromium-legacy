@@ -500,8 +500,13 @@ IdentityManager::ComputeUnconsentedPrimaryAccountInfo() const {
   if (HasPrimaryAccount())
     return GetPrimaryAccountInfo();
 
-#if defined(OS_CHROMEOS) || defined(OS_IOS) || defined(OS_ANDROID)
-  // On ChromeOS and on mobile platforms, we support only the primary account as
+#if defined(OS_CHROMEOS)
+  // Chrome OS directly sets either the primary account or the unconsented
+  // primary account during login. The user is not allowed to sign out, so
+  // keep the value set at login (don't reset).
+  return base::nullopt;
+#elif defined(OS_IOS) || defined(OS_ANDROID)
+  // On iOS and Android platforms, we support only the primary account as
   // the unconsented primary account. By this early return, we avoid an extra
   // request to GAIA that lists cookie accounts.
   return CoreAccountInfo();

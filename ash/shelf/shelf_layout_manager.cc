@@ -427,6 +427,11 @@ void ShelfLayoutManager::InitObservers() {
 }
 
 void ShelfLayoutManager::PrepareForShutdown() {
+  // This might get called twice during shell shutdown - once at the beginning,
+  // and once as part of root window controller shutdown.
+  if (in_shutdown_)
+    return;
+
   in_shutdown_ = true;
 
   // Stop observing changes to avoid updating a partially destructed shelf.
@@ -790,8 +795,11 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
       return ShelfBackgroundType::kInApp;
     }
   } else if (app_list_is_visible) {
-    return maximized ? ShelfBackgroundType::kMaximizedWithAppList
-                     : ShelfBackgroundType::kAppList;
+    // When auto-hide shelf is enabled, shelf cannot be considered maximized.
+    if (maximized && state_.visibility_state != SHELF_AUTO_HIDE)
+      return ShelfBackgroundType::kMaximizedWithAppList;
+
+    return ShelfBackgroundType::kAppList;
   }
 
   if (maximized) {
@@ -912,6 +920,13 @@ void ShelfLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
   // Shelf needs to be hidden on entering to pinned mode, or restored
   // on exiting from pinned mode.
   UpdateVisibilityState();
+}
+
+void ShelfLayoutManager::OnShellDestroying() {
+  // Prepare for shutdown early, to prevent window stacking changes that may
+  // happen during shutdown (e.g. during overview controller, or tablet mode
+  // controller destruction) from causing visibility and state updates.
+  PrepareForShutdown();
 }
 
 void ShelfLayoutManager::OnSplitViewStateChanged(
@@ -1953,6 +1968,32 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (in_mouse_drag_)
     return SHELF_AUTO_HIDE_HIDDEN;
 
+  const auto auto_hide_state_from_cursor =
+      CalculateAutoHideStateBasedOnCursorLocation();
+  if (auto_hide_state_from_cursor.has_value())
+    return *auto_hide_state_from_cursor;
+
+  if (window_drag_controller_ &&
+      window_drag_controller_->during_window_restoration_callback()) {
+    return SHELF_AUTO_HIDE_SHOWN;
+  }
+
+  return SHELF_AUTO_HIDE_HIDDEN;
+}
+
+base::Optional<ShelfAutoHideState>
+ShelfLayoutManager::CalculateAutoHideStateBasedOnCursorLocation() const {
+  // No mouse is available in tablet mode. So there is no point to calculate
+  // the auto-hide state by the cursor location in this scenario.
+  const bool in_tablet_mode = IsTabletModeEnabled();
+  if (in_tablet_mode)
+    return base::nullopt;
+
+  // Do not perform any checks based on the cursor position if the mouse
+  // cursor is currently hidden.
+  if (!shelf_widget_->IsMouseEventsEnabled())
+    return SHELF_AUTO_HIDE_HIDDEN;
+
   gfx::Rect shelf_region = GetVisibleShelfBounds();
   if (shelf_widget_->status_area_widget() &&
       shelf_widget_->status_area_widget()->IsMessageBubbleShown() &&
@@ -1967,30 +2008,27 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
         0);
   }
 
-  // Do not perform any checks based on the cursor position if the mouse cursor
-  // is currently hidden.
-  if (!shelf_widget_->IsMouseEventsEnabled())
-    return SHELF_AUTO_HIDE_HIDDEN;
-
   gfx::Point cursor_position_in_screen =
       display::Screen::GetScreen()->GetCursorScreenPoint();
-  // Cursor is invisible in tablet mode and plug in an external mouse in tablet
-  // mode will switch to clamshell mode.
+  // Cursor is invisible in tablet mode and plug in an external mouse in
+  // tablet mode will switch to clamshell mode.
   if (shelf_region.Contains(cursor_position_in_screen) && !in_tablet_mode)
     return SHELF_AUTO_HIDE_SHOWN;
 
-  // When the shelf is auto hidden and the shelf is on the boundary between two
-  // displays, it is hard to trigger showing the shelf. For instance, if a
+  // When the shelf is auto hidden and the shelf is on the boundary between
+  // two displays, it is hard to trigger showing the shelf. For instance, if a
   // user's primary display is left of their secondary display, it is hard to
   // unautohide a left aligned shelf on the secondary display.
   // It is hard because:
-  // - It is hard to stop the cursor in the shelf "light bar" and not overshoot.
-  // - The cursor is warped to the other display if the cursor gets to the edge
+  // - It is hard to stop the cursor in the shelf "light bar" and not
+  // overshoot.
+  // - The cursor is warped to the other display if the cursor gets to the
+  // edge
   //   of the display.
-  // Show the shelf if the cursor started on the shelf and the user overshot the
-  // shelf slightly to make it easier to show the shelf in this situation. We
-  // do not check |auto_hide_timer_|.IsRunning() because it returns false when
-  // the timer's task is running.
+  // Show the shelf if the cursor started on the shelf and the user overshot
+  // the shelf slightly to make it easier to show the shelf in this situation.
+  // We do not check |auto_hide_timer_|.IsRunning() because it returns false
+  // when the timer's task is running.
   if ((state_.auto_hide_state == SHELF_AUTO_HIDE_SHOWN ||
        mouse_over_shelf_when_auto_hide_timer_started_) &&
       GetAutoHideShowShelfRegionInScreen().Contains(
@@ -1998,7 +2036,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
   }
 
-  return SHELF_AUTO_HIDE_HIDDEN;
+  return base::nullopt;
 }
 
 bool ShelfLayoutManager::IsShelfWindow(aura::Window* window) {

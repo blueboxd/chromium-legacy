@@ -57,7 +57,7 @@ ProtectedMediaIdentifierPermissionContext::
 #if defined(OS_CHROMEOS)
 void ProtectedMediaIdentifierPermissionContext::DecidePermission(
     content::WebContents* web_contents,
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_gesture,
@@ -149,7 +149,7 @@ bool ProtectedMediaIdentifierPermissionContext::IsOriginWhitelisted(
 }
 
 void ProtectedMediaIdentifierPermissionContext::UpdateTabContext(
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_frame,
     bool allowed) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -217,7 +217,7 @@ static void ReportPermissionActionUMA(PermissionAction action) {
 void ProtectedMediaIdentifierPermissionContext::
     OnPlatformVerificationConsentResponse(
         content::WebContents* web_contents,
-        const PermissionRequestID& id,
+        const permissions::PermissionRequestID& id,
         const GURL& requesting_origin,
         const GURL& embedding_origin,
         BrowserPermissionCallback callback,

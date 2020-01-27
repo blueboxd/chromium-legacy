@@ -520,8 +520,7 @@ SearchResultTileItemView::GetAppType() const {
 }
 
 bool SearchResultTileItemView::IsSuggestedAppTile() const {
-  return result() &&
-         result()->display_type() == SearchResultDisplayType::kRecommendation;
+  return result() && result()->is_recommendation();
 }
 
 bool SearchResultTileItemView::IsSuggestedAppTileShownInAppPage() const {

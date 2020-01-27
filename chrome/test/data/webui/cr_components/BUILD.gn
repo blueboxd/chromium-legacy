@@ -5,6 +5,14 @@
 import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js_modulizer("modulize") {
-  input_files = [ "managed_footnote_test.js" ]
-  namespace_rewrites = [ "cr.isChromeOS|isChromeOS" ]
+  input_files = [
+    "certificate_manager_test.js",
+    "managed_footnote_test.js",
+  ]
+  namespace_rewrites = [
+    "certificate_manager.CertificatesBrowserProxyImpl|CertificatesBrowserProxyImpl",
+    "cr.isChromeOS|isChromeOS",
+    "test_util.eventToPromise|eventToPromise",
+    "MockInteractions.keyEventOn|keyEventOn",
+  ]
 }

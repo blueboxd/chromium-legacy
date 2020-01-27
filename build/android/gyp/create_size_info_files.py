@@ -13,7 +13,6 @@ import zipfile
 
 from util import build_utils
 from util import jar_info_utils
-from util import md5_check
 
 
 def _MergeResInfoFiles(res_info_path, info_paths):
@@ -156,13 +155,8 @@ def main(args):
                                       options.uncompressed_assets)
   res_inputs = options.in_res_info_path
 
-  # Don't bother re-running if no .info files have changed (saves ~250ms).
-  md5_check.CallAndRecordIfStale(
-      lambda: _MergeJarInfoFiles(options.jar_info_path, jar_inputs),
-      input_paths=jar_inputs + [__file__],
-      output_paths=[options.jar_info_path])
-
-  # Always recreate these (just as fast as md5 checking them).
+  # Just create the info files every time. See https://crbug.com/1045024
+  _MergeJarInfoFiles(options.jar_info_path, jar_inputs)
   _MergePakInfoFiles(options.pak_info_path, pak_inputs)
   _MergeResInfoFiles(options.res_info_path, res_inputs)
 

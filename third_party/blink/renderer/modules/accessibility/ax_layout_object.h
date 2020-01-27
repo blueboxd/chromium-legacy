@@ -231,6 +231,7 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool HasAriaCellRole(Element*) const;
   bool IsPlaceholder() const;
   ax::mojom::Dropeffect ParseDropeffect(String& dropeffect) const;
+  bool SelectionShouldFollowFocus() const;
 
   static ax::mojom::TextDecorationStyle
   TextDecorationStyleToAXTextDecorationStyle(

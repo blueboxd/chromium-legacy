@@ -107,11 +107,17 @@ base::Optional<std::vector<mojom::CpuInfoPtr>> MakeCpuInfo() {
   return cpu_info;
 }
 
+mojom::TimezoneInfoPtr MakeTimezoneInfo() {
+  return mojom::TimezoneInfo::New("MST7MDT,M3.2.0,M11.1.0" /* posix */,
+                                  "America/Denver" /* region */);
+}
+
 mojom::TelemetryInfoPtr MakeTelemetryInfo() {
   return mojom::TelemetryInfo::New(
       MakeBatteryInfo() /* battery_info */,
       MakeNonRemovableBlockDeviceInfo() /* block_device_info */,
-      MakeCachedVpdInfo() /* vpd_info */, MakeCpuInfo() /* cpu_info */
+      MakeCachedVpdInfo() /* vpd_info */, MakeCpuInfo() /* cpu_info */,
+      MakeTimezoneInfo() /* timezone_info */
   );
 }
 

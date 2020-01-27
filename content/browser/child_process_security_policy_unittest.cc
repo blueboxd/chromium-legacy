@@ -1257,6 +1257,7 @@ TEST_F(ChildProcessSecurityPolicyTest, HandleExtendsSecurityStateLifetime) {
   GURL url("file:///etc/passwd");
 
   p->Add(kRendererID, browser_context());
+  LockProcessIfNeeded(kRendererID, browser_context(), url);
 
   auto handle = p->CreateHandle(kRendererID);
 

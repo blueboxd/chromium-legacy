@@ -291,6 +291,17 @@ bool OriginTrialContext::IsFeatureEnabled(OriginTrialFeature feature) const {
   return context->IsFeatureEnabled(feature);
 }
 
+base::Time OriginTrialContext::GetFeatureExpiry(OriginTrialFeature feature) {
+  if (!IsFeatureEnabled(feature))
+    return base::Time();
+
+  auto it = feature_expiry_times_.find(feature);
+  if (it == feature_expiry_times_.end())
+    return base::Time();
+
+  return it->value;
+}
+
 bool OriginTrialContext::IsNavigationFeatureActivated(
     OriginTrialFeature feature) const {
   return navigation_activated_features_.Contains(feature);
@@ -309,9 +320,10 @@ bool OriginTrialContext::EnableTrialFromToken(const SecurityOrigin* origin,
   bool valid = false;
   StringUTF8Adaptor token_string(token);
   std::string trial_name_str;
+  base::Time expiry_time;
   OriginTrialTokenStatus token_result = trial_token_validator_->ValidateToken(
-      token_string.AsStringPiece(), origin->ToUrlOrigin(), &trial_name_str,
-      base::Time::Now());
+      token_string.AsStringPiece(), origin->ToUrlOrigin(), base::Time::Now(),
+      &trial_name_str, &expiry_time);
   if (token_result == OriginTrialTokenStatus::kSuccess) {
     String trial_name =
         String::FromUTF8(trial_name_str.data(), trial_name_str.size());
@@ -325,10 +337,19 @@ bool OriginTrialContext::EnableTrialFromToken(const SecurityOrigin* origin,
           if (origin_trials::FeatureEnabledForOS(feature)) {
             valid = true;
             enabled_features_.insert(feature);
+
+            // Use the latest expiry time for the feature.
+            if (GetFeatureExpiry(feature) < expiry_time)
+              feature_expiry_times_.Set(feature, expiry_time);
+
             // Also enable any features implied by this feature.
             for (OriginTrialFeature implied_feature :
                  origin_trials::GetImpliedFeatures(feature)) {
               enabled_features_.insert(implied_feature);
+
+              // Use the latest expiry time for the implied feature.
+              if (GetFeatureExpiry(implied_feature) < expiry_time)
+                feature_expiry_times_.Set(implied_feature, expiry_time);
             }
           }
         }

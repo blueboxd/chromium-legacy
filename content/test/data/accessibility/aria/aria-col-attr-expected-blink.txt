@@ -1,26 +1,26 @@
 rootWebArea
 ++genericContainer ignored
 ++++grid ariaColumnCount=5
-++++++row selected=false
-++++++++columnHeader name='cell 2' ariaCellColumnIndex=2 ariaCellColumnSpan=2 selected=false
+++++++row
+++++++++columnHeader name='cell 2' ariaCellColumnIndex=2 ariaCellColumnSpan=2
 ++++++++++staticText name='cell 2'
 ++++++++++++inlineTextBox name='cell 2'
-++++++++columnHeader name='cell 4' ariaCellColumnIndex=4 selected=false
+++++++++columnHeader name='cell 4' ariaCellColumnIndex=4
 ++++++++++staticText name='cell 4'
 ++++++++++++inlineTextBox name='cell 4'
-++++++++columnHeader name='cell 5' ariaCellColumnIndex=5 selected=false
+++++++++columnHeader name='cell 5' ariaCellColumnIndex=5
 ++++++++++staticText name='cell 5'
 ++++++++++++inlineTextBox name='cell 5'
-++++++row ariaCellColumnIndex=2 selected=false
-++++++++cell name='cell 2' ariaCellColumnIndex=2 selected=false
+++++++row ariaCellColumnIndex=2
+++++++++cell name='cell 2' ariaCellColumnIndex=2
 ++++++++++staticText name='cell 2'
 ++++++++++++inlineTextBox name='cell 2'
-++++++++cell name='cell 3' ariaCellColumnIndex=3 selected=false
+++++++++cell name='cell 3' ariaCellColumnIndex=3
 ++++++++++staticText name='cell 3'
 ++++++++++++inlineTextBox name='cell 3'
-++++++++cell name='cell 4' ariaCellColumnIndex=4 selected=false
+++++++++cell name='cell 4' ariaCellColumnIndex=4
 ++++++++++staticText name='cell 4'
 ++++++++++++inlineTextBox name='cell 4'
-++++++++cell name='cell 5' ariaCellColumnIndex=5 selected=false
+++++++++cell name='cell 5' ariaCellColumnIndex=5
 ++++++++++staticText name='cell 5'
 ++++++++++++inlineTextBox name='cell 5'

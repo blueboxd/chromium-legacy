@@ -41,7 +41,7 @@ struct RequestAction {
 
   RequestAction(Type type,
                 uint32_t rule_id,
-                uint32_t rule_priority,
+                uint64_t index_priority,
                 api::declarative_net_request::SourceType source_type,
                 const ExtensionId& extension_id);
   ~RequestAction();
@@ -59,8 +59,9 @@ struct RequestAction {
   // The ID of the matching rule for this action.
   uint32_t rule_id;
 
-  // The priority of the matching rule for this action.
-  uint32_t rule_priority;
+  // The priority of this action in the index. This is a combination of the
+  // rule's priority and the rule's action's priority.
+  uint64_t index_priority;
 
   // The source type of the matching rule for this action.
   api::declarative_net_request::SourceType source_type;

@@ -5,11 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_UI_RECENT_TABS_RECENT_TABS_TABLE_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_RECENT_TABS_RECENT_TABS_TABLE_VIEW_CONTROLLER_H_
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_consumer.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 #include "ui/base/window_open_disposition.h"
 
+class ChromeBrowserState;
 enum class UrlLoadStrategy;
 class WebStateList;
 
@@ -22,7 +22,7 @@ class WebStateList;
     : ChromeTableViewController <RecentTabsConsumer,
                                  UIAdaptivePresentationControllerDelegate>
 // The coordinator's BrowserState.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 // The command handler used by this ViewController.
 @property(nonatomic, weak) id<ApplicationCommands> handler;
 // Opaque instructions on how to open urls.

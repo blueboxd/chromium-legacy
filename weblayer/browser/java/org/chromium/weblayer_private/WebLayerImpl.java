@@ -5,6 +5,7 @@
 package org.chromium.weblayer_private;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
@@ -253,6 +254,13 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         // This is a no-op if init has already happened.
         WebLayerImpl.minimalInitForContext(appContext, remoteContext);
         return CrashReporterControllerImpl.getInstance();
+    }
+
+    @Override
+    public void onReceivedDownloadNotification(IObjectWrapper appContextWrapper, Intent intent) {
+        StrictModeWorkaround.apply();
+        Context context = ObjectWrapper.unwrap(appContextWrapper, Context.class);
+        DownloadImpl.forwardIntent(context, intent);
     }
 
     /**

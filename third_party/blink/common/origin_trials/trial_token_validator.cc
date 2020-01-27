@@ -48,8 +48,9 @@ OriginTrialPolicy* TrialTokenValidator::Policy() {
 OriginTrialTokenStatus TrialTokenValidator::ValidateToken(
     base::StringPiece token,
     const url::Origin& origin,
+    base::Time current_time,
     std::string* feature_name,
-    base::Time current_time) const {
+    base::Time* expiry_time) const {
   OriginTrialPolicy* policy = Policy();
 
   if (!policy->IsOriginTrialsSupported())
@@ -81,6 +82,7 @@ OriginTrialTokenStatus TrialTokenValidator::ValidateToken(
     return OriginTrialTokenStatus::kTokenDisabled;
 
   *feature_name = trial_token->feature_name();
+  *expiry_time = trial_token->expiry_time();
   return OriginTrialTokenStatus::kSuccess;
 }
 
@@ -106,9 +108,10 @@ bool TrialTokenValidator::RequestEnablesFeature(
   std::string token;
   while (response_headers->EnumerateHeader(&iter, "Origin-Trial", &token)) {
     std::string token_feature;
+    base::Time expiry_time;
     // TODO(mek): Log the validation errors to histograms?
-    if (ValidateToken(token, origin, &token_feature, current_time) ==
-        OriginTrialTokenStatus::kSuccess)
+    if (ValidateToken(token, origin, current_time, &token_feature,
+                      &expiry_time) == OriginTrialTokenStatus::kSuccess)
       if (token_feature == feature_name)
         return true;
   }
@@ -129,8 +132,9 @@ TrialTokenValidator::GetValidTokensFromHeaders(
   std::string token;
   while (headers->EnumerateHeader(&iter, "Origin-Trial", &token)) {
     std::string token_feature;
-    if (TrialTokenValidator::ValidateToken(token, origin, &token_feature,
-                                           current_time) ==
+    base::Time expiry_time;
+    if (TrialTokenValidator::ValidateToken(token, origin, current_time,
+                                           &token_feature, &expiry_time) ==
         OriginTrialTokenStatus::kSuccess) {
       (*tokens)[token_feature].push_back(token);
     }
@@ -150,8 +154,9 @@ TrialTokenValidator::GetValidTokens(const url::Origin& origin,
   for (const auto& feature : tokens) {
     for (const std::string& token : feature.second) {
       std::string token_feature;
-      if (TrialTokenValidator::ValidateToken(token, origin, &token_feature,
-                                             current_time) ==
+      base::Time expiry_time;
+      if (TrialTokenValidator::ValidateToken(token, origin, current_time,
+                                             &token_feature, &expiry_time) ==
           OriginTrialTokenStatus::kSuccess) {
         DCHECK_EQ(token_feature, feature.first);
         (*out_tokens)[feature.first].push_back(token);

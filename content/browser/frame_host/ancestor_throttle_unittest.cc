@@ -89,7 +89,7 @@ TEST_F(AncestorThrottleTest, ParsingXFrameOptions) {
         GetAncestorHeaders(test.header, nullptr);
     std::string header_value;
     EXPECT_EQ(test.expected,
-              throttle.ParseHeader(headers.get(), &header_value, true));
+              throttle.ParseHeader(headers.get(), &header_value));
     EXPECT_EQ(test.value, header_value);
   }
 }
@@ -124,7 +124,7 @@ TEST_F(AncestorThrottleTest, ErrorsParsingXFrameOptions) {
         GetAncestorHeaders(test.header, nullptr);
     std::string header_value;
     EXPECT_EQ(test.expected,
-              throttle.ParseHeader(headers.get(), &header_value, true));
+              throttle.ParseHeader(headers.get(), &header_value));
     EXPECT_EQ(test.failure, header_value);
   }
 }
@@ -184,7 +184,7 @@ TEST_F(AncestorThrottleTest, IgnoreWhenFrameAncestorsPresent) {
         GetAncestorHeaders("DENY", test.csp);
     std::string header_value;
     EXPECT_EQ(test.expected,
-              throttle.ParseHeader(headers.get(), &header_value, true));
+              throttle.ParseHeader(headers.get(), &header_value));
     EXPECT_EQ("DENY", header_value);
   }
 }

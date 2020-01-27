@@ -37,7 +37,7 @@ sync_sessions::SyncedTabDelegate* GetSyncedTabDelegateFromWebState(
 }  // namespace
 
 IOSChromeLocalSessionEventRouter::IOSChromeLocalSessionEventRouter(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     sync_sessions::SyncSessionsClient* sessions_client,
     const syncer::SyncableService::StartSyncFlare& flare)
     : handler_(NULL),
@@ -76,13 +76,13 @@ IOSChromeLocalSessionEventRouter::~IOSChromeLocalSessionEventRouter() {
 
 void IOSChromeLocalSessionEventRouter::TabModelRegisteredWithBrowserState(
     TabModel* tab_model,
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   StartObservingWebStateList(tab_model.webStateList);
 }
 
 void IOSChromeLocalSessionEventRouter::TabModelUnregisteredFromBrowserState(
     TabModel* tab_model,
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   StopObservingWebStateList(tab_model.webStateList);
 }
 

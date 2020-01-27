@@ -672,7 +672,7 @@ TEST_F(InputMethodControllerTest,
   Controller().SetEditableSelectionOffsets(PlainTextRange(5, 5));
   EXPECT_EQ("foo\xF0\x9F\x8F\x86", input->value().Utf8());
   Controller().DeleteSurroundingText(1, 0);
-  EXPECT_EQ("foo", input->value());
+  EXPECT_EQ("foo\xED\xA0\xBC", input->value().Utf8());
 
   // composed U+0E01 "ka kai" + U+0E49 "mai tho". It takes up 2 space.
   input->setValue(String::FromUTF8("foo\xE0\xB8\x81\xE0\xB9\x89"));
@@ -680,7 +680,7 @@ TEST_F(InputMethodControllerTest,
   Controller().SetEditableSelectionOffsets(PlainTextRange(5, 5));
   EXPECT_EQ("foo\xE0\xB8\x81\xE0\xB9\x89", input->value().Utf8());
   Controller().DeleteSurroundingText(1, 0);
-  EXPECT_EQ("foo", input->value());
+  EXPECT_EQ("foo\xE0\xB8\x81", input->value().Utf8());
 
   // "trophy" + "trophy".
   input->setValue(String::FromUTF8("foo\xF0\x9F\x8F\x86\xF0\x9F\x8F\x86"));
@@ -696,7 +696,7 @@ TEST_F(InputMethodControllerTest,
   Controller().SetEditableSelectionOffsets(PlainTextRange(7, 7));
   EXPECT_EQ("foo\xF0\x9F\x8F\x86\xF0\x9F\x8F\x86", input->value().Utf8());
   Controller().DeleteSurroundingText(3, 0);
-  EXPECT_EQ("foo", input->value());
+  EXPECT_EQ("foo\xED\xA0\xBC", input->value().Utf8());
 
   // "trophy" + "trophy".
   input->setValue(String::FromUTF8("foo\xF0\x9F\x8F\x86\xF0\x9F\x8F\x86"));
@@ -734,7 +734,7 @@ TEST_F(InputMethodControllerTest,
   Controller().SetEditableSelectionOffsets(PlainTextRange(0, 0));
   EXPECT_EQ("\xF0\x9F\x8F\x86 foo", input->value().Utf8());
   Controller().DeleteSurroundingText(0, 1);
-  EXPECT_EQ(" foo", input->value());
+  EXPECT_EQ("\xED\xBF\x86 foo", input->value().Utf8());
 
   // composed U+0E01 "ka kai" + U+0E49 "mai tho". It takes up 2 space.
   input->setValue(String::FromUTF8("\xE0\xB8\x81\xE0\xB9\x89 foo"));
@@ -742,7 +742,7 @@ TEST_F(InputMethodControllerTest,
   Controller().SetEditableSelectionOffsets(PlainTextRange(0, 0));
   EXPECT_EQ("\xE0\xB8\x81\xE0\xB9\x89 foo", input->value().Utf8());
   Controller().DeleteSurroundingText(0, 1);
-  EXPECT_EQ(" foo", input->value());
+  EXPECT_EQ("\xE0\xB9\x89 foo", input->value().Utf8());
 
   // "trophy" + "trophy".
   input->setValue(String::FromUTF8("\xF0\x9F\x8F\x86\xF0\x9F\x8F\x86 foo"));
@@ -758,7 +758,7 @@ TEST_F(InputMethodControllerTest,
   Controller().SetEditableSelectionOffsets(PlainTextRange(0, 0));
   EXPECT_EQ("\xF0\x9F\x8F\x86\xF0\x9F\x8F\x86 foo", input->value().Utf8());
   Controller().DeleteSurroundingText(0, 3);
-  EXPECT_EQ(" foo", input->value());
+  EXPECT_EQ("\xED\xBF\x86 foo", input->value().Utf8());
 
   // "trophy" + "trophy".
   input->setValue(String::FromUTF8("\xF0\x9F\x8F\x86\xF0\x9F\x8F\x86 foo"));
@@ -788,7 +788,25 @@ TEST_F(InputMethodControllerTest,
   Controller().SetEditableSelectionOffsets(PlainTextRange(2, 2));
   EXPECT_EQ("\xF0\x9F\x8F\x86\xF0\x9F\x8F\x86", input->value().Utf8());
   Controller().DeleteSurroundingText(1, 1);
-  EXPECT_EQ("", input->value());
+  // Deleted second half of the first trophy and the first half of the second
+  // trophy, so we ended up with a complete trophy.
+  EXPECT_EQ("\xF0\x9F\x8F\x86", input->value().Utf8());
+}
+
+// This test comes from http://crbug.com/1024738. It is basically the same to
+// composed text (U+0E01 "ka kai" + U+0E49 "mai tho"), but easier to understand.
+TEST_F(InputMethodControllerTest, DeleteSurroundingTextForComposedCharacter) {
+  auto* input =
+      To<HTMLInputElement>(InsertHTMLElement("<input id='sample'>", "sample"));
+  // p̂p̂ (U+0070 U+0302 U+0070 U+0302)
+  input->setValue(String::FromUTF8("\x70\xCC\x82\x70\xCC\x82"));
+  GetDocument().UpdateStyleAndLayout();
+  Controller().SetEditableSelectionOffsets(PlainTextRange(4, 4));
+  EXPECT_EQ("\x70\xCC\x82\x70\xCC\x82", input->value().Utf8());
+  Controller().DeleteSurroundingText(1, 0);
+  EXPECT_EQ("\x70\xCC\x82\x70", input->value().Utf8());
+  Controller().DeleteSurroundingText(1, 0);
+  EXPECT_EQ("\x70\xCC\x82", input->value().Utf8());
 }
 
 TEST_F(InputMethodControllerTest, DeleteSurroundingTextForMultipleNodes) {
@@ -850,11 +868,10 @@ TEST_F(InputMethodControllerTest,
   // The cursor is at the end of the text.
   Controller().SetEditableSelectionOffsets(PlainTextRange(8, 8));
 
-  // TODO(yabinh): We should only delete 1 code point instead of the entire
-  // grapheme cluster (2 code points). The root cause is that we adjust the
-  // selection by grapheme cluster in deleteSurroundingText().
+  // We should only delete 1 code point.
   Controller().DeleteSurroundingTextInCodePoints(1, 0);
-  EXPECT_EQ("a\xE2\x98\x85 \xF0\x9F\x8F\x86 ", input->value().Utf8());
+  EXPECT_EQ("a\xE2\x98\x85 \xF0\x9F\x8F\x86 \xE0\xB8\x81",
+            input->value().Utf8());
 }
 
 TEST_F(InputMethodControllerTest,
@@ -872,8 +889,8 @@ TEST_F(InputMethodControllerTest,
   EXPECT_EQ("\xE0\xB8\x81\xE0\xB9\x89", input->value().Utf8());
 
   Controller().DeleteSurroundingTextInCodePoints(0, 1);
-  // TODO(yabinh): Same here. We should only delete 1 code point.
-  EXPECT_EQ("", input->value());
+  // We should only delete 1 code point.
+  EXPECT_EQ("\xE0\xB9\x89", input->value().Utf8());
 }
 
 TEST_F(InputMethodControllerTest,

@@ -14,6 +14,7 @@ class UiCredential;
 // Different states for biometric availability for a given device. Either no
 // biometric hardware is available, hardware is available but the user has no
 // biometrics enrolled, or hardware is available and the user makes use of it.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.password_manager
 enum class BiometricsAvailability {
   kAvailable = 0,
   kNoHardware = 1,

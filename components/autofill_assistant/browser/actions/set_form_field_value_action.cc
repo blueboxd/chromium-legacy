@@ -8,6 +8,9 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/signatures_util.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/client_status.h"
 
@@ -20,8 +23,9 @@ SetFormFieldValueAction::FieldInput::FieldInput(
 SetFormFieldValueAction::FieldInput::FieldInput(std::string _value)
     : value(_value) {}
 
-SetFormFieldValueAction::FieldInput::FieldInput(bool _use_password)
-    : use_password(_use_password) {}
+SetFormFieldValueAction::FieldInput::FieldInput(bool _use_password,
+                                                bool _generate_password)
+    : use_password(_use_password), generate_password(_generate_password) {}
 
 SetFormFieldValueAction::FieldInput::FieldInput(FieldInput&& other) = default;
 
@@ -93,7 +97,8 @@ void SetFormFieldValueAction::InternalProcessAction(
                                          ->selected_login()
                                          ->username);
         } else {
-          field_inputs_.emplace_back(/* use_password = */ true);
+          field_inputs_.emplace_back(/* use_password = */ true,
+                                     /* generate_password = */ false);
         }
         break;
       case SetFormFieldValueProto_KeyPress::kText:
@@ -117,6 +122,10 @@ void SetFormFieldValueAction::InternalProcessAction(
         field_inputs_.emplace_back(
             /* value = */ *delegate_->GetClientMemory()->additional_value(
                 keypress.client_memory_key()));
+        break;
+      case SetFormFieldValueProto_KeyPress::kGeneratePassword:
+        field_inputs_.emplace_back(/* use_password = */ true,
+                                   /* generate_password = */ true);
         break;
       default:
         DVLOG(1) << "Unrecognized field for SetFormFieldValueProto_KeyPress";
@@ -159,11 +168,20 @@ void SetFormFieldValueAction::OnSetFieldValue(int next,
                                  delay_in_millisecond,
                                  std::move(next_field_callback));
   } else if (field_input.use_password) {
-    delegate_->GetWebsiteLoginFetcher()->GetPasswordForLogin(
-        *delegate_->GetClientMemory()->selected_login(),
-        base::BindOnce(&SetFormFieldValueAction::OnGetPassword,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       /* field_index = */ next));
+    if (field_input.generate_password) {
+      delegate_->RetrieveElementFormAndFieldData(
+          selector_,
+          base::BindOnce(
+              &SetFormFieldValueAction::OnGetFormAndFieldDataForGeneration,
+              weak_ptr_factory_.GetWeakPtr(),
+              /* field_index = */ next));
+    } else {
+      delegate_->GetWebsiteLoginFetcher()->GetPasswordForLogin(
+          *delegate_->GetClientMemory()->selected_login(),
+          base::BindOnce(&SetFormFieldValueAction::OnGetStoredPassword,
+                         weak_ptr_factory_.GetWeakPtr(),
+                         /* field_index = */ next));
+    }
   } else {
     if (simulate_key_presses || field_input.value.empty()) {
       delegate_->SetFieldValue(selector_, field_input.value,
@@ -230,13 +248,44 @@ void SetFormFieldValueAction::OnGetFieldValue(
   OnSetFieldValue(field_index + 1, OkClientStatus());
 }
 
-void SetFormFieldValueAction::OnGetPassword(int field_index,
-                                            bool success,
-                                            std::string password) {
+void SetFormFieldValueAction::OnGetStoredPassword(int field_index,
+                                                  bool success,
+                                                  std::string password) {
   if (!success) {
     EndAction(ClientStatus(AUTOFILL_INFO_NOT_AVAILABLE));
     return;
   }
+  bool simulate_key_presses = proto_.set_form_value().simulate_key_presses();
+  int delay_in_millisecond = proto_.set_form_value().delay_in_millisecond();
+  if (simulate_key_presses) {
+    delegate_->SetFieldValue(
+        selector_, password, simulate_key_presses, delay_in_millisecond,
+        base::BindOnce(&SetFormFieldValueAction::OnSetFieldValue,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       /* next = */ field_index + 1));
+  } else {
+    delegate_->SetFieldValue(
+        selector_, password, simulate_key_presses, delay_in_millisecond,
+        base::BindOnce(
+            &SetFormFieldValueAction::OnSetFieldValueAndCheckFallback,
+            weak_ptr_factory_.GetWeakPtr(),
+            /* next = */ field_index, /* requested_value = */ password));
+  }
+}
+
+void SetFormFieldValueAction::OnGetFormAndFieldDataForGeneration(
+    int field_index,
+    const ClientStatus& status,
+    const autofill::FormData& form_data,
+    const autofill::FormFieldData& field_data) {
+  if (!status.ok()) {
+    EndAction(status);
+  }
+  uint64_t max_length = field_data.max_length;
+  std::string password = delegate_->GetWebsiteLoginFetcher()->GeneratePassword(
+      autofill::CalculateFormSignature(form_data),
+      autofill::CalculateFieldSignatureForField(field_data), max_length);
+
   bool simulate_key_presses = proto_.set_form_value().simulate_key_presses();
   int delay_in_millisecond = proto_.set_form_value().delay_in_millisecond();
   if (simulate_key_presses) {

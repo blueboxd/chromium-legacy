@@ -45,16 +45,16 @@ struct TypeAndCodec {
   EXPECT_CALL(                                                                 \
       media_log_,                                                              \
       DoAddLogRecordLogString(                                                 \
-          MatchesPropertyExactValue(MediaLog::MediaEventToLogString(           \
+          MatchesPropertyExactValue(MockMediaLog::MediaEventToLogString(       \
               *media_log_.CreatePropertyTestEvent<MediaLogProperty::property>( \
                   value)))))
 
-#define EXPECT_MEDIA_LOG_PROPERTY_ANY_VALUE(property)  \
-  EXPECT_CALL(                                         \
-      media_log_,                                      \
-      DoAddLogRecordLogString(MatchesPropertyAnyValue( \
-          "PROPERTY_CHANGE {\"" +                      \
-          MediaLogPropertyKeyToString(MediaLogProperty::property) + "\"")))
+#define EXPECT_MEDIA_LOG_PROPERTY_ANY_VALUE(property)                       \
+  EXPECT_CALL(                                                              \
+      media_log_,                                                           \
+      DoAddLogRecordLogString(MatchesPropertyAnyValue(                      \
+          "{\"" + MediaLogPropertyKeyToString(MediaLogProperty::property) + \
+          "\"")))
 
 #define EXPECT_FOUND_CODEC_NAME(stream_type, codec_name)                      \
   EXPECT_CALL(media_log_,                                                     \
@@ -66,8 +66,8 @@ struct TypeAndCodec {
 namespace media {
 
 MATCHER_P(TracksHasCodecName, tandc, "") {
-  return (arg.substr(0, 31) == "PROPERTY_CHANGE {\"" + tandc.type + "\"") &&
-         (arg[33] != ']') && CONTAINS_STRING(arg, tandc.codec);
+  return (arg.substr(0, 15) == "{\"" + tandc.type + "\"") && (arg[16] != ']') &&
+         CONTAINS_STRING(arg, tandc.codec);
 }
 
 MATCHER_P(MatchesPropertyExactValue, message, "") {
@@ -92,8 +92,10 @@ class MockMediaLog : public MediaLog {
 
   template <MediaLogProperty P, typename T>
   std::unique_ptr<MediaLogRecord> CreatePropertyTestEvent(const T& value) {
-    return CreatePropertyEvent<P, T>(value);
+    return CreatePropertyRecord<P, T>(value);
   }
+
+  static std::string MediaEventToLogString(const MediaLogRecord& event);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMediaLog);

@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "chrome/browser/android/nfc_system_level_setting_impl.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/permissions/permission_request_id.h"
+#include "components/permissions/permission_request_id.h"
 #include "content/public/browser/web_contents.h"
 
 NfcPermissionContextAndroid::NfcPermissionContextAndroid(Profile* profile)
@@ -19,7 +19,7 @@ NfcPermissionContextAndroid::NfcPermissionContextAndroid(Profile* profile)
 NfcPermissionContextAndroid::~NfcPermissionContextAndroid() = default;
 
 void NfcPermissionContextAndroid::NotifyPermissionSet(
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     BrowserPermissionCallback callback,
@@ -64,7 +64,7 @@ void NfcPermissionContextAndroid::NotifyPermissionSet(
 }
 
 void NfcPermissionContextAndroid::OnNfcSystemLevelSettingPromptClosed(
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     BrowserPermissionCallback callback,

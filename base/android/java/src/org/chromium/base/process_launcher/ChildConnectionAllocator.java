@@ -19,6 +19,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.SysUtils;
 import org.chromium.base.compat.ApiHelperForM;
 
 import java.util.ArrayDeque;
@@ -137,9 +138,13 @@ public abstract class ChildConnectionAllocator {
                         useStrongBinding, MAX_VARIABLE_ALLOCATED);
             }
         }
+        // On low end devices, we do not expect to have many renderers. As a consequence, the fixed
+        // costs of the app zygote are not recovered. See https://crbug.com/1044579 for context and
+        // experimental results.
+        String suffix = SysUtils.isLowEndDevice() ? NON_ZYGOTE_SUFFIX : ZYGOTE_SUFFIX;
         return new VariableSizeAllocatorImpl(launcherHandler, freeSlotCallback, packageName,
-                serviceClassName + ZYGOTE_SUFFIX, bindToCaller, bindAsExternalService,
-                useStrongBinding, MAX_VARIABLE_ALLOCATED);
+                serviceClassName + suffix, bindToCaller, bindAsExternalService, useStrongBinding,
+                MAX_VARIABLE_ALLOCATED);
     }
 
     /**

@@ -279,8 +279,6 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     // See https://crbug.com/901800
     base::internal::CheckedAutoLock lock(any_thread_lock_);
     LazyNow lazy_now = any_thread_.time_domain->CreateLazyNow();
-    if (any_thread_.task_queue_observer)
-      any_thread_.task_queue_observer->OnPostTask(task.location, TimeDelta());
     bool add_queue_time_to_tasks = sequence_manager_->GetAddQueueTimeToTasks();
     if (add_queue_time_to_tasks || delayed_fence_allowed_)
       task.queue_time = lazy_now.Now();
@@ -364,10 +362,6 @@ void TaskQueueImpl::PostDelayedTaskImpl(PostedTask task,
 
     TimeTicks time_domain_now = main_thread_only().time_domain->Now();
     TimeTicks time_domain_delayed_run_time = time_domain_now + task.delay;
-    if (main_thread_only().task_queue_observer) {
-      main_thread_only().task_queue_observer->OnPostTask(task.location,
-                                                         task.delay);
-    }
     if (sequence_manager_->GetAddQueueTimeToTasks())
       task.queue_time = time_domain_now;
 
@@ -386,8 +380,6 @@ void TaskQueueImpl::PostDelayedTaskImpl(PostedTask task,
     {
       base::internal::CheckedAutoLock lock(any_thread_lock_);
       time_domain_now = any_thread_.time_domain->Now();
-      if (any_thread_.task_queue_observer)
-        any_thread_.task_queue_observer->OnPostTask(task.location, task.delay);
     }
     TimeTicks time_domain_delayed_run_time = time_domain_now + task.delay;
     if (sequence_manager_->GetAddQueueTimeToTasks())

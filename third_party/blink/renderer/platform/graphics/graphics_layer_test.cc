@@ -149,11 +149,10 @@ TEST_P(GraphicsLayerTest, SetDrawsContentFalse) {
 TEST_P(GraphicsLayerTest, ContentsLayer) {
   auto& graphics_layer = layers_.graphics_layer();
   auto contents_layer = cc::Layer::Create();
-  GraphicsLayer::RegisterContentsLayer(contents_layer.get());
-  graphics_layer.SetContentsToCcLayer(contents_layer.get(), true);
+  graphics_layer.SetContentsToCcLayer(contents_layer, true);
   EXPECT_TRUE(graphics_layer.HasContentsLayer());
   EXPECT_EQ(contents_layer.get(), graphics_layer.ContentsLayer());
-  GraphicsLayer::UnregisterContentsLayer(contents_layer.get());
+  graphics_layer.SetContentsToCcLayer(nullptr, true);
   EXPECT_FALSE(graphics_layer.HasContentsLayer());
   EXPECT_EQ(nullptr, graphics_layer.ContentsLayer());
 }

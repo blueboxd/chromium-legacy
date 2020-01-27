@@ -55,6 +55,9 @@ class ASH_EXPORT AssistantTestApi {
   // Returns the interface to get/set Assistant related prefs and states.
   virtual AssistantState* GetAssistantState() = 0;
 
+  // Wait for all Assistant related actions to settle.
+  virtual void WaitUntilIdle() = 0;
+
   // Returns the top-level Assistant specific view.
   // Can only be used after the Assistant UI has been shown at least once.
   virtual views::View* page_view() = 0;

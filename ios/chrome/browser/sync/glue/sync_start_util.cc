@@ -21,7 +21,7 @@ namespace {
 
 void StartSyncOnUIThread(const base::FilePath& browser_state_path,
                          syncer::ModelType type) {
-  ios::ChromeBrowserStateManager* browser_state_manager =
+  ChromeBrowserStateManager* browser_state_manager =
       GetApplicationContext()->GetChromeBrowserStateManager();
   if (!browser_state_manager) {
     // Can happen in tests.
@@ -29,7 +29,7 @@ void StartSyncOnUIThread(const base::FilePath& browser_state_path,
     return;
   }
 
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       browser_state_manager->GetBrowserState(browser_state_path);
   if (!browser_state) {
     DVLOG(2) << "ChromeBrowserState not found, can't start sync.";

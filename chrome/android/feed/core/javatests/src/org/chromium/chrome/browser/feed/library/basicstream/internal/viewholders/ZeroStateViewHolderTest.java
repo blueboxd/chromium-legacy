@@ -25,6 +25,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguration;
 import org.chromium.chrome.browser.feed.library.testing.host.stream.FakeCardConfiguration;
+import org.chromium.chrome.feed.R;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Tests for {@link ZeroStateViewHolder}. */

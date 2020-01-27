@@ -65,7 +65,6 @@ luci.list_view(
         'try/gpu-fyi-try-linux-nvidia-rel',
         'try/gpu-fyi-try-linux-nvidia-skv',
         'try/gpu-fyi-try-linux-nvidia-tsn',
-        'try/gpu-fyi-try-win-xr-builder-64',
         'try/gpu-fyi-try-win7-amd-dbg-32',
         'try/gpu-fyi-try-win7-amd-dqp-32',
         'try/gpu-fyi-try-win7-amd-rel-32',

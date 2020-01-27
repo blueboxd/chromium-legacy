@@ -504,6 +504,13 @@ const char kTetherHostScansIgnoreWiredConnections[] =
 // Shows all Bluetooth devices in UI (System Tray/Settings Page.)
 const char kUnfilteredBluetoothDevices[] = "unfiltered-bluetooth-devices";
 
+// Skips the call to IdentityManager SetPrimaryAccount() on login, using
+// SetUnconsentedPrimaryAccount() instead. This marks the primary account as
+// *not* consented to browser sync, allowing consent to be set later. Used for
+// manual testing, not intended for production. See also
+// chromeos::features::kSplitSettingsSync.
+const char kUseUnconsentedPrimaryAccount[] = "use-unconsented-primary-account";
+
 // Used to tell the policy infrastructure to not let profile initialization
 // complete until policy is manually set by a test. This is used to provide
 // backward compatibility with a few tests that incorrectly use the
@@ -599,6 +606,11 @@ bool IsArcCpuRestrictionDisabled() {
 bool IsUnfilteredBluetoothDevicesEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kUnfilteredBluetoothDevices);
+}
+
+bool UseUnconsentedPrimaryAccount() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      kUseUnconsentedPrimaryAccount);
 }
 
 }  // namespace switches

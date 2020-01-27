@@ -602,9 +602,6 @@ bool TaskQueueThrottler::Metadata::DecrementRefCount() {
   return false;
 }
 
-void TaskQueueThrottler::Metadata::OnPostTask(base::Location from_here,
-                                              base::TimeDelta delay) {}
-
 void TaskQueueThrottler::Metadata::OnQueueNextWakeUpChanged(
     base::TimeTicks wake_up) {
   throttler_->OnQueueNextWakeUpChanged(queue_, wake_up);

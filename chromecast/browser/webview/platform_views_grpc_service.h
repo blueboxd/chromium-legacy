@@ -28,7 +28,7 @@ class PlatformViewsAsyncService : public base::PlatformThread::Delegate {
       std::unique_ptr<grpc::ServerCompletionQueue> cq,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       WebContentsProvider* web_contents_provider,
-      CastWindowManager* cast_window_manager = nullptr);
+      CastWindowManager* cast_window_manager);
   ~PlatformViewsAsyncService() override;
 
  private:

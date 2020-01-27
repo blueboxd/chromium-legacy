@@ -210,26 +210,6 @@ WebFrameTestProxy::GetEffectiveConnectionType() {
   return RenderFrameImpl::GetEffectiveConnectionType();
 }
 
-void WebFrameTestProxy::RunModalAlertDialog(const blink::WebString& message) {
-  test_client_->RunModalAlertDialog(message);
-}
-
-bool WebFrameTestProxy::RunModalConfirmDialog(const blink::WebString& message) {
-  return test_client_->RunModalConfirmDialog(message);
-}
-
-bool WebFrameTestProxy::RunModalPromptDialog(
-    const blink::WebString& message,
-    const blink::WebString& default_value,
-    blink::WebString* actual_value) {
-  return test_client_->RunModalPromptDialog(message, default_value,
-                                            actual_value);
-}
-
-bool WebFrameTestProxy::RunModalBeforeUnloadDialog(bool is_reload) {
-  return test_client_->RunModalBeforeUnloadDialog(is_reload);
-}
-
 void WebFrameTestProxy::ShowContextMenu(
     const blink::WebContextMenuData& context_menu_data) {
   test_client_->ShowContextMenu(context_menu_data);

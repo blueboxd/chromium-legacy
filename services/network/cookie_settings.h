@@ -54,9 +54,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CookieSettings
   }
 
   void set_content_settings_for_legacy_cookie_access(
-      const ContentSettingsForOneType& settings) {
-    settings_for_legacy_cookie_access_ = settings;
-  }
+      const ContentSettingsForOneType& settings);
 
   // Returns a predicate that takes the domain of a cookie and a bool whether
   // the cookie is secure and returns true if the cookie should be deleted on

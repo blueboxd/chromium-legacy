@@ -13,6 +13,10 @@ blink_modules_sources("webcodecs") {
     "video_decoder.h",
     "video_frame.cc",
     "video_frame.h",
+    "video_track_reader.cc",
+    "video_track_reader.h",
+    "video_track_writer.cc",
+    "video_track_writer.h",
   ]
 }
 
@@ -21,6 +25,7 @@ source_set("unit_tests") {
   sources = [
     "encoded_video_chunk_test.cc",
     "video_frame_test.cc",
+    "video_track_reader_writer_test.cc",
   ]
 
   configs += [

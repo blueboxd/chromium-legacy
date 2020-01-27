@@ -30,7 +30,7 @@ static {{namespace}}FunctionMap* g_{{namespace|lower}}_constructors = nullptr;
 static {{namespace}}Element* {{namespace}}{{tag.name.to_upper_camel_case()}}Constructor(
     Document& document, const CreateElementFlags flags) {
   {% if tag.runtimeEnabled %}
-  if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
+  if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled(&document))
     return MakeGarbageCollected<{{fallback_interface}}>({{cpp_namespace}}::{{tag|symbol}}Tag, document);
   {% endif %}
   return MakeGarbageCollected<{{tag.interface}}>(

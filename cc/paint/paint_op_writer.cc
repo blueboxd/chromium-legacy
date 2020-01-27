@@ -19,6 +19,10 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 
+#ifndef OS_ANDROID
+#include "cc/paint/skottie_transfer_cache_entry.h"
+#endif
+
 namespace cc {
 namespace {
 const size_t kSkiaAlignment = 4u;
@@ -269,6 +273,35 @@ void PaintOpWriter::Write(const DrawImage& draw_image,
   WriteImage(id.value_or(kInvalidImageTransferCacheEntryId),
              decoded_draw_image.transfer_cache_entry_needs_mips());
 }
+
+// Android does not use skottie. Remove below section to keep binary size to a
+// minimum.
+#ifndef OS_ANDROID
+void PaintOpWriter::Write(scoped_refptr<SkottieWrapper> skottie) {
+  uint32_t id = skottie->id();
+  Write(id);
+
+  uint64_t* bytes_to_skip = WriteSize(0u);
+  if (!valid_)
+    return;
+
+  bool locked =
+      options_.transfer_cache->LockEntry(TransferCacheEntryType::kSkottie, id);
+
+  // Add a cache entry for the skottie animation.
+  uint64_t bytes_written = 0u;
+  if (!locked) {
+    bytes_written = options_.transfer_cache->CreateEntry(
+        ClientSkottieTransferCacheEntry(skottie), memory_);
+    options_.transfer_cache->AssertLocked(TransferCacheEntryType::kSkottie, id);
+  }
+
+  DCHECK_LE(bytes_written, remaining_bytes_);
+  *bytes_to_skip = bytes_written;
+  memory_ += bytes_written;
+  remaining_bytes_ -= bytes_written;
+}
+#endif  // OS_ANDROID
 
 void PaintOpWriter::WriteImage(uint32_t transfer_cache_entry_id,
                                bool needs_mips) {

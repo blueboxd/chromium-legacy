@@ -53,6 +53,7 @@ mojom("mojom_platform") {
     "frame/frame_policy.mojom",
     "frame/fullscreen.mojom",
     "frame/lifecycle.mojom",
+    "frame/media_player_action.mojom",
     "frame/navigation_initiator.mojom",
     "frame/sudden_termination_disabler_type.mojom",
     "frame/user_activation_update_types.mojom",

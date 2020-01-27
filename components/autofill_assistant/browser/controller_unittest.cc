@@ -1749,4 +1749,64 @@ TEST_F(ControllerTest, WriteUserData) {
             TermsAndConditionsState::ACCEPTED);
 }
 
+TEST_F(ControllerTest, ExpandOrCollapseBottomSheet) {
+  {
+    testing::InSequence seq;
+    EXPECT_CALL(mock_observer_, OnCollapseBottomSheet()).Times(1);
+    EXPECT_CALL(mock_observer_, OnExpandBottomSheet()).Times(1);
+  }
+  controller_->CollapseBottomSheet();
+  controller_->ExpandBottomSheet();
+}
+
+TEST_F(ControllerTest, ShouldPromptActionExpandSheet) {
+  // Expect this to be true initially.
+  EXPECT_TRUE(controller_->ShouldPromptActionExpandSheet());
+
+  controller_->SetExpandSheetForPromptAction(false);
+  EXPECT_FALSE(controller_->ShouldPromptActionExpandSheet());
+
+  controller_->SetExpandSheetForPromptAction(true);
+  EXPECT_TRUE(controller_->ShouldPromptActionExpandSheet());
+}
+
+TEST_F(ControllerTest, SecondPromptActionShouldDefaultToExpandSheet) {
+  SupportsScriptResponseProto script_response;
+  AddRunnableScript(&script_response, "runnable")
+      ->mutable_presentation()
+      ->set_autostart(true);
+  SetNextScriptResponse(script_response);
+
+  ActionsResponseProto runnable_script;
+  // Prompt action 1 which disables auto expand.
+  auto* prompt_action = runnable_script.add_actions()->mutable_prompt();
+  prompt_action->add_choices()->mutable_chip()->set_text("continue");
+  prompt_action->set_disable_force_expand_sheet(true);
+
+  // Prompt action 2 using the default should fall back to auto expand again.
+  runnable_script.add_actions()
+      ->mutable_prompt()
+      ->add_choices()
+      ->mutable_chip()
+      ->set_text("next");
+
+  SetupActionsForScript("runnable", runnable_script);
+  Start();
+
+  // The first prompt should not auto expand.
+  EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
+  EXPECT_FALSE(controller_->ShouldPromptActionExpandSheet());
+  ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
+  EXPECT_EQ(controller_->GetUserActions()[0].chip().text, "continue");
+
+  // Click "continue"
+  EXPECT_TRUE(controller_->PerformUserAction(0));
+
+  // The second prompt should fall back to default auto expand again.
+  EXPECT_EQ(AutofillAssistantState::PROMPT, controller_->GetState());
+  EXPECT_TRUE(controller_->ShouldPromptActionExpandSheet());
+  ASSERT_THAT(controller_->GetUserActions(), SizeIs(1));
+  EXPECT_EQ(controller_->GetUserActions()[0].chip().text, "next");
+}
+
 }  // namespace autofill_assistant

@@ -35,7 +35,6 @@ class ChromeSearchResult {
   using Action = ash::SearchResultAction;
   using Actions = ash::SearchResultActions;
   using DisplayIndex = ash::SearchResultDisplayIndex;
-  using DisplayLocation = ash::SearchResultDisplayLocation;
 
   ChromeSearchResult();
   virtual ~ChromeSearchResult();
@@ -54,13 +53,11 @@ class ChromeSearchResult {
     return metadata_->result_type;
   }
   DisplayIndex display_index() const { return metadata_->display_index; }
-  DisplayLocation display_location() const {
-    return metadata_->display_location;
-  }
   float position_priority() const { return metadata_->position_priority; }
   const Actions& actions() const { return metadata_->actions; }
   double display_score() const { return metadata_->display_score; }
   bool is_installing() const { return metadata_->is_installing; }
+  bool is_recommendation() const { return metadata_->is_recommendation; }
   const base::Optional<GURL>& query_url() const { return metadata_->query_url; }
   const base::Optional<std::string>& equivalent_result_id() const {
     return metadata_->equivalent_result_id;
@@ -85,11 +82,11 @@ class ChromeSearchResult {
   void SetDisplayType(DisplayType display_type);
   void SetResultType(ResultType result_type);
   void SetDisplayIndex(DisplayIndex display_index);
-  void SetDisplayLocation(DisplayLocation display_location);
   void SetPositionPriority(float position_priority);
   void SetDisplayScore(double display_score);
   void SetActions(const Actions& actions);
   void SetIsOmniboxSearch(bool is_omnibox_search);
+  void SetIsRecommendation(bool is_recommendation);
   void SetIsInstalling(bool is_installing);
   void SetQueryUrl(const GURL& url);
   void SetEquivalentResutlId(const std::string& equivlanet_result_id);

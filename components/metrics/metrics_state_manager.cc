@@ -66,12 +66,15 @@ void LogClonedInstall() {
 
 class MetricsStateMetricsProvider : public MetricsProvider {
  public:
-  MetricsStateMetricsProvider(PrefService* local_state,
-                              bool metrics_ids_were_reset,
-                              std::string previous_client_id)
+  MetricsStateMetricsProvider(
+      PrefService* local_state,
+      bool metrics_ids_were_reset,
+      std::string previous_client_id,
+      ClonedInstallDetector const& cloned_install_detector)
       : local_state_(local_state),
         metrics_ids_were_reset_(metrics_ids_were_reset),
-        previous_client_id_(std::move(previous_client_id)) {}
+        previous_client_id_(std::move(previous_client_id)),
+        cloned_install_detector_(cloned_install_detector) {}
 
   // MetricsProvider:
   void ProvideSystemProfileMetrics(
@@ -99,7 +102,7 @@ class MetricsStateMetricsProvider : public MetricsProvider {
 
   void ProvideCurrentSessionData(
       ChromeUserMetricsExtension* uma_proto) override {
-    if (local_state_->GetBoolean(prefs::kMetricsResetIds))
+    if (cloned_install_detector_.ClonedInstallDetectedInCurrentSession())
       LogClonedInstall();
   }
 
@@ -108,6 +111,7 @@ class MetricsStateMetricsProvider : public MetricsProvider {
   const bool metrics_ids_were_reset_;
   // |previous_client_id_| is set only (if known) when |metrics_ids_were_reset_|
   const std::string previous_client_id_;
+  const ClonedInstallDetector& cloned_install_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsStateMetricsProvider);
 };
@@ -179,7 +183,8 @@ MetricsStateManager::~MetricsStateManager() {
 
 std::unique_ptr<MetricsProvider> MetricsStateManager::GetProvider() {
   return std::make_unique<MetricsStateMetricsProvider>(
-      local_state_, metrics_ids_were_reset_, previous_client_id_);
+      local_state_, metrics_ids_were_reset_, previous_client_id_,
+      cloned_install_detector_);
 }
 
 bool MetricsStateManager::IsMetricsReportingEnabled() {
@@ -266,13 +271,10 @@ void MetricsStateManager::ForceClientIdCreation() {
 }
 
 void MetricsStateManager::CheckForClonedInstall() {
-  DCHECK(!cloned_install_detector_);
-
   if (!MachineIdProvider::HasId())
     return;
 
-  cloned_install_detector_ = std::make_unique<ClonedInstallDetector>();
-  cloned_install_detector_->CheckForClonedInstall(local_state_);
+  cloned_install_detector_.CheckForClonedInstall(local_state_);
 }
 
 std::unique_ptr<const base::FieldTrial::EntropyProvider>
@@ -314,7 +316,6 @@ std::unique_ptr<MetricsStateManager> MetricsStateManager::Create(
 
 // static
 void MetricsStateManager::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(prefs::kMetricsResetIds, false);
   registry->RegisterStringPref(prefs::kMetricsClientID, std::string());
   registry->RegisterInt64Pref(prefs::kMetricsReportingEnabledTimestamp, 0);
   registry->RegisterInt64Pref(prefs::kInstallDate, 0);
@@ -373,7 +374,7 @@ void MetricsStateManager::UpdateEntropySourceReturnedValue(
 }
 
 void MetricsStateManager::ResetMetricsIDsIfNecessary() {
-  if (!local_state_->GetBoolean(prefs::kMetricsResetIds))
+  if (!cloned_install_detector_.ShouldResetClientIds(local_state_))
     return;
   metrics_ids_were_reset_ = true;
   previous_client_id_ = local_state_->GetString(prefs::kMetricsClientID);
@@ -383,7 +384,6 @@ void MetricsStateManager::ResetMetricsIDsIfNecessary() {
   DCHECK(client_id_.empty());
 
   local_state_->ClearPref(prefs::kMetricsClientID);
-  local_state_->ClearPref(prefs::kMetricsResetIds);
   entropy_state_.ClearPrefs();
 
   // Also clear the backed up client info.

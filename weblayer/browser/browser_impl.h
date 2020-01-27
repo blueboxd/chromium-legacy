@@ -20,6 +20,10 @@ namespace base {
 class FilePath;
 }
 
+namespace content {
+class WebContents;
+}
+
 namespace weblayer {
 
 class ProfileImpl;
@@ -42,6 +46,9 @@ class BrowserImpl : public Browser {
 
   ProfileImpl* profile() { return profile_; }
 
+  TabImpl* CreateTabForSessionRestore(
+      std::unique_ptr<content::WebContents> web_contents);
+
 #if defined(OS_ANDROID)
   void AddTab(JNIEnv* env,
               const base::android::JavaParamRef<jobject>& caller,
@@ -58,6 +65,11 @@ class BrowserImpl : public Browser {
   base::android::ScopedJavaLocalRef<jobject> GetActiveTab(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& caller);
+  void PrepareForShutdown(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& caller);
+  base::android::ScopedJavaLocalRef<jstring> GetPersistenceId(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller);
 #endif
 
   // Browser:
@@ -67,6 +79,7 @@ class BrowserImpl : public Browser {
   Tab* GetActiveTab() override;
   const std::vector<Tab*>& GetTabs() override;
   void PrepareForShutdown() override;
+  const std::string& GetPersistenceId() override;
   void AddObserver(BrowserObserver* observer) override;
   void RemoveObserver(BrowserObserver* observer) override;
 

@@ -38,8 +38,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.toolbar.top.ActionModeController;
-import org.chromium.chrome.browser.toolbar.top.ToolbarActionModeCallback;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -103,7 +101,6 @@ public class SelectableListToolbar<E>
     private boolean mIsSearching;
     private boolean mHasSearchView;
     private LinearLayout mSearchView;
-    private EditText mSearchText;
     private EditText mSearchEditText;
     private ImageButton mClearTextButton;
     private SearchDelegate mSearchDelegate;
@@ -142,7 +139,6 @@ public class SelectableListToolbar<E>
     private boolean mShowInfoIcon;
     private int mShowInfoStringId;
     private int mHideInfoStringId;
-    private int mExtraMenuItemId;
 
     // current view type that SelectableListToolbar is showing
     private int mViewType;
@@ -229,15 +225,6 @@ public class SelectableListToolbar<E>
         mShowInfoIcon = true;
         mShowInfoStringId = R.string.show_info;
         mHideInfoStringId = R.string.hide_info;
-
-        // Used only for the case of DownloadManagerToolbar.
-        // Will not be needed after a tint is applied to all toolbar buttons.
-        MenuItem extraMenuItem = getMenu().findItem(mExtraMenuItemId);
-        if (extraMenuItem != null) {
-            Drawable iconDrawable = UiUtils.getTintedDrawable(
-                    getContext(), R.drawable.ic_more_vert_24dp, R.color.standard_mode_tint);
-            extraMenuItem.setIcon(iconDrawable);
-        }
     }
 
     @Override
@@ -273,10 +260,8 @@ public class SelectableListToolbar<E>
 
         LayoutInflater.from(getContext()).inflate(R.layout.search_toolbar, this);
 
-        mSearchView = (LinearLayout) findViewById(R.id.search_view);
-        mSearchText = (EditText) mSearchView.findViewById(R.id.search_text);
-
-        mSearchEditText = (EditText) findViewById(R.id.search_text);
+        mSearchView = findViewById(R.id.search_view);
+        mSearchEditText = mSearchView.findViewById(R.id.search_text);
         mSearchEditText.setHint(hintStringResId);
         mSearchEditText.setOnEditorActionListener(this);
         mSearchEditText.addTextChangedListener(new TextWatcher() {
@@ -295,12 +280,7 @@ public class SelectableListToolbar<E>
         });
 
         mClearTextButton = findViewById(R.id.clear_text_button);
-        mClearTextButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mSearchEditText.setText("");
-            }
-        });
+        mClearTextButton.setOnClickListener(v -> mSearchEditText.setText(""));
     }
 
     @Override
@@ -308,7 +288,7 @@ public class SelectableListToolbar<E>
         super.onFinishInflate();
 
         LayoutInflater.from(getContext()).inflate(R.layout.number_roll_view, this);
-        mNumberRollView = (NumberRollView) findViewById(R.id.selection_mode_number);
+        mNumberRollView = findViewById(R.id.selection_mode_number);
         mNumberRollView.setString(R.plurals.selected_items);
         mNumberRollView.setStringForZero(R.string.select_items);
     }
@@ -322,7 +302,7 @@ public class SelectableListToolbar<E>
         // If onSelectionStateChange() gets called before onFinishInflate(), mNumberRollView
         // will be uninitialized. See crbug.com/637948.
         if (mNumberRollView == null) {
-            mNumberRollView = (NumberRollView) findViewById(R.id.selection_mode_number);
+            mNumberRollView = findViewById(R.id.selection_mode_number);
         }
 
         if (mIsSelectionEnabled) {
@@ -416,16 +396,6 @@ public class SelectableListToolbar<E>
         mSearchEditText.requestFocus();
         KeyboardVisibilityDelegate.getInstance().showKeyboard(mSearchEditText);
         setTitle(null);
-    }
-
-    /**
-     * Set a custom delegate for when the action mode starts showing for the search view.
-     * @param delegate The delegate to use.
-     */
-    public void setActionBarDelegate(ActionModeController.ActionBarDelegate delegate) {
-        ToolbarActionModeCallback callback = new ToolbarActionModeCallback();
-        callback.setActionModeController(new ActionModeController(getContext(), delegate));
-        mSearchText.setCustomSelectionActionModeCallback(callback);
     }
 
     /**
@@ -623,42 +593,6 @@ public class SelectableListToolbar<E>
      */
     public void setInfoMenuItem(int infoMenuItemId) {
         mInfoMenuItemId = infoMenuItemId;
-    }
-
-    /**
-     * Set ID of menu item that is displayed to hold any extra actions.
-     * Needs to be called before {@link #initialize}.
-     *
-     * @param extraMenuItemId The menu item.
-     */
-    public void setExtraMenuItem(int extraMenuItemId) {
-        mExtraMenuItemId = extraMenuItemId;
-    }
-
-    /**
-     * Sets the parameter that determines whether to show the info icon.
-     * This is useful when the info menu option is being shown in a sub-menu, where only the text is
-     * necessary, versus being shown as an icon in the toolbar.
-     * Needs to be called before {@link #initialize}.
-     *
-     * @param shouldShow    Whether to show the icon for the info menu item. Defaults to true.
-     */
-    public void setShowInfoIcon(boolean shouldShow) {
-        mShowInfoIcon = shouldShow;
-    }
-
-    /**
-     * Set the IDs of the string resources to be shown for the info button text if different from
-     * the default "Show info"/"Hide info" text.
-     * Needs to be called before {@link #initialize}.
-     *
-     * @param showInfoStringId  Resource ID of string for the info button text that, when clicked,
-     *                          will show info.
-     * @param hideInfoStringId  Resource ID of the string that will hide the info.
-     */
-    public void setInfoButtonText(int showInfoStringId, int hideInfoStringId) {
-        mShowInfoStringId = showInfoStringId;
-        mHideInfoStringId = hideInfoStringId;
     }
 
     /**

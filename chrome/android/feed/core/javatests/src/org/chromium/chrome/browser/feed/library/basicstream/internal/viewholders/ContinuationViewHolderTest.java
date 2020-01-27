@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguratio
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.LoggingListener;
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.VisibilityMonitor;
 import org.chromium.chrome.browser.feed.library.testing.host.stream.FakeCardConfiguration;
+import org.chromium.chrome.feed.R;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Tests for {@link ContinuationViewHolder}. */

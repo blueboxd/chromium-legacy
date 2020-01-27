@@ -70,10 +70,15 @@ const base::Feature kPasswordImport = {"PasswordImport",
 const base::Feature kPasswordManagerOnboardingAndroid = {
     "PasswordManagerOnboardingAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controlls whether the password bubble on desktop contains an illustration and
+// Controls whether the password bubble on desktop contains an illustration and
 // which illustration.
 const base::Feature kPasswordSaveIllustration = {
     "SavePasswordIllustration", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables showing UI which allows users to easily revert their choice to
+// never save passwords on a certain website.
+const base::Feature kRecoverFromNeverSaveAndroid = {
+    "RecoverFromNeverSaveAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables support of filling and saving on username first flow.
 const base::Feature kUsernameFirstFlow = {"UsernameFirstFlow",

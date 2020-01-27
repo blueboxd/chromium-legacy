@@ -5,13 +5,13 @@
 #include "chrome/browser/plugins/flash_permission_context.h"
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/plugins/flash_temporary_permission_tracker.h"
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/permissions/permission_request_id.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -51,9 +51,10 @@ ContentSetting FlashPermissionContext::GetPermissionStatusInternal(
   return flash_setting;
 }
 
-void FlashPermissionContext::UpdateTabContext(const PermissionRequestID& id,
-                                              const GURL& requesting_origin,
-                                              bool allowed) {
+void FlashPermissionContext::UpdateTabContext(
+    const permissions::PermissionRequestID& id,
+    const GURL& requesting_origin,
+    bool allowed) {
   if (!allowed)
     return;
 

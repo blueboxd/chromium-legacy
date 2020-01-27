@@ -42,35 +42,39 @@ void InspectorMediaEventHandler::SendQueuedMediaEvents(
   blink::InspectorPlayerProperties properties;
 
   for (media::MediaLogRecord event : events_to_send) {
-    if (event.type == media::MediaLogRecord::PROPERTY_CHANGE) {
-      for (auto&& itr : event.params.DictItems()) {
-        blink::InspectorPlayerProperty prop = {
-            blink::WebString::FromUTF8(itr.first), ToString(itr.second)};
-        properties.emplace_back(prop);
+    switch (event.type) {
+      case media::MediaLogRecord::Type::kMessage: {
+        for (auto&& itr : event.params.DictItems()) {
+          blink::InspectorPlayerEvent ev = {
+              blink::InspectorPlayerEvent::MESSAGE_EVENT, event.time,
+              blink::WebString::FromUTF8(itr.first), ToString(itr.second)};
+          events.emplace_back(std::move(ev));
+        }
+        break;
       }
-    } else {
-      blink::InspectorPlayerEvent::InspectorPlayerEventType event_type =
-          blink::InspectorPlayerEvent::SYSTEM_EVENT;
-
-      if (event.type == media::MediaLogRecord::MEDIA_ERROR_LOG_ENTRY ||
-          event.type == media::MediaLogRecord::MEDIA_WARNING_LOG_ENTRY ||
-          event.type == media::MediaLogRecord::MEDIA_INFO_LOG_ENTRY ||
-          event.type == media::MediaLogRecord::MEDIA_DEBUG_LOG_ENTRY) {
-        event_type = blink::InspectorPlayerEvent::MESSAGE_EVENT;
+      case media::MediaLogRecord::Type::kMediaPropertyChange: {
+        for (auto&& itr : event.params.DictItems()) {
+          blink::InspectorPlayerProperty prop = {
+              blink::WebString::FromUTF8(itr.first), ToString(itr.second)};
+          properties.emplace_back(std::move(prop));
+        }
+        break;
       }
-      if (event.params.size() == 0) {
+      case media::MediaLogRecord::Type::kMediaEventTriggered: {
         blink::InspectorPlayerEvent ev = {
-            blink::InspectorPlayerEvent::PLAYBACK_EVENT, event.time,
-            blink::WebString::FromUTF8("Event"),
-            blink::WebString::FromUTF8(
-                media::MediaLog::EventTypeToString(event.type))};
-        events.emplace_back(ev);
+            blink::InspectorPlayerEvent::TRIGGERED_EVENT, event.time,
+            blink::WebString::FromUTF8("event"), ToString(event.params)};
+        events.emplace_back(std::move(ev));
+        break;
       }
-      for (auto&& itr : event.params.DictItems()) {
-        blink::InspectorPlayerEvent ev = {event_type, event.time,
-                                          blink::WebString::FromUTF8(itr.first),
-                                          ToString(itr.second)};
-        events.emplace_back(ev);
+      case media::MediaLogRecord::Type::kMediaError: {
+        // TODO(tmathmeyer) Make a new type in the browser protocol instead
+        // of overloading InspectorPlayerEvent.
+        blink::InspectorPlayerEvent ev = {
+            blink::InspectorPlayerEvent::ERROR_EVENT, event.time,
+            blink::WebString::FromUTF8("error"), ToString(event.params)};
+        events.emplace_back(std::move(ev));
+        break;
       }
     }
   }

@@ -15,13 +15,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chromecast/browser/application_media_info_manager.h"
+#include "chromecast/browser/cast_browser_interface_binders.h"
 #include "chromecast/browser/cast_browser_main_parts.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/service_connector.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/media/cdm/cast_cdm_factory.h"
-#include "components/network_hints/browser/simple_network_hints_handler_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/mojo/buildflags.h"
 #include "services/service_manager/public/cpp/binder_map.h"
@@ -93,13 +93,6 @@ void StartExternalMojoBrokerService(
 }
 #endif  // BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
 
-void BindNetworkHintsHandler(
-    content::RenderFrameHost* frame_host,
-    mojo::PendingReceiver<network_hints::mojom::NetworkHintsHandler> receiver) {
-  network_hints::SimpleNetworkHintsHandlerImpl::Create(frame_host,
-                                                       std::move(receiver));
-}
-
 }  // namespace
 
 void CastContentBrowserClient::ExposeInterfacesToRenderer(
@@ -147,8 +140,7 @@ void CastContentBrowserClient::ExposeInterfacesToMediaService(
 void CastContentBrowserClient::RegisterBrowserInterfaceBindersForFrame(
     content::RenderFrameHost* render_frame_host,
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
-  map->Add<network_hints::mojom::NetworkHintsHandler>(
-      base::BindRepeating(&BindNetworkHintsHandler));
+  PopulateCastFrameBinders(render_frame_host, map);
 }
 
 mojo::Remote<::media::mojom::MediaService>

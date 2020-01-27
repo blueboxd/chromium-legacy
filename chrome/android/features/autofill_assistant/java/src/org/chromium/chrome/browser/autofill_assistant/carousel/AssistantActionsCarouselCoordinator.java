@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill_assistant.carousel;
 
+import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.RECYCLER_VIEW_TAG;
+
 import android.content.Context;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.OrientationHelper;
@@ -41,6 +43,7 @@ public class AssistantActionsCarouselCoordinator implements AssistantCarouselCoo
 
     public AssistantActionsCarouselCoordinator(Context context, AssistantCarouselModel model) {
         mView = new RecyclerView(context);
+        mView.setTag(RECYCLER_VIEW_TAG);
 
         CustomLayoutManager layoutManager = new CustomLayoutManager();
         // Workaround for b/128679161.

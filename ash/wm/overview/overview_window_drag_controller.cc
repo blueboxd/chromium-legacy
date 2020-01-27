@@ -582,6 +582,36 @@ OverviewWindowDragController::CompleteNormalDrag(
 
   // Drop a window into overview because we have not done anything else with it.
   DCHECK(item_);
+  aura::Window* target_root = GetRootWindowBeingDraggedIn();
+  if (AreMultiDisplayOverviewAndSplitViewEnabled() &&
+      target_root != item_->root_window()) {
+    // Get the window and bounds from |item_| before removing it from its grid.
+    aura::Window* window = item_->GetWindow();
+    const gfx::RectF bounds = item_->target_bounds();
+    item_->overview_grid()->RemoveItem(item_);
+    item_ = nullptr;
+    // Use |OverviewSession::set_ignore_window_hierarchy_changes| to prevent
+    // |OverviewSession::OnWindowHierarchyChanged| from ending overview as we
+    // move |window| to |target_root|.
+    overview_session_->set_ignore_window_hierarchy_changes(true);
+    window_util::MoveWindowToDisplay(window,
+                                     display::Screen::GetScreen()
+                                         ->GetDisplayNearestWindow(target_root)
+                                         .id());
+    overview_session_->set_ignore_window_hierarchy_changes(false);
+
+    OverviewGrid* target_grid =
+        overview_session_->GetGridWithRootWindow(target_root);
+    // Add |window| to |target_grid| with reposition=false because soon we will
+    // call |OverviewSession::PositionWindows| anyway.
+    target_grid->AddItemInMruOrder(window, /*reposition=*/false,
+                                   /*animate=*/false);
+    item_ = target_grid->GetOverviewItemContaining(window);
+    // Put the new item where the old item ended, so it looks like it is the
+    // same item. The following call to |OverviewSession::PositionWindows| will
+    // animate it from there.
+    item_->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
+  }
   item_->set_should_restack_on_animation_end(true);
   overview_session_->PositionWindows(/*animate=*/true);
   return DragResult::kDropIntoOverview;

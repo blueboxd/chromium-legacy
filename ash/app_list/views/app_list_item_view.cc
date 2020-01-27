@@ -222,19 +222,6 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
       apps_grid_view_(apps_grid_view) {
   SetFocusBehavior(FocusBehavior::ALWAYS);
 
-  auto icon = std::make_unique<IconImageView>();
-
-  if (is_folder_) {
-    // Set background blur for folder icon and use mask layer to clip it into
-    // circle. Note that blur is only enabled in tablet mode to improve dragging
-    // smoothness.
-    if (apps_grid_view_->IsTabletMode())
-      SetBackgroundBlurEnabled(true);
-    icon->SetRoundedCornerAndInsets(
-        GetAppListConfig().folder_icon_radius(),
-        gfx::Insets(GetAppListConfig().folder_icon_insets()));
-  }
-
   if (!is_in_folder && !is_folder_) {
     // To display shadow for icon while not affecting the icon's bounds, icon
     // shadow is behind the icon.
@@ -260,7 +247,19 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
     title_shadow_margins_ = gfx::ShadowValue::GetMargin(title_shadow);
   }
 
-  icon_ = AddChildView(std::move(icon));
+  icon_ = AddChildView(std::make_unique<IconImageView>());
+
+  if (is_folder_) {
+    // Set background blur for folder icon and use mask layer to clip it into
+    // circle. Note that blur is only enabled in tablet mode to improve dragging
+    // smoothness.
+    if (apps_grid_view_->IsTabletMode())
+      SetBackgroundBlurEnabled(true);
+    icon_->SetRoundedCornerAndInsets(
+        GetAppListConfig().folder_icon_radius(),
+        gfx::Insets(GetAppListConfig().folder_icon_insets()));
+  }
+
   title_ = AddChildView(std::move(title));
   progress_bar_ = AddChildView(std::make_unique<views::ProgressBar>());
 

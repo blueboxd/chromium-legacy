@@ -4,11 +4,19 @@
 
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
+#import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils_app_interface.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_earl_grey_ui.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -22,10 +30,17 @@ using chrome_test_util::PrimarySignInButton;
 
 namespace {
 
+// Constant for timeout while waiting for asynchronous sync operations.
+const NSTimeInterval kSyncOperationTimeout = 10.0;
+
 // Returns a matcher for a button that matches the userEmail in the given
 // |fakeIdentity|.
 id<GREYMatcher> ButtonWithFakeIdentity(FakeChromeIdentity* fakeIdentity) {
   return ButtonWithAccessibilityLabel(fakeIdentity.userEmail);
+}
+
+id<GREYMatcher> NoBookmarksLabel() {
+  return grey_text(l10n_util::GetNSString(IDS_IOS_BOOKMARK_NO_BOOKMARKS_LABEL));
 }
 }
 
@@ -34,6 +49,25 @@ id<GREYMatcher> ButtonWithFakeIdentity(FakeChromeIdentity* fakeIdentity) {
 @end
 
 @implementation AccountCollectionsTestCase
+
+- (void)tearDown {
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
+  [BookmarkEarlGrey clearBookmarksPositionCache];
+
+  [ChromeEarlGrey clearSyncServerData];
+  [super tearDown];
+}
+
+- (void)setUp {
+  [super setUp];
+
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [ChromeEarlGrey clearBookmarks];
+  GREYAssertEqual(
+      [ChromeEarlGrey numberOfSyncEntitiesWithType:syncer::BOOKMARKS], 0,
+      @"No bookmarks should exist before tests start.");
+}
 
 // Tests that the Sync and Account Settings screen are correctly popped if the
 // signed in account is removed.
@@ -136,6 +170,74 @@ id<GREYMatcher> ButtonWithFakeIdentity(FakeChromeIdentity* fakeIdentity) {
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
+}
+
+// Tests that selecting sign-out from a non-managed account keeps the user's
+// synced data.
+- (void)testSignOutFromNonManagedAccountKeepsData {
+// Earl Grey 1 does not enable experimental flags.
+#if defined(CHROME_EARL_GREY_1)
+  EARL_GREY_TEST_SKIPPED(@"Test skipped on Earl Grey 1.");
+#endif
+  [[AppLaunchManager sharedManager]
+      ensureAppLaunchedWithFeaturesEnabled:{kClearSyncedData}
+                                  disabled:{}
+                            relaunchPolicy:NoForceRelaunchAndResetState];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+
+  // Sign In |fakeIdentity|.
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+
+  // Add a bookmark after sync is initialized.
+  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [SigninEarlGreyUtilsAppInterface addBookmark:@"youtube.com"
+                                     withTitle:@"cats"];
+
+  [SigninEarlGreyUI
+      signOutWithSignOutConfirmation:SignOutConfirmationNonManagedUser];
+
+  // Open the Bookmarks screen on the Tools menu.
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
+
+  // Assert that the 'cats' bookmark is displayed.
+  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(@"cats")]
+      assertWithMatcher:grey_notNil()];
+}
+
+// Tests that selecting sign-out and clear data from a non-managed user account
+// clears the user's synced data.
+- (void)testSignOutAndClearDataFromNonManagedAccountClearsData {
+// Earl Grey 1 does not enable experimental flags.
+#if defined(CHROME_EARL_GREY_1)
+  EARL_GREY_TEST_SKIPPED(@"Test skipped on Earl Grey 1.");
+#endif
+  [[AppLaunchManager sharedManager]
+      ensureAppLaunchedWithFeaturesEnabled:{kClearSyncedData}
+                                  disabled:{}
+                            relaunchPolicy:NoForceRelaunchAndResetState];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeIdentity1];
+
+  // Sign In |fakeIdentity|.
+  [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
+
+  // Add a bookmark after sync is initialized.
+  [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:kSyncOperationTimeout];
+  [ChromeEarlGrey waitForBookmarksToFinishLoading];
+  [SigninEarlGreyUtilsAppInterface addBookmark:@"youtube.com"
+                                     withTitle:@"cats"];
+
+  [SigninEarlGreyUI signOutWithSignOutConfirmation:
+                        SignOutConfirmationNonManagedUserWithClearedData];
+
+  // Open the Bookmarks screen on the Tools menu.
+  [BookmarkEarlGreyUI openBookmarks];
+  [BookmarkEarlGreyUI openMobileBookmarks];
+
+  // Assert that there are no bookmarks.
+  [[EarlGrey selectElementWithMatcher:NoBookmarksLabel()]
+      assertWithMatcher:grey_notNil()];
 }
 
 // Tests that the user isn't signed out and the UI is correct when the

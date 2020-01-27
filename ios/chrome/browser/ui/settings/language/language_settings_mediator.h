@@ -7,15 +7,16 @@
 
 #include <Foundation/Foundation.h>
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_commands.h"
 #import "ios/chrome/browser/ui/settings/language/language_settings_data_source.h"
+
+class ChromeBrowserState;
 
 @interface LanguageSettingsMediator
     : NSObject <LanguageSettingsDataSource, LanguageSettingsCommands>
 
 // The designated initializer. |browserState| must not be nil.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

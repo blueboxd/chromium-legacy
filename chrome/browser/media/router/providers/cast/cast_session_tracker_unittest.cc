@@ -177,7 +177,7 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageBasic) {
   //
   // - A request ID is not required.
   //
-  // - A 'supportedMediaRequests' field whose value is zero in the 'status'
+  // - A 'supportedMediaCommands' field whose value is zero in the 'status'
   //   objects is converted to an empty list.
   //
   EXPECT_CALL(observer_, OnMediaStatusUpdated(sink_, IsJson(R"({
@@ -185,7 +185,7 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageBasic) {
     "status": [{
         "playerState": "anything but IDLE",
         "sessionId": "theSessionId",
-        "supportedMediaRequests": [],
+        "supportedMediaCommands": [],
       },
     ],
   })"),
@@ -198,7 +198,7 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageBasic) {
                                     kMediaNamespace, ParseJson(R"({
     "status": [{
         "playerState": "anything but IDLE",
-        "supportedMediaRequests": 0,
+        "supportedMediaCommands": 0,
       }, {
         "playerState": "IDLE",
       },
@@ -210,7 +210,7 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageBasic) {
   EXPECT_THAT(*session_->value().FindKey("media"), IsJson(R"([{
     "playerState": "anything but IDLE",
     "sessionId": "theSessionId",
-    "supportedMediaRequests": [],
+    "supportedMediaCommands": [],
   }])"));
 }
 
@@ -227,7 +227,7 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageFancy) {
   // - The request ID is copied into the output message and passed as a separate
   //   parameters to OnMediaStatusUpdated().
   //
-  // - A nonzero numeric 'supportedMediaRequests' field in the 'status' objects
+  // - A nonzero numeric 'supportedMediaCommands' field in the 'status' objects
   //   is converted to a non-empty list.
   //
   // - Extra fields are preserved in the message and the status objects.
@@ -238,7 +238,7 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageFancy) {
     "status": [{
         "playerState": "anything but IDLE",
         "sessionId": "theSessionId",
-        "supportedMediaRequests": ["pause"],
+        "supportedMediaCommands": ["pause"],
         "xyzzy": "xyzzyValue1",
       },
     ],
@@ -254,7 +254,7 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageFancy) {
     "requestId": 12345,
     "status": [{
         "playerState": "anything but IDLE",
-        "supportedMediaRequests": 1,
+        "supportedMediaCommands": 1,
         "xyzzy": "xyzzyValue1",
       }, {
         "playerState": "IDLE",
@@ -268,7 +268,7 @@ TEST_F(CastSessionTrackerTest, HandleMediaStatusMessageFancy) {
   EXPECT_THAT(*session_->value().FindKey("media"), IsJson(R"([{
     "playerState": "anything but IDLE",
     "sessionId": "theSessionId",
-    "supportedMediaRequests": ["pause"],
+    "supportedMediaCommands": ["pause"],
     "xyzzy": "xyzzyValue1",
   }])"));
 }
@@ -286,7 +286,7 @@ TEST_F(CastSessionTrackerTest, CopySavedMediaFieldsToMediaList) {
         "media": "theMedia",
         "mediaSessionId": 345,
         "playerState": "anything but IDLE",
-        "supportedMediaRequests": 0,
+        "supportedMediaCommands": 0,
         "xyzzy": "xyzzy1",
       },
     ],
@@ -298,7 +298,7 @@ TEST_F(CastSessionTrackerTest, CopySavedMediaFieldsToMediaList) {
     "media": "theMedia",
     "playerState": "anything but IDLE",
     "sessionId": "theSessionId",
-    "supportedMediaRequests": [],
+    "supportedMediaCommands": [],
     "xyzzy": "xyzzy1",
   }])"));
 
@@ -314,7 +314,7 @@ TEST_F(CastSessionTrackerTest, CopySavedMediaFieldsToMediaList) {
         "mediaSessionId": 345,
         "playerState": "anything but IDLE",
         "sessionId": "theSessionId",
-        "supportedMediaRequests": [],
+        "supportedMediaCommands": [],
         "xyzzy": "xyzzy2",
       },
     ],
@@ -331,7 +331,7 @@ TEST_F(CastSessionTrackerTest, CopySavedMediaFieldsToMediaList) {
     "status": [{
         "mediaSessionId": 345,
         "playerState": "anything but IDLE",
-        "supportedMediaRequests": 0,
+        "supportedMediaCommands": 0,
         "xyzzy": "xyzzy2",
       },
     ],
@@ -344,7 +344,7 @@ TEST_F(CastSessionTrackerTest, CopySavedMediaFieldsToMediaList) {
     "mediaSessionId": 345,
     "playerState": "anything but IDLE",
     "sessionId": "theSessionId",
-    "supportedMediaRequests": [],
+    "supportedMediaCommands": [],
     "xyzzy": "xyzzy2",
   }])"));
 }
@@ -361,7 +361,7 @@ TEST_F(CastSessionTrackerTest, DoNotCopySavedMediaFieldsWhenFieldPresent) {
         "media": "oldMedia",
         "mediaSessionId": 345,
         "playerState": "anything but IDLE",
-        "supportedMediaRequests": 0,
+        "supportedMediaCommands": 0,
         "xyzzy": "xyzzy1",
       },
     ],
@@ -377,7 +377,7 @@ TEST_F(CastSessionTrackerTest, DoNotCopySavedMediaFieldsWhenFieldPresent) {
         "media": "newMedia",
         "mediaSessionId": 345,
         "playerState": "anything but IDLE",
-        "supportedMediaRequests": 0,
+        "supportedMediaCommands": 0,
         "xyzzy": "xyzzy2",
       },
     ],
@@ -389,7 +389,7 @@ TEST_F(CastSessionTrackerTest, DoNotCopySavedMediaFieldsWhenFieldPresent) {
     "mediaSessionId": 345,
     "playerState": "anything but IDLE",
     "sessionId": "theSessionId",
-    "supportedMediaRequests": [],
+    "supportedMediaCommands": [],
     "xyzzy": "xyzzy2",
   }])"));
 }

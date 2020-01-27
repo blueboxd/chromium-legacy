@@ -185,32 +185,29 @@ STDMETHODIMP TSFTextStore::GetScreenExt(TsViewCookie view_cookie, RECT* rect) {
 
   // {0, 0, 0, 0} means that the document rect is not currently displayed.
   SetRect(rect, 0, 0, 0, 0);
-
-  // Currently ui::TextInputClient does not expose the document rect. So use
-  // the Win32 client rectangle instead.
-  // TODO(yukawa): Upgrade TextInputClient so that the client can retrieve the
-  // document rectangle.
   POINT left_top;
   POINT right_bottom;
   if (!GetWindowClientRect(window_handle_, &left_top, &right_bottom))
     return E_FAIL;
-
-  rect->left = left_top.x;
-  rect->top = left_top.y;
-  rect->right = right_bottom.x;
-  rect->bottom = right_bottom.y;
+  base::Optional<gfx::Rect> result_rect;
+  base::Optional<gfx::Rect> tmp_rect;
   // If the EditContext is active, then fetch the layout bounds from
-  // the active EditContext.
-  gfx::Rect result_rect;
-  gfx::Rect tmp_rect;
-  // TODO(snianu): Use this route to fetch the focused content editable
-  // element's layout bounds instead of reporting the client rectangle.
-  if (text_input_client_->GetEditContextLayoutBounds(&result_rect, &tmp_rect)) {
-    *rect =
-        display::win::ScreenWin::DIPToScreenRect(window_handle_, result_rect)
-            .ToRECT();
+  // the active EditContext, else get it from the focused element's
+  // bounding client rect.
+  text_input_client_->GetActiveTextInputControlLayoutBounds(&result_rect,
+                                                            &tmp_rect);
+  if (result_rect) {
+    *rect = display::win::ScreenWin::DIPToScreenRect(window_handle_,
+                                                     result_rect.value())
+                .ToRECT();
     rect->left += left_top.x;
     rect->top += left_top.y;
+  } else {
+    // Default if the layout bounds are not present in text input client.
+    rect->left = left_top.x;
+    rect->top = left_top.y;
+    rect->right = right_bottom.x;
+    rect->bottom = right_bottom.y;
   }
   return S_OK;
 }
@@ -325,26 +322,28 @@ STDMETHODIMP TSFTextStore::GetTextExt(TsViewCookie view_cookie,
   // indicates a last character's one.
   // TODO(IME): add tests for scenario that left position is bigger than right
   // position.
-  gfx::Rect result_rect;
-  gfx::Rect tmp_rect;
+  base::Optional<gfx::Rect> result_rect;
+  base::Optional<gfx::Rect> tmp_opt_rect;
   const uint32_t start_pos = acp_start - composition_start_;
   const uint32_t end_pos = acp_end - composition_start_;
-
   // If there is an active EditContext, then fetch the layout bounds from it.
-  if (text_input_client_->GetEditContextLayoutBounds(&tmp_rect, &result_rect)) {
+  text_input_client_->GetActiveTextInputControlLayoutBounds(&tmp_opt_rect,
+                                                            &result_rect);
+  if (result_rect) {
     POINT left_top;
     POINT right_bottom;
     if (!GetWindowClientRect(window_handle_, &left_top, &right_bottom))
       return E_FAIL;
-    *rect =
-        display::win::ScreenWin::DIPToScreenRect(window_handle_, result_rect)
-            .ToRECT();
+    *rect = display::win::ScreenWin::DIPToScreenRect(window_handle_,
+                                                     result_rect.value())
+                .ToRECT();
     rect->left += left_top.x;
     rect->top += left_top.y;
     *clipped = FALSE;
     return S_OK;
   }
 
+  gfx::Rect tmp_rect;
   if (start_pos == end_pos) {
     if (text_input_client_->HasCompositionText()) {
       // According to MSDN document, if |acp_start| and |acp_end| are equal it
@@ -381,10 +380,10 @@ STDMETHODIMP TSFTextStore::GetTextExt(TsViewCookie view_cookie,
         result_rect = gfx::Rect(tmp_rect);
         if (text_input_client_->GetCompositionCharacterBounds(end_pos - 1,
                                                               &tmp_rect)) {
-          result_rect.set_width(tmp_rect.x() - result_rect.x() +
-                                tmp_rect.width());
-          result_rect.set_height(tmp_rect.y() - result_rect.y() +
-                                 tmp_rect.height());
+          result_rect->set_width(tmp_rect.x() - result_rect->x() +
+                                 tmp_rect.width());
+          result_rect->set_height(tmp_rect.y() - result_rect->y() +
+                                  tmp_rect.height());
         } else {
           // We may not be able to get the last character bounds, so we use the
           // first character bounds instead of returning TS_E_NOLAYOUT.
@@ -406,7 +405,8 @@ STDMETHODIMP TSFTextStore::GetTextExt(TsViewCookie view_cookie,
       result_rect = gfx::Rect(text_input_client_->GetCaretBounds());
     }
   }
-  *rect = display::win::ScreenWin::DIPToScreenRect(window_handle_, result_rect)
+  *rect = display::win::ScreenWin::DIPToScreenRect(window_handle_,
+                                                   result_rect.value())
               .ToRECT();
   *clipped = FALSE;
   return S_OK;

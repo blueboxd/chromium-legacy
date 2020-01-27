@@ -127,7 +127,6 @@ class GPU_GLES2_EXPORT SharedContextState
   std::vector<uint8_t>* scratch_deserialization_buffer() {
     return &scratch_deserialization_buffer_;
   }
-  size_t max_resource_cache_bytes() const { return max_resource_cache_bytes_; }
   bool use_virtualized_gl_contexts() const {
     return use_virtualized_gl_contexts_;
   }
@@ -226,8 +225,6 @@ class GPU_GLES2_EXPORT SharedContextState
   gl::ProgressReporter* progress_reporter_ = nullptr;
   sk_sp<GrContext> owned_gr_context_;
   std::unique_ptr<ServiceTransferCache> transfer_cache_;
-  size_t max_resource_cache_bytes_ = 0u;
-  size_t glyph_cache_max_texture_bytes_ = 0u;
   uint64_t skia_gr_cache_size_ = 0;
   std::vector<uint8_t> scratch_deserialization_buffer_;
 

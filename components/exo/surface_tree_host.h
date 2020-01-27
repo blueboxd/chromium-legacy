@@ -8,9 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/exo/surface.h"
 #include "components/exo/surface_delegate.h"
+#include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -18,13 +20,17 @@ namespace aura {
 class Window;
 }  // namespace aura
 
+namespace viz {
+class ContextProvider;
+}
+
 namespace exo {
 class LayerTreeFrameSinkHolder;
 
 // This class provides functionality for hosting a surface tree. The surface
 // tree is hosted in the |host_window_|.
 class SurfaceTreeHost : public SurfaceDelegate,
-                        public ui::ContextFactoryObserver {
+                        public viz::ContextLostObserver {
  public:
   explicit SurfaceTreeHost(const std::string& window_name);
   ~SurfaceTreeHost() override;
@@ -84,8 +90,8 @@ class SurfaceTreeHost : public SurfaceDelegate,
   void OnSetApplicationId(const char* application_id) override {}
   void OnActivationRequested() override {}
 
-  // Overridden from ui::ContextFactoryObserver:
-  void OnLostSharedContext() override;
+  // Overridden from viz::ContextLostObserver:
+  void OnContextLost() override;
 
  protected:
   // Call this to submit a compositor frame.
@@ -102,6 +108,8 @@ class SurfaceTreeHost : public SurfaceDelegate,
 
  private:
   viz::CompositorFrame PrepareToSubmitCompositorFrame();
+
+  void HandleContextLost();
 
   Surface* root_surface_ = nullptr;
 
@@ -125,6 +133,10 @@ class SurfaceTreeHost : public SurfaceDelegate,
       active_presentation_callbacks_;
 
   viz::FrameTokenGenerator next_token_;
+
+  scoped_refptr<viz::ContextProvider> context_provider_;
+
+  base::WeakPtrFactory<SurfaceTreeHost> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceTreeHost);
 };

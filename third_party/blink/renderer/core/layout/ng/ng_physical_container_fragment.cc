@@ -212,16 +212,23 @@ bool NGPhysicalContainerFragment::DependsOnPercentageBlockSize(
   // element if it has a percentage block-size however, but this will return
   // the correct result from below.
 
+  // There are two conditions where we need to know about an (arbitrary)
+  // descendant which depends on a %-block-size.
+  //  - In quirks mode, the arbitrary descendant may depend the percentage
+  //    resolution block-size given (to this node), and need to relayout if
+  //    this size changes.
+  //  - A flex-item may have its "definiteness" change, (e.g. if itself is a
+  //    flex item which is being stretched). This definiteness change will
+  //    affect any %-block-size children.
+  //
+  // NOTE(ikilpatrick): For the flex-item case this is potentially too general.
+  // We only need to know about if this flex-item has a %-block-size child if
+  // the "definiteness" changes, not if the percentage resolution size changes.
   if ((builder.has_descendant_that_depends_on_percentage_block_size_ ||
        builder.is_legacy_layout_root_) &&
-      node.UseParentPercentageResolutionBlockSizeForChildren()) {
-    // Quirks mode has different %-block-size behaviour, than standards mode.
-    // An arbitrary descendant may depend on the percentage resolution
-    // block-size given.
-    // If this is also an anonymous block we need to mark ourselves dependent
-    // if we have a dependent child.
+      (node.UseParentPercentageResolutionBlockSizeForChildren() ||
+       node.IsFlexItem()))
     return true;
-  }
 
   const ComputedStyle& style = builder.Style();
   if (style.LogicalHeight().IsPercentOrCalc() ||

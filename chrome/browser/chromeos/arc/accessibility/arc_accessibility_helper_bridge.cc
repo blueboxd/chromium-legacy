@@ -360,6 +360,9 @@ void ArcAccessibilityHelperBridge::OnNotificationStateChanged(
   auto key = KeyForNotification(notification_key);
   switch (state) {
     case arc::mojom::AccessibilityNotificationStateType::SURFACE_CREATED: {
+      if (GetFromKey(key))
+        return;
+
       AXTreeSourceArc* tree_source = CreateFromKey(std::move(key));
       ui::AXTreeData tree_data;
       if (!tree_source->GetTreeData(&tree_data)) {

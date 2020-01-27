@@ -9,7 +9,6 @@
 
 namespace updates {
 namespace {
-
 // Helper routines to get Finch experiment parameter. If no Finch seed was
 // found, use the |default_value|. The |name| should match an experiment
 // parameter in Finch server configuration.
@@ -33,9 +32,6 @@ bool GetFinchConfigBool(const std::string& name, bool default_value) {
 // Default update notification schedule interval in days.
 constexpr int kDefaultUpdateNotificationInterval = 21;
 
-// Default update notification state.
-constexpr bool kDefaultUpdateNotificationState = false;
-
 // Default start clock of deliver window in the morning.
 constexpr int kDefaultDeliverWindowMorningStart = 5;
 
@@ -54,6 +50,10 @@ constexpr double kDefaultThrottleIntervalScale = 1.0;
 // Default offset coefficient of custom throttle linear function.
 constexpr double kDefaultThrottleIntervalOffset = 0.0;
 
+// Default update notification state.
+constexpr bool kDefaultUpdateNotificationState = false;
+
+// TODO(hesen): Create a CreateFromFinch method (issue 1043237).
 std::unique_ptr<UpdateNotificationConfig> UpdateNotificationConfig::Create() {
   std::unique_ptr<UpdateNotificationConfig> config =
       std::make_unique<UpdateNotificationConfig>();

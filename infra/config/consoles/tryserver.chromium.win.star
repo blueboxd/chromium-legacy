@@ -1,7 +1,6 @@
 luci.list_view(
     name = 'tryserver.chromium.win',
     entries = [
-        'try/gpu-fyi-try-win-xr-builder-64',
         'try/gpu-fyi-try-win7-amd-dbg-32',
         'try/gpu-fyi-try-win7-amd-dqp-32',
         'try/gpu-fyi-try-win7-amd-rel-32',

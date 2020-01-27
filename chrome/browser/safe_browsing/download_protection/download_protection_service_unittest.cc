@@ -2880,7 +2880,7 @@ TEST_P(DeepScanningDownloadTest, PasswordProtectedArchivesBlockedByPreference) {
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
           sb_service_->GetBinaryUploadService(profile()));
-  test_upload_service->SetResponse(BinaryUploadService::Result::SUCCESS,
+  test_upload_service->SetResponse(BinaryUploadService::Result::FILE_ENCRYPTED,
                                    DeepScanningClientResponse());
 
   {
@@ -2909,7 +2909,7 @@ TEST_P(DeepScanningDownloadTest, PasswordProtectedArchivesBlockedByPreference) {
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                           base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadCheckResult::DEEP_SCANNED_SAFE));
+    EXPECT_TRUE(IsResult(DownloadCheckResult::UNKNOWN));
     EXPECT_TRUE(HasClientDownloadRequest());
     ClearClientDownloadRequest();
   }
@@ -2941,7 +2941,7 @@ TEST_P(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
           sb_service_->GetBinaryUploadService(profile()));
-  test_upload_service->SetResponse(BinaryUploadService::Result::SUCCESS,
+  test_upload_service->SetResponse(BinaryUploadService::Result::FILE_TOO_LARGE,
                                    DeepScanningClientResponse());
 
   {
@@ -2968,7 +2968,7 @@ TEST_P(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
         &item, base::Bind(&DownloadProtectionServiceTest::CheckDoneCallback,
                           base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
-    EXPECT_TRUE(IsResult(DownloadCheckResult::DEEP_SCANNED_SAFE));
+    EXPECT_TRUE(IsResult(DownloadCheckResult::UNKNOWN));
     EXPECT_TRUE(HasClientDownloadRequest());
     ClearClientDownloadRequest();
   }

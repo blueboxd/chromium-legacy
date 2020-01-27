@@ -54,6 +54,19 @@ BrowserImpl::~BrowserImpl() {
   }
 }
 
+TabImpl* BrowserImpl::CreateTabForSessionRestore(
+    std::unique_ptr<content::WebContents> web_contents) {
+  TabImpl* tab = new TabImpl(profile_, std::move(web_contents));
+#if defined(OS_ANDROID)
+  // The Java side takes ownership of Tab.
+  Java_BrowserImpl_createTabForSessionRestore(
+      base::android::AttachCurrentThread(), java_impl_,
+      reinterpret_cast<jlong>(tab));
+#endif
+  AddTab(tab);
+  return tab;
+}
+
 #if defined(OS_ANDROID)
 void BrowserImpl::AddTab(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& caller,
@@ -97,6 +110,20 @@ base::android::ScopedJavaLocalRef<jobject> BrowserImpl::GetActiveTab(
     return nullptr;
   return base::android::ScopedJavaLocalRef<jobject>(active_tab_->GetJavaTab());
 }
+
+void BrowserImpl::PrepareForShutdown(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& caller) {
+  PrepareForShutdown();
+}
+
+base::android::ScopedJavaLocalRef<jstring> BrowserImpl::GetPersistenceId(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& caller) {
+  return base::android::ScopedJavaLocalRef<jstring>(
+      base::android::ConvertUTF8ToJavaString(env, persistence_id_));
+}
+
 #endif
 
 void BrowserImpl::AddTab(Tab* tab) {
@@ -170,6 +197,10 @@ void BrowserImpl::PrepareForShutdown() {
   session_service_.reset();
 }
 
+const std::string& BrowserImpl::GetPersistenceId() {
+  return persistence_id_;
+}
+
 void BrowserImpl::AddObserver(BrowserObserver* observer) {
   browser_observers_.AddObserver(observer);
 }
@@ -199,9 +230,14 @@ void BrowserImpl::CreateSessionServiceAndRestore() {
 static jlong JNI_BrowserImpl_CreateBrowser(
     JNIEnv* env,
     jlong profile,
+    const base::android::JavaParamRef<jstring>& persistence_id,
     const base::android::JavaParamRef<jobject>& java_impl) {
   return reinterpret_cast<intptr_t>(new BrowserImpl(
-      reinterpret_cast<ProfileImpl*>(profile), std::string(), java_impl));
+      reinterpret_cast<ProfileImpl*>(profile),
+      persistence_id.obj()
+          ? base::android::ConvertJavaStringToUTF8(persistence_id)
+          : std::string(),
+      java_impl));
 }
 
 static void JNI_BrowserImpl_DeleteBrowser(JNIEnv* env, jlong browser) {

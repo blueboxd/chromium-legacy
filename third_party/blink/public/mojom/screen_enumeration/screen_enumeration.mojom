@@ -10,9 +10,10 @@ import "ui/display/mojom/display.mojom";
 // window and worker processes.
 interface ScreenEnumeration {
   // If success is false, other returned values are meaningless. Otherwise,
-  // |displays| is the list of connected display devices, and |primary_id| is
-  // the id of the primary display.
+  // |displays| is the list of connected display devices; |internal_id| and
+  // |primary_id| are respectively the ids of the internal and primary displays.
   GetDisplays() => (array<display.mojom.Display> displays,
+                    int64 internal_id,
                     int64 primary_id,
                     bool success);
 };

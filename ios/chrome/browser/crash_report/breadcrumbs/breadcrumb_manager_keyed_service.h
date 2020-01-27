@@ -40,9 +40,11 @@ class BreadcrumbManagerKeyedService : public KeyedService {
 
  private:
   // A short string identifying the browser state used to initialize the
-  // receiver. For example, "N" for "N"ormal browsing mode. This value is
+  // receiver. For example, "I" for "I"ncognito browsing mode. This value is
   // prepended to events sent to |AddEvent| in order to differentiate the
   // BrowserState associated with each event.
+  // Note: Normal browsing mode uses an empty string in order to prevent
+  // prepending most events with the same static value.
   std::string browsing_mode_;
 
   // The associated BreadcrumbManager to store events added with |AddEvent|.

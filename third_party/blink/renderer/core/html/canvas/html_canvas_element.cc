@@ -152,10 +152,6 @@ void HTMLCanvasElement::Dispose() {
   }
 
   if (surface_layer_bridge_) {
-    if (surface_layer_bridge_->GetCcLayer()) {
-      GraphicsLayer::UnregisterContentsLayer(
-          surface_layer_bridge_->GetCcLayer());
-    }
     // Observer has to be cleared out at this point. Otherwise the
     // SurfaceLayerBridge may call back into the observer which is undefined
     // behavior. In the worst case, the dead canvas element re-adds itself into
@@ -1426,12 +1422,10 @@ void HTMLCanvasElement::OnWebLayerUpdated() {
 }
 
 void HTMLCanvasElement::RegisterContentsLayer(cc::Layer* layer) {
-  GraphicsLayer::RegisterContentsLayer(layer);
   OnContentsCcLayerChanged();
 }
 
 void HTMLCanvasElement::UnregisterContentsLayer(cc::Layer* layer) {
-  GraphicsLayer::UnregisterContentsLayer(layer);
   OnContentsCcLayerChanged();
 }
 

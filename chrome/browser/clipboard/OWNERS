@@ -1,5 +1,5 @@
 garykac@chromium.org
 
-per-file *permission_context*=file://chrome/browser/permissions/PERMISSIONS_OWNERS
+per-file *permission_context*=file://components/permissions/PERMISSIONS_OWNERS
 
 # COMPONENT: Internals>Permissions

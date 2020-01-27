@@ -15,11 +15,11 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/permissions/crowd_deny_preload_data.h"
-#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_features.h"
+#include "components/permissions/permission_request.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 
 namespace {
@@ -102,7 +102,7 @@ ContextualNotificationPermissionUiSelector::
     : profile_(profile) {}
 
 void ContextualNotificationPermissionUiSelector::SelectUiToUse(
-    PermissionRequest* request,
+    permissions::PermissionRequest* request,
     DecisionMadeCallback callback) {
   callback_ = std::move(callback);
   DCHECK(callback_);

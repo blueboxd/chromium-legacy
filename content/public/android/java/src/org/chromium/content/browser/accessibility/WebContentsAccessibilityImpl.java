@@ -1327,11 +1327,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     protected void convertWebRectToAndroidCoordinates(Rect rect) {
-        // Offset by the scroll position.
-        RenderCoordinatesImpl rc = mWebContents.getRenderCoordinates();
-        rect.offset(-(int) rc.getScrollX(), -(int) rc.getScrollY());
-
         // Convert CSS (web) pixels to Android View pixels
+        RenderCoordinatesImpl rc = mWebContents.getRenderCoordinates();
         rect.left = (int) rc.fromLocalCssToPix(rect.left);
         rect.top = (int) rc.fromLocalCssToPix(rect.top);
         rect.bottom = (int) rc.fromLocalCssToPix(rect.bottom);

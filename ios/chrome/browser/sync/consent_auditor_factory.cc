@@ -34,7 +34,7 @@
 
 // static
 consent_auditor::ConsentAuditor* ConsentAuditorFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<consent_auditor::ConsentAuditor*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -42,7 +42,7 @@ consent_auditor::ConsentAuditor* ConsentAuditorFactory::GetForBrowserState(
 // static
 consent_auditor::ConsentAuditor*
 ConsentAuditorFactory::GetForBrowserStateIfExists(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<consent_auditor::ConsentAuditor*>(
       GetInstance()->GetServiceForBrowserState(browser_state, false));
 }
@@ -64,8 +64,8 @@ ConsentAuditorFactory::~ConsentAuditorFactory() {}
 
 std::unique_ptr<KeyedService> ConsentAuditorFactory::BuildServiceInstanceFor(
     web::BrowserState* browser_state) const {
-  ios::ChromeBrowserState* ios_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(browser_state);
+  ChromeBrowserState* ios_browser_state =
+      ChromeBrowserState::FromBrowserState(browser_state);
 
   std::unique_ptr<consent_auditor::ConsentSyncBridge> consent_sync_bridge;
   syncer::OnceModelTypeStoreFactory store_factory =

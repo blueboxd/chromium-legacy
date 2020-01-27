@@ -10,7 +10,6 @@
 #include "base/ios/block_types.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/payments/full_card_request.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/payments/address_edit_coordinator.h"
 #import "ios/chrome/browser/ui/payments/contact_info_edit_coordinator.h"
@@ -21,6 +20,8 @@
 #import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
 #import "ios/chrome/browser/ui/payments/shipping_address_selection_coordinator.h"
 #import "ios/chrome/browser/ui/payments/shipping_option_selection_coordinator.h"
+
+class ChromeBrowserState;
 
 namespace autofill {
 class AutofillManager;
@@ -85,9 +86,9 @@ class PaymentShippingOption;
 // reference is not owned by this class.
 @property(nonatomic, assign) autofill::AutofillManager* autofillManager;
 
-// An ios::ChromeBrowserState instance. This reference is not owned by this
+// An ChromeBrowserState instance. This reference is not owned by this
 // class.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 
 // The favicon of the page invoking the PaymentRequest API. Should be set before
 // calling |start|.

@@ -23,7 +23,7 @@ using history::BrowsingHistoryService;
 #pragma mark - IOSBrowsingHistoryDriver
 
 IOSBrowsingHistoryDriver::IOSBrowsingHistoryDriver(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     id<HistoryConsumer> consumer)
     : browser_state_(browser_state), consumer_(consumer) {
   DCHECK(browser_state_);

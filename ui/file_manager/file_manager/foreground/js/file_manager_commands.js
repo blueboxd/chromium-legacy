@@ -1502,7 +1502,7 @@ CommandHandler.COMMANDS_['get-info'] = new class extends Command {
       return;
     }
 
-    event.canExecute = entries.length === 1;
+    event.canExecute = entries.length >= 1;
     event.command.setHidden(false);
   }
 };

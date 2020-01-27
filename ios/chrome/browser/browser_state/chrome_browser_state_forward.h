@@ -8,9 +8,12 @@
 // This file is there to help move ios::ChromeBrowserState to the global
 // namespace (i.e. rename it to ChromeBrowserState).
 
-namespace ios {
 class ChromeBrowserState;
 enum class ChromeBrowserStateType;
+
+namespace ios {
+using ::ChromeBrowserState;
+using ::ChromeBrowserStateType;
 }  // namespace ios
 
 #endif  // IOS_CHROME_BROWSER_BROWSER_STATE_CHROME_BROWSER_STATE_FORWARD_H_

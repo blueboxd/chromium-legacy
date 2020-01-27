@@ -95,8 +95,6 @@ class CORE_EXPORT PaintLayerCompositor {
   // to the native view/window system.
   void SetCompositingModeEnabled(bool);
 
-  bool PreferCompositingToLCDTextEnabled() const;
-
   bool RootShouldAlwaysComposite() const;
 
   // Notifies about changes to PreferCompositingToLCDText or

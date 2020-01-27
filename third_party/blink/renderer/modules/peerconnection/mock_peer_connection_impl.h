@@ -98,7 +98,7 @@ class FakeRtpTransceiver : public webrtc::RtpTransceiverInterface {
       base::Optional<webrtc::RtpTransceiverDirection> current_direction);
   ~FakeRtpTransceiver() override;
 
-  FakeRtpTransceiver& operator=(const FakeRtpTransceiver& other) = default;
+  void ReplaceWith(const FakeRtpTransceiver& other);
 
   cricket::MediaType media_type() const override;
   absl::optional<std::string> mid() const override;

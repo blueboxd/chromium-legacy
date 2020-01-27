@@ -145,6 +145,8 @@ jumbo_static_library("test_support") {
 
   if (is_win) {
     sources += [
+      "win/test/scoped_screen_win.cc",
+      "win/test/scoped_screen_win.h",
       "win/test/screen_util_win.cc",
       "win/test/screen_util_win.h",
     ]

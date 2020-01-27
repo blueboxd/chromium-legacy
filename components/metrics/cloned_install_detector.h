@@ -26,19 +26,37 @@ class ClonedInstallDetector {
   // previously stored one, then the install is considered cloned. The ID is a
   // 24-bit value based off of machine characteristics. This value should never
   // be sent over the network.
-  // TODO(jwd): Implement change detection.
   void CheckForClonedInstall(PrefService* local_state);
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Returns true for the whole session if we detected a cloned install during
+  // the construction of a client id.
+  bool ShouldResetClientIds(PrefService* local_state);
+
+  // Returns true for the whole session if we detect a cloned install this
+  // session.
+  bool ClonedInstallDetectedInCurrentSession() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ClonedInstallDetectorTest, SaveId);
   FRIEND_TEST_ALL_PREFIXES(ClonedInstallDetectorTest, DetectClone);
+  FRIEND_TEST_ALL_PREFIXES(ClonedInstallDetectorTest, ShouldResetClientIds);
+  FRIEND_TEST_ALL_PREFIXES(ClonedInstallDetectorTest,
+                           ClonedInstallDetectedInCurrentSession);
+  FRIEND_TEST_ALL_PREFIXES(MetricsStateManagerTest, CheckProviderResetIds);
 
   // Converts raw_id into a 24-bit hash and stores the hash in |local_state|.
   // |raw_id| is not a const ref because it's passed from a cross-thread post
   // task.
   void SaveMachineId(PrefService* local_state, const std::string& raw_id);
+
+  // Indicates that we detected a cloned install during the current session.
+  bool detected_this_session_ = false;
+
+  // Indicates that we detected a cloned install during the construction of a
+  // client id and should reset client ids as a result.
+  bool should_reset_client_ids_ = false;
 
   base::WeakPtrFactory<ClonedInstallDetector> weak_ptr_factory_{this};
 

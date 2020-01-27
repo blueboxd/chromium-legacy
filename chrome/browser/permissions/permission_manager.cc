@@ -27,8 +27,6 @@
 #include "chrome/browser/payments/payment_handler_permission_context.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
-#include "chrome/browser/permissions/permission_request_id.h"
-#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -41,6 +39,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/permission_request_id.h"
+#include "components/permissions/permission_result.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_type.h"
@@ -462,7 +462,7 @@ int PermissionManager::RequestPermissions(
   int request_id = pending_requests_.Add(std::make_unique<PendingRequest>(
       render_frame_host, permissions, std::move(callback)));
 
-  const PermissionRequestID request(render_frame_host, request_id);
+  const permissions::PermissionRequestID request(render_frame_host, request_id);
   const GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
 
   for (size_t i = 0; i < permissions.size(); ++i) {
@@ -497,7 +497,7 @@ int PermissionManager::RequestPermissions(
   return request_id;
 }
 
-PermissionResult PermissionManager::GetPermissionStatus(
+permissions::PermissionResult PermissionManager::GetPermissionStatus(
     ContentSettingsType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
@@ -512,7 +512,7 @@ PermissionResult PermissionManager::GetPermissionStatus(
                                    requesting_origin, embedding_origin);
 }
 
-PermissionResult PermissionManager::GetPermissionStatusForFrame(
+permissions::PermissionResult PermissionManager::GetPermissionStatusForFrame(
     ContentSettingsType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin) {
@@ -595,7 +595,7 @@ PermissionStatus PermissionManager::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  PermissionResult result =
+  permissions::PermissionResult result =
       GetPermissionStatus(PermissionTypeToContentSetting(permission),
                           requesting_origin, embedding_origin);
   ContentSettingsType type = PermissionTypeToContentSetting(permission);
@@ -617,7 +617,7 @@ PermissionStatus PermissionManager::GetPermissionStatusForFrame(
     const GURL& requesting_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ContentSettingsType type = PermissionTypeToContentSetting(permission);
-  PermissionResult result =
+  permissions::PermissionResult result =
       GetPermissionStatusForFrame(type, render_frame_host, requesting_origin);
 
   // TODO(benwells): split this into two functions, GetPermissionStatus and
@@ -771,7 +771,7 @@ void PermissionManager::OnContentSettingChanged(
     std::move(callback).Run();
 }
 
-PermissionResult PermissionManager::GetPermissionStatusHelper(
+permissions::PermissionResult PermissionManager::GetPermissionStatusHelper(
     ContentSettingsType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
@@ -781,9 +781,10 @@ PermissionResult PermissionManager::GetPermissionStatusHelper(
   auto status = GetPermissionOverrideForDevTools(
       url::Origin::Create(canonical_requesting_origin), permission);
   if (status != CONTENT_SETTING_DEFAULT)
-    return PermissionResult(status, PermissionStatusSource::UNSPECIFIED);
+    return permissions::PermissionResult(
+        status, permissions::PermissionStatusSource::UNSPECIFIED);
   PermissionContextBase* context = GetPermissionContext(permission);
-  PermissionResult result = context->GetPermissionStatus(
+  permissions::PermissionResult result = context->GetPermissionStatus(
       render_frame_host, canonical_requesting_origin.GetOrigin(),
       embedding_origin.GetOrigin());
   DCHECK(result.content_setting == CONTENT_SETTING_ALLOW ||

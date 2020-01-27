@@ -38,7 +38,7 @@ class PermissionPromptBubbleView : public views::BubbleDialogDelegateView {
   bool Close() override;
 
  private:
-  void AddPermissionRequestLine(PermissionRequest* request);
+  void AddPermissionRequestLine(permissions::PermissionRequest* request);
 
   void Show();
 

@@ -51,7 +51,7 @@
 }
 
 // The BrowserState passed to this instance.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 
 @end
 
@@ -59,7 +59,7 @@
 
 @synthesize consumer = _consumer;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
   DCHECK(browserState);
   self = [super init];
   if (self) {

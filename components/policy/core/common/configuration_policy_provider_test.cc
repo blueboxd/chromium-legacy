@@ -137,6 +137,7 @@ void PolicyTestBase::SetUp() {
 
 void PolicyTestBase::TearDown() {
   task_environment_.RunUntilIdle();
+  ConfigurationPolicyProvider::SetMigrators({});
 }
 
 bool PolicyTestBase::RegisterSchema(const PolicyNamespace& ns,
@@ -350,9 +351,11 @@ class MockPolicyMigrator : public ExtensionPolicyMigrator {
 };
 
 TEST_P(ConfigurationPolicyProviderTest, AddMigrator) {
-  MockPolicyMigrator* migrator = new MockPolicyMigrator;
+  auto migrator = std::make_unique<MockPolicyMigrator>();
   EXPECT_CALL(*migrator, Migrate(_));
-  provider_->AddMigrator(std::unique_ptr<ExtensionPolicyMigrator>(migrator));
+  std::vector<std::unique_ptr<ExtensionPolicyMigrator>> migrators;
+  migrators.emplace_back(std::move(migrator));
+  ConfigurationPolicyProvider::SetMigrators(std::move(migrators));
   provider_->RefreshPolicies();
   task_environment_.RunUntilIdle();
 }

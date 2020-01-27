@@ -482,13 +482,15 @@ static jboolean JNI_WebsitePreferenceBridge_IsNotificationEmbargoedForOrigin(
     const JavaParamRef<jobject>& jprofile,
     const JavaParamRef<jstring>& origin) {
   GURL origin_url(ConvertJavaStringToUTF8(env, origin));
-  PermissionResult status =
+  permissions::PermissionResult status =
       PermissionManager::Get(ProfileAndroid::FromProfileAndroid(jprofile))
           ->GetPermissionStatus(ContentSettingsType::NOTIFICATIONS, origin_url,
                                 origin_url);
   return status.content_setting == ContentSetting::CONTENT_SETTING_BLOCK &&
-         (status.source == PermissionStatusSource::MULTIPLE_IGNORES ||
-          status.source == PermissionStatusSource::MULTIPLE_DISMISSALS);
+         (status.source ==
+              permissions::PermissionStatusSource::MULTIPLE_IGNORES ||
+          status.source ==
+              permissions::PermissionStatusSource::MULTIPLE_DISMISSALS);
 }
 
 static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(

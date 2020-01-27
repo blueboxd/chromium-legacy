@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_request.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_request.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -40,11 +40,13 @@ class PermissionUtil {
   static std::string GetPermissionString(ContentSettingsType);
 
   // Returns the request type corresponding to a permission type.
-  static PermissionRequestType GetRequestType(ContentSettingsType permission);
+  static permissions::PermissionRequestType GetRequestType(
+      ContentSettingsType permission);
 
   // Returns the gesture type corresponding to whether a permission request is
   // made with or without a user gesture.
-  static PermissionRequestGestureType GetGestureType(bool user_gesture);
+  static permissions::PermissionRequestGestureType GetGestureType(
+      bool user_gesture);
 
   // Limited conversion of ContentSettingsType to PermissionType. Returns true
   // if the conversion was performed.

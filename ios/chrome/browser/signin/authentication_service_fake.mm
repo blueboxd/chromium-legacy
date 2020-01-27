@@ -69,8 +69,8 @@ ChromeIdentity* AuthenticationServiceFake::GetAuthenticatedIdentity() const {
 std::unique_ptr<KeyedService>
 AuthenticationServiceFake::CreateAuthenticationService(
     web::BrowserState* context) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   auto service = base::WrapUnique(new AuthenticationServiceFake(
       browser_state->GetPrefs(),
       SyncSetupServiceFactory::GetForBrowserState(browser_state),

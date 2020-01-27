@@ -7,6 +7,10 @@
 
 #include "base/callback.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace payments {
 
 // Sets a delegate on future Java PaymentRequests that returns the given values
@@ -18,6 +22,13 @@ void SetUseDelegateOnPaymentRequestForTesting(bool use_delegate,
                                               bool is_web_contents_active,
                                               bool prefs_can_make_payment,
                                               bool skip_ui_for_basic_card);
+
+// Get the WebContents of the Expandable Payment Handler for testing purpose, or
+// null if nonexistent. To guarantee a non-null return, this function should be
+// called only if: 1) PaymentRequest UI is opening. 2)
+// ScrollToExpandPaymentHandler feature is enabled. 3) PaymentHandler is
+// opening.
+content::WebContents* GetPaymentHandlerWebContentsForTest();
 
 // Sets an observer on future Java PaymentRequests that will call these
 // callbacks when the events occur.

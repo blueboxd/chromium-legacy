@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/system_tray_test_api.h"
+#include "ash/public/cpp/test/shell_test_api.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
 #include "chrome/browser/chromeos/first_run/step_names.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "content/public/test/test_utils.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_handler.h"
@@ -51,17 +55,34 @@ class CountingEventHandler : public ui::EventHandler {
 
 }  // namespace
 
-class FirstRunUIBrowserTest : public InProcessBrowserTest,
-                              public FirstRunActor::Delegate {
+// The param respectively indicate whether tablet mode and the
+// kHideShelfControlsInTabletMode feature are enabled.
+class FirstRunUIBrowserTest
+    : public InProcessBrowserTest,
+      public FirstRunActor::Delegate,
+      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   FirstRunUIBrowserTest()
       : initialized_(false),
         finalized_(false) {
+    if (IsHomeButtonHiddenInTabletMode()) {
+      // kHideShelfControlsInTabletMode is predicated on hotseat being enabled.
+      scoped_feature_list_.InitWithFeatures(
+          {ash::features::kHideShelfControlsInTabletMode,
+           chromeos::features::kShelfHotseat},
+          {});
+    } else {
+      scoped_feature_list_.InitWithFeatures(
+          {}, {ash::features::kHideShelfControlsInTabletMode});
+    }
   }
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     tray_test_api_ = ash::SystemTrayTestApi::Create();
+
+    if (InTabletMode())
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true);
   }
 
   // FirstRunActor::Delegate overrides.
@@ -97,6 +118,16 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
   }
 
   void OnActorDestroyed() override { controller()->OnActorDestroyed(); }
+
+  bool InTabletMode() const { return std::get<0>(GetParam()); }
+
+  bool IsHomeButtonHiddenInTabletMode() const {
+    return std::get<1>(GetParam());
+  }
+
+  bool IsHomeButtonShown() const {
+    return !InTabletMode() || !IsHomeButtonHiddenInTabletMode();
+  }
 
   void LaunchTutorial() {
     chromeos::first_run::LaunchTutorial();
@@ -155,19 +186,30 @@ class FirstRunUIBrowserTest : public InProcessBrowserTest,
   std::string current_step_name_;
   bool initialized_;
   bool finalized_;
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::OnceClosure on_initialized_callback_;
   base::OnceClosure on_step_shown_callback_;
   base::OnceClosure on_finalized_callback_;
   test::JSChecker js_;
 };
 
-IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, FirstRunFlow) {
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    FirstRunUIBrowserTest,
+    ::testing::Combine(
+        ::testing::Bool() /*tablet mode*/,
+        ::testing::Bool() /*home button hidden in tablet mode*/));
+
+IN_PROC_BROWSER_TEST_P(FirstRunUIBrowserTest, FirstRunFlow) {
   LaunchTutorial();
   WaitForInitialization();
-  WaitForStep(first_run::kAppListStep);
-  EXPECT_FALSE(IsTrayBubbleOpen());
 
-  AdvanceStep();
+  if (IsHomeButtonShown()) {
+    WaitForStep(first_run::kAppListStep);
+    EXPECT_FALSE(IsTrayBubbleOpen());
+    AdvanceStep();
+  }
+
   WaitForStep(first_run::kTrayStep);
   EXPECT_TRUE(IsTrayBubbleOpen());
 
@@ -182,11 +224,12 @@ IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, FirstRunFlow) {
 // window might be open if enterprise policy forces a browser tab to open
 // on first login and the web page opens a JavaScript alert.
 // See https://crrev.com/99673003
-IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, ModalWindowDoesNotBlock) {
+IN_PROC_BROWSER_TEST_P(FirstRunUIBrowserTest, ModalWindowDoesNotBlock) {
   // Start the tutorial.
   LaunchTutorial();
   WaitForInitialization();
-  WaitForStep(first_run::kAppListStep);
+  WaitForStep(IsHomeButtonShown() ? first_run::kAppListStep
+                                  : first_run::kTrayStep);
 
   // Simulate the browser opening a modal dialog.
   views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
@@ -208,12 +251,14 @@ IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, ModalWindowDoesNotBlock) {
 }
 
 // Tests that the escape key cancels the tutorial.
-IN_PROC_BROWSER_TEST_F(FirstRunUIBrowserTest, EscapeCancelsTutorial) {
+IN_PROC_BROWSER_TEST_P(FirstRunUIBrowserTest, EscapeCancelsTutorial) {
   // Run the tutorial for a couple steps, but don't finish it.
   LaunchTutorial();
   WaitForInitialization();
-  WaitForStep(first_run::kAppListStep);
-  AdvanceStep();
+  if (IsHomeButtonShown()) {
+    WaitForStep(first_run::kAppListStep);
+    AdvanceStep();
+  }
   WaitForStep(first_run::kTrayStep);
   EXPECT_TRUE(IsTrayBubbleOpen());
 

@@ -38,6 +38,13 @@ class MockWebsiteLoginFetcher : public WebsiteLoginFetcher {
                void(const Login& login,
                     base::OnceCallback<void(bool, std::string)>&));
 
+  std::string GeneratePassword(autofill::FormSignature form_signature,
+                               autofill::FieldSignature field_signature,
+                               uint64_t max_length) override {
+    return GetGeneratedPassword();
+  }
+
+  MOCK_METHOD0(GetGeneratedPassword, std::string());
   DISALLOW_COPY_AND_ASSIGN(MockWebsiteLoginFetcher);
 };
 

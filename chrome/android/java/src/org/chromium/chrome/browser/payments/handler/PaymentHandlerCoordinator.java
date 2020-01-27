@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.payments.handler;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
@@ -28,6 +30,7 @@ import java.net.URI;
  */
 public class PaymentHandlerCoordinator {
     private Runnable mHider;
+    private WebContents mWebContents;
 
     /** Constructs the payment-handler component coordinator. */
     public PaymentHandlerCoordinator() {
@@ -56,25 +59,24 @@ public class PaymentHandlerCoordinator {
             PaymentHandlerUiObserver observer) {
         assert mHider == null : "Already showing payment-handler UI";
 
-        WebContents webContents =
-                WebContentsFactory.createWebContents(isIncognito, /*initiallyHidden=*/false);
-        ContentView webContentView = ContentView.createContentView(activity, webContents);
-        webContents.initialize(ChromeVersionInfo.getProductVersion(),
+        mWebContents = WebContentsFactory.createWebContents(isIncognito, /*initiallyHidden=*/false);
+        ContentView webContentView = ContentView.createContentView(activity, mWebContents);
+        mWebContents.initialize(ChromeVersionInfo.getProductVersion(),
                 ViewAndroidDelegate.createBasicDelegate(webContentView), webContentView,
                 activity.getWindowAndroid(), WebContents.createDefaultInternalsHolder());
-        webContents.getNavigationController().loadUrl(new LoadUrlParams(url.toString()));
+        mWebContents.getNavigationController().loadUrl(new LoadUrlParams(url.toString()));
 
         PropertyModel model = new PropertyModel.Builder(PaymentHandlerProperties.ALL_KEYS).build();
         PaymentHandlerMediator mediator =
-                new PaymentHandlerMediator(model, this::hide, webContents, observer);
+                new PaymentHandlerMediator(model, this::hide, mWebContents, observer);
         BottomSheetController bottomSheetController = activity.getBottomSheetController();
         bottomSheetController.addObserver(mediator);
-        webContents.addObserver(mediator);
+        mWebContents.addObserver(mediator);
 
         PaymentHandlerToolbarCoordinator toolbarCoordinator = new PaymentHandlerToolbarCoordinator(
-                activity, webContents, url, /*observer=*/mediator);
+                activity, mWebContents, url, /*observer=*/mediator);
         PaymentHandlerView view = new PaymentHandlerView(
-                activity, webContents, webContentView, toolbarCoordinator.getView());
+                activity, mWebContents, webContentView, toolbarCoordinator.getView());
         assert toolbarCoordinator.getToolbarHeightPx() == view.getToolbarHeightPx();
         PropertyModelChangeProcessor changeProcessor =
                 PropertyModelChangeProcessor.create(model, view, PaymentHandlerViewBinder::bind);
@@ -82,10 +84,21 @@ public class PaymentHandlerCoordinator {
             changeProcessor.destroy();
             bottomSheetController.removeObserver(mediator);
             bottomSheetController.hideContent(/*content=*/view, /*animate=*/true);
-            webContents.destroy();
+            mWebContents.destroy();
             observer.onPaymentHandlerUiClosed();
         };
         return bottomSheetController.requestShowContent(view, /*animate=*/true);
+    }
+
+    /**
+     * Get the WebContents of the Payment Handler for testing purpose. In other situations,
+     * WebContents should not be leaked outside the Payment Handler.
+     *
+     * @return The WebContents of the Payment Handler.
+     */
+    @VisibleForTesting
+    public WebContents getWebContentsForTest() {
+        return mWebContents;
     }
 
     /** Hides the payment-handler UI. */

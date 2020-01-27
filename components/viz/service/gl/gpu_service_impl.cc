@@ -30,6 +30,7 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
+#include "gpu/config/skia_limits.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/common/memory_stats.h"
@@ -170,10 +171,18 @@ GpuServiceImpl::GpuServiceImpl(
   protected_buffer_manager_ = new arc::ProtectedBufferManager();
 #endif  // defined(OS_CHROMEOS)
 
+  size_t max_resource_cache_bytes;
+  size_t max_glyph_cache_texture_bytes;
+  gpu::DetermineGrCacheLimitsFromAvailableMemory(
+      &max_resource_cache_bytes, &max_glyph_cache_texture_bytes);
+  GrContextOptions context_options;
+  context_options.fGlyphCacheTextureMaximumBytes =
+      max_glyph_cache_texture_bytes;
+
 #if BUILDFLAG(ENABLE_VULKAN)
   if (vulkan_implementation_) {
-    vulkan_context_provider_ =
-        VulkanInProcessContextProvider::Create(vulkan_implementation_);
+    vulkan_context_provider_ = VulkanInProcessContextProvider::Create(
+        vulkan_implementation_, context_options);
     if (vulkan_context_provider_) {
       // If Vulkan is supported, then OOP-R is supported.
       gpu_info_.oop_rasterization_supported = true;
@@ -187,7 +196,7 @@ GpuServiceImpl::GpuServiceImpl(
 
 #if BUILDFLAG(SKIA_USE_DAWN)
   if (gpu_preferences_.gr_context_type == gpu::GrContextType::kDawn) {
-    dawn_context_provider_ = DawnContextProvider::Create();
+    dawn_context_provider_ = DawnContextProvider::Create(context_options);
     if (dawn_context_provider_) {
       gpu_info_.oop_rasterization_supported = true;
       gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_OOP_RASTERIZATION] =
@@ -206,7 +215,7 @@ GpuServiceImpl::GpuServiceImpl(
 #if defined(OS_MACOSX)
   if (gpu_feature_info_.status_values[gpu::GPU_FEATURE_TYPE_METAL] ==
       gpu::kGpuFeatureStatusEnabled) {
-    metal_context_provider_ = MetalContextProvider::Create();
+    metal_context_provider_ = MetalContextProvider::Create(context_options);
   }
 #endif
 

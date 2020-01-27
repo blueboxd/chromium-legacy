@@ -77,6 +77,10 @@ void DialogDelegate::OnCloseContents(content::WebContents* source,
   *out_close_dialog = true;
 }
 
+bool DialogDelegate::ShouldCloseDialogOnEscape() const {
+  return false;
+}
+
 bool DialogDelegate::ShouldShowDialogTitle() const {
   return true;
 }

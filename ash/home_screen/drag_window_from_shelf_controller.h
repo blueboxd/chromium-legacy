@@ -113,6 +113,9 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   aura::Window* dragged_window() const { return window_; }
   bool drag_started() const { return drag_started_; }
   bool show_overview_windows() const { return show_overview_windows_; }
+  bool during_window_restoration_callback() const {
+    return during_window_restoration_callback_;
+  }
 
  private:
   class WindowsHider;
@@ -202,6 +205,8 @@ class ASH_EXPORT DragWindowFromShelfController : public aura::WindowObserver {
   bool show_overview_windows_ = false;
 
   base::ObserverList<Observer> observers_;
+
+  bool during_window_restoration_callback_ = false;
 
   base::WeakPtrFactory<DragWindowFromShelfController> weak_ptr_factory_{this};
 

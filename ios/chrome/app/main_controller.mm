@@ -130,7 +130,6 @@
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_switcher.h"
 #import "ios/chrome/browser/ui/tab_grid/view_controller_swapping.h"
-#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -348,8 +347,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // browser has started up to the FOREGROUND stage.
 @property(nonatomic, readonly) TabGridCoordinator* mainCoordinator;
 
-// Starts a voice search on the current BVC.
-- (void)startVoiceSearchInCurrentBVC;
 // Returns whether the restore infobar should be displayed.
 - (bool)mustShowRestoreInfobar;
 // Switch all global states for the given mode (normal or incognito).
@@ -430,10 +427,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 @implementation MainController
 // Defined by MainControllerGuts.
-@synthesize historyCoordinator;
 @synthesize appURLLoadingService;
-@synthesize isProcessingTabSwitcherCommand;
-@synthesize isProcessingVoiceSearchCommand;
 @synthesize dismissingTabSwitcher = _dismissingTabSwitcher;
 @synthesize restoreHelper = _restoreHelper;
 
@@ -448,11 +442,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 @synthesize appLaunchTime = _appLaunchTime;
 // Defined in private interface
 @synthesize mainCoordinator = _mainCoordinator;
-@synthesize NTPActionAfterTabSwitcherDismissal =
-    _NTPActionAfterTabSwitcherDismissal;
 @synthesize tabSwitcherIsActive;
-@synthesize modeToDisplayOnTabSwitcherDismissal =
-    _modeToDisplayOnTabSwitcherDismissal;
 
 #pragma mark - Application lifecycle
 
@@ -814,9 +804,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   self.browserViewWrangler = nil;
 
   _extensionSearchEngineDataUpdater = nullptr;
-
-  [self.historyCoordinator stop];
-  self.historyCoordinator = nil;
 
   ios::GetChromeBrowserProvider()
       ->GetMailtoHandlerProvider()
@@ -1426,20 +1413,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self switchGlobalStateToMode:mode];
 }
 
-- (void)displayCurrentBVCAndFocusOmnibox:(BOOL)focusOmnibox {
-  ProceduralBlock completion = nil;
-  if (focusOmnibox) {
-    __weak BrowserViewController* weakCurrentBVC = self.currentBVC;
-    completion = ^{
-      [weakCurrentBVC.dispatcher focusOmnibox];
-    };
-  }
-  [self.mainCoordinator showTabViewController:self.currentBVC
-                                   completion:completion];
-  [self.currentBVC.dispatcher
-      setIncognitoContentVisible:(self.currentBVC == self.otrBVC)];
-}
-
 - (TabModel*)currentTabModel {
   return self.currentBVC.tabModel;
 }
@@ -1451,29 +1424,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (ios::ChromeBrowserState*)currentBrowserState {
   return self.currentBVC.browserState;
 }
-
-#pragma mark - Tab opening utility methods.
-
-- (ProceduralBlock)completionBlockForTriggeringAction:
-    (NTPTabOpeningPostOpeningAction)action {
-  switch (action) {
-    case START_VOICE_SEARCH:
-      return ^{
-        [self startVoiceSearchInCurrentBVC];
-      };
-    case START_QR_CODE_SCANNER:
-      return ^{
-        [self.currentBVC.dispatcher showQRScanner];
-      };
-    case FOCUS_OMNIBOX:
-      return ^{
-        [self.currentBVC.dispatcher focusOmnibox];
-      };
-    default:
-      return nil;
-  }
-}
-
 
 - (bool)mustShowRestoreInfobar {
   if ([self isFirstLaunchAfterUpgrade])
@@ -1513,18 +1463,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 
-#pragma mark - ApplicationCommands helpers
-
-- (void)startVoiceSearchInCurrentBVC {
-  // If the background (non-current) BVC is playing TTS audio, call
-  // -startVoiceSearch on it to stop the TTS.
-  BrowserViewController* backgroundBVC =
-      self.mainBVC == self.currentBVC ? self.otrBVC : self.mainBVC;
-  if (backgroundBVC.playingTTS)
-    [backgroundBVC startVoiceSearch];
-  else
-    [self.currentBVC startVoiceSearch];
-}
 
 #pragma mark - SceneController plumbing
 

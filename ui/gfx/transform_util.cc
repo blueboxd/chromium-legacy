@@ -18,42 +18,41 @@ namespace gfx {
 
 namespace {
 
-SkMScalar Length3(SkMScalar v[3]) {
-  double vd[3] = {SkMScalarToDouble(v[0]), SkMScalarToDouble(v[1]),
-                  SkMScalarToDouble(v[2])};
-  return SkDoubleToMScalar(
+SkScalar Length3(SkScalar v[3]) {
+  double vd[3] = {v[0], v[1], v[2]};
+  return SkDoubleToScalar(
       std::sqrt(vd[0] * vd[0] + vd[1] * vd[1] + vd[2] * vd[2]));
 }
 
 template <int n>
-SkMScalar Dot(const SkMScalar* a, const SkMScalar* b) {
+SkScalar Dot(const SkScalar* a, const SkScalar* b) {
   double total = 0.0;
   for (int i = 0; i < n; ++i)
     total += a[i] * b[i];
-  return SkDoubleToMScalar(total);
+  return SkDoubleToScalar(total);
 }
 
 template <int n>
-void Combine(SkMScalar* out,
-             const SkMScalar* a,
-             const SkMScalar* b,
+void Combine(SkScalar* out,
+             const SkScalar* a,
+             const SkScalar* b,
              double scale_a,
              double scale_b) {
   for (int i = 0; i < n; ++i)
-    out[i] = SkDoubleToMScalar(a[i] * scale_a + b[i] * scale_b);
+    out[i] = SkDoubleToScalar(a[i] * scale_a + b[i] * scale_b);
 }
 
-void Cross3(SkMScalar out[3], SkMScalar a[3], SkMScalar b[3]) {
-  SkMScalar x = a[1] * b[2] - a[2] * b[1];
-  SkMScalar y = a[2] * b[0] - a[0] * b[2];
-  SkMScalar z = a[0] * b[1] - a[1] * b[0];
+void Cross3(SkScalar out[3], SkScalar a[3], SkScalar b[3]) {
+  SkScalar x = a[1] * b[2] - a[2] * b[1];
+  SkScalar y = a[2] * b[0] - a[0] * b[2];
+  SkScalar z = a[0] * b[1] - a[1] * b[0];
   out[0] = x;
   out[1] = y;
   out[2] = z;
 }
 
-SkMScalar Round(SkMScalar n) {
-  return SkDoubleToMScalar(std::floor(SkMScalarToDouble(n) + 0.5));
+SkScalar Round(SkScalar n) {
+  return SkDoubleToScalar(std::floor(double{n} + 0.5));
 }
 
 // Returns false if the matrix cannot be normalized.
@@ -62,7 +61,7 @@ bool Normalize(SkMatrix44& m) {
     // Cannot normalize.
     return false;
 
-  SkMScalar scale = SK_MScalar1 / m.get(3, 3);
+  SkScalar scale = SK_Scalar1 / m.get(3, 3);
   for (int i = 0; i < 4; i++)
     for (int j = 0; j < 4; j++)
       m.set(i, j, m.get(i, j) * scale);
@@ -81,9 +80,9 @@ SkMatrix44 BuildPerspectiveMatrix(const DecomposedTransform& decomp) {
 SkMatrix44 BuildTranslationMatrix(const DecomposedTransform& decomp) {
   SkMatrix44 matrix(SkMatrix44::kUninitialized_Constructor);
   // Implicitly calls matrix.setIdentity()
-  matrix.setTranslate(SkDoubleToMScalar(decomp.translate[0]),
-                      SkDoubleToMScalar(decomp.translate[1]),
-                      SkDoubleToMScalar(decomp.translate[2]));
+  matrix.setTranslate(SkDoubleToScalar(decomp.translate[0]),
+                      SkDoubleToScalar(decomp.translate[1]),
+                      SkDoubleToScalar(decomp.translate[2]));
   return matrix;
 }
 
@@ -103,7 +102,7 @@ SkMatrix44 BuildSnappedRotationMatrix(const DecomposedTransform& decomp) {
   SkMatrix44 rotation_matrix = BuildRotationMatrix(decomp);
   for (int i = 0; i < 3; ++i) {
     for (int j = 0; j < 3; ++j) {
-      SkMScalar value = rotation_matrix.get(i, j);
+      SkScalar value = rotation_matrix.get(i, j);
       // Snap values to -1, 0 or 1.
       if (value < -0.5f) {
         value = -1.0f;
@@ -143,9 +142,9 @@ SkMatrix44 BuildSkewMatrix(const DecomposedTransform& decomp) {
 
 SkMatrix44 BuildScaleMatrix(const DecomposedTransform& decomp) {
   SkMatrix44 matrix(SkMatrix44::kUninitialized_Constructor);
-  matrix.setScale(SkDoubleToMScalar(decomp.scale[0]),
-                  SkDoubleToMScalar(decomp.scale[1]),
-                  SkDoubleToMScalar(decomp.scale[2]));
+  matrix.setScale(SkDoubleToScalar(decomp.scale[0]),
+                  SkDoubleToScalar(decomp.scale[1]),
+                  SkDoubleToScalar(decomp.scale[2]));
   return matrix;
 }
 
@@ -383,8 +382,8 @@ bool DecomposeTransform(DecomposedTransform* decomp,
   if (matrix.get(3, 0) != 0.0 || matrix.get(3, 1) != 0.0 ||
       matrix.get(3, 2) != 0.0) {
     // rhs is the right hand side of the equation.
-    SkMScalar rhs[4] = {matrix.get(3, 0), matrix.get(3, 1), matrix.get(3, 2),
-                        matrix.get(3, 3)};
+    SkScalar rhs[4] = {matrix.get(3, 0), matrix.get(3, 1), matrix.get(3, 2),
+                       matrix.get(3, 3)};
 
     // Solve the equation by inverting perspectiveMatrix and multiplying
     // rhs by the inverse.
@@ -395,7 +394,7 @@ bool DecomposeTransform(DecomposedTransform* decomp,
     SkMatrix44 transposedInversePerspectiveMatrix = inversePerspectiveMatrix;
 
     transposedInversePerspectiveMatrix.transpose();
-    transposedInversePerspectiveMatrix.mapMScalars(rhs);
+    transposedInversePerspectiveMatrix.mapScalars(rhs);
 
     for (int i = 0; i < 4; ++i)
       decomp->perspective[i] = rhs[i];
@@ -412,7 +411,7 @@ bool DecomposeTransform(DecomposedTransform* decomp,
 
   // Copy of matrix is stored in column major order to facilitate column-level
   // operations.
-  SkMScalar column[3][3];
+  SkScalar column[3][3];
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; ++j)
       column[i][j] = matrix.get(j, i);
@@ -463,7 +462,7 @@ bool DecomposeTransform(DecomposedTransform* decomp,
   // only 1 axis is flipped when the determinant is negative. Verify if it is
   // correct to flip all of the scales and matrix elements, as this introduces
   // rotation for the simple case of a single axis scale inversion.
-  SkMScalar pdum3[3];
+  SkScalar pdum3[3];
   Cross3(pdum3, column[1], column[2]);
   if (Dot<3>(column[0], pdum3) < 0) {
     for (int i = 0; i < 3; i++) {
@@ -478,15 +477,15 @@ bool DecomposeTransform(DecomposedTransform* decomp,
   // which has a degenerate case of zero off-diagonal elements in the
   // orthonormal matrix, which leads to errors in determining the sign
   // of the quaternions.
-  double q_xx = SkMScalarToDouble(column[0][0]);
-  double q_xy = SkMScalarToDouble(column[1][0]);
-  double q_xz = SkMScalarToDouble(column[2][0]);
-  double q_yx = SkMScalarToDouble(column[0][1]);
-  double q_yy = SkMScalarToDouble(column[1][1]);
-  double q_yz = SkMScalarToDouble(column[2][1]);
-  double q_zx = SkMScalarToDouble(column[0][2]);
-  double q_zy = SkMScalarToDouble(column[1][2]);
-  double q_zz = SkMScalarToDouble(column[2][2]);
+  double q_xx = column[0][0];
+  double q_xy = column[1][0];
+  double q_xz = column[2][0];
+  double q_yx = column[0][1];
+  double q_yy = column[1][1];
+  double q_yz = column[2][1];
+  double q_zx = column[0][2];
+  double q_zy = column[1][2];
+  double q_zz = column[2][2];
 
   double r, s, t, x, y, z, w;
   t = q_xx + q_yy + q_zz;
@@ -520,10 +519,10 @@ bool DecomposeTransform(DecomposedTransform* decomp,
     w = (q_yx - q_xy) * s;
   }
 
-  decomp->quaternion.set_x(SkDoubleToMScalar(x));
-  decomp->quaternion.set_y(SkDoubleToMScalar(y));
-  decomp->quaternion.set_z(SkDoubleToMScalar(z));
-  decomp->quaternion.set_w(SkDoubleToMScalar(w));
+  decomp->quaternion.set_x(SkDoubleToScalar(x));
+  decomp->quaternion.set_y(SkDoubleToScalar(y));
+  decomp->quaternion.set_z(SkDoubleToScalar(z));
+  decomp->quaternion.set_w(SkDoubleToScalar(w));
 
   return true;
 }

@@ -83,8 +83,9 @@ class VIEWS_EXPORT PrefixSelector : public ui::TextInputClient {
 #endif
 
 #if defined(OS_WIN)
-  bool GetEditContextLayoutBounds(gfx::Rect* control_bounds,
-                                  gfx::Rect* selection_bounds) override;
+  void GetActiveTextInputControlLayoutBounds(
+      base::Optional<gfx::Rect>* control_bounds,
+      base::Optional<gfx::Rect>* selection_bounds) override;
   void SetActiveCompositionForAccessibility(
       const gfx::Range& range,
       const base::string16& active_composition_text,

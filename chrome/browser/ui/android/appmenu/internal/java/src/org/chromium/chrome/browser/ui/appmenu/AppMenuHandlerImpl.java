@@ -12,10 +12,10 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.view.ContextThemeWrapper;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.PopupMenu;
 
 import androidx.annotation.VisibleForTesting;
@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
 import org.chromium.chrome.browser.lifecycle.StartStopWithNativeObserver;
 import org.chromium.chrome.browser.ui.appmenu.internal.R;
 import org.chromium.chrome.browser.ui.widget.textbubble.TextBubble;
+import org.chromium.ui.display.DisplayAndroidManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -149,8 +150,8 @@ class AppMenuHandlerImpl
         boolean isByPermanentButton = false;
 
         Context context = mDecorView.getContext();
-        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-        int rotation = wm.getDefaultDisplay().getRotation();
+        Display display = DisplayAndroidManager.getDefaultDisplayForContext(context);
+        int rotation = display.getRotation();
         if (anchorView == null) {
             // This fixes the bug where the bottom of the menu starts at the top of
             // the keyboard, instead of overlapping the keyboard as it should.
@@ -202,7 +203,7 @@ class AppMenuHandlerImpl
             appRect.bottom = mDecorView.getHeight();
         }
         Point pt = new Point();
-        wm.getDefaultDisplay().getSize(pt);
+        display.getSize(pt);
 
         int footerResourceId = 0;
         if (mDelegate.shouldShowFooter(appRect.height())) {

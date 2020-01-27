@@ -133,6 +133,10 @@ AssistantState* AssistantTestApiImpl::GetAssistantState() {
   return AssistantState::Get();
 }
 
+void AssistantTestApiImpl::WaitUntilIdle() {
+  base::RunLoop().RunUntilIdle();
+}
+
 void AssistantTestApiImpl::EnableAnimations() {
   scoped_animation_duration_ = nullptr;
   AppListView::SetShortAnimationForTesting(false);

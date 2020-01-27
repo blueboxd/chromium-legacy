@@ -33,6 +33,11 @@ class TestDrmOverlayManager : public DrmOverlayManager {
       gfx::AcceleratedWidget widget) override {
     requests_.push_back(candidates);
   }
+  std::vector<OverlayStatus> SendOverlayValidationRequestSync(
+      const std::vector<OverlaySurfaceCandidate>& candidates,
+      gfx::AcceleratedWidget widget) override {
+    return {};
+  }
 
  private:
   std::vector<std::vector<OverlaySurfaceCandidate>> requests_;

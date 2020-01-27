@@ -14,11 +14,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_request_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -53,10 +53,10 @@ class VisibilityTimerTabHelper
   void PostTaskAfterVisibleDelay(const base::Location& from_here,
                                  base::OnceClosure task,
                                  base::TimeDelta visible_delay,
-                                 const PermissionRequestID& id);
+                                 const permissions::PermissionRequestID& id);
 
   // Deletes any earlier task(s) that match |id|.
-  void CancelTask(const PermissionRequestID& id);
+  void CancelTask(const permissions::PermissionRequestID& id);
 
   // WebContentsObserver:
   void OnVisibilityChanged(content::Visibility visibility) override;
@@ -71,7 +71,7 @@ class VisibilityTimerTabHelper
   bool is_visible_;
 
   struct Task {
-    Task(const PermissionRequestID& id,
+    Task(const permissions::PermissionRequestID& id,
          std::unique_ptr<base::RetainingOneShotTimer> timer)
         : id(id), timer(std::move(timer)) {}
 
@@ -85,7 +85,7 @@ class VisibilityTimerTabHelper
       return *this;
     }
 
-    PermissionRequestID id;
+    permissions::PermissionRequestID id;
     std::unique_ptr<base::RetainingOneShotTimer> timer;
   };
   base::circular_deque<Task> task_queue_;
@@ -119,7 +119,7 @@ void VisibilityTimerTabHelper::PostTaskAfterVisibleDelay(
     const base::Location& from_here,
     base::OnceClosure task,
     base::TimeDelta visible_delay,
-    const PermissionRequestID& id) {
+    const permissions::PermissionRequestID& id) {
   if (web_contents()->IsBeingDestroyed())
     return;
 
@@ -140,7 +140,8 @@ void VisibilityTimerTabHelper::PostTaskAfterVisibleDelay(
     task_queue_.front().timer->Reset();
 }
 
-void VisibilityTimerTabHelper::CancelTask(const PermissionRequestID& id) {
+void VisibilityTimerTabHelper::CancelTask(
+    const permissions::PermissionRequestID& id) {
   bool deleting_front = task_queue_.front().id == id;
 
   base::EraseIf(task_queue_, [id](const Task& task) { return task.id == id; });
@@ -263,7 +264,7 @@ void NotificationPermissionContext::ResetPermission(
 
 void NotificationPermissionContext::DecidePermission(
     content::WebContents* web_contents,
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_gesture,

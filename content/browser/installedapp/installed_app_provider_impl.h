@@ -27,6 +27,7 @@ class InstalledAppProviderImpl : public blink::mojom::InstalledAppProvider {
   // InstalledAppProvider overrides:
   void FilterInstalledApps(
       std::vector<blink::mojom::RelatedApplicationPtr> related_apps,
+      const GURL& manifest_url,
       FilterInstalledAppsCallback callback) override;
 
  private:

@@ -172,7 +172,8 @@ class AppSearchProviderTest : public AppListTestBase {
     std::vector<ChromeSearchResult*> priority_results;
     for (const auto& result : app_search_->results()) {
       if (result->display_index() == ash::kFirstIndex &&
-          result->display_location() == ash::kSuggestionChipContainer) {
+          (result->display_type() == ash::kChip ||
+           result->display_type() == ash::kTile)) {
         priority_results.emplace_back(result.get());
       } else {
         non_relevance_results.emplace_back(result.get());

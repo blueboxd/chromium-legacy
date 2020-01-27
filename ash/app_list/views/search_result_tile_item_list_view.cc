@@ -276,10 +276,9 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
   // then add them to their preferred position in the tile list if found.
   auto policy_tiles_filter =
       base::BindRepeating([](const SearchResult& r) -> bool {
-        return r.display_location() ==
-                   SearchResultDisplayLocation::kTileListContainer &&
-               r.display_index() != SearchResultDisplayIndex::kUndefined &&
-               r.display_type() == SearchResultDisplayType::kRecommendation;
+        return r.display_index() != SearchResultDisplayIndex::kUndefined &&
+               r.display_type() == SearchResultDisplayType::kTile &&
+               r.is_recommendation();
       });
   std::vector<SearchResult*> policy_tiles_results =
       is_app_reinstall_recommendation_enabled_ && query.empty()
@@ -287,11 +286,7 @@ std::vector<SearchResult*> SearchResultTileItemListView::GetDisplayResults() {
                 results(), policy_tiles_filter, max_search_result_tiles_)
           : std::vector<SearchResult*>();
 
-  SearchResult::DisplayType display_type =
-      app_list_features::IsZeroStateSuggestionsEnabled()
-          ? (query.empty() ? SearchResultDisplayType::kRecommendation
-                           : SearchResultDisplayType::kTile)
-          : SearchResultDisplayType::kTile;
+  SearchResult::DisplayType display_type = SearchResultDisplayType::kTile;
   size_t display_num = max_search_result_tiles_ - policy_tiles_results.size();
 
   // Do not display the repeat reinstall results or continue reading app in the

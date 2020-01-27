@@ -232,6 +232,11 @@ void LogSubmittedFormFrame(SubmittedFormFrame frame) {
                                 SubmittedFormFrame::SUBMITTED_FORM_FRAME_COUNT);
 }
 
+void LogPasswordSettingsReauthResult(ReauthResult result) {
+  base::UmaHistogramEnumeration(
+      "PasswordManager.ReauthToAccessPasswordInSettings", result);
+}
+
 void LogDeleteUndecryptableLoginsReturnValue(
     DeleteCorruptedPasswordsResult result) {
   base::UmaHistogramEnumeration(

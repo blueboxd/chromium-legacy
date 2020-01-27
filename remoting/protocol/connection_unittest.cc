@@ -216,17 +216,17 @@ class FakeAudioPlayer : public AudioStub {
     const int16_t* data = reinterpret_cast<const int16_t*>(data_.data());
     int num_samples = data_.size() / kAudioChannels / sizeof(int16_t);
 
-    int skipped_samples = 0;
-    while (skipped_samples < num_samples &&
-           data[skipped_samples * kAudioChannels] == 0 &&
-           data[skipped_samples * kAudioChannels + 1] == 0) {
-      skipped_samples += kAudioChannels;
-    }
+    // Skip the first 200 ms as these samples are more likely to be affected by
+    // concealment which causes the zero-crossing frequency estimation to fail.
+    // This is even more likely for ASAN builds.
+    constexpr int kSkippedSamples =
+        200 * kAudioSampleRate / base::Time::kMillisecondsPerSecond;
+    ASSERT_GT(num_samples, kSkippedSamples);
 
     // Estimate signal frequency by counting how often it crosses 0.
     int left = 0;
     int right = 0;
-    for (int i = skipped_samples + 1; i < num_samples; ++i) {
+    for (int i = kSkippedSamples; i < num_samples; ++i) {
       if (data[(i - 1) * kAudioChannels] < 0 && data[i * kAudioChannels] >= 0) {
         ++left;
       }
@@ -236,11 +236,11 @@ class FakeAudioPlayer : public AudioStub {
       }
     }
 
-    const int kMaxErrorHz = 100;
-    int left_hz = (left * kAudioSampleRate / (num_samples - skipped_samples));
+    const int kMaxErrorHz = 50;
+    int left_hz = (left * kAudioSampleRate / (num_samples - kSkippedSamples));
     EXPECT_LE(kTestAudioSignalFrequencyLeftHz - kMaxErrorHz, left_hz);
     EXPECT_GE(kTestAudioSignalFrequencyLeftHz + kMaxErrorHz, left_hz);
-    int right_hz = (right * kAudioSampleRate / (num_samples - skipped_samples));
+    int right_hz = (right * kAudioSampleRate / (num_samples - kSkippedSamples));
     EXPECT_LE(kTestAudioSignalFrequencyRightHz - kMaxErrorHz, right_hz);
     EXPECT_GE(kTestAudioSignalFrequencyRightHz + kMaxErrorHz, right_hz);
   }

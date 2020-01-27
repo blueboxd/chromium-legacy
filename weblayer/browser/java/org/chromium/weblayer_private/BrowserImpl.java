@@ -62,14 +62,14 @@ public class BrowserImpl extends IBrowser.Stub {
         sLifecycleObservers.removeObserver(observer);
     }
 
-    public BrowserImpl(ProfileImpl profile, Bundle savedInstanceState) {
+    public BrowserImpl(ProfileImpl profile, String persistenceId, Bundle savedInstanceState) {
         mProfile = profile;
-        mNativeBrowser = BrowserImplJni.get().createBrowser(profile.getNativeProfile(), this);
+        mNativeBrowser =
+                BrowserImplJni.get().createBrowser(profile.getNativeProfile(), persistenceId, this);
 
         for (Observer observer : sLifecycleObservers) {
             observer.onBrowserCreated();
         }
-        // Restore tabs etc from savedInstanceState here.
     }
 
     public WindowAndroid getWindowAndroid() {
@@ -88,15 +88,15 @@ public class BrowserImpl extends IBrowser.Stub {
         mViewController = new BrowserViewController(context, windowAndroid);
         mLocaleReceiver = new LocaleChangedBroadcastReceiver(context);
 
-        if (getTabs().isEmpty()) {
+        if (getTabs().size() > 0) {
+            updateAllTabs();
+            mViewController.setActiveTab(getActiveTab());
+        } else if (BrowserImplJni.get().getPersistenceId(mNativeBrowser, this).isEmpty()) {
             TabImpl tab = new TabImpl(mProfile, windowAndroid);
             addTab(tab);
             boolean set_active_result = setActiveTab(tab);
             assert set_active_result;
-        } else {
-            updateAllTabs();
-            mViewController.setActiveTab(getActiveTab());
-        }
+        } // else case is session restore, which will asynchronously create tabs.
     }
 
     public void onFragmentDetached() {
@@ -158,6 +158,11 @@ public class BrowserImpl extends IBrowser.Stub {
         TabImpl tab = (TabImpl) iTab;
         if (tab.getBrowser() == this) return;
         BrowserImplJni.get().addTab(mNativeBrowser, this, tab.getNativeTab());
+    }
+
+    @CalledByNative
+    private void createTabForSessionRestore(long nativeTab) {
+        new TabImpl(mProfile, mWindowAndroid, nativeTab);
     }
 
     @CalledByNative
@@ -246,6 +251,7 @@ public class BrowserImpl extends IBrowser.Stub {
 
     public void destroy() {
         mInDestroy = true;
+        BrowserImplJni.get().prepareForShutdown(mNativeBrowser, this);
         setActiveTab(null);
         for (Object tab : getTabs()) {
             destroyTabImpl((TabImpl) tab);
@@ -280,12 +286,14 @@ public class BrowserImpl extends IBrowser.Stub {
 
     @NativeMethods
     interface Natives {
-        long createBrowser(long profile, BrowserImpl caller);
+        long createBrowser(long profile, String persistenceId, BrowserImpl caller);
         void deleteBrowser(long browser);
         void addTab(long nativeBrowserImpl, BrowserImpl browser, long nativeTab);
         void removeTab(long nativeBrowserImpl, BrowserImpl browser, long nativeTab);
         TabImpl[] getTabs(long nativeBrowserImpl, BrowserImpl browser);
         void setActiveTab(long nativeBrowserImpl, BrowserImpl browser, long nativeTab);
         TabImpl getActiveTab(long nativeBrowserImpl, BrowserImpl browser);
+        void prepareForShutdown(long nativeBrowserImpl, BrowserImpl browser);
+        String getPersistenceId(long nativeBrowserImpl, BrowserImpl browser);
     }
 }

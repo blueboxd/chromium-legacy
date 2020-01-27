@@ -159,15 +159,25 @@ std::string PrintToString(const PoolingTestParams& p) {
       "Dependency");
 }
 
-std::string GenerateQuicVersionsListForAltSvcHeader(
-    const quic::ParsedQuicVersionVector& versions) {
-  std::string result = "";
-  for (const quic::ParsedQuicVersion& version : versions) {
-    if (!result.empty())
-      result.append(",");
-    result.append(base::NumberToString(version.transport_version));
+std::string GenerateQuicAltSvcHeader() {
+  std::string altsvc_header = "Alt-Svc: ";
+  std::string version_string;
+  for (const auto& version : quic::AllSupportedVersions()) {
+    if (version.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+      altsvc_header.append(quic::AlpnForVersion(version));
+      altsvc_header.append("=\":443\", ");
+    } else {
+      if (!version_string.empty()) {
+        version_string.append(",");
+      }
+      version_string.append(base::NumberToString(version.transport_version));
+    }
   }
-  return result;
+  altsvc_header.append("quic=\":443\"; v=\"");
+  altsvc_header.append(version_string);
+  altsvc_header.append("\"\r\n");
+
+  return altsvc_header;
 }
 
 std::vector<TestParams> GetTestParams() {
@@ -1658,7 +1668,7 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServicesDifferentHost) {
 
 TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
   quic::ParsedQuicVersion unsupported_version = quic::UnsupportedQuicVersion();
-  // Add support for another QUIC version besides |version_|. Also find a
+  // Add support for another QUIC version besides |version_|. Also find an
   // unsupported version.
   for (const quic::ParsedQuicVersion& version : quic::AllSupportedVersions()) {
     if (version == version_)
@@ -1670,7 +1680,8 @@ TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
     unsupported_version = version;
     break;
   }
-  DCHECK_NE(unsupported_version, quic::UnsupportedQuicVersion());
+  ASSERT_EQ(2u, supported_versions_.size());
+  ASSERT_NE(quic::UnsupportedQuicVersion(), unsupported_version);
 
   // Set up alternative service to use QUIC with a version that is not
   // supported.
@@ -1695,19 +1706,11 @@ TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
   // in the stored AlternativeService is not supported by the client. However,
   // the response from the server will advertise new Alt-Svc with supported
   // versions.
-  quic::ParsedQuicVersionVector versions;
-  for (quic::QuicTransportVersion version :
-       quic::AllSupportedTransportVersions()) {
-    versions.push_back(
-        quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, version));
-  }
-  std::string advertised_versions_list_str =
-      GenerateQuicVersionsListForAltSvcHeader(versions);
-  std::string altsvc_header =
-      base::StringPrintf("Alt-Svc: quic=\":443\"; v=\"%s\"\r\n\r\n",
-                         advertised_versions_list_str.c_str());
+  std::string altsvc_header = GenerateQuicAltSvcHeader();
   MockRead http_reads[] = {
-      MockRead("HTTP/1.1 200 OK\r\n"), MockRead(altsvc_header.c_str()),
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead(altsvc_header.c_str()),
+      MockRead("\r\n"),
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
       MockRead(ASYNC, OK)};
@@ -1757,19 +1760,30 @@ TEST_P(QuicNetworkTransactionTest, DoNotUseQuicForUnsupportedVersion) {
   alt_svc_info_vector =
       session_->http_server_properties()->GetAlternativeServiceInfos(
           server, NetworkIsolationKey());
-  EXPECT_EQ(1u, alt_svc_info_vector.size());
-  EXPECT_EQ(kProtoQUIC, alt_svc_info_vector[0].alternative_service().protocol);
-  EXPECT_EQ(2u, alt_svc_info_vector[0].advertised_versions().size());
-  // Advertised versions will be lised in a sorted order.
-  std::sort(
-      supported_versions_.begin(), supported_versions_.end(),
-      [](const quic::ParsedQuicVersion& a, const quic::ParsedQuicVersion& b) {
-        return a.transport_version < b.transport_version;
-      });
-  EXPECT_EQ(supported_versions_[0],
-            alt_svc_info_vector[0].advertised_versions()[0]);
-  EXPECT_EQ(supported_versions_[1],
-            alt_svc_info_vector[0].advertised_versions()[1]);
+  // All PROTOCOL_QUIC_CRYPTO versions are sent in a single Alt-Svc entry,
+  // therefore they aer accumulated in a single AlternativeServiceInfo, whereas
+  // each PROTOCOL_TLS1_3 version has its own Alt-Svc entry and
+  // AlternativeServiceInfo entry.  Flatten to compare.
+  quic::ParsedQuicVersionVector alt_svc_negotiated_versions;
+  for (const auto& alt_svc_info : alt_svc_info_vector) {
+    EXPECT_EQ(kProtoQUIC, alt_svc_info.alternative_service().protocol);
+    for (const auto& version : alt_svc_info.advertised_versions()) {
+      alt_svc_negotiated_versions.push_back(version);
+    }
+  }
+
+  ASSERT_EQ(supported_versions_.size(), alt_svc_negotiated_versions.size());
+  auto version_compare = [](const quic::ParsedQuicVersion& a,
+                            const quic::ParsedQuicVersion& b) {
+    return std::tie(a.transport_version, a.handshake_protocol) <
+           std::tie(b.transport_version, b.handshake_protocol);
+  };
+  std::sort(supported_versions_.begin(), supported_versions_.end(),
+            version_compare);
+  std::sort(alt_svc_negotiated_versions.begin(),
+            alt_svc_negotiated_versions.end(), version_compare);
+  EXPECT_TRUE(std::equal(supported_versions_.begin(), supported_versions_.end(),
+                         alt_svc_negotiated_versions.begin()));
 }
 
 // Regression test for https://crbug.com/546991.
@@ -2114,11 +2128,13 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic1) {
     advertised_version_2 = version;
     break;
   }
-  DCHECK_NE(advertised_version_2, quic::UnsupportedQuicVersion());
+  ASSERT_EQ(2u, supported_versions_.size());
+  ASSERT_NE(quic::UnsupportedQuicVersion(), advertised_version_2);
 
-  std::string QuicAltSvcWithVersionHeader = base::StringPrintf(
-      "Alt-Svc: quic=\":443\";v=\"%d,%d\"\r\n\r\n",
-      advertised_version_2.transport_version, version_.transport_version);
+  std::string QuicAltSvcWithVersionHeader =
+      base::StringPrintf("Alt-Svc: %s=\":443\", %s=\":443\"\r\n\r\n",
+                         quic::AlpnForVersion(advertised_version_2).c_str(),
+                         quic::AlpnForVersion(version_).c_str());
 
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"),
@@ -2166,6 +2182,13 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic1) {
 }
 
 TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic2) {
+  if (version_.handshake_protocol != quic::PROTOCOL_QUIC_CRYPTO) {
+    // Only QUIC_CRYPTO versions can be encoded with Google-style AltSvc.
+    // Currently client preference is not observed with IETF-style AltSvc.
+    // TODO(https://crbug.com/1044691): Fix that and add test.
+    return;
+  }
+
   // Client and server mutually support more than one QUIC_VERSION.
   // The QuicStreamFactoy will pick the preferred QUIC_VERSION: |version_|,
   // which is verified as the PacketMakers are using |version_|.
@@ -2177,7 +2200,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceWithVersionForQuic2) {
     common_version_2 = version;
     break;
   }
-  DCHECK_NE(common_version_2, quic::UnsupportedQuicVersion());
+  ASSERT_NE(quic::UnsupportedQuicVersion(), common_version_2);
 
   supported_versions_.push_back(
       common_version_2);  // Supported but unpreferred.
@@ -2353,25 +2376,17 @@ TEST_P(QuicNetworkTransactionTest,
        StoreMutuallySupportedVersionsWhenProcessAltSvc) {
   // Add support for another QUIC version besides |version_|.
   for (const quic::ParsedQuicVersion& version : quic::AllSupportedVersions()) {
-    if (version == version_)
-      continue;
-    supported_versions_.push_back(version);
-    break;
+    if (version != version_) {
+      supported_versions_.push_back(version);
+      break;
+    }
   }
 
-  quic::ParsedQuicVersionVector versions;
-  for (quic::QuicTransportVersion version :
-       quic::AllSupportedTransportVersions()) {
-    versions.push_back(
-        quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, version));
-  }
-  std::string advertised_versions_list_str =
-      GenerateQuicVersionsListForAltSvcHeader(versions);
-  std::string altsvc_header =
-      base::StringPrintf("Alt-Svc: quic=\":443\"; v=\"%s\"\r\n\r\n",
-                         advertised_versions_list_str.c_str());
+  std::string altsvc_header = GenerateQuicAltSvcHeader();
   MockRead http_reads[] = {
-      MockRead("HTTP/1.1 200 OK\r\n"), MockRead(altsvc_header.c_str()),
+      MockRead("HTTP/1.1 200 OK\r\n"),
+      MockRead(altsvc_header.c_str()),
+      MockRead("\r\n"),
       MockRead("hello world"),
       MockRead(SYNCHRONOUS, ERR_TEST_PEER_CLOSE_AFTER_NEXT_MOCK_READ),
       MockRead(ASYNC, OK)};
@@ -2415,29 +2430,41 @@ TEST_P(QuicNetworkTransactionTest,
   SendRequestAndExpectHttpResponse("hello world");
   SendRequestAndExpectQuicResponse("hello!");
 
-  // Check alternative service is set with only mutually supported versions.
+  // Alt-Svc header contains all possible versions, so alternative services
+  // should contain all of |supported_versions_|.
   const url::SchemeHostPort https_server(request_.url);
   const AlternativeServiceInfoVector alt_svc_info_vector =
       session_->http_server_properties()->GetAlternativeServiceInfos(
           https_server, NetworkIsolationKey());
-  EXPECT_EQ(1u, alt_svc_info_vector.size());
-  EXPECT_EQ(kProtoQUIC, alt_svc_info_vector[0].alternative_service().protocol);
-  EXPECT_EQ(2u, alt_svc_info_vector[0].advertised_versions().size());
-  // Advertised versions will be lised in a sorted order.
-  std::sort(
-      supported_versions_.begin(), supported_versions_.end(),
-      [](const quic::ParsedQuicVersion& a, const quic::ParsedQuicVersion& b) {
-        return a.transport_version < b.transport_version;
-      });
-  EXPECT_EQ(supported_versions_[0],
-            alt_svc_info_vector[0].advertised_versions()[0]);
-  EXPECT_EQ(supported_versions_[1],
-            alt_svc_info_vector[0].advertised_versions()[1]);
+  // However, all PROTOCOL_QUIC_CRYPTO versions are sent in a single Alt-Svc
+  // entry, therefore they aer accumulated in a single AlternativeServiceInfo,
+  // whereas each PROTOCOL_TLS1_3 version has its own Alt-Svc entry and
+  // AlternativeServiceInfo entry.  Flatten to compare.
+  quic::ParsedQuicVersionVector alt_svc_negotiated_versions;
+  for (const auto& alt_svc_info : alt_svc_info_vector) {
+    EXPECT_EQ(kProtoQUIC, alt_svc_info.alternative_service().protocol);
+    for (const auto& version : alt_svc_info.advertised_versions()) {
+      alt_svc_negotiated_versions.push_back(version);
+    }
+  }
+
+  ASSERT_EQ(supported_versions_.size(), alt_svc_negotiated_versions.size());
+  auto version_compare = [](const quic::ParsedQuicVersion& a,
+                            const quic::ParsedQuicVersion& b) {
+    return std::tie(a.transport_version, a.handshake_protocol) <
+           std::tie(b.transport_version, b.handshake_protocol);
+  };
+  std::sort(supported_versions_.begin(), supported_versions_.end(),
+            version_compare);
+  std::sort(alt_svc_negotiated_versions.begin(),
+            alt_svc_negotiated_versions.end(), version_compare);
+  EXPECT_TRUE(std::equal(supported_versions_.begin(), supported_versions_.end(),
+                         alt_svc_negotiated_versions.begin()));
 }
 
 TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceAllSupportedVersion) {
   std::string altsvc_header = base::StringPrintf(
-      "Alt-Svc: quic=\":443\"; v=\"%u\"\r\n\r\n", version_.transport_version);
+      "Alt-Svc: %s=\":443\"\r\n\r\n", quic::AlpnForVersion(version_).c_str());
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n"), MockRead(altsvc_header.c_str()),
       MockRead("hello world"),

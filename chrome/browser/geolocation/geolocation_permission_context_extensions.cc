@@ -9,8 +9,8 @@
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/permissions/permission_request_id.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/process_map.h"
@@ -49,7 +49,7 @@ GeolocationPermissionContextExtensions::
 
 bool GeolocationPermissionContextExtensions::DecidePermission(
     content::WebContents* web_contents,
-    const PermissionRequestID& request_id,
+    const permissions::PermissionRequestID& request_id,
     int bridge_id,
     const GURL& requesting_frame,
     bool user_gesture,

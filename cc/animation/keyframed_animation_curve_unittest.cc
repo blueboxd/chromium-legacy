@@ -15,7 +15,7 @@
 namespace cc {
 namespace {
 
-void ExpectTranslateX(SkMScalar translate_x,
+void ExpectTranslateX(SkScalar translate_x,
                       const TransformOperations& operations) {
   EXPECT_FLOAT_EQ(translate_x, operations.Apply().matrix().get(0, 3));
 }

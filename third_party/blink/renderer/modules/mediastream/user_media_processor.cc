@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "media/base/audio_parameters.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -45,6 +46,7 @@
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
 #include "third_party/blink/renderer/platform/mediastream/webrtc_uma_histograms.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/video_capture/local_video_capturer_source.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -150,12 +152,14 @@ std::string GetTrackSourceLogString(blink::MediaStreamAudioSource* source) {
 }
 
 std::string GetOnTrackStartedLogString(
+    int request_id,
     blink::WebPlatformMediaStreamSource* source,
     MediaStreamRequestResult result) {
   const MediaStreamDevice& device = source->device();
-  String str = String::Format("OnTrackStarted({session_id=%s}, {result=%s})",
-                              device.session_id().ToString().c_str(),
-                              MediaStreamRequestResultToString(result));
+  String str = String::Format(
+      "OnTrackStarted({request_id=%d}, {session_id=%s}, {result=%s})",
+      request_id, device.session_id().ToString().c_str(),
+      MediaStreamRequestResultToString(result));
   return str.Utf8();
 }
 
@@ -314,6 +318,11 @@ Vector<blink::VideoInputDeviceCapabilities> ToVideoInputDeviceCapabilities(
 
 }  // namespace
 
+// This timeout must be long enough to eliminate the possibility
+// of false-positive timeouts.
+const static base::TimeDelta kVideoInputFormatsTimeout =
+    base::TimeDelta::FromSeconds(45);
+
 UserMediaRequestInfo::UserMediaRequestInfo(
     int request_id,
     const blink::WebUserMediaRequest& web_request,
@@ -425,6 +434,19 @@ class UserMediaProcessor::RequestInfo final
     return request_->is_processing_user_gesture;
   }
 
+  bool all_video_input_formats_received() const {
+    return all_video_input_formats_received_;
+  }
+
+  void set_all_video_input_formats_timeout_task_handle(TaskHandle task_handle) {
+    all_video_input_formats_timeout_task_handle_ = std::move(task_handle);
+  }
+
+  void CancelAllVideoInputFormatsTimeout() {
+    all_video_input_formats_received_ = true;
+    all_video_input_formats_timeout_task_handle_.Cancel();
+  }
+
   void Trace(Visitor* visitor) {}
 
  private:
@@ -446,6 +468,8 @@ class UserMediaProcessor::RequestInfo final
   blink::WebMediaStream web_stream_;
   StreamControls stream_controls_;
   ResourcesReady ready_callback_;
+  bool all_video_input_formats_received_ = false;
+  TaskHandle all_video_input_formats_timeout_task_handle_;
   MediaStreamRequestResult request_result_ = MediaStreamRequestResult::OK;
   String request_result_name_;
   // Sources used in this request.
@@ -519,7 +543,7 @@ void UserMediaProcessor::RequestInfo::OnTrackStarted(
     blink::WebPlatformMediaStreamSource* source,
     MediaStreamRequestResult result,
     const blink::WebString& result_name) {
-  SendLogMessage(GetOnTrackStartedLogString(source, result));
+  SendLogMessage(GetOnTrackStartedLogString(request_id(), source, result));
   auto** it = std::find(sources_waiting_for_callback_.begin(),
                         sources_waiting_for_callback_.end(), source);
   DCHECK(it != sources_waiting_for_callback_.end());
@@ -989,13 +1013,23 @@ void UserMediaProcessor::OnStreamGenerated(
     GetMediaDevicesDispatcher()->GetAllVideoInputDeviceFormats(
         video_device_id,
         WTF::Bind(&UserMediaProcessor::GotAllVideoInputFormatsForDevice,
-                  WrapWeakPersistent(this),
+                  WrapWeakPersistent(this), /*success=*/true,
                   current_request_info_->web_request(), label,
                   video_device_id));
+    TaskHandle timeout_task_handle = PostDelayedCancellableTask(
+        *task_runner_, FROM_HERE,
+        WTF::Bind(&UserMediaProcessor::GotAllVideoInputFormatsForDevice,
+                  WrapWeakPersistent(this), /*success=*/false,
+                  current_request_info_->web_request(), label, video_device_id,
+                  Vector<media::VideoCaptureFormat>()),
+        kVideoInputFormatsTimeout);
+    current_request_info_->set_all_video_input_formats_timeout_task_handle(
+        std::move(timeout_task_handle));
   }
 }
 
 void UserMediaProcessor::GotAllVideoInputFormatsForDevice(
+    bool success,
     const blink::WebUserMediaRequest& web_request,
     const String& label,
     const String& device_id,
@@ -1007,11 +1041,24 @@ void UserMediaProcessor::GotAllVideoInputFormatsForDevice(
   if (!IsCurrentRequestInfo(web_request))
     return;
 
-  SendLogMessage(
-      base::StringPrintf("GotAllVideoInputFormatsForDevice({request_id=%d}, "
-                         "{label=%s}, {device=[id: %s]})",
-                         current_request_info_->request_id(),
-                         label.Utf8().c_str(), device_id.Utf8().c_str()));
+  SendLogMessage(base::StringPrintf(
+      "GotAllVideoInputFormatsForDevice({request_id=%d}, "
+      "{label=%s}, {device=[id: %s]}, {success=%d})",
+      current_request_info_->request_id(), label.Utf8().c_str(),
+      device_id.Utf8().c_str(), success));
+  if (!success) {
+    if (!current_request_info_->all_video_input_formats_received()) {
+      // Fail, since the request for video input formats timed out.
+      GetUserMediaRequestFailed(
+          MediaStreamRequestResult::TRACK_START_FAILURE_VIDEO);
+      DeleteWebRequest(current_request_info_->web_request());
+    }
+    // If input formats were successfully received already, there is nothing
+    // left to do.
+    return;
+  }
+
+  current_request_info_->CancelAllVideoInputFormatsTimeout();
   current_request_info_->AddNativeVideoFormats(device_id, formats);
   if (current_request_info_->CanStartTracks())
     StartTracks(label);
@@ -1090,6 +1137,7 @@ void UserMediaProcessor::NotifyCurrentRequestInfoOfAudioSourceStarted(
     blink::WebPlatformMediaStreamSource* source,
     MediaStreamRequestResult result,
     const String& result_name) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // The only request possibly being processed is |current_request_info_|.
   if (current_request_info_)
     current_request_info_->OnAudioSourceStarted(source, result, result_name);

@@ -13,10 +13,12 @@ import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarPropert
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_IPH;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.INCOGNITO_STATE_PROVIDER;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.INCOGNITO_SWITCHER_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.LOGO_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.MENU_IS_VISIBLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_BUTTON_AT_LEFT;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_BUTTON_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_CLICK_HANDLER;
 
@@ -104,12 +106,26 @@ class StartSurfaceToolbarMediator {
                 public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                     mPropertyModel.set(IS_INCOGNITO, mTabModelSelector.isIncognitoSelected());
                     updateIdentityDiscVisibility();
+                    if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY) {
+                        mPropertyModel.set(INCOGNITO_SWITCHER_VISIBLE, hasIncognitoTabs());
+                    }
                 }
             };
         }
         mPropertyModel.set(IS_INCOGNITO, mTabModelSelector.isIncognitoSelected());
         updateIdentityDiscVisibility();
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
+    }
+
+    // TODO(crbug.com/1042997): share with TabSwitcherModeTTPhone.
+    private boolean hasIncognitoTabs() {
+        // Check if there is no incognito tab, or all the incognito tabs are being closed.
+        TabModel incognitoTabModel = mTabModelSelector.getModel(true);
+        for (int i = 0; i < incognitoTabModel.getCount(); i++) {
+            if (!incognitoTabModel.getTabAt(i).isClosing()) return true;
+        }
+        assert !mTabModelSelector.isIncognitoSelected();
+        return false;
     }
 
     void setStartSurfaceMode(boolean inStartSurfaceMode) {
@@ -146,6 +162,13 @@ class StartSurfaceToolbarMediator {
                     updateIdentityDiscVisibility();
                 }
                 @Override
+                public void onOverviewModeStartedShowing(boolean showToolbar) {
+                    if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY) {
+                        mPropertyModel.set(INCOGNITO_SWITCHER_VISIBLE, hasIncognitoTabs());
+                        mPropertyModel.set(NEW_TAB_BUTTON_AT_LEFT, true);
+                    }
+                }
+                @Override
                 public void onOverviewModeFinishedShowing() {
                     mPropertyModel.set(BUTTONS_CLICKABLE, true);
                 }
@@ -164,7 +187,8 @@ class StartSurfaceToolbarMediator {
         mIsGoogleSearchEngine = isGoogleSearchEngine;
         boolean shouldShowLogo =
                 (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE
-                        || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY)
+                        || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY
+                        || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY)
                 && mIsGoogleSearchEngine;
         mPropertyModel.set(LOGO_IS_VISIBLE, shouldShowLogo);
     }
@@ -203,6 +227,7 @@ class StartSurfaceToolbarMediator {
         // OverviewListLayout will be shown as the tab switcher instead of the star surface.
         boolean isShownTabswitcherState = mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER
                 || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY
+                || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY
                 || AccessibilityUtil.isAccessibilityEnabled();
         mPropertyModel.set(NEW_TAB_BUTTON_IS_VISIBLE, isShownTabswitcherState);
     }

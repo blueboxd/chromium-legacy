@@ -222,10 +222,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 #endif
 
 #if defined(OS_WIN)
-  // Returns false if the EditContext bounds are not available, else it returns
-  // true with the control and selection bounds for the active EditContext.
-  bool GetEditContextLayoutBounds(gfx::Rect* control_bounds,
-                                  gfx::Rect* selection_bounds) override;
+  // Returns the control and selection bounds of the EditContext or control
+  // bounds of the active editable element. This is used to report the layout
+  // bounds of the text input control to TSF on Windows.
+  void GetActiveTextInputControlLayoutBounds(
+      base::Optional<gfx::Rect>* control_bounds,
+      base::Optional<gfx::Rect>* selection_bounds) override;
   // API to notify accessibility whether there is an active composition
   // from TSF or not.
   // It notifies the composition range, composition text and whether the

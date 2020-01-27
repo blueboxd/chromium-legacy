@@ -127,7 +127,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierContent];
 
   TableViewTextEditItem* cardLastDigitsItem = [self
-      textEditItemWithType:ItemTypeCardExpireYear
+      textEditItemWithType:ItemTypeCardLastDigits
              textFieldName:l10n_util::GetNSString(IDS_IOS_AUTOFILL_CARD_NUMBER)
             textFieldValue:self.cardNumber
           textFieldEnabled:NO];
@@ -136,7 +136,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierContent];
 
   self.cardholderNameItem =
-      [self textEditItemWithType:ItemTypeCardExpireYear
+      [self textEditItemWithType:ItemTypeCardHolderName
                    textFieldName:l10n_util::GetNSString(
                                      IDS_IOS_AUTOFILL_CARDHOLDER_NAME)
                   textFieldValue:self.cardholderName
@@ -145,7 +145,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierContent];
 
   self.expirationMonthItem = [self
-      textEditItemWithType:ItemTypeCardExpireYear
+      textEditItemWithType:ItemTypeCardExpireMonth
              textFieldName:l10n_util::GetNSString(IDS_IOS_AUTOFILL_EXP_MONTH)
             textFieldValue:self.expirationMonth
           textFieldEnabled:self.supportsEditing];
@@ -182,6 +182,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.saveCardButtonItem.disableButtonIntrinsicWidth = YES;
   [model addItem:self.saveCardButtonItem
       toSectionWithIdentifier:SectionIdentifierContent];
+
+  if (self.supportsEditing) {
+    [self.cardholderNameItem
+        setHasValidText:[self isCardholderNameValid:self.cardholderName]];
+    [self.expirationMonthItem
+        setHasValidText:[self isExpirationMonthValid:self.expirationMonth
+                                             forYear:self.expirationYear]];
+    [self.expirationYearItem
+        setHasValidText:[self isExpirationYearValid:self.expirationYear]];
+    [self updateSaveCardButtonState];
+  }
 }
 
 #pragma mark - UITableViewDataSource
@@ -205,8 +216,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
                              action:@selector(nameEditDidBegin)
                    forControlEvents:UIControlEventEditingDidBegin];
       [editCell.textField addTarget:self
-                             action:@selector(updateSaveCardButtonState)
-                   forControlEvents:UIControlEventEditingChanged];
+                             action:@selector(nameDidChange:)
+                   forControlEvents:UIControlEventEditingChanged |
+                                    UIControlEventEditingDidEnd];
       editCell.selectionStyle = UITableViewCellSelectionStyleNone;
       editCell.textField.delegate = self;
       break;
@@ -218,8 +230,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
                              action:@selector(monthEditDidBegin)
                    forControlEvents:UIControlEventEditingDidBegin];
       [editCell.textField addTarget:self
-                             action:@selector(updateSaveCardButtonState)
-                   forControlEvents:UIControlEventEditingChanged];
+                             action:@selector(expireMonthDidChange:)
+                   forControlEvents:UIControlEventEditingChanged |
+                                    UIControlEventEditingDidEnd];
       editCell.selectionStyle = UITableViewCellSelectionStyleNone;
       editCell.textField.delegate = self;
       break;
@@ -231,8 +244,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
                              action:@selector(yearEditDidBegin)
                    forControlEvents:UIControlEventEditingDidBegin];
       [editCell.textField addTarget:self
-                             action:@selector(updateSaveCardButtonState)
-                   forControlEvents:UIControlEventEditingChanged];
+                             action:@selector(expireYearDidChange:)
+                   forControlEvents:UIControlEventEditingChanged |
+                                    UIControlEventEditingDidEnd];
       editCell.selectionStyle = UITableViewCellSelectionStyleNone;
       editCell.textField.delegate = self;
       break;
@@ -325,6 +339,45 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)yearEditDidBegin {
   // TODO(crbug.com/1014652): Implement, should only be needed to record
   // SaveCard specific editing metrics.
+}
+
+- (void)nameDidChange:(UITextField*)textField {
+  BOOL isNameValid = [self isCardholderNameValid:textField.text];
+
+  self.cardholderNameItem.textFieldValue = textField.text;
+  [self.cardholderNameItem setHasValidText:isNameValid];
+  [self reconfigureCellsForItems:@[ self.cardholderNameItem ]];
+
+  [self updateSaveCardButtonState];
+}
+
+- (void)expireMonthDidChange:(UITextField*)textField {
+  BOOL isMonthValid =
+      [self isExpirationMonthValid:textField.text
+                           forYear:self.expirationYearItem.textFieldValue];
+
+  self.expirationMonthItem.textFieldValue = textField.text;
+  [self.expirationMonthItem setHasValidText:isMonthValid];
+  [self reconfigureCellsForItems:@[ self.expirationMonthItem ]];
+
+  [self updateSaveCardButtonState];
+}
+
+- (void)expireYearDidChange:(UITextField*)textField {
+  BOOL isYearValid = [self isExpirationYearValid:textField.text];
+  // Check if the card month is valid for the newly entered year.
+  BOOL isMonthValid =
+      [self isExpirationMonthValid:self.expirationMonthItem.textFieldValue
+                           forYear:textField.text];
+
+  self.expirationYearItem.textFieldValue = textField.text;
+  [self.expirationYearItem setHasValidText:isYearValid];
+  [self.expirationMonthItem setHasValidText:isMonthValid];
+  [self reconfigureCellsForItems:@[
+    self.expirationYearItem, self.expirationMonthItem
+  ]];
+
+  [self updateSaveCardButtonState];
 }
 
 - (void)dismissInfobarModal {

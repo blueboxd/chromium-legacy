@@ -102,12 +102,12 @@ public class SelectableListLayout<E>
 
         LayoutInflater.from(getContext()).inflate(R.layout.selectable_list_layout, this);
 
-        mEmptyView = (TextView) findViewById(R.id.empty_view);
+        mEmptyView = findViewById(R.id.empty_view);
         mEmptyViewWrapper = findViewById(R.id.empty_view_wrapper);
-        mLoadingView = (LoadingView) findViewById(R.id.loading_view);
+        mLoadingView = findViewById(R.id.loading_view);
         mLoadingView.showLoadingUI();
 
-        mToolbarStub = (ViewStub) findViewById(R.id.action_bar_stub);
+        mToolbarStub = findViewById(R.id.action_bar_stub);
 
         setFocusable(true);
         setFocusableInTouchMode(true);
@@ -144,14 +144,14 @@ public class SelectableListLayout<E>
         mAdapter = adapter;
 
         if (recyclerView == null) {
-            mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
+            mRecyclerView = findViewById(R.id.recycler_view);
             mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         } else {
             mRecyclerView = recyclerView;
 
             // Replace the inflated recycler view with the one supplied to this method.
-            FrameLayout contentView = (FrameLayout) findViewById(R.id.list_content);
-            RecyclerView existingView = (RecyclerView) contentView.findViewById(R.id.recycler_view);
+            FrameLayout contentView = findViewById(R.id.list_content);
+            RecyclerView existingView = contentView.findViewById(R.id.recycler_view);
             contentView.removeView(existingView);
             contentView.addView(mRecyclerView, 0);
         }
@@ -209,7 +209,7 @@ public class SelectableListLayout<E>
             mToolbar.setOnMenuItemClickListener(listener);
         }
 
-        mToolbarShadow = (FadingShadowView) findViewById(R.id.shadow);
+        mToolbarShadow = findViewById(R.id.shadow);
         mToolbarShadow.init(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.toolbar_shadow_color),
                 FadingShadow.POSITION_TOP);

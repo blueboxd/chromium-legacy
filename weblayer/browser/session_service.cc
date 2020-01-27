@@ -259,9 +259,7 @@ void SessionService::OnGotCurrentSessionCommands(
 
   if (browser_->GetTabs().empty()) {
     // Nothing to restore, or restore failed. Create a default tab.
-    TabImpl* tab = new TabImpl(browser_->profile());
-    browser_->AddTab(tab);
-    browser_->SetActiveTab(tab);
+    browser_->SetActiveTab(browser_->CreateTabForSessionRestore(nullptr));
   }
 }
 
@@ -412,8 +410,8 @@ void SessionService::ProcessRestoreCommands(
                                           content::RestoreType::CURRENT_SESSION,
                                           &entries);
     DCHECK_EQ(0u, entries.size());
-    TabImpl* tab = new TabImpl(browser_->profile(), std::move(web_contents));
-    browser_->AddTab(tab);
+    TabImpl* tab =
+        browser_->CreateTabForSessionRestore(std::move(web_contents));
 
     if (!had_tabs && i == (windows[0])->selected_tab_index)
       browser_->SetActiveTab(tab);

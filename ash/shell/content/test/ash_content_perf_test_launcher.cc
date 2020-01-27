@@ -52,12 +52,8 @@ class AshContentPerfTestLauncherDelegate : public content::TestLauncherDelegate 
   int RunTestSuite(int argc, char** argv) override {
     return AshContentTestSuite(argc, argv).Run();
   }
-  bool AdjustChildProcessCommandLine(
-      base::CommandLine* command_line,
-      const base::FilePath& temp_data_dir) override {
-    command_line->AppendSwitchPath(switches::kContentShellDataPath,
-                                   temp_data_dir);
-    return true;
+  std::string GetUserDataDirectoryCommandLineSwitch() override {
+    return switches::kContentShellDataPath;
   }
 
  protected:

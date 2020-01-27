@@ -80,13 +80,11 @@ class CONTENT_EXPORT BrowserTaskTraitsExtension {
           base::trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
   constexpr BrowserTaskTraitsExtension(ArgTypes... args)
       : browser_thread_(
-            base::trait_helpers::GetEnum<BrowserThread::ID, BrowserThread::UI>(
-                args...)),
+            base::trait_helpers::GetEnum<BrowserThread::ID>(args...)),
         task_type_(
             base::trait_helpers::GetEnum<BrowserTaskType,
                                          BrowserTaskType::kDefault>(args...)),
-        nestable_(!base::trait_helpers::HasTrait<NonNestable, ArgTypes...>()) {
-  }
+        nestable_(!base::trait_helpers::HasTrait<NonNestable, ArgTypes...>()) {}
 
   // Keep in sync with UiThreadTaskTraits.java
   constexpr base::TaskTraitsExtensionStorage Serialize() const {

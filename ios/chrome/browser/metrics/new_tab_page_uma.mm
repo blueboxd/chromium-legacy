@@ -20,7 +20,7 @@
 
 namespace new_tab_page_uma {
 
-void RecordAction(ios::ChromeBrowserState* browser_state,
+void RecordAction(ChromeBrowserState* browser_state,
                   web::WebState* web_state,
                   ActionType action) {
   DCHECK(browser_state);
@@ -34,7 +34,7 @@ void RecordAction(ios::ChromeBrowserState* browser_state,
   counter->Add(action);
 }
 
-void RecordAction(ios::ChromeBrowserState* browser_state, ActionType action) {
+void RecordAction(ChromeBrowserState* browser_state, ActionType action) {
   DCHECK(browser_state);
   WebStateList* web_state_list =
       TabModelList::GetLastActiveTabModelForChromeBrowserState(browser_state)
@@ -43,7 +43,7 @@ void RecordAction(ios::ChromeBrowserState* browser_state, ActionType action) {
                       action);
 }
 
-void RecordActionFromOmnibox(ios::ChromeBrowserState* browser_state,
+void RecordActionFromOmnibox(ChromeBrowserState* browser_state,
                              web::WebState* web_state,
                              const GURL& url,
                              ui::PageTransition transition,

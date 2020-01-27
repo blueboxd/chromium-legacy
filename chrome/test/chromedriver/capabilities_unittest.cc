@@ -624,3 +624,20 @@ TEST(ParseCapabilities, MobileEmulationBadDict) {
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
+
+TEST(ParseCapabilities, VirtualAuthenticatorsBool) {
+  Capabilities capabilities;
+  base::DictionaryValue caps;
+  caps.SetBoolKey("webauthn:virtualAuthenticators", true);
+  EXPECT_TRUE(capabilities.Parse(caps).IsOk());
+
+  caps.SetBoolKey("webauthn:virtualAuthenticators", false);
+  EXPECT_TRUE(capabilities.Parse(caps).IsOk());
+}
+
+TEST(ParseCapabilities, VirtualAuthenticatorsNotBool) {
+  Capabilities capabilities;
+  base::DictionaryValue caps;
+  caps.SetStringKey("webauthn:virtualAuthenticators", "not a bool");
+  EXPECT_FALSE(capabilities.Parse(caps).IsOk());
+}

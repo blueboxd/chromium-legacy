@@ -176,6 +176,7 @@ js2gtest("browser_tests_js_webui") {
     "//skia",
   ]
   data = [
+    "$root_gen_dir/chrome/test/data/webui/cr_components/certificate_manager_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_components/managed_footnote_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_button_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_container_shadow_behavior_test.m.js",
@@ -191,6 +192,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_radio_button_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_radio_group_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_search_field_tests.m.js",
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_scrollable_behavior_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_slider_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toast_manager_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_toast_test.m.js",

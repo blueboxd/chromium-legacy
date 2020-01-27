@@ -24,8 +24,7 @@ class WebStateList;
 // TODO(crbug.com/892376): Pass a Browser object instead of BrowserState and
 // WebStateList once BVC has a Browser pointer.
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+                              browserState:(ChromeBrowserState*)browserState
                               webStateList:(WebStateList*)webStateList
     NS_DESIGNATED_INITIALIZER;
 ;
@@ -34,8 +33,7 @@ class WebStateList;
     NS_UNAVAILABLE;
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+                              browserState:(ChromeBrowserState*)browserState
     NS_UNAVAILABLE;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
                                    browser:(Browser*)browser NS_UNAVAILABLE;

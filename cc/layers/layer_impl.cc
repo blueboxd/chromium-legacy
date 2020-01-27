@@ -179,8 +179,8 @@ void LayerImpl::PopulateScaledSharedQuadStateWithContentRects(
     bool contents_opaque) const {
   gfx::Transform scaled_draw_transform =
       draw_properties_.target_space_transform;
-  scaled_draw_transform.Scale(SK_MScalar1 / layer_to_content_scale,
-                              SK_MScalar1 / layer_to_content_scale);
+  scaled_draw_transform.Scale(SK_Scalar1 / layer_to_content_scale,
+                              SK_Scalar1 / layer_to_content_scale);
 
   EffectNode* effect_node = GetEffectTree().Node(effect_tree_index_);
   state->SetAll(scaled_draw_transform, content_rect, visible_content_rect,
@@ -871,7 +871,7 @@ gfx::Rect LayerImpl::GetEnclosingRectInTargetSpace() const {
 
 gfx::Rect LayerImpl::GetScaledEnclosingRectInTargetSpace(float scale) const {
   gfx::Transform scaled_draw_transform = DrawTransform();
-  scaled_draw_transform.Scale(SK_MScalar1 / scale, SK_MScalar1 / scale);
+  scaled_draw_transform.Scale(SK_Scalar1 / scale, SK_Scalar1 / scale);
   gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(bounds(), scale);
   return MathUtil::MapEnclosingClippedRect(scaled_draw_transform,
                                            gfx::Rect(scaled_bounds));

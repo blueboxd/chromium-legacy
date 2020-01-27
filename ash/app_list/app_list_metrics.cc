@@ -174,7 +174,7 @@ APP_LIST_EXPORT void RecordSearchResultOpenSource(
     const AppListModel* model,
     const SearchModel* search_model) {
   // Record the search metric if the SearchResult is not a suggested app.
-  if (result->display_type() == SearchResultDisplayType::kRecommendation)
+  if (result->is_recommendation())
     return;
 
   ApplistSearchResultOpenedSource source;

@@ -9,6 +9,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 
 import org.chromium.base.Callback;
+import org.chromium.base.UnguessableToken;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -23,8 +24,9 @@ import javax.annotation.Nonnull;
 @JNINamespace("paint_preview")
 class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     interface CompositorListener {
-        void onCompositorReady(long rootFrameGuid, long[] frameGuids, int[] frameContentSize,
-                int[] subFramesCount, long[] subFrameGuids, int[] subFrameClipRects);
+        void onCompositorReady(UnguessableToken rootFrameGuid, UnguessableToken[] frameGuids,
+                int[] frameContentSize, int[] subFramesCount, UnguessableToken[] subFrameGuids,
+                int[] subFrameClipRects);
     }
 
     private CompositorListener mCompositorListener;
@@ -66,14 +68,15 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
      * and {@code subFrameGuids[4*k+3]}, where {@code k} has the same value as above.
      */
     @CalledByNative
-    void onCompositorReady(long rootFrameGuid, long[] frameGuids, int[] frameContentSize,
-            int[] subFramesCount, long[] subFrameGuids, int[] subFrameClipRects) {
+    void onCompositorReady(UnguessableToken rootFrameGuid, UnguessableToken[] frameGuids,
+            int[] frameContentSize, int[] subFramesCount, UnguessableToken[] subFrameGuids,
+            int[] subFrameClipRects) {
         mCompositorListener.onCompositorReady(rootFrameGuid, frameGuids, frameContentSize,
                 subFramesCount, subFrameGuids, subFrameClipRects);
     }
 
     @Override
-    public void requestBitmap(long frameGuid, Rect clipRect, float scaleFactor,
+    public void requestBitmap(UnguessableToken frameGuid, Rect clipRect, float scaleFactor,
             Callback<Bitmap> bitmapCallback, Runnable errorCallback) {
         if (mNativePlayerCompositorDelegate == 0) return;
 
@@ -83,7 +86,7 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
     }
 
     @Override
-    public void onClick(long frameGuid, Point point) {
+    public void onClick(UnguessableToken frameGuid, Point point) {
         if (mNativePlayerCompositorDelegate == 0) return;
 
         PlayerCompositorDelegateImplJni.get().onClick(
@@ -102,9 +105,10 @@ class PlayerCompositorDelegateImpl implements PlayerCompositorDelegate {
         long initialize(PlayerCompositorDelegateImpl caller, long nativePaintPreviewBaseService,
                 String url);
         void destroy(long nativePlayerCompositorDelegateAndroid);
-        void requestBitmap(long nativePlayerCompositorDelegateAndroid, long frameGuid,
+        void requestBitmap(long nativePlayerCompositorDelegateAndroid, UnguessableToken frameGuid,
                 Callback<Bitmap> bitmapCallback, Runnable errorCallback, float scaleFactor,
                 int clipX, int clipY, int clipWidth, int clipHeight);
-        void onClick(long nativePlayerCompositorDelegateAndroid, long frameGuid, int x, int y);
+        void onClick(long nativePlayerCompositorDelegateAndroid, UnguessableToken frameGuid, int x,
+                int y);
     }
 }

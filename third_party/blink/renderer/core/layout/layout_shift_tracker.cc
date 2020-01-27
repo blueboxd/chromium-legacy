@@ -426,15 +426,8 @@ std::unique_ptr<TracedValue> LayoutShiftTracker::PerFrameTraceData(
 
 void LayoutShiftTracker::SetLayoutShiftRects(const Vector<IntRect>& int_rects) {
   // Store the layout shift rects in the HUD layer.
-  GraphicsLayer* root_graphics_layer =
-      frame_view_->GetLayoutView()->Compositor()->RootGraphicsLayer();
-  if (!root_graphics_layer)
-    return;
-
-  cc::Layer* cc_layer = root_graphics_layer->CcLayer();
-  if (!cc_layer)
-    return;
-  if (cc_layer->layer_tree_host()) {
+  auto* cc_layer = frame_view_->RootCcLayer();
+  if (cc_layer && cc_layer->layer_tree_host()) {
     if (!cc_layer->layer_tree_host()->GetDebugState().show_layout_shift_regions)
       return;
     if (cc_layer->layer_tree_host()->hud_layer()) {

@@ -58,7 +58,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 @interface SyncEncryptionPassphraseTableViewController () <
     IdentityManagerObserverBridgeDelegate,
     SettingsControllerProtocol> {
-  ios::ChromeBrowserState* _browserState;
+  ChromeBrowserState* _browserState;
   // Whether the decryption progress is currently being shown.
   BOOL _isDecryptionProgressShown;
   NSString* _savedTitle;
@@ -73,7 +73,7 @@ const CGFloat kSpinnerButtonPadding = 18;
 
 @implementation SyncEncryptionPassphraseTableViewController
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
   DCHECK(browserState);
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain

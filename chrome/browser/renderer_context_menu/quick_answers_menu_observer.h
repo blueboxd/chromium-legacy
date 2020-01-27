@@ -11,6 +11,10 @@
 #include "chromeos/components/quick_answers/quick_answers_client.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 
+namespace base {
+class TimeTicks;
+}
+
 class RenderViewContextMenuProxy;
 
 // A class that implements the quick answers menu.
@@ -55,6 +59,11 @@ class QuickAnswersMenuObserver
 
   // Query used to retrieve quick answer.
   std::string query_;
+
+  std::unique_ptr<chromeos::quick_answers::QuickAnswer> quick_answer_;
+
+  // Time when the quick answer is received.
+  base::TimeTicks quick_answer_received_time_;
 };
 
 #endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_QUICK_ANSWERS_MENU_OBSERVER_H_

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -293,4 +294,35 @@ TEST_F(TabStripUIHandlerTest, GroupVisualDataChangedEvent) {
   const base::DictionaryValue* visual_data;
   ASSERT_TRUE(data.arg3()->GetAsDictionary(&visual_data));
   ExpectVisualDataDictionary(new_visual_data, visual_data);
+}
+
+TEST_F(TabStripUIHandlerTest, GroupTab) {
+  // Add a tab inside of a group.
+  AddTab(browser(), GURL("http://foo"));
+  tab_groups::TabGroupId group_id =
+      browser()->tab_strip_model()->AddToNewGroup({0});
+
+  // Add another tab at index 1, and try to group it.
+  AddTab(browser(), GURL("http://foo"));
+  base::ListValue args;
+  args.AppendInteger(extensions::ExtensionTabUtil::GetTabId(
+      browser()->tab_strip_model()->GetWebContentsAt(1)));
+  args.AppendString(group_id.ToString());
+  handler()->HandleGroupTab(&args);
+
+  ASSERT_EQ(group_id, browser()->tab_strip_model()->GetTabGroupForTab(1));
+}
+
+TEST_F(TabStripUIHandlerTest, UngroupTab) {
+  // Add a tab inside of a group.
+  AddTab(browser(), GURL("http://foo"));
+  browser()->tab_strip_model()->AddToNewGroup({0});
+
+  // Add another tab at index 1, and try to group it.
+  base::ListValue args;
+  args.AppendInteger(extensions::ExtensionTabUtil::GetTabId(
+      browser()->tab_strip_model()->GetWebContentsAt(0)));
+  handler()->HandleUngroupTab(&args);
+
+  ASSERT_FALSE(browser()->tab_strip_model()->GetTabGroupForTab(0).has_value());
 }

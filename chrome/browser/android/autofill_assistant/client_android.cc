@@ -31,6 +31,8 @@
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/website_login_fetcher_impl.h"
+#include "components/password_manager/content/browser/content_password_manager_driver.h"
+#include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/version_info/channel.h"
@@ -463,8 +465,16 @@ autofill::PersonalDataManager* ClientAndroid::GetPersonalDataManager() {
 
 WebsiteLoginFetcher* ClientAndroid::GetWebsiteLoginFetcher() {
   if (!website_login_fetcher_) {
-    website_login_fetcher_ = std::make_unique<WebsiteLoginFetcherImpl>(
-        ChromePasswordManagerClient::FromWebContents(web_contents_));
+    auto* client = ChromePasswordManagerClient::FromWebContents(web_contents_);
+    auto* factory =
+        password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
+            web_contents_);
+    // TODO(crbug.com/1043132): Add support for non-main frames. If another
+    // frame has a different origin than the main frame, passwords-related
+    // features may not work.
+    auto* driver = factory->GetDriverForFrame(web_contents_->GetMainFrame());
+    website_login_fetcher_ =
+        std::make_unique<WebsiteLoginFetcherImpl>(client, driver);
   }
   return website_login_fetcher_.get();
 }

@@ -80,7 +80,7 @@ ProfileSyncServiceFactory* ProfileSyncServiceFactory::GetInstance() {
 
 // static
 syncer::SyncService* ProfileSyncServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   if (!switches::IsSyncAllowedByFlag())
     return nullptr;
 
@@ -90,7 +90,7 @@ syncer::SyncService* ProfileSyncServiceFactory::GetForBrowserState(
 
 // static
 syncer::SyncService* ProfileSyncServiceFactory::GetForBrowserStateIfExists(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   if (!switches::IsSyncAllowedByFlag())
     return nullptr;
 
@@ -101,7 +101,7 @@ syncer::SyncService* ProfileSyncServiceFactory::GetForBrowserStateIfExists(
 // static
 syncer::ProfileSyncService*
 ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<syncer::ProfileSyncService*>(
       GetForBrowserState(browser_state));
 }
@@ -109,7 +109,7 @@ ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserState(
 // static
 syncer::ProfileSyncService*
 ProfileSyncServiceFactory::GetAsProfileSyncServiceForBrowserStateIfExists(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<syncer::ProfileSyncService*>(
       GetForBrowserStateIfExists(browser_state));
 }
@@ -149,8 +149,8 @@ ProfileSyncServiceFactory::~ProfileSyncServiceFactory() {}
 std::unique_ptr<KeyedService>
 ProfileSyncServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
 
   // Always create the GCMProfileService instance such that we can listen to
   // the profile notifications and purge the GCM store when the profile is

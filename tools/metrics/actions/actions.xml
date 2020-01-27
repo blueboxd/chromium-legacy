@@ -20937,6 +20937,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="StartSurface.OmniboxOnly">
+  <owner>wychen@chromium.org</owner>
+  <description>
+    Metric record when the omnibox only start surface is shown (the user taps
+    the tab switcher button or on chrome start).
+  </description>
+</action>
+
 <action name="StartSurface.Shown">
   <owner>gogerald@chromium.org</owner>
   <description>

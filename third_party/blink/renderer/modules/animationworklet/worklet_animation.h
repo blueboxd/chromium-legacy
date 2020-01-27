@@ -91,9 +91,13 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   // relevant to CSS animations which means it does not have any material effect
   // on worklet animations either way.
   bool IsEventDispatchAllowed() const override { return true; }
-  // Effect supression is used by devtool's animation inspection machinery which
-  // is not currently supported by worklet animations.
+  // Effect suppression is used by devtool's animation inspection machinery
+  // which is not currently supported by worklet animations.
   bool EffectSuppressed() const override { return false; }
+  // Worklet animations are not currently replaceable.
+  // TODO(crbug.com/833846): Make replaceable once a proper subclass of
+  // Animation.
+  bool ReplaceStateRemoved() const override { return false; }
 
   void EffectInvalidated() override;
   void UpdateIfNecessary() override;

@@ -24,8 +24,8 @@ namespace {
 
 std::unique_ptr<KeyedService> BuildAuthenticationService(
     web::BrowserState* context) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<AuthenticationService>(
       browser_state->GetPrefs(),
       SyncSetupServiceFactory::GetForBrowserState(browser_state),
@@ -37,7 +37,7 @@ std::unique_ptr<KeyedService> BuildAuthenticationService(
 
 // static
 AuthenticationService* AuthenticationServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   AuthenticationService* service = static_cast<AuthenticationService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
   CHECK(!service || service->initialized());
@@ -52,7 +52,7 @@ AuthenticationServiceFactory* AuthenticationServiceFactory::GetInstance() {
 
 // static
 void AuthenticationServiceFactory::CreateAndInitializeForBrowserState(
-    ios::ChromeBrowserState* browser_state,
+    ChromeBrowserState* browser_state,
     std::unique_ptr<AuthenticationServiceDelegate> delegate) {
   AuthenticationService* service = static_cast<AuthenticationService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));

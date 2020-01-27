@@ -178,6 +178,18 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
                                             std::move(submitted_reporter));
 }
 
+void CompositorFrameReportingController::DidNotProduceFrame(
+    const viz::BeginFrameId& id) {
+  for (auto& stage_reporter : reporters_) {
+    if (stage_reporter && stage_reporter->frame_id_ == id) {
+      stage_reporter->TerminateFrame(
+          CompositorFrameReporter::FrameTerminationStatus::kDidNotProduceFrame,
+          Now());
+      return;
+    }
+  }
+}
+
 void CompositorFrameReportingController::OnFinishImplFrame(
     const viz::BeginFrameId& id) {
   if (reporters_[PipelineStage::kBeginImplFrame]) {

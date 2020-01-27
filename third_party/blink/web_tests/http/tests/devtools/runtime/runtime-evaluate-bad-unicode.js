@@ -127,6 +127,14 @@
     await test("'\u{10FFFF}'.codePointAt(0).toString(16)");
 
     await test("String.fromCodePoint(0x10FFFF)");
+
+    // Constructs a string with the Unicode code point 0xffff in V8.
+    // On the way back to the browser, it will eventually get
+    // converted to JSON, e.g. by escaping the character into
+    // \uffff for transport. Eventually, as reflected in the
+    // test expectation file, it's converted into a 3 byte UTF8
+    // sequence for that codepoint, that is 0xef 0xbf 0xbf.
+    await test("String.fromCodePoint(0xFFFF)");
   }
 
   TestRunner.completeTest();

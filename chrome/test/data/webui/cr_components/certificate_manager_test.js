@@ -6,6 +6,26 @@
 // context of the Settings privacy page. This simplifies the test setup and
 // provides better context for testing.
 
+// clang-format off
+// #import 'chrome://settings/strings.m.js';
+
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {isChromeOS} from 'chrome://resources/js/cr.m.js';
+// #import {CertificatesBrowserProxyImpl, CertificateType} from 'chrome://resources/cr_components/certificate_manager/certificates_browser_proxy.m.js';
+// #import {TestBrowserProxy} from '../test_browser_proxy.m.js';
+// #import {eventToPromise} from '../test_util.m.js';
+// #import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+
+// #import 'chrome://resources/cr_components/certificate_manager/ca_trust_edit_dialog.m.js';
+// #import 'chrome://resources/cr_components/certificate_manager/certificate_delete_confirmation_dialog.m.js';
+// #import 'chrome://resources/cr_components/certificate_manager/certificate_list.m.js';
+// #import 'chrome://resources/cr_components/certificate_manager/certificate_manager.m.js';
+// #import {CertificateAction, CertificateActionEvent} from 'chrome://resources/cr_components/certificate_manager/certificate_manager_types.m.js';
+// #import 'chrome://resources/cr_components/certificate_manager/certificate_password_decryption_dialog.m.js';
+// #import 'chrome://resources/cr_components/certificate_manager/certificate_password_encryption_dialog.m.js';
+// #import 'chrome://resources/cr_components/certificate_manager/certificate_subentry.m.js';
+// clang-format on
+
 cr.define('certificate_manager', function() {
   /**
    * A test version of CertificatesBrowserProxy. Provides helper methods
@@ -189,8 +209,7 @@ cr.define('certificate_manager', function() {
     const caTrustInfo = {ssl: true, email: false, objSign: false};
 
     setup(async function() {
-      await settings.forceLazyLoaded();
-      settings.Router.getInstance().navigateTo(settings.routes.CERTIFICATES);
+      /* #ignore */ await settings.forceLazyLoaded();
       browserProxy = new TestCertificatesBrowserProxy();
       browserProxy.setCaCertificateTrust(caTrustInfo);
 
@@ -287,7 +306,6 @@ cr.define('certificate_manager', function() {
     const model = createSampleCertificateSubnode();
 
     setup(function() {
-      settings.Router.getInstance().navigateTo(settings.routes.CERTIFICATES);
       browserProxy = new TestCertificatesBrowserProxy();
       certificate_manager.CertificatesBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
@@ -345,7 +363,6 @@ cr.define('certificate_manager', function() {
     const methodName = 'exportPersonalCertificatePasswordSelected';
 
     setup(function() {
-      settings.Router.getInstance().navigateTo(settings.routes.CERTIFICATES);
       browserProxy = new TestCertificatesBrowserProxy();
       certificate_manager.CertificatesBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
@@ -422,7 +439,6 @@ cr.define('certificate_manager', function() {
     const methodName = 'importPersonalCertificatePasswordSelected';
 
     setup(function() {
-      settings.Router.getInstance().navigateTo(settings.routes.CERTIFICATES);
       browserProxy = new TestCertificatesBrowserProxy();
       certificate_manager.CertificatesBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
@@ -486,7 +502,6 @@ cr.define('certificate_manager', function() {
     };
 
     setup(function() {
-      settings.Router.getInstance().navigateTo(settings.routes.CERTIFICATES);
       browserProxy = new TestCertificatesBrowserProxy();
       certificate_manager.CertificatesBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
@@ -625,7 +640,6 @@ cr.define('certificate_manager', function() {
     };
 
     setup(function() {
-      settings.Router.getInstance().navigateTo(settings.routes.CERTIFICATES);
       browserProxy = new TestCertificatesBrowserProxy();
       certificate_manager.CertificatesBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
@@ -898,7 +912,6 @@ cr.define('certificate_manager', function() {
     let browserProxy = null;
 
     setup(function() {
-      settings.Router.getInstance().navigateTo(settings.routes.CERTIFICATES);
       browserProxy = new TestCertificatesBrowserProxy();
       certificate_manager.CertificatesBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
@@ -972,4 +985,5 @@ cr.define('certificate_manager', function() {
           CertificateType.CA, 'importCaCertificate', true, false);
     });
   });
+  // #cr_define_end
 });

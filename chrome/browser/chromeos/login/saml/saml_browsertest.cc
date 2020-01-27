@@ -1541,8 +1541,8 @@ IN_PROC_BROWSER_TEST_F(SAMLPolicyTest, SAMLInterstitialChangeAccount) {
   test::OobeJS()
       .CreateVisibilityWaiter(false, {"gaia-signin", "gaia-loading"})
       ->Wait();
-  test::OobeJS().ExpectHasClass("non-transparent",
-                                {"gaia-signin", "signin-frame-container"});
+  test::OobeJS().ExpectHasNoAttribute(
+      "transparent", {"gaia-signin", "signin-frame-container"});
   test::OobeJS().ExpectHiddenPath({"gaia-signin", "offline-gaia"});
   test::OobeJS().ExpectHiddenPath({"gaia-signin", "saml-interstitial"});
 }

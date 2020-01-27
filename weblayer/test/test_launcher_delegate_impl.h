@@ -12,9 +12,7 @@ namespace weblayer {
 class TestLauncherDelegateImpl : public content::TestLauncherDelegate {
  public:
   int RunTestSuite(int argc, char** argv) override;
-  bool AdjustChildProcessCommandLine(
-      base::CommandLine* command_line,
-      const base::FilePath& temp_data_dir) override;
+  std::string GetUserDataDirectoryCommandLineSwitch() override;
 #if !defined(OS_ANDROID)
   content::ContentMainDelegate* CreateContentMainDelegate() override;
 #endif

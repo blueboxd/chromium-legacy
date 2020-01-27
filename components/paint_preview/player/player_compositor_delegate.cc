@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "base/unguessable_token.h"
 #include "components/paint_preview/browser/compositor_utils.h"
 #include "components/paint_preview/browser/paint_preview_base_service.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
@@ -29,25 +30,27 @@
 namespace paint_preview {
 namespace {
 
-base::flat_map<uint64_t, base::File> CreateFileMapFromProto(
+base::flat_map<base::UnguessableToken, base::File> CreateFileMapFromProto(
     const paint_preview::PaintPreviewProto& proto) {
-  std::vector<std::pair<uint64_t, base::File>> entries;
+  std::vector<std::pair<base::UnguessableToken, base::File>> entries;
   entries.reserve(1 + proto.subframes_size());
-  uint64_t root_frame_id = proto.root_frame().id();
+  base::UnguessableToken root_frame_id = base::UnguessableToken::Deserialize(
+      proto.root_frame().embedding_token_high(),
+      proto.root_frame().embedding_token_low());
   base::BasicStringPiece<std::string> root_frame_file_path =
       proto.root_frame().file_path();
   entries.emplace_back(
       root_frame_id, base::File(base::FilePath(root_frame_file_path),
                                 base::File::FLAG_OPEN | base::File::FLAG_READ));
-  for (int i = 0; i < proto.subframes_size(); ++i) {
-    uint64_t frame_id = proto.subframes(i).id();
-    base::BasicStringPiece<std::string> frame_file_path =
-        proto.subframes(i).file_path();
+  for (const auto& subframe : proto.subframes()) {
+    base::BasicStringPiece<std::string> frame_file_path = subframe.file_path();
     entries.emplace_back(
-        frame_id, base::File(base::FilePath(frame_file_path),
-                             base::File::FLAG_OPEN | base::File::FLAG_READ));
+        base::UnguessableToken::Deserialize(subframe.embedding_token_high(),
+                                            subframe.embedding_token_low()),
+        base::File(base::FilePath(frame_file_path),
+                   base::File::FLAG_OPEN | base::File::FLAG_READ));
   }
-  return base::flat_map<uint64_t, base::File>(std::move(entries));
+  return base::flat_map<base::UnguessableToken, base::File>(std::move(entries));
 }
 
 base::Optional<base::ReadOnlySharedMemoryRegion> ToReadOnlySharedMemory(
@@ -119,7 +122,7 @@ void PlayerCompositorDelegate::OnCompositorClientDisconnected() {
 }
 
 void PlayerCompositorDelegate::RequestBitmap(
-    uint64_t frame_guid,
+    const base::UnguessableToken& frame_guid,
     const gfx::Rect& clip_rect,
     float scale_factor,
     base::OnceCallback<void(mojom::PaintPreviewCompositor::Status,
@@ -134,7 +137,9 @@ void PlayerCompositorDelegate::RequestBitmap(
       frame_guid, clip_rect, scale_factor, std::move(callback));
 }
 
-void PlayerCompositorDelegate::OnClick(uint64_t frame_guid, int x, int y) {
+void PlayerCompositorDelegate::OnClick(const base::UnguessableToken& frame_guid,
+                                       int x,
+                                       int y) {
   // TODO(crbug.com/1019883): Handle url clicks with the HitTester class.
 }
 

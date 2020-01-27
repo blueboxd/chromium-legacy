@@ -442,6 +442,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openQuickViewAndEscape"),
         TestCase("openQuickView").InGuestMode(),
         TestCase("openQuickView").TabletMode(),
+        TestCase("openQuickViewViaContextMenuSingleSelection"),
         TestCase("openQuickViewAudio"),
         TestCase("openQuickViewAudioWithImageMetadata"),
         TestCase("openQuickViewImage"),

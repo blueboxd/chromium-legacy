@@ -11,7 +11,10 @@
 #include "chrome/browser/permissions/notification_permission_ui_selector.h"
 
 class Profile;
+
+namespace permissions {
 class PermissionRequest;
+}
 
 namespace url {
 class Origin;
@@ -36,7 +39,7 @@ class ContextualNotificationPermissionUiSelector
   ~ContextualNotificationPermissionUiSelector() override;
 
   // NotificationPermissionUiSelector:
-  void SelectUiToUse(PermissionRequest* request,
+  void SelectUiToUse(permissions::PermissionRequest* request,
                      DecisionMadeCallback callback) override;
 
   void Cancel() override;

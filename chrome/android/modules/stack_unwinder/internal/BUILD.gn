@@ -6,11 +6,9 @@ import("//build/config/android/rules.gni")
 import("//chrome/android/modules/buildflags.gni")
 
 android_library("java") {
-  sources = [ "java/src/org/chromium/chrome/modules/stack_unwinder/StackUnwinderProviderImpl.java" ]
+  sources = [ "java/src/org/chromium/chrome/modules/stack_unwinder/StackUnwinderDummyImpl.java" ]
   deps = [
     "//base:base_java",
-    "//chrome/android/features/stack_unwinder/internal:java",
-    "//chrome/android/features/stack_unwinder/public:java",
     "//chrome/android/modules/stack_unwinder/public:java",
   ]
 }
@@ -25,21 +23,10 @@ group("native") {
 
 component("stack_unwinder") {
   sources = [ "entrypoints.cc" ]
-  deps = [
-    ":jni_registration",
-    "//base",
-    "//chrome/android/features/stack_unwinder/internal:native",
-  ]
+  deps = [ "//base" ]
 
   # stack unwinder native entrypoints belong in the partition.
   if (use_native_partitions) {
     cflags = [ "-fsymbol-partition=stack_unwinder_partition" ]
   }
-}
-
-generate_jni_registration("jni_registration") {
-  targets = [ "//chrome/android/features/stack_unwinder/internal:java" ]
-  header_output = "$target_gen_dir/jni_registration.h"
-  namespace = "stack_unwinder"
-  no_transitive_deps = true
 }

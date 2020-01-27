@@ -8,10 +8,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/captive_portal/captive_portal_service.h"
 #include "chrome/browser/captive_portal/captive_portal_tab_reloader.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/captive_portal/content/captive_portal_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"

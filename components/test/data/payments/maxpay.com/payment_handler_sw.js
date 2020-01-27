@@ -5,6 +5,7 @@
  */
 
 let paymentRequestResponder;
+let paymentRequestEvent;
 let methodName;
 
 self.addEventListener('canmakepayment', (evt) => {
@@ -19,10 +20,16 @@ self.addEventListener('message', (evt) => {
   } else if (evt.data === 'cancel') {
     paymentRequestResponder({methodName, details: {status: 'fail'}});
     return;
+  } else if (evt.data === 'app_is_ready') {
+    paymentRequestEvent.changePaymentMethod(methodName, {
+      status: evt.data,
+    });
+    return;
   }
 });
 
 self.addEventListener('paymentrequest', (evt) => {
+  paymentRequestEvent = evt;
   methodName = evt.methodData[0].supportedMethods;
   evt.respondWith(new Promise((responder) => {
     paymentRequestResponder = responder;

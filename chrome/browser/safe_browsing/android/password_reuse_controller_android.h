@@ -74,6 +74,9 @@ class PasswordReuseControllerAndroid
   ui::WindowAndroid* window_android_;
   OnWarningDone done_callback_;
 
+  // Records the start time when modal warning is constructed.
+  base::TimeTicks modal_construction_start_time_;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseControllerAndroid);
 };
 

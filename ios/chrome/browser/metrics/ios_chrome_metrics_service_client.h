@@ -21,10 +21,10 @@
 #include "components/omnibox/browser/omnibox_event_global_tracker.h"
 #include "components/ukm/observers/history_delete_observer.h"
 #include "components/ukm/observers/ukm_consent_state_observer.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/metrics/incognito_web_state_observer.h"
 #include "ios/web/public/deprecated/global_web_state_observer.h"
 
+class ChromeBrowserState;
 class IOSChromeStabilityMetricsProvider;
 class PrefRegistrySimple;
 
@@ -117,7 +117,7 @@ class IOSChromeMetricsServiceClient : public IncognitoWebStateObserver,
 
   // Register to observe events on a browser state's services.
   // Returns true if registration was successful.
-  bool RegisterForBrowserStateEvents(ios::ChromeBrowserState* browser_state);
+  bool RegisterForBrowserStateEvents(ChromeBrowserState* browser_state);
 
   // Called when a tab is parented.
   void OnTabParented(web::WebState* web_state);

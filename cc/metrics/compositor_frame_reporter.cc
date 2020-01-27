@@ -175,6 +175,8 @@ CompositorFrameReporter::StageData::~StageData() = default;
 void CompositorFrameReporter::StartStage(
     CompositorFrameReporter::StageType stage_type,
     base::TimeTicks start_time) {
+  if (frame_termination_status_ != FrameTerminationStatus::kUnknown)
+    return;
   EndCurrentStage(start_time);
   if (stage_history_.empty()) {
     // Use first stage's start timestamp to ensure correct event nesting.
@@ -213,6 +215,11 @@ void CompositorFrameReporter::MissedSubmittedFrame() {
 void CompositorFrameReporter::TerminateFrame(
     FrameTerminationStatus termination_status,
     base::TimeTicks termination_time) {
+  // If the reporter is already terminated, (possibly as a result of no damage)
+  // then we don't need to do anything here, otherwise the reporter will be
+  // terminated.
+  if (frame_termination_status_ != FrameTerminationStatus::kUnknown)
+    return;
   frame_termination_status_ = termination_status;
   frame_termination_time_ = termination_time;
   EndCurrentStage(frame_termination_time_);

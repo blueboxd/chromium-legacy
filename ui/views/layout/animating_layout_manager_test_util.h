@@ -20,6 +20,10 @@ AnimatingLayoutManager* GetAnimatingLayoutManager(View* view);
 void WaitForAnimatingLayoutManager(AnimatingLayoutManager* layout_manager);
 void WaitForAnimatingLayoutManager(View* view);
 
+// Sets animation times to a small but nonzero value to speed up tests.
+void ReduceAnimationDuration(AnimatingLayoutManager* layout_manager);
+void ReduceAnimationDuration(View* view);
+
 }  // namespace test
 }  // namespace views
 

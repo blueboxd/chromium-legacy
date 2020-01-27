@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/resources_private/resources_private_api.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -42,6 +43,7 @@ void AddStringsForIdentity(base::DictionaryValue* dict) {
 }
 
 void AddStringsForPdf(base::DictionaryValue* dict) {
+#if BUILDFLAG(ENABLE_PDF)
   static constexpr webui::LocalizedString kPdfResources[] = {
     {"passwordDialogTitle", IDS_PDF_PASSWORD_DIALOG_TITLE},
     {"passwordPrompt", IDS_PDF_NEED_PASSWORD},
@@ -117,6 +119,7 @@ void AddStringsForPdf(base::DictionaryValue* dict) {
     dict->SetString(resource.name, l10n_util::GetStringUTF16(resource.id));
 
   dict->SetString("presetZoomFactors", zoom::GetPresetZoomFactorsAsJSON());
+#endif  // BUILDFLAG(ENABLE_PDF)
 }
 
 void AddAdditionalDataForPdf(base::DictionaryValue* dict) {

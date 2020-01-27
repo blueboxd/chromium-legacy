@@ -143,6 +143,11 @@ const char kReportDeviceSessionStatus[] =
 const char kReportDeviceGraphicsStatus[] =
     "cros.device_status.report_graphics_status";
 
+// Determines whether the device reports crash report information to the device
+// management server.
+const char kReportDeviceCrashReportInfo[] =
+    "cros.device_status.report_crash_report_info";
+
 // Determines whether the device reports os update status (update status,
 // new platform version and new required platform version of the auto
 // launched kiosk app).

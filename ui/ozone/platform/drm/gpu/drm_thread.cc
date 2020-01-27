@@ -290,9 +290,24 @@ void DrmThread::CheckOverlayCapabilities(
     OverlayCapabilitiesCallback callback) {
   TRACE_EVENT0("drm,hwoverlays", "DrmThread::CheckOverlayCapabilities");
 
-  std::move(callback).Run(
-      widget, overlays,
-      screen_manager_->GetWindow(widget)->TestPageFlip(overlays));
+  std::vector<OverlayStatus> result;
+  CheckOverlayCapabilitiesSync(widget, overlays, &result);
+  std::move(callback).Run(widget, overlays, std::move(result));
+}
+
+void DrmThread::CheckOverlayCapabilitiesSync(
+    gfx::AcceleratedWidget widget,
+    const OverlaySurfaceCandidateList& overlays,
+    std::vector<OverlayStatus>* result) {
+  TRACE_EVENT0("drm,hwoverlays", "DrmThread::CheckOverlayCapabilitiesSync");
+
+  DrmWindow* window = screen_manager_->GetWindow(widget);
+  if (!window) {
+    result->clear();
+    result->insert(result->end(), overlays.size(), OVERLAY_STATUS_NOT);
+    return;
+  }
+  *result = window->TestPageFlip(overlays);
 }
 
 void DrmThread::GetDeviceCursor(

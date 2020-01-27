@@ -10,6 +10,7 @@
 
 namespace password_manager {
 class PasswordManagerClient;
+class PasswordManagerDriver;
 }  // namespace password_manager
 
 namespace autofill_assistant {
@@ -18,8 +19,8 @@ namespace autofill_assistant {
 // wraps access to the Chrome password manager.
 class WebsiteLoginFetcherImpl : public WebsiteLoginFetcher {
  public:
-  WebsiteLoginFetcherImpl(
-      const password_manager::PasswordManagerClient* client);
+  WebsiteLoginFetcherImpl(const password_manager::PasswordManagerClient* client,
+                          password_manager::PasswordManagerDriver* driver);
   ~WebsiteLoginFetcherImpl() override;
 
   // From WebsiteLoginFetcher:
@@ -29,6 +30,9 @@ class WebsiteLoginFetcherImpl : public WebsiteLoginFetcher {
   void GetPasswordForLogin(
       const Login& login,
       base::OnceCallback<void(bool, std::string)> callback) override;
+  std::string GeneratePassword(autofill::FormSignature form_signature,
+                               autofill::FieldSignature field_signature,
+                               uint64_t max_length) override;
 
  private:
   class PendingRequest;
@@ -38,6 +42,8 @@ class WebsiteLoginFetcherImpl : public WebsiteLoginFetcher {
   void OnRequestFinished(const PendingRequest* request);
 
   const password_manager::PasswordManagerClient* client_;
+
+  password_manager::PasswordManagerDriver* driver_;
 
   // Fetch requests owned by the password manager, released when they are
   // finished.

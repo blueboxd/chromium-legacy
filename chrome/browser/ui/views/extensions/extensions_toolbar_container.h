@@ -119,6 +119,11 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
     std::string extension_id;
   };
 
+  // Determines whether an action must be visible (i.e. cannot be hidden for any
+  // reason). Returns true if the action is popped out or has an attached
+  // bubble.
+  bool ShouldForceVisibility(const std::string& extension_id) const;
+
   // Updates the view's visibility state according to
   // IsActionVisibleOnToolbar(). Note that IsActionVisibleOnToolbar() does not
   // return View visibility but whether the action should be visible or not

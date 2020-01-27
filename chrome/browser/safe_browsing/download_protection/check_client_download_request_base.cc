@@ -130,7 +130,6 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
     base::FilePath target_file_path,
     base::FilePath full_path,
     TabUrls tab_urls,
-    size_t file_size,
     std::string mime_type,
     std::string hash,
     content::BrowserContext* browser_context,
@@ -143,7 +142,6 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
       full_path_(std::move(full_path)),
       tab_url_(std::move(tab_urls.url)),
       tab_referrer_url_(std::move(tab_urls.referrer)),
-      file_size_(file_size),
       callback_(std::move(callback)),
       service_(service),
       binary_feature_extractor_(std::move(binary_feature_extractor)),
@@ -162,15 +160,6 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
         profile &&
         AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
             ->IsUnderAdvancedProtection();
-
-    int password_protected_allowed_policy =
-        g_browser_process->local_state()->GetInteger(
-            prefs::kAllowPasswordProtectedFiles);
-    password_protected_allowed_ =
-        (password_protected_allowed_policy ==
-             AllowPasswordProtectedFilesValues::ALLOW_DOWNLOADS ||
-         password_protected_allowed_policy ==
-             AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
   }
 }
 
@@ -207,39 +196,14 @@ void CheckClientDownloadRequestBase::FinishRequest(
                               reason, REASON_MAX);
   }
 
-  bool did_upload_binary = false;
   if (ShouldUploadBinary(reason)) {
-    if (password_protected_allowed_ && is_password_protected_) {
-      Profile* profile = Profile::FromBrowserContext(GetBrowserContext());
-      extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-          ->OnUnscannedFileEvent(
-              source_url_, target_file_path_.AsUTF8Unsafe(),
-              base::HexEncode(hash_.data(), hash_.size()), mime_type_,
-              extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
-              "filePasswordProtected", file_size_);
-    }
-
-    if (is_password_protected_ && !password_protected_allowed_) {
-      result = DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED;
-      reason = DownloadCheckResultReason::REASON_BLOCKED_PASSWORD_PROTECTED;
-    } else if (BinaryUploadService::ShouldBlockFileSize(file_size_)) {
-      result = DownloadCheckResult::BLOCKED_TOO_LARGE;
-      reason = DownloadCheckResultReason::REASON_BLOCKED_TOO_LARGE;
-    } else {
-      UploadBinary();
-      did_upload_binary = true;
-    }
-  } else if (ShouldPromptForDeepScanning(reason)) {
-    result = DownloadCheckResult::PROMPT_FOR_SCANNING;
-    reason = DownloadCheckResultReason::REASON_ADVANCED_PROTECTION_PROMPT;
+    UploadBinary();
+  } else {
+    std::move(callback_).Run(result);
   }
 
   UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats", reason,
                             REASON_MAX);
-
-  if (!did_upload_binary) {
-    std::move(callback_).Run(result);
-  }
 
   NotifyRequestFinished(result, reason);
   service()->RequestFinished(this);
@@ -356,12 +320,6 @@ void CheckClientDownloadRequestBase::OnFileFeatureExtractionDone(
                   REASON_ARCHIVE_WITHOUT_BINARIES);
     return;
   }
-
-  is_password_protected_ = std::any_of(
-      results.archived_binaries.begin(), results.archived_binaries.end(),
-      [](const ClientDownloadRequest::ArchivedBinary& binary) {
-        return binary.is_encrypted();
-      });
 
   // The content checks cannot determine that we decided to sample this file, so
   // special case that DownloadType.

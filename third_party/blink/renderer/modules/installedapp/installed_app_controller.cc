@@ -62,7 +62,7 @@ void InstalledAppController::ContextDestroyed(ExecutionContext*) {
 
 void InstalledAppController::OnGetManifestForRelatedApps(
     std::unique_ptr<AppInstalledCallbacks> callbacks,
-    const KURL& /*url*/,
+    const KURL& url,
     mojom::blink::ManifestPtr manifest) {
   Vector<mojom::blink::RelatedApplicationPtr> mojo_related_apps;
   for (const auto& related_application : manifest->related_applications) {
@@ -86,7 +86,7 @@ void InstalledAppController::OnGetManifestForRelatedApps(
   }
 
   provider_->FilterInstalledApps(
-      std::move(mojo_related_apps),
+      std::move(mojo_related_apps), url,
       WTF::Bind(&InstalledAppController::OnFilterInstalledApps,
                 WrapPersistent(this), WTF::Passed(std::move(callbacks))));
 }

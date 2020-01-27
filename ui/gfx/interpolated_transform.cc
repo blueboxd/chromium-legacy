@@ -325,8 +325,8 @@ void InterpolatedTransformAboutPivot::Init(
     std::unique_ptr<InterpolatedTransform> xform) {
   gfx::Transform to_pivot;
   gfx::Transform from_pivot;
-  to_pivot.Translate(SkIntToMScalar(-pivot.x()), SkIntToMScalar(-pivot.y()));
-  from_pivot.Translate(SkIntToMScalar(pivot.x()), SkIntToMScalar(pivot.y()));
+  to_pivot.Translate(SkIntToScalar(-pivot.x()), SkIntToScalar(-pivot.y()));
+  from_pivot.Translate(SkIntToScalar(pivot.x()), SkIntToScalar(pivot.y()));
 
   std::unique_ptr<InterpolatedTransform> pre_transform =
       std::make_unique<InterpolatedConstantTransform>(to_pivot);

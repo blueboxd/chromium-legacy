@@ -77,8 +77,7 @@ void ClonedInstallDetector::SaveMachineId(PrefService* local_state,
   if (local_state->HasPrefPath(prefs::kMetricsMachineId)) {
     if (local_state->GetInteger(prefs::kMetricsMachineId) != hashed_id) {
       id_state = ID_CHANGED;
-      // TODO(jwd): Use a callback to set the reset pref. That way
-      // ClonedInstallDetector doesn't need to know about this pref.
+      detected_this_session_ = true;
       local_state->SetBoolean(prefs::kMetricsResetIds, true);
     } else {
       id_state = ID_UNCHANGED;
@@ -90,8 +89,27 @@ void ClonedInstallDetector::SaveMachineId(PrefService* local_state,
   local_state->SetInteger(prefs::kMetricsMachineId, hashed_id);
 }
 
+bool ClonedInstallDetector::ShouldResetClientIds(PrefService* local_state) {
+  // The existence of the pref indicates that it has been set when we saved the
+  // MachineId and thus we need to update the member variable for this session
+  // and clear the pref for future runs. We shouldn't clear the pref multiple
+  // times because it may have been cloned again.
+  if (!should_reset_client_ids_ &&
+      local_state->HasPrefPath(prefs::kMetricsResetIds)) {
+    should_reset_client_ids_ = local_state->GetBoolean(prefs::kMetricsResetIds);
+    local_state->ClearPref(prefs::kMetricsResetIds);
+  }
+
+  return should_reset_client_ids_;
+}
+
+bool ClonedInstallDetector::ClonedInstallDetectedInCurrentSession() const {
+  return detected_this_session_;
+}
+
 // static
 void ClonedInstallDetector::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kMetricsResetIds, false);
   registry->RegisterIntegerPref(prefs::kMetricsMachineId, 0);
 }
 

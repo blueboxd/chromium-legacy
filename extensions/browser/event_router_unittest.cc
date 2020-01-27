@@ -140,7 +140,6 @@ class EventRouterTest : public ExtensionsTest {
                              int component_count,
                              int persistent_count,
                              int suspended_count,
-                             int component_suspended_count,
                              int running_count) {
     if (dispatch_count) {
       histogram_tester_.ExpectBucketCount("Extensions.Events.Dispatch",
@@ -161,11 +160,6 @@ class EventRouterTest : public ExtensionsTest {
       histogram_tester_.ExpectBucketCount(
           "Extensions.Events.DispatchWithSuspendedEventPage",
           events::HistogramValue::FOR_TEST, suspended_count);
-    }
-    if (component_suspended_count) {
-      histogram_tester_.ExpectBucketCount(
-          "Extensions.Events.DispatchToComponentWithSuspendedEventPage",
-          events::HistogramValue::FOR_TEST, component_suspended_count);
     }
     if (running_count) {
       histogram_tester_.ExpectBucketCount(
@@ -328,35 +322,34 @@ TEST_F(EventRouterTest, TestReportEvent) {
   ExpectHistogramCounts(1 /** Dispatch */, 0 /** DispatchToComponent */,
                         0 /** DispatchWithPersistentBackgroundPage */,
                         0 /** DispatchWithSuspendedEventPage */,
-                        0 /** DispatchToComponentWithSuspendedEventPage */,
                         0 /** DispatchWithRunningEventPage */);
 
   scoped_refptr<const Extension> component =
       CreateExtension(true /** component */, true /** persistent */);
   router.ReportEvent(events::HistogramValue::FOR_TEST, component.get(),
                      false /** did_enqueue */);
-  ExpectHistogramCounts(2, 1, 1, 0, 0, 0);
+  ExpectHistogramCounts(2, 1, 1, 0, 0);
 
   scoped_refptr<const Extension> persistent = CreateExtension(false, true);
   router.ReportEvent(events::HistogramValue::FOR_TEST, persistent.get(),
                      false /** did_enqueue */);
-  ExpectHistogramCounts(3, 1, 2, 0, 0, 0);
+  ExpectHistogramCounts(3, 1, 2, 0, 0);
 
   scoped_refptr<const Extension> event = CreateExtension(false, false);
   router.ReportEvent(events::HistogramValue::FOR_TEST, event.get(),
                      false /** did_enqueue */);
-  ExpectHistogramCounts(4, 1, 2, 0, 0, 0);
+  ExpectHistogramCounts(4, 1, 2, 0, 0);
   router.ReportEvent(events::HistogramValue::FOR_TEST, event.get(),
                      true /** did_enqueue */);
-  ExpectHistogramCounts(5, 1, 2, 1, 0, 1);
+  ExpectHistogramCounts(5, 1, 2, 1, 1);
 
   scoped_refptr<const Extension> component_event = CreateExtension(true, false);
   router.ReportEvent(events::HistogramValue::FOR_TEST, component_event.get(),
                      false /** did_enqueue */);
-  ExpectHistogramCounts(6, 2, 2, 1, 0, 2);
+  ExpectHistogramCounts(6, 2, 2, 1, 2);
   router.ReportEvent(events::HistogramValue::FOR_TEST, component_event.get(),
                      true /** did_enqueue */);
-  ExpectHistogramCounts(7, 3, 2, 2, 1, 2);
+  ExpectHistogramCounts(7, 3, 2, 2, 2);
 }
 
 // Tests adding and removing events with filters.

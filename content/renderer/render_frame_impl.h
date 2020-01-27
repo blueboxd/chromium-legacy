@@ -42,7 +42,6 @@
 #include "content/common/widget.mojom.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/fullscreen_video_element.mojom.h"
-#include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/resource_type.h"
@@ -131,7 +130,6 @@ class WebURL;
 struct FramePolicy;
 struct WebContextMenuData;
 struct WebCursorInfo;
-struct MediaPlayerAction;
 struct WebImeTextSpan;
 struct WebScrollIntoViewParams;
 }  // namespace blink
@@ -739,12 +737,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void AbortClientNavigation() override;
   void DidChangeSelection(bool is_empty_selection) override;
   bool HandleCurrentKeyboardEvent() override;
-  void RunModalAlertDialog(const blink::WebString& message) override;
-  bool RunModalConfirmDialog(const blink::WebString& message) override;
-  bool RunModalPromptDialog(const blink::WebString& message,
-                            const blink::WebString& default_value,
-                            blink::WebString* actual_value) override;
-  bool RunModalBeforeUnloadDialog(bool is_reload) override;
   void ShowContextMenu(const blink::WebContextMenuData& data) override;
   void SaveImageFromDataURL(const blink::WebString& data_url) override;
   void FrameRectsChanged(const blink::WebRect& frame_rect) override;
@@ -1084,8 +1076,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSuppressFurtherDialogs();
   void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);
   void OnSetOverlayRoutingToken(const base::UnguessableToken& token);
-  void OnMediaPlayerActionAt(const gfx::PointF&,
-                             const blink::MediaPlayerAction&);
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
@@ -1143,11 +1133,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // called, that means we have got whole html page. In here we should
   // finally get right encoding of page.
   void UpdateEncoding(blink::WebFrame* frame, const std::string& encoding_name);
-
-  bool RunJavaScriptDialog(JavaScriptDialogType type,
-                           const base::string16& message,
-                           const base::string16& default_value,
-                           base::string16* result);
 
   base::Value GetJavaScriptExecutionResult(v8::Local<v8::Value> result);
 
@@ -1509,11 +1494,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Whether or not this RenderFrame is currently pasting.
   bool is_pasting_;
-
-  // Whether we must stop creating nested run loops for modal dialogs. This
-  // is necessary because modal dialogs have a ScopedPageLoadDeferrer on the
-  // stack that interferes with swapping out.
-  bool suppress_further_dialogs_;
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // The external popup for the currently showing select popup.

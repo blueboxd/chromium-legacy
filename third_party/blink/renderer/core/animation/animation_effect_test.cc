@@ -49,6 +49,7 @@ class MockAnimationEffectOwner
   MOCK_CONST_METHOD0(Playing, bool());
   MOCK_CONST_METHOD0(IsEventDispatchAllowed, bool());
   MOCK_CONST_METHOD0(EffectSuppressed, bool());
+  MOCK_CONST_METHOD0(ReplaceStateRemoved, bool());
   MOCK_METHOD0(EffectInvalidated, void());
   MOCK_METHOD0(UpdateIfNecessary, void());
   MOCK_METHOD0(GetAnimation, Animation*());

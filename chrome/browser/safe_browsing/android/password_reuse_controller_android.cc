@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/ui/android/safe_browsing/password_reuse_dialog_view_android.h"
+#include "components/safe_browsing/content/password_protection/metrics_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -21,12 +22,14 @@ PasswordReuseControllerAndroid::PasswordReuseControllerAndroid(
       password_type_(password_type),
       window_android_(web_contents->GetTopLevelNativeWindow()),
       done_callback_(std::move(done_callback)) {
+  modal_construction_start_time_ = base::TimeTicks::Now();
   service_->AddObserver(this);
 }
 
 PasswordReuseControllerAndroid::~PasswordReuseControllerAndroid() {
   service_->RemoveObserver(this);
   dialog_view_.reset();
+  LogModalWarningDialogLifetime(modal_construction_start_time_);
 }
 
 void PasswordReuseControllerAndroid::ShowDialog() {

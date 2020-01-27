@@ -37,14 +37,14 @@ IdentityManagerFactory::~IdentityManagerFactory() {}
 
 // static
 signin::IdentityManager* IdentityManagerFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<signin::IdentityManager*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
 
 // static
 signin::IdentityManager* IdentityManagerFactory::GetForBrowserStateIfExists(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<signin::IdentityManager*>(
       GetInstance()->GetServiceForBrowserState(browser_state, false));
 }
@@ -67,8 +67,8 @@ void IdentityManagerFactory::RemoveObserver(
 
 std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
 
   signin::IdentityManagerBuildParams params;
   params.account_consistency = signin::AccountConsistencyMethod::kMirror;

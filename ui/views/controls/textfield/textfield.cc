@@ -1820,10 +1820,10 @@ bool Textfield::SetCompositionFromExistingText(
 #endif
 
 #if defined(OS_WIN)
-bool Textfield::GetEditContextLayoutBounds(gfx::Rect* control_bounds,
-                                           gfx::Rect* selection_bounds) {
-  return false;
-}
+void Textfield::GetActiveTextInputControlLayoutBounds(
+    base::Optional<gfx::Rect>* control_bounds,
+    base::Optional<gfx::Rect>* selection_bounds) {}
+
 // TODO(https://crbug.com/952355): Implement this method once TSF supports reconversion
 // features on native text fields.
 void Textfield::SetActiveCompositionForAccessibility(

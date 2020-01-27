@@ -88,6 +88,12 @@ class CORE_EXPORT OriginTrialContext final
   // execution context.
   bool IsFeatureEnabled(OriginTrialFeature feature) const;
 
+  // Gets the latest expiry time of all valid tokens that enable |feature|. If
+  // there are no valid tokens enabling the feature, this will return the null
+  // time (base::Time()). Note: This will only find expiry times for features
+  // backed by a token, so will not work for features enabled via |AddFeature|.
+  base::Time GetFeatureExpiry(OriginTrialFeature feature);
+
   std::unique_ptr<Vector<OriginTrialFeature>> GetEnabledNavigationFeatures()
       const;
 
@@ -130,6 +136,7 @@ class CORE_EXPORT OriginTrialContext final
   HashSet<OriginTrialFeature> enabled_features_;
   HashSet<OriginTrialFeature> installed_features_;
   HashSet<OriginTrialFeature> navigation_activated_features_;
+  WTF::HashMap<OriginTrialFeature, base::Time> feature_expiry_times_;
   std::unique_ptr<TrialTokenValidator> trial_token_validator_;
   Member<ExecutionContext> context_;
 };

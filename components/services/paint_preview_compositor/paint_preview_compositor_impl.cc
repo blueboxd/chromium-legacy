@@ -56,7 +56,9 @@ void PaintPreviewCompositorImpl::BeginComposite(
         std::move(response));
     return;
   }
-  response->root_frame_guid = paint_preview.root_frame().id();
+  response->root_frame_guid = base::UnguessableToken::Deserialize(
+      paint_preview.root_frame().embedding_token_high(),
+      paint_preview.root_frame().embedding_token_low());
   for (const auto& subframe_proto : paint_preview.subframes())
     AddFrame(subframe_proto, &request->file_map, &response);
 
@@ -65,7 +67,7 @@ void PaintPreviewCompositorImpl::BeginComposite(
 }
 
 void PaintPreviewCompositorImpl::BitmapForFrame(
-    uint64_t frame_guid,
+    const base::UnguessableToken& frame_guid,
     const gfx::Rect& clip_rect,
     float scale_factor,
     BitmapForFrameCallback callback) {
@@ -104,16 +106,17 @@ PaintPreviewFrame PaintPreviewCompositorImpl::DeserializeFrame(
 
   frame.skp = SkPicture::MakeFromStream(&rstream, &procs);
 
-  for (const auto& id_pair : frame_proto.content_id_proxy_id_map()) {
+  for (const auto& id_pair : frame_proto.content_id_to_embedding_tokens()) {
     // It is possible that subframes recorded in this map were not captured
     // (e.g. renderer crash, closed, etc.). Missing subframes are allowable
     // since having just the main frame is sufficient to create a preview.
-    auto rect_it = ctx.find(id_pair.first);
+    auto rect_it = ctx.find(id_pair.content_id());
     if (rect_it == ctx.end())
       continue;
 
     mojom::SubframeClipRect rect;
-    rect.frame_guid = id_pair.second;
+    rect.frame_guid = base::UnguessableToken::Deserialize(
+        id_pair.embedding_token_high(), id_pair.embedding_token_low());
     rect.clip_rect = rect_it->second;
     frame.subframe_clip_rects.push_back(rect);
   }
@@ -124,8 +127,9 @@ bool PaintPreviewCompositorImpl::AddFrame(
     const PaintPreviewFrameProto& frame_proto,
     FileMap* file_map,
     mojom::PaintPreviewBeginCompositeResponsePtr* response) {
-  uint64_t id = frame_proto.id();
-  auto file_it = file_map->find(id);
+  base::UnguessableToken guid = base::UnguessableToken::Deserialize(
+      frame_proto.embedding_token_high(), frame_proto.embedding_token_low());
+  auto file_it = file_map->find(guid);
   if (file_it == file_map->end() || !file_it->second.IsValid())
     return false;
   PaintPreviewFrame frame =
@@ -139,8 +143,8 @@ bool PaintPreviewCompositorImpl::AddFrame(
   for (const auto& subframe_clip_rect : frame.subframe_clip_rects)
     frame_data->subframes.push_back(subframe_clip_rect.Clone());
 
-  (*response)->frames.insert({id, std::move(frame_data)});
-  frames_.insert({id, std::move(frame)});
+  (*response)->frames.insert({guid, std::move(frame_data)});
+  frames_.insert({guid, std::move(frame)});
   return true;
 }
 

@@ -824,6 +824,68 @@ void WebController::OnGetFormAndFieldDataForFillingForm(
   std::move(callback).Run(OkClientStatus());
 }
 
+void WebController::RetrieveElementFormAndFieldData(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&,
+                            const autofill::FormData& form_data,
+                            const autofill::FormFieldData& field_data)>
+        callback) {
+  DVLOG(3) << __func__ << " " << selector;
+  FindElement(
+      selector, /* strict_mode= */ true,
+      base::BindOnce(&WebController::OnFindElementToRetrieveFormAndFieldData,
+                     weak_ptr_factory_.GetWeakPtr(), selector,
+                     std::move(callback)));
+}
+
+void WebController::OnFindElementToRetrieveFormAndFieldData(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&,
+                            const autofill::FormData& form_data,
+                            const autofill::FormFieldData& field_data)>
+        callback,
+    const ClientStatus& status,
+    std::unique_ptr<ElementFinder::Result> element_result) {
+  if (!status.ok()) {
+    DVLOG(1) << __func__
+             << " Failed to find the element to retrieve form and field data.";
+    std::move(callback).Run(status, autofill::FormData(),
+                            autofill::FormFieldData());
+    return;
+  }
+  ContentAutofillDriver* driver = ContentAutofillDriver::GetForRenderFrameHost(
+      element_result->container_frame_host);
+  if (driver == nullptr) {
+    DVLOG(1) << __func__ << " Failed to get the autofill driver.";
+    std::move(callback).Run(
+        FillAutofillErrorStatus(UnexpectedErrorStatus(__FILE__, __LINE__)),
+        autofill::FormData(), autofill::FormFieldData());
+    return;
+  }
+  DCHECK(!selector.empty());
+  driver->GetAutofillAgent()->GetElementFormAndFieldData(
+      std::vector<std::string>(1, selector.selectors.back()),
+      base::BindOnce(&WebController::OnGetFormAndFieldDataForRetrieving,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnGetFormAndFieldDataForRetrieving(
+    base::OnceCallback<void(const ClientStatus&,
+                            const autofill::FormData& form_data,
+                            const autofill::FormFieldData& field_data)>
+        callback,
+    const autofill::FormData& form_data,
+    const autofill::FormFieldData& field_data) {
+  if (form_data.fields.empty()) {
+    DVLOG(1) << __func__
+             << " Failed to get form and field data for retrieving.";
+    std::move(callback).Run(UnexpectedErrorStatus(__FILE__, __LINE__),
+                            autofill::FormData(), autofill::FormFieldData());
+    return;
+  }
+  std::move(callback).Run(OkClientStatus(), form_data, field_data);
+}
+
 void WebController::SelectOption(
     const Selector& selector,
     const std::string& selected_option,

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -20,12 +21,13 @@ namespace paint_preview {
 
 namespace {
 
-// A frame's GUID is (ProcessID || Routing ID) where || is a bitwise
-// concatenation.
-uint64_t GenerateFrameGuid(content::RenderFrameHost* render_frame_host) {
-  int process_id = render_frame_host->GetProcess()->GetID();
-  int frame_id = render_frame_host->GetRoutingID();
-  return static_cast<uint64_t>(process_id) << 32 | frame_id;
+// Creates an old style id of Process ID || Routing ID. This should only be used
+// for looking up the main frame's filler GUID in cases where only the
+// RenderFrameHost is available (such as in RenderFrameDeleted()).
+uint64_t MakeOldStyleId(content::RenderFrameHost* render_frame_host) {
+  return (static_cast<uint64_t>(render_frame_host->GetProcess()->GetID())
+          << 32) |
+         render_frame_host->GetRoutingID();
 }
 
 // Converts gfx::Rect to its RectProto form.
@@ -38,28 +40,24 @@ void RectToRectProto(const gfx::Rect& rect, RectProto* proto) {
 
 // Converts |response| into |proto|. Returns a list of the frame GUIDs
 // referenced by the response.
-std::vector<uint64_t> PaintPreviewCaptureResponseToPaintPreviewFrameProto(
+std::vector<base::UnguessableToken>
+PaintPreviewCaptureResponseToPaintPreviewFrameProto(
     mojom::PaintPreviewCaptureResponsePtr response,
-    content::RenderFrameHost* render_frame_host,
+    base::UnguessableToken frame_guid,
     PaintPreviewFrameProto* proto) {
-  int process_id = render_frame_host->GetProcess()->GetID();
-  proto->set_id(static_cast<uint64_t>(process_id) << 32 | response->id);
+  proto->set_embedding_token_high(frame_guid.GetHighForSerialization());
+  proto->set_embedding_token_low(frame_guid.GetLowForSerialization());
 
-  std::vector<uint64_t> frame_guids;
-  auto* proto_content_id_proxy_map = proto->mutable_content_id_proxy_id_map();
-  for (const auto& id_pair : response->content_id_proxy_id_map) {
-    content::RenderFrameHost* rfh =
-        content::RenderFrameHost::FromPlaceholderId(process_id, id_pair.second);
-    if (!rfh) {
-      // The render frame host doesn't exist. We won't be able to infill this
-      // content. 0 is an invalid content_id so an empty picture will be used
-      // instead.
-      proto_content_id_proxy_map->insert({id_pair.first, 0});
-      continue;
-    }
-    auto guid = GenerateFrameGuid(rfh);
-    frame_guids.push_back(guid);
-    proto_content_id_proxy_map->insert({id_pair.first, guid});
+  std::vector<base::UnguessableToken> frame_guids;
+  for (const auto& id_pair : response->content_id_to_embedding_token) {
+    auto* content_id_embedding_token_pair =
+        proto->add_content_id_to_embedding_tokens();
+    content_id_embedding_token_pair->set_content_id(id_pair.first);
+    content_id_embedding_token_pair->set_embedding_token_low(
+        id_pair.second.GetLowForSerialization());
+    content_id_embedding_token_pair->set_embedding_token_high(
+        id_pair.second.GetHighForSerialization());
+    frame_guids.push_back(id_pair.second);
   }
 
   for (const auto& link : response->links) {
@@ -78,6 +76,7 @@ PaintPreviewClient::PaintPreviewParams::~PaintPreviewParams() = default;
 
 PaintPreviewClient::PaintPreviewData::PaintPreviewData() = default;
 PaintPreviewClient::PaintPreviewData::~PaintPreviewData() = default;
+
 PaintPreviewClient::PaintPreviewData& PaintPreviewClient::PaintPreviewData::
 operator=(PaintPreviewData&& rhs) noexcept = default;
 PaintPreviewClient::PaintPreviewData::PaintPreviewData(
@@ -86,7 +85,9 @@ PaintPreviewClient::PaintPreviewData::PaintPreviewData(
 PaintPreviewClient::CreateResult::CreateResult(base::File file,
                                                base::File::Error error)
     : file(std::move(file)), error(error) {}
+
 PaintPreviewClient::CreateResult::~CreateResult() = default;
+
 PaintPreviewClient::CreateResult::CreateResult(CreateResult&& other) = default;
 PaintPreviewClient::CreateResult& PaintPreviewClient::CreateResult::operator=(
     CreateResult&& other) = default;
@@ -125,7 +126,19 @@ void PaintPreviewClient::CaptureSubframePaintPreview(
 
 void PaintPreviewClient::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  uint64_t frame_guid = GenerateFrameGuid(render_frame_host);
+  // TODO(crbug/1044983): Investigate possible issues with cleanup if just
+  // a single subframe gets deleted.
+  auto maybe_token = render_frame_host->GetEmbeddingToken();
+  bool is_main_frame = false;
+  if (!maybe_token.has_value()) {
+    uint64_t old_style_id = MakeOldStyleId(render_frame_host);
+    auto it = main_frame_guids_.find(old_style_id);
+    if (it == main_frame_guids_.end())
+      return;
+    maybe_token = it->second;
+    is_main_frame = true;
+  }
+  base::UnguessableToken frame_guid = maybe_token.value();
   auto it = pending_previews_on_subframe_.find(frame_guid);
   if (it == pending_previews_on_subframe_.end())
     return;
@@ -136,7 +149,15 @@ void PaintPreviewClient::RenderFrameDeleted(
     data_it->second.awaiting_subframes.erase(frame_guid);
     data_it->second.finished_subframes.insert(frame_guid);
     data_it->second.had_error = true;
-    if (data_it->second.awaiting_subframes.empty()) {
+    if (data_it->second.awaiting_subframes.empty() || is_main_frame) {
+      if (is_main_frame) {
+        for (const auto& subframe_guid : data_it->second.awaiting_subframes) {
+          auto subframe_docs = pending_previews_on_subframe_[subframe_guid];
+          subframe_docs.erase(document_guid);
+          if (subframe_docs.empty())
+            pending_previews_on_subframe_.erase(subframe_guid);
+        }
+      }
       interface_ptrs_.erase(frame_guid);
       OnFinished(document_guid, &data_it->second);
     }
@@ -168,14 +189,34 @@ mojom::PaintPreviewCaptureParamsPtr PaintPreviewClient::CreateMojoParams(
 void PaintPreviewClient::CapturePaintPreviewInternal(
     const PaintPreviewParams& params,
     content::RenderFrameHost* render_frame_host) {
-  uint64_t frame_guid = GenerateFrameGuid(render_frame_host);
+  // Use a frame's embedding token as its GUID. Note that we create a GUID for
+  // the main frame so that we can treat it the same as other frames.
+  auto token = render_frame_host->GetEmbeddingToken();
+  if (params.is_main_frame && !token.has_value()) {
+    token = base::UnguessableToken::Create();
+    main_frame_guids_.insert(
+        {MakeOldStyleId(render_frame_host), token.value()});
+  }
+
+  // This should be impossible, but if it happens in a release build just abort.
+  if (!token.has_value()) {
+    DVLOG(1) << "Error: Attempted to capture a non-main frame without an "
+                "embedding token.";
+    NOTREACHED();
+    return;
+  }
+
   auto* document_data = &all_document_data_[params.document_guid];
+
+  base::UnguessableToken frame_guid = token.value();
+  if (params.is_main_frame)
+    document_data->root_frame_token = frame_guid;
   // Deduplicate data if a subframe is required multiple times.
   if (base::Contains(document_data->awaiting_subframes, frame_guid) ||
       base::Contains(document_data->finished_subframes, frame_guid))
     return;
   base::FilePath file_path = document_data->root_dir.AppendASCII(
-      base::StrCat({base::NumberToString(frame_guid), ".skp"}));
+      base::StrCat({frame_guid.ToString(), ".skp"}));
   base::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
@@ -187,7 +228,7 @@ void PaintPreviewClient::CapturePaintPreviewInternal(
 
 void PaintPreviewClient::RequestCaptureOnUIThread(
     const PaintPreviewParams& params,
-    uint64_t frame_guid,
+    const base::UnguessableToken& frame_guid,
     content::RenderFrameHost* render_frame_host,
     const base::FilePath& file_path,
     CreateResult result) {
@@ -228,8 +269,8 @@ void PaintPreviewClient::RequestCaptureOnUIThread(
 }
 
 void PaintPreviewClient::OnPaintPreviewCapturedCallback(
-    base::UnguessableToken guid,
-    uint64_t frame_guid,
+    const base::UnguessableToken& guid,
+    const base::UnguessableToken& frame_guid,
     bool is_main_frame,
     const base::FilePath& filename,
     content::RenderFrameHost* render_frame_host,
@@ -250,8 +291,9 @@ void PaintPreviewClient::OnPaintPreviewCapturedCallback(
     OnFinished(guid, document_data);
 }
 
-void PaintPreviewClient::MarkFrameAsProcessed(base::UnguessableToken guid,
-                                              uint64_t frame_guid) {
+void PaintPreviewClient::MarkFrameAsProcessed(
+    base::UnguessableToken guid,
+    const base::UnguessableToken& frame_guid) {
   pending_previews_on_subframe_[frame_guid].erase(guid);
   if (pending_previews_on_subframe_[frame_guid].empty())
     interface_ptrs_.erase(frame_guid);
@@ -260,8 +302,8 @@ void PaintPreviewClient::MarkFrameAsProcessed(base::UnguessableToken guid,
 }
 
 mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
-    base::UnguessableToken guid,
-    uint64_t frame_guid,
+    const base::UnguessableToken& guid,
+    const base::UnguessableToken& frame_guid,
     bool is_main_frame,
     const base::FilePath& filename,
     content::RenderFrameHost* render_frame_host,
@@ -279,16 +321,18 @@ mojom::PaintPreviewStatus PaintPreviewClient::RecordFrame(
   if (is_main_frame) {
     frame_proto = proto_ptr->mutable_root_frame();
     frame_proto->set_is_main_frame(true);
+    uint64_t old_style_id = MakeOldStyleId(render_frame_host);
+    main_frame_guids_.erase(old_style_id);
   } else {
     frame_proto = proto_ptr->add_subframes();
     frame_proto->set_is_main_frame(false);
   }
-  // Safe since always <#>.skp.
+  // Safe since always HEX.skp.
   frame_proto->set_file_path(filename.AsUTF8Unsafe());
 
-  std::vector<uint64_t> remote_frame_guids =
+  std::vector<base::UnguessableToken> remote_frame_guids =
       PaintPreviewCaptureResponseToPaintPreviewFrameProto(
-          std::move(response), render_frame_host, frame_proto);
+          std::move(response), frame_guid, frame_proto);
 
   for (const auto& remote_frame_guid : remote_frame_guids) {
     if (!base::Contains(it->second.finished_subframes, remote_frame_guid))
@@ -301,7 +345,14 @@ void PaintPreviewClient::OnFinished(base::UnguessableToken guid,
                                     PaintPreviewData* document_data) {
   if (!document_data)
     return;
+
+  base::UmaHistogramBoolean("Browser.PaintPreview.Capture.Success",
+                            document_data->proto != nullptr);
   if (document_data->proto) {
+    base::UmaHistogramCounts100(
+        "Browser.PaintPreview.Capture.NumberOfFramesCaptured",
+        document_data->finished_subframes.size());
+
     // At a minimum one frame was captured successfully, it is up to the
     // caller to decide if a partial success is acceptable based on what is
     // contained in the proto.

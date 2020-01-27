@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
+class ChromeBrowserState;
 class IOSProfileSessionDurationsService;
 
 class IOSProfileSessionDurationsServiceFactory
@@ -17,7 +17,7 @@ class IOSProfileSessionDurationsServiceFactory
  public:
   // Creates the service if it doesn't exist already for |browser_state|.
   static IOSProfileSessionDurationsService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   static IOSProfileSessionDurationsServiceFactory* GetInstance();
 

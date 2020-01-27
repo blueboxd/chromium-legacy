@@ -862,7 +862,8 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry() {
   scroll_size = scroll_size.ExpandedTo(overflow_clip_rect.Size());
 
   auto* scrolling_coordinator = owning_layer_.GetScrollingCoordinator();
-  scrolling_coordinator->UpdateCompositedScrollOffset(scrollable_area);
+  scrolling_coordinator->UpdateCompositorScrollOffset(*layout_box.GetFrame(),
+                                                      *scrollable_area);
 
   if (gfx::Size(scroll_size) != scrolling_contents_layer_->Size() ||
       scroll_container_size_changed) {

@@ -49,6 +49,7 @@ class DocumentLoader;
 class LocalFrame;
 class HTMLImportsController;
 class Settings;
+class WindowAgentFactory;
 
 class CORE_EXPORT DocumentInit final {
   STACK_ALLOCATED();
@@ -170,6 +171,9 @@ class CORE_EXPORT DocumentInit final {
   const DocumentPolicy::FeatureState& GetDocumentPolicy() const {
     return document_policy_;
   }
+
+  WindowAgentFactory* GetWindowAgentFactory() const;
+  Settings* GetSettingsForWindowAgentFactory() const;
 
  private:
   DocumentInit(HTMLImportsController*);

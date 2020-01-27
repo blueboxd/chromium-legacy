@@ -377,6 +377,10 @@ bool CastMediaSource::ContainsAnyAppFrom(
       [this](const std::string& app_id) { return ContainsApp(app_id); });
 }
 
+bool CastMediaSource::ContainsStreamingApp() const {
+  return ContainsAnyAppFrom({kCastStreamingAppId, kCastStreamingAudioAppId});
+}
+
 std::vector<std::string> CastMediaSource::GetAppIds() const {
   std::vector<std::string> app_ids;
   for (const auto& info : app_infos_)

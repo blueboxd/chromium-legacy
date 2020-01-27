@@ -820,11 +820,6 @@ void EventRouter::ReportEvent(events::HistogramValue histogram_value,
       UMA_HISTOGRAM_ENUMERATION(
           "Extensions.Events.DispatchWithSuspendedEventPage", histogram_value,
           events::ENUM_BOUNDARY);
-      if (is_component) {
-        UMA_HISTOGRAM_ENUMERATION(
-            "Extensions.Events.DispatchToComponentWithSuspendedEventPage",
-            histogram_value, events::ENUM_BOUNDARY);
-      }
     } else {
       UMA_HISTOGRAM_ENUMERATION(
           "Extensions.Events.DispatchWithRunningEventPage", histogram_value,

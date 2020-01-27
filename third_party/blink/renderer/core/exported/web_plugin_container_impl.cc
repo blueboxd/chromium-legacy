@@ -338,11 +338,6 @@ void WebPluginContainerImpl::SetCcLayer(cc::Layer* new_layer,
       prevent_contents_opaque_changes == prevent_contents_opaque_changes_)
     return;
 
-  if (layer_)
-    GraphicsLayer::UnregisterContentsLayer(layer_);
-  if (new_layer)
-    GraphicsLayer::RegisterContentsLayer(new_layer);
-
   layer_ = new_layer;
   prevent_contents_opaque_changes_ = prevent_contents_opaque_changes;
 
@@ -781,10 +776,7 @@ void WebPluginContainerImpl::Dispose() {
     web_plugin_ = nullptr;
   }
 
-  if (layer_) {
-    GraphicsLayer::UnregisterContentsLayer(layer_);
-    layer_ = nullptr;
-  }
+  layer_ = nullptr;
 }
 
 void WebPluginContainerImpl::SetFrameRect(const IntRect& rect) {

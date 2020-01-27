@@ -65,7 +65,9 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
   // Proposed extensions to the Screen interface.
   // https://github.com/webscreens/screen-enumeration
   // TODO(msw): Resolve different info sources, caching, and lifetimes.
-  Screen(display::mojom::blink::DisplayPtr display, bool primary);
+  Screen(display::mojom::blink::DisplayPtr display,
+         bool internal,
+         bool primary);
   int left() const;
   int top() const;
   bool internal() const;
@@ -82,6 +84,10 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
   // This member is only valid for Screen objects obtained via the experimental
   // Screen Enumeration API.
   const display::mojom::blink::DisplayPtr display_;
+  // True if this is an internal display of the device; it is a static value
+  // provided upon construction. This member is only valid for Screen objects
+  // obtained via the experimental Screen Enumeration API.
+  const base::Optional<bool> internal_;
   // True if this is the primary screen of the operating system; it is a static
   // value provided upon construction. This member is only valid for Screen
   // objects obtained via the experimental Screen Enumeration API.

@@ -1083,7 +1083,8 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
           first_embedded_surface_id_ = current_surface_id;
         }
       }
-      if (latest_embedded_surface_id_.is_valid()) {
+      if (latest_embedded_surface_id_.is_valid() &&
+          !embedded_surface_size_.IsEmpty()) {
         if (!state_.crop.IsEmpty()) {
           quad_state->is_clipped = true;
           quad_state->clip_rect = output_rect;

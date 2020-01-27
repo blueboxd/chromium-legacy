@@ -113,7 +113,7 @@
     (SigninInteractionControllerCompletionCallback)completion {
   signin_metrics::LogSigninAccessPointStarted(_accessPoint, _promoAction);
   _completionCallback = [completion copy];
-  ios::ChromeBrowserState* browserState = _browser->GetBrowserState();
+  ChromeBrowserState* browserState = _browser->GetBrowserState();
   CoreAccountInfo accountInfo =
       IdentityManagerFactory::GetForBrowserState(browserState)
           ->GetPrimaryAccountInfo();

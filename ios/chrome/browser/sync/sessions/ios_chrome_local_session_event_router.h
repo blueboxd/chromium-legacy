@@ -14,11 +14,11 @@
 #include "base/macros.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/sync_sessions/local_session_event_router.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #import "ios/chrome/browser/tabs/tab_model_list_observer.h"
 #include "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #include "ios/web/public/web_state_observer.h"
 
+class ChromeBrowserState;
 class GURL;
 
 namespace sync_sessions {
@@ -34,7 +34,7 @@ class IOSChromeLocalSessionEventRouter
       public TabModelListObserver {
  public:
   IOSChromeLocalSessionEventRouter(
-      ios::ChromeBrowserState* browser_state,
+      ChromeBrowserState* browser_state,
       sync_sessions::SyncSessionsClient* sessions_client_,
       const syncer::SyncableService::StartSyncFlare& flare);
   ~IOSChromeLocalSessionEventRouter() override;
@@ -47,10 +47,10 @@ class IOSChromeLocalSessionEventRouter
   // TabModelListObserver:
   void TabModelRegisteredWithBrowserState(
       TabModel* tab_model,
-      ios::ChromeBrowserState* browser_state) override;
+      ChromeBrowserState* browser_state) override;
   void TabModelUnregisteredFromBrowserState(
       TabModel* tab_model,
-      ios::ChromeBrowserState* browser_state) override;
+      ChromeBrowserState* browser_state) override;
 
   // web::WebStateObserver:
   void TitleWasSet(web::WebState* web_state) override;
@@ -96,7 +96,7 @@ class IOSChromeLocalSessionEventRouter
   void OnFaviconsChanged(const std::set<GURL>& page_urls, const GURL& icon_url);
 
   sync_sessions::LocalSessionEventHandler* handler_;
-  ios::ChromeBrowserState* const browser_state_;
+  ChromeBrowserState* const browser_state_;
   sync_sessions::SyncSessionsClient* const sessions_client_;
   syncer::SyncableService::StartSyncFlare flare_;
 

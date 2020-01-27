@@ -20,13 +20,13 @@
   `);
 
   TestRunner.addSniffer(SDK.RuntimeModel.prototype, '_inspectRequested', inspect);
-  TestRunner.addSniffer(Common.Revealer, 'reveal', oneRevealPromise, true);
-
-  function oneRevealPromise(node, revealPromise) {
-    if (!(node instanceof SDK.RemoteObject))
-      return;
-    revealPromise.then(updateFocusedNode);
-  }
+  const originalReveal = Common.Revealer.reveal;
+  Common.Revealer.setRevealForTest((node) => {
+    if (!(node instanceof SDK.RemoteObject)) {
+      return Promise.resolve();
+    }
+    return originalReveal(node).then(updateFocusedNode);
+  });
 
   function updateFocusedNode() {
     TestRunner.addResult('Selected node id: \'' + UI.panels.elements.selectedDOMNode().getAttribute('id') + '\'.');

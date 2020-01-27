@@ -32,9 +32,9 @@ ArcAppReinstallAppResult::ArcAppReinstallAppResult(
   set_id(kPlayStoreAppUrlPrefix + mojom_data->package_name);
   SetResultType(ash::AppListSearchResultType::kPlayStoreReinstallApp);
   SetTitle(base::UTF8ToUTF16(mojom_data->title));
-  SetDisplayType(ash::SearchResultDisplayType::kRecommendation);
-  SetDisplayLocation(ash::SearchResultDisplayLocation::kTileListContainer);
+  SetDisplayType(ash::SearchResultDisplayType::kTile);
   SetDisplayIndex(ash::SearchResultDisplayIndex::kSixthIndex);
+  SetIsRecommendation(true);
   set_relevance(kAppReinstallRelevance);
   SetNotifyVisibilityChange(true);
   SetIcon(skia_icon);

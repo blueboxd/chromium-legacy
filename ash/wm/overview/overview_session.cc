@@ -427,7 +427,7 @@ void OverviewSession::AddItemInMruOrder(aura::Window* window, bool animate) {
   if (!grid || grid->GetOverviewItemContaining(window))
     return;
 
-  grid->AddItemInMruOrder(window, animate);
+  grid->AddItemInMruOrder(window, /*reposition=*/true, animate);
   OnItemAdded(window);
 }
 

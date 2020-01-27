@@ -6,6 +6,7 @@
 #define WEBLAYER_PUBLIC_BROWSER_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace weblayer {
@@ -33,6 +34,9 @@ class Browser {
 
   // Called early on in shutdown, before any tabs have been removed.
   virtual void PrepareForShutdown() = 0;
+
+  // Returns the id supplied to Create() that is used for persistence.
+  virtual const std::string& GetPersistenceId() = 0;
 
   virtual void AddObserver(BrowserObserver* observer) = 0;
   virtual void RemoveObserver(BrowserObserver* observer) = 0;

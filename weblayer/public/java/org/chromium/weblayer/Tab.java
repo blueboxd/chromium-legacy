@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.webkit.ValueCallback;
@@ -43,12 +44,12 @@ public final class Tab {
     private static final Map<Integer, Tab> sTabMap = new HashMap<Integer, Tab>();
 
     private final ITab mImpl;
-    private FullscreenCallbackClientImpl mFullscreenCallbackClient;
     private final NavigationController mNavigationController;
+    private final FindInPageController mFindInPageController;
     private final ObserverList<TabCallback> mCallbacks;
     private Browser mBrowser;
     private DownloadCallbackClientImpl mDownloadCallbackClient;
-    private ErrorPageCallbackClientImpl mErrorPageCallbackClient;
+    private FullscreenCallbackClientImpl mFullscreenCallbackClient;
     private NewTabCallback mNewTabCallback;
     // Id from the remote side.
     private final int mId;
@@ -65,6 +66,7 @@ public final class Tab {
 
         mCallbacks = new ObserverList<TabCallback>();
         mNavigationController = NavigationController.create(mImpl);
+        mFindInPageController = new FindInPageController(mImpl);
         registerTab(this);
     }
 
@@ -122,13 +124,8 @@ public final class Tab {
     public void setErrorPageCallback(@Nullable ErrorPageCallback callback) {
         ThreadCheck.ensureOnUiThread();
         try {
-            if (callback != null) {
-                mErrorPageCallbackClient = new ErrorPageCallbackClientImpl(callback);
-                mImpl.setErrorPageCallbackClient(mErrorPageCallbackClient);
-            } else {
-                mErrorPageCallbackClient = null;
-                mImpl.setErrorPageCallbackClient(null);
-            }
+            mImpl.setErrorPageCallbackClient(
+                    callback == null ? null : new ErrorPageCallbackClientImpl(callback));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -208,6 +205,12 @@ public final class Tab {
     public NavigationController getNavigationController() {
         ThreadCheck.ensureOnUiThread();
         return mNavigationController;
+    }
+
+    @NonNull
+    public FindInPageController getFindInPageController() {
+        ThreadCheck.ensureOnUiThread();
+        return mFindInPageController;
     }
 
     public void registerTabCallback(@Nullable TabCallback callback) {
@@ -327,6 +330,15 @@ public final class Tab {
         public void downloadFailed(IClientDownload download) {
             StrictModeWorkaround.apply();
             mCallback.onDownloadFailed((Download) download);
+        }
+
+        @Override
+        public Intent createIntent() {
+            StrictModeWorkaround.apply();
+            // Intent objects need to be created in the client library so they can refer to the
+            // broadcast receiver that will handle them. The broadcast receiver needs to be in the
+            // client library because it's referenced in the manifest.
+            return new Intent(WebLayer.getAppContext(), DownloadBroadcastReceiver.class);
         }
     }
 

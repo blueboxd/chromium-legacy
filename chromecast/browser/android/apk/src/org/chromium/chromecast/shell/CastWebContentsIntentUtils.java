@@ -151,6 +151,8 @@ public class CastWebContentsIntentUtils {
     static final int VISIBITY_TYPE_PARTIAL_OUT = VisibilityType.PARTIAL_OUT;
     @VisibilityType
     static final int VISIBITY_TYPE_HIDDEN = VisibilityType.HIDDEN;
+    @VisibilityType
+    static final int VISIBITY_TYPE_TRANSIENTLY_HIDDEN = VisibilityType.TRANSIENTLY_HIDDEN;
 
     // CastWebContentsSurfaceHelper -> CastWebContentsComponent.Receiver
     // -> CastContentWindowAndroid

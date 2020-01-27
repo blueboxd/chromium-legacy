@@ -92,16 +92,14 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndClipping) {
 
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
   content::RenderFrame* frame = GetFrame();
-  int routing_id = frame->GetRoutingID();
   PaintPreviewRecorderImpl paint_preview_recorder(frame);
   paint_preview_recorder.CapturePaintPreview(
       std::move(params),
       base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
                      base::Unretained(&out_response)));
 
-  // Here id() is just the routing ID.
-  EXPECT_EQ(static_cast<int>(out_response->id), routing_id);
-  EXPECT_EQ(out_response->content_id_proxy_id_map.size(), 0U);
+  EXPECT_FALSE(out_response->embedding_token.has_value());
+  EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
 
   EXPECT_EQ(out_response->links.size(), 1U);
   EXPECT_EQ(out_response->links[0]->url, GURL("http://www.google.com/"));
@@ -166,15 +164,14 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureFragment) {
 
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
   content::RenderFrame* frame = GetFrame();
-  int routing_id = frame->GetRoutingID();
   PaintPreviewRecorderImpl paint_preview_recorder(frame);
   paint_preview_recorder.CapturePaintPreview(
       std::move(params),
       base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
                      &out_response));
-  // Here id() is just the routing ID.
-  EXPECT_EQ(static_cast<int>(out_response->id), routing_id);
-  EXPECT_EQ(out_response->content_id_proxy_id_map.size(), 0U);
+
+  EXPECT_FALSE(out_response->embedding_token.has_value());
+  EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
 
   EXPECT_EQ(out_response->links.size(), 1U);
   EXPECT_EQ(out_response->links[0]->url, GURL("fragment"));
@@ -225,15 +222,13 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureMainFrameAndLocalFrame) {
 
   auto out_response = mojom::PaintPreviewCaptureResponse::New();
   content::RenderFrame* frame = GetFrame();
-  int routing_id = frame->GetRoutingID();
   PaintPreviewRecorderImpl paint_preview_recorder(frame);
   paint_preview_recorder.CapturePaintPreview(
       std::move(params),
       base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
                      base::Unretained(&out_response)));
-  // Here id() is just the routing ID.
-  EXPECT_EQ(static_cast<int>(out_response->id), routing_id);
-  EXPECT_EQ(out_response->content_id_proxy_id_map.size(), 0U);
+  EXPECT_FALSE(out_response->embedding_token.has_value());
+  EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
 }
 
 TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureLocalFrame) {
@@ -259,15 +254,13 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureLocalFrame) {
   auto* child_frame = content::RenderFrame::FromWebFrame(
       GetFrame()->GetWebFrame()->FirstChild()->ToWebLocalFrame());
   ASSERT_TRUE(child_frame);
-  int routing_id = child_frame->GetRoutingID();
   PaintPreviewRecorderImpl paint_preview_recorder(child_frame);
   paint_preview_recorder.CapturePaintPreview(
       std::move(params),
       base::BindOnce(&OnCaptureFinished, mojom::PaintPreviewStatus::kOk,
                      base::Unretained(&out_response)));
-  // Here id() is just the routing ID.
-  EXPECT_EQ(static_cast<int>(out_response->id), routing_id);
-  EXPECT_EQ(out_response->content_id_proxy_id_map.size(), 0U);
+  EXPECT_FALSE(out_response->embedding_token.has_value());
+  EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
 }
 
 }  // namespace paint_preview

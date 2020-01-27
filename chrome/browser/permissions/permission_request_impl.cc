@@ -37,7 +37,8 @@ PermissionRequestImpl::~PermissionRequestImpl() {
   DCHECK(is_finished_);
 }
 
-PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
+permissions::PermissionRequest::IconId PermissionRequestImpl::GetIconId()
+    const {
 #if defined(OS_ANDROID)
   switch (content_settings_type_) {
     case ContentSettingsType::GEOLOCATION:
@@ -283,13 +284,13 @@ void PermissionRequestImpl::RequestFinished() {
   std::move(delete_callback_).Run();
 }
 
-PermissionRequestType PermissionRequestImpl::GetPermissionRequestType()
-    const {
+permissions::PermissionRequestType
+PermissionRequestImpl::GetPermissionRequestType() const {
   return PermissionUtil::GetRequestType(content_settings_type_);
 }
 
-PermissionRequestGestureType PermissionRequestImpl::GetGestureType()
-    const {
+permissions::PermissionRequestGestureType
+PermissionRequestImpl::GetGestureType() const {
   return PermissionUtil::GetGestureType(has_gesture_);
 }
 

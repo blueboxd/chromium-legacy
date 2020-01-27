@@ -14,6 +14,8 @@
 #include "weblayer/browser/safe_browsing/safe_browsing_ui_manager.h"
 
 namespace content {
+class NavigationHandle;
+class NavigationThrottle;
 class RenderProcessHost;
 }
 
@@ -47,6 +49,8 @@ class SafeBrowsingService {
   std::unique_ptr<blink::URLLoaderThrottle> CreateURLLoaderThrottle(
       const base::RepeatingCallback<content::WebContents*()>& wc_getter,
       int frame_tree_node_id);
+  std::unique_ptr<content::NavigationThrottle>
+  CreateSafeBrowsingNavigationThrottle(content::NavigationHandle* handle);
   void AddInterface(service_manager::BinderRegistry* registry,
                     content::RenderProcessHost* render_process_host);
 

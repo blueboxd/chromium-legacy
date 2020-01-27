@@ -8,14 +8,21 @@ import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.intent.Intents.intended;
+import static android.support.test.espresso.intent.matcher.BundleMatchers.hasEntry;
+import static android.support.test.espresso.intent.matcher.IntentMatchers.hasAction;
+import static android.support.test.espresso.intent.matcher.IntentMatchers.hasExtras;
+import static android.support.test.espresso.intent.matcher.IntentMatchers.hasType;
 import static android.support.test.espresso.matcher.RootMatchers.withDecorView;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -31,14 +38,18 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.v
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabStripFaviconCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 
+import android.content.Intent;
 import android.graphics.Rect;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.NoMatchingRootException;
+import android.support.test.espresso.intent.Intents;
+import android.support.test.espresso.intent.rule.IntentsTestRule;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.junit.Assert;
@@ -50,6 +61,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
@@ -80,6 +92,10 @@ public class TabGridDialogTest {
 
     @Rule
     public TestRule mProcessor = new Features.InstrumentationProcessor();
+
+    @Rule
+    public IntentsTestRule<ChromeActivity> mShareActivityTestRule =
+            new IntentsTestRule<>(ChromeActivity.class, false, false);
 
     @Before
     public void setUp() {
@@ -281,6 +297,29 @@ public class TabGridDialogTest {
         openDialogFromStripAndVerify(cta, 2);
     }
 
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
+    public void testDialogToolbarMenuShareGroup() throws InterruptedException {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Create a tab group.
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+
+        // Open dialog and verify dialog is showing correct content.
+        openDialogFromTabSwitcherAndVerify(cta, 2);
+
+        // Click to show the menu and verify it.
+        openDialogToolbarMenuAndVerify(cta);
+
+        // Trigger the share sheet by clicking the share button and verify it.
+        triggerShareGroupAndVerify(cta);
+    }
+
     private void openDialogFromTabSwitcherAndVerify(ChromeTabbedActivity cta, int tabCount) {
         clickFirstCardFromTabSwitcher(cta);
         CriteriaHelper.pollInstrumentationThread(() -> isDialogShowing(cta));
@@ -352,5 +391,56 @@ public class TabGridDialogTest {
             assert false : "error when verifying undo snack bar.";
         }
         return isShowing;
+    }
+
+    private void openDialogToolbarMenuAndVerify(ChromeTabbedActivity cta) {
+        onView(withId(R.id.toolbar_menu_button))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .perform(click());
+        onView(withId(R.id.tab_switcher_action_menu_list))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .check((v, noMatchException) -> {
+                    if (noMatchException != null) throw noMatchException;
+                    Assert.assertTrue(v instanceof ListView);
+                    ListView listView = (ListView) v;
+                    assertEquals(2, listView.getCount());
+                    verifyTabGridDialogToolbarMenuItem(listView, 0,
+                            cta.getString(R.string.tab_grid_dialog_toolbar_remove_from_group));
+                    verifyTabGridDialogToolbarMenuItem(listView, 1,
+                            cta.getString(R.string.tab_grid_dialog_toolbar_share_group));
+                });
+    }
+
+    private void verifyTabGridDialogToolbarMenuItem(ListView listView, int index, String text) {
+        View menuItemView = listView.getChildAt(index);
+        TextView menuItemText = menuItemView.findViewById(R.id.menu_item);
+        assertEquals(text, menuItemText.getText());
+    }
+
+    private void selectTabGridDialogToolbarMenuItem(ChromeTabbedActivity cta, String buttonText) {
+        onView(withText(buttonText))
+                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                .perform(click());
+    }
+
+    private void triggerShareGroupAndVerify(ChromeTabbedActivity cta) {
+        Intents.init();
+        selectTabGridDialogToolbarMenuItem(cta, "Share group");
+        // For K and below, we show share dialog; for L and above, we send intent and trigger system
+        // share sheet. See ShareSheetMediator.ShareSheetDelegate for more info.
+        if (TabUiTestHelper.isKitKatAndBelow()) {
+            onView(withId(R.id.action_bar_root))
+                    .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                    .check(matches(isDisplayed()));
+            onView(withId(R.id.contentPanel))
+                    .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+                    .check(matches(isDisplayed()));
+        } else {
+            intended(allOf(hasAction(equalTo(Intent.ACTION_CHOOSER)),
+                    hasExtras(hasEntry(equalTo(Intent.EXTRA_INTENT),
+                            allOf(hasAction(equalTo(Intent.ACTION_SEND)),
+                                    hasType("text/plain"))))));
+        }
+        Intents.release();
     }
 }

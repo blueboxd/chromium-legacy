@@ -56,19 +56,20 @@ std::unique_ptr<gfx::SkiaVectorAnimation> GetVectorAnimationNamed(
 
   auto compressed_raw_data =
       rb.GetRawDataResourceForScale(resource_id, scale_factor_to_load);
-  auto* uncompressed_bytes = new base::RefCountedBytes(
+  std::vector<uint8_t> uncompressed_bytes(
       compression::GetUncompressedSize(compressed_raw_data));
   base::StringPiece uncompressed_str_piece(
-      reinterpret_cast<const char*>(uncompressed_bytes->front()),
-      uncompressed_bytes->size());
+      reinterpret_cast<char*>(uncompressed_bytes.data()),
+      uncompressed_bytes.size());
 
   TRACE_EVENT1("ui", "GetVectorAnimationNamed uncompress and parse",
-               "zip size bytes", uncompressed_bytes->size());
+               "zip size bytes", uncompressed_bytes.size());
   base::TimeTicks start_timestamp = base::TimeTicks::Now();
   CHECK(
       compression::GzipUncompress(compressed_raw_data, uncompressed_str_piece));
 
-  auto skottie = base::MakeRefCounted<cc::SkottieWrapper>(uncompressed_bytes);
+  auto skottie =
+      cc::SkottieWrapper::CreateSerializable(std::move(uncompressed_bytes));
 
   UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
       "UncompressAndParseSkiaVectorAsset",

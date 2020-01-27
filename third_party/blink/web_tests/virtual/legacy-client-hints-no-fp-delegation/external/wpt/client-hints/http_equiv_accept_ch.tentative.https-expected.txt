@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Test that the browser attaches client hints on subresources in the same navigation
-FAIL Loading of resources/expect_client_hints_headers.html did not finish. assert_equals: expected "PASS" but got "FAIL"
-Harness: the test ran to completion.
-

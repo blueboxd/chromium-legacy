@@ -50,7 +50,7 @@ NSString* const kSyncTestErrorDomain = @"SyncTestDomain";
 // |create_http_post_provider_factory_cb|.
 void OverrideSyncNetwork(const syncer::CreateHttpPostProviderFactory&
                              create_http_post_provider_factory_cb) {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   DCHECK(browser_state);
   syncer::ProfileSyncService* service =
@@ -79,7 +79,7 @@ void TearDownFakeSyncServer() {
 
 void StartSync() {
   DCHECK(!IsSyncInitialized());
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   SyncSetupService* sync_setup_service =
       SyncSetupServiceFactory::GetForBrowserState(browser_state);
@@ -88,7 +88,7 @@ void StartSync() {
 
 void StopSync() {
   DCHECK(IsSyncInitialized());
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   SyncSetupService* sync_setup_service =
       SyncSetupServiceFactory::GetForBrowserState(browser_state);
@@ -96,7 +96,7 @@ void StopSync() {
 }
 
 void TriggerSyncCycle(syncer::ModelType type) {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(browser_state);
@@ -150,7 +150,7 @@ void InjectBookmarkOnFakeSyncServer(std::string url, std::string title) {
 }
 
 bool IsSyncInitialized() {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   DCHECK(browser_state);
   syncer::SyncService* syncService =
@@ -160,7 +160,7 @@ bool IsSyncInitialized() {
 
 std::string GetSyncCacheGuid() {
   DCHECK(IsSyncInitialized());
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   syncer::DeviceInfoSyncService* service =
       DeviceInfoSyncServiceFactory::GetForBrowserState(browser_state);
@@ -208,7 +208,7 @@ void DeleteAutofillProfileOnFakeSyncServer(std::string guid) {
 }
 
 bool IsAutofillProfilePresent(std::string guid, std::string full_name) {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   autofill::PersonalDataManager* personal_data_manager =
       autofill::PersonalDataManagerFactory::GetForBrowserState(browser_state);
@@ -224,7 +224,7 @@ bool IsAutofillProfilePresent(std::string guid, std::string full_name) {
 }
 
 void ClearAutofillProfile(std::string guid) {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   autofill::PersonalDataManager* personal_data_manager =
       autofill::PersonalDataManagerFactory::GetForBrowserState(browser_state);
@@ -251,7 +251,7 @@ BOOL VerifySessionsOnSyncServer(const std::multiset<std::string>& expected_urls,
 }
 
 void AddTypedURLOnClient(const GURL& url) {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   history::HistoryService* historyService =
       ios::HistoryServiceFactory::GetForBrowserState(
@@ -282,7 +282,7 @@ BOOL IsTypedUrlPresentOnClient(const GURL& url,
                                BOOL expect_present,
                                NSError** error) {
   // Call the history service.
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   history::HistoryService* history_service =
       ios::HistoryServiceFactory::GetForBrowserState(
@@ -330,7 +330,7 @@ BOOL IsTypedUrlPresentOnClient(const GURL& url,
 }
 
 void DeleteTypedUrlFromClient(const GURL& url) {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   history::HistoryService* history_service =
       ios::HistoryServiceFactory::GetForBrowserState(

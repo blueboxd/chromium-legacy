@@ -24,8 +24,9 @@ class Step {
        FirstRunActor* actor);
   virtual ~Step();
 
-  // Step shows its content.
-  void Show();
+  // Step shows its content. Return whether the step was successfully shown.
+  // Returns false if the step should be skipped.
+  bool Show();
 
   // Called before hiding step.
   void OnBeforeHide();
@@ -39,8 +40,9 @@ class Step {
   FirstRunController* first_run_controller() { return first_run_controller_; }
   FirstRunActor* actor() const { return actor_; }
 
-  // Called from Show method.
-  virtual void DoShow() = 0;
+  // Called from Show method. Returns false if the step should be skipped, true
+  // otherwise.
+  virtual bool DoShow() = 0;
 
   // Called from OnBeforeHide. Step implementation could override this method to
   // react on corresponding event.

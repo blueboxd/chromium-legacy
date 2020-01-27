@@ -49,7 +49,7 @@ class PaintPreviewRecorderImpl : public content::RenderFrameObserver,
 
   bool is_painting_preview_;
   const bool is_main_frame_;
-  const int32_t routing_id_;
+  const base::Optional<base::UnguessableToken> embedding_token_;
   mojo::AssociatedReceiver<mojom::PaintPreviewRecorder>
       paint_preview_recorder_receiver_{this};
 

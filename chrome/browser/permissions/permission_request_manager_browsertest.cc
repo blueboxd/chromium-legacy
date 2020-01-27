@@ -179,21 +179,23 @@ class PermissionDialogTest
 
   GURL GetUrl() { return GURL("https://example.com"); }
 
-  PermissionRequest* MakeRegisterProtocolHandlerRequest();
-  PermissionRequest* MakePermissionRequest(ContentSettingsType permission);
+  permissions::PermissionRequest* MakeRegisterProtocolHandlerRequest();
+  permissions::PermissionRequest* MakePermissionRequest(
+      ContentSettingsType permission);
 
   // TestBrowserDialog:
   void ShowUi(const std::string& name) override;
   void DismissUi() override;
 
   // Holds requests that do not delete themselves.
-  std::vector<std::unique_ptr<PermissionRequest>> owned_requests_;
+  std::vector<std::unique_ptr<permissions::PermissionRequest>> owned_requests_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PermissionDialogTest);
 };
 
-PermissionRequest* PermissionDialogTest::MakeRegisterProtocolHandlerRequest() {
+permissions::PermissionRequest*
+PermissionDialogTest::MakeRegisterProtocolHandlerRequest() {
   std::string protocol = "mailto";
   bool user_gesture = true;
   ProtocolHandler handler =
@@ -206,7 +208,7 @@ PermissionRequest* PermissionDialogTest::MakeRegisterProtocolHandlerRequest() {
                                                       GetUrl(), user_gesture);
 }
 
-PermissionRequest* PermissionDialogTest::MakePermissionRequest(
+permissions::PermissionRequest* PermissionDialogTest::MakePermissionRequest(
     ContentSettingsType permission) {
   bool user_gesture = true;
   auto decided = [](ContentSetting) {};
@@ -704,16 +706,16 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_AnimatedIcon,
   // First add a quiet permission request. Ensure that this request is decided
   // by the end of this test.
   MockPermissionRequest request_quiet(
-      "quiet", PermissionRequestType::PERMISSION_NOTIFICATIONS,
-      PermissionRequestGestureType::UNKNOWN);
+      "quiet", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      permissions::PermissionRequestGestureType::UNKNOWN);
   GetPermissionRequestManager()->AddRequest(&request_quiet);
   base::RunLoop().RunUntilIdle();
 
   // Add a second permission request. This ones should cause the initial
   // request to be cancelled.
   MockPermissionRequest request_loud(
-      "loud", PermissionRequestType::PERMISSION_GEOLOCATION,
-      PermissionRequestGestureType::UNKNOWN);
+      "loud", permissions::PermissionRequestType::PERMISSION_GEOLOCATION,
+      permissions::PermissionRequestGestureType::UNKNOWN);
   GetPermissionRequestManager()->AddRequest(&request_loud);
   base::RunLoop().RunUntilIdle();
 
@@ -731,14 +733,15 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_AnimatedIcon,
 IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
                        LoudPendingRequestsQueued) {
   MockPermissionRequest request1(
-      "request1", PermissionRequestType::PERMISSION_CLIPBOARD_READ_WRITE,
-      PermissionRequestGestureType::UNKNOWN);
+      "request1",
+      permissions::PermissionRequestType::PERMISSION_CLIPBOARD_READ_WRITE,
+      permissions::PermissionRequestGestureType::UNKNOWN);
   GetPermissionRequestManager()->AddRequest(&request1);
   base::RunLoop().RunUntilIdle();
 
-  MockPermissionRequest request2("request2",
-                                 PermissionRequestType::PERMISSION_GEOLOCATION,
-                                 PermissionRequestGestureType::UNKNOWN);
+  MockPermissionRequest request2(
+      "request2", permissions::PermissionRequestType::PERMISSION_GEOLOCATION,
+      permissions::PermissionRequestGestureType::UNKNOWN);
   GetPermissionRequestManager()->AddRequest(&request2);
   base::RunLoop().RunUntilIdle();
 

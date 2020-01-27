@@ -183,50 +183,33 @@ Status DevToolsClientImpl::ConnectIfNecessary() {
       if (!socket_->Connect(url_))
         return Status(kDisconnected, "unable to connect to renderer");
     }
-    if (id_ != kBrowserwideDevToolsClientId) {
-      base::DictionaryValue params;
-      std::string script =
-          "(function () {"
-          "window.cdc_adoQpoasnfa76pfcZLmcfl_Array = window.Array;"
-          "window.cdc_adoQpoasnfa76pfcZLmcfl_Promise = window.Promise;"
-          "window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol = window.Symbol;"
-          "}) ();";
-      params.SetString("source", script);
-      Status status(kOk);
-      for (int attempt = 0; attempt < 3; attempt++) {
-        Timeout small = Timeout(base::TimeDelta::FromSeconds(1));
-        status = SendCommandWithTimeout("Page.addScriptToEvaluateOnNewDocument",
-                                        params, &small);
-        if (status.IsOk())
-          break;
-        else if (status.code() == kTimeout)
-          continue;
-        else
-          return status;
-      }
-      if (status.IsError())
-        return status;
-
-      params.Clear();
-      params.SetString("expression", script);
-      for (int attempt = 0; attempt < 3; attempt++) {
-        Timeout small = Timeout(base::TimeDelta::FromSeconds(1));
-        status = SendCommandWithTimeout("Runtime.evaluate", params, &small);
-        if (status.IsOk())
-          break;
-        else if (status.code() == kTimeout)
-          continue;
-        else
-          return status;
-      }
-      if (status.IsError())
-        return status;
-    }
   }
 
+  // These lines must be before the following SendCommandXxx calls
   unnotified_connect_listeners_ = listeners_;
   unnotified_event_listeners_.clear();
   response_info_map_.clear();
+
+  if (id_ != kBrowserwideDevToolsClientId) {
+    base::DictionaryValue params;
+    std::string script =
+        "(function () {"
+        "window.cdc_adoQpoasnfa76pfcZLmcfl_Array = window.Array;"
+        "window.cdc_adoQpoasnfa76pfcZLmcfl_Promise = window.Promise;"
+        "window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol = window.Symbol;"
+        "}) ();";
+    params.SetString("source", script);
+    Status status = SendCommandAndIgnoreResponse(
+        "Page.addScriptToEvaluateOnNewDocument", params);
+    if (status.IsError())
+      return status;
+
+    params.Clear();
+    params.SetString("expression", script);
+    status = SendCommandAndIgnoreResponse("Runtime.evaluate", params);
+    if (status.IsError())
+      return status;
+  }
 
   // Notify all listeners of the new connection. Do this now so that any errors
   // that occur are reported now instead of later during some unrelated call.

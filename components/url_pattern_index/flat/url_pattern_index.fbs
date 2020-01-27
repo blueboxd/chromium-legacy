@@ -104,7 +104,7 @@ table UrlRule {
   id : uint;
 
   // Priority of the rule. Larger the value, greater the priority.
-  priority : uint;
+  priority : uint64;
 }
 
 // Contains an N-gram (acting as a key in a hash table) and a list of URL rules

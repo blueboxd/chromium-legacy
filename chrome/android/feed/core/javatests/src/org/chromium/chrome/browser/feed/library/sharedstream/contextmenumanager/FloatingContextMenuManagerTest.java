@@ -30,6 +30,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowAlertDialog;
 
 import org.chromium.chrome.browser.feed.library.sharedstream.contextmenumanager.ContextMenuManager.ContextMenuClickHandler;
+import org.chromium.chrome.feed.R;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /** Tests for {@link ContextMenuManagerImpl}. */

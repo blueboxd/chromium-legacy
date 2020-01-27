@@ -6,8 +6,8 @@
 
 #include "base/callback.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/permissions/permission_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
 
@@ -19,13 +19,13 @@
 // PermissionRequestManager guarentees that |RequestFinished| will always,
 // eventually, be called. This object uses that fact to delete itself during
 // |RequestFinished| and thus owns itself.
-class AttestationPermissionRequest : public PermissionRequest {
+class AttestationPermissionRequest : public permissions::PermissionRequest {
  public:
   AttestationPermissionRequest(const url::Origin& origin,
                                base::OnceCallback<void(bool)> callback)
       : origin_(origin), callback_(std::move(callback)) {}
 
-  PermissionRequest::IconId GetIconId() const override {
+  permissions::PermissionRequest::IconId GetIconId() const override {
     return kUsbSecurityKeyIcon;
   }
 
@@ -46,8 +46,9 @@ class AttestationPermissionRequest : public PermissionRequest {
     delete this;
   }
 
-  PermissionRequestType GetPermissionRequestType() const override {
-    return PermissionRequestType::PERMISSION_SECURITY_KEY_ATTESTATION;
+  permissions::PermissionRequestType GetPermissionRequestType() const override {
+    return permissions::PermissionRequestType::
+        PERMISSION_SECURITY_KEY_ATTESTATION;
   }
 
  private:
@@ -59,7 +60,7 @@ class AttestationPermissionRequest : public PermissionRequest {
   DISALLOW_COPY_AND_ASSIGN(AttestationPermissionRequest);
 };
 
-PermissionRequest* NewAttestationPermissionRequest(
+permissions::PermissionRequest* NewAttestationPermissionRequest(
     const url::Origin& origin,
     base::OnceCallback<void(bool)> callback) {
   return new AttestationPermissionRequest(origin, std::move(callback));

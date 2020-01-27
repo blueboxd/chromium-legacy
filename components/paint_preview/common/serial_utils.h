@@ -10,6 +10,7 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file.h"
+#include "base/unguessable_token.h"
 #include "components/paint_preview/common/glyph_usage.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -19,8 +20,9 @@
 
 namespace paint_preview {
 
-// Maps a content ID to a frame ID (Process ID || Routing ID).
-using PictureSerializationContext = base::flat_map<uint32_t, uint64_t>;
+// Maps a content ID to an embedding token.
+using PictureSerializationContext =
+    base::flat_map<uint32_t, base::UnguessableToken>;
 
 // Maps a typeface ID to a glyph usage tracker.
 using TypefaceUsageMap = base::flat_map<SkFontID, std::unique_ptr<GlyphUsage>>;

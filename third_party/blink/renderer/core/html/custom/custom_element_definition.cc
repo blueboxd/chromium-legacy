@@ -123,8 +123,9 @@ HTMLElement* CustomElementDefinition::CreateElement(
     Document& document,
     const QualifiedName& tag_name,
     CreateElementFlags flags) {
-  DCHECK(CustomElement::ShouldCreateCustomElement(tag_name) ||
-         CustomElement::ShouldCreateCustomizedBuiltinElement(tag_name))
+  DCHECK(
+      CustomElement::ShouldCreateCustomElement(tag_name) ||
+      CustomElement::ShouldCreateCustomizedBuiltinElement(tag_name, document))
       << tag_name;
 
   // 5. If definition is non-null, and definition’s name is not equal to

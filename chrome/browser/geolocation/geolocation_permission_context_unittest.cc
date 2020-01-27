@@ -30,8 +30,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_request.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_features.h"
@@ -39,6 +37,8 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/permission_request.h"
+#include "components/permissions/permission_request_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -107,15 +107,15 @@ class GeolocationPermissionContextTests
   void SetUp() override;
   void TearDown() override;
 
-  PermissionRequestID RequestID(int request_id);
-  PermissionRequestID RequestIDForTab(int tab, int request_id);
+  permissions::PermissionRequestID RequestID(int request_id);
+  permissions::PermissionRequestID RequestIDForTab(int tab, int request_id);
 
   void RequestGeolocationPermission(content::WebContents* web_contents,
-                                    const PermissionRequestID& id,
+                                    const permissions::PermissionRequestID& id,
                                     const GURL& requesting_frame,
                                     bool user_gesture);
 
-  void PermissionResponse(const PermissionRequestID& id,
+  void PermissionResponse(const permissions::PermissionRequestID& id,
                           ContentSetting content_setting);
   void CheckPermissionMessageSent(int request_id, bool allowed);
   void CheckPermissionMessageSentForTab(int tab, int request_id, bool allowed);
@@ -157,24 +157,23 @@ class GeolocationPermissionContextTests
   std::map<int, std::pair<int, bool>> responses_;
 };
 
-PermissionRequestID GeolocationPermissionContextTests::RequestID(
+permissions::PermissionRequestID GeolocationPermissionContextTests::RequestID(
     int request_id) {
-  return PermissionRequestID(
+  return permissions::PermissionRequestID(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
       web_contents()->GetMainFrame()->GetRoutingID(), request_id);
 }
 
-PermissionRequestID GeolocationPermissionContextTests::RequestIDForTab(
-    int tab,
-    int request_id) {
-  return PermissionRequestID(
+permissions::PermissionRequestID
+GeolocationPermissionContextTests::RequestIDForTab(int tab, int request_id) {
+  return permissions::PermissionRequestID(
       extra_tabs_[tab]->GetMainFrame()->GetProcess()->GetID(),
       extra_tabs_[tab]->GetMainFrame()->GetRoutingID(), request_id);
 }
 
 void GeolocationPermissionContextTests::RequestGeolocationPermission(
     content::WebContents* web_contents,
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_frame,
     bool user_gesture) {
   geolocation_permission_context_->RequestPermission(
@@ -185,7 +184,7 @@ void GeolocationPermissionContextTests::RequestGeolocationPermission(
 }
 
 void GeolocationPermissionContextTests::PermissionResponse(
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     ContentSetting content_setting) {
   responses_[id.render_process_id()] =
       std::make_pair(id.request_id(), content_setting == CONTENT_SETTING_ALLOW);
@@ -395,7 +394,7 @@ void GeolocationPermissionContextTests::ClosePrompt() {
 base::string16 GeolocationPermissionContextTests::GetPromptText() {
   PermissionRequestManager* manager =
       PermissionRequestManager::FromWebContents(web_contents());
-  PermissionRequest* request = manager->requests_.front();
+  permissions::PermissionRequest* request = manager->requests_.front();
   return base::ASCIIToUTF16(request->GetOrigin().spec()) +
          request->GetMessageTextFragment();
 }

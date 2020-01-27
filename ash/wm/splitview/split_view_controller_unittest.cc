@@ -169,19 +169,10 @@ class SplitViewControllerTest : public MultiDisplayOverviewAndSplitViewTest {
       return;
     split_view_controller()->StopAndShoveAnimatedDivider();
     split_view_controller()->EndResizeImpl();
-    split_view_controller()->EndSplitViewAfterResizingIfAppropriate();
+    split_view_controller()->EndTabletSplitViewAfterResizingIfAppropriate();
   }
 
   void EndSplitView() { split_view_controller()->EndSplitView(); }
-
-  void ToggleOverview() {
-    OverviewController* overview_controller =
-        Shell::Get()->overview_controller();
-    if (overview_controller->InOverviewSession())
-      overview_controller->EndOverview();
-    else
-      overview_controller->StartOverview();
-  }
 
   void LongPressOnOverivewButtonTray() {
     ui::GestureEvent event(0, 0, 0, base::TimeTicks(),

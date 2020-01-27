@@ -73,8 +73,9 @@ _namespace_rewrites = {}
 _auto_imports = {}
 
 _chrome_redirects = {
-  'chrome://resources/polymer/v1_0/': POLYMER_V1_DIR,
-  'chrome://resources/html/': 'ui/webui/resources/html/',
+    'chrome://resources/polymer/v1_0/': POLYMER_V1_DIR,
+    'chrome://resources/html/': 'ui/webui/resources/html/',
+    'chrome://resources/cr_elements/': 'ui/webui/resources/cr_elements/',
 }
 
 _chrome_reverse_redirects = {
@@ -401,10 +402,10 @@ template.innerHTML = `
 <dom-module id="%(style_id)s" assetpath="chrome://resources/">%(html_template)s</dom-module>
 `;
 document.body.appendChild(template.content.cloneNode(true));""" % {
-  'html_template': html_template,
-  'js_imports': '\n'.join(js_imports),
-  'style_id': style_id,
-}
+      'html_template': html_template,
+      'js_imports': '\n'.join(js_imports),
+      'style_id': style_id,
+  }
 
   out_filename = os.path.basename(js_file)
   return js_template, out_filename
@@ -419,9 +420,9 @@ def _process_custom_style(js_file, html_file):
 const $_documentContainer = document.createElement('template');
 $_documentContainer.innerHTML = `%(html_template)s`;
 document.head.appendChild($_documentContainer.content);""" % {
-  'js_imports': '\n'.join(js_imports),
-  'html_template': html_template,
-}
+      'js_imports': '\n'.join(js_imports),
+      'html_template': html_template,
+  }
 
   out_filename = os.path.basename(js_file)
   return js_template, out_filename
@@ -435,9 +436,9 @@ def _process_iron_iconset(js_file, html_file):
 const template = html`%(html_template)s`;
 document.head.appendChild(template.content);
 """ % {
-  'js_imports': '\n'.join(js_imports),
-  'html_template': html_template,
-}
+      'js_imports': '\n'.join(js_imports),
+      'html_template': html_template,
+  }
 
   out_filename = os.path.basename(js_file)
   return js_template, out_filename

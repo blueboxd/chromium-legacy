@@ -123,6 +123,14 @@ export class TabsApiProxy {
 
   /**
    * @param {number} tabId
+   * @param {string} groupId
+   */
+  groupTab(tabId, groupId) {
+    chrome.send('groupTab', [tabId, groupId]);
+  }
+
+  /**
+   * @param {number} tabId
    * @param {number} newIndex
    * @return {!Promise<!ExtensionsApiTab>}
    */
@@ -140,6 +148,11 @@ export class TabsApiProxy {
    */
   setThumbnailTracked(tabId, thumbnailTracked) {
     chrome.send('setThumbnailTracked', [tabId, thumbnailTracked]);
+  }
+
+  /** @param {number} tabId */
+  ungroupTab(tabId) {
+    chrome.send('ungroupTab', [tabId]);
   }
 }
 

@@ -12,7 +12,8 @@
 #include "base/callback_list.h"
 #include "base/macros.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
+
+class ChromeBrowserState;
 
 namespace signin {
 class IdentityManager;
@@ -30,7 +31,7 @@ namespace synced_sessions {
 class SyncedSessionsObserverBridge : public signin::IdentityManager::Observer {
  public:
   SyncedSessionsObserverBridge(id<SyncedSessionsObserver> owner,
-                               ios::ChromeBrowserState* browserState);
+                               ChromeBrowserState* browserState);
   ~SyncedSessionsObserverBridge() override;
   // signin::IdentityManager::Observer implementation.
   void OnPrimaryAccountCleared(

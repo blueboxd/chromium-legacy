@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
-#include "gpu/config/skia_limits.h"
 #include "gpu/vulkan/buildflags.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
@@ -17,10 +16,11 @@ namespace viz {
 
 scoped_refptr<VulkanInProcessContextProvider>
 VulkanInProcessContextProvider::Create(
-    gpu::VulkanImplementation* vulkan_implementation) {
+    gpu::VulkanImplementation* vulkan_implementation,
+    const GrContextOptions& options) {
   scoped_refptr<VulkanInProcessContextProvider> context_provider(
       new VulkanInProcessContextProvider(vulkan_implementation));
-  if (!context_provider->Initialize())
+  if (!context_provider->Initialize(options))
     return nullptr;
   return context_provider;
 }
@@ -44,7 +44,8 @@ VulkanInProcessContextProvider::~VulkanInProcessContextProvider() {
   Destroy();
 }
 
-bool VulkanInProcessContextProvider::Initialize() {
+bool VulkanInProcessContextProvider::Initialize(
+    const GrContextOptions& context_options) {
   DCHECK(!device_queue_);
 
   const auto& instance_extensions = vulkan_implementation_->GetVulkanInstance()
@@ -99,18 +100,7 @@ bool VulkanInProcessContextProvider::Initialize() {
       vulkan_implementation_->enforce_protected_memory() ? GrProtected::kYes
                                                          : GrProtected::kNo;
 
-  size_t max_resource_cache_bytes;
-  size_t max_glyph_cache_texture_bytes;
-  gpu::DetermineGrCacheLimitsFromAvailableMemory(
-      &max_resource_cache_bytes, &max_glyph_cache_texture_bytes);
-
-  GrContextOptions context_options;
-  context_options.fGlyphCacheTextureMaximumBytes =
-      max_glyph_cache_texture_bytes;
-
   gr_context_ = GrContext::MakeVulkan(backend_context, context_options);
-  if (gr_context_)
-    gr_context_->setResourceCacheLimit(max_resource_cache_bytes);
 
   return gr_context_ != nullptr;
 }

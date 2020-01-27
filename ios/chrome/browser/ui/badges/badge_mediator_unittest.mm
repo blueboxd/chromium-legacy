@@ -122,7 +122,7 @@ class BadgeMediatorTest : public testing::TestWithParam<TestParam> {
     return GetParam() == TestParam::kOffTheRecord;
   }
   // Returns the BrowserState to use for the test fixture.
-  ios::ChromeBrowserState* browser_state() {
+  ChromeBrowserState* browser_state() {
     return is_off_the_record()
                ? browser_state_->GetOffTheRecordChromeBrowserState()
                : browser_state_.get();
@@ -149,7 +149,7 @@ class BadgeMediatorTest : public testing::TestWithParam<TestParam> {
   base::test::ScopedFeatureList feature_list_;
   base::test::TaskEnvironment environment_;
   FakeBadgeConsumer* badge_consumer_;
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
   std::unique_ptr<Browser> browser_;

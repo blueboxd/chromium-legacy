@@ -56,6 +56,7 @@ class DialogDelegate : public ui::WebDialogDelegate {
   void OnDialogClosed(const std::string& json_retval) override;
   void OnCloseContents(content::WebContents* source,
                        bool* out_close_dialog) override;
+  bool ShouldCloseDialogOnEscape() const override;
   bool ShouldShowDialogTitle() const override;
   bool ShouldCenterDialogTitleText() const override;
 

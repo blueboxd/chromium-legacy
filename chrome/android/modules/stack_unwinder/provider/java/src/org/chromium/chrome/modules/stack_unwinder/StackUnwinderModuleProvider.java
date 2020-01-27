@@ -4,33 +4,23 @@
 
 package org.chromium.chrome.modules.stack_unwinder;
 
-import org.chromium.components.module_installer.engine.InstallListener;
+import org.chromium.base.annotations.CalledByNative;
 
 /** Installs and loads the stack unwinder module. */
 public class StackUnwinderModuleProvider {
     /** Returns true if the module is installed. */
+    @CalledByNative
     public static boolean isModuleInstalled() {
         return StackUnwinderModule.isInstalled();
     }
 
     /**
-     * Installs the module.
+     * Installs the module asynchronously.
      *
      * Can only be called if the module is not installed.
-     *
-     * @param listener Called when the install has finished.
      */
-    public static void installModule(InstallListener listener) {
-        StackUnwinderModule.install(listener);
-    }
-
-    /**
-     * Returns the stack unwinder provider from inside the module.
-     *
-     * Can only be called if the module is installed. Maps native resources into memory on first
-     * call.
-     */
-    public static StackUnwinderProvider getStackUnwinderProvider() {
-        return StackUnwinderModule.getImpl();
+    @CalledByNative
+    public static void installModule() {
+        StackUnwinderModule.install((boolean success) -> {});
     }
 }

@@ -205,8 +205,9 @@ void TypingCommand::DeleteSelection(Document& document, Options options) {
       ->Apply();
 }
 
-void TypingCommand::DeleteSelectionIfRange(const VisibleSelection& selection,
-                                           EditingState* editing_state) {
+void TypingCommand::DeleteSelectionIfRange(
+    const SelectionForUndoStep& selection,
+    EditingState* editing_state) {
   if (!selection.IsRange())
     return;
   // Although the 'selection' to delete is indeed a Range, it may have been
@@ -785,8 +786,8 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
     return;
 
   if (EndingSelection().IsRange()) {
-    DeleteKeyPressedInternal(EndingVisibleSelection(), EndingSelection(),
-                             kill_ring, editing_state);
+    DeleteKeyPressedInternal(EndingSelection(), EndingSelection(), kill_ring,
+                             editing_state);
     return;
   }
 
@@ -894,7 +895,7 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
   if (!StartingSelection().IsRange() ||
       selection_to_delete.Base() != StartingSelection().Start()) {
     DeleteKeyPressedInternal(
-        selection_to_delete,
+        SelectionForUndoStep::From(selection_to_delete.AsSelection()),
         SelectionForUndoStep::From(selection_to_delete.AsSelection()),
         kill_ring, editing_state);
     return;
@@ -908,12 +909,13 @@ void TypingCommand::DeleteKeyPressed(TextGranularity granularity,
               CreateVisiblePosition(selection_to_delete.Extent())
                   .DeepEquivalent())
           .Build();
-  DeleteKeyPressedInternal(selection_to_delete, selection_after_undo, kill_ring,
-                           editing_state);
+  DeleteKeyPressedInternal(
+      SelectionForUndoStep::From(selection_to_delete.AsSelection()),
+      selection_after_undo, kill_ring, editing_state);
 }
 
 void TypingCommand::DeleteKeyPressedInternal(
-    const VisibleSelection& selection_to_delete,
+    const SelectionForUndoStep& selection_to_delete,
     const SelectionForUndoStep& selection_after_undo,
     bool kill_ring,
     EditingState* editing_state) {
@@ -927,9 +929,10 @@ void TypingCommand::DeleteKeyPressedInternal(
   LocalFrame* frame = GetDocument().GetFrame();
   DCHECK(frame);
 
-  if (kill_ring)
-    frame->GetEditor().AddToKillRing(
-        selection_to_delete.ToNormalizedEphemeralRange());
+  if (kill_ring) {
+    frame->GetEditor().AddToKillRing(CreateVisibleSelection(selection_to_delete)
+                                         .ToNormalizedEphemeralRange());
+  }
   // On Mac, make undo select everything that has been deleted, unless an undo
   // will undo more than just this deletion.
   // FIXME: This behaves like TextEdit except for the case where you open with
@@ -969,7 +972,7 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
     return;
 
   if (EndingSelection().IsRange()) {
-    ForwardDeleteKeyPressedInternal(EndingVisibleSelection(), EndingSelection(),
+    ForwardDeleteKeyPressedInternal(EndingSelection(), EndingSelection(),
                                     kill_ring, editing_state);
     return;
   }
@@ -1041,7 +1044,7 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
       MostBackwardCaretPosition(selection_to_delete.Base()) !=
           StartingSelection().Start()) {
     ForwardDeleteKeyPressedInternal(
-        selection_to_delete,
+        SelectionForUndoStep::From(selection_to_delete.AsSelection()),
         SelectionForUndoStep::From(selection_to_delete.AsSelection()),
         kill_ring, editing_state);
     return;
@@ -1054,12 +1057,13 @@ void TypingCommand::ForwardDeleteKeyPressed(TextGranularity granularity,
               ComputeExtentForForwardDeleteUndo(selection_to_delete,
                                                 StartingSelection().End()))
           .Build();
-  ForwardDeleteKeyPressedInternal(selection_to_delete, selection_after_undo,
-                                  kill_ring, editing_state);
+  ForwardDeleteKeyPressedInternal(
+      SelectionForUndoStep::From(selection_to_delete.AsSelection()),
+      selection_after_undo, kill_ring, editing_state);
 }
 
 void TypingCommand::ForwardDeleteKeyPressedInternal(
-    const VisibleSelection& selection_to_delete,
+    const SelectionForUndoStep& selection_to_delete,
     const SelectionForUndoStep& selection_after_undo,
     bool kill_ring,
     EditingState* editing_state) {
@@ -1073,9 +1077,10 @@ void TypingCommand::ForwardDeleteKeyPressedInternal(
   LocalFrame* frame = GetDocument().GetFrame();
   DCHECK(frame);
 
-  if (kill_ring)
-    frame->GetEditor().AddToKillRing(
-        selection_to_delete.ToNormalizedEphemeralRange());
+  if (kill_ring) {
+    frame->GetEditor().AddToKillRing(CreateVisibleSelection(selection_to_delete)
+                                         .ToNormalizedEphemeralRange());
+  }
   // Make undo select what was deleted on Mac alone
   if (frame->GetEditor().Behavior().ShouldUndoOfDeleteSelectText())
     SetStartingSelection(selection_after_undo);

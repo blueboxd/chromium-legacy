@@ -60,6 +60,7 @@ if (is_mac) {
       "//base",
       "//components/crash/core/common:crash_key",
       "//components/metal_util",
+      "//gpu/config",
       "//ui/gfx",
       "//ui/gl",
     ]
@@ -96,7 +97,6 @@ if (enable_vulkan) {
 
     deps = [
       "//base",
-      "//gpu/config",
       "//gpu/vulkan",
       "//gpu/vulkan:buildflags",
       "//ui/gfx",

@@ -5,4 +5,7 @@
 package org.chromium.weblayer_private.interfaces;
 
 /** Keys for the Bundle of arguments with which BrowserFragments are created. */
-public interface BrowserFragmentArgs { String PROFILE_NAME = "profile_name"; }
+public interface BrowserFragmentArgs {
+    String PROFILE_NAME = "profile_name";
+    String PERSISTENCE_ID = "persistence_id";
+}

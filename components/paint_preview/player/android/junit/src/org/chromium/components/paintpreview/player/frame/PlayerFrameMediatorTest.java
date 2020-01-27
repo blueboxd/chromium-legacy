@@ -7,6 +7,7 @@ package org.chromium.components.paintpreview.player.frame;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.os.Parcel;
 import android.util.Pair;
 import android.view.View;
 
@@ -17,6 +18,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
 import org.chromium.base.Callback;
+import org.chromium.base.UnguessableToken;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.paintpreview.player.PlayerCompositorDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -30,25 +32,37 @@ import java.util.List;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 public class PlayerFrameMediatorTest {
-    private static final long FRAME_GUID = 123321L;
     private static final int CONTENT_WIDTH = 560;
     private static final int CONTENT_HEIGHT = 1150;
 
+    private UnguessableToken mFrameGuid;
     private PropertyModel mModel;
     private TestPlayerCompositorDelegate mCompositorDelegate;
     private PlayerFrameMediator mMediator;
 
     /**
+     * Generate an UnguessableToken with a static value.
+     */
+    private UnguessableToken frameGuid() {
+        // Use a parcel for testing to avoid calling the normal native constructor.
+        Parcel parcel = Parcel.obtain();
+        parcel.writeLong(123321L);
+        parcel.writeLong(987654L);
+        parcel.setDataPosition(0);
+        return UnguessableToken.CREATOR.createFromParcel(parcel);
+    }
+
+    /**
      * Used for keeping track of all bitmap requests that {@link PlayerFrameMediator} makes.
      */
     private class RequestedBitmap {
-        long mFrameGuid;
+        UnguessableToken mFrameGuid;
         Rect mClipRect;
         float mScaleFactor;
         Callback<Bitmap> mBitmapCallback;
         Runnable mErrorCallback;
 
-        public RequestedBitmap(long frameGuid, Rect clipRect, float scaleFactor,
+        public RequestedBitmap(UnguessableToken frameGuid, Rect clipRect, float scaleFactor,
                 Callback<Bitmap> bitmapCallback, Runnable errorCallback) {
             this.mFrameGuid = frameGuid;
             this.mClipRect = clipRect;
@@ -57,7 +71,7 @@ public class PlayerFrameMediatorTest {
             this.mErrorCallback = errorCallback;
         }
 
-        public RequestedBitmap(long frameGuid, Rect clipRect, float scaleFactor) {
+        public RequestedBitmap(UnguessableToken frameGuid, Rect clipRect, float scaleFactor) {
             this.mFrameGuid = frameGuid;
             this.mClipRect = clipRect;
             this.mScaleFactor = scaleFactor;
@@ -90,22 +104,23 @@ public class PlayerFrameMediatorTest {
         List<RequestedBitmap> mRequestedBitmap = new ArrayList<>();
 
         @Override
-        public void requestBitmap(long frameGuid, Rect clipRect, float scaleFactor,
+        public void requestBitmap(UnguessableToken frameGuid, Rect clipRect, float scaleFactor,
                 Callback<Bitmap> bitmapCallback, Runnable errorCallback) {
             mRequestedBitmap.add(new RequestedBitmap(
                     frameGuid, new Rect(clipRect), scaleFactor, bitmapCallback, errorCallback));
         }
 
         @Override
-        public void onClick(long frameGuid, Point point) {}
+        public void onClick(UnguessableToken frameGuid, Point point) {}
     }
 
     @Before
     public void setUp() {
+        mFrameGuid = frameGuid();
         mModel = new PropertyModel.Builder(PlayerFrameProperties.ALL_KEYS).build();
         mCompositorDelegate = new TestPlayerCompositorDelegate();
         mMediator = new PlayerFrameMediator(
-                mModel, mCompositorDelegate, FRAME_GUID, CONTENT_WIDTH, CONTENT_HEIGHT);
+                mModel, mCompositorDelegate, mFrameGuid, CONTENT_WIDTH, CONTENT_HEIGHT);
     }
 
     /**
@@ -143,7 +158,7 @@ public class PlayerFrameMediatorTest {
         // Since the current view port fully matches the top left bitmap tile, that should be the
         // only requested bitmap.
         List<RequestedBitmap> expectedRequestedBitmaps = new ArrayList<>();
-        expectedRequestedBitmaps.add(new RequestedBitmap(FRAME_GUID, new Rect(0, 0, 100, 200), 1f));
+        expectedRequestedBitmaps.add(new RequestedBitmap(mFrameGuid, new Rect(0, 0, 100, 200), 1f));
         Assert.assertEquals(expectedRequestedBitmaps, mCompositorDelegate.mRequestedBitmap);
 
         mMediator.scrollBy(10, 20);
@@ -155,11 +170,11 @@ public class PlayerFrameMediatorTest {
         // The current viewport covers portions of 4 adjacent bitmap tiles. Make sure requests for
         // compositing those bitmap tiles are made.
         expectedRequestedBitmaps.add(
-                new RequestedBitmap(FRAME_GUID, new Rect(0, 200, 100, 400), 1f));
+                new RequestedBitmap(mFrameGuid, new Rect(0, 200, 100, 400), 1f));
         expectedRequestedBitmaps.add(
-                new RequestedBitmap(FRAME_GUID, new Rect(100, 0, 200, 200), 1f));
+                new RequestedBitmap(mFrameGuid, new Rect(100, 0, 200, 200), 1f));
         expectedRequestedBitmaps.add(
-                new RequestedBitmap(FRAME_GUID, new Rect(100, 200, 200, 400), 1f));
+                new RequestedBitmap(mFrameGuid, new Rect(100, 200, 200, 400), 1f));
         Assert.assertEquals(expectedRequestedBitmaps, mCompositorDelegate.mRequestedBitmap);
 
         // Move the view port slightly. It is still covered by the same 4 tiles. Since there were
@@ -174,13 +189,13 @@ public class PlayerFrameMediatorTest {
         Assert.assertEquals(expectedViewPort, mModel.get(PlayerFrameProperties.VIEWPORT));
 
         expectedRequestedBitmaps.add(
-                new RequestedBitmap(FRAME_GUID, new Rect(400, 800, 500, 1000), 1f));
+                new RequestedBitmap(mFrameGuid, new Rect(400, 800, 500, 1000), 1f));
         expectedRequestedBitmaps.add(
-                new RequestedBitmap(FRAME_GUID, new Rect(400, 1000, 500, 1200), 1f));
+                new RequestedBitmap(mFrameGuid, new Rect(400, 1000, 500, 1200), 1f));
         expectedRequestedBitmaps.add(
-                new RequestedBitmap(FRAME_GUID, new Rect(500, 800, 600, 1000), 1f));
+                new RequestedBitmap(mFrameGuid, new Rect(500, 800, 600, 1000), 1f));
         expectedRequestedBitmaps.add(
-                new RequestedBitmap(FRAME_GUID, new Rect(500, 1000, 600, 1200), 1f));
+                new RequestedBitmap(mFrameGuid, new Rect(500, 1000, 600, 1200), 1f));
         Assert.assertEquals(expectedRequestedBitmaps, mCompositorDelegate.mRequestedBitmap);
     }
 
@@ -211,13 +226,13 @@ public class PlayerFrameMediatorTest {
         // Assert that there are the only 4 total bitmap requests, i.e. we didn't request for the
         // tile at [0][0] again.
         List<RequestedBitmap> expectedRequestedBitmaps = new ArrayList<>();
-        expectedRequestedBitmaps.add(new RequestedBitmap(FRAME_GUID, new Rect(0, 0, 150, 200), 1f));
+        expectedRequestedBitmaps.add(new RequestedBitmap(mFrameGuid, new Rect(0, 0, 150, 200), 1f));
         expectedRequestedBitmaps.add(
-                new RequestedBitmap(FRAME_GUID, new Rect(0, 200, 150, 400), 1f));
+                new RequestedBitmap(mFrameGuid, new Rect(0, 200, 150, 400), 1f));
         expectedRequestedBitmaps.add(
-                new RequestedBitmap(FRAME_GUID, new Rect(150, 0, 300, 200), 1f));
+                new RequestedBitmap(mFrameGuid, new Rect(150, 0, 300, 200), 1f));
         expectedRequestedBitmaps.add(
-                new RequestedBitmap(FRAME_GUID, new Rect(150, 200, 300, 400), 1f));
+                new RequestedBitmap(mFrameGuid, new Rect(150, 200, 300, 400), 1f));
         Assert.assertEquals(expectedRequestedBitmaps, mCompositorDelegate.mRequestedBitmap);
 
         // Mock a compositing failure for the second request.
@@ -227,7 +242,7 @@ public class PlayerFrameMediatorTest {
         // compositing failure.
         mMediator.scrollBy(10, 10);
         expectedRequestedBitmaps.add(
-                new RequestedBitmap(FRAME_GUID, new Rect(0, 200, 150, 400), 1f));
+                new RequestedBitmap(mFrameGuid, new Rect(0, 200, 150, 400), 1f));
         Assert.assertEquals(expectedRequestedBitmaps, mCompositorDelegate.mRequestedBitmap);
     }
 

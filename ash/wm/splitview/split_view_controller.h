@@ -320,7 +320,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
 
   // Ends split view if |ShouldEndTabletSplitViewAfterResizing| returns true.
   // Handles extra details associated with dragging the divider off the screen.
-  void EndSplitViewAfterResizingIfAppropriate();
+  void EndTabletSplitViewAfterResizingIfAppropriate();
 
   // After resizing, if we should end split view mode, returns the window that
   // needs to be activated. Returns nullptr if there is no such window.

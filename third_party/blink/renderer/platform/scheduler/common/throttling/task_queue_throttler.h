@@ -143,7 +143,6 @@ class PLATFORM_EXPORT TaskQueueThrottler : public BudgetPoolController {
     bool DecrementRefCount();
 
     // TaskQueue::Observer implementation:
-    void OnPostTask(base::Location from_here, base::TimeDelta delay) override;
     void OnQueueNextWakeUpChanged(base::TimeTicks wake_up) override;
 
     size_t throttling_ref_count() const { return throttling_ref_count_; }
@@ -157,6 +156,8 @@ class PLATFORM_EXPORT TaskQueueThrottler : public BudgetPoolController {
     TaskQueueThrottler* const throttler_;
     size_t throttling_ref_count_ = 0;
     HashSet<BudgetPool*> budget_pools_;
+
+    DISALLOW_COPY_AND_ASSIGN(Metadata);
   };
 
   using TaskQueueMap =

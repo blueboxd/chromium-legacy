@@ -31,10 +31,6 @@ const service_manager::Manifest& GetCastContentBrowserOverlayManifest() {
                           service_manager::Manifest::InterfaceList<
                               chromecast::media::mojom::MediaCaps,
                               chromecast::mojom::MemoryPressureController>())
-        .ExposeInterfaceFilterCapability_Deprecated(
-            "navigation:frame", "renderer",
-            service_manager::Manifest::InterfaceList<
-                mojom::ApplicationMediaCapabilities>())
         .Build()
 #if defined(USE_INTERNAL_OVERLAY_MANIFESTS)
         .Amend(cast_content_browser_internal_manifest_overlay::GetManifest())

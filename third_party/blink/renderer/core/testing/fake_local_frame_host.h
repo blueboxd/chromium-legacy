@@ -64,6 +64,15 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void ForwardResourceTimingToParent(
       mojom::blink::ResourceTimingInfoPtr timing) override;
   void DidFinishDocumentLoad() override;
+  void RunModalAlertDialog(const WTF::String& alert_message,
+                           RunModalAlertDialogCallback callback) override;
+  void RunModalConfirmDialog(const WTF::String& alert_message,
+                             RunModalConfirmDialogCallback callback) override;
+  void RunModalPromptDialog(const WTF::String& alert_message,
+                            const WTF::String& default_value,
+                            RunModalPromptDialogCallback callback) override;
+  void RunBeforeUnloadConfirm(bool is_reload,
+                              RunBeforeUnloadConfirmCallback callback) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

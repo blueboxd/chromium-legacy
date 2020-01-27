@@ -21,11 +21,8 @@ int TestLauncherDelegateImpl::RunTestSuite(int argc, char** argv) {
   return test_suite.Run();
 }
 
-bool TestLauncherDelegateImpl::AdjustChildProcessCommandLine(
-    base::CommandLine* command_line,
-    const base::FilePath& temp_data_dir) {
-  command_line->AppendSwitchPath(switches::kWebLayerUserDataDir, temp_data_dir);
-  return true;
+std::string TestLauncherDelegateImpl::GetUserDataDirectoryCommandLineSwitch() {
+  return switches::kWebLayerUserDataDir;
 }
 
 #if !defined(OS_ANDROID)

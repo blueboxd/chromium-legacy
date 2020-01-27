@@ -54,6 +54,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/peak_gpu_memory_tracker.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -226,6 +227,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
  public:
   using AXTreeSnapshotCallback =
       base::OnceCallback<void(const ui::AXTreeUpdate&)>;
+  using JavaScriptDialogCallback =
+      content::JavaScriptDialogManager::DialogClosedCallback;
 
   // Callback used with IsClipboardPasteAllowed() method.
   using ClipboardPasteAllowed = ContentBrowserClient::ClipboardPasteAllowed;
@@ -259,6 +262,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsDescendantOf(RenderFrameHost*) override;
   int GetFrameTreeNodeId() override;
   base::UnguessableToken GetDevToolsFrameToken() override;
+  base::Optional<base::UnguessableToken> GetEmbeddingToken() override;
   const std::string& GetFrameName() override;
   bool IsFrameDisplayNone() override;
   const base::Optional<gfx::Size>& GetFrameSize() override;
@@ -316,7 +320,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   PauseSubresourceLoading() override;
   void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point&,
-      const blink::MediaPlayerAction& action) override;
+      const blink::mojom::MediaPlayerAction& action) override;
   bool CreateNetworkServiceDefaultFactory(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           default_factory_receiver) override;
@@ -680,12 +684,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void AdvanceFocus(blink::WebFocusType type,
                     RenderFrameProxyHost* source_proxy);
 
-  // Notifies the RenderFrame that the JavaScript message that was shown was
-  // closed by the user.
-  void JavaScriptDialogClosed(IPC::Message* reply_msg,
-                              bool success,
-                              const base::string16& user_input);
-
   // Get the accessibility mode from the delegate and Send a message to the
   // renderer process to change the accessibility mode.
   void UpdateAccessibilityMode();
@@ -907,11 +905,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return frame_host_associated_receiver_;
   }
 
+  // Exposed so that tests can swap the implementation and intercept calls.
   mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>&
   local_frame_host_receiver_for_testing() {
     return local_frame_host_receiver_;
   }
 
+  // Exposed so that tests can swap the implementation and intercept calls.
   mojo::Receiver<blink::mojom::BrowserInterfaceBroker>&
   browser_interface_broker_receiver_for_testing() {
     return broker_receiver_;
@@ -1336,6 +1336,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ForwardResourceTimingToParent(
       blink::mojom::ResourceTimingInfoPtr timing) override;
   void DidFinishDocumentLoad() override;
+  void RunModalAlertDialog(const base::string16& alert_message,
+                           RunModalAlertDialogCallback callback) override;
+  void RunModalConfirmDialog(const base::string16& alert_message,
+                             RunModalConfirmDialogCallback callback) override;
+  void RunModalPromptDialog(const base::string16& alert_message,
+                            const base::string16& default_value,
+                            RunModalPromptDialogCallback callback) override;
+  void RunBeforeUnloadConfirm(bool is_reload,
+                              RunBeforeUnloadConfirmCallback callback) override;
 
  protected:
   friend class RenderFrameHostFactory;
@@ -1486,11 +1495,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnUnloadACK();
   void OnContextMenu(const ContextMenuParams& params);
   void OnVisualStateResponse(uint64_t id);
-  void OnRunJavaScriptDialog(const base::string16& message,
-                             const base::string16& default_prompt,
-                             JavaScriptDialogType dialog_type,
-                             IPC::Message* reply_msg);
-  void OnRunBeforeUnloadConfirm(bool is_reload, IPC::Message* reply_msg);
   void OnDidChangeOpener(int32_t opener_routing_id);
 
   void OnDidChangeFramePolicy(int32_t frame_routing_id,
@@ -1730,10 +1734,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Allows tests to disable the unload event timer to simulate bugs that
   // happen before it fires (to avoid flakiness).
   void DisableUnloadTimerForTesting();
-
-  void SendJavaScriptDialogReply(IPC::Message* reply_msg,
-                                 bool success,
-                                 const base::string16& user_input);
 
   // Creates a NavigationRequest to use for commit. This should only be used
   // when no appropriate NavigationRequest has been found.
@@ -1996,6 +1996,21 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const network::mojom::RedirectMode cross_origin_redirects,
       mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token,
       mojo::PendingRemote<blink::mojom::Blob> data_url_blob);
+
+  // Common handler for displaying a javascript dialog from the Run*Dialog
+  // mojo handlers. This method sets up some initial state before asking the
+  // delegate to create a dialog.
+  void RunJavaScriptDialog(const base::string16& message,
+                           const base::string16& default_prompt,
+                           JavaScriptDialogType dialog_type,
+                           JavaScriptDialogCallback callback);
+
+  // Callback function used to handle the dialog being closed. It will reset
+  // the state in the associated RenderFrameHostImpl and call the associated
+  // callback when done.
+  void JavaScriptDialogClosed(JavaScriptDialogCallback response_callback,
+                              bool success,
+                              const base::string16& user_input);
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //

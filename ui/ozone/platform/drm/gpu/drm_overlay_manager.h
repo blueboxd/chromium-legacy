@@ -46,6 +46,12 @@ class DrmOverlayManager : public OverlayManagerOzone {
       const std::vector<OverlaySurfaceCandidate>& candidates,
       gfx::AcceleratedWidget widget) = 0;
 
+  // Similar to SendOverlayValidationRequest() but instead of calling
+  // UpdateCacheForOverlayCandidates(), returns the result synchronously.
+  virtual std::vector<OverlayStatus> SendOverlayValidationRequestSync(
+      const std::vector<OverlaySurfaceCandidate>& candidates,
+      gfx::AcceleratedWidget widget) = 0;
+
   // Perform basic validation to see if |candidate| is a valid request.
   bool CanHandleCandidate(const OverlaySurfaceCandidate& candidate,
                           gfx::AcceleratedWidget widget) const;

@@ -566,12 +566,6 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
     {"changeHomePage", IDS_SETTINGS_CHANGE_HOME_PAGE},
     {"themesGalleryUrl", IDS_THEMES_GALLERY_URL},
     {"chooseFromWebStore", IDS_SETTINGS_WEB_STORE},
-#if defined(OS_CHROMEOS)
-    {"changePictureTitle", IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE},
-    {"openWallpaperApp", IDS_OS_SETTINGS_OPEN_WALLPAPER_APP},
-    {"personalizationPageTitle", IDS_OS_SETTINGS_PERSONALIZATION},
-    {"setWallpaper", IDS_OS_SETTINGS_SET_WALLPAPER},
-#endif
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     {"showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS},
 #endif

@@ -225,14 +225,17 @@ class JSONEncoder : public ParserHandler {
         // belonging to this Unicode character into |codepoint|.
         if (ii + num_bytes_left >= chars.size())
           continue;
+        bool invalid_byte_seen = false;
         while (num_bytes_left > 0) {
           c = chars[++ii];
           --num_bytes_left;
           // Check the next byte is a continuation byte, that is 10xx xxxx.
           if ((c & 0xc0) != 0x80)
-            continue;
+            invalid_byte_seen = true;
           codepoint = (codepoint << 6) | (c & 0x3f);
         }
+        if (invalid_byte_seen)
+          continue;
 
         // Disallow overlong encodings for ascii characters, as these
         // would include " and other characters significant to JSON
@@ -246,7 +249,7 @@ class JSONEncoder : public ParserHandler {
         // So, now we transcode to UTF16,
         // using the math described at https://en.wikipedia.org/wiki/UTF-16,
         // for either one or two 16 bit characters.
-        if (codepoint < 0xffff) {
+        if (codepoint <= 0xffff) {
           Emit("\\u");
           PrintHex(static_cast<uint16_t>(codepoint), out_);
           continue;
@@ -752,7 +755,7 @@ class JsonParser {
         // So, now we transcode to UTF16,
         // using the math described at https://en.wikipedia.org/wiki/UTF-16,
         // for either one or two 16 bit characters.
-        if (codepoint < 0xffff) {
+        if (codepoint <= 0xffff) {
           output->push_back(codepoint);
           continue;
         }

@@ -484,8 +484,8 @@ void SurfaceAggregator::EmitSurfaceContent(
         parent_device_scale_factor /
         surface->GetActiveFrame().device_scale_factor();
   }
-  float inverse_extra_content_scale_x = SK_MScalar1 / extra_content_scale_x;
-  float inverse_extra_content_scale_y = SK_MScalar1 / extra_content_scale_y;
+  float inverse_extra_content_scale_x = SK_Scalar1 / extra_content_scale_x;
+  float inverse_extra_content_scale_y = SK_Scalar1 / extra_content_scale_y;
 
   gfx::Transform scaled_quad_to_target_transform(
       source_sqs->quad_to_target_transform);

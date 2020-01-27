@@ -9,7 +9,10 @@
 #include "chrome/browser/permissions/permission_context_base.h"
 
 class GURL;
+
+namespace permissions {
 class PermissionRequestID;
+}
 
 class FlashPermissionContext : public PermissionContextBase {
  public:
@@ -22,7 +25,7 @@ class FlashPermissionContext : public PermissionContextBase {
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       const GURL& embedding_origin) const override;
-  void UpdateTabContext(const PermissionRequestID& id,
+  void UpdateTabContext(const permissions::PermissionRequestID& id,
                         const GURL& requesting_origin,
                         bool allowed) override;
   void UpdateContentSetting(const GURL& requesting_origin,

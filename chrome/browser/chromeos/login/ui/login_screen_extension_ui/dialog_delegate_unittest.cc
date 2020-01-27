@@ -62,6 +62,7 @@ TEST_F(DialogDelegateUnittest, Test) {
   EXPECT_FALSE(delegate->CanResizeDialog());
   EXPECT_TRUE(delegate->ShouldShowDialogTitle());
   EXPECT_TRUE(delegate->ShouldCenterDialogTitleText());
+  EXPECT_FALSE(delegate->ShouldCloseDialogOnEscape());
 
   EXPECT_FALSE(delegate->CanCloseDialog());
   delegate->set_can_close(true);

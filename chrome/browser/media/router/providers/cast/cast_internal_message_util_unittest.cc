@@ -473,16 +473,16 @@ TEST(CastInternalMessageUtilTest, CreateV2Message) {
   })"));
 }
 
-TEST(CastInternalMessageUtilTest, SupportedMediaRequestsToListValue) {
-  EXPECT_THAT(SupportedMediaRequestsToListValue(0), IsJson("[]"));
-  EXPECT_THAT(SupportedMediaRequestsToListValue(1), IsJson("[\"pause\"]"));
-  EXPECT_THAT(SupportedMediaRequestsToListValue(2), IsJson("[\"seek\"]"));
-  EXPECT_THAT(SupportedMediaRequestsToListValue(4),
+TEST(CastInternalMessageUtilTest, SupportedMediaCommandsToListValue) {
+  EXPECT_THAT(SupportedMediaCommandsToListValue(0), IsJson("[]"));
+  EXPECT_THAT(SupportedMediaCommandsToListValue(1), IsJson("[\"pause\"]"));
+  EXPECT_THAT(SupportedMediaCommandsToListValue(2), IsJson("[\"seek\"]"));
+  EXPECT_THAT(SupportedMediaCommandsToListValue(4),
               IsJson("[\"stream_volume\"]"));
-  EXPECT_THAT(SupportedMediaRequestsToListValue(8),
+  EXPECT_THAT(SupportedMediaCommandsToListValue(8),
               IsJson("[\"stream_mute\"]"));
   EXPECT_THAT(
-      SupportedMediaRequestsToListValue(15),
+      SupportedMediaCommandsToListValue(15),
       IsJson("[\"pause\", \"seek\", \"stream_volume\", \"stream_mute\"]"));
 }
 

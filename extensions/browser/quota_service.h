@@ -21,7 +21,6 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -174,9 +173,8 @@ class QuotaLimitHeuristic {
     DISALLOW_COPY_AND_ASSIGN(SingletonBucketMapper);
   };
 
-  // Ownership of |map| is given to the new QuotaLimitHeuristic.
   QuotaLimitHeuristic(const Config& config,
-                      BucketMapper* map,
+                      std::unique_ptr<BucketMapper> map,
                       const std::string& name);
   virtual ~QuotaLimitHeuristic();
 
@@ -202,7 +200,7 @@ class QuotaLimitHeuristic {
 
   const Config config_;
 
-  // The mapper used in Map. Cannot be NULL.
+  // The mapper used in Map. Cannot be null.
   std::unique_ptr<BucketMapper> bucket_mapper_;
 
   // The name of the heuristic for formatting error messages.
@@ -215,8 +213,10 @@ class QuotaLimitHeuristic {
 // a given period of time; e.g "no more than 100 events in an hour".
 class QuotaService::TimedLimit : public QuotaLimitHeuristic {
  public:
-  TimedLimit(const Config& config, BucketMapper* map, const std::string& name)
-      : QuotaLimitHeuristic(config, map, name) {}
+  TimedLimit(const Config& config,
+             std::unique_ptr<BucketMapper> map,
+             const std::string& name)
+      : QuotaLimitHeuristic(config, std::move(map), name) {}
   bool Apply(Bucket* bucket, const base::TimeTicks& event_time) override;
 };
 

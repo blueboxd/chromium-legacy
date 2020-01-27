@@ -53,6 +53,7 @@ class StubInstalledAppProvider : public blink::mojom::InstalledAppProvider {
   // InstalledAppProvider overrides:
   void FilterInstalledApps(
       std::vector<blink::mojom::RelatedApplicationPtr> related_apps,
+      const GURL& manifest_url,
       FilterInstalledAppsCallback callback) override {
     std::move(callback).Run(std::vector<blink::mojom::RelatedApplicationPtr>());
   }

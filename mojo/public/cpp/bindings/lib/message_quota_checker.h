@@ -6,11 +6,13 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_MESSAGE_QUOTA_CHECKER_H_
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/component_export.h"
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
@@ -39,6 +41,35 @@ namespace internal {
 class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MessageQuotaChecker
     : public base::RefCountedThreadSafe<MessageQuotaChecker> {
  public:
+  // A helper class to maintain a decaying average for the rate of events per
+  // sampling interval over time.
+  class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) DecayingRateAverage {
+   public:
+    DecayingRateAverage();
+
+    // Accrues one event at time |when|. Note that |when| must increase
+    // monotonically from one event to the next.
+    void AccrueEvent(base::TimeTicks when);
+    // Retrieves the current rate average, decayed to |when|.
+    double GetDecayedRateAverage(base::TimeTicks when) const;
+
+    // The length of a sampling interval in seconds.
+    static constexpr size_t kSecondsPerSamplingInterval = 5;
+
+   private:
+    // A new sample is weighed at this rate into the average, whereas the old
+    // average is weighed at (1-kSampleWeight)^age;
+    static constexpr double kSampleWeight = 0.5;
+
+    // The event count for the current or most recent sampling interval.
+    size_t events_ = 0;
+    int64_t events_sampling_interval_;
+
+    // The so-far accrued average and the sampling interval it covers.
+    double decayed_average_ = 0.0;
+    int64_t decayed_average_sampling_interval_;
+  };
+
   // Returns a new instance if this invocation has been sampled for quota
   // checking.
   static scoped_refptr<MessageQuotaChecker> MaybeCreate();
@@ -79,15 +110,26 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MessageQuotaChecker
 
   const Configuration* config_;
 
+  // The time ticks when this instance was created.
+  const base::TimeTicks creation_time_;
+
   // Locks all local state.
   base::Lock lock_;
+
+  // Cumulative counts for the number of messages enqueued with
+  // |BeforeMessagesEnqueued()| and dequeued with |BeforeMessagesDequeued()|.
+  std::atomic<uint64_t> messages_enqueued_;
+  std::atomic<uint64_t> messages_dequeued_;
+  std::atomic<uint64_t> messages_written_;
+
+  // A decaying average of the rate of call to BeforeWrite per second.
+  DecayingRateAverage write_rate_average_;
+
   // The locally consumed quota, e.g. the difference between the counts passed
   // to |BeforeMessagesEnqueued()| and |BeforeMessagesDequeued()|.
   size_t consumed_quota_ = 0u;
   // The high watermark consumed quota observed.
   size_t max_consumed_quota_ = 0u;
-  // The quota level that triggers a crash dump, or zero to disable crashing.
-  size_t crash_threshold_ = 0u;
   // The message pipe this instance observes, if any.
   MessagePipeHandle message_pipe_;
 };
@@ -98,7 +140,9 @@ struct MessageQuotaChecker::Configuration {
   size_t unread_message_count_quota = 0u;
   size_t crash_threshold = 0u;
   void (*maybe_crash_function)(size_t quota_used,
-                               base::Optional<size_t> message_pipe_quota_used);
+                               base::Optional<size_t> message_pipe_quota_used,
+                               int64_t seconds_since_construction,
+                               double average_write_rate);
 };
 
 }  // namespace internal

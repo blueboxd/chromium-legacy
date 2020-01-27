@@ -21,7 +21,7 @@ struct InspectorPlayerProperty {
 using InspectorPlayerProperties = WebVector<InspectorPlayerProperty>;
 
 struct InspectorPlayerEvent {
-  enum InspectorPlayerEventType { PLAYBACK_EVENT, SYSTEM_EVENT, MESSAGE_EVENT };
+  enum InspectorPlayerEventType { ERROR_EVENT, TRIGGERED_EVENT, MESSAGE_EVENT };
   InspectorPlayerEventType type;
   base::TimeTicks timestamp;
   WebString key;

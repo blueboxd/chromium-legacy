@@ -337,6 +337,15 @@ void ScriptExecutor::FillCardForm(
                                               std::move(callback));
 }
 
+void ScriptExecutor::RetrieveElementFormAndFieldData(
+    const Selector& selector,
+    base::OnceCallback<void(const ClientStatus&,
+                            const autofill::FormData&,
+                            const autofill::FormFieldData&)> callback) {
+  delegate_->GetWebController()->RetrieveElementFormAndFieldData(
+      selector, std::move(callback));
+}
+
 void ScriptExecutor::SelectOption(
     const Selector& selector,
     const std::string& selected_option,

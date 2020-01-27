@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 PASS Has %IteratorPrototype% as prototype
 PASS next() exists and is writable, enumerable, and configurable
-FAIL next() throws TypeError when called on ineligible receiver assert_throws: function "() => {
+FAIL next() throws TypeError when called on ineligible receiver assert_throws_js: function "() => {
     iteratorProto.next.call(new Headers().entries());
   }" did not throw
 FAIL Object.prototype.toString returns correct value assert_equals: expected "[object URLSearchParams Iterator]" but got "[object Iterator]"

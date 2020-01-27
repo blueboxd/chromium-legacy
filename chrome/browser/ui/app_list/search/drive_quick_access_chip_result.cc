@@ -23,12 +23,7 @@ DriveQuickAccessChipResult::DriveQuickAccessChipResult(
     : DriveQuickAccessResult(filepath, relevance, profile) {
   set_id(kDriveQuickAccessChipResultPrefix + filepath.value());
   SetResultType(ResultType::kDriveQuickAccessChip);
-  // TODO(crbug.com/1034842) Add line:
-  // SetDisplayType(DisplayType::kChip);
-  // to replace DisplayType and DisplayLocation setting
-  // once CL:1980331 merged
-  SetDisplayType(DisplayType::kNone);
-  SetDisplayLocation(DisplayLocation::kSuggestionChipContainer);
+  SetDisplayType(DisplayType::kChip);
 }
 
 }  // namespace app_list

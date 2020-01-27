@@ -32,17 +32,14 @@
 namespace autofill {
 class AutofillProfile;
 class CreditCard;
+struct FormData;
+struct FormFieldData;
 }  // namespace autofill
 
 namespace content {
 class WebContents;
 class RenderFrameHost;
 }  // namespace content
-
-namespace autofill {
-struct FormData;
-struct FormFieldData;
-}  // namespace autofill
 
 namespace autofill_assistant {
 struct ClientSettings;
@@ -95,6 +92,15 @@ class WebController {
       const base::string16& cvc,
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&)> callback);
+
+  // Return |FormData| and |FormFieldData| for the element identified with
+  // |selector|. The result is returned asynchronously through |callback|.
+  virtual void RetrieveElementFormAndFieldData(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&,
+                              const autofill::FormData& form_data,
+                              const autofill::FormFieldData& field_data)>
+          callback);
 
   // Select the option given by |selector| and the value of the option to be
   // picked.
@@ -309,6 +315,21 @@ class WebController {
       std::unique_ptr<FillFormInputData> data_to_autofill,
       base::OnceCallback<void(const ClientStatus&)> callback,
       content::RenderFrameHost* container_frame_host,
+      const autofill::FormData& form_data,
+      const autofill::FormFieldData& form_field);
+  void OnFindElementToRetrieveFormAndFieldData(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&,
+                              const autofill::FormData& form_data,
+                              const autofill::FormFieldData& form_field)>
+          callback,
+      const ClientStatus& status,
+      std::unique_ptr<ElementFinder::Result> element_result);
+  void OnGetFormAndFieldDataForRetrieving(
+      base::OnceCallback<void(const ClientStatus&,
+                              const autofill::FormData& form_data,
+                              const autofill::FormFieldData& form_field)>
+          callback,
       const autofill::FormData& form_data,
       const autofill::FormFieldData& form_field);
   void OnFindElementForFocusElement(

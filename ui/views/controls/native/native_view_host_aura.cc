@@ -214,8 +214,8 @@ void NativeViewHostAura::ShowWidget(int x,
   } else {
     gfx::Transform transform = original_transform_;
     if (w > 0 && h > 0 && native_w > 0 && native_h > 0) {
-      transform.Scale(static_cast<SkMScalar>(w) / native_w,
-                      static_cast<SkMScalar>(h) / native_h);
+      transform.Scale(static_cast<SkScalar>(w) / native_w,
+                      static_cast<SkScalar>(h) / native_h);
     }
     // Only set the transform when it is actually different.
     if (transform != host_->native_view()->transform()) {

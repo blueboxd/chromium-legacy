@@ -182,6 +182,7 @@ include_rules = [
   "+components/performance_manager/performance_manager_tab_helper.h",
   "+components/performance_manager/test_support",
   "+components/performance_manager/performance_manager_impl.h",
+  "+components/permissions",
   "+components/pdf/browser",
   "+components/policy",
   "+components/pref_registry",

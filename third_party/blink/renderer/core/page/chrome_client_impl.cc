@@ -149,6 +149,15 @@ const char* DismissalTypeToString(Document::PageDismissalType dismissal_type) {
   return "";
 }
 
+String TruncateDialogMessage(const String& message) {
+  if (message.IsNull())
+    return g_empty_string;
+
+  // 10k ought to be enough for anyone.
+  const wtf_size_t kMaxMessageSize = 10 * 1024;
+  return message.Substring(0, kMaxMessageSize);
+}
+
 }  // namespace
 
 class CompositorAnimationTimeline;
@@ -356,9 +365,10 @@ bool ChromeClientImpl::CanOpenBeforeUnloadConfirmPanel() {
 bool ChromeClientImpl::OpenBeforeUnloadConfirmPanelDelegate(LocalFrame* frame,
                                                             bool is_reload) {
   NotifyPopupOpeningObservers();
-  WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
-  return webframe->Client() &&
-         webframe->Client()->RunModalBeforeUnloadDialog(is_reload);
+  bool success = false;
+  // Synchronous mojo call.
+  frame->GetLocalFrameHostRemote().RunBeforeUnloadConfirm(is_reload, &success);
+  return success;
 }
 
 void ChromeClientImpl::CloseWindowSoon() {
@@ -369,22 +379,20 @@ void ChromeClientImpl::CloseWindowSoon() {
 bool ChromeClientImpl::OpenJavaScriptAlertDelegate(LocalFrame* frame,
                                                    const String& message) {
   NotifyPopupOpeningObservers();
-  WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
-  if (webframe->Client()) {
-    webframe->Client()->RunModalAlertDialog(message);
-    return true;
-  }
-  return false;
+  // Synchronous mojo call.
+  frame->GetLocalFrameHostRemote().RunModalAlertDialog(
+      TruncateDialogMessage(message));
+  return true;
 }
 
 bool ChromeClientImpl::OpenJavaScriptConfirmDelegate(LocalFrame* frame,
                                                      const String& message) {
   NotifyPopupOpeningObservers();
-  WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
-  if (webframe->Client()) {
-    return webframe->Client()->RunModalConfirmDialog(message);
-  }
-  return false;
+  bool success = false;
+  // Synchronous mojo call.
+  frame->GetLocalFrameHostRemote().RunModalConfirmDialog(
+      TruncateDialogMessage(message), &success);
+  return success;
 }
 
 bool ChromeClientImpl::OpenJavaScriptPromptDelegate(LocalFrame* frame,
@@ -392,16 +400,13 @@ bool ChromeClientImpl::OpenJavaScriptPromptDelegate(LocalFrame* frame,
                                                     const String& default_value,
                                                     String& result) {
   NotifyPopupOpeningObservers();
-  WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
-  if (webframe->Client()) {
-    WebString actual_value;
-    bool ok = webframe->Client()->RunModalPromptDialog(message, default_value,
-                                                       &actual_value);
-    if (ok)
-      result = actual_value;
-    return ok;
-  }
-  return false;
+  bool success = false;
+  // Synchronous mojo call.
+  frame->GetLocalFrameHostRemote().RunModalPromptDialog(
+      TruncateDialogMessage(message),
+      default_value.IsNull() ? g_empty_string : default_value, &success,
+      &result);
+  return success;
 }
 bool ChromeClientImpl::TabsToLinks() {
   return web_view_->TabsToLinks();

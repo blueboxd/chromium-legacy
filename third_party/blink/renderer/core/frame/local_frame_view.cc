@@ -889,7 +889,8 @@ void LocalFrameView::UpdateLayout() {
       TRACE_DISABLED_BY_DEFAULT("blink.debug.layout.trees"), "LayoutTree", this,
       TracedLayoutObject::Create(*GetLayoutView(), true));
 
-  GetLayoutView()->Compositor()->DidLayout();
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    GetLayoutView()->Compositor()->DidLayout();
   layout_count_for_testing_++;
 
   if (AXObjectCache* cache = document->ExistingAXObjectCache()) {
@@ -1246,6 +1247,8 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
       layout_view->GetScrollableArea()->ClampScrollOffsetAfterOverflowChange();
     }
 
+    // TODO(pdr): |UsesCompositing()| will be false with CompositeAfterPaint but
+    // do we need to do these updates?
     if (layout_view->UsesCompositing()) {
       layout_view->Layer()->SetNeedsCompositingInputsUpdate();
       SetNeedsPaintPropertyUpdate();
@@ -1448,6 +1451,8 @@ void LocalFrameView::UpdateCompositedSelectionIfNeeded() {
 
 void LocalFrameView::SetNeedsCompositingUpdate(
     CompositingUpdateType update_type) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return;
   if (auto* layout_view = GetLayoutView()) {
     if (frame_->GetDocument()->IsActive())
       layout_view->Compositor()->SetNeedsCompositingUpdate(update_type);

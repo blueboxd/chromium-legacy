@@ -82,11 +82,6 @@ void ChromeSearchResult::SetDisplayIndex(DisplayIndex display_index) {
   SetSearchResultMetadata();
 }
 
-void ChromeSearchResult::SetDisplayLocation(DisplayLocation display_location) {
-  metadata_->display_location = display_location;
-  SetSearchResultMetadata();
-}
-
 void ChromeSearchResult::SetPositionPriority(float position_priority) {
   metadata_->position_priority = position_priority;
   SetSearchResultMetadata();
@@ -94,6 +89,11 @@ void ChromeSearchResult::SetPositionPriority(float position_priority) {
 
 void ChromeSearchResult::SetIsOmniboxSearch(bool is_omnibox_search) {
   metadata_->is_omnibox_search = is_omnibox_search;
+  SetSearchResultMetadata();
+}
+
+void ChromeSearchResult::SetIsRecommendation(bool is_recommendation) {
+  metadata_->is_recommendation = is_recommendation;
   SetSearchResultMetadata();
 }
 

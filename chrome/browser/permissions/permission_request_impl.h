@@ -7,17 +7,17 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_request.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_request.h"
+#include "components/permissions/permission_request_id.h"
 
 class GURL;
 
-// Default implementation of PermissionRequest, it is assumed that the
-// caller owns it and that it can be deleted once the |delete_callback|
-// is executed.
-class PermissionRequestImpl : public PermissionRequest {
+// Default implementation of permissions::PermissionRequest, it is assumed that
+// the caller owns it and that it can be deleted once the |delete_callback| is
+// executed.
+class PermissionRequestImpl : public permissions::PermissionRequest {
  public:
   using PermissionDecidedCallback = base::OnceCallback<void(ContentSetting)>;
 
@@ -30,7 +30,7 @@ class PermissionRequestImpl : public PermissionRequest {
   ~PermissionRequestImpl() override;
 
  private:
-  // PermissionRequest:
+  // permissions::PermissionRequest:
   IconId GetIconId() const override;
 #if defined(OS_ANDROID)
   base::string16 GetTitleText() const override;
@@ -44,8 +44,8 @@ class PermissionRequestImpl : public PermissionRequest {
   void PermissionDenied() override;
   void Cancelled() override;
   void RequestFinished() override;
-  PermissionRequestType GetPermissionRequestType() const override;
-  PermissionRequestGestureType GetGestureType() const override;
+  permissions::PermissionRequestType GetPermissionRequestType() const override;
+  permissions::PermissionRequestGestureType GetGestureType() const override;
   ContentSettingsType GetContentSettingsType() const override;
 
   GURL request_origin_;

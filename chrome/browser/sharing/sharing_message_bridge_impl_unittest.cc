@@ -4,9 +4,12 @@
 
 #include "chrome/browser/sharing/sharing_message_bridge_impl.h"
 
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
+#include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/sync/model/metadata_batch.h"
+#include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,13 +59,15 @@ TEST_F(SharingMessageBridgeTest, ShouldWriteMessagesToProcessor) {
   syncer::EntityData entity_data;
   EXPECT_CALL(*processor(), Put(_, _, _))
       .WillRepeatedly(SaveArgPointeeMove<1>(&entity_data));
-  bridge()->SendSharingMessage(CreateSpecifics("test_payload"));
+  bridge()->SendSharingMessage(CreateSpecifics("test_payload"),
+                               base::DoNothing());
 
   EXPECT_TRUE(entity_data.specifics.has_sharing_message());
   EXPECT_EQ(entity_data.specifics.sharing_message().payload(), "test_payload");
 
   entity_data.specifics.Clear();
-  bridge()->SendSharingMessage(CreateSpecifics("another_payload"));
+  bridge()->SendSharingMessage(CreateSpecifics("another_payload"),
+                               base::DoNothing());
 
   EXPECT_TRUE(entity_data.specifics.has_sharing_message());
   EXPECT_EQ(entity_data.specifics.sharing_message().payload(),
@@ -76,12 +81,69 @@ TEST_F(SharingMessageBridgeTest, ShouldGenerateUniqueStorageKey) {
   EXPECT_CALL(*processor(), Put(_, _, _))
       .WillOnce(SaveArg<0>(&first_storage_key))
       .WillOnce(SaveArg<0>(&second_storage_key));
-  bridge()->SendSharingMessage(CreateSpecifics("payload"));
-  bridge()->SendSharingMessage(CreateSpecifics("another_payload"));
+  bridge()->SendSharingMessage(CreateSpecifics("payload"), base::DoNothing());
+  bridge()->SendSharingMessage(CreateSpecifics("another_payload"),
+                               base::DoNothing());
 
   EXPECT_FALSE(first_storage_key.empty());
   EXPECT_FALSE(second_storage_key.empty());
   EXPECT_NE(first_storage_key, second_storage_key);
+}
+
+TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnSuccess) {
+  std::string storage_key;
+  EXPECT_CALL(*processor(), Put(_, _, _)).WillOnce(SaveArg<0>(&storage_key));
+
+  base::MockCallback<SharingMessageBridge::CommitFinishedCallback> callback;
+  sync_pb::SharingMessageCommitError commit_error;
+  EXPECT_CALL(callback, Run).WillOnce(SaveArg<0>(&commit_error));
+
+  bridge()->SendSharingMessage(CreateSpecifics("payload"), callback.Get());
+
+  // The callback should be called only after committing data.
+  EXPECT_FALSE(commit_error.has_error_code());
+
+  // Mark data as committed.
+  syncer::EntityChangeList change_list;
+  change_list.push_back(syncer::EntityChange::CreateDelete(storage_key));
+  bridge()->ApplySyncChanges(nullptr, std::move(change_list));
+
+  EXPECT_TRUE(commit_error.has_error_code());
+  EXPECT_EQ(commit_error.error_code(),
+            sync_pb::SharingMessageCommitError::NONE);
+  EXPECT_EQ(bridge()->GetCallbacksCountForTesting(), 0u);
+}
+
+TEST_F(SharingMessageBridgeTest, ShouldInvokeCallbackOnFailure) {
+  syncer::EntityData entity_data;
+  EXPECT_CALL(*processor(), Put(_, _, _))
+      .WillRepeatedly(SaveArgPointeeMove<1>(&entity_data));
+
+  base::MockCallback<SharingMessageBridge::CommitFinishedCallback> callback;
+  sync_pb::SharingMessageCommitError commit_error;
+  EXPECT_CALL(callback, Run).WillOnce(SaveArg<0>(&commit_error));
+
+  bridge()->SendSharingMessage(CreateSpecifics("payload"), callback.Get());
+
+  EXPECT_FALSE(entity_data.client_tag_hash.value().empty());
+
+  // The callback should be called only after committing data.
+  EXPECT_FALSE(commit_error.has_error_code());
+
+  syncer::FailedCommitResponseDataList response_list;
+  {
+    syncer::FailedCommitResponseData response;
+    response.client_tag_hash = entity_data.client_tag_hash;
+    response.sharing_message_error.set_error_code(
+        sync_pb::SharingMessageCommitError::PERMISSION_DENIED);
+    response_list.push_back(std::move(response));
+  }
+  bridge()->OnCommitAttemptErrors(response_list);
+
+  EXPECT_TRUE(commit_error.has_error_code());
+  EXPECT_EQ(commit_error.error_code(),
+            sync_pb::SharingMessageCommitError::PERMISSION_DENIED);
+  EXPECT_EQ(bridge()->GetCallbacksCountForTesting(), 0u);
 }
 
 }  // namespace

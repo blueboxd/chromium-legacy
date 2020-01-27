@@ -285,10 +285,10 @@ TEST_F(RTCRtpTransceiverImplTest, ModifyTransceiver) {
 
   // Modify the webrtc transceiver and create a new state object for the
   // modified state.
-  *webrtc_transceiver =
+  webrtc_transceiver->ReplaceWith(
       *CreateWebRtcTransceiver(webrtc_sender, webrtc_receiver, "MidyMacMidface",
                                true, webrtc::RtpTransceiverDirection::kInactive,
-                               webrtc::RtpTransceiverDirection::kSendRecv);
+                               webrtc::RtpTransceiverDirection::kSendRecv));
   RtpTransceiverState modified_transceiver_state =
       CreateTransceiverState(webrtc_transceiver, local_track_adapter->Copy(),
                              remote_track_adapter->Copy());
@@ -353,9 +353,9 @@ TEST_F(RTCRtpTransceiverImplTest, ShallowCopy) {
   // shared internal state.
   {
     // Modify webrtc transceiver to be stopped.
-    *webrtc_transceiver = *CreateWebRtcTransceiver(
+    webrtc_transceiver->ReplaceWith(*CreateWebRtcTransceiver(
         webrtc_sender, webrtc_receiver, base::nullopt, true /* stopped */,
-        webrtc::RtpTransceiverDirection::kSendRecv, base::nullopt);
+        webrtc::RtpTransceiverDirection::kSendRecv, base::nullopt));
     RtpTransceiverState transceiver_state =
         CreateTransceiverState(webrtc_transceiver, local_track_adapter->Copy(),
                                remote_track_adapter->Copy());
@@ -390,10 +390,10 @@ TEST_F(RTCRtpTransceiverImplTest, TransceiverStateUpdateModeSetDescription) {
   // Modify the webrtc transceiver and create a new state object for the
   // modified state.
   webrtc_sender->SetTrack(nullptr);
-  *webrtc_transceiver =
+  webrtc_transceiver->ReplaceWith(
       *CreateWebRtcTransceiver(webrtc_sender, webrtc_receiver, "MidyMacMidface",
                                true, webrtc::RtpTransceiverDirection::kInactive,
-                               webrtc::RtpTransceiverDirection::kSendRecv);
+                               webrtc::RtpTransceiverDirection::kSendRecv));
   RtpTransceiverState modified_transceiver_state =
       CreateTransceiverState(webrtc_transceiver, local_track_adapter->Copy(),
                              remote_track_adapter->Copy());

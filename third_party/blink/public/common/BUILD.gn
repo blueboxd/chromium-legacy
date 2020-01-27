@@ -102,7 +102,6 @@ source_set("headers") {
     "manifest/manifest.h",
     "manifest/manifest_icon_selector.h",
     "manifest/manifest_util.h",
-    "media/media_player_action.h",
     "media/video_capture.h",
     "mediastream/media_devices.h",
     "mediastream/media_devices_mojom_traits.h",

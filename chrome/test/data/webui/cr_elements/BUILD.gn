@@ -24,6 +24,7 @@ js_modulizer("modulize") {
     "cr_policy_indicator_behavior_tests.js",
     "cr_radio_button_test.js",
     "cr_radio_group_test.js",
+    "cr_scrollable_behavior_tests.js",
     "cr_search_field_tests.js",
     "cr_slider_test.js",
     "cr_toolbar_search_field_tests.js",
@@ -45,10 +46,12 @@ js_modulizer("modulize") {
     "MockInteractions.keyUpOn|keyUpOn",
     "MockInteractions.pressAndReleaseKeyOn|pressAndReleaseKeyOn",
     "MockInteractions.tap|tap",
+    "Polymer.Base|Base",
     "Polymer.dom.flush|flush",
     "test_util.eventToPromise|eventToPromise",
     "test_util.flushTasks|flushTasks",
     "test_util.isVisible|isVisible",
+    "test_util.waitBeforeNextRender|waitBeforeNextRender",
     "test_util.whenAttributeIs|whenAttributeIs",
   ]
 

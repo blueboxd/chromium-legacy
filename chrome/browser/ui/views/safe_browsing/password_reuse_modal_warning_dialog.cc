@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/safe_browsing/content/password_protection/metrics_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
@@ -169,11 +170,13 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
             : l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS));
     CreateGaiaPasswordReuseModalWarningDialog(message_body_label);
   }
+  modal_construction_start_time_ = base::TimeTicks::Now();
 }
 
 PasswordReuseModalWarningDialog::~PasswordReuseModalWarningDialog() {
   if (service_)
     service_->RemoveObserver(this);
+  LogModalWarningDialogLifetime(modal_construction_start_time_);
 }
 
 void PasswordReuseModalWarningDialog::

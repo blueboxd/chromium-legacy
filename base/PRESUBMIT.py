@@ -16,6 +16,7 @@ def _CheckNoInterfacesInBase(input_api, output_api):
     if (f.LocalPath().startswith('base/') and
         not "/ios/" in f.LocalPath() and
         not "/test/" in f.LocalPath() and
+        not f.LocalPath().endswith('.java') and
         not f.LocalPath().endswith('_unittest.mm') and
         not f.LocalPath().endswith('mac/sdk_forward_declarations.h')):
       contents = input_api.ReadFile(f)

@@ -32,7 +32,7 @@ class PlayerCompositorDelegateAndroid : public PlayerCompositorDelegate {
   // j_error_callback will be called.
   void RequestBitmap(
       JNIEnv* env,
-      jlong j_frame_guid,
+      const base::android::JavaParamRef<jobject>& j_frame_guid,
       const base::android::JavaParamRef<jobject>& j_bitmap_callback,
       const base::android::JavaParamRef<jobject>& j_error_callback,
       jfloat j_scale_factor,
@@ -42,16 +42,19 @@ class PlayerCompositorDelegateAndroid : public PlayerCompositorDelegate {
       jint j_clip_height);
 
   // Called from Java on touch event on a frame.
-  void OnClick(JNIEnv* env, jlong j_frame_guid, jint j_x, jint j_y);
+  void OnClick(JNIEnv* env,
+               const base::android::JavaParamRef<jobject>& j_frame_guid,
+               jint j_x,
+               jint j_y);
 
   void Destroy(JNIEnv* env);
 
   static void CompositeResponseFramesToVectors(
-      const base::flat_map<uint64_t, mojom::FrameDataPtr>& frames,
-      std::vector<int64_t>* all_guids,
+      const base::flat_map<base::UnguessableToken, mojom::FrameDataPtr>& frames,
+      std::vector<base::UnguessableToken>* all_guids,
       std::vector<int>* scroll_extents,
       std::vector<int>* subframe_count,
-      std::vector<int64_t>* subframe_ids,
+      std::vector<base::UnguessableToken>* subframe_ids,
       std::vector<int>* subframe_rects);
 
  private:

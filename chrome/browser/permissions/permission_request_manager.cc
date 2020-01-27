@@ -20,7 +20,6 @@
 #include "chrome/browser/permissions/contextual_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
-#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
@@ -28,6 +27,7 @@
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "components/permissions/permission_request.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -50,8 +50,8 @@
 
 namespace {
 
-bool IsMessageTextEqual(PermissionRequest* a,
-                        PermissionRequest* b) {
+bool IsMessageTextEqual(permissions::PermissionRequest* a,
+                        permissions::PermissionRequest* b) {
   if (a == b)
     return true;
   if (a->GetMessageTextFragment() == b->GetMessageTextFragment() &&
@@ -63,20 +63,21 @@ bool IsMessageTextEqual(PermissionRequest* a,
 
 // We only group together media requests. We don't display grouped requests for
 // any other permissions at present.
-bool ShouldGroupRequests(PermissionRequest* a, PermissionRequest* b) {
+bool ShouldGroupRequests(permissions::PermissionRequest* a,
+                         permissions::PermissionRequest* b) {
   if (a->GetOrigin() != b->GetOrigin())
     return false;
 
   if (a->GetPermissionRequestType() ==
-      PermissionRequestType::PERMISSION_MEDIASTREAM_MIC) {
+      permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC) {
     return b->GetPermissionRequestType() ==
-           PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA;
+           permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA;
   }
 
   if (a->GetPermissionRequestType() ==
-      PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA) {
+      permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA) {
     return b->GetPermissionRequestType() ==
-           PermissionRequestType::PERMISSION_MEDIASTREAM_MIC;
+           permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC;
   }
 
   return false;
@@ -92,7 +93,8 @@ PermissionRequestManager::~PermissionRequestManager() {
   DCHECK(queued_requests_.empty());
 }
 
-void PermissionRequestManager::AddRequest(PermissionRequest* request) {
+void PermissionRequestManager::AddRequest(
+    permissions::PermissionRequest* request) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDenyPermissionPrompts)) {
     request->PermissionDenied();
@@ -145,7 +147,8 @@ void PermissionRequestManager::AddRequest(PermissionRequest* request) {
 #endif
 
   // Don't re-add an existing request or one with a duplicate text request.
-  PermissionRequest* existing_request = GetExistingRequest(request);
+  permissions::PermissionRequest* existing_request =
+      GetExistingRequest(request);
   if (existing_request) {
     // |request| is a duplicate. Add it to |duplicate_requests_| unless it's the
     // same object as |existing_request| or an existing duplicate.
@@ -299,7 +302,8 @@ void PermissionRequestManager::OnVisibilityChanged(
   }
 }
 
-const std::vector<PermissionRequest*>& PermissionRequestManager::Requests() {
+const std::vector<permissions::PermissionRequest*>&
+PermissionRequestManager::Requests() {
   return requests_;
 }
 
@@ -326,7 +330,7 @@ PermissionRequestManager::GetDisplayNameOrOrigin() {
 
 void PermissionRequestManager::Accept() {
   DCHECK(view_);
-  std::vector<PermissionRequest*>::iterator requests_iter;
+  std::vector<permissions::PermissionRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin(); requests_iter != requests_.end();
        requests_iter++) {
     PermissionGrantedIncludingDuplicates(*requests_iter);
@@ -350,7 +354,7 @@ void PermissionRequestManager::Deny() {
     is_notification_prompt_cooldown_active_ = true;
   }
 
-  std::vector<PermissionRequest*>::iterator requests_iter;
+  std::vector<permissions::PermissionRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin();
        requests_iter != requests_.end();
        requests_iter++) {
@@ -361,7 +365,7 @@ void PermissionRequestManager::Deny() {
 
 void PermissionRequestManager::Closing() {
   DCHECK(view_);
-  std::vector<PermissionRequest*>::iterator requests_iter;
+  std::vector<permissions::PermissionRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin();
        requests_iter != requests_.end();
        requests_iter++) {
@@ -406,7 +410,7 @@ void PermissionRequestManager::DequeueRequestIfNeeded() {
   }
 
   if (requests_.front()->GetPermissionRequestType() ==
-      PermissionRequestType::PERMISSION_NOTIFICATIONS) {
+      permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS) {
     notification_permission_ui_selector_->SelectUiToUse(
         requests_.front(),
         base::BindOnce(
@@ -479,7 +483,7 @@ void PermissionRequestManager::FinalizeBubble(
 
   auto* adaptive_notification_permission_ui_enabler =
       AdaptiveQuietNotificationPermissionUiEnabler::GetForProfile(profile);
-  for (PermissionRequest* request : requests_) {
+  for (permissions::PermissionRequest* request : requests_) {
     // TODO(timloh): We only support dismiss and ignore embargo for permissions
     // which use PermissionRequestImpl as the other subclasses don't support
     // GetContentSettingsType.
@@ -487,7 +491,7 @@ void PermissionRequestManager::FinalizeBubble(
       continue;
 
     if (request->GetPermissionRequestType() ==
-        PermissionRequestType::PERMISSION_NOTIFICATIONS) {
+        permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS) {
       adaptive_notification_permission_ui_enabler
           ->RecordPermissionPromptOutcome(permission_action);
     }
@@ -509,7 +513,7 @@ void PermissionRequestManager::FinalizeBubble(
     }
     PermissionUmaUtil::RecordEmbargoStatus(embargo_status);
   }
-  std::vector<PermissionRequest*>::iterator requests_iter;
+  std::vector<permissions::PermissionRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin();
        requests_iter != requests_.end();
        requests_iter++) {
@@ -530,7 +534,7 @@ void PermissionRequestManager::FinalizeBubble(
 }
 
 void PermissionRequestManager::CleanUpRequests() {
-  for (PermissionRequest* request : queued_requests_)
+  for (permissions::PermissionRequest* request : queued_requests_)
     RequestFinishedIncludingDuplicates(request);
   queued_requests_.clear();
 
@@ -538,13 +542,13 @@ void PermissionRequestManager::CleanUpRequests() {
     FinalizeBubble(PermissionAction::IGNORED);
 }
 
-PermissionRequest* PermissionRequestManager::GetExistingRequest(
-    PermissionRequest* request) {
-  for (PermissionRequest* existing_request : requests_) {
+permissions::PermissionRequest* PermissionRequestManager::GetExistingRequest(
+    permissions::PermissionRequest* request) {
+  for (permissions::PermissionRequest* existing_request : requests_) {
     if (IsMessageTextEqual(existing_request, request))
       return existing_request;
   }
-  for (PermissionRequest* existing_request : queued_requests_) {
+  for (permissions::PermissionRequest* existing_request : queued_requests_) {
     if (IsMessageTextEqual(existing_request, request))
       return existing_request;
   }
@@ -552,7 +556,7 @@ PermissionRequest* PermissionRequestManager::GetExistingRequest(
 }
 
 void PermissionRequestManager::PermissionGrantedIncludingDuplicates(
-    PermissionRequest* request) {
+    permissions::PermissionRequest* request) {
   DCHECK_EQ(request, GetExistingRequest(request))
       << "Only requests in [queued_[frame_]]requests_ can have duplicates";
   request->PermissionGranted();
@@ -562,7 +566,7 @@ void PermissionRequestManager::PermissionGrantedIncludingDuplicates(
 }
 
 void PermissionRequestManager::PermissionDeniedIncludingDuplicates(
-    PermissionRequest* request) {
+    permissions::PermissionRequest* request) {
   DCHECK_EQ(request, GetExistingRequest(request))
       << "Only requests in [queued_]requests_ can have duplicates";
   request->PermissionDenied();
@@ -572,7 +576,7 @@ void PermissionRequestManager::PermissionDeniedIncludingDuplicates(
 }
 
 void PermissionRequestManager::CancelledIncludingDuplicates(
-    PermissionRequest* request) {
+    permissions::PermissionRequest* request) {
   DCHECK_EQ(request, GetExistingRequest(request))
       << "Only requests in [queued_]requests_ can have duplicates";
   request->Cancelled();
@@ -582,7 +586,7 @@ void PermissionRequestManager::CancelledIncludingDuplicates(
 }
 
 void PermissionRequestManager::RequestFinishedIncludingDuplicates(
-    PermissionRequest* request) {
+    permissions::PermissionRequest* request) {
   // We can't call GetExistingRequest here, because other entries in requests_,
   // queued_requests_ might already have been deleted.
   DCHECK_EQ(1, std::count(requests_.begin(), requests_.end(), request) +

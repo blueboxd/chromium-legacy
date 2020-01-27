@@ -9,8 +9,11 @@
 #include "chrome/browser/permissions/permission_context_base.h"
 
 class GURL;
-class PermissionRequestID;
 class Profile;
+
+namespace permissions {
+class PermissionRequestID;
+}
 
 namespace content {
 class WebContents;
@@ -26,7 +29,7 @@ class PaymentHandlerPermissionContext : public PermissionContextBase {
  private:
   // PermissionContextBase
   void DecidePermission(content::WebContents* web_contents,
-                        const PermissionRequestID& id,
+                        const permissions::PermissionRequestID& id,
                         const GURL& requesting_origin,
                         const GURL& embedding_origin,
                         bool user_gesture,

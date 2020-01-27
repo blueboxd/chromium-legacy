@@ -28,7 +28,7 @@ using base::test::ios::WaitUntilConditionOrTimeout;
 namespace {
 
 bool ClearBrowsingData(bool off_the_record, BrowsingDataRemoveMask mask) {
-  ios::ChromeBrowserState* browser_state =
+  ChromeBrowserState* browser_state =
       off_the_record ? chrome_test_util::GetCurrentIncognitoBrowserState()
                      : chrome_test_util::GetOriginalBrowserState();
 
@@ -81,9 +81,9 @@ bool ClearAllWebStateBrowsingData() {
 }
 
 bool ClearCertificatePolicyCache(bool off_the_record) {
-  ios::ChromeBrowserState* browser_state =
-      off_the_record ? GetCurrentIncognitoBrowserState()
-                     : GetOriginalBrowserState();
+  ChromeBrowserState* browser_state = off_the_record
+                                          ? GetCurrentIncognitoBrowserState()
+                                          : GetOriginalBrowserState();
   auto cache = web::BrowserState::GetCertificatePolicyCache(browser_state);
   __block BOOL policies_cleared = NO;
   base::PostTask(FROM_HERE, {web::WebThread::IO}, base::BindOnce(^{

@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "components/download/public/common/download_item.h"
 
 namespace safe_browsing {
@@ -45,9 +46,13 @@ class DownloadItemRequest : public BinaryUploadService::Request,
   void OnGotFileContents(std::string contents);
 
   // Calls to GetFileContents can be deferred if the download item is not yet
-  // renamed to its final location. When ready, this method runs those
-  // callbacks.
-  void RunPendingGetFileContentsCallbacks();
+  // renamed to its final location. When ready, this method runs one of those
+  // callbacks. The callbacks are all run asynchronously, as they may delete
+  // |this|.
+  void RunPendingGetFileContentsCallback(DataCallback callback);
+
+  // Called when the file contents have finished being checked for encryption.
+  void OnCheckedForEncryption(const ArchiveAnalyzerResults& results);
 
   // Pointer the download item for upload. This must be accessed only the UI
   // thread. Unowned.
@@ -56,9 +61,12 @@ class DownloadItemRequest : public BinaryUploadService::Request,
   // The file's data.
   Data data_;
 
-  // Is the |data_| member valid?  It becomes valid once the file has been
+  // Is the |data_| member valid? It becomes valid once the file has been
   // read successfully.
   bool is_data_valid_ = false;
+
+  // Is the |data_| member encrypted?
+  bool is_data_encrypted_ = false;
 
   // All pending callbacks to GetFileContents before the download item is ready.
   std::vector<DataCallback> pending_callbacks_;

@@ -51,7 +51,7 @@ class TestQuietNotificationPermissionUiSelector
 
  protected:
   // NotificationPermissionUiSelector:
-  void SelectUiToUse(PermissionRequest* request,
+  void SelectUiToUse(permissions::PermissionRequest* request,
                      DecisionMadeCallback callback) override {
     std::move(callback).Run(UiToUse::kQuietUi, simulated_reason_for_quiet_ui_);
   }
@@ -160,7 +160,8 @@ void ContentSettingBubbleDialogTest::TriggerQuietNotificationPermissionRequest(
               simulated_reason_for_quiet_ui));
   DCHECK(!notification_permission_request_);
   notification_permission_request_.emplace(
-      "notifications", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      "notifications",
+      permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       GURL("https://example.com"));
   permission_request_manager->AddRequest(&*notification_permission_request_);
   base::RunLoop().RunUntilIdle();

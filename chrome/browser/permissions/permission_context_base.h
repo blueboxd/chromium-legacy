@@ -11,16 +11,19 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/permissions/permission_request.h"
-#include "chrome/browser/permissions/permission_result.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/permissions/permission_request.h"
+#include "components/permissions/permission_result.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 class GURL;
-class PermissionRequestID;
 class Profile;
+
+namespace permissions {
+class PermissionRequestID;
+}
 
 namespace content {
 class RenderFrameHost;
@@ -72,7 +75,7 @@ class PermissionContextBase : public KeyedService {
   // |callback| is called upon resolution of the request, but not if a prompt
   // is shown and ignored.
   virtual void RequestPermission(content::WebContents* web_contents,
-                                 const PermissionRequestID& id,
+                                 const permissions::PermissionRequestID& id,
                                  const GURL& requesting_frame,
                                  bool user_gesture,
                                  BrowserPermissionCallback callback);
@@ -80,7 +83,7 @@ class PermissionContextBase : public KeyedService {
   // Returns whether the permission has been granted, denied etc.
   // |render_frame_host| may be nullptr if the call is coming from a context
   // other than a specific frame.
-  PermissionResult GetPermissionStatus(
+  permissions::PermissionResult GetPermissionStatus(
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       const GURL& embedding_origin) const;
@@ -92,8 +95,8 @@ class PermissionContextBase : public KeyedService {
   // Update |result| with any modifications based on the device state. For
   // example, if |result| is ALLOW but Chrome does not have the relevant
   // permission at the device level, but will prompt the user, return ASK.
-  virtual PermissionResult UpdatePermissionStatusWithDeviceStatus(
-      PermissionResult result,
+  virtual permissions::PermissionResult UpdatePermissionStatusWithDeviceStatus(
+      permissions::PermissionResult result,
       const GURL& requesting_origin,
       const GURL& embedding_origin) const;
 
@@ -115,7 +118,7 @@ class PermissionContextBase : public KeyedService {
   // Called if generic checks (existing content setting, embargo, etc.) fail to
   // resolve a permission request. The default implementation prompts the user.
   virtual void DecidePermission(content::WebContents* web_contents,
-                                const PermissionRequestID& id,
+                                const permissions::PermissionRequestID& id,
                                 const GURL& requesting_origin,
                                 const GURL& embedding_origin,
                                 bool user_gesture,
@@ -123,7 +126,7 @@ class PermissionContextBase : public KeyedService {
 
   // Updates stored content setting if persist is set, updates tab indicators
   // and runs the callback to finish the request.
-  virtual void NotifyPermissionSet(const PermissionRequestID& id,
+  virtual void NotifyPermissionSet(const permissions::PermissionRequestID& id,
                                    const GURL& requesting_origin,
                                    const GURL& embedding_origin,
                                    BrowserPermissionCallback callback,
@@ -132,7 +135,7 @@ class PermissionContextBase : public KeyedService {
 
   // Implementors can override this method to update the icons on the
   // url bar with the result of the new permission.
-  virtual void UpdateTabContext(const PermissionRequestID& id,
+  virtual void UpdateTabContext(const permissions::PermissionRequestID& id,
                                 const GURL& requesting_origin,
                                 bool allowed) {}
 
@@ -159,11 +162,11 @@ class PermissionContextBase : public KeyedService {
   bool PermissionAllowedByFeaturePolicy(content::RenderFrameHost* rfh) const;
 
   // Called when a request is no longer used so it can be cleaned up.
-  void CleanUpRequest(const PermissionRequestID& id);
+  void CleanUpRequest(const permissions::PermissionRequestID& id);
 
   // This is the callback for PermissionRequestImpl and is called once the user
   // allows/blocks/dismisses a permission prompt.
-  void PermissionDecided(const PermissionRequestID& id,
+  void PermissionDecided(const permissions::PermissionRequestID& id,
                          const GURL& requesting_origin,
                          const GURL& embedding_origin,
                          BrowserPermissionCallback callback,
@@ -172,15 +175,17 @@ class PermissionContextBase : public KeyedService {
   // Called when the user has made a permission decision. This is a hook for
   // descendent classes to do appropriate things they might need to do when this
   // happens.
-  virtual void UserMadePermissionDecision(const PermissionRequestID& id,
-                                          const GURL& requesting_origin,
-                                          const GURL& embedding_origin,
-                                          ContentSetting content_setting);
+  virtual void UserMadePermissionDecision(
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      ContentSetting content_setting);
 
   Profile* profile_;
   const ContentSettingsType content_settings_type_;
   const blink::mojom::FeaturePolicyFeature feature_policy_feature_;
-  std::unordered_map<std::string, std::unique_ptr<PermissionRequest>>
+  std::unordered_map<std::string,
+                     std::unique_ptr<permissions::PermissionRequest>>
       pending_requests_;
 
   // Must be the last member, to ensure that it will be

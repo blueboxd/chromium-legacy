@@ -195,18 +195,22 @@ TEST_P(FrameThrottlingTest, IntersectionObservationOverridesThrottling) {
   LayoutView* inner_view = inner_frame_document->View()->GetLayoutView();
 
   inner_view->SetNeedsLayout("test");
-  inner_view->Compositor()->SetNeedsCompositingUpdate(
-      kCompositingUpdateRebuildTree);
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    inner_view->Compositor()->SetNeedsCompositingUpdate(
+        kCompositingUpdateRebuildTree);
+  }
   inner_view->SetShouldDoFullPaintInvalidation(
       PaintInvalidationReason::kForTesting);
   inner_view->Layer()->SetNeedsRepaint();
   EXPECT_TRUE(inner_frame_document->View()
                   ->GetLayoutView()
                   ->ShouldDoFullPaintInvalidation());
-  inner_view->Compositor()->SetNeedsCompositingUpdate(
-      kCompositingUpdateRebuildTree);
-  EXPECT_EQ(kCompositingUpdateRebuildTree,
-            inner_view->Compositor()->pending_update_type_);
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    inner_view->Compositor()->SetNeedsCompositingUpdate(
+        kCompositingUpdateRebuildTree);
+    EXPECT_EQ(kCompositingUpdateRebuildTree,
+              inner_view->Compositor()->pending_update_type_);
+  }
   EXPECT_TRUE(inner_view->Layer()->SelfNeedsRepaint());
 
   CompositeFrame();
@@ -217,8 +221,10 @@ TEST_P(FrameThrottlingTest, IntersectionObservationOverridesThrottling) {
   EXPECT_TRUE(inner_frame_document->View()
                   ->GetLayoutView()
                   ->ShouldDoFullPaintInvalidation());
-  EXPECT_EQ(kCompositingUpdateRebuildTree,
-            inner_view->Compositor()->pending_update_type_);
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    EXPECT_EQ(kCompositingUpdateRebuildTree,
+              inner_view->Compositor()->pending_update_type_);
+  }
   EXPECT_TRUE(inner_view->Layer()->SelfNeedsRepaint());
 }
 

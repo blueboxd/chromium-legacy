@@ -24,6 +24,13 @@ js_library("cr_toast_manager") {
   ]
 }
 
+group("polymer3_elements") {
+  deps = [
+    ":cr_toast_manager_module",
+    ":cr_toast_module",
+  ]
+}
+
 polymer_modulizer("cr_toast") {
   js_file = "cr_toast.js"
   html_file = "cr_toast.html"

@@ -85,7 +85,7 @@ QUIC_FLAG(double, FLAGS_quic_lumpy_pacing_cwnd_fraction, 0.25f)
 
 // Default enables QUIC ack decimation and adds a connection option to disable
 // it.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_ack_decimation, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_ack_decimation, false)
 
 // If true, QUIC offload pacing when using USPS as egress method.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_offload_pacing_to_usps2, false)
@@ -312,9 +312,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q049, false)
 // If true, disable QUIC version Q050.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q050, false)
 
-// If true, enable QUIC version Q099.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_q099, true)
-
 // If true, enable QUIC version T050.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t050, true)
 
@@ -387,7 +384,7 @@ QUIC_FLAG(bool,
 // If true, correctly stop processing bad PROX packets.
 QUIC_FLAG(bool,
           FLAGS_quic_restart_flag_quic_fix_handling_of_bad_prox_packet,
-          false)
+          true)
 
 // The default initial value of the max ack height filter's window length.
 QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_initial_ack_height_filter_window, 10)
@@ -406,3 +403,11 @@ QUIC_FLAG(double, FLAGS_quic_bbr2_default_probe_bw_full_loss_count, 2)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ack_delay_alarm_granularity,
           false)
+
+// If true, enable the 1ACK connection option to only send 1 immediate ACK after
+// reordering.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_immediate_ack, false)
+
+// If true, instead of getting handshake state from sent packet manager, ask
+// session for current handshake state.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_get_handshake_state, false)

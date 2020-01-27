@@ -23,7 +23,25 @@ void DrmOverlayManagerGpu::SendOverlayValidationRequest(
     gfx::AcceleratedWidget widget) {
   TRACE_EVENT_ASYNC_BEGIN0(
       "hwoverlays", "DrmOverlayManagerGpu::SendOverlayValidationRequest", this);
+  SetClearCacheCallbackIfNecessary();
+  drm_thread_proxy_->CheckOverlayCapabilities(
+      widget, candidates,
+      base::BindOnce(&DrmOverlayManagerGpu::ReceiveOverlayValidationResponse,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
 
+std::vector<OverlayStatus>
+DrmOverlayManagerGpu::SendOverlayValidationRequestSync(
+    const std::vector<OverlaySurfaceCandidate>& candidates,
+    gfx::AcceleratedWidget widget) {
+  TRACE_EVENT_ASYNC_BEGIN0(
+      "hwoverlays", "DrmOverlayManagerGpu::SendOverlayValidationRequestSync",
+      this);
+  SetClearCacheCallbackIfNecessary();
+  return drm_thread_proxy_->CheckOverlayCapabilitiesSync(widget, candidates);
+}
+
+void DrmOverlayManagerGpu::SetClearCacheCallbackIfNecessary() {
   // Adds a callback for the DRM thread to let us know when display
   // configuration has changed and to reset cache of valid overlay
   // configurations. This happens in SendOverlayValidationRequest() because the
@@ -35,11 +53,6 @@ void DrmOverlayManagerGpu::SendOverlayValidationRequest(
     drm_thread_proxy_->SetClearOverlayCacheCallback(base::BindRepeating(
         &DrmOverlayManagerGpu::ResetCache, weak_ptr_factory_.GetWeakPtr()));
   }
-
-  drm_thread_proxy_->CheckOverlayCapabilities(
-      widget, candidates,
-      base::BindOnce(&DrmOverlayManagerGpu::ReceiveOverlayValidationResponse,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DrmOverlayManagerGpu::ReceiveOverlayValidationResponse(

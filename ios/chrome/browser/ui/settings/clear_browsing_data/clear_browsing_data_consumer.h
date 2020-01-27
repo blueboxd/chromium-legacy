@@ -8,8 +8,8 @@
 #import <Foundation/Foundation.h>
 
 #include "base/ios/block_types.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
+class ChromeBrowserState;
 @class ListItem;
 
 namespace browsing_data {
@@ -20,7 +20,7 @@ enum class BrowsingDataRemoveMask;
 
 @protocol ClearBrowsingDataConsumer <NSObject>
 // Execute action to clear browsing data.
-- (void)removeBrowsingDataForBrowserState:(ios::ChromeBrowserState*)browserState
+- (void)removeBrowsingDataForBrowserState:(ChromeBrowserState*)browserState
                                timePeriod:(browsing_data::TimePeriod)timePeriod
                                removeMask:(BrowsingDataRemoveMask)removeMask
                           completionBlock:(ProceduralBlock)completionBlock;

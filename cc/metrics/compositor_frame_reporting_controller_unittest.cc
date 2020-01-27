@@ -249,6 +249,33 @@ TEST_F(CompositorFrameReportingControllerTest, ImplFrameCausedNoDamage) {
       "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 0);
 }
 
+TEST_F(CompositorFrameReportingControllerTest, MainFrameCausedNoDamage) {
+  base::HistogramTester histogram_tester;
+  viz::BeginFrameId current_id_1_ = viz::BeginFrameId(1, 1);
+  viz::BeginFrameId current_id_2_ = viz::BeginFrameId(1, 2);
+  viz::BeginFrameId current_id_3_ = viz::BeginFrameId(1, 3);
+
+  reporting_controller_.WillBeginImplFrame(current_id_1_);
+  reporting_controller_.WillBeginMainFrame(current_id_1_);
+  reporting_controller_.BeginMainFrameAborted(current_id_1_);
+  reporting_controller_.OnFinishImplFrame(current_id_1_);
+  reporting_controller_.DidNotProduceFrame(current_id_1_);
+
+  reporting_controller_.WillBeginImplFrame(current_id_2_);
+  reporting_controller_.WillBeginMainFrame(current_id_2_);
+  reporting_controller_.OnFinishImplFrame(current_id_2_);
+  reporting_controller_.BeginMainFrameAborted(current_id_2_);
+  reporting_controller_.DidNotProduceFrame(current_id_2_);
+
+  reporting_controller_.WillBeginImplFrame(current_id_3_);
+  reporting_controller_.WillBeginMainFrame(current_id_3_);
+
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.MissedFrame.BeginImplFrameToSendBeginMainFrame", 0);
+  histogram_tester.ExpectTotalCount(
+      "CompositorLatency.MissedFrame.SendBeginMainFrameToCommit", 0);
+}
+
 TEST_F(CompositorFrameReportingControllerTest, MainFrameAborted) {
   base::HistogramTester histogram_tester;
 

@@ -144,11 +144,10 @@ class SearchResultTileItemListViewTest
         std::unique_ptr<TestSearchResult> result =
             std::make_unique<TestSearchResult>();
         result->set_result_id("RecommendedApp " + base::NumberToString(i));
-        result->set_display_type(SearchResultDisplayType::kRecommendation);
+        result->set_display_type(SearchResultDisplayType::kTile);
+        result->set_is_recommendation(true);
         result->set_result_type(
             AppListSearchResultType::kPlayStoreReinstallApp);
-        result->set_display_location(
-            SearchResultDisplayLocation::kTileListContainer);
         result->set_display_index(SearchResultDisplayIndex::kSixthIndex);
         result->set_title(base::ASCIIToUTF16("RecommendedApp ") +
                           base::NumberToString16(i));
@@ -206,11 +205,10 @@ class SearchResultTileItemListViewTest
         std::unique_ptr<TestSearchResult> result =
             std::make_unique<TestSearchResult>();
         result->set_result_id("RecommendedApp " + base::NumberToString(i));
-        result->set_display_type(SearchResultDisplayType::kRecommendation);
+        result->set_display_type(SearchResultDisplayType::kTile);
+        result->set_is_recommendation(true);
         result->set_result_type(
             AppListSearchResultType::kPlayStoreReinstallApp);
-        result->set_display_location(
-            SearchResultDisplayLocation::kTileListContainer);
         result->set_display_index(display_indexes[i]);
         result->set_title(base::ASCIIToUTF16("RecommendedApp ") +
                           base::NumberToString16(i));

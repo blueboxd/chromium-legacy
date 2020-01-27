@@ -109,7 +109,8 @@ IN_PROC_BROWSER_TEST_F(PaintPreviewBrowserTest, CaptureFrame) {
             EXPECT_EQ(status, mojom::PaintPreviewStatus::kOk);
             EXPECT_TRUE(proto->has_root_frame());
             EXPECT_EQ(proto->subframes_size(), 0);
-            EXPECT_EQ(proto->root_frame().content_id_proxy_id_map_size(), 0);
+            EXPECT_EQ(proto->root_frame().content_id_to_embedding_tokens_size(),
+                      0);
             EXPECT_TRUE(proto->root_frame().is_main_frame());
 #if defined(OS_WIN)
             base::FilePath path = base::FilePath(

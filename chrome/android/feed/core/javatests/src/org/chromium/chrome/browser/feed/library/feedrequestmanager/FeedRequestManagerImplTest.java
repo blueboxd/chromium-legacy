@@ -201,6 +201,11 @@ public class FeedRequestManagerImplTest {
     }
 
     @Test
+    public void testTriggerRefresh_sendFeedbackCapabilityAddedWhenFlagIsOn() throws Exception {
+        testCapabilityAdded(ConfigKey.SEND_FEEDBACK_ENABLED, Capability.SEND_FEEDBACK);
+    }
+
+    @Test
     public void testTriggerRefresh_tooltipCapabilityAddedWhenFlagIsOn() throws Exception {
         testCapabilityAdded(ConfigKey.CARD_MENU_TOOLTIP_ELIGIBLE, Capability.CARD_MENU_TOOLTIP);
     }

@@ -72,7 +72,6 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
 import org.chromium.chrome.browser.download.DownloadUtils;
-import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitor;
 import org.chromium.chrome.browser.feed.FeedProcessScopeFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.flags.ActivityType;
@@ -234,8 +233,6 @@ public class ChromeTabbedActivity extends ChromeActivity {
     private TabModelSelectorImpl mTabModelSelectorImpl;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private TabModelSelectorTabModelObserver mTabModelObserver;
-
-    private ScreenshotMonitor mScreenshotMonitor;
 
     private ComposedBrowserControlsVisibilityDelegate mAppBrowserControlsVisibilityDelegate;
     private BrowserControlsVisibilityDelegate mVrBrowserControlsVisibilityDelegate;
@@ -711,8 +708,6 @@ public class ChromeTabbedActivity extends ChromeActivity {
             mLayoutManager.setToolbarManager(getToolbarManager());
 
             mOverviewModeController.hideOverview(false);
-
-            mScreenshotMonitor = new ScreenshotMonitor(getToolbarButtonInProductHelpController());
         }
     }
 
@@ -858,18 +853,6 @@ public class ChromeTabbedActivity extends ChromeActivity {
         if (!isWarmOnResume()) {
             SuggestionsMetrics.recordArticlesListVisible();
         }
-
-        maybeStartMonitoringForScreenshots();
-    }
-
-    private void maybeStartMonitoringForScreenshots() {
-        // Part of the (more runtime-related) check to determine whether to trigger help UI is
-        // left until onScreenshotTaken() since it is less expensive to keep monitoring on and
-        // check when the help UI is accessed than it is to start/stop monitoring per tab change
-        // (e.g. tab switch or in overview mode).
-        if (isTablet()) return;
-
-        mScreenshotMonitor.startMonitoring();
     }
 
     @Override
@@ -879,8 +862,6 @@ public class ChromeTabbedActivity extends ChromeActivity {
 
         mLocaleManager.setSnackbarManager(null);
         mLocaleManager.stopObservingPhoneChanges();
-
-        mScreenshotMonitor.stopMonitoring();
 
         super.onPauseWithNative();
     }

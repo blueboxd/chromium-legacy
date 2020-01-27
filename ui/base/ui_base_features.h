@@ -94,6 +94,15 @@ extern const base::Feature kHandwritingGesture;
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kWebUIA11yEnhancements;
+
+// Indicates whether DrmOverlayManager should used the synchronous API to
+// perform pageflip tests.
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kSynchronousPageFlipTesting;
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+bool IsSynchronousPageFlipTestingEnabled();
+
 }  // namespace features
 
 #endif  // UI_BASE_UI_BASE_FEATURES_H_

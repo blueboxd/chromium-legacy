@@ -41,3 +41,24 @@ var CrComponentsManagedFootnoteV3Test =
 TEST_F('CrComponentsManagedFootnoteV3Test', 'All', function() {
   mocha.run();
 });
+
+GEN('#if defined(USE_NSS_CERTS)');
+
+/**
+ * Test fixture for chrome://settings/certificates. This tests the
+ * certificate-manager component in the context of the Settings privacy page.
+ */
+// eslint-disable-next-line no-var
+var CrComponentsCertificateManagerV3Test =
+    class extends CrComponentsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=cr_components/certificate_manager_test.m.js';
+  }
+};
+
+TEST_F('CrComponentsCertificateManagerV3Test', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif  // defined(USE_NSS_CERTS)');

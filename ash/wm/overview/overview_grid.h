@@ -106,10 +106,9 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
                   bool animate,
                   bool use_spawn_animation = false);
 
-  // Adds |window| at the correct position according to MRU order. |window|
-  // cannot already be on the grid. Repositions all items. If |animate| is true,
-  // animates the repositioning.
-  void AddItemInMruOrder(aura::Window* window, bool animate);
+  // Like |AddItem|, but adds |window| at the correct position according to MRU
+  // order.
+  void AddItemInMruOrder(aura::Window* window, bool reposition, bool animate);
 
   // Removes |overview_item| from the grid. |overview_item| cannot already be
   // absent from the grid. If |item_destroying| is true, we may want to notify

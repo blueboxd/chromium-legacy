@@ -64,10 +64,10 @@ public final class DeveloperModeContentProvider extends ContentProvider {
     }
 
     private void disableDeveloperMode() {
-        ComponentName developerModeContentProvider =
-                new ComponentName(getContext(), DeveloperModeContentProvider.class.getName());
-        getContext().getPackageManager().setComponentEnabledSetting(developerModeContentProvider,
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+        ComponentName developerModeState =
+                new ComponentName(getContext(), DeveloperModeUtils.DEVELOPER_MODE_STATE_COMPONENT);
+        getContext().getPackageManager().setComponentEnabledSetting(developerModeState,
+                PackageManager.COMPONENT_ENABLED_STATE_DEFAULT, PackageManager.DONT_KILL_APP);
 
         // Stop the service explicitly, in case it's running. NOOP if the service is not running.
         getContext().stopService(new Intent(getContext(), DeveloperUiService.class));

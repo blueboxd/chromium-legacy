@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/text_fragment_anchor.h"
 
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -258,6 +259,10 @@ void TextFragmentAnchor::DidFindMatch(const EphemeralRangeInFlatTree& range) {
                                     ScrollAlignment::kAlignCenterAlways,
                                     kProgrammaticScroll));
     did_scroll_into_view_ = true;
+
+    if (AXObjectCache* cache = frame_->GetDocument()->ExistingAXObjectCache())
+      cache->HandleScrolledToAnchor(&node);
+
     metrics_->DidScroll();
 
     // We scrolled the text into view if the main document scrolled or the text

@@ -1135,5 +1135,31 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
+                       TextFragmentAnchor) {
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+  AccessibilityNotificationWaiter anchor_waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kScrolledToAnchor);
+
+  GURL url(
+      "data:text/html,"
+      "<p>Some text</p>"
+      "<p id='target' style='position: absolute; top: 1000px'>Anchor text</p>"
+      "#:~:text=Anchor%20text");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  anchor_waiter.WaitForNotification();
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Anchor text");
+
+  const BrowserAccessibility* root = GetManager()->GetRoot();
+  ASSERT_EQ(2u, root->PlatformChildCount());
+  const BrowserAccessibility* target = root->PlatformGetChild(1);
+  ASSERT_EQ(1u, target->PlatformChildCount());
+  const BrowserAccessibility* text = target->PlatformGetChild(0);
+
+  EXPECT_EQ(text->GetId(), anchor_waiter.event_target_id());
+}
+
 #endif
 }  // namespace content

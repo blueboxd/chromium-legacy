@@ -43,7 +43,7 @@ class CORE_EXPORT DeleteSelectionCommand final : public CompositeEditCommand {
       InputEvent::InputType input_type = InputEvent::InputType::kNone,
       const Position& reference_move_position = Position());
   DeleteSelectionCommand(
-      const VisibleSelection&,
+      const SelectionForUndoStep&,
       const DeleteSelectionOptions&,
       InputEvent::InputType input_type = InputEvent::InputType::kNone);
 
@@ -85,7 +85,7 @@ class CORE_EXPORT DeleteSelectionCommand final : public CompositeEditCommand {
 
   // This data is transient and should be cleared at the end of the doApply
   // function.
-  VisibleSelection selection_to_delete_;
+  SelectionForUndoStep selection_to_delete_;
   Position upstream_start_;
   Position downstream_start_;
   Position upstream_end_;

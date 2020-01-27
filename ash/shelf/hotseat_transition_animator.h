@@ -56,6 +56,10 @@ class ASH_EXPORT HotseatTransitionAnimator
   void OnTabletModeEnding() override;
   void OnTabletModeEnded() override;
 
+  // Enables or enables animations. Disabling the animations will stop in-flight
+  // animations.
+  void SetAnimationsEnabledInSessionState(bool enabled);
+
   // Set the test observer to watch for animations completed.
   void SetTestObserver(TestObserver* test_observer);
 
@@ -77,6 +81,10 @@ class ASH_EXPORT HotseatTransitionAnimator
   // Used to avoid animating the HotseatState change during the tablet mode
   // transition.
   bool tablet_mode_transitioning_ = false;
+
+  // Whether hotseat animations should be animated for the current session
+  // state.
+  bool animations_enabled_for_current_session_state_ = false;
 
   // Callback used to notify observers of animation completion.
   base::OnceClosure animation_complete_callback_;

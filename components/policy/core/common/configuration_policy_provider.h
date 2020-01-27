@@ -39,6 +39,9 @@ class POLICY_EXPORT ConfigurationPolicyProvider
   // to post to the FILE thread, for example.
   ~ConfigurationPolicyProvider() override;
 
+  static void SetMigrators(
+      std::vector<std::unique_ptr<ExtensionPolicyMigrator>> migrators);
+
   // Invoked as soon as the main message loops are spinning. Policy providers
   // are created early during startup to provide the initial policies; the
   // Init() call allows them to perform initialization tasks that require
@@ -73,10 +76,6 @@ class POLICY_EXPORT ConfigurationPolicyProvider
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
 
-  // Adds an ExtensionPolicyMigrator to be run before OnUpdatePolicy() is
-  // called.
-  void AddMigrator(std::unique_ptr<ExtensionPolicyMigrator> migrator);
-
   // SchemaRegistry::Observer:
   void OnSchemaRegistryUpdated(bool has_new_schemas) override;
   void OnSchemaRegistryReady() override;
@@ -102,8 +101,6 @@ class POLICY_EXPORT ConfigurationPolicyProvider
   SchemaRegistry* schema_registry_;
 
   base::ObserverList<Observer, true>::Unchecked observer_list_;
-
-  std::vector<std::unique_ptr<ExtensionPolicyMigrator>> migrators_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProvider);
 };

@@ -118,16 +118,16 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   // Builds a mapping from index in |nodes| to whether ignored state should be
   // applied to the node in chrome accessibility.
   // Assuming that |nodes[0]| is a root of the tree.
-  void BuildImportantMap(
+  void BuildImportaceTable(
       const std::vector<mojom::AccessibilityNodeInfoDataPtr>& nodes,
       const std::map<int32_t, int32_t>& node_id_to_nodes_index,
-      std::map<int32_t, bool>& out_node) const;
+      std::vector<bool>& out_node) const;
 
-  bool BuildImportantMapInternal(
+  bool BuildHasImportantProperty(
       int32_t nodes_index,
       const std::vector<mojom::AccessibilityNodeInfoDataPtr>& nodes,
       const std::map<int32_t, int32_t>& node_id_to_nodes_index,
-      std::map<int32_t, bool>& is_important_cache) const;
+      std::vector<bool>& has_important_prop_cache) const;
 
   // Find the most top-left focusable node under the given node.
   AccessibilityInfoDataWrapper* FindFirstFocusableNode(

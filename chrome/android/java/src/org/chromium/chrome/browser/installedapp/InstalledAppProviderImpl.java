@@ -17,6 +17,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
@@ -26,6 +27,8 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.installedapp.mojom.RelatedApplication;
 import org.chromium.mojo.system.MojoException;
+import org.chromium.url.mojom.Url;
+import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -44,6 +47,8 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     public static final String ASSET_STATEMENT_NAMESPACE_WEB = "web";
     @VisibleForTesting
     public static final String RELATED_APP_PLATFORM_ANDROID = "play";
+    @VisibleForTesting
+    public static final String RELATED_APP_PLATFORM_WEBAPP = "webapp";
     @VisibleForTesting
     public static final String INSTANT_APP_ID_STRING = "instantapp";
     @VisibleForTesting
@@ -86,15 +91,15 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     }
 
     @Override
-    public void filterInstalledApps(
-            final RelatedApplication[] relatedApps, final FilterInstalledAppsResponse callback) {
+    public void filterInstalledApps(final RelatedApplication[] relatedApps, final Url manifestUrl,
+            final FilterInstalledAppsResponse callback) {
         final URI frameUrl = mFrameUrlDelegate.getUrl();
         // Use an AsyncTask to execute the installed/related checks on a background thread (so as
         // not to block the UI thread).
         new AsyncTask<Pair<RelatedApplication[], Integer>>() {
             @Override
             protected Pair<RelatedApplication[], Integer> doInBackground() {
-                return filterInstalledAppsOnBackgroundThread(relatedApps, frameUrl);
+                return filterInstalledAppsOnBackgroundThread(relatedApps, manifestUrl, frameUrl);
             }
 
             @Override
@@ -124,13 +129,14 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      * Filters a list of apps, returning those that are both installed and match the origin.
      *
      * @param relatedApps A list of applications to be filtered.
+     * @param manifestUrl The URL of the Web App Manifest.
      * @param frameUrl The URL of the frame this operation was called from.
      * @return Pair of: A subsequence of applications that meet the criteria, and, the total amount
      *         of time in ms that should be delayed before returning to the user, to mask the
      *         installed state of the requested apps.
      */
     private Pair<RelatedApplication[], Integer> filterInstalledAppsOnBackgroundThread(
-            RelatedApplication[] relatedApps, URI frameUrl) {
+            RelatedApplication[] relatedApps, Url manifestUrl, URI frameUrl) {
         ThreadUtils.assertOnBackgroundThread();
 
         ArrayList<RelatedApplication> installedApps = new ArrayList<RelatedApplication>();
@@ -159,10 +165,23 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
                     installedApps.add(app);
                 }
             }
+            // The website wants to check whether its own WebAPK is installed.
+            else if (app.platform.equals(RELATED_APP_PLATFORM_WEBAPP) && app.url != null
+                    && app.url.equals(manifestUrl.url)) {
+                // Use the WebAPK's manifestURL as the package ID.
+                delayMillis += calculateDelayForPackageMs(manifestUrl.url);
+                if (isWebApkInstalled(manifestUrl.url)) {
+                    // TODO(crbug.com/1043970): Should we expose the package
+                    // name and the version?
+                    installedApps.add(app);
+                }
+            }
         }
 
         for (RelatedApplication installedApp : installedApps) {
-            setVersionInfo(installedApp);
+            if (installedApp.id != null) {
+                setVersionInfo(installedApp);
+            }
         }
 
         // Don't expose the related apps if in incognito mode. This is done at
@@ -195,6 +214,16 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
      */
     private boolean isInstantAppId(String appId) {
         return INSTANT_APP_ID_STRING.equals(appId) || INSTANT_APP_HOLDBACK_ID_STRING.equals(appId);
+    }
+
+    /**
+     * Return whether the WebAPK identified by |manifestUurl| is installed.
+     */
+    @VisibleForTesting
+    public boolean isWebApkInstalled(String manifestUrl) {
+        return WebApkValidator.queryBoundWebApkForManifestUrl(
+                       ContextUtils.getApplicationContext(), manifestUrl)
+                != null;
     }
 
     /**

@@ -6,6 +6,10 @@
  * @fileoverview Closure compiler typedefs.
  */
 
+// clang-format off
+// #import {CertificateSubnode, NewCertificateSubNode, CertificateType, CertificatesError, CertificatesImportError} from './certificates_browser_proxy.m.js';
+// clang-format on
+
 /**
  * The payload of the 'certificate-action' event.
  * @typedef {{
@@ -15,7 +19,7 @@
  *   anchor: !HTMLElement
  * }}
  */
-let CertificateActionEventDetail;
+/* #export */ let CertificateActionEventDetail;
 
 /**
  * The payload of the 'certificates-error' event.
@@ -24,13 +28,13 @@ let CertificateActionEventDetail;
  *   anchor: ?HTMLElement
  * }}
  */
-let CertificatesErrorEventDetail;
+/* #export */ let CertificatesErrorEventDetail;
 
 /**
  * Enumeration of actions that require a popup menu to be shown to the user.
  * @enum {number}
  */
-const CertificateAction = {
+/* #export */ const CertificateAction = {
   DELETE: 0,
   EDIT: 1,
   EXPORT_PERSONAL: 2,
@@ -41,4 +45,4 @@ const CertificateAction = {
  * The name of the event fired when a certificate action is selected from the
  * dropdown menu. CertificateActionEventDetail is passed as the event detail.
  */
-const CertificateActionEvent = 'certificate-action';
+/* #export */ const CertificateActionEvent = 'certificate-action';

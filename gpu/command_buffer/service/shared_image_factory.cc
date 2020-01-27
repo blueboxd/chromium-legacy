@@ -368,9 +368,9 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
   constexpr auto kWrappedSkImageUsage = SHARED_IMAGE_USAGE_RASTER |
                                         SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
                                         SHARED_IMAGE_USAGE_DISPLAY;
-  bool using_wrapped_sk_image = wrapped_sk_image_factory_ &&
-                                (usage == kWrappedSkImageUsage) &&
-                                !using_interop_factory;
+  bool using_wrapped_sk_image =
+      wrapped_sk_image_factory_ && (usage == kWrappedSkImageUsage) &&
+      !using_interop_factory && !share_between_threads;
   using_interop_factory |= vulkan_usage && !using_wrapped_sk_image;
 
   if (gmb_type != gfx::EMPTY_BUFFER) {

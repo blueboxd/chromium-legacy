@@ -128,6 +128,7 @@ test("weblayer_browsertests") {
       "//android_webview:pak_file_assets",
       "//components/safe_browsing/android:safe_browsing_api_handler",
       "//components/safe_browsing/content",
+      "//components/safe_browsing/core:features",
       "//components/viz/service:service_java",
       "//content/public/test/android:android_test_message_pump_support_java",
       "//content/test:android_test_message_pump_support",

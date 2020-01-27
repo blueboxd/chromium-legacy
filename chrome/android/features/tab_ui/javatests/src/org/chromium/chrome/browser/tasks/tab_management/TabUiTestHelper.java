@@ -72,7 +72,7 @@ public class TabUiTestHelper {
      *         model.
      * @param tabsCount      Number of tabs to be created.
      */
-    static void createTabs(ChromeTabbedActivity cta, boolean isIncognito, int tabsCount) {
+    public static void createTabs(ChromeTabbedActivity cta, boolean isIncognito, int tabsCount) {
         for (int i = 0; i < (isIncognito ? tabsCount : tabsCount - 1); i++) {
             ChromeTabUtils.newTabFromMenu(
                     InstrumentationRegistry.getInstrumentation(), cta, isIncognito, true);

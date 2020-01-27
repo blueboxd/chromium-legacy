@@ -396,10 +396,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         "PasswordManager.AccessPasswordInSettings",
         password_manager::metrics_util::ACCESS_PASSWORD_COPIED,
         password_manager::metrics_util::ACCESS_PASSWORD_COUNT);
-    UMA_HISTOGRAM_ENUMERATION(
-        "PasswordManager.ReauthToAccessPasswordInSettings",
-        password_manager::metrics_util::REAUTH_SKIPPED,
-        password_manager::metrics_util::REAUTH_COUNT);
+    password_manager::metrics_util::LogPasswordSettingsReauthResult(
+        password_manager::metrics_util::ReauthResult::kSkipped);
   } else if ([_weakReauthenticationModule canAttemptReauth]) {
     __weak PasswordDetailsTableViewController* weakSelf = self;
     void (^copyPasswordHandler)(BOOL) = ^(BOOL success) {

@@ -193,8 +193,8 @@ void TabLayer::SetProperties(int id,
   const gfx::RectF shadow_padding(shadow_resource->padding());
   const gfx::RectF contour_padding(contour_resource->padding());
 
-  const bool back_visible = cos(rotation_x * SK_MScalarPI / 180.0f) < 0 ||
-                            cos(rotation_y * SK_MScalarPI / 180.0f) < 0;
+  const bool back_visible = cos(rotation_x * SK_ScalarPI / 180.0f) < 0 ||
+                            cos(rotation_y * SK_ScalarPI / 180.0f) < 0;
 
   const float content_scale = width / content_width;
   gfx::RectF content_area(0.f, 0.f, content_width, content_height);

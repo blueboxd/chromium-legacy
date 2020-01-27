@@ -12,6 +12,11 @@
 
 namespace media {
 
+// Events are changes in the state of a player, or a user interaction, or any
+// other internal representation of a player at a given point in time.
+// This list contains both events that are instant, such as play/pause, as
+// well as events that span ranges of time, such as waiting for more data
+// from the network, or decoding a video frame.
 enum class MediaLogEvent {
   // The media player has started playing.
   kPlay,

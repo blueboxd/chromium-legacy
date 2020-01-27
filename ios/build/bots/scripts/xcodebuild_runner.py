@@ -620,10 +620,32 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
         'PASS': len(self.logs['passed tests']),
     }
     self.test_results['tests'] = collections.OrderedDict()
-    for test in self.logs['passed tests']:
-      self.test_results['tests'][test] = {'expected': 'PASS', 'actual': 'PASS'}
-    for test in self.logs['failed tests'] + self.logs['aborted tests']:
-      self.test_results['tests'][test] = {'expected': 'PASS', 'actual': 'FAIL'}
+
+    for shard_attempts in attempts_results:
+      for attempt, attempt_results in enumerate(shard_attempts):
+
+        for test in attempt_results['failed'].keys() + self.logs[
+            'aborted tests']:
+          if attempt == len(shard_attempts) - 1:
+            test_result = 'FAIL'
+          else:
+            test_result = self.test_results['tests'].get(test, {}).get(
+                'actual', '') + ' FAIL'
+          self.test_results['tests'][test] = {
+              'expected': 'PASS',
+              'actual': test_result.strip()
+          }
+
+        for test in attempt_results['passed']:
+          test_result = self.test_results['tests'].get(test, {}).get(
+              'actual', '') + ' PASS'
+          self.test_results['tests'][test] = {
+              'expected': 'PASS',
+              'actual': test_result.strip()
+          }
+          if 'FAIL' in test_result:
+            self.test_results['tests'][test]['is_flaky'] = True
+
     # Test is failed if there are failures for the last run.
     return not self.logs['failed tests']
 

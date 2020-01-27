@@ -8,6 +8,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
+#include "components/password_manager/core/browser/password_generation_frame_helper.h"
+#include "components/password_manager/core/browser/password_manager_driver.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -136,8 +138,9 @@ class WebsiteLoginFetcherImpl::PendingFetchPasswordRequest
 };
 
 WebsiteLoginFetcherImpl::WebsiteLoginFetcherImpl(
-    const password_manager::PasswordManagerClient* client)
-    : client_(client), weak_ptr_factory_(this) {}
+    const password_manager::PasswordManagerClient* client,
+    password_manager::PasswordManagerDriver* driver)
+    : client_(client), driver_(driver), weak_ptr_factory_(this) {}
 
 WebsiteLoginFetcherImpl::~WebsiteLoginFetcherImpl() = default;
 
@@ -165,6 +168,16 @@ void WebsiteLoginFetcherImpl::GetPasswordForLogin(
       base::BindOnce(&WebsiteLoginFetcherImpl::OnRequestFinished,
                      weak_ptr_factory_.GetWeakPtr())));
   pending_requests_.back()->Start();
+}
+
+std::string WebsiteLoginFetcherImpl::GeneratePassword(
+    autofill::FormSignature form_signature,
+    autofill::FieldSignature field_signature,
+    uint64_t max_length) {
+  return base::UTF16ToUTF8(
+      driver_->GetPasswordGenerationHelper()->GeneratePassword(
+          driver_->GetLastCommittedURL(), form_signature, field_signature,
+          max_length));
 }
 
 void WebsiteLoginFetcherImpl::OnRequestFinished(const PendingRequest* request) {

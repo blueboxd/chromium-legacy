@@ -446,12 +446,19 @@ class ChannelMac : public Channel,
         io_task_runner_->PostTask(
             FROM_HERE, base::BindOnce(&ChannelMac::SendPendingMessages, this));
       } else {
-        // If the message failed to send for other reasons, destroy it and
-        // close the channel.
-        MACH_LOG_IF(ERROR, kr != MACH_SEND_INVALID_DEST, kr) << "mach_msg send";
+        // If the message failed to send for other reasons, destroy it.
         send_buffer_contains_message_ = false;
         mach_msg_destroy(header);
-        OnWriteErrorLocked(Error::kDisconnected);
+        if (kr != MACH_SEND_INVALID_DEST) {
+          // If the message failed to send because the receiver is a dead-name,
+          // wait for the Channel to process the dead-name notification.
+          // Otherwise, the notification message will never be received and the
+          // dead-name right contained within it will be leaked
+          // (https://crbug.com/1041682). If the message failed to send for any
+          // other reason, report an error and shut down.
+          MACH_LOG(ERROR, kr) << "mach_msg send";
+          OnWriteErrorLocked(Error::kDisconnected);
+        }
       }
       return false;
     }

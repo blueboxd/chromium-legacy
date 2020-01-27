@@ -27,6 +27,7 @@
  *   printerProtocol: string,
  *   printerQueue: string,
  *   printerStatus: string,
+ *   printServerUri: string,
  * }}
  *
  * Note: |printerPPDPath| refers to a PPD retrieved from the user at the

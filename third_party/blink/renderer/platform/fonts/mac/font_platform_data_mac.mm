@@ -200,19 +200,8 @@ std::unique_ptr<FontPlatformData> FontPlatformDataFromNSFont(
   SkFontArguments::VariationPosition variation_design_position{
       coordinates_to_set.data(), coordinates_to_set.size()};
 
-  // See https://bugs.chromium.org/p/skia/issues/detail?id=9747 - Depending on
-  // variation axes parameters Mac OS pre 10.15 produces broken SkTypefaces when
-  // using makeClone() on system fonts. Work around this issue by only using the
-  // more efficient makeClone() on supported versions.
-  if (CoreTextVersionSupportsSystemFontMakeClone()) {
-    typeface = typeface->makeClone(SkFontArguments().setVariationDesignPosition(
-        variation_design_position));
-  } else {
-    sk_sp<SkFontMgr> fm(SkFontMgr::RefDefault());
-    typeface = fm->makeFromStream(typeface->openStream(nullptr)->duplicate(),
-                                  SkFontArguments().setVariationDesignPosition(
-                                      variation_design_position));
-  }
+  typeface = typeface->makeClone(
+      SkFontArguments().setVariationDesignPosition(variation_design_position));
 
   return std::make_unique<FontPlatformData>(
       std::move(typeface),

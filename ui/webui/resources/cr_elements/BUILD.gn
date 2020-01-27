@@ -140,7 +140,10 @@ polymer_modulizer("search_highlight_style_css") {
 }
 
 js_modulizer("modulize") {
-  input_files = [ "cr_container_shadow_behavior.js" ]
+  input_files = [
+    "cr_container_shadow_behavior.js",
+    "cr_scrollable_behavior.js",
+  ]
   deps = []
 }
 
@@ -164,24 +167,17 @@ group("polymer3_elements") {
     "cr_expand_button:cr_expand_button_module",
     "cr_fingerprint:cr_fingerprint_progress_arc_module",
     "cr_icon_button:cr_icon_button_module",
-    "cr_input:cr_input_module",
-    "cr_input:cr_input_style_css_module",
+    "cr_input:polymer3_elements",
     "cr_lazy_render:cr_lazy_render_module",
     "cr_link_row:cr_link_row_module",
-    "cr_radio_button:cr_radio_button_module",
-    "cr_radio_button:cr_radio_button_style_css_module",
-    "cr_radio_button:modulize",
+    "cr_radio_button:polymer3_elements",
     "cr_radio_group:cr_radio_group_module",
-    "cr_search_field:cr_search_field_module",
-    "cr_search_field:modulize",
+    "cr_search_field:polymer3_elements",
     "cr_slider:cr_slider_module",
     "cr_tabs:cr_tabs_module",
-    "cr_toast:cr_toast_manager_module",
-    "cr_toast:cr_toast_module",
+    "cr_toast:polymer3_elements",
     "cr_toggle:cr_toggle_module",
-    "cr_toolbar:cr_toolbar_module",
-    "cr_toolbar:cr_toolbar_search_field_module",
-    "cr_toolbar:cr_toolbar_selection_overlay_module",
+    "cr_toolbar:polymer3_elements",
     "cr_view_manager:cr_view_manager_module",
     "policy:polymer3_elements",
   ]
@@ -196,12 +192,26 @@ group("polymer3_elements") {
 }
 
 js_type_check("cr_elements_module_resources") {
-  uses_js_modules = true
-  deps = [ ":cr_container_shadow_behavior.m" ]
+  is_polymer3 = true
+  deps = [
+    ":cr_container_shadow_behavior.m",
+    ":cr_scrollable_behavior.m",
+  ]
 }
 
 js_library("cr_container_shadow_behavior.m") {
   sources = [ "$root_gen_dir/ui/webui/resources/cr_elements/cr_container_shadow_behavior.m.js" ]
   deps = [ "//ui/webui/resources/js:assert.m" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("cr_scrollable_behavior.m") {
+  sources = [
+    "$root_gen_dir/ui/webui/resources/cr_elements/cr_scrollable_behavior.m.js",
+  ]
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/iron-list:iron-list",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+  ]
   extra_deps = [ ":modulize" ]
 }

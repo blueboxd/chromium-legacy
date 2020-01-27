@@ -561,9 +561,6 @@ extern const char kEnableUseZoomForDsfChoiceDisabled[];
 extern const char kEnableScrollAnchorSerializationName[];
 extern const char kEnableScrollAnchorSerializationDescription[];
 
-extern const char kEnableSharedArrayBufferName[];
-extern const char kEnableSharedArrayBufferDescription[];
-
 extern const char kEnableWasmName[];
 extern const char kEnableWasmDescription[];
 
@@ -1178,9 +1175,6 @@ extern const char kStorageAccessAPIDescription[];
 extern const char kIsolateOriginsName[];
 extern const char kIsolateOriginsDescription[];
 
-extern const char kKidsManagementUrlClassificationName[];
-extern const char kKidsManagementUrlClassificationDescription[];
-
 extern const char kSiteIsolationOptOutName[];
 extern const char kSiteIsolationOptOutDescription[];
 extern const char kSiteIsolationOptOutChoiceDefault[];
@@ -1650,6 +1644,9 @@ extern const char kReaderModeHeuristicsAlwaysOn[];
 extern const char kReaderModeInCCTName[];
 extern const char kReaderModeInCCTDescription[];
 
+extern const char kRecoverFromNeverSaveAndroidName[];
+extern const char kRecoverFromNeverSaveAndroidDescription[];
+
 extern const char kSafeBrowsingUseLocalBlacklistsV2Name[];
 extern const char kSafeBrowsingUseLocalBlacklistsV2Description[];
 
@@ -1662,14 +1659,14 @@ extern const char kShoppingAssistDescription[];
 extern const char kSiteIsolationForPasswordSitesName[];
 extern const char kSiteIsolationForPasswordSitesDescription[];
 
+extern const char kStartSurfaceAndroidName[];
+extern const char kStartSurfaceAndroidDescription[];
+
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
 
 extern const char kTabSwitcherLongpressMenuName[];
 extern const char kTabSwitcherLongpressMenuDescription[];
-
-extern const char kStartSurfaceAndroidName[];
-extern const char kStartSurfaceAndroidDescription[];
 
 extern const char kUpdateMenuBadgeName[];
 extern const char kUpdateMenuBadgeDescription[];
@@ -1949,9 +1946,6 @@ extern const char kAshDragWindowFromShelfDescription[];
 
 extern const char kAshEnableDisplayMoveWindowAccelsName[];
 extern const char kAshEnableDisplayMoveWindowAccelsDescription[];
-
-extern const char kAshEnableOverviewRoundedCornersName[];
-extern const char kAshEnableOverviewRoundedCornersDescription[];
 
 extern const char kAshEnablePersistentWindowBoundsName[];
 extern const char kAshEnablePersistentWindowBoundsDescription[];

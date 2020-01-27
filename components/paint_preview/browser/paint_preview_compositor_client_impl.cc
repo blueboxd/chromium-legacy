@@ -35,7 +35,7 @@ void PaintPreviewCompositorClientImpl::BeginComposite(
 }
 
 void PaintPreviewCompositorClientImpl::BitmapForFrame(
-    uint64_t frame_guid,
+    const base::UnguessableToken& frame_guid,
     const gfx::Rect& clip_rect,
     float scale_factor,
     mojom::PaintPreviewCompositor::BitmapForFrameCallback callback) {

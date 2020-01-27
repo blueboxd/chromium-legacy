@@ -60,11 +60,11 @@ struct LinkData {
 };
 
 struct PaintPreviewCaptureResponse {
-  // Routing ID of the frame.
-  uint64 id;
+  // Embedding token of the frame. Will be nullopt for the main frame.
+  mojo_base.mojom.UnguessableToken? embedding_token;
 
   // Map between subframe content IDs and the RenderFrameProxy Routing ID.
-  map<uint32, uint64> content_id_proxy_id_map;
+  map<uint32, mojo_base.mojom.UnguessableToken> content_id_to_embedding_token;
 
   // A list of links within the frame.
   array<LinkData> links;

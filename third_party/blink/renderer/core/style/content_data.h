@@ -274,7 +274,7 @@ class NoneContentData final : public ContentData {
                                    const ComputedStyle&,
                                    LegacyLayout) const override;
 
-  bool Equals(const ContentData& data) const override { return IsNone(); }
+  bool Equals(const ContentData& data) const override { return data.IsNone(); }
 
  private:
   ContentData* CloneInternal() const override {

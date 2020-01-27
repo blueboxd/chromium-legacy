@@ -28,7 +28,6 @@
 #include "chrome/common/chrome_features.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/policy/core/browser/url_util.h"
-#include "components/safe_search_api/safe_search/safe_search_url_checker_client.h"
 #include "components/url_matcher/url_matcher.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -542,40 +541,8 @@ void SupervisedUserURLFilter::InitAsyncURLChecker(
       country = variations_service->GetLatestCountry();
   }
 
-  std::unique_ptr<safe_search_api::URLCheckerClient> url_checker_client;
-
-  if ((base::FeatureList::IsEnabled(
-          features::kKidsManagementUrlClassification))) {
-    url_checker_client =
-        std::make_unique<KidsManagementURLCheckerClient>(country);
-  } else {
-    // TODO(crbug.com/940454): remove safe_search_checker
-    net::NetworkTrafficAnnotationTag traffic_annotation =
-        net::DefineNetworkTrafficAnnotation("supervised_user_url_filter", R"(
-        semantics {
-          sender: "Supervised Users"
-          description:
-            "Checks whether a given URL (or set of URLs) is considered safe by "
-            "Google SafeSearch."
-          trigger:
-            "If the parent enabled this feature for the child account, this is "
-            "sent for every navigation."
-          data: "URL(s) to be checked."
-          destination: GOOGLE_OWNED_SERVICE
-        }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "This feature is only used in child accounts and cannot be "
-            "disabled by settings. Parent accounts can disable it in the "
-            "family dashboard."
-          policy_exception_justification: "Not implemented."
-        })");
-    url_checker_client =
-        std::make_unique<safe_search_api::SafeSearchURLCheckerClient>(
-            std::move(url_loader_factory), traffic_annotation, country);
-  }
-
+  std::unique_ptr<safe_search_api::URLCheckerClient> url_checker_client =
+      std::make_unique<KidsManagementURLCheckerClient>(country);
   async_url_checker_ = std::make_unique<safe_search_api::URLChecker>(
       std::move(url_checker_client));
 }

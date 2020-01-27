@@ -12,6 +12,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.UnguessableToken;
 import org.chromium.components.paintpreview.browser.PaintPreviewBaseService;
 import org.chromium.components.paintpreview.player.frame.PlayerFrameCoordinator;
 
@@ -39,8 +40,9 @@ public class PlayerManager {
      * method initializes a sub-component for each frame and adds the view for the root frame to
      * {@link #mHostView}.
      */
-    private void onCompositorReady(long rootFrameGuid, long[] frameGuids, int[] frameContentSize,
-            int[] subFramesCount, long[] subFrameGuids, int[] subFrameClipRects) {
+    private void onCompositorReady(UnguessableToken rootFrameGuid, UnguessableToken[] frameGuids,
+            int[] frameContentSize, int[] subFramesCount, UnguessableToken[] subFrameGuids,
+            int[] subFrameClipRects) {
         PaintPreviewFrame rootFrame = buildFrameTreeHierarchy(rootFrameGuid, frameGuids,
                 frameContentSize, subFramesCount, subFrameGuids, subFrameClipRects);
 
@@ -60,10 +62,10 @@ public class PlayerManager {
      * @return The root {@link PaintPreviewFrame}
      */
     @VisibleForTesting
-    static PaintPreviewFrame buildFrameTreeHierarchy(long rootFrameGuid, long[] frameGuids,
-            int[] frameContentSize, int[] subFramesCount, long[] subFrameGuids,
-            int[] subFrameClipRects) {
-        Map<Long, PaintPreviewFrame> framesMap = new HashMap<>();
+    static PaintPreviewFrame buildFrameTreeHierarchy(UnguessableToken rootFrameGuid,
+            UnguessableToken[] frameGuids, int[] frameContentSize, int[] subFramesCount,
+            UnguessableToken[] subFrameGuids, int[] subFrameClipRects) {
+        Map<UnguessableToken, PaintPreviewFrame> framesMap = new HashMap<>();
         for (int i = 0; i < frameGuids.length; i++) {
             framesMap.put(frameGuids[i],
                     new PaintPreviewFrame(

@@ -198,8 +198,7 @@ ChromeSearchResult* SearchController::GetResultByTitleForTest(
       if (result->title() == target_title &&
           result->result_type() ==
               ash::AppListSearchResultType::kInstalledApp &&
-          result->display_type() !=
-              ash::SearchResultDisplayType::kRecommendation) {
+          !result->is_recommendation()) {
         return result.get();
       }
     }

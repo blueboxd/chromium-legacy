@@ -638,5 +638,20 @@ runTests([
     registerOnBeforeRequestAndOnErrorOcurredListeners();
     navigateAndWait(getServerURL(
         BASE + 'fetch.html?path=accept&with-preflight'));
-  }
+  },
+  function testCorsServerRedirect() {
+    const url = getServerURL('server-redirect?whatever', 'cors.example.com');
+
+    const callback = callbackPass(() => {});
+    chrome.webRequest.onHeadersReceived.addListener((details) => {
+      if (details.url === url && details.method === 'GET') {
+        callback();
+      }
+    }, {urls: ["http://*/*"]}, ['extraHeaders']);
+
+    const absPath =
+          encodeURIComponent(`/server-redirect?${encodeURIComponent(url)}`);
+    navigateAndWait(getServerURL(
+        BASE + `fetch.html?abspath=${absPath}&with-preflight`));
+  },
 ]);

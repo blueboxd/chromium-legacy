@@ -189,16 +189,31 @@ using chrome_test_util::UnifiedConsentAddAccountButton;
       assertWithMatcher:grey_nil()];
 }
 
-+ (void)signOutWithManagedAccount:(BOOL)isManagedAccount {
++ (void)signOutWithSignOutConfirmation:
+    (SignOutConfirmation)signOutConfirmation {
   [ChromeEarlGreyUI openSettingsMenu];
   [ChromeEarlGreyUI tapSettingsMenuButton:SettingsAccountButton()];
   [ChromeEarlGreyUI tapAccountsMenuButton:SignOutAccountsButton()];
   int confirmationLabelID = 0;
-  if (isManagedAccount) {
-    confirmationLabelID = IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT_UNITY;
-  } else {
-    confirmationLabelID = IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE;
+  switch (signOutConfirmation) {
+    case SignOutConfirmationManagedUser: {
+      confirmationLabelID = IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT_UNITY;
+      break;
+    }
+    case SignOutConfirmationNonManagedUser: {
+      confirmationLabelID = IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE;
+      break;
+    }
+    case SignOutConfirmationNonManagedUserWithClearedData: {
+      confirmationLabelID = IDS_IOS_DISCONNECT_DIALOG_CONTINUE_AND_CLEAR_MOBILE;
+      break;
+    }
+    default: {
+      NOTREACHED();
+      break;
+    }
   }
+
   id<GREYMatcher> confirmationButtonMatcher = [ChromeMatchersAppInterface
       buttonWithAccessibilityLabelID:confirmationLabelID];
   [[EarlGrey selectElementWithMatcher:confirmationButtonMatcher]

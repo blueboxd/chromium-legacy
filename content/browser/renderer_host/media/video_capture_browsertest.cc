@@ -22,6 +22,10 @@
 #include "media/capture/video_capture_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 using testing::_;
 using testing::AtLeast;
 using testing::Bool;
@@ -257,8 +261,7 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
 }
 
 // Flaky on MSAN. https://crbug.com/840294
-// Flaky on MacOS 10.12. https://crbug.com/938074
-#if defined(MEMORY_SANITIZER) || defined(MAC_OS_X_VERSION_10_12)
+#if defined(MEMORY_SANITIZER)
 #define MAYBE_ReceiveFramesFromFakeCaptureDevice \
   DISABLED_ReceiveFramesFromFakeCaptureDevice
 #else
@@ -267,6 +270,13 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
 #endif
 IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
                        MAYBE_ReceiveFramesFromFakeCaptureDevice) {
+#if defined(OS_MACOSX)
+  if (base::mac::IsOS10_12()) {
+    // Flaky on MacOS 10.12. https://crbug.com/938074
+    return;
+  }
+#endif
+
   // Only fake device with index 2 delivers MJPEG.
   if (params_.exercise_accelerated_jpeg_decoding &&
       params_.device_index_to_use != 2) {

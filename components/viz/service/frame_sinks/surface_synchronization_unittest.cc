@@ -3067,6 +3067,22 @@ TEST_F(SurfaceSynchronizationTest,
   EXPECT_EQ(parent_id2, parent_support().last_activated_surface_id());
 }
 
+// Regression test for https://crbug.com/1000868. Verify that the output of
+// GetLatestInFlightSurface is correct when there is a conflict between the last
+// surface in the group and the queried SurfaceRange.
+TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceConflict) {
+  const SurfaceId id1 = MakeSurfaceId(kParentFrameSink, 1, 1);
+  const SurfaceId id2 = MakeSurfaceId(kParentFrameSink, 2, 2);
+  const SurfaceId id3 = MakeSurfaceId(kParentFrameSink, 1, 3);
+
+  parent_support().SubmitCompositorFrame(id1.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  parent_support().SubmitCompositorFrame(id2.local_surface_id(),
+                                         MakeDefaultCompositorFrame());
+  EXPECT_EQ(GetSurfaceForId(id1),
+            GetLatestInFlightSurface(SurfaceRange(base::nullopt, id3)));
+}
+
 // Check that if two different SurfaceIds with the same embed token are
 // embedded, viz doesn't crash. https://crbug.com/1001143
 TEST_F(SurfaceSynchronizationTest,

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_filter.h"
 #include "cc/paint/paint_op_writer.h"
@@ -15,6 +16,7 @@
 namespace cc {
 
 class PaintShader;
+class SkottieWrapper;
 
 // PaintOpReader takes garbage |memory| and clobbers it with successive
 // read functions.
@@ -68,6 +70,10 @@ class CC_PAINT_EXPORT PaintOpReader {
   void Read(SkImageInfo* info);
   void Read(sk_sp<SkColorSpace>* color_space);
   void Read(SkYUVColorSpace* yuv_color_space);
+
+#ifndef OS_ANDROID
+  void Read(scoped_refptr<SkottieWrapper>* skottie);
+#endif
 
   void Read(SkClipOp* op) {
     uint8_t value = 0u;

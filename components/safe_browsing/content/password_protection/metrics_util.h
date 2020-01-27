@@ -203,6 +203,11 @@ void LogReferrerChainSize(
     LoginReputationClientResponse::VerdictType verdict_type,
     int referrer_chain_size);
 
+// Logs the interval between when the modal warning is constructed and when it
+// is destructed.
+void LogModalWarningDialogLifetime(
+    base::TimeTicks modal_construction_start_time);
+
 }  // namespace safe_browsing
 
 #endif  // COMPONENTS_SAFE_BROWSING_CONTENT_PASSWORD_PROTECTION_METRICS_UTIL_H_

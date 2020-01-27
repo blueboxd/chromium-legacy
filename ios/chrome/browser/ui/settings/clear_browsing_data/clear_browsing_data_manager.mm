@@ -117,7 +117,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
       _countersByMasks;
 }
 
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 // Whether to show alert about other forms of browsing history.
 @property(nonatomic, assign)
     BOOL shouldShowNoticeAboutOtherFormsOfBrowsingHistory;
@@ -141,7 +141,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
 @synthesize shouldPopupDialogAboutOtherFormsOfBrowsingHistory =
     _shouldPopupDialogAboutOtherFormsOfBrowsingHistory;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
   return [self initWithBrowserState:browserState
                      browsingDataRemover:BrowsingDataRemoverFactory::
                                              GetForBrowserState(browserState)
@@ -149,7 +149,7 @@ static NSDictionary* _imageNamesByItemTypes = @{
                                              alloc] init]];
 }
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
                    browsingDataRemover:(BrowsingDataRemover*)remover
     browsingDataCounterWrapperProducer:
         (BrowsingDataCounterWrapperProducer*)producer {

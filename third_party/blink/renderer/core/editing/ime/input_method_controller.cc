@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/editing/commands/delete_selection_command.h"
 #include "third_party/blink/renderer/core/editing/commands/typing_command.h"
 #include "third_party/blink/renderer/core/editing/commands/undo_stack.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
@@ -50,6 +51,7 @@
 #include "third_party/blink/renderer/core/events/composition_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -1162,6 +1164,48 @@ bool InputMethodController::DeleteSelection() {
   return IsAvailable();
 }
 
+bool InputMethodController::DeleteSelectionWithoutAdjustment() {
+  const SelectionInDOMTree& selection_in_dom_tree =
+      GetFrame().Selection().GetSelectionInDOMTree();
+  if (selection_in_dom_tree.IsCaret())
+    return true;
+
+  const SelectionForUndoStep& selection =
+      SelectionForUndoStep::From(selection_in_dom_tree);
+
+  Node* target = GetFrame().GetDocument()->FocusedElement();
+  if (target) {
+    DispatchBeforeInputEditorCommand(
+        target, InputEvent::InputType::kDeleteContentBackward,
+        TargetRangesForInputEvent(*target));
+    // Frame could have been destroyed by the beforeinput event.
+    if (!IsAvailable())
+      return false;
+  }
+
+  if (TypingCommand* last_typing_command =
+          TypingCommand::LastTypingCommandIfStillOpenForTyping(&GetFrame())) {
+    TypingCommand::UpdateSelectionIfDifferentFromCurrentSelection(
+        last_typing_command, &GetFrame());
+
+    last_typing_command->DeleteSelection(TypingCommand::kSmartDelete,
+                                         ASSERT_NO_EDITING_ABORT);
+    return true;
+  }
+
+  MakeGarbageCollected<DeleteSelectionCommand>(
+      selection,
+      DeleteSelectionOptions::Builder()
+          .SetMergeBlocksAfterDelete(true)
+          .SetSanitizeMarkup(true)
+          .Build(),
+      InputEvent::InputType::kDeleteContentBackward)
+      ->Apply();
+
+  // Frame could have been destroyed by the input event.
+  return IsAvailable();
+}
+
 bool InputMethodController::MoveCaret(int new_caret_position) {
   GetDocument().UpdateStyleAndLayout();
   PlainTextRange selected_range =
@@ -1210,7 +1254,9 @@ void InputMethodController::ExtendSelectionAndDelete(int before, int after) {
   ignore_result(DeleteSelection());
 }
 
-// TODO(yabinh): We should reduce the number of selectionchange events.
+// TODO(ctzsm): We should reduce the number of selectionchange events.
+// Ideally, we want to do the deletion without selection, however, there is no
+// such editing command exists currently.
 void InputMethodController::DeleteSurroundingText(int before, int after) {
   if (!GetEditor().CanEdit())
     return;
@@ -1231,25 +1277,17 @@ void InputMethodController::DeleteSurroundingText(int before, int after) {
   if (before > 0 && selection_start > 0) {
     // In case of exceeding the left boundary.
     const int start = std::max(selection_start - before, 0);
-
     const EphemeralRange& range =
         PlainTextRange(0, start).CreateRange(*root_editable_element);
     if (range.IsNull())
       return;
-    const Position& position = range.EndPosition();
-
-    // Adjust the start of selection for multi-code text(a grapheme cluster
-    // contains more than one code point). TODO(yabinh): Adjustment should be
-    // based on code point instead of grapheme cluster.
-    const size_t diff = ComputeDistanceToLeftGraphemeBoundary(position);
-    const int adjusted_start = start - static_cast<int>(diff);
-    if (!SetSelectionOffsets(PlainTextRange(adjusted_start, selection_start)))
+    if (!SetSelectionOffsets(PlainTextRange(start, selection_start)))
       return;
-    if (!DeleteSelection())
+    if (!DeleteSelectionWithoutAdjustment())
       return;
 
-    selection_end = selection_end - (selection_start - adjusted_start);
-    selection_start = adjusted_start;
+    selection_end = selection_end - (selection_start - start);
+    selection_start = start;
   }
 
   // Select the text to be deleted after SelectionState::kEnd.
@@ -1264,15 +1302,10 @@ void InputMethodController::DeleteSurroundingText(int before, int after) {
       return;
     const int end =
         PlainTextRange::Create(*root_editable_element, valid_range).End();
-    const Position& position = valid_range.EndPosition();
 
-    // Adjust the end of selection for multi-code text. TODO(yabinh): Adjustment
-    // should be based on code point instead of grapheme cluster.
-    const size_t diff = ComputeDistanceToRightGraphemeBoundary(position);
-    const int adjusted_end = end + static_cast<int>(diff);
-    if (!SetSelectionOffsets(PlainTextRange(selection_end, adjusted_end)))
+    if (!SetSelectionOffsets(PlainTextRange(selection_end, end)))
       return;
-    if (!DeleteSelection())
+    if (!DeleteSelectionWithoutAdjustment())
       return;
   }
 
@@ -1318,6 +1351,31 @@ void InputMethodController::DeleteSurroundingTextInCodePoints(int before,
     return;
 
   return DeleteSurroundingText(before_length, after_length);
+}
+
+void InputMethodController::GetLayoutBounds(WebRect* control_bounds,
+                                            WebRect* selection_bounds) {
+  if (!IsAvailable())
+    return;
+
+  if (GetActiveEditContext()) {
+    return GetActiveEditContext()->GetLayoutBounds(control_bounds,
+                                                   selection_bounds);
+  }
+  if (!GetFrame().Selection().IsAvailable())
+    return;
+  Element* element = RootEditableElementOfSelection(GetFrame().Selection());
+  if (!element)
+    return;
+  // Fetch the control bounds of the active editable element.
+  // Selection bounds are currently populated only for EditContext.
+  // For editable elements we use GetCompositionCharacterBounds to fetch the
+  // selection bounds.
+  DOMRect* editable_rect = element->getBoundingClientRect();
+  control_bounds->x = editable_rect->x();
+  control_bounds->y = editable_rect->y();
+  control_bounds->width = editable_rect->width();
+  control_bounds->height = editable_rect->height();
 }
 
 WebTextInputInfo InputMethodController::TextInputInfo() const {

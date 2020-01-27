@@ -22,12 +22,7 @@ FileChipResult::FileChipResult(const base::FilePath& filepath,
     : ZeroStateFileResult(filepath, relevance, profile) {
   set_id(kFileChipResultPrefix + filepath.value());
   SetResultType(ResultType::kFileChip);
-  // TODO(crbug.com/1034842) Add line:
-  // SetDisplayType(DisplayType::kChip);
-  // to replace DisplayType and DisplayLocation setting
-  // once CL:1980331 merged
-  SetDisplayType(DisplayType::kNone);
-  SetDisplayLocation(DisplayLocation::kSuggestionChipContainer);
+  SetDisplayType(DisplayType::kChip);
 }
 
 }  // namespace app_list

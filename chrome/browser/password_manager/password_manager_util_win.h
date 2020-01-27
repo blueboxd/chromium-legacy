@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_UTIL_WIN_H_
 #define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_MANAGER_UTIL_WIN_H_
 
-#include "chrome/browser/password_manager/reauth_purpose.h"
+#include "components/password_manager/core/browser/reauth_purpose.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace password_manager_util_win {

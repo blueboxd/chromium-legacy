@@ -2563,10 +2563,11 @@ void ExtensionWebRequestEventRouter::ClearSignaled(uint64_t request_id,
 // when the cache is cleared (when page loads happen).
 class ClearCacheQuotaHeuristic : public QuotaLimitHeuristic {
  public:
-  ClearCacheQuotaHeuristic(const Config& config, BucketMapper* map)
+  ClearCacheQuotaHeuristic(const Config& config,
+                           std::unique_ptr<BucketMapper> map)
       : QuotaLimitHeuristic(
             config,
-            map,
+            std::move(map),
             "MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES"),
         callback_registered_(false) {}
   ~ClearCacheQuotaHeuristic() override {}
@@ -2867,10 +2868,8 @@ void WebRequestHandlerBehaviorChangedFunction::GetQuotaLimitHeuristics(
       // See web_request.json for current value.
       web_request::MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES,
       base::TimeDelta::FromMinutes(10)};
-  QuotaLimitHeuristic::BucketMapper* bucket_mapper =
-      new QuotaLimitHeuristic::SingletonBucketMapper();
-  heuristics->push_back(
-      std::make_unique<ClearCacheQuotaHeuristic>(config, bucket_mapper));
+  heuristics->push_back(std::make_unique<ClearCacheQuotaHeuristic>(
+      config, std::make_unique<QuotaLimitHeuristic::SingletonBucketMapper>()));
 }
 
 void WebRequestHandlerBehaviorChangedFunction::OnQuotaExceeded(

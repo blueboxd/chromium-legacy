@@ -176,10 +176,7 @@ WebTextInputType WebInputMethodControllerImpl::TextInputType() {
 
 void WebInputMethodControllerImpl::GetLayoutBounds(WebRect* control_bounds,
                                                    WebRect* selection_bounds) {
-  if (IsEditContextActive()) {
-    return GetInputMethodController().GetActiveEditContext()->GetLayoutBounds(
-        control_bounds, selection_bounds);
-  }
+  GetInputMethodController().GetLayoutBounds(control_bounds, selection_bounds);
 }
 
 bool WebInputMethodControllerImpl::IsInputPanelPolicyManual() const {

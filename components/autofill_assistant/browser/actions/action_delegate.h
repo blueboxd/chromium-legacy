@@ -26,6 +26,8 @@ class GURL;
 namespace autofill {
 class AutofillProfile;
 class CreditCard;
+struct FormData;
+struct FormFieldData;
 class PersonalDataManager;
 }  // namespace autofill
 
@@ -145,6 +147,14 @@ class ActionDelegate {
       const base::string16& cvc,
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
+
+  // Return |FormData| and |FormFieldData| for the element identified with
+  // |selector|. The result is returned asynchronously through |callback|.
+  virtual void RetrieveElementFormAndFieldData(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&,
+                              const autofill::FormData&,
+                              const autofill::FormFieldData&)> callback);
 
   // Select the option given by |selector| and the value of the option to be
   // picked.

@@ -65,6 +65,8 @@ cast_source_set("browser") {
     "bluetooth/cast_bluetooth_chooser.h",
     "cast_browser_context.cc",
     "cast_browser_context.h",
+    "cast_browser_interface_binders.cc",
+    "cast_browser_interface_binders.h",
     "cast_browser_main_parts.cc",
     "cast_browser_main_parts.h",
     "cast_browser_process.cc",

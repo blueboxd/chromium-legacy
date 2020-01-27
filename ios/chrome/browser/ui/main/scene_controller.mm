@@ -50,6 +50,7 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
+#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -97,6 +98,11 @@ enum class EnterTabSwitcherSnapshotResult {
   kMaxValue = kPageNotLoadingAndSnapshotSucceeded,
 };
 
+// Used to update the current BVC mode if a new tab is added while the tab
+// switcher view is being dismissed.  This is different than ApplicationMode in
+// that it can be set to |NONE| when not in use.
+enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
+
 }  // namespace
 
 @interface SceneController () <UserFeedbackDataSource,
@@ -116,6 +122,32 @@ enum class EnterTabSwitcherSnapshotResult {
 // self.settingsNavigationController or from SigninInteractionCoordinator.
 @property(nonatomic, assign, readonly, getter=isSettingsViewPresented)
     BOOL settingsViewPresented;
+
+// Coordinator for displaying history.
+@property(nonatomic, strong) HistoryCoordinator* historyCoordinator;
+
+// The tab switcher command and the voice search commands can be sent by views
+// that reside in a different UIWindow leading to the fact that the exclusive
+// touch property will be ineffective and a command for processing both
+// commands may be sent in the same run of the runloop leading to
+// inconsistencies. Those two boolean indicate if one of those commands have
+// been processed in the last 200ms in order to only allow processing one at
+// a time.
+// TODO(crbug.com/560296):  Provide a general solution for handling mutually
+// exclusive chrome commands sent at nearly the same time.
+@property(nonatomic, assign) BOOL isProcessingTabSwitcherCommand;
+@property(nonatomic, assign) BOOL isProcessingVoiceSearchCommand;
+
+// If not NONE, the current BVC should be switched to this BVC on completion
+// of tab switcher dismissal.
+@property(nonatomic, assign)
+    TabSwitcherDismissalMode modeToDisplayOnTabSwitcherDismissal;
+
+// A property to track whether the QR Scanner should be started upon tab
+// switcher dismissal. It can only be YES if the QR Scanner experiment is
+// enabled.
+@property(nonatomic, readwrite)
+    NTPTabOpeningPostOpeningAction NTPActionAfterTabSwitcherDismissal;
 
 @end
 
@@ -188,6 +220,9 @@ enum class EnterTabSwitcherSnapshotResult {
   [self.signinInteractionCoordinator cancel];
   self.signinInteractionCoordinator = nil;
 
+  [self.historyCoordinator stop];
+  self.historyCoordinator = nil;
+
   self.hasInitializedUI = NO;
 }
 
@@ -198,15 +233,14 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)showHistory {
-  self.mainController.historyCoordinator = [[HistoryCoordinator alloc]
+  self.historyCoordinator = [[HistoryCoordinator alloc]
       initWithBaseViewController:self.mainController.currentBVC
                     browserState:self.mainController.mainBrowserState];
-  self.mainController.historyCoordinator.loadStrategy =
+  self.historyCoordinator.loadStrategy =
       [self currentPageIsIncognito] ? UrlLoadStrategy::ALWAYS_IN_INCOGNITO
                                     : UrlLoadStrategy::NORMAL;
-  self.mainController.historyCoordinator.dispatcher =
-      self.mainController.mainBVC.dispatcher;
-  [self.mainController.historyCoordinator start];
+  self.historyCoordinator.dispatcher = self.mainController.mainBVC.dispatcher;
+  [self.historyCoordinator start];
 }
 
 // Opens an url from a link in the settings UI.
@@ -250,14 +284,14 @@ enum class EnterTabSwitcherSnapshotResult {
 
 - (void)displayTabSwitcher {
   DCHECK(!self.mainController.isTabSwitcherActive);
-  if (!self.mainController.isProcessingVoiceSearchCommand) {
+  if (!self.isProcessingVoiceSearchCommand) {
     [self.mainController.currentBVC userEnteredTabSwitcher];
     [self showTabSwitcher];
-    self.mainController.isProcessingTabSwitcherCommand = YES;
+    self.isProcessingTabSwitcherCommand = YES;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
                                  kExpectedTransitionDurationInNanoSeconds),
                    dispatch_get_main_queue(), ^{
-                     self.mainController.isProcessingTabSwitcherCommand = NO;
+                     self.isProcessingTabSwitcherCommand = NO;
                    });
   }
 }
@@ -375,13 +409,13 @@ enum class EnterTabSwitcherSnapshotResult {
 }
 
 - (void)startVoiceSearch {
-  if (!self.mainController.isProcessingTabSwitcherCommand) {
-    [self.mainController startVoiceSearchInCurrentBVC];
-    self.mainController.isProcessingVoiceSearchCommand = YES;
+  if (!self.isProcessingTabSwitcherCommand) {
+    [self startVoiceSearchInCurrentBVC];
+    self.isProcessingVoiceSearchCommand = YES;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
                                  kExpectedTransitionDurationInNanoSeconds),
                    dispatch_get_main_queue(), ^{
-                     self.mainController.isProcessingVoiceSearchCommand = NO;
+                     self.isProcessingVoiceSearchCommand = NO;
                    });
   }
 }
@@ -642,7 +676,7 @@ enum class EnterTabSwitcherSnapshotResult {
 
   // The call to set currentBVC above does not actually display the BVC, because
   // _dismissingTabSwitcher is YES.  So: Force the BVC transition to start.
-  [self.mainController displayCurrentBVCAndFocusOmnibox:focusOmnibox];
+  [self displayCurrentBVCAndFocusOmnibox:focusOmnibox];
 }
 
 - (void)finishDismissingTabSwitcher {
@@ -659,9 +693,8 @@ enum class EnterTabSwitcherSnapshotResult {
       self.currentInterface.browser->GetWebStateList()->count() == 0U) {
     self.mainController.tabSwitcherIsActive = NO;
     self.mainController.dismissingTabSwitcher = NO;
-    self.mainController.modeToDisplayOnTabSwitcherDismissal =
-        TabSwitcherDismissalMode::NONE;
-    self.mainController.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
+    self.modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
+    self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
     [self showTabSwitcher];
     return;
   }
@@ -672,27 +705,60 @@ enum class EnterTabSwitcherSnapshotResult {
   DCHECK_EQ(self.mainController.mainCoordinator.activeViewController,
             self.mainController.currentBVC);
 
-  if (self.mainController.modeToDisplayOnTabSwitcherDismissal ==
+  if (self.modeToDisplayOnTabSwitcherDismissal ==
       TabSwitcherDismissalMode::NORMAL) {
     [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
-  } else if (self.mainController.modeToDisplayOnTabSwitcherDismissal ==
+  } else if (self.modeToDisplayOnTabSwitcherDismissal ==
              TabSwitcherDismissalMode::INCOGNITO) {
     [self setCurrentInterfaceForMode:ApplicationMode::INCOGNITO];
   }
 
-  self.mainController.modeToDisplayOnTabSwitcherDismissal =
-      TabSwitcherDismissalMode::NONE;
+  self.modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
 
-  ProceduralBlock action = [self.mainController
-      completionBlockForTriggeringAction:
-          self.mainController.NTPActionAfterTabSwitcherDismissal];
-  self.mainController.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
+  ProceduralBlock action = [self completionBlockForTriggeringAction:
+                                     self.NTPActionAfterTabSwitcherDismissal];
+  self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
   if (action) {
     action();
   }
 
   self.mainController.tabSwitcherIsActive = NO;
   self.mainController.dismissingTabSwitcher = NO;
+}
+
+#pragma mark Tab opening utility methods.
+
+- (ProceduralBlock)completionBlockForTriggeringAction:
+    (NTPTabOpeningPostOpeningAction)action {
+  switch (action) {
+    case START_VOICE_SEARCH:
+      return ^{
+        [self startVoiceSearchInCurrentBVC];
+      };
+    case START_QR_CODE_SCANNER:
+      return ^{
+        [self.mainController.currentBVC.dispatcher showQRScanner];
+      };
+    case FOCUS_OMNIBOX:
+      return ^{
+        [self.mainController.currentBVC.dispatcher focusOmnibox];
+      };
+    default:
+      return nil;
+  }
+}
+
+// Starts a voice search on the current BVC.
+- (void)startVoiceSearchInCurrentBVC {
+  // If the background (non-current) BVC is playing TTS audio, call
+  // -startVoiceSearch on it to stop the TTS.
+  BrowserViewController* backgroundBVC =
+      self.mainInterface == self.currentInterface ? self.incognitoInterface.bvc
+                                                  : self.mainInterface.bvc;
+  if (backgroundBVC.playingTTS)
+    [backgroundBVC startVoiceSearch];
+  else
+    [self.mainController.currentBVC startVoiceSearch];
 }
 
 #pragma mark - TabSwitching
@@ -789,11 +855,6 @@ enum class EnterTabSwitcherSnapshotResult {
                              WebStateList::kInvalidIndex;
 }
 
-- (ProceduralBlock)completionBlockForTriggeringAction:
-    (NTPTabOpeningPostOpeningAction)action {
-  return [self.mainController completionBlockForTriggeringAction:action];
-}
-
 - (BOOL)shouldOpenNTPTabOnActivationOfTabModel:(TabModel*)tabModel {
   if (self.mainController.tabSwitcherIsActive) {
     TabModel* mainTabModel =
@@ -851,7 +912,7 @@ enum class EnterTabSwitcherSnapshotResult {
   self.interfaceProvider.currentInterface = newInterface;
 
   if (!self.mainController.dismissingTabSwitcher)
-    [self.mainController displayCurrentBVCAndFocusOmnibox:NO];
+    [self displayCurrentBVCAndFocusOmnibox:NO];
 
   // Tell the BVC that was made current that it can use the web.
   [self activateBVCAndMakeCurrentBVCPrimary];
@@ -959,7 +1020,7 @@ enum class EnterTabSwitcherSnapshotResult {
           ? self.interfaceProvider.mainInterface
           : self.interfaceProvider.incognitoInterface;
   NSUInteger tabIndex = NSNotFound;
-  ProceduralBlock startupCompletion = [self.mainController
+  ProceduralBlock startupCompletion = [self
       completionBlockForTriggeringAction:[self.mainController.startupParameters
                                                  postOpeningAction]];
 
@@ -985,7 +1046,7 @@ enum class EnterTabSwitcherSnapshotResult {
     // note that when the tab switcher finishes dismissing, the current BVC
     // should be switched to be the main BVC if necessary.
     if (self.mainController.dismissingTabSwitcher) {
-      self.mainController.modeToDisplayOnTabSwitcherDismissal =
+      self.modeToDisplayOnTabSwitcherDismissal =
           targetMode == ApplicationMode::NORMAL
               ? TabSwitcherDismissalMode::NORMAL
               : TabSwitcherDismissalMode::INCOGNITO;
@@ -998,7 +1059,7 @@ enum class EnterTabSwitcherSnapshotResult {
     } else {
       // Voice search, QRScanner and the omnibox are presented by the BVC.
       // They must be started after the BVC view is added in the hierarchy.
-      self.mainController.NTPActionAfterTabSwitcherDismissal =
+      self.NTPActionAfterTabSwitcherDismissal =
           [self.mainController.startupParameters postOpeningAction];
       [self.mainController setStartupParameters:nil];
       [self.mainController.tabSwitcher
@@ -1124,6 +1185,24 @@ enum class EnterTabSwitcherSnapshotResult {
   if (tabOpenedCompletion) {
     tabOpenedCompletion();
   }
+}
+
+// Displays current (incognito/normal) BVC and optionally focuses the omnibox.
+- (void)displayCurrentBVCAndFocusOmnibox:(BOOL)focusOmnibox {
+  ProceduralBlock completion = nil;
+  if (focusOmnibox) {
+    __weak BrowserViewController* weakCurrentBVC =
+        self.mainController.currentBVC;
+    completion = ^{
+      [weakCurrentBVC.dispatcher focusOmnibox];
+    };
+  }
+  [self.mainController.mainCoordinator
+      showTabViewController:self.currentInterface.bvc
+                 completion:completion];
+  [self.currentInterface.bvc.dispatcher
+      setIncognitoContentVisible:(self.currentInterface ==
+                                  self.incognitoInterface)];
 }
 
 #pragma mark - AppNavigation

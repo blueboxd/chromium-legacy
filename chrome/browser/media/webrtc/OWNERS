@@ -18,6 +18,6 @@ per-file media_permission*=raymes@chromium.org
 # For WebRTC event logging code.
 per-file webrtc_event_log_*=eladalon@chromium.org
 
-per-file *permission_context*=file://chrome/browser/permissions/PERMISSIONS_OWNERS
+per-file *permission_context*=file://components/permissions/PERMISSIONS_OWNERS
 
 # COMPONENT: Blink>WebRTC

@@ -554,6 +554,69 @@ suite('TabList', () => {
     assertEquals(newIndex, dragOverIndex);
   });
 
+  test('DragOverTabGroup', async () => {
+    const tabElements = getUnpinnedTabs();
+
+    // Group the first tab.
+    webUIListenerCallback(
+        'tab-group-state-changed', tabElements[0].tab.id, 0, 'group0');
+
+    // Start dragging the second tab.
+    const draggedTab = tabElements[1];
+    const mockDataTransfer = new MockDataTransfer();
+    const dragStartEvent = new DragEvent('dragstart', {
+      bubbles: true,
+      composed: true,
+      clientX: 100,
+      clientY: 150,
+      dataTransfer: mockDataTransfer,
+    });
+    draggedTab.dispatchEvent(dragStartEvent);
+
+    // Drag the second tab over the newly created tab group.
+    const dragOverTabGroup = getTabGroups()[0];
+    const dragOverEvent = new DragEvent('dragover', {
+      bubbles: true,
+      composed: true,
+      dataTransfer: mockDataTransfer,
+    });
+    dragOverTabGroup.dispatchEvent(dragOverEvent);
+    const [tabId, groupId] = await testTabsApiProxy.whenCalled('groupTab');
+    assertEquals(draggedTab.tab.id, tabId);
+    assertEquals('group0', groupId);
+  });
+
+  test('DragOutOfTabGroup', async () => {
+    const tabElements = getUnpinnedTabs();
+
+    // Group the first tab.
+    webUIListenerCallback(
+        'tab-group-state-changed', tabElements[0].tab.id, 0, 'group0');
+
+    // Start dragging the first tab.
+    const draggedTab = tabElements[0];
+    const mockDataTransfer = new MockDataTransfer();
+    const dragStartEvent = new DragEvent('dragstart', {
+      bubbles: true,
+      composed: true,
+      clientX: 100,
+      clientY: 150,
+      dataTransfer: mockDataTransfer,
+    });
+    draggedTab.dispatchEvent(dragStartEvent);
+
+    // Drag the first tab out.
+    const dragOverTabGroup = getTabGroups()[0];
+    const dragOverEvent = new DragEvent('dragover', {
+      bubbles: true,
+      composed: true,
+      dataTransfer: mockDataTransfer,
+    });
+    tabList.dispatchEvent(dragOverEvent);
+    const [tabId] = await testTabsApiProxy.whenCalled('ungroupTab');
+    assertEquals(draggedTab.tab.id, tabId);
+  });
+
   test('tracks and untracks thumbnails based on viewport', async () => {
     // Wait for slideIn animations to complete updating widths and reset
     // resolvers to track new calls.

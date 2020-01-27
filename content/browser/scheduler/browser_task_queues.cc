@@ -150,52 +150,6 @@ void BrowserTaskQueues::Handle::ScheduleRunAllPendingTasksForTesting(
           base::ScopedClosureRunner(std::move(on_pending_task_ran))));
 }
 
-#if DCHECK_IS_ON()
-
-void BrowserTaskQueues::Handle::AddValidator(QueueType queue_type,
-                                             Validator* validator) {
-  validator_sets_[static_cast<size_t>(queue_type)].AddValidator(validator);
-}
-
-void BrowserTaskQueues::Handle::RemoveValidator(QueueType queue_type,
-                                                Validator* validator) {
-  validator_sets_[static_cast<size_t>(queue_type)].RemoveValidator(validator);
-}
-
-BrowserTaskQueues::ValidatorSet::ValidatorSet() = default;
-
-BrowserTaskQueues::ValidatorSet::~ValidatorSet() {
-  // Note the queue has already been shut down by the time we're deleted so we
-  // don't need to unregister.
-  DCHECK(validators_.empty());
-}
-
-void BrowserTaskQueues::ValidatorSet::AddValidator(Validator* validator) {
-  base::AutoLock lock(lock_);
-  DCHECK_EQ(validators_.count(validator), 0u)
-      << "Validator added more than once";
-  validators_.insert(validator);
-}
-
-void BrowserTaskQueues::ValidatorSet::RemoveValidator(Validator* validator) {
-  base::AutoLock lock(lock_);
-  size_t num_erased = validators_.erase(validator);
-  DCHECK_EQ(num_erased, 1u) << "Validator not in set";
-}
-
-void BrowserTaskQueues::ValidatorSet::OnPostTask(base::Location from_here,
-                                                 base::TimeDelta delay) {
-  base::AutoLock lock(lock_);
-  for (Validator* validator : validators_) {
-    validator->ValidatePostTask(from_here);
-  }
-}
-
-void BrowserTaskQueues::ValidatorSet::OnQueueNextWakeUpChanged(
-    base::TimeTicks next_wake_up) {}
-
-#endif  // DCHECK_IS_ON()
-
 BrowserTaskQueues::QueueData::QueueData() = default;
 BrowserTaskQueues::QueueData::~QueueData() = default;
 
@@ -240,17 +194,6 @@ BrowserTaskQueues::BrowserTaskQueues(
       QueuePriority::kBestEffortPriority);
 
   handle_ = base::AdoptRef(new Handle(this));
-
-#if DCHECK_IS_ON()
-  for (size_t i = 0; i < queue_data_.size(); ++i) {
-    queue_data_[i].task_queue->SetObserver(&handle_->validator_sets_[i]);
-  }
-
-  // Treat the |default_task_queue_| the same as the USER_BLOCKING task queue
-  // from a validation point of view.
-  default_task_queue_->SetObserver(
-      &handle_->validator_sets_[static_cast<int>(QueueType::kUserBlocking)]);
-#endif
 }
 
 BrowserTaskQueues::~BrowserTaskQueues() {

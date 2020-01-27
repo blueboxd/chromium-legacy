@@ -22,7 +22,9 @@ cr.define('settings', function() {
     if (!loadTimeData.getBoolean('isGuest')) {
       r.PEOPLE = r.BASIC.createSection('/people', 'people');
       r.SYNC = r.PEOPLE.createChild('/syncSetup');
-      r.SYNC_ADVANCED = r.SYNC.createChild('/syncSetup/advanced');
+      if (!loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+        r.SYNC_ADVANCED = r.SYNC.createChild('/syncSetup/advanced');
+      }
     }
 
     r.INTERNET = r.BASIC.createSection('/internet', 'internet');
@@ -102,8 +104,7 @@ cr.define('settings', function() {
     r.ACCESSIBILITY = r.ADVANCED.createSection('/accessibility', 'a11y');
 
     if (!loadTimeData.getBoolean('isGuest')) {
-      if (loadTimeData.valueExists('splitSettingsSyncEnabled') &&
-          loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
+      if (loadTimeData.getBoolean('splitSettingsSyncEnabled')) {
         r.OS_SYNC = r.PEOPLE.createChild('/osSync');
       }
       // Personalization

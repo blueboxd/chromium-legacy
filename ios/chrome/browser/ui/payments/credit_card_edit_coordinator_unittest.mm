@@ -38,7 +38,7 @@ using ::testing::_;
 class MockPaymentRequest : public payments::TestPaymentRequest {
  public:
   MockPaymentRequest(payments::WebPaymentRequest web_payment_request,
-                     ios::ChromeBrowserState* browser_state,
+                     ChromeBrowserState* browser_state,
                      web::WebState* web_state,
                      autofill::PersonalDataManager* personal_data_manager)
       : payments::TestPaymentRequest(web_payment_request,

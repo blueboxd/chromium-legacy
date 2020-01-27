@@ -57,6 +57,10 @@ class DownloadImpl : public Download, public base::SupportsUserData::Data {
   base::android::ScopedJavaLocalRef<jstring> GetLocation(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  // Add Impl suffix to avoid compiler clash with the C++ interface method.
+  base::android::ScopedJavaLocalRef<jstring> GetMimeTypeImpl(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   int GetError(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj) {
     return static_cast<int>(GetError());
   }
@@ -74,6 +78,7 @@ class DownloadImpl : public Download, public base::SupportsUserData::Data {
   void Resume() override;
   void Cancel() override;
   base::FilePath GetLocation() override;
+  std::string GetMimeType() override;
   DownloadError GetError() override;
 
  private:

@@ -336,7 +336,6 @@ static bool ConvertEventToUpdate(int render_process_id,
   base::DictionaryValue dict;
   dict.SetInteger("renderer", render_process_id);
   dict.SetInteger("player", event.id);
-  dict.SetString("type", media::MediaLog::EventTypeToString(event.type));
 
   // TODO(dalecurtis): This is technically not correct.  TimeTicks "can't" be
   // converted to to a human readable time format.  See base/time/time.h.
@@ -344,8 +343,28 @@ static bool ConvertEventToUpdate(int render_process_id,
   const double ticks_millis = ticks / base::Time::kMicrosecondsPerMillisecond;
   dict.SetDouble("ticksMillis", ticks_millis);
 
+  base::Value cloned_params = event.params.Clone();
+  switch (event.type) {
+    case media::MediaLogRecord::Type::kMessage:
+      dict.SetString("type", "MEDIA_LOG_ENTRY");
+      break;
+    case media::MediaLogRecord::Type::kMediaPropertyChange:
+      dict.SetString("type", "PROPERTY_CHANGE");
+      break;
+    case media::MediaLogRecord::Type::kMediaEventTriggered: {
+      // Delete the "event" param so that it won't spam the log.
+      base::Optional<base::Value> exists = cloned_params.ExtractPath("event");
+      DCHECK(exists.has_value());
+      dict.SetKey("type", std::move(exists.value()));
+      break;
+    }
+    case media::MediaLogRecord::Type::kMediaError:
+      dict.SetString("type", "PIPELINE_ERROR");
+      break;
+  }
+
   // Convert PipelineStatus to human readable string
-  if (event.type == media::MediaLogRecord::PIPELINE_ERROR) {
+  if (event.type == media::MediaLogRecord::Type::kMediaError) {
     int status;
     if (!event.params.GetInteger("pipeline_error", &status) ||
         status < static_cast<int>(media::PIPELINE_OK) ||
@@ -356,7 +375,7 @@ static bool ConvertEventToUpdate(int render_process_id,
     dict.SetString("params.pipeline_error",
                    media::PipelineStatusToString(error));
   } else {
-    dict.SetKey("params", event.params.Clone());
+    dict.SetKey("params", std::move(cloned_params));
   }
 
   *update = SerializeUpdate("media.onMediaEvent", &dict);

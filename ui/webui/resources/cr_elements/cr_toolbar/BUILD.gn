@@ -26,6 +26,14 @@ js_library("cr_toolbar") {
   deps = [ ":cr_toolbar_search_field" ]
 }
 
+group("polymer3_elements") {
+  deps = [
+    ":cr_toolbar_module",
+    ":cr_toolbar_search_field_module",
+    ":cr_toolbar_selection_overlay_module",
+  ]
+}
+
 polymer_modulizer("cr_toolbar") {
   js_file = "cr_toolbar.js"
   html_file = "cr_toolbar.html"

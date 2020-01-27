@@ -119,6 +119,7 @@ message DeviceReportingProto {
   optional bool report_board_status = 14 [default = false];
   optional bool report_cpu_info = 15 [default = false];
   optional bool report_graphics_status = 16 [default = false];
+  optional bool report_crash_report_info = 17 [default = false];
 
   // Frequency to report device status, default to 3 hours.
   optional int64 device_status_frequency = 9 [default = 10800000];

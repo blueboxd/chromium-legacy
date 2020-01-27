@@ -33,12 +33,30 @@ export let DisplayInputs;
 export class OmniboxInput extends OmniboxElement {
   constructor() {
     super('omnibox-input-template');
-    this.displayInputs = OmniboxInput.defaultDisplayInputs;
+    this.restoreInputs_();
   }
 
   /** @override */
   connectedCallback() {
     this.setupElementListeners_();
+  }
+
+  /** @private */
+  storeInputs_() {
+    const inputs = {
+      connectWindowOmnibox: this.connectWindowOmnibox,
+      displayInputs: this.displayInputs,
+    };
+    window.localStorage.setItem('preserved-inputs', JSON.stringify(inputs));
+  }
+
+  /** @private */
+  restoreInputs_() {
+    const inputsString = window.localStorage.getItem('preserved-inputs');
+    const inputs = inputsString && JSON.parse(inputsString) || {};
+    this.$('#connect-window-omnibox').checked = inputs.connectWindowOmnibox;
+    this.displayInputs =
+        inputs.displayInputs || OmniboxInput.defaultDisplayInputs;
   }
 
   /** @private */
@@ -61,6 +79,9 @@ export class OmniboxInput extends OmniboxElement {
     this.$('#input-text')
         .addEventListener(
             'input', this.positionCursorPositionIndicators_.bind(this));
+
+    this.$('#connect-window-omnibox')
+        .addEventListener('input', this.storeInputs_.bind(this));
 
     this.$('#response-selection')
         .addEventListener('input', this.onResponseSelectionChanged_.bind(this));
@@ -188,6 +209,11 @@ export class OmniboxInput extends OmniboxElement {
     return this.$('#connect-window-omnibox').checked;
   }
 
+  /** @private @param {boolean} connectWindowOmnibox */
+  set connectWindowOmnibox_(connectWindowOmnibox) {
+    this.$('#connect-window-omnibox').checked = connectWindowOmnibox;
+  }
+
   /** @private */
   onResponseSelectionChanged_() {
     const {value, max} = this.$('#response-selection');
@@ -216,6 +242,7 @@ export class OmniboxInput extends OmniboxElement {
 
   /** @private */
   onDisplayInputsChanged_() {
+    this.storeInputs_();
     this.dispatchEvent(new CustomEvent(
         'display-inputs-changed', {detail: this.displayInputs}));
   }
@@ -325,7 +352,11 @@ export class OmniboxInput extends OmniboxElement {
     }
   }
 
-  /** @private @param {!File} file */
+  /**
+   * @private
+   * @param {!File} file
+   * @return {!Promise}
+   */
   static readFile_(file) {
     return new Promise(resolve => {
       const reader = new FileReader();

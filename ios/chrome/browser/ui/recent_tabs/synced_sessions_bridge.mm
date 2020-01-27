@@ -21,7 +21,7 @@ namespace synced_sessions {
 
 SyncedSessionsObserverBridge::SyncedSessionsObserverBridge(
     id<SyncedSessionsObserver> owner,
-    ios::ChromeBrowserState* browserState)
+    ChromeBrowserState* browserState)
     : owner_(owner),
       identity_manager_(
           IdentityManagerFactory::GetForBrowserState(browserState)),

@@ -152,14 +152,14 @@ enum InternalGridAutoFlowDirection {
 };
 
 enum GridAutoFlow {
-  kAutoFlowRow =
-      kInternalAutoFlowAlgorithmSparse | kInternalAutoFlowDirectionRow,
-  kAutoFlowColumn =
-      kInternalAutoFlowAlgorithmSparse | kInternalAutoFlowDirectionColumn,
+  kAutoFlowRow = int(kInternalAutoFlowAlgorithmSparse) |
+                 int(kInternalAutoFlowDirectionRow),
+  kAutoFlowColumn = int(kInternalAutoFlowAlgorithmSparse) |
+                    int(kInternalAutoFlowDirectionColumn),
   kAutoFlowRowDense =
-      kInternalAutoFlowAlgorithmDense | kInternalAutoFlowDirectionRow,
-  kAutoFlowColumnDense =
-      kInternalAutoFlowAlgorithmDense | kInternalAutoFlowDirectionColumn
+      int(kInternalAutoFlowAlgorithmDense) | int(kInternalAutoFlowDirectionRow),
+  kAutoFlowColumnDense = int(kInternalAutoFlowAlgorithmDense) |
+                         int(kInternalAutoFlowDirectionColumn)
 };
 
 static const size_t kContainmentBits = 4;

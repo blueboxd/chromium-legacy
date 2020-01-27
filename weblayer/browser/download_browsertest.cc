@@ -80,6 +80,7 @@ class DownloadBrowserTest : public WebLayerBrowserTest,
   base::FilePath download_location() { return download_location_; }
   int64_t total_bytes() { return total_bytes_; }
   DownloadError download_state() { return download_state_; }
+  std::string mime_type() { return mime_type_; }
   int completed_count() { return completed_count_; }
   int failed_count() { return failed_count_; }
   int download_dropped_count() { return download_dropped_count_; }
@@ -118,6 +119,7 @@ class DownloadBrowserTest : public WebLayerBrowserTest,
     download_location_ = download->GetLocation();
     total_bytes_ = download->GetTotalBytes();
     download_state_ = download->GetError();
+    mime_type_ = download->GetMimeType();
     CHECK_EQ(download->GetReceivedBytes(), total_bytes_);
     CHECK_EQ(download->GetState(), DownloadState::kComplete);
     completed_run_loop_->Quit();
@@ -142,6 +144,7 @@ class DownloadBrowserTest : public WebLayerBrowserTest,
   base::FilePath download_location_;
   int64_t total_bytes_ = 0;
   DownloadError download_state_ = DownloadError::kNoError;
+  std::string mime_type_;
   int completed_count_ = 0;
   int failed_count_ = 0;
   int download_dropped_count_ = 0;
@@ -204,6 +207,7 @@ IN_PROC_BROWSER_TEST_F(DownloadBrowserTest, Basic) {
   EXPECT_EQ(failed_count(), 0);
   EXPECT_EQ(download_dropped_count(), 0);
   EXPECT_EQ(download_state(), DownloadError::kNoError);
+  EXPECT_EQ(mime_type(), "text/html");
 
   // Check that the size on disk matches what's expected.
   {

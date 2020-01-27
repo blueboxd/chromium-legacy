@@ -4,7 +4,6 @@
 
 package org.chromium.weblayer.shell;
 
-import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -13,27 +12,30 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.ValueCallback;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.DownloadCallback;
 import org.chromium.weblayer.ErrorPageCallback;
+import org.chromium.weblayer.FindInPageCallback;
 import org.chromium.weblayer.FullscreenCallback;
+import org.chromium.weblayer.Navigation;
 import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.NewTabCallback;
@@ -58,10 +60,12 @@ public class WebLayerShellActivity extends FragmentActivity {
     private Profile mProfile;
     private Browser mBrowser;
     private EditText mUrlView;
+    private ImageButton mMenuButton;
     private ProgressBar mLoadProgressBar;
     private View mMainView;
     private int mMainViewId;
-    private ViewGroup mTopContentsContainer;
+    private View mTopContentsContainer;
+    private TabListCallback mTabListCallback;
     private List<Tab> mPreviousTabList = new ArrayList<>();
     private Runnable mExitFullscreenRunnable;
 
@@ -86,14 +90,10 @@ public class WebLayerShellActivity extends FragmentActivity {
         mMainView = mainView;
         setContentView(mainView);
 
-        mUrlView = new EditText(this);
-        mUrlView.setId(View.generateViewId());
-        mUrlView.setSelectAllOnFocus(true);
-        mUrlView.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
-        mUrlView.setImeOptions(EditorInfo.IME_ACTION_GO);
-        // The background of the top-view must be opaque, otherwise it bleeds through to the
-        // cc::Layer that mirrors the contents of the top-view.
-        mUrlView.setBackgroundColor(0xFFa9a9a9);
+        mTopContentsContainer =
+                LayoutInflater.from(this).inflate(R.layout.shell_browser_controls, null);
+
+        mUrlView = mTopContentsContainer.findViewById(R.id.url_view);
         mUrlView.setOnEditorActionListener(new OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
@@ -111,22 +111,38 @@ public class WebLayerShellActivity extends FragmentActivity {
             }
         });
 
-        mLoadProgressBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
-        mLoadProgressBar.setIndeterminate(false);
-        mLoadProgressBar.setMax(100);
-        mLoadProgressBar.setVisibility(View.INVISIBLE);
+        mMenuButton = mTopContentsContainer.findViewById(R.id.menu_button);
+        mMenuButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PopupMenu popup = new PopupMenu(WebLayerShellActivity.this, v);
+                popup.getMenuInflater().inflate(R.menu.app_menu, popup.getMenu());
+                popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        if (item.getItemId() == R.id.find_begin_menu_id) {
+                            // TODO(estade): add a UI for FIP. For now, just search for "cat", or go
+                            // to the next result if a search has already been initiated.
+                            mBrowser.getActiveTab().getFindInPageController().setFindInPageCallback(
+                                    new FindInPageCallback() {});
+                            mBrowser.getActiveTab().getFindInPageController().find("cat", true);
+                            return true;
+                        }
 
-        // The progress bar sits above the URL bar in Z order and at its bottom in Y.
-        mTopContentsContainer = new RelativeLayout(this);
-        mTopContentsContainer.addView(mUrlView,
-                new RelativeLayout.LayoutParams(
-                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+                        if (item.getItemId() == R.id.find_end_menu_id) {
+                            mBrowser.getActiveTab().getFindInPageController().setFindInPageCallback(
+                                    null);
+                            return true;
+                        }
 
-        RelativeLayout.LayoutParams progressLayoutParams = new RelativeLayout.LayoutParams(
-                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-        progressLayoutParams.addRule(RelativeLayout.ALIGN_BOTTOM, mUrlView.getId());
-        progressLayoutParams.setMargins(0, 0, 0, -10);
-        mTopContentsContainer.addView(mLoadProgressBar, progressLayoutParams);
+                        return false;
+                    }
+                });
+                popup.show();
+            }
+        });
+
+        mLoadProgressBar = mTopContentsContainer.findViewById(R.id.progress_bar);
 
         try {
             // This ensures asynchronous initialization of WebLayer on first start of activity.
@@ -140,36 +156,72 @@ public class WebLayerShellActivity extends FragmentActivity {
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mTabListCallback != null) {
+            mBrowser.unregisterTabListCallback(mTabListCallback);
+            mTabListCallback = null;
+        }
+    }
+
     private void onWebLayerReady(WebLayer webLayer, Bundle savedInstanceState) {
         if (isFinishing() || isDestroyed()) return;
 
         webLayer.setRemoteDebuggingEnabled(true);
 
         Fragment fragment = getOrCreateBrowserFragment(savedInstanceState);
+
+        // Have WebLayer Shell retain the fragment instance to simulate the behavior of
+        // external embedders (note that if this is changed, then WebLayer Shell should handle
+        // rotations and resizes itself via its manifest, as otherwise the user loses all state
+        // when the shell is rotated in the foreground).
+        fragment.setRetainInstance(true);
         mBrowser = Browser.fromFragment(fragment);
-        mBrowser.registerTabListCallback(new TabListCallback() {
+        mTabListCallback = new TabListCallback() {
             @Override
             public void onActiveTabChanged(Tab activeTab) {
-                NavigationController navigationController = activeTab.getNavigationController();
-                if (navigationController.getNavigationListSize() > 0) {
-                    mUrlView.setText(
-                            navigationController
-                                    .getNavigationEntryDisplayUri(
-                                            navigationController.getNavigationListCurrentIndex())
-                                    .toString());
+                String currentDisplayUrl = getCurrentDisplayUrl();
+                if (currentDisplayUrl != null) {
+                    mUrlView.setText(currentDisplayUrl);
                 }
             }
-        });
+        };
+        mBrowser.registerTabListCallback(mTabListCallback);
         setTabCallbacks(mBrowser.getActiveTab(), fragment);
         mProfile = mBrowser.getProfile();
 
         mBrowser.setTopView(mTopContentsContainer);
 
-        String startupUrl = getUrlFromIntent(getIntent());
-        if (TextUtils.isEmpty(startupUrl)) {
-            startupUrl = "https://google.com";
+        // If there is already a url loaded in the current tab just display it in the top bar;
+        // otherwise load the startup url.
+        String currentDisplayUrl = getCurrentDisplayUrl();
+
+        if (currentDisplayUrl != null) {
+            mUrlView.setText(currentDisplayUrl);
+
+        } else {
+            String startupUrl = getUrlFromIntent(getIntent());
+            if (TextUtils.isEmpty(startupUrl)) {
+                startupUrl = "https://google.com";
+            }
+            loadUrl(startupUrl);
         }
-        loadUrl(startupUrl);
+    }
+
+    /* Returns the Url for the current tab as a String, or null if there is no
+     * current tab. */
+    private String getCurrentDisplayUrl() {
+        NavigationController navigationController =
+                mBrowser.getActiveTab().getNavigationController();
+
+        if (navigationController.getNavigationListSize() == 0) {
+            return null;
+        }
+
+        return navigationController
+                .getNavigationEntryDisplayUri(navigationController.getNavigationListCurrentIndex())
+                .toString();
     }
 
     private void setTabCallbacks(Tab tab, Fragment fragment) {
@@ -177,6 +229,7 @@ public class WebLayerShellActivity extends FragmentActivity {
             @Override
             public void onNewTab(Tab newTab, @NewTabType int type) {
                 setTabCallbacks(newTab, fragment);
+                mBrowser.getActiveTab().getFindInPageController().setFindInPageCallback(null);
                 mPreviousTabList.add(mBrowser.getActiveTab());
                 mBrowser.setActiveTab(newTab);
             }
@@ -230,6 +283,11 @@ public class WebLayerShellActivity extends FragmentActivity {
         });
         tab.getNavigationController().registerNavigationCallback(new NavigationCallback() {
             @Override
+            public void onNavigationStarted(Navigation navigation) {
+                mBrowser.getActiveTab().getFindInPageController().setFindInPageCallback(null);
+            }
+
+            @Override
             public void onLoadStateChanged(boolean isLoading, boolean toDifferentDocument) {
                 mLoadProgressBar.setVisibility(
                         isLoading && toDifferentDocument ? View.VISIBLE : View.INVISIBLE);
@@ -244,11 +302,7 @@ public class WebLayerShellActivity extends FragmentActivity {
             @Override
             public boolean onInterceptDownload(Uri uri, String userAgent, String contentDisposition,
                     String mimetype, long contentLength) {
-                DownloadManager.Request request = new DownloadManager.Request(uri);
-                request.setNotificationVisibility(
-                        DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-                getSystemService(DownloadManager.class).enqueue(request);
-                return true;
+                return false;
             }
 
             @Override

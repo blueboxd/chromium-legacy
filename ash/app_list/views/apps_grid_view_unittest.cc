@@ -169,7 +169,8 @@ class DragAfterPageFlipTask : public ash::PaginationModelObserver {
 class TestSuggestedSearchResult : public TestSearchResult {
  public:
   TestSuggestedSearchResult() {
-    set_display_type(ash::SearchResultDisplayType::kRecommendation);
+    set_display_type(ash::SearchResultDisplayType::kTile);
+    set_is_recommendation(true);
   }
   ~TestSuggestedSearchResult() override {}
 

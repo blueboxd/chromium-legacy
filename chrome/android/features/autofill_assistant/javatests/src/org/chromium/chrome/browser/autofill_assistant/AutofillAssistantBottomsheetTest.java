@@ -12,13 +12,18 @@ import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withTagValue;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
+import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.RECYCLER_VIEW_TAG;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.getAbsoluteBoundingRect;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewAssertionTrue;
@@ -99,6 +104,17 @@ public class AutofillAssistantBottomsheetTest {
         mTestRule.getActivity().getScrim().disableAnimationForTesting(true);
     }
 
+    private AutofillAssistantTestScript makeScriptWithActionArray(
+            ArrayList<ActionProto> actionsList) {
+        return new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("bottomsheet_behaviour_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Bottomsheet behaviour")))
+                        .build(),
+                actionsList);
+    }
+
     private AutofillAssistantTestScript makeScript(
             ViewportResizing resizing, PeekMode peekMode, boolean withDetails) {
         ArrayList<ActionProto> list = new ArrayList<>();
@@ -139,13 +155,7 @@ public class AutofillAssistantBottomsheetTest {
                                                                      .setText("Done"))))
                          .build());
 
-        return new AutofillAssistantTestScript(
-                (SupportedScriptProto) SupportedScriptProto.newBuilder()
-                        .setPath("bottomsheet_behaviour_target_website.html")
-                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
-                                ChipProto.newBuilder().setText("Bottomsheet behaviour")))
-                        .build(),
-                list);
+        return makeScriptWithActionArray(list);
     }
 
     @Test
@@ -379,6 +389,80 @@ public class AutofillAssistantBottomsheetTest {
         onView(withText("Cancel")).check(doesNotExist());
         waitUntilViewAssertionTrue(withText(R.string.undo), doesNotExist(), 3000L);
         onView(withId(R.id.autofill_assistant)).check(doesNotExist());
+    }
+
+    @Test
+    @MediumTest
+    public void testBottomSheetAutoCollapseAndExpand() {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        // Prompt.
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder()
+                                            .setMessage("Hello world!")
+                                            .addChoices(Choice.newBuilder().setChip(
+                                                    ChipProto.newBuilder()
+                                                            .setType(ChipType.DONE_ACTION)
+                                                            .setText("Focus element"))))
+                         .build());
+        // Focus on the bottom element.
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setFocusElement(FocusElementProto.newBuilder().setElement(
+                                 ElementReferenceProto.newBuilder().addSelectors("p.bottom")))
+                         .build());
+        // Set handle and header peek mode and auto collapse to that state.
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setConfigureBottomSheet(ConfigureBottomSheetProto.newBuilder()
+                                                          .setViewportResizing(NO_RESIZE)
+                                                          .setPeekMode(HANDLE_HEADER)
+                                                          .setCollapse(true))
+                         .build());
+        // Add sticky "Next" button. Disable auto expanding the sheet for prompt actions.
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder()
+                                            .addChoices(Choice.newBuilder().setChip(
+                                                    ChipProto.newBuilder()
+                                                            .setType(ChipType.DONE_ACTION)
+                                                            .setSticky(true)
+                                                            .setText("Sticky next")))
+                                            .setDisableForceExpandSheet(true))
+                         .build());
+        // Expand the sheet.
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setConfigureBottomSheet(ConfigureBottomSheetProto.newBuilder()
+                                                          .setViewportResizing(NO_RESIZE)
+                                                          .setExpand(true))
+                         .build());
+        // Add "Done" button.
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().addChoices(
+                                 Choice.newBuilder().setChip(ChipProto.newBuilder()
+                                                                     .setType(ChipType.DONE_ACTION)
+                                                                     .setText("Done"))))
+                         .build());
+
+        AutofillAssistantTestScript script = makeScriptWithActionArray(list);
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Focus element"), isCompletelyDisplayed());
+        onView(withText("Focus element")).perform(click());
+
+        // Check that the sheet is in peek state and has a sticky button. There is
+        // a second button still in the hidden carousel.
+        waitUntilViewMatchesCondition(
+                allOf(withText("Sticky next"), isDescendantOfA(withId(R.id.header))),
+                isCompletelyDisplayed());
+        onView(allOf(withText("Sticky next"), isDescendantOfA(withTagValue(is(RECYCLER_VIEW_TAG)))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withText("Sticky next"), isDescendantOfA(withId(R.id.header))))
+                .perform(click());
+
+        // Check that the sheet is now expanded and the done button is part of the recycler view,
+        // not the header.
+        waitUntilViewMatchesCondition(
+                allOf(withText("Done"), isDescendantOfA(withTagValue(is(RECYCLER_VIEW_TAG)))),
+                isCompletelyDisplayed());
     }
 
     private ViewAction swipeDownToMinimize() {

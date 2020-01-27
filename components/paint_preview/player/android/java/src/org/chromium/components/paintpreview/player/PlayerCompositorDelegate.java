@@ -9,6 +9,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 
 import org.chromium.base.Callback;
+import org.chromium.base.UnguessableToken;
 
 /**
  * Used for communicating with the Paint Preview delegate for requesting new bitmaps and forwarding
@@ -24,7 +25,7 @@ public interface PlayerCompositorDelegate {
      * if there are any errors.
      * @param errorCallback Gets notified if there are any errors. Won't get called otherwise.
      */
-    void requestBitmap(long frameGuid, Rect clipRect, float scaleFactor,
+    void requestBitmap(UnguessableToken frameGuid, Rect clipRect, float scaleFactor,
             Callback<Bitmap> bitmapCallback, Runnable errorCallback);
 
     /**
@@ -32,5 +33,5 @@ public interface PlayerCompositorDelegate {
      * @param frameGuid The GUID of the frame.
      * @param point The coordinates of the click event, relative to the frame.
      */
-    void onClick(long frameGuid, Point point);
+    void onClick(UnguessableToken frameGuid, Point point);
 }

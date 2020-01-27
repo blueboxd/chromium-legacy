@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -23,6 +24,7 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 
 /**
@@ -182,10 +184,12 @@ public final class ReturnToChromeExperimentsUtil {
      */
     public static boolean shouldShowStartSurfaceAsTheHomePage() {
         // Note that we should only show StartSurface as the HomePage if Single Pane is enabled,
-        // HomePage is not customized and accessibility is not enabled.
+        // HomePage is not customized, accessibility is not enabled and not on tablet.
         String homePageUrl = HomepageManager.getHomepageUri();
         return FeatureUtilities.isStartSurfaceSinglePaneEnabled()
                 && (TextUtils.isEmpty(homePageUrl) || NewTabPage.isNTPUrl(homePageUrl))
-                && !AccessibilityUtil.isAccessibilityEnabled();
+                && !AccessibilityUtil.isAccessibilityEnabled()
+                && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
+                        ContextUtils.getApplicationContext());
     }
 }

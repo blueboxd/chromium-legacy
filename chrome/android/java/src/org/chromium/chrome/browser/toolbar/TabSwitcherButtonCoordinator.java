@@ -123,9 +123,10 @@ public class TabSwitcherButtonCoordinator {
     }
 
     private void updateButtonState() {
-        boolean shouldEnable = shouldEnable =
-                mOverviewModeState != OverviewModeState.SHOWN_TABSWITCHER
+        // TODO(crbug.com/1039997): match SHOWN_HOMEPAGE instead.
+        boolean shouldEnable = mOverviewModeState != OverviewModeState.SHOWN_TABSWITCHER
                 && mOverviewModeState != OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY
+                && mOverviewModeState != OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY
                 && mOverviewModeState != OverviewModeState.SHOWN_TABSWITCHER_TWO_PANES
                 && mTabSwitcherButtonModel.get(TabSwitcherButtonProperties.NUMBER_OF_TABS) >= 1;
         mTabSwitcherButtonModel.set(TabSwitcherButtonProperties.IS_ENABLED, shouldEnable);

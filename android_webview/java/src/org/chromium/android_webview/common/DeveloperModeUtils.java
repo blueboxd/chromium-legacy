@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 
-import org.chromium.android_webview.common.services.ServiceNames;
 import org.chromium.base.ContextUtils;
 
 import java.util.HashMap;
@@ -26,6 +25,8 @@ public final class DeveloperModeUtils {
     // Do not instantiate this class.
     private DeveloperModeUtils() {}
 
+    public static final String DEVELOPER_MODE_STATE_COMPONENT =
+            "org.chromium.android_webview.devui.DeveloperModeState";
     public static final String URI_AUTHORITY_SUFFIX = ".DeveloperModeContentProvider";
     public static final String FLAG_OVERRIDE_URI_PATH = "/flag-overrides";
     public static final String FLAG_OVERRIDE_NAME_COLUMN = "flagName";
@@ -44,10 +45,10 @@ public final class DeveloperModeUtils {
      */
     public static boolean isDeveloperModeEnabled(String webViewPackageName) {
         final Context context = ContextUtils.getApplicationContext();
-        ComponentName developerModeContentProvider =
-                new ComponentName(webViewPackageName, ServiceNames.DEVELOPER_MODE_CONTENT_PROVIDER);
-        int enabledState = context.getPackageManager().getComponentEnabledSetting(
-                developerModeContentProvider);
+        ComponentName developerModeComponent =
+                new ComponentName(webViewPackageName, DEVELOPER_MODE_STATE_COMPONENT);
+        int enabledState =
+                context.getPackageManager().getComponentEnabledSetting(developerModeComponent);
         return enabledState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
     }
 

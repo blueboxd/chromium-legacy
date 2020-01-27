@@ -35,6 +35,7 @@ quic::QuicFrames CloneFrames(const quic::QuicFrames& frames) {
       case quic::STOP_WAITING_FRAME:
       case quic::STREAMS_BLOCKED_FRAME:
       case quic::STREAM_FRAME:
+      case quic::HANDSHAKE_DONE_FRAME:
         break;
       case quic::ACK_FRAME:
         frame.ack_frame = new quic::QuicAckFrame(*frame.ack_frame);

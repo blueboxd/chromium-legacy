@@ -384,5 +384,28 @@ TEST_F(PromptActionTest, NormalMessageSet) {
   action.ProcessAction(callback_.Get());
 }
 
+TEST_F(PromptActionTest, ForceExpandSheetDefault) {
+  auto* ok_proto = prompt_proto_->add_choices();
+  ok_proto->mutable_chip()->set_text("Ok");
+  ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
+  ok_proto->set_server_payload("ok");
+
+  EXPECT_CALL(mock_action_delegate_, Prompt(_, Eq(false)));
+  PromptAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(PromptActionTest, ForceExpandSheetDisable) {
+  auto* ok_proto = prompt_proto_->add_choices();
+  ok_proto->mutable_chip()->set_text("Ok");
+  ok_proto->mutable_chip()->set_type(HIGHLIGHTED_ACTION);
+  ok_proto->set_server_payload("ok");
+
+  prompt_proto_->set_disable_force_expand_sheet(true);
+  EXPECT_CALL(mock_action_delegate_, Prompt(_, Eq(true)));
+  PromptAction action(&mock_action_delegate_, proto_);
+  action.ProcessAction(callback_.Get());
+}
+
 }  // namespace
 }  // namespace autofill_assistant

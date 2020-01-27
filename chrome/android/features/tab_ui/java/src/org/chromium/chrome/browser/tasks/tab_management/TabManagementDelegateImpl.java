@@ -57,6 +57,7 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
                 activity.getCompositorViewHolder().getDynamicResourceLoader(),
                 activity.getFullscreenManager(), activity,
                 activity.getMenuOrKeyboardActionController(), activity, containerView,
+                activity.getShareDelegateSupplier(),
                 FeatureUtilities.isTabGroupsAndroidContinuationEnabled()
                                 && SysUtils.isLowEndDevice()
                         ? TabListCoordinator.TabListMode.LIST
@@ -70,7 +71,7 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
                 activity.getCompositorViewHolder().getDynamicResourceLoader(),
                 activity.getFullscreenManager(), activity,
                 activity.getMenuOrKeyboardActionController(), activity, containerView,
-                TabListCoordinator.TabListMode.CAROUSEL);
+                activity.getShareDelegateSupplier(), TabListCoordinator.TabListMode.CAROUSEL);
     }
 
     @Override

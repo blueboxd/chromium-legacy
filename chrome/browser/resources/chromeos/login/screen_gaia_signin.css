@@ -20,13 +20,18 @@
   width: 100%;
 }
 
-.transparent {
+/* Use the opacity CSS property in order to make the element invisible without
+actually making it formally "hidden". This is used for hiding the webview
+element during loading, without affecting its loading events. */
+[transparent] {
   opacity: 0;
+}
+
+[animated-transparency][transparent] {
   transition: opacity 500ms ease-in;
 }
 
-.non-transparent {
-  opacity: 1;
+[animated-transparency]:not([transparent]) {
   transition: opacity 500ms ease-out;
 }
 

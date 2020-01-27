@@ -30,12 +30,6 @@ class WebEngineTestLauncherDelegate : public content::TestLauncherDelegate {
     return test_suite.Run();
   }
 
-  bool AdjustChildProcessCommandLine(
-      base::CommandLine* command_line,
-      const base::FilePath& temp_data_dir) override {
-    return true;
-  }
-
   content::ContentMainDelegate* CreateContentMainDelegate() override {
     // Set up the channels for the Context service, but postpone client
     // binding until after the browser TaskRunners are up and running.

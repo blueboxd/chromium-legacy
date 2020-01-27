@@ -19,6 +19,7 @@
 #include "content/public/browser/resource_context.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "weblayer/browser/safe_browsing/safe_browsing_navigation_throttle.h"
 #include "weblayer/browser/safe_browsing/url_checker_delegate_impl.h"
 
 namespace weblayer {
@@ -84,6 +85,13 @@ SafeBrowsingService::CreateURLLoaderThrottle(
       // UKM opted in. Since WebLayer currently doesn't support UKM, this
       // feature is not enabled.
       /*cache_manager*/ nullptr);
+}
+
+std::unique_ptr<content::NavigationThrottle>
+SafeBrowsingService::CreateSafeBrowsingNavigationThrottle(
+    content::NavigationHandle* handle) {
+  return std::make_unique<SafeBrowsingNavigationThrottle>(
+      handle, GetSafeBrowsingUIManager());
 }
 
 scoped_refptr<safe_browsing::UrlCheckerDelegate>

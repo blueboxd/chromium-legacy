@@ -48,8 +48,6 @@ WebGPUSwapBufferProvider::WebGPUSwapBufferProvider(
   // paths to keep the rendering correct in that cases.
   layer_->SetContentsOpaque(true);
   layer_->SetPremultipliedAlpha(true);
-
-  GraphicsLayer::RegisterContentsLayer(layer_.get());
 }
 
 WebGPUSwapBufferProvider::~WebGPUSwapBufferProvider() {
@@ -67,7 +65,6 @@ void WebGPUSwapBufferProvider::Neuter() {
   }
 
   if (layer_) {
-    GraphicsLayer::UnregisterContentsLayer(layer_.get());
     layer_->ClearClient();
     layer_ = nullptr;
   }

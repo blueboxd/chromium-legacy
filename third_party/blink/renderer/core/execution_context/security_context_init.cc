@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
@@ -14,6 +15,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -21,11 +23,6 @@
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
-
-bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
-  return frame && frame->GetPage()->GetChromeClient().IsPopup() &&
-         WebTestSupport::IsRunningWebTest();
-}
 // This constructor is used for non-Document contexts (i.e., workers and tests).
 // This does a simpler check than Documents to set secure_context_mode_. This
 // is only sufficient until there are APIs that are available in workers or
@@ -85,10 +82,20 @@ bool SecurityContextInit::FeatureEnabled(OriginTrialFeature feature) const {
 }
 
 void SecurityContextInit::ApplyPendingDataToDocument(Document& document) const {
+  if (BindCSPImmediately()) {
+    document.GetContentSecurityPolicy()->BindToDelegate(
+        document.GetContentSecurityPolicyDelegate());
+  }
   for (auto feature : feature_count_)
     UseCounter::Count(document, feature);
   for (auto feature : parsed_feature_policies_)
     document.FeaturePolicyFeatureObserved(feature);
+  for (const auto& message : feature_policy_parse_messages_) {
+    document.AddConsoleMessage(
+        ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
+                               mojom::ConsoleMessageLevel::kError,
+                               "Error with Feature-Policy header: " + message));
+  }
 }
 
 void SecurityContextInit::InitializeContentSecurityPolicy(
@@ -214,7 +221,8 @@ void SecurityContextInit::InitializeOrigin(const DocumentInit& initializer) {
   // owner's security origin so the tests can possibly access the
   // document via internals API.
   auto* frame = initializer.GetFrame();
-  if (IsPagePopupRunningInWebTest(frame)) {
+  if (frame && frame->GetPage()->GetChromeClient().IsPopup() &&
+      WebTestSupport::IsRunningWebTest()) {
     security_origin_ = frame->PagePopupOwner()
                            ->GetDocument()
                            .GetSecurityOrigin()
@@ -391,41 +399,19 @@ void SecurityContextInit::InitializeOriginTrials(
 }
 
 void SecurityContextInit::InitializeAgent(const DocumentInit& initializer) {
-  auto* frame = initializer.GetFrame();
-
-  // If we are a page popup in LayoutTests ensure we use the popup
-  // owner's frame for looking up the Agent so the tests can possibly
-  // access the document via internals API.
-  if (IsPagePopupRunningInWebTest(frame)) {
-    frame = frame->PagePopupOwner()->GetDocument().GetFrame();
-  } else if (!frame) {
-    if (Document* context_document = initializer.ContextDocument()) {
-      frame = context_document->GetFrame();
-      window_agent_factory_ = context_document->GetWindowAgentFactory();
-    } else if (const Document* owner_document = initializer.OwnerDocument()) {
-      frame = owner_document->GetFrame();
-      window_agent_factory_ = owner_document->GetWindowAgentFactory();
-    }
-  }
-
-  if (!window_agent_factory_ && frame)
-    window_agent_factory_ = &frame->window_agent_factory();
-
   // If we are allowed to share our document with other windows then we need
   // to look at the window agent factory, otherwise we should create our own
   // window agent.
-  if (window_agent_factory_) {
+  if (auto* window_agent_factory = initializer.GetWindowAgentFactory()) {
     bool has_potential_universal_access_privilege = false;
-    if (frame) {
-      if (Settings* settings = frame->GetSettings()) {
-        // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
-        // dynamically change.
-        if (!settings->GetWebSecurityEnabled() ||
-            settings->GetAllowUniversalAccessFromFileURLs())
-          has_potential_universal_access_privilege = true;
-      }
+    if (auto* settings = initializer.GetSettingsForWindowAgentFactory()) {
+      // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
+      // dynamically change.
+      if (!settings->GetWebSecurityEnabled() ||
+          settings->GetAllowUniversalAccessFromFileURLs())
+        has_potential_universal_access_privilege = true;
     }
-    agent_ = window_agent_factory_->GetAgentForOrigin(
+    agent_ = window_agent_factory->GetAgentForOrigin(
         has_potential_universal_access_privilege,
         V8PerIsolateData::MainThreadIsolate(), security_origin_.get());
   } else {

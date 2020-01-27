@@ -37,8 +37,8 @@ AshWindowTreeHostMirroringUnified::GetRootTransformForLocalEventCoordinates()
     DCHECK(display);
     // Undo the translation in the root window transform, since this transform
     // should be applied on local points to this host.
-    trans.Translate(SkIntToMScalar(display->bounds().x()),
-                    SkIntToMScalar(display->bounds().y()));
+    trans.Translate(SkIntToScalar(display->bounds().x()),
+                    SkIntToScalar(display->bounds().y()));
   }
 
   return trans;

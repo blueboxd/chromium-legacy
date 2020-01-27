@@ -316,14 +316,16 @@ void CertificateProviderRequestPinFunction::GetQuotaLimitHeuristics(
       api::certificate_provider::kMaxClosedDialogsPerMinute - 1,
       base::TimeDelta::FromMinutes(1)};
   heuristics->push_back(std::make_unique<QuotaService::TimedLimit>(
-      short_limit_config, new RequestPinExceptFirstQuotaBucketMapper,
+      short_limit_config,
+      std::make_unique<RequestPinExceptFirstQuotaBucketMapper>(),
       "MAX_PIN_DIALOGS_CLOSED_PER_MINUTE"));
 
   QuotaLimitHeuristic::Config long_limit_config = {
       api::certificate_provider::kMaxClosedDialogsPer10Minutes - 1,
       base::TimeDelta::FromMinutes(10)};
   heuristics->push_back(std::make_unique<QuotaService::TimedLimit>(
-      long_limit_config, new RequestPinExceptFirstQuotaBucketMapper,
+      long_limit_config,
+      std::make_unique<RequestPinExceptFirstQuotaBucketMapper>(),
       "MAX_PIN_DIALOGS_CLOSED_PER_10_MINUTES"));
 }
 

@@ -12,9 +12,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
+#include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/signin/public/identity_manager/primary_account_access_token_fetcher.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "services/identity/public/cpp/scope_set.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -39,7 +40,7 @@ class TokenHandleFetcherShutdownNotifierFactory
             "TokenHandleFetcher") {
     DependsOn(IdentityManagerFactory::GetInstance());
   }
-  ~TokenHandleFetcherShutdownNotifierFactory() override {}
+  ~TokenHandleFetcherShutdownNotifierFactory() override = default;
 
   DISALLOW_COPY_AND_ASSIGN(TokenHandleFetcherShutdownNotifierFactory);
 };
@@ -50,7 +51,7 @@ TokenHandleFetcher::TokenHandleFetcher(TokenHandleUtil* util,
                                        const AccountId& account_id)
     : token_handle_util_(util), account_id_(account_id) {}
 
-TokenHandleFetcher::~TokenHandleFetcher() {}
+TokenHandleFetcher::~TokenHandleFetcher() = default;
 
 void TokenHandleFetcher::BackfillToken(Profile* profile,
                                        const TokenFetchingCallback& callback) {
@@ -58,7 +59,10 @@ void TokenHandleFetcher::BackfillToken(Profile* profile,
   callback_ = callback;
 
   identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
-  if (!identity_manager_->HasPrimaryAccountWithRefreshToken()) {
+  // This class doesn't care about browser sync consent.
+  CoreAccountId core_account_id =
+      identity_manager_->GetUnconsentedPrimaryAccountId();
+  if (!identity_manager_->HasAccountWithRefreshToken(core_account_id)) {
     profile_shutdown_notification_ =
         TokenHandleFetcherShutdownNotifierFactory::GetInstance()
             ->Get(profile)
@@ -74,14 +78,13 @@ void TokenHandleFetcher::BackfillToken(Profile* profile,
 
   // We can use base::Unretained(this) below because |access_token_fetcher_| is
   // owned by this object (thus destroyed when this object is destroyed) and
-  // PrimaryAccountAccessTokenFetcher guarantees that it doesn't invoke its
-  // callback after it is destroyed.
-  access_token_fetcher_ =
-      std::make_unique<signin::PrimaryAccountAccessTokenFetcher>(
-          kAccessTokenFetchId, identity_manager_, scopes,
-          base::BindOnce(&TokenHandleFetcher::OnAccessTokenFetchComplete,
-                         base::Unretained(this)),
-          signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable);
+  // AccountAccessTokenFetcher guarantees that it doesn't invoke its callback
+  // after it is destroyed.
+  access_token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForAccount(
+      core_account_id, kAccessTokenFetchId, scopes,
+      base::BindOnce(&TokenHandleFetcher::OnAccessTokenFetchComplete,
+                     base::Unretained(this)),
+      signin::AccessTokenFetcher::Mode::kWaitUntilRefreshTokenAvailable);
 }
 
 void TokenHandleFetcher::OnAccessTokenFetchComplete(

@@ -600,19 +600,13 @@ void BrowserNonClientFrameViewAsh::OnProfileAvatarChanged(
 // BrowserNonClientFrameViewAsh, private:
 
 bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
-  // In tablet mode, to prevent accidental taps of the window controls, and to
-  // give more horizontal space for tabs and the new tab button especially in
-  // splitscreen view, we hide the window controls. We only do this when the
-  // Home Launcher feature is enabled, since it gives the user the ability to
-  // minimize all windows when pressing the Launcher button on the shelf.
-  const bool hide_caption_buttons_in_tablet_mode =
-      !UsePackagedAppHeaderStyle(browser_view()->browser());
-  if (hide_caption_buttons_in_tablet_mode &&
-      ash::TabletMode::Get()->InTabletMode()) {
-    return false;
-  }
+  return ShouldShowCaptionButtonsWhenNotInOverview() && !IsInOverviewMode();
+}
 
-  return !IsInOverviewMode();
+bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtonsWhenNotInOverview()
+    const {
+  return UsePackagedAppHeaderStyle(browser_view()->browser()) ||
+         !ash::TabletMode::Get()->InTabletMode();
 }
 
 int BrowserNonClientFrameViewAsh::GetToolbarLeftInset() const {
@@ -632,7 +626,7 @@ int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
 
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
   int inset = 0;
-  if (ShouldShowCaptionButtons())
+  if (ShouldShowCaptionButtonsWhenNotInOverview())
     inset += caption_button_container_->GetPreferredSize().width();
   if (web_app_frame_toolbar())
     inset += web_app_frame_toolbar()->GetPreferredSize().width();

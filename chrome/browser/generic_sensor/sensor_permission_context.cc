@@ -6,9 +6,9 @@
 
 #include "base/feature_list.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_request_id.h"
 #include "services/device/public/cpp/device_features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 #include "url/gurl.h"
@@ -20,9 +20,10 @@ SensorPermissionContext::SensorPermissionContext(Profile* profile)
 
 SensorPermissionContext::~SensorPermissionContext() {}
 
-void SensorPermissionContext::UpdateTabContext(const PermissionRequestID& id,
-                                               const GURL& requesting_frame,
-                                               bool allowed) {
+void SensorPermissionContext::UpdateTabContext(
+    const permissions::PermissionRequestID& id,
+    const GURL& requesting_frame,
+    bool allowed) {
   auto* content_settings = TabSpecificContentSettings::GetForFrame(
       id.render_process_id(), id.render_frame_id());
   if (!content_settings)

@@ -96,8 +96,6 @@ class DesktopSessionAgent
 
   // webrtc::MouseCursorMonitor::Callback implementation.
   void OnMouseCursor(webrtc::MouseCursor* cursor) override;
-  void OnMouseCursorPosition(webrtc::MouseCursorMonitor::CursorState state,
-                             const webrtc::DesktopVector& position) override;
 
   // Forwards a local clipboard event though the IPC channel to the network
   // process.

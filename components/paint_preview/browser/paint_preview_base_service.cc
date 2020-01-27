@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/task/post_task.h"
+#include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/paint_preview/browser/compositor_utils.h"
@@ -98,10 +98,12 @@ void PaintPreviewBaseService::CapturePaintPreview(
   params.is_main_frame = (render_frame_host == web_contents->GetMainFrame());
   params.root_dir = root_dir;
 
+  auto start_time = base::TimeTicks::Now();
   client->CapturePaintPreview(
       params, render_frame_host,
       base::BindOnce(&PaintPreviewBaseService::OnCaptured,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+                     weak_ptr_factory_.GetWeakPtr(), start_time,
+                     std::move(callback)));
 }
 
 std::unique_ptr<PaintPreviewCompositorService>
@@ -112,6 +114,7 @@ PaintPreviewBaseService::StartCompositorService(
 }
 
 void PaintPreviewBaseService::OnCaptured(
+    base::TimeTicks start_time,
     OnCapturedCallback callback,
     base::UnguessableToken guid,
     mojom::PaintPreviewStatus status,
@@ -122,6 +125,8 @@ void PaintPreviewBaseService::OnCaptured(
     std::move(callback).Run(kCaptureFailed, nullptr);
     return;
   }
+  base::UmaHistogramTimes("Browser.PaintPreview.Capture.TotalCaptureDuration",
+                          base::TimeTicks::Now() - start_time);
   std::move(callback).Run(kOk, std::move(proto));
 }
 

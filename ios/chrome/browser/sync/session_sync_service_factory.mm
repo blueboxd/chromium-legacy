@@ -53,7 +53,7 @@ bool ShouldSyncURLImpl(const GURL& url) {
 // might inherit from other interfaces with same methods.
 class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
  public:
-  explicit SyncSessionsClientImpl(ios::ChromeBrowserState* browser_state)
+  explicit SyncSessionsClientImpl(ChromeBrowserState* browser_state)
       : browser_state_(browser_state),
         window_delegates_getter_(
             std::make_unique<TabModelSyncedWindowDelegatesGetter>()),
@@ -104,7 +104,7 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   }
 
  private:
-  ios::ChromeBrowserState* const browser_state_;
+  ChromeBrowserState* const browser_state_;
   const std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
       window_delegates_getter_;
   const std::unique_ptr<IOSChromeLocalSessionEventRouter>
@@ -129,7 +129,7 @@ bool SessionSyncServiceFactory::ShouldSyncURLForTesting(const GURL& url) {
 
 // static
 SessionSyncService* SessionSyncServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<SessionSyncService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -148,8 +148,8 @@ SessionSyncServiceFactory::~SessionSyncServiceFactory() {}
 std::unique_ptr<KeyedService>
 SessionSyncServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<sync_sessions::SessionSyncServiceImpl>(
       ::GetChannel(), std::make_unique<SyncSessionsClientImpl>(browser_state));
 }

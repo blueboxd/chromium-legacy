@@ -142,6 +142,18 @@ AppActivity& AppActivity::operator=(AppActivity&&) = default;
 AppActivity::~AppActivity() = default;
 
 void AppActivity::SetAppState(AppState app_state) {
+  if (is_active_) {
+    // Log the active time before  updating app_state
+    base::TimeTicks now = base::TimeTicks::Now();
+    base::TimeDelta active_time = now - last_updated_time_ticks_;
+
+    base::Time end_time = base::Time::Now();
+    base::Time start_time = end_time - active_time;
+
+    active_times_.push_back(ActiveTime(start_time, end_time));
+    running_active_time_ += active_time;
+  }
+
   app_state_ = app_state;
   last_updated_time_ticks_ = base::TimeTicks::Now();
 }
@@ -166,6 +178,21 @@ void AppActivity::SetAppInactive(base::Time timestamp) {
   active_times_.push_back(ActiveTime(start_time, timestamp));
 
   running_active_time_ += active_time;
+  last_updated_time_ticks_ = now;
+}
+
+void AppActivity::ResetRunningActiveTime(base::Time timestamp) {
+  running_active_time_ = base::TimeDelta::FromMinutes(0);
+
+  if (!is_active_)
+    return;
+
+  // Log the active time before the until the reset.
+  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeDelta active_time = now - last_updated_time_ticks_;
+  base::Time start_time = timestamp - active_time;
+
+  active_times_.push_back(ActiveTime(start_time, timestamp));
   last_updated_time_ticks_ = now;
 }
 

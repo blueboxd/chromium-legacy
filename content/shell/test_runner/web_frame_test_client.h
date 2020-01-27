@@ -38,12 +38,6 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
                                     blink::WebLocalFrame* frame);
 
   // WebLocalFrameClient overrides needed by WebFrameTestProxy.
-  void RunModalAlertDialog(const blink::WebString& message) override;
-  bool RunModalConfirmDialog(const blink::WebString& message) override;
-  bool RunModalPromptDialog(const blink::WebString& message,
-                            const blink::WebString& default_value,
-                            blink::WebString* actual_value) override;
-  bool RunModalBeforeUnloadDialog(bool is_reload) override;
   void PostAccessibilityEvent(const blink::WebAXObject& object,
                               ax::mojom::Event event,
                               ax::mojom::EventFrom event_from) override;

@@ -6,6 +6,8 @@
 
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/property_tree.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
@@ -1412,20 +1414,23 @@ TEST_F(CompositedLayerMappingTest, ScrollingContainerBoundsChange) {
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
 
   cc::Layer* scrolling_layer = scrollable_area->LayerForScrolling();
-  EXPECT_EQ(0, scrolling_layer->CurrentScrollOffset().y());
+  auto element_id = scrollable_area->GetScrollElementId();
+  auto& scroll_tree =
+      scrolling_layer->layer_tree_host()->property_trees()->scroll_tree;
+  EXPECT_EQ(0, scroll_tree.current_scroll_offset(element_id).y());
   EXPECT_EQ(150, scrolling_layer->bounds().height());
   EXPECT_EQ(100, scrolling_layer->scroll_container_bounds().height());
 
   scrollerElement->setScrollTop(300);
   scrollerElement->setAttribute(html_names::kStyleAttr, "max-height: 25px;");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(50, scrolling_layer->CurrentScrollOffset().y());
+  EXPECT_EQ(50, scroll_tree.current_scroll_offset(element_id).y());
   EXPECT_EQ(150, scrolling_layer->bounds().height());
   EXPECT_EQ(25, scrolling_layer->scroll_container_bounds().height());
 
   scrollerElement->setAttribute(html_names::kStyleAttr, "max-height: 300px;");
   UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(50, scrolling_layer->CurrentScrollOffset().y());
+  EXPECT_EQ(50, scroll_tree.current_scroll_offset(element_id).y());
   EXPECT_EQ(150, scrolling_layer->bounds().height());
   EXPECT_EQ(100, scrolling_layer->scroll_container_bounds().height());
 }

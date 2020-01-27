@@ -197,6 +197,9 @@ public final class ChromePreferenceKeys {
     public static final String CRASH_UPLOAD_SUCCESS_OTHER = "other_crash_success_upload";
     public static final String CRASH_UPLOAD_SUCCESS_RENDERER = "renderer_crash_success_upload";
 
+    public static final KeyPrefix CUSTOM_TABS_DEX_LAST_UPDATE_TIME_PREF_PREFIX =
+            new KeyPrefix("pref_local_custom_tabs_module_dex_last_update_time_*");
+
     /**
      * Key used to save the time in milliseconds since epoch that the first run experience or second
      * run promo was shown.
@@ -881,6 +884,7 @@ public final class ChromePreferenceKeys {
     static List<KeyPrefix> createGrandfatheredPrefixesInUse() {
         // clang-format off
         return Arrays.asList(
+                CUSTOM_TABS_DEX_LAST_UPDATE_TIME_PREF_PREFIX,
                 PAYMENTS_PAYMENT_INSTRUMENT_USE_COUNT,
                 PAYMENTS_PAYMENT_INSTRUMENT_USE_DATE
         );

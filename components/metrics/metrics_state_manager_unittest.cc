@@ -508,6 +508,18 @@ TEST_F(MetricsStateManagerTest, CheckProviderResetIds) {
   EXPECT_EQ(MetricsLog::Hash(state_manager->previous_client_id_),
             uma_proto.client_id());
   histogram_tester.ExpectUniqueSample("UMA.IsClonedInstall", 1, 1);
+
+  // Since we set the pref and didn't call SaveMachineId(), this should do
+  // nothing
+  provider->ProvideCurrentSessionData(&uma_proto);
+  histogram_tester.ExpectUniqueSample("UMA.IsClonedInstall", 1, 1);
+
+  // Set the pref through SaveMachineId and expect previous to do nothing and
+  // current to log the histogram
+  prefs_.SetInteger(prefs::kMetricsMachineId, 2216820);
+  state_manager->cloned_install_detector_.SaveMachineId(&prefs_, "test");
+  provider->ProvideCurrentSessionData(&uma_proto);
+  histogram_tester.ExpectUniqueSample("UMA.IsClonedInstall", 1, 2);
 }
 
 }  // namespace metrics

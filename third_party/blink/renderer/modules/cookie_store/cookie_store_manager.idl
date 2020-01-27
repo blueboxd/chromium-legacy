@@ -6,7 +6,7 @@
 
 [
   Exposed=(ServiceWorker,Window),
-  RuntimeEnabled=CookieStore,
+  RuntimeEnabled=CookieStoreWorker,
   SecureContext
 ] interface CookieStoreManager {
   [CallWith=ScriptState, MeasureAs=CookieStoreAPI, RaisesException]

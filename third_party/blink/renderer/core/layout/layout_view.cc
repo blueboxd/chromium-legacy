@@ -97,8 +97,9 @@ LayoutView::LayoutView(Document* document)
     : LayoutBlockFlow(document),
       frame_view_(document->View()),
       layout_state_(nullptr),
-      // TODO(pdr): This should be null if CompositeAfterPaintEnabled() is true.
-      compositor_(std::make_unique<PaintLayerCompositor>(*this)),
+      compositor_(RuntimeEnabledFeatures::CompositeAfterPaintEnabled()
+                      ? nullptr
+                      : std::make_unique<PaintLayerCompositor>(*this)),
       layout_quote_head_(nullptr),
       layout_counter_count_(0),
       hit_test_count_(0),
@@ -812,14 +813,10 @@ void LayoutView::UpdateHitTestResult(HitTestResult& result,
 }
 
 bool LayoutView::UsesCompositing() const {
-  // TODO(pdr): compositor_ should be null when CompositeAfterPaint is enabled.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return false;
   return compositor_ && compositor_->StaleInCompositingMode();
 }
 
 PaintLayerCompositor* LayoutView::Compositor() {
-  DCHECK(compositor_);
   return compositor_.get();
 }
 

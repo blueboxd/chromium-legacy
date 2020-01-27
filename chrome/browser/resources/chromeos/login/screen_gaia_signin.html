@@ -12,8 +12,8 @@
         show-buttons-overlay="[[!navigationEnabled_]]"
         hidden="[[!isStep_(step_, 'online-gaia', 'gaia-loading')]]">
       <div slot="footer" class="flex layout vertical">
-        <div id="signin-frame-container"
-            class$="[[getSigninFrameContainerClass_(isLoadingUiShown_)]]">
+        <div id="signin-frame-container" transparent$="[[isLoadingUiShown_]]"
+            animated-transparency$="[[!usedSaml_]]">
           <webview id="signin-frame" name="signin-frame"></webview>
         </div>
       </div>

@@ -166,7 +166,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   // The browser where the settings are being displayed.
   Browser* _browser;
   // The browser state for |_browser|. Never off the record.
-  ios::ChromeBrowserState* _browserState;  // weak
+  ChromeBrowserState* _browserState;  // weak
   // Bridge for TemplateURLServiceObserver.
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserverBridge;
   std::unique_ptr<signin::IdentityManagerObserverBridge>

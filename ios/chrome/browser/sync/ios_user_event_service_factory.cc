@@ -27,7 +27,7 @@
 
 // static
 syncer::UserEventService* IOSUserEventServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<syncer::UserEventService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -55,8 +55,8 @@ IOSUserEventServiceFactory::BuildServiceInstanceFor(
     return std::make_unique<syncer::NoOpUserEventService>();
   }
 
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   syncer::OnceModelTypeStoreFactory store_factory =
       ModelTypeStoreServiceFactory::GetForBrowserState(browser_state)
           ->GetStoreFactory();

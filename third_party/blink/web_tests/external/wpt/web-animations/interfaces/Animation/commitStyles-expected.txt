@@ -6,7 +6,7 @@ FAIL Commits logical properties animation.commitStyles is not a function
 FAIL Commits values calculated mid-interval animation.commitStyles is not a function
 FAIL Commits variables as their computed values animation.commitStyles is not a function
 FAIL Commits em units as pixel values animation.commitStyles is not a function
-FAIL Commits the intermediate value of an animation in the middle of stack promise_test: Unhandled rejection with value: object "TypeError: animA.persist is not a function"
+FAIL Commits the intermediate value of an animation in the middle of stack promise_test: Unhandled rejection with value: object "TypeError: animB.commitStyles is not a function"
 FAIL Triggers mutation observers when updating style promise_test: Unhandled rejection with value: object "TypeError: animation.commitStyles is not a function"
 FAIL Does NOT trigger mutation observers when the change to style is redundant promise_test: Unhandled rejection with value: object "TypeError: animation.commitStyles is not a function"
 FAIL Throws if the target element is a pseudo element assert_throws: function "() => {

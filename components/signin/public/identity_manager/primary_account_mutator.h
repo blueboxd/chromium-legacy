@@ -60,6 +60,13 @@ class PrimaryAccountMutator {
   virtual bool SetPrimaryAccount(const CoreAccountId& account_id) = 0;
 
 #if defined(OS_CHROMEOS)
+  // Sets the account with |account_id| as the unconsented primary account
+  // (i.e. without implying browser sync consent). Requires that the account
+  // is known by the IdentityManager. See README.md for details on the meaning
+  // of "unconsented".
+  virtual void SetUnconsentedPrimaryAccount(
+      const CoreAccountId& account_id) = 0;
+
   // Updates the info of the account corresponding to (|gaia_id|, |email|),
   // marks it as the primary account, and returns whether the operation
   // succeeded or not. Currently, this method is guaranteed to succeed.

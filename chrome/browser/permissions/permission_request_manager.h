@@ -19,7 +19,10 @@
 
 enum class PermissionAction;
 enum class PermissionPromptDisposition;
+
+namespace permissions {
 class PermissionRequest;
+}
 
 namespace test {
 class PermissionRequestManagerTestApi;
@@ -69,7 +72,7 @@ class PermissionRequestManager
   // bubble closes. A request with message text identical to an outstanding
   // request will be merged with the outstanding request, and will have the same
   // callbacks called as the outstanding request.
-  void AddRequest(PermissionRequest* request);
+  void AddRequest(permissions::PermissionRequest* request);
 
   // Will reposition the bubble (may change parent if necessary).
   void UpdateAnchorPosition();
@@ -108,7 +111,7 @@ class PermissionRequestManager
   void OnVisibilityChanged(content::Visibility visibility) override;
 
   // PermissionPrompt::Delegate:
-  const std::vector<PermissionRequest*>& Requests() override;
+  const std::vector<permissions::PermissionRequest*>& Requests() override;
   PermissionPrompt::DisplayNameOrOrigin GetDisplayNameOrOrigin() override;
   void Accept() override;
   void Deny() override;
@@ -170,16 +173,20 @@ class PermissionRequestManager
   // *not* |duplicate_requests_| - for a request matching |request|, and returns
   // the matching request, or |nullptr| if no match. Note that the matching
   // request may or may not be the same object as |request|.
-  PermissionRequest* GetExistingRequest(PermissionRequest* request);
+  permissions::PermissionRequest* GetExistingRequest(
+      permissions::PermissionRequest* request);
 
   // Calls PermissionGranted on a request and all its duplicates.
-  void PermissionGrantedIncludingDuplicates(PermissionRequest* request);
+  void PermissionGrantedIncludingDuplicates(
+      permissions::PermissionRequest* request);
   // Calls PermissionDenied on a request and all its duplicates.
-  void PermissionDeniedIncludingDuplicates(PermissionRequest* request);
+  void PermissionDeniedIncludingDuplicates(
+      permissions::PermissionRequest* request);
   // Calls Cancelled on a request and all its duplicates.
-  void CancelledIncludingDuplicates(PermissionRequest* request);
+  void CancelledIncludingDuplicates(permissions::PermissionRequest* request);
   // Calls RequestFinished on a request and all its duplicates.
-  void RequestFinishedIncludingDuplicates(PermissionRequest* request);
+  void RequestFinishedIncludingDuplicates(
+      permissions::PermissionRequest* request);
 
   void NotifyBubbleAdded();
   void NotifyBubbleRemoved();
@@ -206,11 +213,12 @@ class PermissionRequestManager
   // The request (or requests) that the user is currently being prompted for.
   // When this is non-empty, the |view_| is generally non-null as long as the
   // tab is visible.
-  std::vector<PermissionRequest*> requests_;
-  base::circular_deque<PermissionRequest*> queued_requests_;
+  std::vector<permissions::PermissionRequest*> requests_;
+  base::circular_deque<permissions::PermissionRequest*> queued_requests_;
   // Maps from the first request of a kind to subsequent requests that were
   // duped against it.
-  std::unordered_multimap<PermissionRequest*, PermissionRequest*>
+  std::unordered_multimap<permissions::PermissionRequest*,
+                          permissions::PermissionRequest*>
       duplicate_requests_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;

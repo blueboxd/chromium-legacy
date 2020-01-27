@@ -31,26 +31,26 @@ struct CC_ANIMATION_EXPORT TransformOperation {
   gfx::Transform matrix;
 
   union {
-    SkMScalar perspective_depth;
+    SkScalar perspective_depth;
 
     struct {
-      SkMScalar x, y;
+      SkScalar x, y;
     } skew;
 
     struct {
-      SkMScalar x, y, z;
+      SkScalar x, y, z;
     } scale;
 
     struct {
-      SkMScalar x, y, z;
+      SkScalar x, y, z;
     } translate;
 
     struct {
       struct {
-        SkMScalar x, y, z;
+        SkScalar x, y, z;
       } axis;
 
-      SkMScalar angle;
+      SkScalar angle;
     } rotate;
   };
 
@@ -60,18 +60,18 @@ struct CC_ANIMATION_EXPORT TransformOperation {
   void Bake();
 
   bool ApproximatelyEqual(const TransformOperation& other,
-                          SkMScalar tolerance) const;
+                          SkScalar tolerance) const;
 
   static bool BlendTransformOperations(const TransformOperation* from,
                                        const TransformOperation* to,
-                                       SkMScalar progress,
+                                       SkScalar progress,
                                        TransformOperation* result);
 
   static bool BlendedBoundsForBox(const gfx::BoxF& box,
                                   const TransformOperation* from,
                                   const TransformOperation* to,
-                                  SkMScalar min_progress,
-                                  SkMScalar max_progress,
+                                  SkScalar min_progress,
+                                  SkScalar max_progress,
                                   gfx::BoxF* bounds);
 };
 

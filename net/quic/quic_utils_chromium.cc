@@ -30,17 +30,18 @@ quic::QuicTagVector ParseQuicConnectionOptions(
 
 quic::ParsedQuicVersionVector ParseQuicVersions(
     const std::string& quic_versions) {
-  quic::ParsedQuicVersionVector supported_versions;
-  quic::QuicTransportVersionVector all_supported_versions =
-      quic::AllSupportedTransportVersions();
-
-  for (const base::StringPiece& version : base::SplitStringPiece(
+  quic::ParsedQuicVersionVector all_supported_versions =
+      quic::AllSupportedVersions();
+  quic::ParsedQuicVersionVector parsed_versions;
+  for (const base::StringPiece& version_string : base::SplitStringPiece(
            quic_versions, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     auto it = all_supported_versions.begin();
     while (it != all_supported_versions.end()) {
-      if (quic::QuicVersionToString(*it) == version) {
-        supported_versions.push_back(
-            quic::ParsedQuicVersion(quic::PROTOCOL_QUIC_CRYPTO, *it));
+      if ((it->handshake_protocol == quic::PROTOCOL_QUIC_CRYPTO &&
+           quic::QuicVersionToString(it->transport_version) ==
+               version_string) ||
+          quic::AlpnForVersion(*it) == version_string) {
+        parsed_versions.push_back(*it);
         // Remove the supported version to deduplicate versions extracted from
         // |quic_versions|.
         all_supported_versions.erase(it);
@@ -48,14 +49,8 @@ quic::ParsedQuicVersionVector ParseQuicVersions(
       }
       it++;
     }
-    for (const auto& supported_version : quic::AllSupportedVersions()) {
-      if (quic::AlpnForVersion(supported_version) == version) {
-        supported_versions.push_back(supported_version);
-        break;
-      }
-    }
   }
-  return supported_versions;
+  return parsed_versions;
 }
 
 }  // namespace net

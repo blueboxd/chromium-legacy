@@ -14,7 +14,6 @@
 #include "chrome/browser/android/location_settings_impl.h"
 #include "chrome/browser/android/search_permissions/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/infobars/core/infobar.h"
+#include "components/permissions/permission_request_id.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
@@ -106,7 +106,7 @@ void GeolocationPermissionContextAndroid::SetDSEOriginForTesting(
 
 void GeolocationPermissionContextAndroid::RequestPermission(
     content::WebContents* web_contents,
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_frame_origin,
     bool user_gesture,
     BrowserPermissionCallback callback) {
@@ -147,7 +147,7 @@ void GeolocationPermissionContextAndroid::RequestPermission(
 }
 
 void GeolocationPermissionContextAndroid::UserMadePermissionDecision(
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     ContentSetting content_setting) {
@@ -158,7 +158,7 @@ void GeolocationPermissionContextAndroid::UserMadePermissionDecision(
 }
 
 void GeolocationPermissionContextAndroid::NotifyPermissionSet(
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     BrowserPermissionCallback callback,
@@ -226,9 +226,9 @@ void GeolocationPermissionContextAndroid::NotifyPermissionSet(
                             std::move(callback), persist, content_setting);
 }
 
-PermissionResult
+permissions::PermissionResult
 GeolocationPermissionContextAndroid::UpdatePermissionStatusWithDeviceStatus(
-    PermissionResult result,
+    permissions::PermissionResult result,
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
   if (result.content_setting != CONTENT_SETTING_BLOCK) {
@@ -251,7 +251,7 @@ GeolocationPermissionContextAndroid::UpdatePermissionStatusWithDeviceStatus(
       } else {
         result.content_setting = CONTENT_SETTING_BLOCK;
       }
-      result.source = PermissionStatusSource::UNSPECIFIED;
+      result.source = permissions::PermissionStatusSource::UNSPECIFIED;
     }
 
     if (result.content_setting != CONTENT_SETTING_BLOCK &&
@@ -259,7 +259,7 @@ GeolocationPermissionContextAndroid::UpdatePermissionStatusWithDeviceStatus(
       // TODO(benwells): plumb through the RFH and use the associated
       // WebContents to check that the android location can be prompted for.
       result.content_setting = CONTENT_SETTING_ASK;
-      result.source = PermissionStatusSource::UNSPECIFIED;
+      result.source = permissions::PermissionStatusSource::UNSPECIFIED;
     }
   }
 
@@ -372,7 +372,7 @@ bool GeolocationPermissionContextAndroid::IsRequestingOriginDSE(
 }
 
 void GeolocationPermissionContextAndroid::HandleUpdateAndroidPermissions(
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_frame_origin,
     const GURL& embedding_origin,
     BrowserPermissionCallback callback,
@@ -435,11 +435,12 @@ void GeolocationPermissionContextAndroid::OnLocationSettingsDialogShown(
       location_settings_dialog_request_id_, requesting_origin, embedding_origin,
       std::move(location_settings_dialog_callback_), persist, content_setting);
 
-  location_settings_dialog_request_id_ = PermissionRequestID(0, 0, 0);
+  location_settings_dialog_request_id_ =
+      permissions::PermissionRequestID(0, 0, 0);
 }
 
 void GeolocationPermissionContextAndroid::FinishNotifyPermissionSet(
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     BrowserPermissionCallback callback,

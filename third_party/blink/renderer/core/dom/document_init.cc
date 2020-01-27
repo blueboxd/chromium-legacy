@@ -39,11 +39,13 @@
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/platform/network/mime/content_type.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 
@@ -397,6 +399,41 @@ DocumentInit& DocumentInit::WithDocumentPolicy(
     const DocumentPolicy::FeatureState& document_policy) {
   document_policy_ = document_policy;
   return *this;
+}
+
+bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
+  return frame && frame->GetPage()->GetChromeClient().IsPopup() &&
+         WebTestSupport::IsRunningWebTest();
+}
+
+WindowAgentFactory* DocumentInit::GetWindowAgentFactory() const {
+  // If we are a page popup in LayoutTests ensure we use the popup
+  // owner's frame for looking up the Agent so the tests can possibly
+  // access the document via internals API.
+  if (IsPagePopupRunningInWebTest(GetFrame())) {
+    auto* frame = GetFrame()->PagePopupOwner()->GetDocument().GetFrame();
+    return &frame->window_agent_factory();
+  }
+  if (GetFrame())
+    return &GetFrame()->window_agent_factory();
+  if (Document* context_document = ContextDocument())
+    return context_document->GetWindowAgentFactory();
+  if (const Document* owner_document = OwnerDocument())
+    return owner_document->GetWindowAgentFactory();
+  return nullptr;
+}
+
+Settings* DocumentInit::GetSettingsForWindowAgentFactory() const {
+  LocalFrame* frame = nullptr;
+  if (IsPagePopupRunningInWebTest(GetFrame()))
+    frame = GetFrame()->PagePopupOwner()->GetDocument().GetFrame();
+  else if (GetFrame())
+    frame = GetFrame();
+  else if (Document* context_document = ContextDocument())
+    frame = context_document->GetFrame();
+  else if (const Document* owner_document = OwnerDocument())
+    frame = owner_document->GetFrame();
+  return frame ? frame->GetSettings() : nullptr;
 }
 
 }  // namespace blink

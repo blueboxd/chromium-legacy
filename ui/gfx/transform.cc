@@ -22,50 +22,50 @@ namespace gfx {
 
 namespace {
 
-const SkMScalar kEpsilon = std::numeric_limits<float>::epsilon();
+const SkScalar kEpsilon = std::numeric_limits<float>::epsilon();
 
-SkMScalar TanDegrees(double degrees) {
-  return SkDoubleToMScalar(std::tan(gfx::DegToRad(degrees)));
+SkScalar TanDegrees(double degrees) {
+  return SkDoubleToScalar(std::tan(gfx::DegToRad(degrees)));
 }
 
-inline bool ApproximatelyZero(SkMScalar x, SkMScalar tolerance) {
+inline bool ApproximatelyZero(SkScalar x, SkScalar tolerance) {
   return std::abs(x) <= tolerance;
 }
 
-inline bool ApproximatelyOne(SkMScalar x, SkMScalar tolerance) {
-  return std::abs(x - SkDoubleToMScalar(1.0)) <= tolerance;
+inline bool ApproximatelyOne(SkScalar x, SkScalar tolerance) {
+  return std::abs(x - 1) <= tolerance;
 }
 
 }  // namespace
 
-Transform::Transform(SkMScalar col1row1,
-                     SkMScalar col2row1,
-                     SkMScalar col3row1,
-                     SkMScalar col4row1,
-                     SkMScalar col1row2,
-                     SkMScalar col2row2,
-                     SkMScalar col3row2,
-                     SkMScalar col4row2,
-                     SkMScalar col1row3,
-                     SkMScalar col2row3,
-                     SkMScalar col3row3,
-                     SkMScalar col4row3,
-                     SkMScalar col1row4,
-                     SkMScalar col2row4,
-                     SkMScalar col3row4,
-                     SkMScalar col4row4)
+Transform::Transform(SkScalar col1row1,
+                     SkScalar col2row1,
+                     SkScalar col3row1,
+                     SkScalar col4row1,
+                     SkScalar col1row2,
+                     SkScalar col2row2,
+                     SkScalar col3row2,
+                     SkScalar col4row2,
+                     SkScalar col1row3,
+                     SkScalar col2row3,
+                     SkScalar col3row3,
+                     SkScalar col4row3,
+                     SkScalar col1row4,
+                     SkScalar col2row4,
+                     SkScalar col3row4,
+                     SkScalar col4row4)
     : matrix_(SkMatrix44::kUninitialized_Constructor) {
   matrix_.set4x4(col1row1, col1row2, col1row3, col1row4, col2row1, col2row2,
                  col2row3, col2row4, col3row1, col3row2, col3row3, col3row4,
                  col4row1, col4row2, col4row3, col4row4);
 }
 
-Transform::Transform(SkMScalar col1row1,
-                     SkMScalar col2row1,
-                     SkMScalar col1row2,
-                     SkMScalar col2row2,
-                     SkMScalar x_translation,
-                     SkMScalar y_translation)
+Transform::Transform(SkScalar col1row1,
+                     SkScalar col2row1,
+                     SkScalar col1row2,
+                     SkScalar col2row2,
+                     SkScalar x_translation,
+                     SkScalar y_translation)
     : matrix_(SkMatrix44::kIdentity_Constructor) {
   matrix_.set(0, 0, col1row1);
   matrix_.set(1, 0, col1row2);
@@ -83,21 +83,21 @@ Transform::Transform(const Quaternion& q)
   double w = q.w();
 
   // Implicitly calls matrix.setIdentity()
-  matrix_.set3x3(SkDoubleToMScalar(1.0 - 2.0 * (y * y + z * z)),
-                 SkDoubleToMScalar(2.0 * (x * y + z * w)),
-                 SkDoubleToMScalar(2.0 * (x * z - y * w)),
-                 SkDoubleToMScalar(2.0 * (x * y - z * w)),
-                 SkDoubleToMScalar(1.0 - 2.0 * (x * x + z * z)),
-                 SkDoubleToMScalar(2.0 * (y * z + x * w)),
-                 SkDoubleToMScalar(2.0 * (x * z + y * w)),
-                 SkDoubleToMScalar(2.0 * (y * z - x * w)),
-                 SkDoubleToMScalar(1.0 - 2.0 * (x * x + y * y)));
+  matrix_.set3x3(SkDoubleToScalar(1.0 - 2.0 * (y * y + z * z)),
+                 SkDoubleToScalar(2.0 * (x * y + z * w)),
+                 SkDoubleToScalar(2.0 * (x * z - y * w)),
+                 SkDoubleToScalar(2.0 * (x * y - z * w)),
+                 SkDoubleToScalar(1.0 - 2.0 * (x * x + z * z)),
+                 SkDoubleToScalar(2.0 * (y * z + x * w)),
+                 SkDoubleToScalar(2.0 * (x * z + y * w)),
+                 SkDoubleToScalar(2.0 * (y * z - x * w)),
+                 SkDoubleToScalar(1.0 - 2.0 * (x * x + y * y)));
 }
 
 void Transform::RotateAboutXAxis(double degrees) {
   double radians = gfx::DegToRad(degrees);
-  SkMScalar cosTheta = SkDoubleToMScalar(std::cos(radians));
-  SkMScalar sinTheta = SkDoubleToMScalar(std::sin(radians));
+  SkScalar cosTheta = SkDoubleToScalar(std::cos(radians));
+  SkScalar sinTheta = SkDoubleToScalar(std::sin(radians));
   if (matrix_.isIdentity()) {
       matrix_.set3x3(1, 0, 0,
                      0, cosTheta, sinTheta,
@@ -113,8 +113,8 @@ void Transform::RotateAboutXAxis(double degrees) {
 
 void Transform::RotateAboutYAxis(double degrees) {
   double radians = gfx::DegToRad(degrees);
-  SkMScalar cosTheta = SkDoubleToMScalar(std::cos(radians));
-  SkMScalar sinTheta = SkDoubleToMScalar(std::sin(radians));
+  SkScalar cosTheta = SkDoubleToScalar(std::cos(radians));
+  SkScalar sinTheta = SkDoubleToScalar(std::sin(radians));
   if (matrix_.isIdentity()) {
       // Note carefully the placement of the -sinTheta for rotation about
       // y-axis is different than rotation about x-axis or z-axis.
@@ -132,8 +132,8 @@ void Transform::RotateAboutYAxis(double degrees) {
 
 void Transform::RotateAboutZAxis(double degrees) {
   double radians = gfx::DegToRad(degrees);
-  SkMScalar cosTheta = SkDoubleToMScalar(std::cos(radians));
-  SkMScalar sinTheta = SkDoubleToMScalar(std::sin(radians));
+  SkScalar cosTheta = SkDoubleToScalar(std::cos(radians));
+  SkScalar sinTheta = SkDoubleToScalar(std::sin(radians));
   if (matrix_.isIdentity()) {
       matrix_.set3x3(cosTheta, sinTheta, 0,
                      -sinTheta, cosTheta, 0,
@@ -149,27 +149,25 @@ void Transform::RotateAboutZAxis(double degrees) {
 
 void Transform::RotateAbout(const Vector3dF& axis, double degrees) {
   if (matrix_.isIdentity()) {
-    matrix_.setRotateDegreesAbout(SkFloatToMScalar(axis.x()),
-                                  SkFloatToMScalar(axis.y()),
-                                  SkFloatToMScalar(axis.z()),
-                                  SkDoubleToMScalar(degrees));
+    matrix_.setRotateDegreesAbout(axis.x(), axis.y(), axis.z(),
+                                  SkDoubleToScalar(degrees));
   } else {
     SkMatrix44 rot(SkMatrix44::kUninitialized_Constructor);
-    rot.setRotateDegreesAbout(SkFloatToMScalar(axis.x()),
-                              SkFloatToMScalar(axis.y()),
-                              SkFloatToMScalar(axis.z()),
-                              SkDoubleToMScalar(degrees));
+    rot.setRotateDegreesAbout(axis.x(), axis.y(), axis.z(),
+                              SkDoubleToScalar(degrees));
     matrix_.preConcat(rot);
   }
 }
 
-void Transform::Scale(SkMScalar x, SkMScalar y) { matrix_.preScale(x, y, 1); }
+void Transform::Scale(SkScalar x, SkScalar y) {
+  matrix_.preScale(x, y, 1);
+}
 
-void Transform::PostScale(SkMScalar x, SkMScalar y) {
+void Transform::PostScale(SkScalar x, SkScalar y) {
   matrix_.postScale(x, y, 1);
 }
 
-void Transform::Scale3d(SkMScalar x, SkMScalar y, SkMScalar z) {
+void Transform::Scale3d(SkScalar x, SkScalar y, SkScalar z) {
   matrix_.preScale(x, y, z);
 }
 
@@ -177,7 +175,7 @@ void Transform::Translate(const Vector2dF& offset) {
   Translate(offset.x(), offset.y());
 }
 
-void Transform::Translate(SkMScalar x, SkMScalar y) {
+void Transform::Translate(SkScalar x, SkScalar y) {
   matrix_.preTranslate(x, y, 0);
 }
 
@@ -185,7 +183,7 @@ void Transform::PostTranslate(const Vector2dF& offset) {
   PostTranslate(offset.x(), offset.y());
 }
 
-void Transform::PostTranslate(SkMScalar x, SkMScalar y) {
+void Transform::PostTranslate(SkScalar x, SkScalar y) {
   matrix_.postTranslate(x, y, 0);
 }
 
@@ -193,7 +191,7 @@ void Transform::Translate3d(const Vector3dF& offset) {
   Translate3d(offset.x(), offset.y(), offset.z());
 }
 
-void Transform::Translate3d(SkMScalar x, SkMScalar y, SkMScalar z) {
+void Transform::Translate3d(SkScalar x, SkScalar y, SkScalar z) {
   matrix_.preTranslate(x, y, z);
 }
 
@@ -209,14 +207,14 @@ void Transform::Skew(double angle_x, double angle_y) {
   }
 }
 
-void Transform::ApplyPerspectiveDepth(SkMScalar depth) {
+void Transform::ApplyPerspectiveDepth(SkScalar depth) {
   if (depth == 0)
     return;
   if (matrix_.isIdentity()) {
-    matrix_.set(3, 2, -SK_MScalar1 / depth);
+    matrix_.set(3, 2, -SK_Scalar1 / depth);
   } else {
     SkMatrix44 m(SkMatrix44::kIdentity_Constructor);
-    m.set(3, 2, -SK_MScalar1 / depth);
+    m.set(3, 2, -SK_Scalar1 / depth);
     matrix_.preConcat(m);
   }
 }
@@ -229,8 +227,7 @@ void Transform::ConcatTransform(const Transform& transform) {
   matrix_.postConcat(transform.matrix_);
 }
 
-bool Transform::IsApproximatelyIdentityOrTranslation(
-    SkMScalar tolerance) const {
+bool Transform::IsApproximatelyIdentityOrTranslation(SkScalar tolerance) const {
   DCHECK_GE(tolerance, 0);
   return
       ApproximatelyOne(matrix_.get(0, 0), tolerance) &&
@@ -413,8 +410,8 @@ bool Transform::IsFlat() const {
 }
 
 Vector2dF Transform::To2dTranslation() const {
-  return gfx::Vector2dF(SkMScalarToFloat(matrix_.get(0, 3)),
-                        SkMScalarToFloat(matrix_.get(1, 3)));
+  return gfx::Vector2dF(SkScalarToFloat(matrix_.get(0, 3)),
+                        SkScalarToFloat(matrix_.get(1, 3)));
 }
 
 void Transform::TransformPoint(Point* point) const {
@@ -533,7 +530,7 @@ bool Transform::Blend(const Transform& from, double progress) {
 }
 
 void Transform::RoundTranslationComponents() {
-  // TODO(pkasting): Use SkMScalarRound() when
+  // TODO(pkasting): Use SkScalarRound() when
   // https://bugs.chromium.org/p/skia/issues/detail?id=6852 is fixed.
   matrix_.set(0, 3, std::round(matrix_.get(0, 3)));
   matrix_.set(1, 3, std::round(matrix_.get(1, 3)));
@@ -544,13 +541,12 @@ void Transform::TransformPointInternal(const SkMatrix44& xform,
   if (xform.isIdentity())
     return;
 
-  SkMScalar p[4] = {SkFloatToMScalar(point->x()), SkFloatToMScalar(point->y()),
-                    SkFloatToMScalar(point->z()), 1};
+  SkScalar p[4] = {point->x(), point->y(), point->z(), 1};
 
-  xform.mapMScalars(p);
+  xform.mapScalars(p);
 
-  if (p[3] != SK_MScalar1 && p[3] != 0.f) {
-    float w_inverse = SK_MScalar1 / p[3];
+  if (p[3] != SK_Scalar1 && p[3] != 0.f) {
+    float w_inverse = SK_Scalar1 / p[3];
     point->SetPoint(p[0] * w_inverse, p[1] * w_inverse, p[2] * w_inverse);
   } else {
     point->SetPoint(p[0], p[1], p[2]);
@@ -562,11 +558,9 @@ void Transform::TransformVectorInternal(const SkMatrix44& xform,
   if (xform.isIdentity())
     return;
 
-  SkMScalar p[4] = {SkFloatToMScalar(vector->x()),
-                    SkFloatToMScalar(vector->y()),
-                    SkFloatToMScalar(vector->z()), 0};
+  SkScalar p[4] = {vector->x(), vector->y(), vector->z(), 0};
 
-  xform.mapMScalars(p);
+  xform.mapScalars(p);
 
   vector->set_x(p[0]);
   vector->set_y(p[1]);
@@ -578,10 +572,9 @@ void Transform::TransformPointInternal(const SkMatrix44& xform,
   if (xform.isIdentity())
     return;
 
-  SkMScalar p[4] = {SkIntToMScalar(point->x()), SkIntToMScalar(point->y()), 0,
-                    1};
+  SkScalar p[4] = {SkIntToScalar(point->x()), SkIntToScalar(point->y()), 0, 1};
 
-  xform.mapMScalars(p);
+  xform.mapScalars(p);
 
   point->SetPoint(p[0], p[1]);
 }

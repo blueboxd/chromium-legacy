@@ -9,8 +9,9 @@
 
 #include "base/macros.h"
 #include "components/signin/core/browser/signin_status_metrics_provider_delegate.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/signin/identity_manager_factory_observer.h"
+
+class ChromeBrowserState;
 
 class IOSChromeSigninStatusMetricsProviderDelegate
     : public SigninStatusMetricsProviderDelegate,
@@ -31,7 +32,7 @@ class IOSChromeSigninStatusMetricsProviderDelegate
   void IdentityManagerShutdown(signin::IdentityManager* manager) override;
 
   // Returns the loaded ChromeBrowserState instances.
-  std::vector<ios::ChromeBrowserState*> GetLoadedChromeBrowserStates();
+  std::vector<ChromeBrowserState*> GetLoadedChromeBrowserStates();
 
   DISALLOW_COPY_AND_ASSIGN(IOSChromeSigninStatusMetricsProviderDelegate);
 };

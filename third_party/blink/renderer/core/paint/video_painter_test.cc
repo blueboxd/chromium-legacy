@@ -153,11 +153,13 @@ TEST_P(VideoPaintPreviewTest, URLIsRecordedWhenPaintingPreview) {
   test::RunPendingTasks();
 
   auto token = base::UnguessableToken::Create();
-  const int32_t routing_id = 1;
+  const base::UnguessableToken embedding_token =
+      base::UnguessableToken::Create();
   const bool is_main_frame = true;
 
   cc::PaintRecorder recorder;
-  paint_preview::PaintPreviewTracker tracker(token, routing_id, is_main_frame);
+  paint_preview::PaintPreviewTracker tracker(token, embedding_token,
+                                             is_main_frame);
   cc::PaintCanvas* canvas =
       recorder.beginRecording(bounds().width(), bounds().height());
   canvas->SetPaintPreviewTracker(&tracker);

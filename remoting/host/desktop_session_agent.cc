@@ -461,13 +461,6 @@ void DesktopSessionAgent::OnMouseCursor(webrtc::MouseCursor* cursor) {
       std::make_unique<ChromotingDesktopNetworkMsg_MouseCursor>(*owned_cursor));
 }
 
-void DesktopSessionAgent::OnMouseCursorPosition(
-    webrtc::MouseCursorMonitor::CursorState state,
-    const webrtc::DesktopVector& position) {
-  // We're not subscribing to mouse position changes.
-  NOTREACHED();
-}
-
 void DesktopSessionAgent::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());

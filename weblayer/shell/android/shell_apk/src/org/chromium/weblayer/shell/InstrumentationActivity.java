@@ -25,6 +25,7 @@ import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
+import org.chromium.weblayer.TabListCallback;
 import org.chromium.weblayer.UnsupportedVersionException;
 import org.chromium.weblayer.WebLayer;
 
@@ -37,6 +38,7 @@ public class InstrumentationActivity extends FragmentActivity {
     private static final String TAG = "WLInstrumentation";
     private static final String KEY_MAIN_VIEW_ID = "mainViewId";
 
+    public static final String EXTRA_PERSISTENCE_ID = "EXTRA_PERSISTENCE_ID";
     public static final String EXTRA_PROFILE_NAME = "EXTRA_PROFILE_NAME";
 
     // Used in tests to specify whether WebLayer should be created automatically on launch.
@@ -172,7 +174,26 @@ public class InstrumentationActivity extends FragmentActivity {
 
         mBrowser.setTopView(mTopContentsContainer);
 
-        mTab = mBrowser.getActiveTab();
+        if (mBrowser.getActiveTab() == null) {
+            assert mBrowser.getTabs().size() == 0;
+            // This happens with session restore enabled.
+            mBrowser.registerTabListCallback(new TabListCallback() {
+                @Override
+                public void onTabAdded(Tab tab) {
+                    if (mTab == null) {
+                        mBrowser.unregisterTabListCallback(this);
+                        setTab(tab);
+                    }
+                }
+            });
+        } else {
+            setTab(mBrowser.getActiveTab());
+        }
+    }
+
+    private void setTab(Tab tab) {
+        assert mTab == null;
+        mTab = tab;
         mTabCallback = new TabCallback() {
             @Override
             public void onVisibleUriChanged(Uri uri) {
@@ -202,7 +223,10 @@ public class InstrumentationActivity extends FragmentActivity {
         String profileName = getIntent().hasExtra(EXTRA_PROFILE_NAME)
                 ? getIntent().getStringExtra(EXTRA_PROFILE_NAME)
                 : "DefaultProfile";
-        Fragment fragment = WebLayer.createBrowserFragment(profileName);
+        String persistenceId = getIntent().hasExtra(EXTRA_PERSISTENCE_ID)
+                ? getIntent().getStringExtra(EXTRA_PERSISTENCE_ID)
+                : null;
+        Fragment fragment = WebLayer.createBrowserFragment(profileName, persistenceId);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.add(viewId, fragment);
 

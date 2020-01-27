@@ -95,7 +95,7 @@ void AssistantOverlay::StartAnimation(bool show_icon) {
   // Setup ripple initial state.
   ripple_layer_->SetOpacity(0);
 
-  SkMScalar scale_factor =
+  SkScalar scale_factor =
       kRippleCircleStartRadiusDip / kRippleCircleInitRadiusDip;
   gfx::Transform transform;
 
@@ -134,7 +134,7 @@ void AssistantOverlay::BurstAnimation() {
 
   // Setup ripple animations.
   {
-    SkMScalar scale_factor =
+    SkScalar scale_factor =
         kRippleCircleBurstRadiusDip / kRippleCircleInitRadiusDip;
     transform.Translate(center.x() - kRippleCircleBurstRadiusDip,
                         center.y() - kRippleCircleBurstRadiusDip);
@@ -161,7 +161,7 @@ void AssistantOverlay::EndAnimation() {
 
   // Play reverse animation
   // Setup ripple animations.
-  SkMScalar scale_factor =
+  SkScalar scale_factor =
       kRippleCircleStartRadiusDip / kRippleCircleInitRadiusDip;
   gfx::Transform transform;
 

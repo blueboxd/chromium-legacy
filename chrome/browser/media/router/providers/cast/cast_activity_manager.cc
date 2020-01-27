@@ -86,7 +86,11 @@ void CastActivityManager::LaunchSession(
   MediaRoute route(route_id, source, sink_id, /* description */ std::string(),
                    /* is_local */ true, /* for_display */ true);
   route.set_incognito(incognito);
-  route.set_controller_type(RouteControllerType::kGeneric);
+  if (cast_source.ContainsStreamingApp()) {
+    route.set_controller_type(RouteControllerType::kMirroring);
+  } else {
+    route.set_controller_type(RouteControllerType::kGeneric);
+  }
   route.set_media_sink_name(sink.sink().name());
   DVLOG(1) << "LaunchSession: source_id=" << cast_source.source_id()
            << ", route_id: " << route_id << ", sink_id=" << sink_id;

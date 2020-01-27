@@ -148,6 +148,12 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   bool DirectlyUpdateTransform(const TransformPaintPropertyNode&);
   bool DirectlyUpdatePageScaleTransform(const TransformPaintPropertyNode&);
 
+  // Directly updates cc::ScrollTree::current_scroll_offset. This doesn't affect
+  // cc::TransformNode::scroll_offset (which will be synched with blink
+  // transform node in DirectlyUpdateScrollOffsetTransform() or Update()).
+  bool DirectlyUpdateScrollOffset(CompositorElementId,
+                                  const FloatPoint& scroll_offset);
+
   // The root layer of the tree managed by this object.
   cc::Layer* RootLayer() const { return root_layer_.get(); }
 

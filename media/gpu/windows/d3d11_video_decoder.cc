@@ -362,9 +362,7 @@ void D3D11VideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // At this point, playback is supported so add a line in the media log to help
   // us figure that out.
-  media_log_->AddLogRecord(media_log_->CreateStringEvent(
-      MediaLogRecord::MEDIA_INFO_LOG_ENTRY, "info",
-      "Video is supported by D3D11VideoDecoder"));
+  MEDIA_LOG(INFO, media_log_) << "Video is supported by D3D11VideoDecoder";
 
   if (base::FeatureList::IsEnabled(kD3D11PrintCodecOnCrash)) {
     static base::debug::CrashKeyString* codec_name =
@@ -790,8 +788,7 @@ void D3D11VideoDecoder::NotifyError(const char* reason) {
   TRACE_EVENT0("gpu", "D3D11VideoDecoder::NotifyError");
   state_ = State::kError;
   DLOG(ERROR) << reason;
-  media_log_->AddLogRecord(media_log_->CreateStringEvent(
-      MediaLogRecord::MEDIA_ERROR_LOG_ENTRY, "error", reason));
+  MEDIA_LOG(ERROR, media_log_) << reason;
 
   if (init_cb_)
     std::move(init_cb_).Run(false);

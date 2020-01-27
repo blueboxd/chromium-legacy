@@ -1670,8 +1670,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // Post initialization of the object handling of both feature policy and
   // document policy.
-  void PoliciesInitialized(const DocumentInit& document_initializer,
-                           const SecurityContextInit& security_initializer);
+  void PoliciesInitialized(const DocumentInit& document_initializer);
 
   friend class AXContext;
   void AddAXContext(AXContext*);
@@ -1685,8 +1684,7 @@ class CORE_EXPORT Document : public ContainerNode,
       delete;  // This will catch anyone doing an unnecessary check.
 
   ScriptedIdleTaskController& EnsureScriptedIdleTaskController();
-  void InitSecurityContext(const DocumentInit&,
-                           const SecurityContextInit& security_initializer);
+  void InitSecurityContext(const DocumentInit&);
 
   bool HasPendingVisualUpdate() const {
     return lifecycle_.GetState() == DocumentLifecycle::kVisualUpdatePending;

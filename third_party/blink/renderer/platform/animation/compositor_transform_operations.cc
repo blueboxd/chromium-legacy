@@ -28,29 +28,29 @@ void CompositorTransformOperations::AppendTranslate(double x,
                                                     double y,
                                                     double z) {
   transform_operations_.AppendTranslate(
-      SkDoubleToMScalar(x), SkDoubleToMScalar(y), SkDoubleToMScalar(z));
+      SkDoubleToScalar(x), SkDoubleToScalar(y), SkDoubleToScalar(z));
 }
 
 void CompositorTransformOperations::AppendRotate(double x,
                                                  double y,
                                                  double z,
                                                  double degrees) {
-  transform_operations_.AppendRotate(SkDoubleToMScalar(x), SkDoubleToMScalar(y),
-                                     SkDoubleToMScalar(z),
-                                     SkDoubleToMScalar(degrees));
+  transform_operations_.AppendRotate(SkDoubleToScalar(x), SkDoubleToScalar(y),
+                                     SkDoubleToScalar(z),
+                                     SkDoubleToScalar(degrees));
 }
 
 void CompositorTransformOperations::AppendScale(double x, double y, double z) {
-  transform_operations_.AppendScale(SkDoubleToMScalar(x), SkDoubleToMScalar(y),
-                                    SkDoubleToMScalar(z));
+  transform_operations_.AppendScale(SkDoubleToScalar(x), SkDoubleToScalar(y),
+                                    SkDoubleToScalar(z));
 }
 
 void CompositorTransformOperations::AppendSkew(double x, double y) {
-  transform_operations_.AppendSkew(SkDoubleToMScalar(x), SkDoubleToMScalar(y));
+  transform_operations_.AppendSkew(SkDoubleToScalar(x), SkDoubleToScalar(y));
 }
 
 void CompositorTransformOperations::AppendPerspective(double depth) {
-  transform_operations_.AppendPerspective(SkDoubleToMScalar(depth));
+  transform_operations_.AppendPerspective(SkDoubleToScalar(depth));
 }
 
 void CompositorTransformOperations::AppendMatrix(const SkMatrix44& matrix) {

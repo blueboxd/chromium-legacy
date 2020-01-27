@@ -72,8 +72,8 @@ class TimedLimitMockFunction : public MockFunction {
   explicit TimedLimitMockFunction(const char* name) : MockFunction(name) {}
   void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const override {
-    heuristics->push_back(
-        std::make_unique<TimedLimit>(k2PerMinute, new Mapper(), kGenericName));
+    heuristics->push_back(std::make_unique<TimedLimit>(
+        k2PerMinute, std::make_unique<Mapper>(), kGenericName));
   }
 
  private:
@@ -86,7 +86,7 @@ class FrozenMockFunction : public MockFunction {
   void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const override {
     heuristics->push_back(std::make_unique<TimedLimit>(
-        kFrozenConfig, new Mapper(), kGenericName));
+        kFrozenConfig, std::make_unique<Mapper>(), kGenericName));
   }
 
  private:
@@ -140,7 +140,7 @@ class QuotaLimitHeuristicTest : public testing::Test {
 };
 
 TEST_F(QuotaLimitHeuristicTest, Timed) {
-  TimedLimit lim(k2PerMinute, new MockMapper(), kGenericName);
+  TimedLimit lim(k2PerMinute, std::make_unique<MockMapper>(), kGenericName);
   Bucket b;
 
   b.Reset(k2PerMinute, kStartTime);

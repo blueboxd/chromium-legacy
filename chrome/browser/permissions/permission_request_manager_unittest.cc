@@ -21,7 +21,6 @@
 #include "chrome/browser/permissions/crowd_deny_preload_data.h"
 #include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/permissions/notification_permission_ui_selector.h"
-#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
@@ -34,6 +33,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/permissions/permission_request.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/core/db/test_database_manager.h"
@@ -55,28 +55,30 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
   PermissionRequestManagerTest()
       : ChromeRenderViewHostTestHarness(),
         request1_("test1",
-                  PermissionRequestType::QUOTA,
-                  PermissionRequestGestureType::GESTURE),
+                  permissions::PermissionRequestType::QUOTA,
+                  permissions::PermissionRequestGestureType::GESTURE),
         request2_("test2",
-                  PermissionRequestType::DOWNLOAD,
-                  PermissionRequestGestureType::NO_GESTURE),
-        request_mic_("mic",
-                     PermissionRequestType::PERMISSION_MEDIASTREAM_MIC,
-                     PermissionRequestGestureType::NO_GESTURE),
-        request_camera_("cam",
-                        PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA,
-                        PermissionRequestGestureType::NO_GESTURE),
+                  permissions::PermissionRequestType::DOWNLOAD,
+                  permissions::PermissionRequestGestureType::NO_GESTURE),
+        request_mic_(
+            "mic",
+            permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC,
+            permissions::PermissionRequestGestureType::NO_GESTURE),
+        request_camera_(
+            "cam",
+            permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA,
+            permissions::PermissionRequestGestureType::NO_GESTURE),
         iframe_request_same_domain_(
             "iframe",
-            PermissionRequestType::PERMISSION_NOTIFICATIONS,
+            permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
             GURL("http://www.google.com/some/url")),
         iframe_request_other_domain_(
             "iframe",
-            PermissionRequestType::PERMISSION_GEOLOCATION,
+            permissions::PermissionRequestType::PERMISSION_GEOLOCATION,
             GURL("http://www.youtube.com")),
         iframe_request_mic_other_domain_(
             "iframe",
-            PermissionRequestType::PERMISSION_MEDIASTREAM_MIC,
+            permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC,
             GURL("http://www.youtube.com")) {}
   ~PermissionRequestManagerTest() override {}
 
@@ -183,7 +185,8 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
 
     NavigateAndCommit(url);
     auto request = std::make_unique<MockPermissionRequest>(
-        /*text*/ "test", PermissionRequestType::PERMISSION_GEOLOCATION, url);
+        /*text*/ "test",
+        permissions::PermissionRequestType::PERMISSION_GEOLOCATION, url);
     manager_->AddRequest(request.get());
     return request;
   }
@@ -505,29 +508,31 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleAcceptedGestureBubble) {
 
   manager_->AddRequest(&request1_);
   WaitForBubbleToBeShown();
-  histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptShown,
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
-      1);
+  histograms.ExpectUniqueSample(PermissionUmaUtil::kPermissionsPromptShown,
+                                static_cast<base::HistogramBase::Sample>(
+                                    permissions::PermissionRequestType::QUOTA),
+                                1);
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptShownGesture,
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
+      static_cast<base::HistogramBase::Sample>(
+          permissions::PermissionRequestType::QUOTA),
       1);
   histograms.ExpectTotalCount(
       PermissionUmaUtil::kPermissionsPromptShownNoGesture, 0);
   histograms.ExpectTotalCount("Permissions.Engagement.Accepted.Quota", 0);
 
   Accept();
-  histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptAccepted,
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
-      1);
+  histograms.ExpectUniqueSample(PermissionUmaUtil::kPermissionsPromptAccepted,
+                                static_cast<base::HistogramBase::Sample>(
+                                    permissions::PermissionRequestType::QUOTA),
+                                1);
   histograms.ExpectTotalCount(
       PermissionUmaUtil::kPermissionsPromptDenied, 0);
 
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptAcceptedGesture,
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
+      static_cast<base::HistogramBase::Sample>(
+          permissions::PermissionRequestType::QUOTA),
       1);
   histograms.ExpectTotalCount(
       PermissionUmaUtil::kPermissionsPromptAcceptedNoGesture, 0);
@@ -545,7 +550,8 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedNoGestureBubble) {
       PermissionUmaUtil::kPermissionsPromptShownGesture, 0);
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptShownNoGesture,
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::DOWNLOAD),
+      static_cast<base::HistogramBase::Sample>(
+          permissions::PermissionRequestType::DOWNLOAD),
       1);
   histograms.ExpectTotalCount("Permissions.Engagement.Denied.MultipleDownload",
                               0);
@@ -557,12 +563,14 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedNoGestureBubble) {
       PermissionUmaUtil::kPermissionsPromptAccepted, 0);
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptDenied,
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::DOWNLOAD),
+      static_cast<base::HistogramBase::Sample>(
+          permissions::PermissionRequestType::DOWNLOAD),
       1);
 
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptDeniedNoGesture,
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::DOWNLOAD),
+      static_cast<base::HistogramBase::Sample>(
+          permissions::PermissionRequestType::DOWNLOAD),
       1);
   histograms.ExpectTotalCount(
       PermissionUmaUtil::kPermissionsPromptDeniedGesture, 0);
@@ -583,10 +591,10 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedBubbleAlternatePath) {
   // UMAForSimpleAcceptedBubble.
 
   Deny();
-  histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptDenied,
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
-      1);
+  histograms.ExpectUniqueSample(PermissionUmaUtil::kPermissionsPromptDenied,
+                                static_cast<base::HistogramBase::Sample>(
+                                    permissions::PermissionRequestType::QUOTA),
+                                1);
 }
 
 TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
@@ -598,7 +606,8 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
 
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptShown,
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::MULTIPLE),
+      static_cast<base::HistogramBase::Sample>(
+          permissions::PermissionRequestType::MULTIPLE),
       1);
   histograms.ExpectTotalCount(
       PermissionUmaUtil::kPermissionsPromptShownGesture, 0);
@@ -611,7 +620,8 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
 
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptAccepted,
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::MULTIPLE),
+      static_cast<base::HistogramBase::Sample>(
+          permissions::PermissionRequestType::MULTIPLE),
       1);
   histograms.ExpectUniqueSample(
       "Permissions.Engagement.Accepted.AudioAndVideoCapture",
@@ -633,7 +643,8 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedDeniedBubble) {
 
   histograms.ExpectUniqueSample(
       PermissionUmaUtil::kPermissionsPromptDenied,
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::MULTIPLE),
+      static_cast<base::HistogramBase::Sample>(
+          permissions::PermissionRequestType::MULTIPLE),
       1);
   histograms.ExpectUniqueSample(
       "Permissions.Engagement.Denied.AudioAndVideoCapture",
@@ -653,7 +664,8 @@ TEST_F(PermissionRequestManagerTest, UMAForIgnores) {
                                 kTestEngagementScore, 1);
 
   MockPermissionRequest youtube_request(
-      "request2", PermissionRequestType::PERMISSION_GEOLOCATION, youtube);
+      "request2", permissions::PermissionRequestType::PERMISSION_GEOLOCATION,
+      youtube);
   manager_->AddRequest(&youtube_request);
   WaitForBubbleToBeShown();
 
@@ -667,17 +679,17 @@ TEST_F(PermissionRequestManagerTest, UMAForTabSwitching) {
 
   manager_->AddRequest(&request1_);
   WaitForBubbleToBeShown();
-  histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptShown,
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
-      1);
+  histograms.ExpectUniqueSample(PermissionUmaUtil::kPermissionsPromptShown,
+                                static_cast<base::HistogramBase::Sample>(
+                                    permissions::PermissionRequestType::QUOTA),
+                                1);
 
   MockTabSwitchAway();
   MockTabSwitchBack();
-  histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptShown,
-      static_cast<base::HistogramBase::Sample>(PermissionRequestType::QUOTA),
-      1);
+  histograms.ExpectUniqueSample(PermissionUmaUtil::kPermissionsPromptShown,
+                                static_cast<base::HistogramBase::Sample>(
+                                    permissions::PermissionRequestType::QUOTA),
+                                1);
 }
 
 TEST_F(PermissionRequestManagerTest,
@@ -698,7 +710,7 @@ TEST_F(PermissionRequestManagerTest,
   GURL notification1("http://www.notification1.com/");
   NavigateAndCommit(notification1);
   MockPermissionRequest notification1_request(
-      "request1", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      "request1", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification1);
   manager_->AddRequest(&notification1_request);
   WaitForBubbleToBeShown();
@@ -707,7 +719,7 @@ TEST_F(PermissionRequestManagerTest,
   GURL notification2("http://www.notification2.com/");
   NavigateAndCommit(notification2);
   MockPermissionRequest notification2_request(
-      "request2", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      "request2", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification2);
   manager_->AddRequest(&notification2_request);
   WaitForBubbleToBeShown();
@@ -717,7 +729,7 @@ TEST_F(PermissionRequestManagerTest,
   GURL notification3("http://www.notification3.com/");
   NavigateAndCommit(notification3);
   MockPermissionRequest notification3_request(
-      "request3", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      "request3", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification3);
   manager_->AddRequest(&notification3_request);
   WaitForBubbleToBeShown();
@@ -728,7 +740,7 @@ TEST_F(PermissionRequestManagerTest,
   GURL notification4("http://www.notification4.com/");
   NavigateAndCommit(notification4);
   MockPermissionRequest notification4_request(
-      "request4", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      "request4", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification4);
   manager_->AddRequest(&notification4_request);
   WaitForBubbleToBeShown();
@@ -738,7 +750,7 @@ TEST_F(PermissionRequestManagerTest,
   GURL notification5("http://www.notification5.com/");
   NavigateAndCommit(notification5);
   MockPermissionRequest notification5_request(
-      "request5", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      "request5", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification5);
   manager_->AddRequest(&notification5_request);
   WaitForBubbleToBeShown();
@@ -764,7 +776,7 @@ TEST_F(PermissionRequestManagerTest,
   GURL notification6("http://www.notification6.com/");
   NavigateAndCommit(notification6);
   MockPermissionRequest notification6_request(
-      "request6", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      "request6", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification6);
   manager_->AddRequest(&notification6_request);
   WaitForBubbleToBeShown();
@@ -776,7 +788,7 @@ TEST_F(PermissionRequestManagerTest,
   GURL notification7("http://www.notification7.com/");
   NavigateAndCommit(notification7);
   MockPermissionRequest notification7_request(
-      "request7", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      "request7", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification7);
   // For the first quiet permission prompt, show a promo.
   EXPECT_TRUE(QuietNotificationPermissionUiState::ShouldShowPromo(profile()));
@@ -796,7 +808,7 @@ TEST_F(PermissionRequestManagerTest,
   GURL notification8("http://www.notification8.com/");
   NavigateAndCommit(notification8);
   MockPermissionRequest notification8_request(
-      "request8", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      "request8", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification8);
   // For the rest of the quiet permission prompts, do not show promo.
   EXPECT_TRUE(QuietNotificationPermissionUiState::ShouldShowPromo(profile()));
@@ -819,7 +831,7 @@ TEST_F(PermissionRequestManagerTest,
   GURL notification9("http://www.notification9.com/");
   NavigateAndCommit(notification9);
   MockPermissionRequest notification9_request(
-      "request9", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      "request9", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification9);
   manager_->AddRequest(&notification9_request);
   WaitForBubbleToBeShown();
@@ -832,7 +844,7 @@ TEST_F(PermissionRequestManagerTest,
   GURL notification10("http://www.notification10.com/");
   NavigateAndCommit(notification10);
   MockPermissionRequest notification10_request(
-      "request10", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      "request10", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification10);
   manager_->AddRequest(&notification10_request);
   WaitForBubbleToBeShown();
@@ -844,7 +856,7 @@ TEST_F(PermissionRequestManagerTest,
   GURL notification11("http://www.notification11.com/");
   NavigateAndCommit(notification11);
   MockPermissionRequest notification11_request(
-      "request11", PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      "request11", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       notification11);
   manager_->AddRequest(&notification11_request);
   WaitForBubbleToBeShown();
@@ -872,7 +884,7 @@ class MockNotificationPermissionUiSelector
     async_ = async;
   }
 
-  void SelectUiToUse(PermissionRequest* request,
+  void SelectUiToUse(permissions::PermissionRequest* request,
                      DecisionMadeCallback callback) override {
     base::Optional<QuietUiReason> reason;
     if (ui_to_use_ == UiToUse::kQuietUi)
@@ -935,8 +947,8 @@ TEST_F(PermissionRequestManagerTest, UiSelectorUsedForNotifications) {
         manager_, test.ui_to_use, test.async);
 
     MockPermissionRequest request(
-        "foo", PermissionRequestType::PERMISSION_NOTIFICATIONS,
-        PermissionRequestGestureType::GESTURE);
+        "foo", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
+        permissions::PermissionRequestGestureType::GESTURE);
 
     manager_->AddRequest(&request);
     WaitForBubbleToBeShown();
@@ -958,16 +970,16 @@ TEST_F(PermissionRequestManagerTest,
   MockNotificationPermissionUiSelector::CreateForManager(
       manager_, UiToUse::kQuietUi, true);
   MockPermissionRequest request1(
-      "request1", PermissionRequestType::PERMISSION_NOTIFICATIONS,
-      PermissionRequestGestureType::GESTURE);
+      "request1", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      permissions::PermissionRequestGestureType::GESTURE);
   manager_->AddRequest(&request1);
   WaitForBubbleToBeShown();
   EXPECT_TRUE(manager_->ShouldCurrentRequestUseQuietUI());
   Accept();
 
   MockPermissionRequest request2(
-      "request2", PermissionRequestType::PERMISSION_NOTIFICATIONS,
-      PermissionRequestGestureType::GESTURE);
+      "request2", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      permissions::PermissionRequestGestureType::GESTURE);
   MockNotificationPermissionUiSelector::CreateForManager(
       manager_, UiToUse::kNormalUi, true);
   manager_->AddRequest(&request2);
@@ -1038,7 +1050,8 @@ TEST_F(PermissionRequestManagerTest, TestCrowdDenyHoldbackChance) {
       QuietNotificationPermissionUiState::EnableQuietUiInPrefs(profile());
 
     MockPermissionRequest request(
-        "request", PermissionRequestType::PERMISSION_NOTIFICATIONS, url);
+        "request", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
+        url);
 
     manager_->AddRequest(&request);
     WaitForBubbleToBeShown();
@@ -1081,7 +1094,8 @@ TEST_F(PermissionRequestManagerTest, PreloadDataNeedsSafeBrowsingConfirmation) {
         url, test.safe_browsing_unsolicited_notifications);
 
     MockPermissionRequest request(
-        "request", PermissionRequestType::PERMISSION_NOTIFICATIONS, url);
+        "request", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
+        url);
 
     manager_->AddRequest(&request);
     WaitForBubbleToBeShown();

@@ -464,17 +464,25 @@ TEST_F(NetworkSessionConfiguratorTest, PacketLengthFromFieldTrialParams) {
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParams) {
+  // Find first version with QUIC_CRYPTO.
+  quic::ParsedQuicVersionVector all_supported_versions =
+      quic::AllSupportedVersions();
+  auto it = all_supported_versions.begin();
+  while (it->handshake_protocol != quic::PROTOCOL_QUIC_CRYPTO) {
+    ++it;
+    ASSERT_NE(it, all_supported_versions.end());
+  }
+  quic::ParsedQuicVersion version = *it;
+
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["quic_version"] =
-      quic::QuicVersionToString(quic::AllSupportedTransportVersions().back());
+      quic::QuicVersionToString(version.transport_version);
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
-  quic::ParsedQuicVersionVector supported_versions = {
-      {quic::PROTOCOL_QUIC_CRYPTO,
-       quic::AllSupportedTransportVersions().back()}};
+  quic::ParsedQuicVersionVector supported_versions = {version};
   EXPECT_EQ(supported_versions, quic_params_.supported_versions);
 }
 
@@ -493,42 +501,46 @@ TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParamsAlpn) {
 
 TEST_F(NetworkSessionConfiguratorTest,
        MultipleQuicVersionFromFieldTrialParams) {
-  std::map<std::string, std::string> field_trial_params;
-  quic::QuicTransportVersion version1 =
-      quic::AllSupportedTransportVersions().front();
-  quic::QuicTransportVersion version2 =
-      quic::AllSupportedTransportVersions().back();
-  std::string quic_versions = quic::QuicVersionToString(version1) + "," +
-                              quic::QuicVersionToString(version2);
+  quic::ParsedQuicVersionVector versions_with_quic_crypto;
+  for (const auto& version : quic::AllSupportedVersions()) {
+    if (version.handshake_protocol == quic::PROTOCOL_QUIC_CRYPTO) {
+      versions_with_quic_crypto.push_back(version);
+    }
+  }
+  ASSERT_LE(2u, versions_with_quic_crypto.size());
 
+  quic::ParsedQuicVersion version1 = versions_with_quic_crypto.front();
+  quic::ParsedQuicVersion version2 = versions_with_quic_crypto.back();
+  std::string quic_versions =
+      quic::QuicVersionToString(version1.transport_version) + "," +
+      quic::QuicVersionToString(version2.transport_version);
+
+  std::map<std::string, std::string> field_trial_params;
   field_trial_params["quic_version"] = quic_versions;
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
-  quic::ParsedQuicVersionVector supported_versions = {
-      {quic::PROTOCOL_QUIC_CRYPTO, version1},
-      {quic::PROTOCOL_QUIC_CRYPTO, version2},
-  };
+  quic::ParsedQuicVersionVector supported_versions = {version1, version2};
   EXPECT_EQ(supported_versions, quic_params_.supported_versions);
 }
 
-TEST_F(NetworkSessionConfiguratorTest, SameQuicVersionsFromFieldTrialParams) {
-  std::map<std::string, std::string> field_trial_params;
+TEST_F(NetworkSessionConfiguratorTest,
+       MultipleQuicVersionFromFieldTrialParamsAlpn) {
+  quic::ParsedQuicVersion version1 = quic::AllSupportedVersions().front();
+  quic::ParsedQuicVersion version2 = quic::AllSupportedVersions().back();
   std::string quic_versions =
-      quic::QuicVersionToString(quic::AllSupportedTransportVersions().front()) +
-      "," +
-      quic::QuicVersionToString(quic::AllSupportedTransportVersions().front());
+      quic::AlpnForVersion(version1) + "," + quic::AlpnForVersion(version2);
 
+  std::map<std::string, std::string> field_trial_params;
   field_trial_params["quic_version"] = quic_versions;
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
-  quic::ParsedQuicVersionVector supported_versions;
-  supported_versions.push_back(quic::AllSupportedVersions().front());
+  quic::ParsedQuicVersionVector supported_versions = {version1, version2};
   EXPECT_EQ(supported_versions, quic_params_.supported_versions);
 }
 
@@ -589,18 +601,18 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHostAllowlistEmpty) {
 
 TEST_F(NetworkSessionConfiguratorTest, QuicFlags) {
   FLAGS_quic_reloadable_flag_quic_enable_version_t050 = false;
-  FLAGS_quic_reloadable_flag_quic_enable_version_q099 = false;
+  FLAGS_quic_reloadable_flag_quic_enable_version_t099 = false;
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["set_quic_flags"] =
       "FLAGS_quic_reloadable_flag_quic_enable_version_t050=true,"
-      "FLAGS_quic_reloadable_flag_quic_enable_version_q099=true";
+      "FLAGS_quic_reloadable_flag_quic_enable_version_t099=true";
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
   EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_t050);
-  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_q099);
+  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_t099);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, Http2SettingsFromFieldTrialParams) {
@@ -669,32 +681,6 @@ TEST_F(NetworkSessionConfiguratorTest, QuicMaxPacketLength) {
   command_line.AppendSwitchASCII(switches::kQuicMaxPacketLength, "42");
   ParseCommandLineAndFieldTrials(command_line);
   EXPECT_EQ(42u, quic_params_.max_packet_length);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, QuicVersion) {
-  quic::QuicTransportVersionVector supported_versions =
-      quic::AllSupportedTransportVersions();
-  for (const auto& version : supported_versions) {
-    base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-    command_line.AppendSwitch(switches::kEnableQuic);
-    command_line.AppendSwitchASCII(switches::kQuicVersion,
-                                   quic::QuicVersionToString(version));
-    ParseCommandLineAndFieldTrials(command_line);
-    ASSERT_EQ(1u, quic_params_.supported_versions.size());
-    EXPECT_EQ(version, quic_params_.supported_versions[0].transport_version);
-  }
-}
-
-TEST_F(NetworkSessionConfiguratorTest, QuicVersionAlpn) {
-  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
-  command_line.AppendSwitch(switches::kEnableQuic);
-  command_line.AppendSwitchASCII(switches::kQuicVersion, "h3-T050");
-
-  ParseCommandLineAndFieldTrials(command_line);
-
-  quic::ParsedQuicVersionVector supported_versions = {
-      {quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_50}};
-  EXPECT_EQ(supported_versions, quic_params_.supported_versions);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, OriginToForceQuicOn) {
@@ -902,6 +888,84 @@ TEST_F(NetworkSessionConfiguratorTest,
 
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(500),
             quic_params_.initial_rtt_for_handshake);
+}
+
+class NetworkSessionConfiguratorWithQuicVersionTest
+    : public NetworkSessionConfiguratorTest,
+      public ::testing::WithParamInterface<quic::ParsedQuicVersion> {
+ public:
+  NetworkSessionConfiguratorWithQuicVersionTest() : version_(GetParam()) {}
+  ~NetworkSessionConfiguratorWithQuicVersionTest() override = default;
+
+  const quic::ParsedQuicVersion version_;
+};
+
+INSTANTIATE_TEST_SUITE_P(QuicVersion,
+                         NetworkSessionConfiguratorWithQuicVersionTest,
+                         ::testing::ValuesIn(quic::AllSupportedVersions()));
+
+TEST_P(NetworkSessionConfiguratorWithQuicVersionTest, QuicVersion) {
+  if (version_.handshake_protocol != quic::PROTOCOL_QUIC_CRYPTO) {
+    return;
+  }
+
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableQuic);
+  command_line.AppendSwitchASCII(
+      switches::kQuicVersion,
+      quic::QuicVersionToString(version_.transport_version));
+  ParseCommandLineAndFieldTrials(command_line);
+
+  ASSERT_EQ(1u, quic_params_.supported_versions.size());
+  EXPECT_EQ(version_, quic_params_.supported_versions[0]);
+}
+
+TEST_P(NetworkSessionConfiguratorWithQuicVersionTest, QuicVersionAlpn) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableQuic);
+  command_line.AppendSwitchASCII(switches::kQuicVersion,
+                                 quic::AlpnForVersion(version_));
+  ParseCommandLineAndFieldTrials(command_line);
+
+  ASSERT_EQ(1u, quic_params_.supported_versions.size());
+  EXPECT_EQ(version_, quic_params_.supported_versions[0]);
+}
+
+TEST_P(NetworkSessionConfiguratorWithQuicVersionTest,
+       SameQuicVersionsFromFieldTrialParams) {
+  if (version_.handshake_protocol != quic::PROTOCOL_QUIC_CRYPTO) {
+    return;
+  }
+
+  std::string quic_versions =
+      quic::QuicVersionToString(version_.transport_version) + "," +
+      quic::QuicVersionToString(version_.transport_version);
+
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["quic_version"] = quic_versions;
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  ASSERT_EQ(1u, quic_params_.supported_versions.size());
+  EXPECT_EQ(version_, quic_params_.supported_versions[0]);
+}
+
+TEST_P(NetworkSessionConfiguratorWithQuicVersionTest,
+       SameQuicVersionsFromFieldTrialParamsAlpn) {
+  std::string quic_versions =
+      quic::AlpnForVersion(version_) + "," + quic::AlpnForVersion(version_);
+
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["quic_version"] = quic_versions;
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  ASSERT_EQ(1u, quic_params_.supported_versions.size());
+  EXPECT_EQ(version_, quic_params_.supported_versions[0]);
 }
 
 }  // namespace network_session_configurator

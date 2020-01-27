@@ -66,6 +66,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "printing/buildflags/buildflags.h"
+#include "ui/resources/grit/webui_resources.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
@@ -142,6 +143,15 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
+
+  // TODO(dpapad): Replace the following calls with SetupWebUIDataSource()
+  // when Settings is migrated to Polymer3.
+  // Currently only used for testing the Polymer 3 version of
+  // certificate-manager.
+  html_source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources chrome://test 'self';");
+  html_source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
+  html_source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
 
   AddSettingsPageUIHandler(std::make_unique<AppearanceHandler>(web_ui));
 

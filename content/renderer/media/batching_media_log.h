@@ -58,6 +58,8 @@ class CONTENT_EXPORT BatchingMediaLog : public media::MediaLog {
   // frequency.
   void SendQueuedMediaEvents();
 
+  std::string MediaEventToMessageString(const media::MediaLogRecord& event);
+
   // Security origin of the current frame.
   const GURL security_origin_;
 

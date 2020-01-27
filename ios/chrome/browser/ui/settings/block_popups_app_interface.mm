@@ -17,7 +17,7 @@
 @implementation BlockPopupsAppInterface
 
 + (void)setPopupPolicy:(ContentSetting)policy forPattern:(NSString*)pattern {
-  ios::ChromeBrowserState* browserState =
+  ChromeBrowserState* browserState =
       chrome_test_util::GetOriginalBrowserState();
 
   ContentSettingsPattern exceptionPattern =

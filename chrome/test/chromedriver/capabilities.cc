@@ -791,6 +791,11 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps,
   parser_map["unhandledPromptBehavior"] =
       base::BindRepeating(&ParseUnhandledPromptBehavior);
 
+  // W3C defined extension capabilities.
+  // See https://w3c.github.io/webauthn/#sctn-automation-webdriver-capability
+  parser_map["webauthn:virtualAuthenticators"] =
+      base::BindRepeating(&ParseBoolean, nullptr);
+
   // ChromeDriver specific capabilities.
   // Vendor-prefixed is the current spec conformance, but unprefixed is
   // still supported in legacy mode.

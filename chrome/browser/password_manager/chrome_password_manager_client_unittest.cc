@@ -757,46 +757,6 @@ TEST_F(ChromePasswordManagerClientTest, MissingUIDelegate) {
   client->HideManualFallbackForSaving();
 }
 
-// Parameterized Touch To Fill features test.
-class ChromePasswordManagerClientTouchToFillFeatureTest
-    : public ChromePasswordManagerClientTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool>> {
- public:
-  ChromePasswordManagerClientTouchToFillFeatureTest() {
-    std::vector<base::Feature> enabled;
-    std::vector<base::Feature> disabled;
-
-    (IsTouchToFillEnabled() ? enabled : disabled)
-        .push_back(autofill::features::kAutofillTouchToFill);
-    (IsBiometricTouchToFillEnabled() ? enabled : disabled)
-        .push_back(password_manager::features::kBiometricTouchToFill);
-
-    feature_list_.InitWithFeatures(enabled, disabled);
-  }
-
- protected:
-  bool IsTouchToFillEnabled() const { return std::get<0>(GetParam()); }
-  bool IsBiometricTouchToFillEnabled() const { return std::get<1>(GetParam()); }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-TEST_P(ChromePasswordManagerClientTouchToFillFeatureTest,
-       GetBiometricAuthenticator) {
-#if defined(OS_ANDROID)
-  EXPECT_EQ(IsTouchToFillEnabled() && IsBiometricTouchToFillEnabled(),
-            GetClient()->GetBiometricAuthenticator() != nullptr);
-#else
-  EXPECT_EQ(nullptr, GetClient()->GetBiometricAuthenticator());
-#endif
-}
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         ChromePasswordManagerClientTouchToFillFeatureTest,
-                         ::testing::Combine(::testing::Bool(),
-                                            ::testing::Bool()));
-
 #if defined(OS_ANDROID)
 class ChromePasswordManagerClientAndroidTest
     : public ChromePasswordManagerClientTest {

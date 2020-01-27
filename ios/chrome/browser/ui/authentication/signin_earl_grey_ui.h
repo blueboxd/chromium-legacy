@@ -11,6 +11,12 @@
 
 @class FakeChromeIdentity;
 
+typedef NS_ENUM(NSInteger, SignOutConfirmation) {
+  SignOutConfirmationManagedUser,
+  SignOutConfirmationNonManagedUser,
+  SignOutConfirmationNonManagedUserWithClearedData,
+};
+
 // Methods used for the EarlGrey tests, related to UI.
 @interface SigninEarlGreyUI : NSObject
 
@@ -57,9 +63,9 @@
 // Checks that the sign-in promo view is not visible.
 + (void)checkSigninPromoNotVisible;
 
-// Signs out from the current identity. if |isManagedAccount| is true, the
-// confirmed managed dialog is confirmed while signing out.
-+ (void)signOutWithManagedAccount:(BOOL)isManagedAccount;
+// Taps the appropriate action label on the sign-out dialog for the given
+// |signOutConfirmation| profile and signs out from the current identity.
++ (void)signOutWithSignOutConfirmation:(SignOutConfirmation)signOutConfirmation;
 
 @end
 

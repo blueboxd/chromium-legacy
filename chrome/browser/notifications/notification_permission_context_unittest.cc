@@ -16,11 +16,11 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/permission_request_id.h"
 #include "content/public/browser/permission_controller_delegate.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -80,7 +80,7 @@ class TestNotificationPermissionContext : public NotificationPermissionContext {
 
  private:
   // NotificationPermissionContext:
-  void NotifyPermissionSet(const PermissionRequestID& id,
+  void NotifyPermissionSet(const permissions::PermissionRequestID& id,
                            const GURL& requesting_origin,
                            const GURL& embedder_origin,
                            BrowserPermissionCallback callback,
@@ -270,8 +270,8 @@ TEST_F(NotificationPermissionContextTest, WebNotificationsTopLevelOriginOnly) {
                 .content_setting);
 
   // Requesting permission for different origins should fail.
-  PermissionRequestID fake_id(0 /* render_process_id */,
-                              0 /* render_frame_id */, 0 /* request_id */);
+  permissions::PermissionRequestID fake_id(
+      0 /* render_process_id */, 0 /* render_frame_id */, 0 /* request_id */);
 
   ContentSetting result = CONTENT_SETTING_DEFAULT;
   context.DecidePermission(web_contents(), fake_id, requesting_origin,
@@ -331,7 +331,7 @@ TEST_F(NotificationPermissionContextTest, TestDenyInIncognitoAfterDelay) {
   GURL url("https://www.example.com");
   NavigateAndCommit(url);
 
-  const PermissionRequestID id(
+  const permissions::PermissionRequestID id(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
       web_contents()->GetMainFrame()->GetRoutingID(), -1);
 
@@ -398,10 +398,10 @@ TEST_F(NotificationPermissionContextTest, TestParallelDenyInIncognito) {
   NavigateAndCommit(url);
   web_contents()->WasShown();
 
-  const PermissionRequestID id0(
+  const permissions::PermissionRequestID id0(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
       web_contents()->GetMainFrame()->GetRoutingID(), 0);
-  const PermissionRequestID id1(
+  const permissions::PermissionRequestID id1(
       web_contents()->GetMainFrame()->GetProcess()->GetID(),
       web_contents()->GetMainFrame()->GetRoutingID(), 1);
 

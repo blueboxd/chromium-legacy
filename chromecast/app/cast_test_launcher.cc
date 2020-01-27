@@ -31,12 +31,6 @@ class CastTestLauncherDelegate : public content::TestLauncherDelegate {
     return test_suite.Run();
   }
 
-  bool AdjustChildProcessCommandLine(
-      base::CommandLine* command_line,
-      const base::FilePath& temp_data_dir) override {
-    return true;
-  }
-
  protected:
 #if !defined(OS_ANDROID)
   content::ContentMainDelegate* CreateContentMainDelegate() override {

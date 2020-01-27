@@ -5,11 +5,20 @@
 #include "components/policy/core/common/configuration_policy_provider.h"
 
 #include "base/callback.h"
+#include "base/lazy_instance.h"
 #include "components/policy/core/common/extension_policy_migrator.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 
 namespace policy {
+
+namespace {
+
+// static
+base::LazyInstance<std::vector<std::unique_ptr<ExtensionPolicyMigrator>>>::Leaky
+    g_migrators = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 ConfigurationPolicyProvider::Observer::~Observer() = default;
 
@@ -18,6 +27,12 @@ ConfigurationPolicyProvider::ConfigurationPolicyProvider()
 
 ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {
   DCHECK(!initialized_);
+}
+
+// static
+void ConfigurationPolicyProvider::SetMigrators(
+    std::vector<std::unique_ptr<ExtensionPolicyMigrator>> migrators) {
+  g_migrators.Get() = std::move(migrators);
 }
 
 void ConfigurationPolicyProvider::Init(SchemaRegistry* registry) {
@@ -41,16 +56,10 @@ bool ConfigurationPolicyProvider::IsInitializationComplete(
   return true;
 }
 
-void ConfigurationPolicyProvider::AddMigrator(
-    std::unique_ptr<ExtensionPolicyMigrator> migrator) {
-  DCHECK(migrator);
-  migrators_.push_back(std::move(migrator));
-}
-
 void ConfigurationPolicyProvider::UpdatePolicy(
     std::unique_ptr<PolicyBundle> bundle) {
   if (bundle) {
-    for (const auto& migrator : migrators_)
+    for (const auto& migrator : g_migrators.Get())
       migrator->Migrate(bundle.get());
     policy_bundle_.Swap(bundle.get());
   } else {

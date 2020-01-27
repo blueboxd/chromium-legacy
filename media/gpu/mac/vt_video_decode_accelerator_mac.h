@@ -173,8 +173,7 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   // Since |media_log_| is invalidated in Destroy() on the GPU thread, the easy
   // thing to do is post to the GPU thread to use it. This helper handles the
   // thread hop if necessary.
-  void WriteToMediaLog(MediaLog::MediaLogLevel level,
-                       const std::string& message);
+  void WriteToMediaLog(MediaLogMessageLevel level, const std::string& message);
 
   // |type| is the type of task that the flush will complete, one of TASK_FLUSH,
   // TASK_RESET, or TASK_DESTROY.

@@ -7,6 +7,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
@@ -84,8 +85,10 @@ int ExtensionsMenuTestUtil::VisibleBrowserActions() {
 }
 
 void ExtensionsMenuTestUtil::InspectPopup(int index) {
-  // TODO(https://crbug.com/984654): Implement this.
-  NOTREACHED();
+  ExtensionsMenuItemView* view = GetMenuItemViewAtIndex(index);
+  DCHECK(view);
+  static_cast<ExtensionActionViewController*>(view->view_controller())
+      ->InspectPopup();
 }
 
 bool ExtensionsMenuTestUtil::HasIcon(int index) {

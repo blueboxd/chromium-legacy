@@ -89,10 +89,10 @@ DeleteSelectionCommand::DeleteSelectionCommand(
       reference_move_position_(reference_move_position) {}
 
 DeleteSelectionCommand::DeleteSelectionCommand(
-    const VisibleSelection& selection,
+    const SelectionForUndoStep& selection,
     const DeleteSelectionOptions& options,
     InputEvent::InputType input_type)
-    : CompositeEditCommand(*selection.Start().GetDocument()),
+    : CompositeEditCommand(*selection.Base().GetDocument()),
       options_(options),
       has_selection_to_delete_(true),
       merge_blocks_after_delete_(options.IsMergeBlocksAfterDelete()),
@@ -137,9 +137,10 @@ void DeleteSelectionCommand::InitializeStartEnd(Position& start,
       break;
 
     if (CreateVisiblePosition(start).DeepEquivalent() !=
-            selection_to_delete_.VisibleStart().DeepEquivalent() ||
+            CreateVisiblePosition(selection_to_delete_.Start())
+                .DeepEquivalent() ||
         CreateVisiblePosition(end).DeepEquivalent() !=
-            selection_to_delete_.VisibleEnd().DeepEquivalent())
+            CreateVisiblePosition(selection_to_delete_.End()).DeepEquivalent())
       break;
 
     // If we're going to expand to include the startSpecialContainer, it must be
@@ -561,7 +562,8 @@ void DeleteSelectionCommand::DeleteTextFromNode(Text* node,
 void DeleteSelectionCommand::
     MakeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss(
         EditingState* editing_state) {
-  Range* range = CreateRange(selection_to_delete_.ToNormalizedEphemeralRange());
+  Range* range = CreateRange(CreateVisibleSelection(selection_to_delete_)
+                                 .ToNormalizedEphemeralRange());
   Node* node = range->FirstNode();
   while (node && node != range->PastLastNode()) {
     Node* next_node = NodeTraversal::Next(*node);
@@ -1020,7 +1022,7 @@ void DeleteSelectionCommand::CalculateTypingStyleAfterDelete() {
 }
 
 void DeleteSelectionCommand::ClearTransientState() {
-  selection_to_delete_ = VisibleSelection();
+  selection_to_delete_ = SelectionForUndoStep();
   upstream_start_ = Position();
   downstream_start_ = Position();
   upstream_end_ = Position();
@@ -1059,12 +1061,14 @@ void DeleteSelectionCommand::RemoveRedundantBlocks(
 void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
   // If selection has not been set to a custom selection when the command was
   // created, use the current ending selection.
-  if (!has_selection_to_delete_)
-    selection_to_delete_ = EndingVisibleSelection();
+  if (!has_selection_to_delete_) {
+    selection_to_delete_ =
+        SelectionForUndoStep::From(EndingVisibleSelection().AsSelection());
+  }
 
   if (!selection_to_delete_.IsValidFor(GetDocument()) ||
       !selection_to_delete_.IsRange() ||
-      !selection_to_delete_.IsContentEditable()) {
+      !IsEditablePosition(selection_to_delete_.Base())) {
     // editing/execCommand/delete-non-editable-range-crash.html reaches here.
     return;
   }
@@ -1084,20 +1088,26 @@ void DeleteSelectionCommand::DoApply(EditingState* editing_state) {
       (downstream_end.ComputeContainerNode()->IsTextNode() &&
        downstream_end.ComputeContainerNode()->parentNode() ==
            RootEditableElement(*downstream_end.ComputeContainerNode()));
+  VisiblePosition visible_start = CreateVisiblePosition(
+      selection_to_delete_.Start(),
+      selection_to_delete_.IsRange() ? TextAffinity::kDownstream : affinity);
+  VisiblePosition visible_end = CreateVisiblePosition(
+      selection_to_delete_.End(),
+      selection_to_delete_.IsRange() ? TextAffinity::kUpstream : affinity);
+
   bool line_break_at_end_of_selection_to_delete =
-      LineBreakExistsAtVisiblePosition(selection_to_delete_.VisibleEnd());
-  need_placeholder_ = !root_will_stay_open_without_placeholder &&
-                      IsStartOfParagraph(selection_to_delete_.VisibleStart(),
-                                         kCanCrossEditingBoundary) &&
-                      IsEndOfParagraph(selection_to_delete_.VisibleEnd(),
-                                       kCanCrossEditingBoundary) &&
-                      !line_break_at_end_of_selection_to_delete;
+      LineBreakExistsAtVisiblePosition(visible_end);
+
+  need_placeholder_ =
+      !root_will_stay_open_without_placeholder &&
+      IsStartOfParagraph(visible_start, kCanCrossEditingBoundary) &&
+      IsEndOfParagraph(visible_end, kCanCrossEditingBoundary) &&
+      !line_break_at_end_of_selection_to_delete;
   if (need_placeholder_) {
     // Don't need a placeholder when deleting a selection that starts just
     // before a table and ends inside it (we do need placeholders to hold
     // open empty cells, but that's handled elsewhere).
-    if (Element* table =
-            TableElementJustAfter(selection_to_delete_.VisibleStart())) {
+    if (Element* table = TableElementJustAfter(visible_start)) {
       if (selection_to_delete_.End().AnchorNode()->IsDescendantOf(table))
         need_placeholder_ = false;
     }

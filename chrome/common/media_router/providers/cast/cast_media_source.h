@@ -135,9 +135,11 @@ class CastMediaSource {
   CastMediaSource(const CastMediaSource& other);
   ~CastMediaSource();
 
-  // Returns |true| if |app_infos| contain |app_id|.
+  // Returns true if |app_infos_| contain |app_id|.
   bool ContainsApp(const std::string& app_id) const;
   bool ContainsAnyAppFrom(const std::vector<std::string>& app_ids) const;
+  // Returns true if |app_infos_| contain streaming or audio streaming app ID.
+  bool ContainsStreamingApp() const;
 
   // Returns a list of App IDs in this CastMediaSource.
   std::vector<std::string> GetAppIds() const;

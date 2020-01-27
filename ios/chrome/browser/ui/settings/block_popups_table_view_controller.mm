@@ -45,7 +45,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }  // namespace
 
 @interface BlockPopupsTableViewController ()<BooleanObserver> {
-  ios::ChromeBrowserState* _browserState;  // weak
+  ChromeBrowserState* _browserState;  // weak
 
   // List of url patterns that are allowed to display popups.
   base::ListValue _exceptions;
@@ -61,7 +61,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @implementation BlockPopupsTableViewController
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
   DCHECK(browserState);
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain

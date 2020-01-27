@@ -17,11 +17,11 @@ std::unique_ptr<protocol::Media::PlayerEvent> ConvertInspectorPlayerEvent(
     const InspectorPlayerEvent& event) {
   protocol::Media::PlayerEventType event_type;
   switch (event.type) {
-    case InspectorPlayerEvent::PLAYBACK_EVENT:
-      event_type = protocol::Media::PlayerEventTypeEnum::PlaybackEvent;
+    case InspectorPlayerEvent::ERROR_EVENT:
+      event_type = protocol::Media::PlayerEventTypeEnum::ErrorEvent;
       break;
-    case InspectorPlayerEvent::SYSTEM_EVENT:
-      event_type = protocol::Media::PlayerEventTypeEnum::SystemEvent;
+    case InspectorPlayerEvent::TRIGGERED_EVENT:
+      event_type = protocol::Media::PlayerEventTypeEnum::TriggeredEvent;
       break;
     case InspectorPlayerEvent::MESSAGE_EVENT:
       event_type = protocol::Media::PlayerEventTypeEnum::MessageEvent;

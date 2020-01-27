@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/client_info.h"
+#include "components/metrics/cloned_install_detector.h"
 #include "components/metrics/entropy_state.h"
 
 class PrefService;
@@ -22,7 +23,6 @@ class PrefRegistrySimple;
 
 namespace metrics {
 
-class ClonedInstallDetector;
 class EnabledStateProvider;
 class MetricsProvider;
 
@@ -221,7 +221,9 @@ class MetricsStateManager final {
   // has no record of what the previous metrics id was.
   std::string previous_client_id_;
 
-  std::unique_ptr<ClonedInstallDetector> cloned_install_detector_;
+  // The detector for understanding the cloned nature of the install so that we
+  // can reset client ids.
+  ClonedInstallDetector cloned_install_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsStateManager);
 };

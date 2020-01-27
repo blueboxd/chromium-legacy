@@ -16,6 +16,13 @@ js_library("cr_input") {
   ]
 }
 
+group("polymer3_elements") {
+  deps = [
+    ":cr_input_module",
+    ":cr_input_style_css_module",
+  ]
+}
+
 polymer_modulizer("cr_input") {
   js_file = "cr_input.js"
   html_file = "cr_input.html"

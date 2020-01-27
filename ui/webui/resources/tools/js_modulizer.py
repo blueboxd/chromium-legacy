@@ -109,6 +109,8 @@ def ProcessFile(filename, out_folder, namespace_rewrites):
       line = _rewrite_namespaces(line, namespace_rewrites)
       lines[i] = line
 
+  if cr_define_start_index != -1:
+    assert cr_define_end_index != -1, 'No cr_define_end found'
 
   # Process line numbers in descending order, such that the array can be
   # modified in-place.

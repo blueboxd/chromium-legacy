@@ -6,6 +6,7 @@
 
 const methodName = window.location.origin + '/pay';
 const swSrcUrl = './payment_handler_sw.js';
+let resultPromise;
 
 /**
  * Update the installation status in the widget called 'installationStatus'.
@@ -14,20 +15,19 @@ async function updateStatusView() {
   const installationStatusViewId = 'installationStatus';
   const registration = await navigator.serviceWorker.getRegistration(swSrcUrl);
   if (registration) {
-    document.getElementById(installationStatusViewId).innerHTML = 'installed';
+    document.getElementById(installationStatusViewId).innerText = 'installed';
   } else {
-    document.getElementById(installationStatusViewId).innerHTML = 'uninstalled';
+    document.getElementById(installationStatusViewId).innerText = 'uninstalled';
   }
 }
 
 /**
  * Insert a message to the widget called 'log'.
- * @param {Promise<string>} text - the text that is intended to be inserted
- * into the log.
+ * @param {string} text - the text that is intended to be inserted into the log.
  */
-async function updateLogView(text) {
+function updateLogView(text) {
   const messageElement = document.getElementById('log');
-  messageElement.innerHTML = (await text) + '\n' + messageElement.innerHTML;
+  messageElement.innerText = text + '\n' + messageElement.innerText;
 }
 
 /**
@@ -75,23 +75,41 @@ async function uninstall() { // eslint-disable-line no-unused-vars
 }
 
 /**
- * Launches the payment handler.
- * @return {string} - the message about the launch result.
+ * Launches the payment handler and waits until its window is ready.
+ * @return {Promise<string>} - the message about the launch result.
  */
-async function launch() { // eslint-disable-line no-unused-vars
+function launchAndWaitUntilReady() { // eslint-disable-line no-unused-vars
+  let appReadyResolver;
+  appReadyPromise = new Promise((r) => {
+    appReadyResolver = r;
+  });
   try {
     const request = new PaymentRequest([{supportedMethods: methodName}], {
       total: {label: 'Total', amount: {currency: 'USD', value: '0.01'}},
     });
-    const paymentResponse = await request.show();
-    const status = paymentResponse.details.status;
-    await updateLogView(
-        `Payment App has been shown and completed with status(${status}).`);
-    // status has to be either fail, success, or unknown.
-    await paymentResponse.complete(status);
-    return 'success';
+    request.onpaymentmethodchange = (event) => {
+      appReadyResolver(event.methodDetails.status);
+    };
+    resultPromise = request.show();
+    updateLogView('payment handler is shown.');
   } catch (e) {
-    return e.message;
+    appReadyResolver(e.message);
+  }
+  return appReadyPromise;
+}
+/**
+ * Gets the result of the PaymentRequest.show() from launchAndWaitUntilReady().
+ * @return {Promise<string>} - the payment handler's response to the
+ * 'paymentrequest' event.
+ */
+async function getResult() { // eslint-disable-line no-unused-vars
+  try {
+    const response = await resultPromise;
+    updateLogView(response.details.status);
+    await response.complete(response.details.status);
+    return response.details.status;
+  } catch (e) {
+   return e.message;
   }
 }
 

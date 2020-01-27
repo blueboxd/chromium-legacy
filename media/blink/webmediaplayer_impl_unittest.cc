@@ -94,7 +94,7 @@ constexpr base::TimeDelta kAudioOnlyTestFileDuration =
     base::TimeDelta::FromMilliseconds(296);
 
 MATCHER(WmpiDestroyed, "") {
-  return CONTAINS_STRING(arg, "WEBMEDIAPLAYER_DESTROYED {}");
+  return CONTAINS_STRING(arg, "{\"event\":\"kWebMediaPlayerDestroyed\"}");
 }
 
 MATCHER_P2(PlaybackRateChanged, old_rate_string, new_rate_string, "") {

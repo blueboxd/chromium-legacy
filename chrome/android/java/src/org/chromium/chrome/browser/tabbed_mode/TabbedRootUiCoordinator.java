@@ -148,8 +148,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
 
     private void initializeIPH() {
         WindowAndroid window = mActivity.getWindowAndroid();
-        mToolbarButtonInProductHelpController =
-                new ToolbarButtonInProductHelpController(mActivity, mAppMenuCoordinator);
+        mToolbarButtonInProductHelpController = new ToolbarButtonInProductHelpController(
+                mActivity, mAppMenuCoordinator, mActivity.getLifecycleDispatcher());
         if (!triggerPromo()) {
             mToolbarButtonInProductHelpController.showColdStartIPH();
         }

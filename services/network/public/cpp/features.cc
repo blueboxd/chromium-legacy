@@ -169,6 +169,14 @@ const base::Feature
         "DeriveOriginFromUrlForNeitherGetNorHeadRequestWhenHavingSpecialAccess",
         base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Emergency switch for legacy cookie access semantics on given patterns, as
+// specified by the param, comma separated.
+const base::Feature kEmergencyLegacyCookieAccess{
+    "EmergencyLegacyCookieAccess", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kEmergencyLegacyCookieAccessParamName[] = "Patterns";
+const base::FeatureParam<std::string> kEmergencyLegacyCookieAccessParam{
+    &kEmergencyLegacyCookieAccess, kEmergencyLegacyCookieAccessParamName, ""};
+
 bool ShouldEnableOutOfBlinkCorsForTesting() {
   return base::FeatureList::IsEnabled(features::kOutOfBlinkCors);
 }

@@ -9,10 +9,6 @@ namespace blink {
 
 bool CoreTextVersionSupportsVariations();
 bool CoreTextVersionSupportsColrCpal();
-// See https://bugs.chromium.org/p/skia/issues/detail?id=9747 - Depending on
-// variation axes parameters Mac OS pre 10.15 produces broken SkTypefaces when
-// using makeClone() on system fonts.
-bool CoreTextVersionSupportsSystemFontMakeClone();
 
 }  // namespace blink
 

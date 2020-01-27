@@ -79,6 +79,10 @@ class MockSyncWebSocket : public SyncWebSocket {
       return false;
     EXPECT_TRUE((*dict)->GetInteger("id", &id_));
     EXPECT_TRUE((*dict)->GetString("method", method));
+    // Because ConnectIfNecessary is not waiting for the response, Send can
+    // set connect_complete to true
+    if (add_script_received_ && runtime_eval_received_)
+      connect_complete_ = true;
     if (connect_complete_)
       return true;
     else if (*method == "Page.addScriptToEvaluateOnNewDocument")

@@ -11,11 +11,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/time/default_clock.h"
-#include "chrome/browser/permissions/permission_result.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/permissions/permission_result.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -61,18 +61,20 @@ class PermissionDecisionAutoBlocker : public KeyedService {
   // Prefer to use PermissionManager::GetPermissionStatus when possible. This
   // method is only exposed to facilitate permission checks from threads other
   // than the UI thread. See https://crbug.com/658020.
-  static PermissionResult GetEmbargoResult(HostContentSettingsMap* settings_map,
-                                           const GURL& request_origin,
-                                           ContentSettingsType permission,
-                                           base::Time current_time);
+  static permissions::PermissionResult GetEmbargoResult(
+      HostContentSettingsMap* settings_map,
+      const GURL& request_origin,
+      ContentSettingsType permission,
+      base::Time current_time);
 
   // Updates the threshold to start blocking prompts from the field trial.
   static void UpdateFromVariations();
 
   // Checks the status of the content setting to determine if |request_origin|
   // is under embargo for |permission|. This checks all types of embargo.
-  PermissionResult GetEmbargoResult(const GURL& request_origin,
-                                    ContentSettingsType permission);
+  permissions::PermissionResult GetEmbargoResult(
+      const GURL& request_origin,
+      ContentSettingsType permission);
 
   // Returns the most recent recorded time either an ignore or dismiss embargo
   // was started. Records of embargo start times persist beyond the duration of

@@ -25,10 +25,6 @@ class ScopedWindowEventTargetingBlocker;
 class Window;
 }  // namespace aura
 
-namespace ui {
-class Layer;
-}
-
 namespace ash {
 class OverviewItem;
 class ScopedOverviewAnimationSettings;
@@ -188,9 +184,6 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   base::flat_map<aura::Window*,
                  std::unique_ptr<aura::ScopedWindowEventTargetingBlocker>>
       event_targeting_blocker_map_;
-
-  // The original mask layer of the window before entering overview mode.
-  ui::Layer* original_mask_layer_ = nullptr;
 
   // The original clipping on the layer of the window before entering overview
   // mode.

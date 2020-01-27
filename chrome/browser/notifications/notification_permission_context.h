@@ -115,7 +115,7 @@ class NotificationPermissionContext : public PermissionContextBase {
 
   // PermissionContextBase implementation.
   void DecidePermission(content::WebContents* web_contents,
-                        const PermissionRequestID& id,
+                        const permissions::PermissionRequestID& id,
                         const GURL& requesting_origin,
                         const GURL& embedding_origin,
                         bool user_gesture,

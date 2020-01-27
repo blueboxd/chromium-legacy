@@ -146,14 +146,14 @@ void CastSessionTracker::HandleMediaStatusMessage(const MediaSinkInternal& sink,
   // Backfill messages from receivers to make them compatible with Cast SDK.
   for (auto& media : media_list) {
     media.SetKey("sessionId", base::Value(session_id));
-    const base::Value* supported_media_requests = media.FindKeyOfType(
-        "supportedMediaRequests", base::Value::Type::INTEGER);
-    if (!supported_media_requests)
+    const base::Value* supported_media_commands = media.FindKeyOfType(
+        "supportedMediaCommands", base::Value::Type::INTEGER);
+    if (!supported_media_commands)
       continue;
 
     media.SetKey(
-        "supportedMediaRequests",
-        SupportedMediaRequestsToListValue(supported_media_requests->GetInt()));
+        "supportedMediaCommands",
+        SupportedMediaCommandsToListValue(supported_media_commands->GetInt()));
   }
 
   CopySavedMediaFieldsToMediaList(session, media_list);

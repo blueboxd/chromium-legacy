@@ -1680,6 +1680,7 @@ void NormalPage::Unmark() {
     }
     header_address += header->size();
   }
+  ClearCardTable();
 }
 
 #if defined(ADDRESS_SANITIZER)
@@ -1849,6 +1850,7 @@ void LargeObjectPage::Unmark() {
   if (header->IsMarked()) {
     header->Unmark();
   }
+  SetRemembered(false);
 }
 
 void LargeObjectPage::MakeConsistentForMutator() {

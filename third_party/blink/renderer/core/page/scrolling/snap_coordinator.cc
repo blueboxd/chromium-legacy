@@ -224,6 +224,7 @@ void SnapCoordinator::UpdateAllSnapContainerDataIfNeeded() {
     if (container->GetScrollableArea()->SnapContainerDataNeedsUpdate())
       UpdateSnapContainerData(*container);
   }
+  SetAnySnapContainerDataNeedsUpdate(false);
 }
 
 void SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {

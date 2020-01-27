@@ -13,10 +13,12 @@ import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarPropert
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_IPH;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.INCOGNITO_STATE_PROVIDER;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.INCOGNITO_SWITCHER_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.LOGO_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.MENU_IS_VISIBLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_BUTTON_AT_LEFT;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_BUTTON_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_CLICK_HANDLER;
 
@@ -35,6 +37,10 @@ class StartSurfaceToolbarViewBinder {
             view.setAppMenuButtonHelper(model.get(APP_MENU_BUTTON_HELPER));
         } else if (propertyKey == BUTTONS_CLICKABLE) {
             view.setButtonClickableState(model.get(BUTTONS_CLICKABLE));
+        } else if (propertyKey == INCOGNITO_SWITCHER_VISIBLE) {
+            view.setIncognitoSwitcherVisibility(model.get(INCOGNITO_SWITCHER_VISIBLE));
+        } else if (propertyKey == NEW_TAB_BUTTON_AT_LEFT) {
+            view.setNewTabButtonAtLeft(model.get(NEW_TAB_BUTTON_AT_LEFT));
         } else if (propertyKey == IDENTITY_DISC_CLICK_HANDLER) {
             view.setIdentityDiscClickHandler(model.get(IDENTITY_DISC_CLICK_HANDLER));
         } else if (propertyKey == IDENTITY_DISC_DESCRIPTION) {

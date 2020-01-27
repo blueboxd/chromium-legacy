@@ -9,7 +9,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
 #include "chrome/browser/notifications/notification_handler.h"
-#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_request_notification_handler.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/permissions/permission_request.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -112,7 +112,8 @@ PermissionRequestNotificationAndroid::PermissionRequestNotificationAndroid(
   data.small_image = GetNotificationsSmallImage();
 
   CHECK(!delegate_->Requests().empty());
-  const PermissionRequest* permission_request = delegate_->Requests()[0];
+  const permissions::PermissionRequest* permission_request =
+      delegate_->Requests()[0];
 
   notification_ = std::make_unique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_SIMPLE,

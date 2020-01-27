@@ -113,7 +113,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::HdcpVersion,
                           media::HdcpVersion::kHdcpVersionMax)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaLogRecord::Type,
-                          media::MediaLogRecord::TYPE_LAST)
+                          media::MediaLogRecord::Type::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaStatus::State,
                           media::MediaStatus::State::STATE_MAX)

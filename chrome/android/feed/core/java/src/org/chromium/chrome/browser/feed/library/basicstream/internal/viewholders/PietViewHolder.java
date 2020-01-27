@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.feed.library.sharedstream.piet.PietEventLogge
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;
 import org.chromium.chrome.browser.feed.library.sharedstream.scroll.PietScrollObserver;
 import org.chromium.chrome.browser.feed.library.sharedstream.scroll.ScrollListenerNotifier;
+import org.chromium.chrome.feed.R;
 import org.chromium.components.feed.core.proto.ui.action.FeedActionPayloadProto.FeedActionPayload;
 import org.chromium.components.feed.core.proto.ui.piet.PietProto.Frame;
 import org.chromium.components.feed.core.proto.ui.piet.PietProto.PietSharedState;

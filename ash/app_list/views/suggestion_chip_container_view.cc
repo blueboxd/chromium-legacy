@@ -34,8 +34,7 @@ constexpr int kChipSpacing = 8;
 constexpr int kMinimumSuggestionChipNumber = 3;
 
 bool IsPolicySuggestionChip(const SearchResult& result) {
-  return result.display_location() ==
-             SearchResultDisplayLocation::kSuggestionChipContainer &&
+  return result.display_type() == SearchResultDisplayType::kChip &&
          result.display_index() != SearchResultDisplayIndex::kUndefined;
 }
 
@@ -125,7 +124,8 @@ int SuggestionChipContainerView::DoUpdate() {
   // if shortcuts are displayed as suggestion chips. Also filter out any
   // duplicate policy chip results.
   auto filter_reinstall_and_shortcut = [](const SearchResult& r) -> bool {
-    return r.display_type() == SearchResultDisplayType::kRecommendation &&
+    return (r.display_type() == SearchResultDisplayType::kChip ||
+            r.display_type() == SearchResultDisplayType::kTile) &&
            r.result_type() != AppListSearchResultType::kPlayStoreReinstallApp &&
            r.result_type() != AppListSearchResultType::kArcAppShortcut &&
            !IsPolicySuggestionChip(r);

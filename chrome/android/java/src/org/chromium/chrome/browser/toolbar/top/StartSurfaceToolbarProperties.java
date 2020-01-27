@@ -68,10 +68,23 @@ class StartSurfaceToolbarProperties {
     public static final PropertyModel.WritableBooleanPropertyKey BUTTONS_CLICKABLE =
             new PropertyModel.WritableBooleanPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {APP_MENU_BUTTON_HELPER, NEW_TAB_CLICK_HANDLER, IS_VISIBLE,
-                    LOGO_IS_VISIBLE, IS_INCOGNITO, INCOGNITO_STATE_PROVIDER, ACCESSIBILITY_ENABLED,
-                    MENU_IS_VISIBLE, NEW_TAB_BUTTON_IS_VISIBLE, BUTTONS_CLICKABLE,
-                    IDENTITY_DISC_IS_VISIBLE, IDENTITY_DISC_CLICK_HANDLER, IDENTITY_DISC_IMAGE,
-                    IDENTITY_DISC_DESCRIPTION, IDENTITY_DISC_IPH};
+    /**
+     * This is a hacky workaround for {@link IncognitoSwitchProperties#IS_VISIBLE}.
+     * TODO(crbug.com/1042997): control the visibility through IncognitoSwitchCoordinator.
+     */
+    public static final PropertyModel.WritableBooleanPropertyKey INCOGNITO_SWITCHER_VISIBLE =
+            new PropertyModel.WritableBooleanPropertyKey();
+    /**
+     * When set to true, move New Tab Button to the left of the toolbar, and move the Incognito
+     * switcher to the center. Can only set to true.
+     */
+    public static final PropertyModel.WritableBooleanPropertyKey NEW_TAB_BUTTON_AT_LEFT =
+            new PropertyModel.WritableBooleanPropertyKey();
+
+    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {APP_MENU_BUTTON_HELPER,
+            NEW_TAB_CLICK_HANDLER, IS_VISIBLE, LOGO_IS_VISIBLE, IS_INCOGNITO,
+            INCOGNITO_STATE_PROVIDER, ACCESSIBILITY_ENABLED, MENU_IS_VISIBLE,
+            NEW_TAB_BUTTON_IS_VISIBLE, BUTTONS_CLICKABLE, INCOGNITO_SWITCHER_VISIBLE,
+            NEW_TAB_BUTTON_AT_LEFT, IDENTITY_DISC_IS_VISIBLE, IDENTITY_DISC_CLICK_HANDLER,
+            IDENTITY_DISC_IMAGE, IDENTITY_DISC_DESCRIPTION, IDENTITY_DISC_IPH};
 }

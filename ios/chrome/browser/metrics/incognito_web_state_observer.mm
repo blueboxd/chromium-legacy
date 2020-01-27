@@ -20,17 +20,17 @@ IncognitoWebStateObserver::IncognitoWebStateObserver() {
   TabModelList::AddObserver(this);
 
   // Observe all existing off-the-record TabModels' WebStateLists.
-  std::vector<ios::ChromeBrowserState*> browser_states =
+  std::vector<ChromeBrowserState*> browser_states =
       GetApplicationContext()
           ->GetChromeBrowserStateManager()
           ->GetLoadedBrowserStates();
 
-  for (ios::ChromeBrowserState* browser_state : browser_states) {
+  for (ChromeBrowserState* browser_state : browser_states) {
     DCHECK(!browser_state->IsOffTheRecord());
 
     if (!browser_state->HasOffTheRecordChromeBrowserState())
       continue;
-    ios::ChromeBrowserState* otr_browser_state =
+    ChromeBrowserState* otr_browser_state =
         browser_state->GetOffTheRecordChromeBrowserState();
 
     NSArray<TabModel*>* tab_models =
@@ -46,7 +46,7 @@ IncognitoWebStateObserver::~IncognitoWebStateObserver() {
 
 void IncognitoWebStateObserver::TabModelRegisteredWithBrowserState(
     TabModel* tab_model,
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   if (browser_state->IsOffTheRecord() &&
       !scoped_observer_.IsObserving([tab_model webStateList])) {
     scoped_observer_.Add([tab_model webStateList]);
@@ -55,7 +55,7 @@ void IncognitoWebStateObserver::TabModelRegisteredWithBrowserState(
 
 void IncognitoWebStateObserver::TabModelUnregisteredFromBrowserState(
     TabModel* tab_model,
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   if (browser_state->IsOffTheRecord()) {
     DCHECK(scoped_observer_.IsObserving([tab_model webStateList]));
     scoped_observer_.Remove([tab_model webStateList]);

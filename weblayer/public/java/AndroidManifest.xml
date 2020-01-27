@@ -52,5 +52,17 @@
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/weblayer_file_paths" />
         </provider>
+
+        <receiver android:name="org.chromium.weblayer.DownloadBroadcastReceiver"
+            android:exported="false">
+            <intent-filter>
+                <!-- these need to be in sync with DownloadImpl.java-->
+                <action android:name="org.chromium.weblayer.downloads.OPEN"/>
+                <action android:name="org.chromium.weblayer.downloads.DELETE"/>
+                <action android:name="org.chromium.weblayer.downloads.PAUSE"/>
+                <action android:name="org.chromium.weblayer.downloads.RESUME"/>
+                <action android:name="org.chromium.weblayer.downloads.CANCEL"/>
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

@@ -29,6 +29,9 @@ public class FeedConfigurationTest {
 
     private static final double ASSERT_EQUALS_DOUBLE_DELTA = 0.001d;
 
+    /** Default value for whether to use menu options to send user feedback. */
+    public static final boolean SEND_FEEDBACK_ENABLED_DEFAULT = false;
+
     @Test
     @Feature({"Feed"})
     @Features.EnableFeatures({ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS})
@@ -93,6 +96,13 @@ public class FeedConfigurationTest {
                 FeedConfiguration.getUseSecondaryPageRequest());
         Assert.assertEquals(FeedConfiguration.VIEW_LOG_THRESHOLD_DEFAULT,
                 FeedConfiguration.getViewLogThreshold(), ASSERT_EQUALS_DOUBLE_DELTA);
+    }
+
+    @Test
+    @Feature({"Feed"})
+    public void testSendFeedbackEnabledDefault() {
+        Assert.assertEquals(
+                SEND_FEEDBACK_ENABLED_DEFAULT, FeedConfiguration.getSendFeedbackEnabled());
     }
 
     @Test
@@ -268,6 +278,15 @@ public class FeedConfigurationTest {
     public void
     testManageInterestsEnabled() {
         Assert.assertTrue(FeedConfiguration.getManageInterestsEnabled());
+    }
+
+    @Test
+    @Feature({"Feed"})
+    @CommandLineFlags.
+    Add({"enable-features=InterestFeedFeedback"})
+    public void
+    testSendFeedbackEnabled() {
+        Assert.assertTrue(FeedConfiguration.getSendFeedbackEnabled());
     }
 
     @Test

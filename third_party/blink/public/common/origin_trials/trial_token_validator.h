@@ -39,12 +39,13 @@ class BLINK_COMMON_EXPORT TrialTokenValidator {
                                       std::vector<std::string /* token */>>;
 
   // If token validates, |*feature_name| is set to the name of the feature the
-  // token enables.
+  // token enables and |*expiry_time| is set to the expiry time of the token.
   // This method is thread-safe.
   virtual OriginTrialTokenStatus ValidateToken(base::StringPiece token,
                                                const url::Origin& origin,
+                                               base::Time current_time,
                                                std::string* feature_name,
-                                               base::Time current_time) const;
+                                               base::Time* expiry_time) const;
 
   bool RequestEnablesFeature(const net::URLRequest* request,
                              base::StringPiece feature_name,

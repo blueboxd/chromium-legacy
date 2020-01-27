@@ -490,20 +490,44 @@ class TabListElement extends CustomElement {
    */
   onDragOver_(event) {
     event.preventDefault();
-    const dragOverItem = event.path.find((pathItem) => {
-      return pathItem !== this.draggedItem_ && isTabElement(pathItem);
-    });
 
-    if (!dragOverItem || !this.draggedItem_ ||
-        dragOverItem.tab.pinned !== this.draggedItem_.tab.pinned) {
+    if (!this.draggedItem_) {
+      // Invalid drag.
       return;
     }
 
     event.dataTransfer.dropEffect = 'move';
 
+    const composedPath = event.composedPath();
+    const dragOverTabElement =
+        composedPath.find(item => isTabElement(/** @type {!Element} */ (item)));
+    if (dragOverTabElement &&
+        dragOverTabElement.tab.pinned !== this.draggedItem_.tab.pinned) {
+      // Can only drag between the same pinned states.
+      return;
+    }
+
+    const dragOverTabGroup = composedPath.find(
+        item => isTabGroupElement(/** @type {!Element} */ (item)));
+    if (dragOverTabGroup &&
+        dragOverTabGroup.dataset.groupId !== this.draggedItem_.tab.groupId) {
+      this.tabsApi_.groupTab(
+          this.draggedItem_.tab.id, dragOverTabGroup.dataset.groupId);
+      return;
+    }
+
+    if (!dragOverTabGroup && this.draggedItem_.tab.groupId) {
+      this.tabsApi_.ungroupTab(this.draggedItem_.tab.id);
+      return;
+    }
+
+    if (!dragOverTabElement) {
+      return;
+    }
+
     const dragOverIndex =
         Array.from(this.shadowRoot.querySelectorAll('tabstrip-tab'))
-            .indexOf(dragOverItem);
+            .indexOf(dragOverTabElement);
     this.tabsApi_.moveTab(this.draggedItem_.tab.id, dragOverIndex);
   }
 

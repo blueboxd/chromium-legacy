@@ -28,8 +28,8 @@
   web::WebState* webState = chrome_test_util::GetCurrentWebState();
   if (!webState)
     return UIEdgeInsetsZero;
-  ios::ChromeBrowserState* browserState =
-      ios::ChromeBrowserState::FromBrowserState(webState->GetBrowserState());
+  ChromeBrowserState* browserState =
+      ChromeBrowserState::FromBrowserState(webState->GetBrowserState());
   FullscreenController* fullscreenController =
       FullscreenControllerFactory::GetForBrowserState(browserState);
   if (!fullscreenController)

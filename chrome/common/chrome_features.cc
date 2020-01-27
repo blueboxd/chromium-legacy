@@ -247,14 +247,8 @@ const base::Feature kDesktopCaptureTabSharingInfobar{
     "DesktopCaptureTabSharingInfobar", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables new Desktop PWA support for minimal-ui display mode.
-const base::Feature kDesktopMinimalUI {
-  "DesktopMinimalUI",
-#if defined(OS_MACOSX)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kDesktopMinimalUI{"DesktopMinimalUI",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables new Desktop PWAs implementation that does not use
 // extensions.
@@ -486,11 +480,6 @@ const base::Feature kIntentPicker{"IntentPicker",
 const base::Feature kKernelnextVMs{"KernelnextVMs",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
-
-// Uses KidsManagement UrlClassification instead of SafeSearch for supervised
-// accounts.
-const base::Feature kKidsManagementUrlClassification{
-    "KidsManagementUrlClassification", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_MACOSX)
 // Uses NSFullSizeContentViewWindowMask where available instead of adding our

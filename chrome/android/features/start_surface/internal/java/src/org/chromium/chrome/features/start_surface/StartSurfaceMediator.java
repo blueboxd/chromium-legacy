@@ -56,13 +56,14 @@ import java.lang.annotation.RetentionPolicy;
 class StartSurfaceMediator
         implements StartSurface.Controller, TabSwitcher.OverviewModeObserver, View.OnClickListener {
     @IntDef({SurfaceMode.NO_START_SURFACE, SurfaceMode.TASKS_ONLY, SurfaceMode.TWO_PANES,
-            SurfaceMode.SINGLE_PANE})
+            SurfaceMode.SINGLE_PANE, SurfaceMode.OMNIBOX_ONLY})
     @Retention(RetentionPolicy.SOURCE)
     @interface SurfaceMode {
         int NO_START_SURFACE = 0;
         int TASKS_ONLY = 1;
         int TWO_PANES = 2;
         int SINGLE_PANE = 3;
+        int OMNIBOX_ONLY = 4;
     }
 
     /** Interface to initialize a secondary tasks surface for more tabs. */
@@ -131,7 +132,8 @@ class StartSurfaceMediator
 
         if (mPropertyModel != null) {
             assert mSurfaceMode == SurfaceMode.SINGLE_PANE || mSurfaceMode == SurfaceMode.TWO_PANES
-                    || mSurfaceMode == SurfaceMode.TASKS_ONLY;
+                    || mSurfaceMode == SurfaceMode.TASKS_ONLY
+                    || mSurfaceMode == SurfaceMode.OMNIBOX_ONLY;
             assert mFakeboxDelegate != null;
 
             mIsIncognito = mTabModelSelector.isIncognitoSelected();
@@ -302,6 +304,8 @@ class StartSurfaceMediator
             RecordUserAction.record("StartSurface.TwoPanes.DefaultOn" + defaultOnUserActionString);
         } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY) {
             RecordUserAction.record("StartSurface.TasksOnly");
+        } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY) {
+            RecordUserAction.record("StartSurface.OmniboxOnly");
         }
     }
 
@@ -340,6 +344,10 @@ class StartSurfaceMediator
 
         } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY) {
             setMVTilesVisibility(!mIsIncognito);
+            setExploreSurfaceVisibility(false);
+            setFakeBoxVisibility(true);
+        } else if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY) {
+            setMVTilesVisibility(false);
             setExploreSurfaceVisibility(false);
             setFakeBoxVisibility(true);
         } else if (mOverviewModeState == OverviewModeState.NOT_SHOWN) {
@@ -573,6 +581,7 @@ class StartSurfaceMediator
         // No fake search box on the explore pane in two panes mode.
         if (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE
                 || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY
+                || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY
                 || (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TWO_PANES
                         && !mPropertyModel.get(IS_EXPLORE_SURFACE_VISIBLE))) {
             return true;
@@ -663,6 +672,9 @@ class StartSurfaceMediator
         if (mSurfaceMode == SurfaceMode.TASKS_ONLY) {
             return OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY;
         }
+        if (mSurfaceMode == SurfaceMode.OMNIBOX_ONLY) {
+            return OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY;
+        }
         return OverviewModeState.DISABLED;
     }
 
@@ -670,6 +682,7 @@ class StartSurfaceMediator
         return state == OverviewModeState.SHOWN_HOMEPAGE
                 || state == OverviewModeState.SHOWN_TABSWITCHER
                 || state == OverviewModeState.SHOWN_TABSWITCHER_TWO_PANES
-                || state == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY;
+                || state == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY
+                || state == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY;
     }
 }

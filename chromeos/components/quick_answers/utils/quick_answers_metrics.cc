@@ -12,6 +12,7 @@ namespace chromeos {
 namespace quick_answers {
 
 namespace {
+const char kQuickAnswerClick[] = "QuickAnswers.Click";
 const char kQuickAnswerResult[] = "QuickAnswers.Result";
 const char kQuickAnswerLoadingStatus[] = "QuickAnswers.Loading.Status";
 const char kQuickAnswerLoadingDuration[] = "QuickAnswers.Loading.Duration";
@@ -38,18 +39,17 @@ void RecordTypeAndDuration(const std::string& prefix,
   // Record by result type.
   base::UmaHistogramSparse(prefix, static_cast<int>(result_type));
 
-  // Record sliced by duration.
   const std::string duration_histogram = prefix + kDurationSuffix;
-  if (is_medium_bucketization) {
-    base::UmaHistogramMediumTimes(duration_histogram, duration);
-  } else {
-    base::UmaHistogramTimes(duration_histogram, duration);
-  }
-
-  // Record sliced by duration and result type.
   const std::string result_type_histogram_name =
       duration_histogram + ResultTypeToString(result_type);
-  base::UmaHistogramMediumTimes(result_type_histogram_name.c_str(), duration);
+  // Record sliced by duration and result type.
+  if (is_medium_bucketization) {
+    base::UmaHistogramMediumTimes(duration_histogram, duration);
+    base::UmaHistogramMediumTimes(result_type_histogram_name.c_str(), duration);
+  } else {
+    base::UmaHistogramTimes(duration_histogram, duration);
+    base::UmaHistogramTimes(result_type_histogram_name.c_str(), duration);
+  }
 }
 
 }  // namespace
@@ -62,6 +62,11 @@ void RecordResult(ResultType result_type, const base::TimeDelta duration) {
 void RecordLoadingStatus(LoadStatus status, const base::TimeDelta duration) {
   base::UmaHistogramEnumeration(kQuickAnswerLoadingStatus, status);
   base::UmaHistogramTimes(kQuickAnswerLoadingDuration, duration);
+}
+
+void RecordClick(ResultType result_type, const base::TimeDelta duration) {
+  RecordTypeAndDuration(kQuickAnswerClick, result_type, duration,
+                        /*is_medium_bucketization=*/true);
 }
 
 }  // namespace quick_answers

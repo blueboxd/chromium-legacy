@@ -73,43 +73,48 @@ std::string PermissionUtil::GetPermissionString(
   return std::string();
 }
 
-PermissionRequestType PermissionUtil::GetRequestType(ContentSettingsType type) {
+permissions::PermissionRequestType PermissionUtil::GetRequestType(
+    ContentSettingsType type) {
   switch (type) {
     case ContentSettingsType::GEOLOCATION:
-      return PermissionRequestType::PERMISSION_GEOLOCATION;
+      return permissions::PermissionRequestType::PERMISSION_GEOLOCATION;
     case ContentSettingsType::NOTIFICATIONS:
-      return PermissionRequestType::PERMISSION_NOTIFICATIONS;
+      return permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS;
     case ContentSettingsType::MIDI_SYSEX:
-      return PermissionRequestType::PERMISSION_MIDI_SYSEX;
+      return permissions::PermissionRequestType::PERMISSION_MIDI_SYSEX;
     case ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER:
-      return PermissionRequestType::PERMISSION_PROTECTED_MEDIA_IDENTIFIER;
+      return permissions::PermissionRequestType::
+          PERMISSION_PROTECTED_MEDIA_IDENTIFIER;
     case ContentSettingsType::PLUGINS:
-      return PermissionRequestType::PERMISSION_FLASH;
+      return permissions::PermissionRequestType::PERMISSION_FLASH;
     case ContentSettingsType::MEDIASTREAM_MIC:
-      return PermissionRequestType::PERMISSION_MEDIASTREAM_MIC;
+      return permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC;
     case ContentSettingsType::MEDIASTREAM_CAMERA:
-      return PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA;
+      return permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA;
     case ContentSettingsType::ACCESSIBILITY_EVENTS:
-      return PermissionRequestType::PERMISSION_ACCESSIBILITY_EVENTS;
+      return permissions::PermissionRequestType::
+          PERMISSION_ACCESSIBILITY_EVENTS;
     case ContentSettingsType::CLIPBOARD_READ_WRITE:
-      return PermissionRequestType::PERMISSION_CLIPBOARD_READ_WRITE;
+      return permissions::PermissionRequestType::
+          PERMISSION_CLIPBOARD_READ_WRITE;
     case ContentSettingsType::PAYMENT_HANDLER:
-      return PermissionRequestType::PERMISSION_PAYMENT_HANDLER;
+      return permissions::PermissionRequestType::PERMISSION_PAYMENT_HANDLER;
     case ContentSettingsType::NFC:
-      return PermissionRequestType::PERMISSION_NFC;
+      return permissions::PermissionRequestType::PERMISSION_NFC;
     case ContentSettingsType::VR:
-      return PermissionRequestType::PERMISSION_VR;
+      return permissions::PermissionRequestType::PERMISSION_VR;
     case ContentSettingsType::AR:
-      return PermissionRequestType::PERMISSION_AR;
+      return permissions::PermissionRequestType::PERMISSION_AR;
     default:
       NOTREACHED();
-      return PermissionRequestType::UNKNOWN;
+      return permissions::PermissionRequestType::UNKNOWN;
   }
 }
 
-PermissionRequestGestureType PermissionUtil::GetGestureType(bool user_gesture) {
-  return user_gesture ? PermissionRequestGestureType::GESTURE
-                      : PermissionRequestGestureType::NO_GESTURE;
+permissions::PermissionRequestGestureType PermissionUtil::GetGestureType(
+    bool user_gesture) {
+  return user_gesture ? permissions::PermissionRequestGestureType::GESTURE
+                      : permissions::PermissionRequestGestureType::NO_GESTURE;
 }
 
 bool PermissionUtil::GetPermissionType(ContentSettingsType type,

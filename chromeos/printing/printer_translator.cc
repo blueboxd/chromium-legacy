@@ -194,6 +194,7 @@ std::unique_ptr<base::DictionaryValue> GetCupsPrinterInfo(
                            printer.IsIppEverywhere());
   printer_info->SetString("printerPPDPath",
                           printer.ppd_reference().user_supplied_ppd_url);
+  printer_info->SetString("printServerUri", printer.print_server_uri());
 
   auto optional = printer.GetUriComponents();
   if (!optional.has_value()) {

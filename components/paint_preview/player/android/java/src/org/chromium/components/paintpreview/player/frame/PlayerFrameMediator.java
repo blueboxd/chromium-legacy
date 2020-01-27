@@ -11,6 +11,7 @@ import android.util.Pair;
 import android.view.View;
 
 import org.chromium.base.Callback;
+import org.chromium.base.UnguessableToken;
 import org.chromium.components.paintpreview.player.PlayerCompositorDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -35,7 +36,7 @@ import java.util.Map;
  */
 class PlayerFrameMediator implements PlayerFrameViewDelegate {
     /** The GUID associated with the frame that this class is representing. */
-    private final long mGuid;
+    private final UnguessableToken mGuid;
     /** The content width inside this frame, at a scale factor of 1. */
     private final int mContentWidth;
     /** The content height inside this frame, at a scale factor of 1. */
@@ -62,7 +63,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     private float mScaleFactor;
 
     PlayerFrameMediator(PropertyModel model, PlayerCompositorDelegate compositorDelegate,
-            long frameGuid, int contentWidth, int contentHeight) {
+            UnguessableToken frameGuid, int contentWidth, int contentHeight) {
         mModel = model;
         mCompositorDelegate = compositorDelegate;
         mGuid = frameGuid;

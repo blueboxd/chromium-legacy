@@ -208,7 +208,8 @@ void FirstRunController::ShowNextStep() {
     RecordCompletion(first_run::TUTORIAL_COMPLETED_WITH_GOT_IT);
     return;
   }
-  GetCurrentStep()->Show();
+  if (!GetCurrentStep()->Show())
+    ShowNextStep();
 }
 
 void FirstRunController::AdvanceStep() {

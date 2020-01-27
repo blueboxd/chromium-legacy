@@ -59,8 +59,7 @@
 @implementation InfobarContainerCoordinator
 
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
-                              browserState:
-                                  (ios::ChromeBrowserState*)browserState
+                              browserState:(ChromeBrowserState*)browserState
                               webStateList:(WebStateList*)webStateList {
   self = [super initWithBaseViewController:viewController
                               browserState:browserState];

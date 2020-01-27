@@ -87,6 +87,31 @@ void FakeLocalFrameHost::ForwardResourceTimingToParent(
 
 void FakeLocalFrameHost::DidFinishDocumentLoad() {}
 
+void FakeLocalFrameHost::RunModalAlertDialog(
+    const WTF::String& alert_message,
+    RunModalAlertDialogCallback callback) {
+  std::move(callback).Run();
+}
+
+void FakeLocalFrameHost::RunModalConfirmDialog(
+    const WTF::String& alert_message,
+    RunModalConfirmDialogCallback callback) {
+  std::move(callback).Run(true);
+}
+
+void FakeLocalFrameHost::RunModalPromptDialog(
+    const WTF::String& alert_message,
+    const WTF::String& default_value,
+    RunModalPromptDialogCallback callback) {
+  std::move(callback).Run(true, g_empty_string);
+}
+
+void FakeLocalFrameHost::RunBeforeUnloadConfirm(
+    bool is_reload,
+    RunBeforeUnloadConfirmCallback callback) {
+  std::move(callback).Run(true);
+}
+
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(

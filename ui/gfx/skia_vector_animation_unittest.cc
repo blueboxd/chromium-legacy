@@ -102,8 +102,8 @@ class SkiaVectorAnimationTest : public testing::Test {
   void SetUp() override {
     canvas_ = std::make_unique<gfx::Canvas>(
         gfx::Size(kAnimationWidth, kAnimationHeight), 1.f, false);
-    skottie_ = base::MakeRefCounted<cc::SkottieWrapper>(
-        std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
+    skottie_ = cc::SkottieWrapper::CreateNonSerializable(
+        base::as_bytes(base::make_span(kData, std::strlen(kData))));
     animation_ = std::make_unique<SkiaVectorAnimation>(skottie_);
   }
 
@@ -200,9 +200,8 @@ class SkiaVectorAnimationTest : public testing::Test {
 };
 
 TEST_F(SkiaVectorAnimationTest, InitializationAndLoadingData) {
-  auto bytes = base::MakeRefCounted<base::RefCountedBytes>(
-      std::vector<unsigned char>(kData, kData + std::strlen(kData)));
-  skottie_ = base::MakeRefCounted<cc::SkottieWrapper>(bytes.get());
+  skottie_ = cc::SkottieWrapper::CreateNonSerializable(
+      base::as_bytes(base::make_span(kData, std::strlen(kData))));
   animation_ = std::make_unique<SkiaVectorAnimation>(skottie_);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().width(), kAnimationWidth);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().height(), kAnimationHeight);
@@ -210,8 +209,8 @@ TEST_F(SkiaVectorAnimationTest, InitializationAndLoadingData) {
                   kAnimationDuration);
   EXPECT_TRUE(IsStopped());
 
-  skottie_ = base::MakeRefCounted<cc::SkottieWrapper>(
-      std::make_unique<SkMemoryStream>(kData, std::strlen(kData)));
+  skottie_ = cc::SkottieWrapper::CreateNonSerializable(
+      base::as_bytes(base::make_span(kData, std::strlen(kData))));
   animation_ = std::make_unique<SkiaVectorAnimation>(skottie_);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().width(), kAnimationWidth);
   EXPECT_FLOAT_EQ(animation_->GetOriginalSize().height(), kAnimationHeight);

@@ -9,7 +9,10 @@
 #include "chrome/browser/permissions/permission_context_base.h"
 
 class GURL;
+
+namespace permissions {
 class PermissionRequestID;
+}
 
 class MidiSysexPermissionContext : public PermissionContextBase {
  public:
@@ -18,7 +21,7 @@ class MidiSysexPermissionContext : public PermissionContextBase {
 
  private:
   // PermissionContextBase:
-  void UpdateTabContext(const PermissionRequestID& id,
+  void UpdateTabContext(const permissions::PermissionRequestID& id,
                         const GURL& requesting_frame,
                         bool allowed) override;
   bool IsRestrictedToSecureOrigins() const override;

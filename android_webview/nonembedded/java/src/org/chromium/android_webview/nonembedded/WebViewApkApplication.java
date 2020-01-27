@@ -64,6 +64,18 @@ public class WebViewApkApplication extends Application {
         if (isWebViewProcess()) {
             PathUtils.setPrivateDataDirectorySuffix("webview", "WebView");
             CommandLineUtil.initCommandLine();
+
+            // Temporary code: old clients would toggle DeveloperModeContentProvider's state, and
+            // may have disabled it if the user had activated and disabled developer mode.
+            // PackageManager persists this state across package upgrades and reboots, so we need to
+            // explicitly reset the component state to safely handle these clients. Only do this if
+            // we're in a WebView process, because only WebView's Context can change this state.
+            // TODO(ntfschr): remove this in M83, when all clients are likely to have hit this code.
+            Context ctx = ContextUtils.getApplicationContext();
+            ComponentName developerModeContentProvider = new ComponentName(
+                    ctx, "org.chromium.android_webview.services.DeveloperModeContentProvider");
+            ctx.getPackageManager().setComponentEnabledSetting(developerModeContentProvider,
+                    PackageManager.COMPONENT_ENABLED_STATE_DEFAULT, PackageManager.DONT_KILL_APP);
         }
     }
 

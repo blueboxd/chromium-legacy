@@ -248,7 +248,17 @@ FakeRtpTransceiver::FakeRtpTransceiver(
       direction_(direction),
       current_direction_(blink::ToAbslOptional(current_direction)) {}
 
-FakeRtpTransceiver::~FakeRtpTransceiver() {}
+FakeRtpTransceiver::~FakeRtpTransceiver() = default;
+
+void FakeRtpTransceiver::ReplaceWith(const FakeRtpTransceiver& other) {
+  media_type_ = other.media_type_;
+  sender_ = other.sender_;
+  receiver_ = other.receiver_;
+  mid_ = other.mid_;
+  stopped_ = other.stopped_;
+  direction_ = other.direction_;
+  current_direction_ = other.current_direction_;
+}
 
 cricket::MediaType FakeRtpTransceiver::media_type() const {
   return media_type_;

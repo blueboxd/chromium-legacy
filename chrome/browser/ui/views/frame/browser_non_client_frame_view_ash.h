@@ -152,9 +152,18 @@ class BrowserNonClientFrameViewAsh
 
   friend class WebAppNonClientFrameViewAshTest;
 
-  // Returns whether the caption buttons should be visible. They are hidden, for
-  // example, in overview mode and tablet mode.
+  // Returns true if |ShouldShowCaptionButtonsWhenNotInOverview| returns true
+  // and this browser window is not showing in overview.
   bool ShouldShowCaptionButtons() const;
+
+  // In tablet mode, to prevent accidental taps of the window controls, and to
+  // give more horizontal space for tabs and the new tab button (especially in
+  // split view), we hide the window controls even when this browser window is
+  // not showing in overview. We only do this when the Home Launcher feature is
+  // enabled, because it gives the user the ability to minimize all windows when
+  // pressing the Launcher button on the shelf. So, this function returns true
+  // if the Home Launcher feature is disabled or we are in clamshell mode.
+  bool ShouldShowCaptionButtonsWhenNotInOverview() const;
 
   // Distance between the edge of the NonClientFrameView and the web app frame
   // toolbar.

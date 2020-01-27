@@ -14,6 +14,8 @@ import android.view.View;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.chrome.feed.R;
+
 /** View compatible with KitKat that shows a Material themed spinner. */
 public class MaterialSpinnerView extends AppCompatImageView {
     private final CircularProgressDrawable mSpinner;

@@ -53,7 +53,6 @@ class CheckClientDownloadRequestBase {
       base::FilePath target_file_path,
       base::FilePath full_path,
       TabUrls tab_urls,
-      size_t file_size,
       std::string mime_type,
       std::string hash,
       content::BrowserContext* browser_context,
@@ -159,9 +158,6 @@ class CheckClientDownloadRequestBase {
   // URL chain of redirects leading to (but not including) |tab_url|.
   std::vector<GURL> tab_redirects_;
 
-  // The size of the download.
-  const size_t file_size_;
-
   CheckDownloadCallback callback_;
 
   // A cancelable closure used to track the timeout. If we decide to upload the
@@ -205,9 +201,6 @@ class CheckClientDownloadRequestBase {
   bool is_extended_reporting_ = false;
   bool is_incognito_ = false;
   bool is_under_advanced_protection_ = false;
-  bool password_protected_allowed_ = true;
-
-  bool is_password_protected_ = false;
 
   int file_count_;
   int directory_count_;

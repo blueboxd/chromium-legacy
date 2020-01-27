@@ -767,6 +767,13 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
     extensions.add("GL_APPLE_sync");
   }
 
+  // Skia can fall back to GL_NV_fence if GLsync objects are not available.
+  functions->fDeleteFences = gl->glDeleteFencesNVFn;
+  functions->fFinishFence = gl->glFinishFenceNVFn;
+  functions->fGenFences = gl->glGenFencesNVFn;
+  functions->fSetFence = gl->glSetFenceNVFn;
+  functions->fTestFence = gl->glTestFenceNVFn;
+
   functions->fGetInternalformativ = gl->glGetInternalformativFn;
 
   interface->fStandard = standard;

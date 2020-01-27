@@ -49,8 +49,8 @@ namespace {
 
 std::unique_ptr<KeyedService> CreateSyncSetupService(
     web::BrowserState* context) {
-  ios::ChromeBrowserState* chrome_browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* chrome_browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(chrome_browser_state);
   return std::make_unique<testing::NiceMock<SyncSetupServiceMock>>(

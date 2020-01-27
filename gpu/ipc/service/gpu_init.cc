@@ -221,10 +221,16 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   delayed_watchdog_enable = true;
 #endif
 
+#if defined(OS_LINUX)
   // PreSandbox is mainly for resource handling and not related to the GPU
   // driver, it doesn't need the GPU watchdog. The loadLibrary may take long
   // time that killing and restarting the GPU process will not help.
-  sandbox_helper_->PreSandboxStartup();
+  if (gpu_preferences_.gpu_sandbox_start_early) {
+    // The sandbox will be started earlier than usual (i.e. before GL) so
+    // execute the pre-sandbox steps now.
+    sandbox_helper_->PreSandboxStartup();
+  }
+#endif
 
   // Start the GPU watchdog only after anything that is expected to be time
   // consuming has completed, otherwise the process is liable to be aborted.
@@ -318,6 +324,23 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
         return false;
       }
     }
+  }
+
+  // The ContentSandboxHelper is currently the only one implementation of
+  // gpu::GpuSandboxHelper and it has no dependency. Except on Linux where
+  // VaapiWrapper checks the GL implementation to determine which display
+  // to use. So call PreSandboxStartup after GL initialization. But make
+  // sure the watchdog is paused as loadLibrary may take a long time and
+  // restarting the GPU process will not help.
+  if (!attempted_startsandbox) {
+    if (watchdog_thread_)
+      watchdog_thread_->PauseWatchdog();
+
+    // The sandbox is not started yet.
+    sandbox_helper_->PreSandboxStartup();
+
+    if (watchdog_thread_)
+      watchdog_thread_->ResumeWatchdog();
   }
 
   bool gl_disabled = gl::GetGLImplementation() == gl::kGLImplementationDisabled;

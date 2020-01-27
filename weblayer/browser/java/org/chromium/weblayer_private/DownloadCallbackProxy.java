@@ -21,10 +21,12 @@ import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 @JNINamespace("weblayer")
 public final class DownloadCallbackProxy {
     private long mNativeDownloadCallbackProxy;
+    private BrowserImpl mBrowser;
     private IDownloadCallbackClient mClient;
 
-    DownloadCallbackProxy(long tab, IDownloadCallbackClient client) {
+    DownloadCallbackProxy(BrowserImpl browser, long tab, IDownloadCallbackClient client) {
         assert client != null;
+        mBrowser = browser;
         mClient = client;
         mNativeDownloadCallbackProxy =
                 DownloadCallbackProxyJni.get().createDownloadCallbackProxy(this, tab);
@@ -70,27 +72,31 @@ public final class DownloadCallbackProxy {
 
     @CalledByNative
     private DownloadImpl createDownload(long nativeDownloadImpl) {
-        return new DownloadImpl(mClient, nativeDownloadImpl);
+        return new DownloadImpl(mBrowser, mClient, nativeDownloadImpl);
     }
 
     @CalledByNative
     private void downloadStarted(DownloadImpl download) throws RemoteException {
         mClient.downloadStarted(download.getClientDownload());
+        download.downloadStarted();
     }
 
     @CalledByNative
     private void downloadProgressChanged(DownloadImpl download) throws RemoteException {
         mClient.downloadProgressChanged(download.getClientDownload());
+        download.downloadProgressChanged();
     }
 
     @CalledByNative
     private void downloadCompleted(DownloadImpl download) throws RemoteException {
         mClient.downloadCompleted(download.getClientDownload());
+        download.downloadCompleted();
     }
 
     @CalledByNative
     private void downloadFailed(DownloadImpl download) throws RemoteException {
         mClient.downloadFailed(download.getClientDownload());
+        download.downloadFailed();
     }
 
     @NativeMethods

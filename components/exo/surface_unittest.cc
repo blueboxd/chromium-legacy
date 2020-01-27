@@ -872,6 +872,7 @@ TEST_P(SurfaceTest, SurfaceQuad) {
   surface->Attach(buffer.get());
   surface->SetAlpha(1.0f);
 
+  surface->SetEmbeddedSurfaceSize(gfx::Size(1, 1));
   surface->SetEmbeddedSurfaceId(base::BindRepeating([]() -> viz::SurfaceId {
     return viz::SurfaceId(
         viz::FrameSinkId(1, 1),
@@ -891,6 +892,38 @@ TEST_P(SurfaceTest, SurfaceQuad) {
     EXPECT_EQ(1u, frame.resource_list.back().id);
     EXPECT_EQ(viz::DrawQuad::Material::kSurfaceContent,
               frame.render_pass_list.back()->quad_list.back()->material);
+  }
+}
+
+TEST_P(SurfaceTest, EmptySurfaceQuad) {
+  gfx::Size buffer_size(1, 1);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D, 0,
+      true, true, false);
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  surface->Attach(buffer.get());
+  surface->SetAlpha(1.0f);
+
+  // Explicitly zero the size, no quad should be produced.
+  surface->SetEmbeddedSurfaceSize(gfx::Size(0, 0));
+  surface->SetEmbeddedSurfaceId(base::BindRepeating([]() -> viz::SurfaceId {
+    return viz::SurfaceId(
+        viz::FrameSinkId(1, 1),
+        viz::LocalSurfaceId(1, 1, base::UnguessableToken::Create()));
+  }));
+
+  {
+    surface->Commit();
+    base::RunLoop().RunUntilIdle();
+
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+    EXPECT_EQ(1u, frame.render_pass_list.size());
+    EXPECT_EQ(0u, frame.render_pass_list.back()->quad_list.size());
+    // No quad but still has a resource though.
+    EXPECT_EQ(1u, frame.resource_list.size());
+    EXPECT_EQ(1u, frame.resource_list.back().id);
   }
 }
 

@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
+#include "extensions/browser/api/declarative_net_request/indexed_rule.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_source.h"
 #include "extensions/browser/extension_prefs.h"
@@ -30,7 +31,26 @@ RequestAction CreateRequestActionForTesting(RequestAction::Type type,
                                             uint32_t rule_priority,
                                             dnr_api::SourceType source_type,
                                             const ExtensionId& extension_id) {
-  return RequestAction(type, rule_id, rule_priority, source_type, extension_id);
+  dnr_api::RuleActionType action = [type] {
+    switch (type) {
+      case RequestAction::Type::BLOCK:
+      case RequestAction::Type::COLLAPSE:
+        return dnr_api::RULE_ACTION_TYPE_BLOCK;
+      case RequestAction::Type::ALLOW:
+        return dnr_api::RULE_ACTION_TYPE_ALLOW;
+      case RequestAction::Type::REDIRECT:
+        return dnr_api::RULE_ACTION_TYPE_REDIRECT;
+      case RequestAction::Type::UPGRADE:
+        return dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME;
+      case RequestAction::Type::REMOVE_HEADERS:
+        return dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS;
+      case RequestAction::Type::ALLOW_ALL_REQUESTS:
+        return dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS;
+    }
+  }();
+  return RequestAction(type, rule_id,
+                       ComputeIndexedRulePriority(rule_priority, action),
+                       source_type, extension_id);
 }
 
 // Note: This is not declared in the anonymous namespace so that we can use it
@@ -49,7 +69,7 @@ bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
 
   auto get_members_tuple = [](const RequestAction& action) {
     return std::tie(action.type, action.redirect_url, action.rule_id,
-                    action.rule_priority, action.source_type,
+                    action.index_priority, action.source_type,
                     action.extension_id);
   };
 
@@ -95,7 +115,7 @@ std::ostream& operator<<(std::ostream& output, const RequestAction& action) {
                                  : std::string("nullopt"))
          << "\n";
   output << "|rule_id| " << action.rule_id << "\n";
-  output << "|rule_priority| " << action.rule_priority << "\n";
+  output << "|index_priority| " << action.index_priority << "\n";
   output << "|source_type| "
          << api::declarative_net_request::ToString(action.source_type) << "\n";
   output << "|extension_id| " << action.extension_id << "\n";

@@ -1554,8 +1554,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
       ChromeWebUIControllerFactory::GetInstance());
 
 #if BUILDFLAG(ENABLE_KALEIDOSCOPE)
-  content::WebUIControllerFactory::RegisterFactory(
-      KaleidoscopeWebUIControllerFactory::GetInstance());
+  if (KaleidoscopeWebUIControllerFactory::IsEnabled()) {
+    content::WebUIControllerFactory::RegisterFactory(
+        KaleidoscopeWebUIControllerFactory::GetInstance());
+  }
 #endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
 
 #if BUILDFLAG(ENABLE_NACL)

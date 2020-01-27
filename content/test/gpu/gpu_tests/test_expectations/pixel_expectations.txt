@@ -226,9 +226,6 @@ crbug.com/1041572 [ android nvidia no-skia-renderer ] Pixel_PaintWorkletBasics [
 # Skip dual gpu switch tests on Mac Nvidia
 crbug.com/681341 [ mac nvidia ] Pixel_WebGLLowToHighPower [ Skip ]
 
-# Flakes on Mac Retine NVIDIA producing a blank image.
-crbug.com/1027518 [ mac nvidia ] Pixel_Video_Context_Loss_VP9 [ Skip ]
-
 # Flakes on Linux, Mac and Windows
 crbug.com/1028975 [ linux ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
 crbug.com/1028975 [ mac ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]

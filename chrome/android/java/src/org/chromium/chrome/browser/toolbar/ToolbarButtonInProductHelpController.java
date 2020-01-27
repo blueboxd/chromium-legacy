@@ -10,10 +10,13 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.datareduction.DataReductionSavingsMilestonePromo;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitor;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotMonitorDelegate;
 import org.chromium.chrome.browser.feature_engagement.ScreenshotTabObserver;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.previews.Previews;
@@ -36,17 +39,22 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
  * A helper class for IPH shown on the toolbar.
  * TODO(https://crbug.com/865801): Remove feature-specific IPH from here.
  */
-public class ToolbarButtonInProductHelpController implements ScreenshotMonitorDelegate {
+public class ToolbarButtonInProductHelpController
+        implements ScreenshotMonitorDelegate, PauseResumeWithNativeObserver {
     private final ActivityTabTabObserver mPageLoadObserver;
     private final ChromeActivity mActivity;
     private final AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
+    private final ScreenshotMonitor mScreenshotMonitor;
     private AppMenuHandler mAppMenuHandler;
     private UserEducationHelper mUserEducationHelper;
 
-    public ToolbarButtonInProductHelpController(
-            final ChromeActivity activity, AppMenuCoordinator appMenuCoordinator) {
+    public ToolbarButtonInProductHelpController(final ChromeActivity activity,
+            AppMenuCoordinator appMenuCoordinator,
+            ActivityLifecycleDispatcher lifecycleDispatcher) {
         mActivity = activity;
         mUserEducationHelper = new UserEducationHelper(mActivity);
+        mScreenshotMonitor = new ScreenshotMonitor(this);
+        lifecycleDispatcher.register(this);
         mPageLoadObserver = new ActivityTabTabObserver(activity.getActivityTabProvider()) {
             /**
              * Stores total data saved at the start of a page load. Used to calculate delta at the
@@ -144,6 +152,21 @@ public class ToolbarButtonInProductHelpController implements ScreenshotMonitorDe
     }
 
     // Overridden public methods.
+    @Override
+    public void onResumeWithNative() {
+        // Part of the (more runtime-related) check to determine whether to trigger help UI is
+        // left until onScreenshotTaken() since it is less expensive to keep monitoring on and
+        // check when the help UI is accessed than it is to start/stop monitoring per tab change
+        // (e.g. tab switch or in overview mode).
+        if (mActivity.isTablet()) return;
+        mScreenshotMonitor.startMonitoring();
+    }
+
+    @Override
+    public void onPauseWithNative() {
+        mScreenshotMonitor.stopMonitoring();
+    }
+
     @Override
     public void onScreenshotTaken() {
         Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());

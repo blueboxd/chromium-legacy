@@ -37,7 +37,7 @@ class PaintPreviewCompositorClient {
       mojom::PaintPreviewBeginCompositeRequestPtr request,
       mojom::PaintPreviewCompositor::BeginCompositeCallback callback) = 0;
   virtual void BitmapForFrame(
-      uint64_t frame_guid,
+      const base::UnguessableToken& frame_guid,
       const gfx::Rect& clip_rect,
       float scale_factor,
       mojom::PaintPreviewCompositor::BitmapForFrameCallback callback) = 0;

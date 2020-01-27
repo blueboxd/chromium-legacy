@@ -317,60 +317,6 @@ std::unique_ptr<BrowserProcessSubThread> BrowserTaskExecutor::CreateIOThread() {
   return io_thread;
 }
 
-#if DCHECK_IS_ON()
-
-// static
-void BrowserTaskExecutor::AddValidator(
-    const base::TaskTraits& traits,
-    BrowserTaskQueues::Validator* validator) {
-  if (!g_browser_task_executor)
-    return;
-
-  auto id_and_queue = g_browser_task_executor->GetThreadIdAndQueueType(traits);
-  switch (id_and_queue.thread_id) {
-    case BrowserThread::ID::IO:
-      g_browser_task_executor->browser_io_thread_handle_->AddValidator(
-          id_and_queue.queue_type, validator);
-      break;
-
-    case BrowserThread::ID::UI:
-      g_browser_task_executor->browser_ui_thread_handle_->AddValidator(
-          id_and_queue.queue_type, validator);
-      break;
-
-    case BrowserThread::ID::ID_COUNT:
-      NOTREACHED();
-      break;
-  }
-}
-
-// static
-void BrowserTaskExecutor::RemoveValidator(
-    const base::TaskTraits& traits,
-    BrowserTaskQueues::Validator* validator) {
-  if (!g_browser_task_executor)
-    return;
-
-  auto id_and_queue = g_browser_task_executor->GetThreadIdAndQueueType(traits);
-  switch (id_and_queue.thread_id) {
-    case BrowserThread::ID::IO:
-      g_browser_task_executor->browser_io_thread_handle_->RemoveValidator(
-          id_and_queue.queue_type, validator);
-      break;
-
-    case BrowserThread::ID::UI:
-      g_browser_task_executor->browser_ui_thread_handle_->RemoveValidator(
-          id_and_queue.queue_type, validator);
-      break;
-
-    case BrowserThread::ID::ID_COUNT:
-      NOTREACHED();
-      break;
-  }
-}
-
-#endif
-
 BrowserThread::ID BrowserTaskExecutor::GetCurrentThreadID() const {
   NOTREACHED()
       << "Should have been routed to UIThreadExecutor or IOThreadExecutor";

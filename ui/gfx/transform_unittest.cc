@@ -142,9 +142,8 @@ void InitializeTestMatrix2(Transform* transform) {
   EXPECT_ROW4_EQ(33.0f, 37.0f, 41.0f, 45.0f, (*transform));
 }
 
-const SkMScalar kApproxZero =
-    SkFloatToMScalar(std::numeric_limits<float>::epsilon());
-const SkMScalar kApproxOne = 1 - kApproxZero;
+const SkScalar kApproxZero = std::numeric_limits<float>::epsilon();
+const SkScalar kApproxOne = 1 - kApproxZero;
 
 void InitializeApproxIdentityMatrix(Transform* transform) {
   SkMatrix44& matrix = transform->matrix();
@@ -169,11 +168,7 @@ void InitializeApproxIdentityMatrix(Transform* transform) {
   matrix.set(3, 3, kApproxOne);
 }
 
-#ifdef SK_MSCALAR_IS_DOUBLE
-#define ERROR_THRESHOLD 1e-14
-#else
 #define ERROR_THRESHOLD 1e-7
-#endif
 #define LOOSE_ERROR_THRESHOLD 1e-7
 
 TEST(XFormTest, Equality) {
@@ -820,7 +815,7 @@ TEST(XFormTest, BlendIdentity) {
 TEST(XFormTest, CannotBlendSingularMatrix) {
   Transform from;
   Transform to;
-  to.matrix().set(1, 1, SkDoubleToMScalar(0));
+  to.matrix().set(1, 1, 0);
   EXPECT_FALSE(to.Blend(from, 0.5));
 }
 
@@ -1217,21 +1212,17 @@ TEST(XFormTest, VerifyBlendForCompositeTransform) {
   Transform normalizedExpectedEndOfAnimation = expectedEndOfAnimation;
   Transform normalizationMatrix;
   normalizationMatrix.matrix().set(
-      0.0,
-      0.0,
-      SkDoubleToMScalar(1 / expectedEndOfAnimation.matrix().get(3.0, 3.0)));
+      0.0, 0.0,
+      SkDoubleToScalar(1 / expectedEndOfAnimation.matrix().get(3.0, 3.0)));
   normalizationMatrix.matrix().set(
-      1.0,
-      1.0,
-      SkDoubleToMScalar(1 / expectedEndOfAnimation.matrix().get(3.0, 3.0)));
+      1.0, 1.0,
+      SkDoubleToScalar(1 / expectedEndOfAnimation.matrix().get(3.0, 3.0)));
   normalizationMatrix.matrix().set(
-      2.0,
-      2.0,
-      SkDoubleToMScalar(1 / expectedEndOfAnimation.matrix().get(3.0, 3.0)));
+      2.0, 2.0,
+      SkDoubleToScalar(1 / expectedEndOfAnimation.matrix().get(3.0, 3.0)));
   normalizationMatrix.matrix().set(
-      3.0,
-      3.0,
-      SkDoubleToMScalar(1 / expectedEndOfAnimation.matrix().get(3.0, 3.0)));
+      3.0, 3.0,
+      SkDoubleToScalar(1 / expectedEndOfAnimation.matrix().get(3.0, 3.0)));
   normalizedExpectedEndOfAnimation.PreconcatTransform(normalizationMatrix);
 
   EXPECT_TRUE(MatricesAreNearlyEqual(normalizedExpectedEndOfAnimation, to));
@@ -1272,7 +1263,7 @@ TEST(XFormTest, FactorTRS) {
     EXPECT_FLOAT_EQ(decomp.translate[0], degrees * 2);
     EXPECT_FLOAT_EQ(decomp.translate[1], -degrees * 3);
     double rotation =
-        gfx::RadToDeg(std::acos(SkMScalarToDouble(decomp.quaternion.w())) * 2);
+        gfx::RadToDeg(std::acos(double{decomp.quaternion.w()}) * 2);
     while (rotation < 0.0)
       rotation += 360.0;
     while (rotation > 360.0)
@@ -2420,10 +2411,10 @@ static bool EmpiricallyPreserves2dAxisAlignment(const Transform& transform) {
 
 TEST(XFormTest, Preserves2dAxisAlignment) {
   static const struct TestCase {
-    SkMScalar a; // row 1, column 1
-    SkMScalar b; // row 1, column 2
-    SkMScalar c; // row 2, column 1
-    SkMScalar d; // row 2, column 2
+    SkScalar a;  // row 1, column 1
+    SkScalar b;  // row 1, column 2
+    SkScalar c;  // row 2, column 1
+    SkScalar d;  // row 2, column 2
     bool expected;
   } test_cases[] = {
     { 3.f, 0.f,

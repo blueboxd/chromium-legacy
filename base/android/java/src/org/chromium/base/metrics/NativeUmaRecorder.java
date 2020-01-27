@@ -21,8 +21,6 @@ import java.util.Map;
 @JNINamespace("base::android")
 @MainDex
 /* package */ final class NativeUmaRecorder implements UmaRecorder {
-    /* package */ NativeUmaRecorder() {}
-
     /**
      * Internally, histograms objects are cached on the Java side by their pointer
      * values (converted to long). This is safe to do because C++ Histogram objects
@@ -47,6 +45,7 @@ import java.util.Map;
                 name, oldHint, sample, min, max, numBuckets);
         maybeUpdateNativeHint(name, oldHint, newHint);
     }
+
     @Override
     public void recordLinearHistogram(String name, int sample, int min, int max, int numBuckets) {
         long oldHint = getNativeHint(name);
@@ -79,7 +78,7 @@ import java.util.Map;
 
     /** Natives API to record metrics. */
     @NativeMethods
-    /* package */ interface Natives {
+    interface Natives {
         long recordBooleanHistogram(String name, long nativeHint, boolean sample);
         long recordExponentialHistogram(
                 String name, long nativeHint, int sample, int min, int max, int numBuckets);

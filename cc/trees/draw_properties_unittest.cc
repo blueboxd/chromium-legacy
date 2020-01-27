@@ -1689,7 +1689,7 @@ TEST_F(DrawPropertiesTest, LargeTransforms) {
   LayerImpl* grand_child = AddLayer<LayerImpl>();
 
   gfx::Transform large_transform;
-  large_transform.Scale(SkDoubleToMScalar(1e37), SkDoubleToMScalar(1e37));
+  large_transform.Scale(SkDoubleToScalar(1e37), SkDoubleToScalar(1e37));
 
   root->SetBounds(gfx::Size(10, 10));
   child->SetBounds(gfx::Size(10, 10));
@@ -1887,8 +1887,8 @@ TEST_F(DrawPropertiesDrawRectsTest, DrawRectsFor3dOrthographicTransform) {
   // degrees, but shifted to the side so only the right-half the layer would be
   // visible on the surface.
   // 50 is the un-rotated layer width; divided by sqrt(2) is the rotated width.
-  SkMScalar half_width_of_rotated_layer =
-      SkDoubleToMScalar((100.0 / sqrt(2.0)) * 0.5);
+  SkScalar half_width_of_rotated_layer =
+      SkDoubleToScalar((100.0 / sqrt(2.0)) * 0.5);
   layer_to_surface_transform.MakeIdentity();
   layer_to_surface_transform.Translate(-half_width_of_rotated_layer, 0.0);
   layer_to_surface_transform.RotateAboutYAxis(45.0);  // Rotates about the left
@@ -2396,7 +2396,7 @@ TEST_F(DrawPropertiesTest,
   LayerImpl* grand_child = AddLayer<LayerImpl>();
 
   gfx::Transform perspective;
-  perspective.ApplyPerspectiveDepth(SkDoubleToMScalar(1e-12));
+  perspective.ApplyPerspectiveDepth(SkDoubleToScalar(1e-12));
 
   gfx::Transform rotation;
   rotation.RotateAboutYAxis(45.0);
@@ -2498,7 +2498,7 @@ TEST_F(DrawPropertiesTest, OcclusionForLayerWithUninvertibleDrawTransform) {
   LayerImpl* occluding_child = AddLayer<LayerImpl>();
 
   gfx::Transform perspective;
-  perspective.ApplyPerspectiveDepth(SkDoubleToMScalar(1e-12));
+  perspective.ApplyPerspectiveDepth(SkDoubleToScalar(1e-12));
 
   gfx::Transform rotation;
   rotation.RotateAboutYAxis(45.0);
@@ -3165,7 +3165,7 @@ TEST_F(DrawPropertiesScalingTest, SurfaceLayerTransformsInHighDPI) {
   gfx::Vector2dF perspective_surface_offset(2.f, 2.f);
 
   gfx::Transform scale_small_matrix;
-  scale_small_matrix.Scale(SK_MScalar1 / 10.f, SK_MScalar1 / 12.f);
+  scale_small_matrix.Scale(SK_Scalar1 / 10.f, SK_Scalar1 / 12.f);
 
   LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(100, 100));
@@ -3259,11 +3259,11 @@ TEST_F(DrawPropertiesScalingTest, SurfaceLayerTransformsInHighDPI) {
 
 TEST_F(DrawPropertiesScalingTest, SmallIdealScale) {
   gfx::Transform parent_scale_matrix;
-  SkMScalar initial_parent_scale = 1.75;
+  SkScalar initial_parent_scale = 1.75;
   parent_scale_matrix.Scale(initial_parent_scale, initial_parent_scale);
 
   gfx::Transform child_scale_matrix;
-  SkMScalar initial_child_scale = 0.25;
+  SkScalar initial_child_scale = 0.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
   LayerImpl* root = root_layer();
@@ -3312,11 +3312,11 @@ TEST_F(DrawPropertiesScalingTest, SmallIdealScale) {
 
 TEST_F(DrawPropertiesScalingTest, IdealScaleForAnimatingLayer) {
   gfx::Transform parent_scale_matrix;
-  SkMScalar initial_parent_scale = 1.75;
+  SkScalar initial_parent_scale = 1.75;
   parent_scale_matrix.Scale(initial_parent_scale, initial_parent_scale);
 
   gfx::Transform child_scale_matrix;
-  SkMScalar initial_child_scale = 1.25;
+  SkScalar initial_child_scale = 1.25;
   child_scale_matrix.Scale(initial_child_scale, initial_child_scale);
 
   LayerImpl* root = root_layer();
@@ -4607,8 +4607,8 @@ TEST_F(DrawPropertiesTest, SingularTransformSubtreesDoNotDraw) {
   EXPECT_EQ(3u, GetRenderSurfaceList().size());
 
   gfx::Transform singular_transform;
-  singular_transform.Scale3d(SkDoubleToMScalar(1.0), SkDoubleToMScalar(1.0),
-                             SkDoubleToMScalar(0.0));
+  singular_transform.Scale3d(SkDoubleToScalar(1.0), SkDoubleToScalar(1.0),
+                             SkDoubleToScalar(0.0));
 
   SetTransform(child, singular_transform);
   UpdateActiveTreeDrawProperties();

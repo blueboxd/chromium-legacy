@@ -1,0 +1,18 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("permissions") {
+  sources = [
+    "permission_request.cc",
+    "permission_request.h",
+    "permission_request_id.cc",
+    "permission_request_id.h",
+    "permission_result.cc",
+    "permission_result.h",
+  ]
+  deps = [
+    "//base",
+    "//content/public/browser",
+  ]
+}

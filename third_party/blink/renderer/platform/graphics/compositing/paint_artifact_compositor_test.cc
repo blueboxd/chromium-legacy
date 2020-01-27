@@ -52,7 +52,7 @@ PaintChunk DefaultChunk() {
   return PaintChunk(0, 1, DefaultId(), PropertyTreeState::Root());
 }
 
-gfx::Transform Translation(SkMScalar x, SkMScalar y) {
+gfx::Transform Translation(SkScalar x, SkScalar y) {
   gfx::Transform transform;
   transform.Translate(x, y);
   return transform;

@@ -135,6 +135,8 @@ jumbo_static_library("browser") {
     "multi_store_password_save_manager.h",
     "origin_credential_store.cc",
     "origin_credential_store.h",
+    "password_access_authenticator.cc",
+    "password_access_authenticator.h",
     "password_autofill_manager.cc",
     "password_autofill_manager.h",
     "password_bubble_experiment.cc",
@@ -199,6 +201,7 @@ jumbo_static_library("browser") {
     "possible_username_data.h",
     "psl_matching_helper.cc",
     "psl_matching_helper.h",
+    "reauth_purpose.h",
     "site_affiliation/asset_link_data.cc",
     "site_affiliation/asset_link_data.h",
     "sql_table_builder.cc",
@@ -374,6 +377,7 @@ static_library("password_generator") {
 if (is_android) {
   java_cpp_enum("password_manager_java_enums_srcjar") {
     sources = [
+      "biometric_authenticator.h",
       "manage_passwords_referrer.h",
       "password_manager_metrics_util.h",
     ]
@@ -541,6 +545,7 @@ source_set("unit_tests") {
     "multi_store_form_fetcher_unittest.cc",
     "multi_store_password_save_manager_unittest.cc",
     "origin_credential_store_unittest.cc",
+    "password_access_authenticator_unittest.cc",
     "password_autofill_manager_unittest.cc",
     "password_bubble_experiment_unittest.cc",
     "password_form_filling_unittest.cc",

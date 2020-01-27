@@ -517,15 +517,15 @@ blink::mojom::PresentationConnectionMessagePtr CreateErrorMessage(
                              std::move(error), client_id, sequence_number);
 }
 
-base::Value SupportedMediaRequestsToListValue(int media_requests) {
+base::Value SupportedMediaCommandsToListValue(int media_commands) {
   base::Value value(base::Value::Type::LIST);
-  if (media_requests & 1)
+  if (media_commands & 1)
     value.Append("pause");
-  if (media_requests & 2)
+  if (media_commands & 2)
     value.Append("seek");
-  if (media_requests & 4)
+  if (media_commands & 4)
     value.Append("stream_volume");
-  if (media_requests & 8)
+  if (media_commands & 8)
     value.Append("stream_mute");
   return value;
 }

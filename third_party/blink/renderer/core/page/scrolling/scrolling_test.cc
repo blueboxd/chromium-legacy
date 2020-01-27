@@ -128,12 +128,16 @@ class ScrollingTest : public testing::Test, public PaintTestConfigurations {
         GetFrame()->GetDocument()->getElementById(dom_id)->GetScrollableArea());
   }
 
-  gfx::ScrollOffset CurrentScrollOffset(
-      const cc::ScrollNode* scroll_node) const {
+  gfx::ScrollOffset CurrentScrollOffset(cc::ElementId element_id) const {
     return RootCcLayer()
         ->layer_tree_host()
         ->property_trees()
-        ->scroll_tree.current_scroll_offset(scroll_node->element_id);
+        ->scroll_tree.current_scroll_offset(element_id);
+  }
+
+  gfx::ScrollOffset CurrentScrollOffset(
+      const cc::ScrollNode* scroll_node) const {
+    return CurrentScrollOffset(scroll_node->element_id);
   }
 
   const cc::ScrollbarLayerBase* ScrollbarLayerForScrollNode(
@@ -1364,10 +1368,10 @@ TEST_P(ScrollingTest, ScrollOffsetClobberedBeforeCompositingUpdate) {
   scroll_and_scale_set.scrolls.push_back(
       {scrollable_area->GetScrollElementId(), compositor_delta, base::nullopt});
   RootCcLayer()->layer_tree_host()->ApplyScrollAndScale(&scroll_and_scale_set);
-  // The compositor offset is reflected in blink.
-  EXPECT_EQ(compositor_delta.y(), scrollable_area->GetScrollOffset().Height());
-  // But not in cc scroll node before updating the lifecycle.
-  EXPECT_EQ(gfx::ScrollOffset(), CurrentScrollOffset(scroll_node));
+  // The compositor offset is reflected in blink and cc scroll tree.
+  EXPECT_EQ(compositor_delta,
+            gfx::ScrollOffset(scrollable_area->ScrollPosition()));
+  EXPECT_EQ(compositor_delta, CurrentScrollOffset(scroll_node));
 
   // Before updating the lifecycle, set the scroll offset back to what it was
   // before the commit from the main thread.
@@ -1616,10 +1620,36 @@ TEST_P(ScrollingTest, TouchActionUpdatesOutsideInterestRect) {
   EXPECT_EQ(region.bounds(), gfx::Rect(0, 5000, 200, 100));
 }
 
-class ScrollingTestWithAcceleratedContext : public ScrollingTest {
- public:
-  ScrollingTestWithAcceleratedContext() : ScrollingTest() {}
+TEST_P(ScrollingTest, MainThreadScrollAndDeltaFromImplSide) {
+  LoadHTML(R"HTML(
+    <div id='scroller' style='overflow: scroll; width: 100px; height: 100px'>
+      <div style='height: 1000px'></div>
+    </div>
+  )HTML");
+  ForceFullCompositingUpdate();
 
+  auto* scroller = GetFrame()->GetDocument()->getElementById("scroller");
+  auto* scrollable_area = scroller->GetLayoutBox()->GetScrollableArea();
+  auto element_id = scrollable_area->GetScrollElementId();
+
+  EXPECT_EQ(gfx::ScrollOffset(), CurrentScrollOffset(element_id));
+
+  // Simulate a direct scroll update out of document lifecycle update.
+  scroller->scrollTo(0, 200);
+  EXPECT_EQ(FloatPoint(0, 200), scrollable_area->ScrollPosition());
+  EXPECT_EQ(gfx::ScrollOffset(0, 200), CurrentScrollOffset(element_id));
+
+  // Simulate the scroll update with scroll delta from impl-side at the
+  // beginning of BeginMainFrame.
+  cc::ScrollAndScaleSet scroll_and_scale;
+  scroll_and_scale.scrolls.push_back(cc::ScrollAndScaleSet::ScrollUpdateInfo(
+      element_id, gfx::ScrollOffset(0, 10), base::nullopt));
+  RootCcLayer()->layer_tree_host()->ApplyScrollAndScale(&scroll_and_scale);
+  EXPECT_EQ(FloatPoint(0, 210), scrollable_area->ScrollPosition());
+  EXPECT_EQ(gfx::ScrollOffset(0, 210), CurrentScrollOffset(element_id));
+}
+
+class ScrollingTestWithAcceleratedContext : public ScrollingTest {
  protected:
   void SetUp() override {
     auto factory = [](FakeGLES2Interface* gl, bool* gpu_compositing_disabled)

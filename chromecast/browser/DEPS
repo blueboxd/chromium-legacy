@@ -18,7 +18,7 @@ include_rules = [
   "+components/download/public/common",
   "+components/heap_profiling",
   "+components/keyed_service",
-  "+components/network_hints/browser",
+  "+components/network_hints",
   "+components/network_session_configurator/common",
   "+components/policy/core/browser",
   "+components/prefs",

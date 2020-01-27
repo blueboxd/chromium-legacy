@@ -1692,8 +1692,8 @@ TEST_F(DisplayTest, CompositorFrameWithEpsilonScaleTransform) {
   CompositorFrame frame = MakeDefaultCompositorFrame();
   gfx::Rect rect(0, 0, 100, 100);
 
-  SkMScalar epsilon = float(0.000000001);
-  SkMScalar larger_than_epsilon = float(0.00000001);
+  SkScalar epsilon = float(0.000000001);
+  SkScalar larger_than_epsilon = float(0.00000001);
   gfx::Transform zero_scale;
   zero_scale.Scale(0, 0);
   gfx::Transform epsilon_scale;

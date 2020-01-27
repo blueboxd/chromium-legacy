@@ -27,21 +27,24 @@ dawn_native::BackendType GetDefaultBackendType() {
 
 }  // namespace
 
-std::unique_ptr<DawnContextProvider> DawnContextProvider::Create() {
-  auto context_provider = base::WrapUnique(new DawnContextProvider());
+std::unique_ptr<DawnContextProvider> DawnContextProvider::Create(
+    const GrContextOptions& context_options) {
+  auto context_provider =
+      base::WrapUnique(new DawnContextProvider(context_options));
   if (!context_provider->IsValid())
     return nullptr;
   return context_provider;
 }
 
-DawnContextProvider::DawnContextProvider() {
+DawnContextProvider::DawnContextProvider(
+    const GrContextOptions& context_options) {
   // TODO(sgilhuly): This may return a GPU that is not the active one. Currently
   // the only known way to avoid this is platform-specific; e.g. on Mac, create
   // a Dawn device, get the actual Metal device from it, and compare against
   // MTLCreateSystemDefaultDevice().
   device_ = CreateDevice(GetDefaultBackendType());
   if (device_)
-    gr_context_ = GrContext::MakeDawn(device_);
+    gr_context_ = GrContext::MakeDawn(device_, context_options);
 }
 
 DawnContextProvider::~DawnContextProvider() = default;

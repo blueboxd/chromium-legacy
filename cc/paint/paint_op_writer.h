@@ -103,6 +103,11 @@ class CC_PAINT_EXPORT PaintOpWriter {
   // image.
   void Write(const DrawImage& draw_image, SkSize* scale_adjustment);
 
+#ifndef OS_ANDROID
+  // Serializes the given |skottie| vector graphic.
+  void Write(scoped_refptr<SkottieWrapper> skottie);
+#endif
+
  private:
   template <typename T>
   void WriteSimple(const T& val);

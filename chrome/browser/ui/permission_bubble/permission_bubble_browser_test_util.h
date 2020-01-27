@@ -20,26 +20,28 @@ namespace content {
 class WebContents;
 }  // namespace content
 
+namespace permissions {
 class PermissionRequest;
+}
 
 class TestPermissionBubbleViewDelegate : public PermissionPrompt::Delegate {
  public:
   TestPermissionBubbleViewDelegate();
   ~TestPermissionBubbleViewDelegate() override;
 
-  const std::vector<PermissionRequest*>& Requests() override;
+  const std::vector<permissions::PermissionRequest*>& Requests() override;
   PermissionPrompt::DisplayNameOrOrigin GetDisplayNameOrOrigin() override;
 
   void Accept() override {}
   void Deny() override {}
   void Closing() override {}
 
-  void set_requests(std::vector<PermissionRequest*> requests) {
+  void set_requests(std::vector<permissions::PermissionRequest*> requests) {
     requests_ = requests;
   }
 
  private:
-  std::vector<PermissionRequest*> requests_;
+  std::vector<permissions::PermissionRequest*> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPermissionBubbleViewDelegate);
 };
@@ -61,7 +63,7 @@ class PermissionBubbleBrowserTest : public extensions::ExtensionBrowserTest {
 
  private:
   TestPermissionBubbleViewDelegate test_delegate_;
-  std::vector<std::unique_ptr<PermissionRequest>> requests_;
+  std::vector<std::unique_ptr<permissions::PermissionRequest>> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionBubbleBrowserTest);
 };

@@ -14,8 +14,11 @@ namespace content {
 class WebContents;
 }
 
-class GURL;
+namespace permissions {
 class PermissionRequestID;
+}
+
+class GURL;
 class Profile;
 
 // Chrome extensions specific portions of GeolocationPermissionContext.
@@ -30,7 +33,7 @@ class GeolocationPermissionContextExtensions {
   // returns true while setting |permission_set| to false, otherwise |callback|
   // is not used.
   bool DecidePermission(content::WebContents* web_contents,
-                        const PermissionRequestID& request_id,
+                        const permissions::PermissionRequestID& request_id,
                         int bridge_id,
                         const GURL& requesting_frame,
                         bool user_gesture,

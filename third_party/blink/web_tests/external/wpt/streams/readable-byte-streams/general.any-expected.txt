@@ -22,10 +22,10 @@ FAIL ReadableStream with byte source: Mix of auto allocate and BYOB Failed to co
 FAIL ReadableStream with byte source: Automatic pull() after start() and read(view) Failed to construct 'ReadableStream': bytes type is not yet implemented
 FAIL ReadableStream with byte source: enqueue(), getReader(), then read() Failed to construct 'ReadableStream': bytes type is not yet implemented
 FAIL ReadableStream with byte source: Push source that doesn't understand pull signal Failed to construct 'ReadableStream': bytes type is not yet implemented
-FAIL ReadableStream with byte source: pull() function is not callable assert_throws: constructor should throw function "() => new ReadableStream({
+FAIL ReadableStream with byte source: pull() function is not callable assert_throws_js: constructor should throw function "() => new ReadableStream({
     pull: 'foo',
     type: 'bytes'
-  })" threw object "RangeError: Failed to construct 'ReadableStream': bytes type is not yet implemented" ("RangeError") expected object "TypeError" ("TypeError")
+  })" threw object "RangeError: Failed to construct 'ReadableStream': bytes type is not yet implemented" ("RangeError") expected instance of function "function TypeError() { [native code] }" ("TypeError")
 FAIL ReadableStream with byte source: enqueue() with Uint16Array, getReader(), then read() Failed to construct 'ReadableStream': bytes type is not yet implemented
 FAIL ReadableStream with byte source: enqueue(), read(view) partially, then read() Failed to construct 'ReadableStream': bytes type is not yet implemented
 FAIL ReadableStream with byte source: getReader(), enqueue(), close(), then read() Failed to construct 'ReadableStream': bytes type is not yet implemented

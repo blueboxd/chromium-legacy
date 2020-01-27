@@ -160,19 +160,6 @@ class CONTENT_EXPORT BrowserTaskExecutor : public BaseBrowserTaskExecutor {
   static void RunAllPendingTasksOnThreadForTesting(
       BrowserThread::ID identifier);
 
-#if DCHECK_IS_ON()
-  // Adds a Validator for |traits|. It is assumed the lifetime of |validator| is
-  // is longer than that of the BrowserTaskExecutor unless RemoveValidator
-  // is called. Does nothing if the BrowserTaskExecutor is not registered.
-  static void AddValidator(const base::TaskTraits& traits,
-                           BrowserTaskQueues::Validator* validator);
-
-  // Removes a Validator previously added by AddValidator. Does nothing if the
-  // BrowserTaskExecutor is not registered.
-  static void RemoveValidator(const base::TaskTraits& traits,
-                              BrowserTaskQueues::Validator* validator);
-#endif  // DCHECK_IS_ON()
-
  private:
   friend class BrowserIOThreadDelegate;
   friend class BrowserTaskExecutorTest;

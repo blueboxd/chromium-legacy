@@ -40,8 +40,7 @@ class MouseCursorMonitorProxy : public webrtc::MouseCursorMonitor {
   class Core;
 
   void OnMouseCursor(std::unique_ptr<webrtc::MouseCursor> cursor);
-  void OnMouseCursorPosition(CursorState state,
-                             const webrtc::DesktopVector& position);
+  void OnMouseCursorPosition(const webrtc::DesktopVector& position);
 
   base::ThreadChecker thread_checker_;
 

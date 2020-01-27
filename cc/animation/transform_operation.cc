@@ -16,7 +16,7 @@
 #include "ui/gfx/transform_util.h"
 
 namespace {
-const SkMScalar kAngleEpsilon = 1e-4f;
+const SkScalar kAngleEpsilon = 1e-4f;
 }
 
 namespace cc {
@@ -31,10 +31,10 @@ static bool IsOperationIdentity(const TransformOperation* operation) {
 
 static bool ShareSameAxis(const TransformOperation* from,
                           const TransformOperation* to,
-                          SkMScalar* axis_x,
-                          SkMScalar* axis_y,
-                          SkMScalar* axis_z,
-                          SkMScalar* angle_from) {
+                          SkScalar* axis_x,
+                          SkScalar* axis_y,
+                          SkScalar* axis_z,
+                          SkScalar* angle_from) {
   if (IsOperationIdentity(from) && IsOperationIdentity(to))
     return false;
 
@@ -54,21 +54,21 @@ static bool ShareSameAxis(const TransformOperation* from,
     return true;
   }
 
-  SkMScalar length_2 = from->rotate.axis.x * from->rotate.axis.x +
-                       from->rotate.axis.y * from->rotate.axis.y +
-                       from->rotate.axis.z * from->rotate.axis.z;
-  SkMScalar other_length_2 = to->rotate.axis.x * to->rotate.axis.x +
-                             to->rotate.axis.y * to->rotate.axis.y +
-                             to->rotate.axis.z * to->rotate.axis.z;
+  SkScalar length_2 = from->rotate.axis.x * from->rotate.axis.x +
+                      from->rotate.axis.y * from->rotate.axis.y +
+                      from->rotate.axis.z * from->rotate.axis.z;
+  SkScalar other_length_2 = to->rotate.axis.x * to->rotate.axis.x +
+                            to->rotate.axis.y * to->rotate.axis.y +
+                            to->rotate.axis.z * to->rotate.axis.z;
 
   if (length_2 <= kAngleEpsilon || other_length_2 <= kAngleEpsilon)
     return false;
 
-  SkMScalar dot = to->rotate.axis.x * from->rotate.axis.x +
-                  to->rotate.axis.y * from->rotate.axis.y +
-                  to->rotate.axis.z * from->rotate.axis.z;
-  SkMScalar error =
-      SkMScalarAbs(SK_MScalar1 - (dot * dot) / (length_2 * other_length_2));
+  SkScalar dot = to->rotate.axis.x * from->rotate.axis.x +
+                 to->rotate.axis.y * from->rotate.axis.y +
+                 to->rotate.axis.z * from->rotate.axis.z;
+  SkScalar error =
+      SkScalarAbs(SK_Scalar1 - (dot * dot) / (length_2 * other_length_2));
   bool result = error < kAngleEpsilon;
   if (result) {
     *axis_x = to->rotate.axis.x;
@@ -81,9 +81,7 @@ static bool ShareSameAxis(const TransformOperation* from,
   return result;
 }
 
-static SkMScalar BlendSkMScalars(SkMScalar from,
-                                 SkMScalar to,
-                                 SkMScalar progress) {
+static SkScalar BlendSkScalars(SkScalar from, SkScalar to, SkScalar progress) {
   return from * (1 - progress) + to * progress;
 }
 
@@ -114,7 +112,7 @@ void TransformOperation::Bake() {
 }
 
 bool TransformOperation::ApproximatelyEqual(const TransformOperation& other,
-                                            SkMScalar tolerance) const {
+                                            SkScalar tolerance) const {
   DCHECK_LE(0, tolerance);
   if (type != other.type)
     return false;
@@ -165,7 +163,7 @@ bool TransformOperation::ApproximatelyEqual(const TransformOperation& other,
 bool TransformOperation::BlendTransformOperations(
     const TransformOperation* from,
     const TransformOperation* to,
-    SkMScalar progress,
+    SkScalar progress,
     TransformOperation* result) {
   if (IsOperationIdentity(from) && IsOperationIdentity(to))
     return true;
@@ -180,29 +178,29 @@ bool TransformOperation::BlendTransformOperations(
 
   switch (interpolation_type) {
     case TransformOperation::TRANSFORM_OPERATION_TRANSLATE: {
-      SkMScalar from_x = IsOperationIdentity(from) ? 0 : from->translate.x;
-      SkMScalar from_y = IsOperationIdentity(from) ? 0 : from->translate.y;
-      SkMScalar from_z = IsOperationIdentity(from) ? 0 : from->translate.z;
-      SkMScalar to_x = IsOperationIdentity(to) ? 0 : to->translate.x;
-      SkMScalar to_y = IsOperationIdentity(to) ? 0 : to->translate.y;
-      SkMScalar to_z = IsOperationIdentity(to) ? 0 : to->translate.z;
-      result->translate.x = BlendSkMScalars(from_x, to_x, progress),
-      result->translate.y = BlendSkMScalars(from_y, to_y, progress),
-      result->translate.z = BlendSkMScalars(from_z, to_z, progress),
+      SkScalar from_x = IsOperationIdentity(from) ? 0 : from->translate.x;
+      SkScalar from_y = IsOperationIdentity(from) ? 0 : from->translate.y;
+      SkScalar from_z = IsOperationIdentity(from) ? 0 : from->translate.z;
+      SkScalar to_x = IsOperationIdentity(to) ? 0 : to->translate.x;
+      SkScalar to_y = IsOperationIdentity(to) ? 0 : to->translate.y;
+      SkScalar to_z = IsOperationIdentity(to) ? 0 : to->translate.z;
+      result->translate.x = BlendSkScalars(from_x, to_x, progress),
+      result->translate.y = BlendSkScalars(from_y, to_y, progress),
+      result->translate.z = BlendSkScalars(from_z, to_z, progress),
       result->Bake();
       break;
     }
     case TransformOperation::TRANSFORM_OPERATION_ROTATE: {
-      SkMScalar axis_x = 0;
-      SkMScalar axis_y = 0;
-      SkMScalar axis_z = 1;
-      SkMScalar from_angle = 0;
-      SkMScalar to_angle = IsOperationIdentity(to) ? 0 : to->rotate.angle;
+      SkScalar axis_x = 0;
+      SkScalar axis_y = 0;
+      SkScalar axis_z = 1;
+      SkScalar from_angle = 0;
+      SkScalar to_angle = IsOperationIdentity(to) ? 0 : to->rotate.angle;
       if (ShareSameAxis(from, to, &axis_x, &axis_y, &axis_z, &from_angle)) {
         result->rotate.axis.x = axis_x;
         result->rotate.axis.y = axis_y;
         result->rotate.axis.z = axis_z;
-        result->rotate.angle = BlendSkMScalars(from_angle, to_angle, progress);
+        result->rotate.angle = BlendSkScalars(from_angle, to_angle, progress);
         result->Bake();
       } else {
         if (!IsOperationIdentity(to))
@@ -216,39 +214,39 @@ bool TransformOperation::BlendTransformOperations(
       break;
     }
     case TransformOperation::TRANSFORM_OPERATION_SCALE: {
-      SkMScalar from_x = IsOperationIdentity(from) ? 1 : from->scale.x;
-      SkMScalar from_y = IsOperationIdentity(from) ? 1 : from->scale.y;
-      SkMScalar from_z = IsOperationIdentity(from) ? 1 : from->scale.z;
-      SkMScalar to_x = IsOperationIdentity(to) ? 1 : to->scale.x;
-      SkMScalar to_y = IsOperationIdentity(to) ? 1 : to->scale.y;
-      SkMScalar to_z = IsOperationIdentity(to) ? 1 : to->scale.z;
-      result->scale.x = BlendSkMScalars(from_x, to_x, progress);
-      result->scale.y = BlendSkMScalars(from_y, to_y, progress);
-      result->scale.z = BlendSkMScalars(from_z, to_z, progress);
+      SkScalar from_x = IsOperationIdentity(from) ? 1 : from->scale.x;
+      SkScalar from_y = IsOperationIdentity(from) ? 1 : from->scale.y;
+      SkScalar from_z = IsOperationIdentity(from) ? 1 : from->scale.z;
+      SkScalar to_x = IsOperationIdentity(to) ? 1 : to->scale.x;
+      SkScalar to_y = IsOperationIdentity(to) ? 1 : to->scale.y;
+      SkScalar to_z = IsOperationIdentity(to) ? 1 : to->scale.z;
+      result->scale.x = BlendSkScalars(from_x, to_x, progress);
+      result->scale.y = BlendSkScalars(from_y, to_y, progress);
+      result->scale.z = BlendSkScalars(from_z, to_z, progress);
       result->Bake();
       break;
     }
     case TransformOperation::TRANSFORM_OPERATION_SKEW: {
-      SkMScalar from_x = IsOperationIdentity(from) ? 0 : from->skew.x;
-      SkMScalar from_y = IsOperationIdentity(from) ? 0 : from->skew.y;
-      SkMScalar to_x = IsOperationIdentity(to) ? 0 : to->skew.x;
-      SkMScalar to_y = IsOperationIdentity(to) ? 0 : to->skew.y;
-      result->skew.x = BlendSkMScalars(from_x, to_x, progress);
-      result->skew.y = BlendSkMScalars(from_y, to_y, progress);
+      SkScalar from_x = IsOperationIdentity(from) ? 0 : from->skew.x;
+      SkScalar from_y = IsOperationIdentity(from) ? 0 : from->skew.y;
+      SkScalar to_x = IsOperationIdentity(to) ? 0 : to->skew.x;
+      SkScalar to_y = IsOperationIdentity(to) ? 0 : to->skew.y;
+      result->skew.x = BlendSkScalars(from_x, to_x, progress);
+      result->skew.y = BlendSkScalars(from_y, to_y, progress);
       result->Bake();
       break;
     }
     case TransformOperation::TRANSFORM_OPERATION_PERSPECTIVE: {
-      SkMScalar from_perspective_depth =
-          IsOperationIdentity(from) ? std::numeric_limits<SkMScalar>::max()
+      SkScalar from_perspective_depth =
+          IsOperationIdentity(from) ? std::numeric_limits<SkScalar>::max()
                                     : from->perspective_depth;
-      SkMScalar to_perspective_depth =
-          IsOperationIdentity(to) ? std::numeric_limits<SkMScalar>::max()
-                                  : to->perspective_depth;
+      SkScalar to_perspective_depth = IsOperationIdentity(to)
+                                          ? std::numeric_limits<SkScalar>::max()
+                                          : to->perspective_depth;
       if (from_perspective_depth == 0.f || to_perspective_depth == 0.f)
         return false;
 
-      SkMScalar blended_perspective_depth = BlendSkMScalars(
+      SkScalar blended_perspective_depth = BlendSkScalars(
           1.f / from_perspective_depth, 1.f / to_perspective_depth, progress);
 
       if (blended_perspective_depth == 0.f)
@@ -299,8 +297,8 @@ static void FindCandidatesInPlane(float px,
 static void BoundingBoxForArc(const gfx::Point3F& point,
                               const TransformOperation* from,
                               const TransformOperation* to,
-                              SkMScalar min_progress,
-                              SkMScalar max_progress,
+                              SkScalar min_progress,
+                              SkScalar max_progress,
                               gfx::BoxF* box) {
   const TransformOperation* exemplar = from ? from : to;
   gfx::Vector3dF axis(exemplar->rotate.axis.x,
@@ -320,8 +318,8 @@ static void BoundingBoxForArc(const gfx::Point3F& point,
   if (x_is_zero && y_is_zero && z_is_zero)
     return;
 
-  SkMScalar from_angle = from ? from->rotate.angle : 0.f;
-  SkMScalar to_angle = to ? to->rotate.angle : 0.f;
+  SkScalar from_angle = from ? from->rotate.angle : 0.f;
+  SkScalar to_angle = to ? to->rotate.angle : 0.f;
 
   // If the axes of rotation are pointing in opposite directions, we need to
   // flip one of the angles. Note, if both |from| and |to| exist, then axis will
@@ -334,9 +332,9 @@ static void BoundingBoxForArc(const gfx::Point3F& point,
   }
 
   float min_degrees =
-      SkMScalarToFloat(BlendSkMScalars(from_angle, to_angle, min_progress));
+      SkScalarToFloat(BlendSkScalars(from_angle, to_angle, min_progress));
   float max_degrees =
-      SkMScalarToFloat(BlendSkMScalars(from_angle, to_angle, max_progress));
+      SkScalarToFloat(BlendSkScalars(from_angle, to_angle, max_progress));
   if (max_degrees < min_degrees)
     std::swap(min_degrees, max_degrees);
 
@@ -432,8 +430,8 @@ static void BoundingBoxForArc(const gfx::Point3F& point,
 bool TransformOperation::BlendedBoundsForBox(const gfx::BoxF& box,
                                              const TransformOperation* from,
                                              const TransformOperation* to,
-                                             SkMScalar min_progress,
-                                             SkMScalar max_progress,
+                                             SkScalar min_progress,
+                                             SkScalar max_progress,
                                              gfx::BoxF* bounds) {
   bool is_identity_from = IsOperationIdentity(from);
   bool is_identity_to = IsOperationIdentity(to);
@@ -473,10 +471,10 @@ bool TransformOperation::BlendedBoundsForBox(const gfx::BoxF& box,
       return true;
     }
     case TransformOperation::TRANSFORM_OPERATION_ROTATE: {
-      SkMScalar axis_x = 0;
-      SkMScalar axis_y = 0;
-      SkMScalar axis_z = 1;
-      SkMScalar from_angle = 0;
+      SkScalar axis_x = 0;
+      SkScalar axis_y = 0;
+      SkScalar axis_z = 1;
+      SkScalar from_angle = 0;
       if (!ShareSameAxis(from, to, &axis_x, &axis_y, &axis_z, &from_angle))
         return false;
 

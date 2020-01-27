@@ -379,6 +379,12 @@ void TabStripUIHandler::RegisterMessages() {
       "getThemeColors", base::Bind(&TabStripUIHandler::HandleGetThemeColors,
                                    base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "groupTab",
+      base::Bind(&TabStripUIHandler::HandleGroupTab, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "ungroupTab",
+      base::Bind(&TabStripUIHandler::HandleUngroupTab, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "setThumbnailTracked",
       base::Bind(&TabStripUIHandler::HandleSetThumbnailTracked,
                  base::Unretained(this)));
@@ -567,6 +573,38 @@ void TabStripUIHandler::HandleGetThemeColors(const base::ListValue* args) {
   ResolveJavascriptCallback(callback_id, colors);
 }
 
+void TabStripUIHandler::HandleGroupTab(const base::ListValue* args) {
+  int tab_id = args->GetList()[0].GetInt();
+
+  int tab_index = -1;
+  bool got_tab = extensions::ExtensionTabUtil::GetTabById(
+      tab_id, browser_->profile(), /*include_incognito=*/true, nullptr, nullptr,
+      nullptr, &tab_index);
+  DCHECK(got_tab);
+
+  const std::string group_id_string = args->GetList()[1].GetString();
+
+  for (tab_groups::TabGroupId group_id :
+       browser_->tab_strip_model()->group_model()->ListTabGroups()) {
+    if (group_id.ToString() == group_id_string) {
+      browser_->tab_strip_model()->AddToExistingGroup({tab_index}, group_id);
+      break;
+    }
+  }
+}
+
+void TabStripUIHandler::HandleUngroupTab(const base::ListValue* args) {
+  int tab_id = args->GetList()[0].GetInt();
+
+  int tab_index = -1;
+  bool got_tab = extensions::ExtensionTabUtil::GetTabById(
+      tab_id, browser_->profile(), /*include_incognito=*/true, nullptr, nullptr,
+      nullptr, &tab_index);
+  DCHECK(got_tab);
+
+  browser_->tab_strip_model()->RemoveFromGroup({tab_index});
+}
+
 void TabStripUIHandler::HandleCloseContainer(const base::ListValue* args) {
   // We only autoclose for tab selection.
   RecordTabStripUICloseHistogram(TabStripUICloseAction::kTabSelected);
@@ -578,10 +616,8 @@ void TabStripUIHandler::HandleShowBackgroundContextMenu(
     const base::ListValue* args) {
   gfx::PointF point;
   {
-    double x = 0;
-    args->GetDouble(0, &x);
-    double y = 0;
-    args->GetDouble(1, &y);
+    double x = args->GetList()[0].GetDouble();
+    double y = args->GetList()[1].GetDouble();
     point = gfx::PointF(x, y);
   }
 
@@ -593,15 +629,12 @@ void TabStripUIHandler::HandleShowBackgroundContextMenu(
 }
 
 void TabStripUIHandler::HandleShowTabContextMenu(const base::ListValue* args) {
-  int tab_id = 0;
-  args->GetInteger(0, &tab_id);
+  int tab_id = args->GetList()[0].GetInt();
 
   gfx::PointF point;
   {
-    double x = 0;
-    args->GetDouble(1, &x);
-    double y = 0;
-    args->GetDouble(2, &y);
+    double x = args->GetList()[1].GetDouble();
+    double y = args->GetList()[2].GetDouble();
     point = gfx::PointF(x, y);
   }
 
@@ -631,10 +664,7 @@ void TabStripUIHandler::HandleGetLayout(const base::ListValue* args) {
 void TabStripUIHandler::HandleSetThumbnailTracked(const base::ListValue* args) {
   AllowJavascript();
 
-  int tab_id = 0;
-  if (!args->GetInteger(0, &tab_id))
-    return;
-
+  int tab_id = args->GetList()[0].GetInt();
   const bool thumbnail_tracked = args->GetList()[1].GetBool();
 
   content::WebContents* tab = nullptr;
@@ -653,28 +683,23 @@ void TabStripUIHandler::HandleSetThumbnailTracked(const base::ListValue* args) {
 
 void TabStripUIHandler::HandleReportTabActivationDuration(
     const base::ListValue* args) {
-  int duration_ms = 0;
-  args->GetInteger(0, &duration_ms);
+  int duration_ms = args->GetList()[0].GetInt();
   UMA_HISTOGRAM_TIMES("WebUITabStrip.TabActivation",
                       base::TimeDelta::FromMilliseconds(duration_ms));
 }
 
 void TabStripUIHandler::HandleReportTabDataReceivedDuration(
     const base::ListValue* args) {
-  int tab_count = 0;
-  args->GetInteger(0, &tab_count);
-  int duration_ms = 0;
-  args->GetInteger(1, &duration_ms);
+  int tab_count = args->GetList()[0].GetInt();
+  int duration_ms = args->GetList()[1].GetInt();
   ReportTabDurationHistogram("TabDataReceived", tab_count,
                              base::TimeDelta::FromMilliseconds(duration_ms));
 }
 
 void TabStripUIHandler::HandleReportTabCreationDuration(
     const base::ListValue* args) {
-  int tab_count = 0;
-  args->GetInteger(0, &tab_count);
-  int duration_ms = 0;
-  args->GetInteger(1, &duration_ms);
+  int tab_count = args->GetList()[0].GetInt();
+  int duration_ms = args->GetList()[1].GetInt();
   ReportTabDurationHistogram("TabCreation", tab_count,
                              base::TimeDelta::FromMilliseconds(duration_ms));
 }

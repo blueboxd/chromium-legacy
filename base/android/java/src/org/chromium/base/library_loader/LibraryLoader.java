@@ -644,6 +644,7 @@ public class LibraryLoader {
             Log.i(TAG, "Loaded native library version number \"%s\"",
                     NativeLibraries.sVersionNumber);
         }
+        RecordHistogram.onLibraryLoaded();
 
         // From now on, keep tracing in sync with native.
         TraceEvent.registerNativeEnabledObserver();

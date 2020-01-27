@@ -3,32 +3,50 @@
 // found in the LICENSE file.
 
 #include "cc/paint/skottie_wrapper.h"
+#include <vector>
 
-#include "base/memory/ref_counted_memory.h"
+#include "base/hash/hash.h"
 #include "base/trace_event/trace_event.h"
-#include "third_party/skia/include/core/SkStream.h"
 
 namespace cc {
 
-SkottieWrapper::SkottieWrapper(
-    const scoped_refptr<base::RefCountedMemory>& data_stream) {
-  TRACE_EVENT0("cc", "SkottieWrapper Parse");
-  SkMemoryStream sk_stream(data_stream->front(), data_stream->size());
-  animation_ = skottie::Animation::Make(&sk_stream);
-  DCHECK(animation_);
+// static
+scoped_refptr<SkottieWrapper> SkottieWrapper::CreateSerializable(
+    std::vector<uint8_t> data) {
+  return base::WrapRefCounted<SkottieWrapper>(
+      new SkottieWrapper(std::move(data)));
 }
 
-SkottieWrapper::SkottieWrapper(std::unique_ptr<SkMemoryStream> stream)
-    : animation_(skottie::Animation::Make(stream.get())) {
-  DCHECK(animation_);
+// static
+scoped_refptr<SkottieWrapper> SkottieWrapper::CreateNonSerializable(
+    base::span<const uint8_t> data) {
+  return base::WrapRefCounted<SkottieWrapper>(new SkottieWrapper(data));
 }
 
-SkottieWrapper::~SkottieWrapper() {}
+SkottieWrapper::SkottieWrapper(base::span<const uint8_t> data)
+    : animation_(
+          skottie::Animation::Make(reinterpret_cast<const char*>(data.data()),
+                                   data.size())),
+      id_(base::FastHash(data)) {}
+
+SkottieWrapper::SkottieWrapper(std::vector<uint8_t> data)
+    : animation_(
+          skottie::Animation::Make(reinterpret_cast<const char*>(data.data()),
+                                   data.size())),
+      raw_data_(std::move(data)),
+      id_(base::FastHash(raw_data_)) {}
+
+SkottieWrapper::~SkottieWrapper() = default;
 
 void SkottieWrapper::Draw(SkCanvas* canvas, float t, const SkRect& rect) {
   base::AutoLock lock(lock_);
   animation_->seek(t);
   animation_->render(canvas, &rect);
+}
+
+base::span<const uint8_t> SkottieWrapper::raw_data() const {
+  DCHECK(raw_data_.size());
+  return base::as_bytes(base::make_span(raw_data_.data(), raw_data_.size()));
 }
 
 }  // namespace cc

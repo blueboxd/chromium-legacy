@@ -59,7 +59,7 @@ import org.chromium.chrome.browser.feed.library.piet.host.EventLogger;
 import org.chromium.chrome.browser.feed.library.sharedstream.deepestcontenttracker.DeepestContentTracker;
 import org.chromium.chrome.browser.feed.library.sharedstream.piet.PietEventLogger;
 import org.chromium.chrome.browser.feed.library.sharedstream.publicapi.scroll.ScrollObservable;
-import org.chromium.chrome.browser.feed.library.sharedstream.ui.R;
+import org.chromium.chrome.feed.R;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.Collections;

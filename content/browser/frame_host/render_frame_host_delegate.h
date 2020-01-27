@@ -18,6 +18,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/media_player_watch_time.h"
 #include "content/public/browser/media_stream_request.h"
 #include "content/public/browser/site_instance.h"
@@ -103,6 +104,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   using IsClipboardPasteAllowedCallback =
       RenderFrameHostImpl::IsClipboardPasteAllowedCallback;
 
+  using JavaScriptDialogCallback =
+      content::JavaScriptDialogManager::DialogClosedCallback;
+
   // This is used to give the delegate a chance to filter IPC messages.
   virtual bool OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                                  const IPC::Message& message);
@@ -162,11 +166,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                    const base::string16& message,
                                    const base::string16& default_prompt,
                                    JavaScriptDialogType type,
-                                   IPC::Message* reply_msg) {}
+                                   JavaScriptDialogCallback callback) {}
 
   virtual void RunBeforeUnloadConfirm(RenderFrameHost* render_frame_host,
                                       bool is_reload,
-                                      IPC::Message* reply_msg) {}
+                                      JavaScriptDialogCallback callback) {}
 
   // Called when a file selection is to be done.
   // Overrides of this function must call either listener->FileSelected() or

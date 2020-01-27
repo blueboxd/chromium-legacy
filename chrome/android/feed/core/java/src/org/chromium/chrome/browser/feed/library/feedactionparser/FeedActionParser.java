@@ -15,6 +15,7 @@ import static org.chromium.components.feed.core.proto.ui.action.FeedActionProto.
 
 import android.view.View;
 
+import org.chromium.base.Log;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
 import org.chromium.chrome.browser.feed.library.api.host.action.StreamActionApi;
@@ -213,6 +214,14 @@ public final class FeedActionParser implements ActionParser {
                 streamActionApi.maybeShowTooltip(
                         new TooltipInfoImpl(feedActionMetadata.getTooltipData()), view);
                 break;
+            case SEND_FEEDBACK:
+                Log.d(TAG, "SendFeedback menu item clicked.");
+                // TODO(petewil):
+                // Marshall feed specific args.
+                // Get a Feedback object.
+                // Dismiss menu.
+                // Call the feedback object to send feedback async.  Don't wait for it.
+                break;
             default:
                 Logger.wtf(TAG, "Haven't implemented host handling of %s",
                         feedActionMetadata.getType());
@@ -315,6 +324,9 @@ public final class FeedActionParser implements ActionParser {
                 return streamActionApi.canLearnMore();
             case NOT_INTERESTED_IN:
                 return streamActionApi.canHandleNotInterestedIn();
+            // Send Feedback for the feed is available in M81 and later.
+            case SEND_FEEDBACK:
+                return true;
             case UNKNOWN:
             default:
                 // TODO : Handle the action types introduced in [INTERNAL LINK]

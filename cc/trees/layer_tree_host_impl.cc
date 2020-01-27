@@ -2785,8 +2785,8 @@ static void PopulateHitTestRegion(viz::HitTestRegion* hit_test_region,
   // counterscale the transform here. Note that the rect is scaled by dsf, so
   // the point and the rect are still in the same space.
   gfx::Transform surface_to_root_transform = layer->ScreenSpaceTransform();
-  surface_to_root_transform.Scale(SK_MScalar1 / device_scale_factor,
-                                  SK_MScalar1 / device_scale_factor);
+  surface_to_root_transform.Scale(SK_Scalar1 / device_scale_factor,
+                                  SK_Scalar1 / device_scale_factor);
   surface_to_root_transform.FlattenTo2d();
   // TODO(sunxd): Avoid losing precision by not using inverse if possible.
   bool ok = surface_to_root_transform.GetInverse(&hit_test_region->transform);

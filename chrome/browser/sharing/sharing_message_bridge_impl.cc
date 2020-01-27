@@ -11,10 +11,18 @@
 
 namespace {
 
+syncer::ClientTagHash GetClientTagHashFromStorageKey(
+    const std::string& storage_key) {
+  return syncer::ClientTagHash::FromUnhashed(syncer::SHARING_MESSAGE,
+                                             storage_key);
+}
+
 std::unique_ptr<syncer::EntityData> MoveToEntityData(
     std::unique_ptr<sync_pb::SharingMessageSpecifics> specifics) {
   auto entity_data = std::make_unique<syncer::EntityData>();
   entity_data->name = specifics->message_id();
+  entity_data->client_tag_hash =
+      GetClientTagHashFromStorageKey(specifics->message_id());
   entity_data->specifics.set_allocated_sharing_message(specifics.release());
   return entity_data;
 }
@@ -33,7 +41,8 @@ SharingMessageBridgeImpl::SharingMessageBridgeImpl(
 SharingMessageBridgeImpl::~SharingMessageBridgeImpl() = default;
 
 void SharingMessageBridgeImpl::SendSharingMessage(
-    std::unique_ptr<sync_pb::SharingMessageSpecifics> specifics) {
+    std::unique_ptr<sync_pb::SharingMessageSpecifics> specifics,
+    CommitFinishedCallback on_commit_callback) {
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
   // Fill in the internal message id with unique generated identifier.
@@ -41,6 +50,10 @@ void SharingMessageBridgeImpl::SendSharingMessage(
   specifics->set_message_id(message_id);
   std::unique_ptr<syncer::EntityData> entity_data =
       MoveToEntityData(std::move(specifics));
+  const auto result =
+      commit_callbacks_.emplace(GetClientTagHashFromStorageKey(message_id),
+                                std::move(on_commit_callback));
+  DCHECK(result.second);
   change_processor()->Put(message_id, std::move(entity_data),
                           metadata_change_list.get());
 }
@@ -71,9 +84,17 @@ base::Optional<syncer::ModelError> SharingMessageBridgeImpl::MergeSyncData(
 
 base::Optional<syncer::ModelError> SharingMessageBridgeImpl::ApplySyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
-    syncer::EntityChangeList entity_data) {
-  // This data type is commit only and does not store any data in persistent
-  // storage. We can ignore any data coming from the server.
+    syncer::EntityChangeList entity_changes) {
+  sync_pb::SharingMessageCommitError no_error_message;
+  no_error_message.set_error_code(sync_pb::SharingMessageCommitError::NONE);
+  for (const std::unique_ptr<syncer::EntityChange>& change : entity_changes) {
+    // For commit-only data type we expect only |ACTION_DELETE| changes.
+    DCHECK_EQ(syncer::EntityChange::ACTION_DELETE, change->type());
+
+    const syncer::ClientTagHash client_tag_hash =
+        GetClientTagHashFromStorageKey(change->storage_key());
+    ProcessCommitResponse(client_tag_hash, no_error_message);
+  }
   return {};
 }
 
@@ -97,4 +118,28 @@ std::string SharingMessageBridgeImpl::GetStorageKey(
     const syncer::EntityData& entity_data) {
   DCHECK(entity_data.specifics.has_sharing_message());
   return entity_data.specifics.sharing_message().message_id();
+}
+
+void SharingMessageBridgeImpl::OnCommitAttemptErrors(
+    const syncer::FailedCommitResponseDataList& error_response_list) {
+  for (const syncer::FailedCommitResponseData& response : error_response_list) {
+    // TODO(rushans): untrack entity in change processor on error. We cannot
+    // untrack it by only client tag hash and there is no storage key in
+    // response data.
+    ProcessCommitResponse(response.client_tag_hash,
+                          response.sharing_message_error);
+  }
+}
+
+void SharingMessageBridgeImpl::ProcessCommitResponse(
+    const syncer::ClientTagHash& client_tag_hash,
+    const sync_pb::SharingMessageCommitError& commit_error_message) {
+  const auto iter = commit_callbacks_.find(client_tag_hash);
+  if (iter == commit_callbacks_.end()) {
+    // TODO(crbug.com/1034930): mark as NOTREACHABLE() when the entity will be
+    // untracked on commit errors.
+    return;
+  }
+  std::move(iter->second).Run(commit_error_message);
+  commit_callbacks_.erase(iter);
 }

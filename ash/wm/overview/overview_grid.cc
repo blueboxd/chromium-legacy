@@ -549,8 +549,10 @@ void OverviewGrid::AppendItem(aura::Window* window,
           window_list_.size(), use_spawn_animation);
 }
 
-void OverviewGrid::AddItemInMruOrder(aura::Window* window, bool animate) {
-  AddItem(window, /*reposition=*/true, animate, /*ignored_items=*/{},
+void OverviewGrid::AddItemInMruOrder(aura::Window* window,
+                                     bool reposition,
+                                     bool animate) {
+  AddItem(window, reposition, animate, /*ignored_items=*/{},
           FindInsertionIndex(window));
 }
 

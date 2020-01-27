@@ -24,7 +24,6 @@ class LocalFrame;
 class OriginTrialContext;
 class SecurityOrigin;
 enum class WebSandboxFlags;
-class WindowAgentFactory;
 
 class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   STACK_ALLOCATED();
@@ -48,18 +47,12 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
 
   std::unique_ptr<DocumentPolicy> CreateDocumentPolicy() const;
 
-  const Vector<String>& FeaturePolicyParseMessages() const {
-    return feature_policy_parse_messages_;
-  }
   const ParsedFeaturePolicy& FeaturePolicyHeader() const {
     return feature_policy_header_;
   }
 
   OriginTrialContext* GetOriginTrialContext() const { return origin_trials_; }
 
-  WindowAgentFactory* GetWindowAgentFactory() const {
-    return window_agent_factory_;
-  }
   Agent* GetAgent() const { return agent_; }
   SecureContextMode GetSecureContextMode() const {
     return secure_context_mode_.value();
@@ -98,7 +91,6 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   Member<ContentSecurityPolicy> csp_;
   Member<OriginTrialContext> origin_trials_;
   Member<Agent> agent_;
-  Member<WindowAgentFactory> window_agent_factory_;
   HashSet<mojom::blink::FeaturePolicyFeature> parsed_feature_policies_;
   HashSet<mojom::WebFeature> feature_count_;
   bool bind_csp_immediately_ = false;

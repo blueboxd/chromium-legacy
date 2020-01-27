@@ -21,7 +21,7 @@
 // static
 IOSProfileSessionDurationsService*
 IOSProfileSessionDurationsServiceFactory::GetForBrowserState(
-    ios::ChromeBrowserState* browser_state) {
+    ChromeBrowserState* browser_state) {
   return static_cast<IOSProfileSessionDurationsService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }
@@ -48,8 +48,8 @@ IOSProfileSessionDurationsServiceFactory::
 std::unique_ptr<KeyedService>
 IOSProfileSessionDurationsServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForBrowserState(browser_state);
   signin::IdentityManager* identity_manager =

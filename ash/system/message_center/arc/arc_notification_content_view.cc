@@ -157,6 +157,17 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
             "Arc.UserInteraction",
             arc::UserInteractionType::NOTIFICATION_INTERACTION);
       }
+
+      // When the ARC notification is slid out, all mouse presses and taps
+      // should go to underlying widget so the swipe control buttons can
+      // pressed. See crbug.com/965603.
+      if (owner_->slide_in_progress()) {
+        if (event->type() == ui::ET_MOUSE_RELEASED ||
+            event->type() == ui::ET_MOUSE_PRESSED)
+          widget->OnMouseEvent(event->AsMouseEvent());
+        else if (event->type() == ui::ET_GESTURE_TAP)
+          widget->OnGestureEvent(event->AsGestureEvent());
+      }
     }
 
     // If AXTree is attached to notification content view, notification surface

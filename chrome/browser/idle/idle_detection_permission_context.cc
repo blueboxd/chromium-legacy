@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/permissions/permission_request_id.h"
 #include "url/gurl.h"
 
 IdleDetectionPermissionContext::IdleDetectionPermissionContext(Profile* profile)
@@ -18,7 +18,7 @@ IdleDetectionPermissionContext::IdleDetectionPermissionContext(Profile* profile)
 IdleDetectionPermissionContext::~IdleDetectionPermissionContext() = default;
 
 void IdleDetectionPermissionContext::UpdateTabContext(
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_frame,
     bool allowed) {
   TabSpecificContentSettings* content_settings =

@@ -74,6 +74,9 @@ public class HomepagePolicyIntegrationTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
+    @Rule
+    public HomepageTestRule mHomepageTestRule = new HomepageTestRule();
+
     @Before
     public void setUp() {
         // Disable Histogram for tests.
@@ -81,10 +84,7 @@ public class HomepagePolicyIntegrationTest {
 
         // Give some user pref setting, simulate user that have their customized preference.
         // Use shared preference manager, not to change the order object created in tests.
-        SharedPreferencesManager manager = SharedPreferencesManager.getInstance();
-        manager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_ENABLED, true);
-        manager.writeString(ChromePreferenceKeys.HOMEPAGE_CUSTOM_URI, GOOGLE_HTML);
-        manager.writeBoolean(ChromePreferenceKeys.HOMEPAGE_USE_DEFAULT_URI, false);
+        mHomepageTestRule.useCustomizedHomepageForTest(GOOGLE_HTML);
 
         mActivityTestRule.startMainActivityFromLauncher();
 

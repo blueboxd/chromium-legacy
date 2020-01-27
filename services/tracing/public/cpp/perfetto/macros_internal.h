@@ -75,7 +75,7 @@ static inline base::trace_event::TraceEventHandle AddTraceEvent(
       /* for any TrackEventArgumentFunction in |__VA_ARGS__|. This is     */  \
       /* required so that the scoped event is exactly ONE line and can't  */  \
       /* escape the scope if used in a single line if statement.          */  \
-      ScopedTraceEvent(int) {}                                                \
+      ScopedTraceEvent(int) {} /* NOLINT */                                   \
       ~ScopedTraceEvent() {                                                   \
         /* TODO(nuskos): Remove the empty string passed as the |name|  */     \
         /* field. As described in macros.h we shouldn't need it in our */     \

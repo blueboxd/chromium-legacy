@@ -88,8 +88,6 @@ class MouseCursorMonitorProxyTest
 
   // webrtc::MouseCursorMonitor::Callback implementation.
   void OnMouseCursor(webrtc::MouseCursor* mouse_cursor) override;
-  void OnMouseCursorPosition(webrtc::MouseCursorMonitor::CursorState state,
-                             const webrtc::DesktopVector& position) override;
 
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
@@ -111,12 +109,6 @@ void MouseCursorMonitorProxyTest::OnMouseCursor(
   delete mouse_cursor;
 
   run_loop_.Quit();
-}
-
-void MouseCursorMonitorProxyTest::OnMouseCursorPosition(
-    webrtc::MouseCursorMonitor::CursorState state,
-    const webrtc::DesktopVector& position) {
-  NOTREACHED();
 }
 
 TEST_F(MouseCursorMonitorProxyTest, CursorShape) {

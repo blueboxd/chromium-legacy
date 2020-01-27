@@ -382,23 +382,40 @@ ParseResult ParseRedirect(dnr_api::Redirect redirect,
 
 bool DoesActionSupportPriority(dnr_api::RuleActionType type) {
   switch (type) {
-    case dnr_api::RULE_ACTION_TYPE_NONE:
-      break;
     case dnr_api::RULE_ACTION_TYPE_BLOCK:
-      return true;
     case dnr_api::RULE_ACTION_TYPE_REDIRECT:
-      return true;
     case dnr_api::RULE_ACTION_TYPE_ALLOW:
-      return true;
     case dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME:
+    case dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS:
       return true;
     case dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS:
       return false;
-    case dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS:
-      return true;
+    case dnr_api::RULE_ACTION_TYPE_NONE:
+      break;
   }
   NOTREACHED();
   return false;
+}
+
+uint8_t GetActionTypePriority(dnr_api::RuleActionType action_type) {
+  switch (action_type) {
+    case dnr_api::RULE_ACTION_TYPE_ALLOW:
+      return 5;
+    case dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS:
+      return 4;
+    case dnr_api::RULE_ACTION_TYPE_BLOCK:
+      return 3;
+    case dnr_api::RULE_ACTION_TYPE_UPGRADESCHEME:
+      return 2;
+    case dnr_api::RULE_ACTION_TYPE_REDIRECT:
+      return 1;
+    case dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS:
+      return 0;
+    case dnr_api::RULE_ACTION_TYPE_NONE:
+      break;
+  }
+  NOTREACHED();
+  return 0;
 }
 
 }  // namespace
@@ -493,8 +510,10 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
 
   indexed_rule->action_type = parsed_rule.action.type;
   indexed_rule->id = base::checked_cast<uint32_t>(parsed_rule.id);
-  indexed_rule->priority = base::checked_cast<uint32_t>(
-      is_priority_supported ? *parsed_rule.priority : kDefaultPriority);
+  indexed_rule->priority = parsed_rule.priority ? ComputeIndexedRulePriority(
+                                                      *parsed_rule.priority,
+                                                      indexed_rule->action_type)
+                                                : kDefaultPriority;
   indexed_rule->options = GetOptionsMask(parsed_rule);
   indexed_rule->activation_types = GetActivationTypes(parsed_rule);
 
@@ -558,6 +577,17 @@ ParseResult IndexedRule::CreateIndexedRule(dnr_api::Rule parsed_rule,
   DCHECK_NE(flat_rule::AnchorType_SUBDOMAIN, indexed_rule->anchor_right);
 
   return ParseResult::SUCCESS;
+}
+
+uint64_t ComputeIndexedRulePriority(int parsed_rule_priority,
+                                    dnr_api::RuleActionType action_type) {
+  if (!DoesActionSupportPriority(action_type))
+    return kDefaultPriority;
+  // Incorporate the action's priority into the rule priority, so e.g. allow
+  // rules will be given a higher priority than block rules with the same
+  // priority specified in the rule JSON.
+  return (base::checked_cast<uint32_t>(parsed_rule_priority) << 8) |
+         GetActionTypePriority(action_type);
 }
 
 }  // namespace declarative_net_request

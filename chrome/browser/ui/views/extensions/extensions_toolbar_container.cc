@@ -97,11 +97,9 @@ void ExtensionsToolbarContainer::ShowWidgetForExtension(
   anchored_widgets_.push_back({widget, extension_id});
   widget->AddObserver(this);
   UpdateIconVisibility(extension_id);
-
-  static_cast<views::AnimatingLayoutManager*>(GetLayoutManager())
-      ->PostOrQueueAction(base::BindOnce(
-          &ExtensionsToolbarContainer::AnchorAndShowWidgetImmediately,
-          weak_ptr_factory_.GetWeakPtr(), widget));
+  animating_layout_manager()->PostOrQueueAction(base::BindOnce(
+      &ExtensionsToolbarContainer::AnchorAndShowWidgetImmediately,
+      weak_ptr_factory_.GetWeakPtr(), widget));
 }
 
 views::Widget*
@@ -114,13 +112,41 @@ ExtensionsToolbarContainer::GetAnchoredWidgetForExtensionForTesting(
   return iter->widget;
 }
 
+bool ExtensionsToolbarContainer::ShouldForceVisibility(
+    const std::string& extension_id) const {
+  if (popped_out_action_ && popped_out_action_->GetId() == extension_id)
+    return true;
+
+  for (const auto& anchored_widget : anchored_widgets_) {
+    if (anchored_widget.extension_id == extension_id)
+      return true;
+  }
+
+  return false;
+}
+
 void ExtensionsToolbarContainer::UpdateIconVisibility(
     const std::string& extension_id) {
-  auto it = icons_.find(extension_id);
-  if (it == icons_.end())
+  ToolbarActionView* const action_view = GetViewForId(extension_id);
+  if (!action_view)
     return;
-  it->second->SetVisible(
-      IsActionVisibleOnToolbar(it->second->view_controller()));
+
+  // Popped out action uses a flex rule that causes it to always be visible
+  // regardless of space; default for actions is to drop out when there is
+  // insufficient space. So if an action is being forced visible, it should have
+  // the always-show flex rule, and if it not, it should not.
+  const bool must_show = ShouldForceVisibility(extension_id);
+  if (must_show) {
+    action_view->SetProperty(views::kFlexBehaviorKey,
+                             views::FlexSpecification());
+  } else {
+    action_view->ClearProperty(views::kFlexBehaviorKey);
+  }
+
+  if (must_show || model_->IsActionPinned(extension_id))
+    animating_layout_manager()->FadeIn(action_view);
+  else
+    animating_layout_manager()->FadeOut(action_view);
 }
 
 void ExtensionsToolbarContainer::AnchorAndShowWidgetImmediately(
@@ -167,13 +193,8 @@ ToolbarActionViewController* ExtensionsToolbarContainer::GetPoppedOutAction()
 bool ExtensionsToolbarContainer::IsActionVisibleOnToolbar(
     const ToolbarActionViewController* action) const {
   const std::string& extension_id = action->GetId();
-  for (const auto& anchored_widget : anchored_widgets_) {
-    if (anchored_widget.extension_id == extension_id)
-      return true;
-  }
-
-  return model_->IsActionPinned(action->GetId()) ||
-         action == popped_out_action_;
+  return ShouldForceVisibility(extension_id) ||
+         model_->IsActionPinned(extension_id);
 }
 
 void ExtensionsToolbarContainer::UndoPopOut() {
@@ -181,9 +202,6 @@ void ExtensionsToolbarContainer::UndoPopOut() {
   ToolbarActionViewController* const popped_out_action = popped_out_action_;
   popped_out_action_ = nullptr;
   UpdateIconVisibility(popped_out_action->GetId());
-  GetViewForId(popped_out_action->GetId())
-      ->ClearProperty(views::kFlexBehaviorKey);
-  InvalidateLayout();
 }
 
 void ExtensionsToolbarContainer::SetPopupOwner(
@@ -215,11 +233,8 @@ void ExtensionsToolbarContainer::PopOutAction(
   // TODO(pbos): Highlight popout differently.
   DCHECK(!popped_out_action_);
   popped_out_action_ = action;
-  GetViewForId(action->GetId())
-      ->SetProperty(views::kFlexBehaviorKey, views::FlexSpecification());
-  UpdateIconVisibility(popped_out_action_->GetId());
-  static_cast<views::AnimatingLayoutManager*>(GetLayoutManager())
-      ->PostOrQueueAction(closure);
+  UpdateIconVisibility(action->GetId());
+  animating_layout_manager()->PostOrQueueAction(closure);
 }
 
 bool ExtensionsToolbarContainer::ShowToolbarActionPopup(
@@ -276,13 +291,19 @@ void ExtensionsToolbarContainer::OnToolbarActionRemoved(
   // could be handled inside the model and be invisible to the container when
   // permissions are unchanged.
 
-  // Delete the icon first so it unregisters it from the action.
+  auto iter = std::find_if(
+      actions_.begin(), actions_.end(),
+      [action_id](const auto& item) { return item->GetId() == action_id; });
+  DCHECK(iter != actions_.end());
+  // Ensure the action outlives the UI element to perform any cleanup.
+  std::unique_ptr<ToolbarActionViewController> controller = std::move(*iter);
+  actions_.erase(iter);
+  // Undo the popout, if necessary. Actions expect to not be popped out while
+  // destroying.
+  if (popped_out_action_ == controller.get())
+    UndoPopOut();
+
   icons_.erase(action_id);
-  base::EraseIf(
-      actions_,
-      [action_id](const std::unique_ptr<ToolbarActionViewController>& item) {
-        return item->GetId() == action_id;
-      });
 }
 
 void ExtensionsToolbarContainer::OnToolbarActionMoved(
@@ -345,12 +366,12 @@ void ExtensionsToolbarContainer::CreateActionForId(
       model_->CreateActionForId(browser_, this, false, action_id));
 
   auto icon = std::make_unique<ToolbarActionView>(actions_.back().get(), this);
+  // Set visibility before adding to prevent extraneous animation.
+  icon->SetVisible(model_->IsActionPinned(action_id));
   icon->set_owned_by_client();
-  icon->SetVisible(IsActionVisibleOnToolbar(actions_.back().get()));
   icon->AddButtonObserver(this);
   icon->AddObserver(this);
   AddChildView(icon.get());
-
   icons_[action_id] = std::move(icon);
 }
 
@@ -463,10 +484,9 @@ void ExtensionsToolbarContainer::OnDragExited() {
       drop_info_->action_id;
   drop_info_.reset();
   ReorderViews();
-  static_cast<views::AnimatingLayoutManager*>(GetLayoutManager())
-      ->PostOrQueueAction(base::BindOnce(
-          &ExtensionsToolbarContainer::SetExtensionIconVisibility,
-          weak_ptr_factory_.GetWeakPtr(), dragged_extension_id, true));
+  animating_layout_manager()->PostOrQueueAction(base::BindOnce(
+      &ExtensionsToolbarContainer::SetExtensionIconVisibility,
+      weak_ptr_factory_.GetWeakPtr(), dragged_extension_id, true));
 }
 
 int ExtensionsToolbarContainer::OnPerformDrop(

@@ -45,9 +45,12 @@ Step::Step(const std::string& name,
 
 Step::~Step() { RecordCompletion(); }
 
-void Step::Show() {
+bool Step::Show() {
+  if (!DoShow())
+    return false;
+
   show_time_ = base::Time::Now();
-  DoShow();
+  return true;
 }
 
 void Step::OnBeforeHide() {

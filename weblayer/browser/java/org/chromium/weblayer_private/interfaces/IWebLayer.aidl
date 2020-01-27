@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer_private.interfaces;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import org.chromium.weblayer_private.interfaces.IBrowserFragment;
@@ -67,4 +68,7 @@ interface IWebLayer {
   ICrashReporterController getCrashReporterController(
       in IObjectWrapper appContext,
       in IObjectWrapper remoteContext) = 10;
+
+  // Forwards download intent notifications to the implementation.
+  void onReceivedDownloadNotification(in IObjectWrapper appContext, in Intent intent) = 11;
 }

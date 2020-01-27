@@ -63,6 +63,8 @@ class ArcNotificationContentView
   void OnContainerAnimationEnded();
   void ActivateWidget(bool activate);
 
+  bool slide_in_progress() const { return slide_in_progress_; }
+
  private:
   friend class ArcNotificationViewTest;
   friend class ArcNotificationContentViewTest;

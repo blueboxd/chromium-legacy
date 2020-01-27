@@ -57,7 +57,7 @@ class CC_ANIMATION_EXPORT TransformOperations {
   // If either of the matrices are non-decomposable for the blend, Blend applies
   // discrete interpolation between them based on the progress value.
   TransformOperations Blend(const TransformOperations& from,
-                            SkMScalar progress) const;
+                            SkScalar progress) const;
 
   // Sets |bounds| be the bounding box for the region within which |box| will
   // exist when it is transformed by the result of calling Blend on |from| and
@@ -65,8 +65,8 @@ class CC_ANIMATION_EXPORT TransformOperations {
   // cannot be computed, returns false.
   bool BlendedBoundsForBox(const gfx::BoxF& box,
                            const TransformOperations& from,
-                           SkMScalar min_progress,
-                           SkMScalar max_progress,
+                           SkScalar min_progress,
+                           SkScalar max_progress,
                            gfx::BoxF* bounds) const;
 
   // Returns true if these operations are only translations.
@@ -93,13 +93,13 @@ class CC_ANIMATION_EXPORT TransformOperations {
   // If none of these operations have a perspective component, sets |scale| to
   // be the product of the scale component of every operation. Otherwise,
   // returns false.
-  bool ScaleComponent(SkMScalar* scale) const;
+  bool ScaleComponent(SkScalar* scale) const;
 
-  void AppendTranslate(SkMScalar x, SkMScalar y, SkMScalar z);
-  void AppendRotate(SkMScalar x, SkMScalar y, SkMScalar z, SkMScalar degrees);
-  void AppendScale(SkMScalar x, SkMScalar y, SkMScalar z);
-  void AppendSkew(SkMScalar x, SkMScalar y);
-  void AppendPerspective(SkMScalar depth);
+  void AppendTranslate(SkScalar x, SkScalar y, SkScalar z);
+  void AppendRotate(SkScalar x, SkScalar y, SkScalar z, SkScalar degrees);
+  void AppendScale(SkScalar x, SkScalar y, SkScalar z);
+  void AppendSkew(SkScalar x, SkScalar y);
+  void AppendPerspective(SkScalar depth);
   void AppendMatrix(const gfx::Transform& matrix);
   void AppendIdentity();
   void Append(const TransformOperation& operation);
@@ -117,13 +117,13 @@ class CC_ANIMATION_EXPORT TransformOperations {
   }
 
   bool ApproximatelyEqual(const TransformOperations& other,
-                          SkMScalar tolerance) const;
+                          SkScalar tolerance) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(TransformOperationsTest, TestDecompositionCache);
 
   bool BlendInternal(const TransformOperations& from,
-                     SkMScalar progress,
+                     SkScalar progress,
                      TransformOperations* result) const;
 
   std::vector<TransformOperation> operations_;

@@ -175,7 +175,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 // BrowserState, in order to prevent crashes set |_browserState| to
 // |browserState|->OriginalChromeBrowserState. While doing this check if
 // incognito or not so that pages are loaded accordingly.
-- (void)setBrowserState:(ios::ChromeBrowserState*)browserState {
+- (void)setBrowserState:(ChromeBrowserState*)browserState {
   if (browserState) {
     _browserState = browserState->GetOriginalChromeBrowserState();
     _incognito = browserState->IsOffTheRecord();

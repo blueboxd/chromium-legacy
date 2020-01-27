@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL Cannot transfer all objects assert_throws: function "() => self.postMessage({ get whatever() { throw new Error("You should not have gotten to this point") } }, "*", transferList)" threw object "TypeError: Failed to execute 'postMessage' on 'Window': Value at index 0 does not have a transferable type." that is not a DOMException DataCloneError: property "code" is equal to undefined, expected 25
+FAIL Cannot transfer all objects assert_throws_dom: function "() => self.postMessage({ get whatever() { throw new Error("You should not have gotten to this point") } }, "*", transferList)" threw object "TypeError: Failed to execute 'postMessage' on 'Window': Value at index 0 does not have a transferable type." that is not a DOMException DataCloneError: property "code" is equal to undefined, expected 25
 PASS Cannot transfer the same ArrayBuffer twice
 PASS Serialize should make the ArrayBuffer detached, so it cannot be transferred again
 PASS Serialize should throw before a detached ArrayBuffer is found

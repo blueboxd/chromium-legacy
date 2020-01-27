@@ -26,7 +26,7 @@ namespace viz {
 
 namespace {
 // Tolerance for considering axis vector elements to be zero.
-const SkMScalar kEpsilon = std::numeric_limits<float>::epsilon();
+const SkScalar kEpsilon = std::numeric_limits<float>::epsilon();
 
 const gfx::BufferFormat kOverlayFormats[] = {
     gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::RGBA_8888,

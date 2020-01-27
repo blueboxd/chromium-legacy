@@ -193,6 +193,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   omniboxOutput.addEventListener(
       'responses-count-changed', e => omniboxInput.responsesCount = e.detail);
+
+  omniboxOutput.updateDisplayInputs(omniboxInput.displayInputs);
 });
 
 class ExportDelegate {

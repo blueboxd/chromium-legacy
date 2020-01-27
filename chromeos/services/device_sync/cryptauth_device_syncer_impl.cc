@@ -427,6 +427,14 @@ void CryptAuthDeviceSyncerImpl::ProcessEncryptedGroupPrivateKey() {
     return;
   }
 
+  if (encrypted_group_private_key_->encrypted_private_key().empty()) {
+    // TODO(https://crbug.com/936273): Log metrics for empty private key.
+    PA_LOG(ERROR) << "Group private key from CryptAuth unexpectedly empty.";
+    did_non_fatal_error_occur_ = true;
+    AttemptNextStep();
+    return;
+  }
+
   const CryptAuthKey* device_sync_better_together_key =
       key_registry_->GetActiveKey(
           CryptAuthKeyBundle::Name::kDeviceSyncBetterTogether);

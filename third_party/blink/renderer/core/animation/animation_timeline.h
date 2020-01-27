@@ -68,6 +68,7 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
 
  protected:
   virtual base::Optional<base::TimeDelta> CurrentTimeInternal() = 0;
+  void RemoveReplacedAnimations();
 
   Member<Document> document_;
   unsigned outdated_animation_count_;

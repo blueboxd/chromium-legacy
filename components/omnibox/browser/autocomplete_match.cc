@@ -79,7 +79,7 @@ bool WordMatchesURLContent(
 // static
 const char* const AutocompleteMatch::kDocumentTypeStrings[]{
     "none",        "drive_docs", "drive_forms", "drive_sheets", "drive_slides",
-    "drive_image", "drive_pdf",  "drive_video", "drive_other"};
+    "drive_image", "drive_pdf",  "drive_video", "drive_folder", "drive_other"};
 
 static_assert(
     base::size(AutocompleteMatch::kDocumentTypeStrings) ==
@@ -284,6 +284,8 @@ const gfx::VectorIcon& AutocompleteMatch::GetVectorIcon(
           return omnibox::kDrivePdfIcon;
         case DocumentType::DRIVE_VIDEO:
           return omnibox::kDriveVideoIcon;
+        case DocumentType::DRIVE_FOLDER:
+          return omnibox::kDriveFolderIcon;
         case DocumentType::DRIVE_OTHER:
           return omnibox::kDriveLogoIcon;
         default:

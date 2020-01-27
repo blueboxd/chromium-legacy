@@ -1268,6 +1268,24 @@ public class PaymentRequestImpl
     }
 
     /**
+     * Get the WebContents of the Expandable Payment Handler for testing purpose; return null if
+     * nonexistent.
+     *
+     * @return The WebContents of the Expandable Payment Handler.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    public static WebContents getPaymentHandlerWebContentsForTest() {
+        if (sShowingPaymentRequest == null) return null;
+        return sShowingPaymentRequest.getPaymentHandlerWebContentsForTestInternal();
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.NONE)
+    private WebContents getPaymentHandlerWebContentsForTestInternal() {
+        if (mPaymentHandlerUi == null) return null;
+        return mPaymentHandlerUi.getWebContentsForTest();
+    }
+
+    /**
      *  Called to open a new PaymentHandler UI on the showing PaymentRequest.
      *  @param url The url of the payment app to be displayed in the UI.
      *  @return Whether the opening is successful.

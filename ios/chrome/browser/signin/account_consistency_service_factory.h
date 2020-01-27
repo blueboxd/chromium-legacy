@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 class AccountConsistencyService;
+class ChromeBrowserState;
 
 namespace ios {
 // Singleton that creates the AccountConsistencyService(s) and associates those
@@ -25,7 +25,7 @@ class AccountConsistencyServiceFactory
   // state cannot have an AccountConsistencyService (for example, if it is
   // incognito or if WKWebView is not enabled).
   static AccountConsistencyService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
 
   // Returns an instance of the factory singleton.
   static AccountConsistencyServiceFactory* GetInstance();

@@ -46,6 +46,9 @@ gfx::Rect FirstRunHelperImpl::GetAppListButtonBounds() {
   Shelf* shelf = Shelf::ForWindow(Shell::GetPrimaryRootWindow());
   HomeButton* home_button =
       shelf->shelf_widget()->navigation_widget()->GetHomeButton();
+  if (!home_button)
+    return gfx::Rect();
+
   return home_button->GetBoundsInScreen();
 }
 

@@ -5,9 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_METRICS_NEW_TAB_PAGE_UMA_H_
 #define IOS_CHROME_BROWSER_METRICS_NEW_TAB_PAGE_UMA_H_
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ui/base/page_transition_types.h"
 
+class ChromeBrowserState;
 class GURL;
 namespace web {
 class WebState;
@@ -34,15 +34,15 @@ enum ActionType {
   NUM_ACTION_TYPES,
 };
 
-void RecordAction(ios::ChromeBrowserState* browser_state,
+void RecordAction(ChromeBrowserState* browser_state,
                   web::WebState* web_state,
                   ActionType action);
 
 // DEPRECATED -- use the version above which passes web_state instead.
 // TODO(crbug.com/1032550) : Remove this function.
-void RecordAction(ios::ChromeBrowserState* browser_state, ActionType action);
+void RecordAction(ChromeBrowserState* browser_state, ActionType action);
 
-void RecordActionFromOmnibox(ios::ChromeBrowserState* browser_state,
+void RecordActionFromOmnibox(ChromeBrowserState* browser_state,
                              web::WebState* web_state,
                              const GURL& url,
                              ui::PageTransition transition,

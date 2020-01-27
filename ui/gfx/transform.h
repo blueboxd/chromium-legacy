@@ -46,31 +46,31 @@ class GEOMETRY_SKIA_EXPORT Transform {
   explicit Transform(const SkMatrix44& matrix) : matrix_(matrix) {}
   // Constructs a transform from explicit 16 matrix elements. Elements
   // should be given in row-major order.
-  Transform(SkMScalar col1row1,
-            SkMScalar col2row1,
-            SkMScalar col3row1,
-            SkMScalar col4row1,
-            SkMScalar col1row2,
-            SkMScalar col2row2,
-            SkMScalar col3row2,
-            SkMScalar col4row2,
-            SkMScalar col1row3,
-            SkMScalar col2row3,
-            SkMScalar col3row3,
-            SkMScalar col4row3,
-            SkMScalar col1row4,
-            SkMScalar col2row4,
-            SkMScalar col3row4,
-            SkMScalar col4row4);
+  Transform(SkScalar col1row1,
+            SkScalar col2row1,
+            SkScalar col3row1,
+            SkScalar col4row1,
+            SkScalar col1row2,
+            SkScalar col2row2,
+            SkScalar col3row2,
+            SkScalar col4row2,
+            SkScalar col1row3,
+            SkScalar col2row3,
+            SkScalar col3row3,
+            SkScalar col4row3,
+            SkScalar col1row4,
+            SkScalar col2row4,
+            SkScalar col3row4,
+            SkScalar col4row4);
   // Constructs a transform from explicit 2d elements. All other matrix
   // elements remain the same as the corresponding elements of an identity
   // matrix.
-  Transform(SkMScalar col1row1,
-            SkMScalar col2row1,
-            SkMScalar col1row2,
-            SkMScalar col2row2,
-            SkMScalar x_translation,
-            SkMScalar y_translation);
+  Transform(SkScalar col1row1,
+            SkScalar col2row1,
+            SkScalar col1row2,
+            SkScalar col2row2,
+            SkScalar x_translation,
+            SkScalar y_translation);
 
   // Constructs a transform corresponding to the given quaternion.
   explicit Transform(const Quaternion& q);
@@ -94,27 +94,27 @@ class GEOMETRY_SKIA_EXPORT Transform {
 
   // Applies the current transformation on a scaling and assigns the result
   // to |this|.
-  void Scale(SkMScalar x, SkMScalar y);
-  void Scale3d(SkMScalar x, SkMScalar y, SkMScalar z);
+  void Scale(SkScalar x, SkScalar y);
+  void Scale3d(SkScalar x, SkScalar y, SkScalar z);
   gfx::Vector2dF Scale2d() const {
     return gfx::Vector2dF(matrix_.get(0, 0), matrix_.get(1, 1));
   }
 
   // Applies a scale to the current transformation and assigns the result to
   // |this|.
-  void PostScale(SkMScalar x, SkMScalar y);
+  void PostScale(SkScalar x, SkScalar y);
 
   // Applies the current transformation on a translation and assigns the result
   // to |this|.
   void Translate(const Vector2dF& offset);
-  void Translate(SkMScalar x, SkMScalar y);
+  void Translate(SkScalar x, SkScalar y);
   void Translate3d(const Vector3dF& offset);
-  void Translate3d(SkMScalar x, SkMScalar y, SkMScalar z);
+  void Translate3d(SkScalar x, SkScalar y, SkScalar z);
 
   // Applies a translation to the current transformation and assigns the result
   // to |this|.
   void PostTranslate(const Vector2dF& offset);
-  void PostTranslate(SkMScalar x, SkMScalar y);
+  void PostTranslate(SkScalar x, SkScalar y);
 
   // Applies the current transformation on a skew and assigns the result
   // to |this|.
@@ -122,7 +122,7 @@ class GEOMETRY_SKIA_EXPORT Transform {
 
   // Applies the current transformation on a perspective transform and assigns
   // the result to |this|.
-  void ApplyPerspectiveDepth(SkMScalar depth);
+  void ApplyPerspectiveDepth(SkScalar depth);
 
   // Applies a transformation on the current transformation
   // (i.e. 'this = this * transform;').
@@ -146,7 +146,7 @@ class GEOMETRY_SKIA_EXPORT Transform {
 
   // Returns true if the matrix is either identity or pure translation,
   // allowing for an amount of inaccuracy as specified by the parameter.
-  bool IsApproximatelyIdentityOrTranslation(SkMScalar tolerance) const;
+  bool IsApproximatelyIdentityOrTranslation(SkScalar tolerance) const;
 
   // Returns true if the matrix is either a positive scale and/or a translation.
   bool IsPositiveScaleOrTranslation() const {

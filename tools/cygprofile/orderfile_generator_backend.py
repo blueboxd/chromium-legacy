@@ -1134,8 +1134,6 @@ def CreateArgumentParser():
   parser.add_argument('--commit-hashes', action='store_true',
                       help=('Commit any orderfile hash files in the current '
                             'checkout; performs no other action'))
-  parser.add_argument('--new-commit-flow', action='store_true', default=True,
-                      help='Use the new two-step commit flow.')
   parser.add_argument('--use-call-graph', action='store_true', default=False,
                       help='Use call graph instrumentation.')
   profile_android_startup.AddProfileCollectionArguments(parser)

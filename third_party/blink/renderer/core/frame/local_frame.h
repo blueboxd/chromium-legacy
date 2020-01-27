@@ -468,6 +468,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   const base::Optional<base::UnguessableToken>& GetEmbeddingToken() const;
 
   void CopyImageAtViewportPoint(const IntPoint& viewport_point);
+  void MediaPlayerActionAtViewportPoint(
+      const IntPoint& viewport_position,
+      const blink::mojom::blink::MediaPlayerActionType type,
+      bool enable);
 
   // blink::mojom::LocalFrame overrides:
   void GetTextSurroundingSelection(
@@ -487,6 +491,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void ReportBlinkFeatureUsage(const Vector<mojom::blink::WebFeature>&) final;
   void RenderFallbackContent() final;
   void BeforeUnload(bool is_reload, BeforeUnloadCallback callback) final;
+  void MediaPlayerActionAt(
+      const gfx::Point& window_point,
+      blink::mojom::blink::MediaPlayerActionPtr action) final;
 
   SystemClipboard* GetSystemClipboard();
 

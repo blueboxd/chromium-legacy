@@ -2464,10 +2464,10 @@ TEST_F(WebContentsImplTest, NoJSMessageOnInterstitials) {
 
   // While the interstitial is showing, let's simulate the hidden page
   // attempting to show a JS message.
-  IPC::Message* dummy_message = new IPC::Message;
   contents()->RunJavaScriptDialog(
       main_test_rfh(), base::ASCIIToUTF16("This is an informative message"),
-      base::ASCIIToUTF16("OK"), JAVASCRIPT_DIALOG_TYPE_ALERT, dummy_message);
+      base::ASCIIToUTF16("OK"), JAVASCRIPT_DIALOG_TYPE_ALERT,
+      base::DoNothing());
   EXPECT_TRUE(contents()->last_dialog_suppressed_);
 }
 

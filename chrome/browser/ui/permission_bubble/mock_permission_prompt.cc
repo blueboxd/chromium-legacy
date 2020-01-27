@@ -33,7 +33,7 @@ MockPermissionPrompt::GetTabSwitchingBehavior() {
 MockPermissionPrompt::MockPermissionPrompt(MockPermissionPromptFactory* factory,
                                            Delegate* delegate)
     : factory_(factory), delegate_(delegate) {
-  for (const PermissionRequest* request : delegate_->Requests()) {
+  for (const permissions::PermissionRequest* request : delegate_->Requests()) {
     // The actual prompt will call these, so test they're sane.
     EXPECT_FALSE(request->GetMessageTextFragment().empty());
 #if defined(OS_ANDROID)

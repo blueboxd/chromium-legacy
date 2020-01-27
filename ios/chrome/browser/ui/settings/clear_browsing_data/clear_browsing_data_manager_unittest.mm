@@ -47,8 +47,8 @@ std::unique_ptr<KeyedService> CreateTestSyncService(
 
 std::unique_ptr<KeyedService> BuildMockSyncSetupService(
     web::BrowserState* context) {
-  ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(context);
+  ChromeBrowserState* browser_state =
+      ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<SyncSetupServiceMock>(
       ProfileSyncServiceFactory::GetForBrowserState(browser_state));
 }

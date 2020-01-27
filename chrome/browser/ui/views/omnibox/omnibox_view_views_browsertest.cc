@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -27,6 +28,7 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/url_constants.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -673,14 +675,14 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, ReloadAfterKill) {
       static_cast<OmniboxViewViews*>(omnibox_view);
 
   // Open new tab page.
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   // Kill the tab with chrome://kill
   {
     content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes;
-    ui_test_utils::NavigateToURL(browser(), GURL("chrome://kill"));
+    ui_test_utils::NavigateToURL(browser(), GURL(content::kChromeUIKillURL));
     EXPECT_TRUE(tab->IsCrashed());
   }
 
@@ -690,7 +692,8 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, ReloadAfterKill) {
 
   // Verify the omnibox contents, URL and icon.
   EXPECT_EQ(base::ASCIIToUTF16(""), omnibox_view_views->GetText());
-  EXPECT_EQ(GURL("about:blank"), browser()->location_bar_model()->GetURL());
+  EXPECT_EQ(GURL(url::kAboutBlankURL),
+            browser()->location_bar_model()->GetURL());
 }
 
 // The following set of tests require UIA accessibility support, which only

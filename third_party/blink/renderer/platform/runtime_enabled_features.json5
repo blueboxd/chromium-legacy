@@ -374,8 +374,11 @@
       status: "experimental",
     },
     {
-      name: "CookieStore",
-      origin_trial_feature_name: "CookieStore",
+      name: "CookieStoreDocument",
+      status: "experimental",
+    },
+    {
+      name: "CookieStoreWorker",
       status: "experimental",
     },
     {

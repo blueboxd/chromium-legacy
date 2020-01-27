@@ -7,9 +7,9 @@
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 #include "ios/chrome/browser/ui/history/history_consumer.h"
 
+class ChromeBrowserState;
 enum class UrlLoadStrategy;
 
 @class ContextMenuCoordinator;
@@ -22,7 +22,7 @@ enum class UrlLoadStrategy;
     : ChromeTableViewController <HistoryConsumer,
                                  UIAdaptivePresentationControllerDelegate>
 // The ViewController's BrowserState.
-@property(nonatomic, assign) ios::ChromeBrowserState* browserState;
+@property(nonatomic, assign) ChromeBrowserState* browserState;
 // Abstraction to communicate with HistoryService and WebHistoryService.
 // Not owned by HistoryTableViewController.
 @property(nonatomic, assign) history::BrowsingHistoryService* historyService;

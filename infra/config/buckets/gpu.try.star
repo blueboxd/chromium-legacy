@@ -76,11 +76,172 @@ def try_builder(
 # for specializing on OS: XXX_builder and XXX_YYY_builder where XXX is the part
 # after the last dot in the mastername and YYY is the OS
 
-
-def gpu_mac_builder(*, name, builderless=True, **kwargs):
+def gpu_android_builder(*, name, **kwargs):
   return try_builder(
       name = name,
-      builderless = builderless,
+      builderless = True,
+      goma_backend = goma.backend.RBE_PROD,
+      mastername = 'tryserver.chromium.android',
+      ssd = None,
+      **kwargs
+  )
+
+gpu_android_builder(
+    name = 'gpu-fyi-try-android-l-nexus-5-32',
+    pool = 'luci.chromium.gpu.android.nexus5.try',
+)
+
+gpu_android_builder(
+    name = 'gpu-fyi-try-android-l-nexus-6-32',
+    pool = 'luci.chromium.gpu.android.nexus6.try',
+)
+
+gpu_android_builder(
+    name = 'gpu-fyi-try-android-m-nexus-5x-64',
+    pool = 'luci.chromium.gpu.android.nexus5x.try',
+)
+
+gpu_android_builder(
+    name = 'gpu-fyi-try-android-m-nexus-5x-deqp-64',
+    pool = 'luci.chromium.gpu.android.nexus5x.try',
+)
+
+gpu_android_builder(
+    name = 'gpu-fyi-try-android-m-nexus-5x-skgl-64',
+    pool = 'luci.chromium.gpu.android.nexus5x.try',
+)
+
+gpu_android_builder(
+    name = 'gpu-fyi-try-android-m-nexus-6p-64',
+    pool = 'luci.chromium.gpu.android.nexus6p.try',
+)
+
+gpu_android_builder(
+    name = 'gpu-fyi-try-android-m-nexus-9-64',
+    pool = 'luci.chromium.gpu.android.nexus9.try',
+)
+
+gpu_android_builder(
+    name = 'gpu-fyi-try-android-n-nvidia-shield-tv-64',
+    pool = 'luci.chromium.gpu.android.nvidia.shield.tv.try',
+)
+
+gpu_android_builder(
+    name = 'gpu-fyi-try-android-p-pixel-2-32',
+    pool = 'luci.chromium.gpu.android.pixel2.chromium.try',
+)
+
+gpu_android_builder(
+    name = 'gpu-fyi-try-android-p-pixel-2-skv-32',
+    pool = 'luci.chromium.gpu.android.pixel2.chromium.try',
+)
+
+gpu_android_builder(
+    name = 'gpu-fyi-try-android-q-pixel-2-deqp-vk-32',
+    pool = 'luci.chromium.gpu.android.pixel2.try',
+)
+
+gpu_android_builder(
+    name = 'gpu-fyi-try-android-q-pixel-2-deqp-vk-64',
+    pool = 'luci.chromium.gpu.android.pixel2.try',
+)
+
+gpu_android_builder(
+    name = 'gpu-fyi-try-android-q-pixel-2-vk-32',
+    pool = 'luci.chromium.gpu.android.pixel2.try',
+)
+
+gpu_android_builder(
+    name = 'gpu-fyi-try-android-q-pixel-2-vk-64',
+    pool = 'luci.chromium.gpu.android.pixel2.try',
+)
+
+gpu_android_builder(
+    name = 'gpu-try-android-m-nexus-5x-64',
+    pool = 'luci.chromium.gpu.android.nexus5x.try',
+)
+
+
+def gpu_linux_builder(*, name, **kwargs):
+  return try_builder(
+      name = name,
+      builderless = True,
+      goma_backend = goma.backend.RBE_PROD,
+      mastername = 'tryserver.chromium.linux',
+      ssd = None,
+      **kwargs
+  )
+
+gpu_linux_builder(
+    name = 'gpu-fyi-try-linux-intel-dqp',
+    pool = 'luci.chromium.gpu.linux.intel.try',
+)
+
+gpu_linux_builder(
+    name = 'gpu-fyi-try-linux-intel-exp',
+    pool = 'luci.chromium.gpu.linux.intel.try',
+)
+
+gpu_linux_builder(
+    name = 'gpu-fyi-try-linux-intel-rel',
+    pool = 'luci.chromium.gpu.linux.intel.try',
+)
+
+gpu_linux_builder(
+    name = 'gpu-fyi-try-linux-intel-sk-dawn-rel',
+    pool = 'luci.chromium.gpu.linux.intel.try',
+)
+
+gpu_linux_builder(
+    name = 'gpu-fyi-try-linux-intel-skv',
+    pool = 'luci.chromium.gpu.linux.intel.try',
+)
+
+gpu_linux_builder(
+    name = 'gpu-fyi-try-linux-nvidia-dbg',
+    pool = 'luci.chromium.gpu.linux.nvidia.try',
+)
+
+gpu_linux_builder(
+    name = 'gpu-fyi-try-linux-nvidia-dqp',
+    pool = 'luci.chromium.gpu.linux.nvidia.try',
+)
+
+gpu_linux_builder(
+    name = 'gpu-fyi-try-linux-nvidia-exp',
+    pool = 'luci.chromium.gpu.linux.nvidia.try',
+)
+
+gpu_linux_builder(
+    name = 'gpu-fyi-try-linux-nvidia-rel',
+    pool = 'luci.chromium.gpu.linux.nvidia.try',
+)
+
+gpu_linux_builder(
+    name = 'gpu-fyi-try-linux-nvidia-skv',
+    pool = 'luci.chromium.gpu.linux.nvidia.try',
+)
+
+gpu_linux_builder(
+    name = 'gpu-fyi-try-linux-nvidia-tsn',
+    pool = 'luci.chromium.gpu.linux.nvidia.try',
+)
+
+gpu_linux_builder(
+    name = 'gpu-try-linux-nvidia-dbg',
+    pool = 'luci.chromium.gpu.linux.nvidia.try',
+)
+
+gpu_linux_builder(
+    name = 'gpu-try-linux-nvidia-rel',
+    pool = 'luci.chromium.gpu.linux.nvidia.try',
+)
+
+
+def gpu_mac_builder(*, name, **kwargs):
+  return try_builder(
+      name = name,
+      builderless = True,
       cores = None,
       goma_backend = goma.backend.RBE_PROD,
       mastername = 'tryserver.chromium.mac',
@@ -168,5 +329,107 @@ gpu_mac_builder(
 gpu_mac_builder(
     name = 'gpu-try-mac-intel-dbg',
     pool = 'luci.chromium.gpu.mac.mini.intel.try',
+)
+
+
+def gpu_win_builder(*, name, **kwargs):
+  return try_builder(
+      name = name,
+      builderless = True,
+      goma_backend = goma.backend.RBE_PROD,
+      mastername = 'tryserver.chromium.win',
+      os = os.WINDOWS_ANY,
+      ssd = None,
+      **kwargs
+  )
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win10-intel-dqp-64',
+    pool = 'luci.chromium.gpu.win10.intel.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win10-intel-exp-64',
+    pool = 'luci.chromium.gpu.win10.intel.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win10-intel-rel-64',
+    pool = 'luci.chromium.gpu.win10.intel.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win10-nvidia-dbg-64',
+    pool = 'luci.chromium.gpu.win10.nvidia.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win10-nvidia-dqp-64',
+    pool = 'luci.chromium.gpu.win10.nvidia.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win10-nvidia-dx12vk-dbg-64',
+    pool = 'luci.chromium.gpu.win10.nvidia.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win10-nvidia-dx12vk-rel-64',
+    pool = 'luci.chromium.gpu.win10.nvidia.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win10-nvidia-exp-64',
+    pool = 'luci.chromium.gpu.win10.nvidia.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win10-nvidia-skgl-64',
+    pool = 'luci.chromium.gpu.win10.nvidia.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win10-nvidia-rel-32',
+    pool = 'luci.chromium.gpu.win10.nvidia.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win10-nvidia-rel-64',
+    pool = 'luci.chromium.gpu.win10.nvidia.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win7-amd-dbg-32',
+    pool = 'luci.chromium.gpu.win7.amd.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win7-amd-dqp-32',
+    pool = 'luci.chromium.gpu.win7.amd.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win7-amd-rel-32',
+    pool = 'luci.chromium.gpu.win7.amd.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win7-nvidia-dqp-64',
+    pool = 'luci.chromium.gpu.win7.nvidia.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win7-nvidia-rel-32',
+    pool = 'luci.chromium.gpu.win7.nvidia.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-fyi-try-win7-nvidia-rel-64',
+    pool = 'luci.chromium.gpu.win7.nvidia.try',
+)
+
+gpu_win_builder(
+    name = 'gpu-try-win10-nvidia-rel',
+    pool = 'luci.chromium.gpu.win10.nvidia.try',
 )
 

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PERMISSIONS_NOTIFICATION_PERMISSION_UI_SELECTOR_H_
 #define CHROME_BROWSER_PERMISSIONS_NOTIFICATION_PERMISSION_UI_SELECTOR_H_
 
-#include "chrome/browser/permissions/permission_request.h"
+#include "components/permissions/permission_request.h"
 
 // The interface for implementations that decide if the quiet prompt UI should
 // be used to display a notification permission |request|.
@@ -33,7 +33,7 @@ class NotificationPermissionUiSelector {
   // when done, either synchronously or asynchrously. The |callback| is
   // guaranteed never to be invoked after |this| goes out of scope. Only one
   // request is supported at a time.
-  virtual void SelectUiToUse(PermissionRequest* request,
+  virtual void SelectUiToUse(permissions::PermissionRequest* request,
                              DecisionMadeCallback callback) = 0;
 
   // Cancel the pending request, if any. After this, the |callback| is

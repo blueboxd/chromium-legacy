@@ -46,6 +46,7 @@ function getEmptyPrinter_() {
     printerProtocol: 'ipp',
     printerQueue: 'ipp/print',
     printerStatus: '',
+    printServerUri: '',
   };
 }
 

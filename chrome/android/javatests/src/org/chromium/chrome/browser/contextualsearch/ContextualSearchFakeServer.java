@@ -33,7 +33,7 @@ import java.util.concurrent.TimeoutException;
 @VisibleForTesting
 class ContextualSearchFakeServer
         implements ContextualSearchNetworkCommunicator, OverlayPanelContentFactory {
-    static final long LOGGED_EVENT_ID = 2 ^ 50; // Arbitrary value larger than 32 bits.
+    static final long LOGGED_EVENT_ID = 1L << 50; // Arbitrary value larger than 32 bits.
 
     private final ContextualSearchPolicy mPolicy;
 

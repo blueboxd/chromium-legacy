@@ -4,13 +4,8 @@
 
 package org.chromium.base.metrics;
 
-/**
- * An empty implementation of {@link UmaRecorder} used by {@link
- * RecordHistogram#setDisabledForTests(boolean)}.
- */
-/* package */ final class NoopUmaRecorder implements UmaRecorder {
-    /* package */ NoopUmaRecorder() {}
-
+/** An empty implementation of {@link UmaRecorder}. */
+/* package */ class NoopUmaRecorder implements UmaRecorder {
     @Override
     public void recordBooleanHistogram(String name, boolean sample) {}
 

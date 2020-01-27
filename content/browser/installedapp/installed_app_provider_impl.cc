@@ -19,6 +19,7 @@ InstalledAppProviderImpl::InstalledAppProviderImpl(
 
 void InstalledAppProviderImpl::FilterInstalledApps(
     std::vector<blink::mojom::RelatedApplicationPtr> related_apps,
+    const GURL& manifest_url,
     FilterInstalledAppsCallback callback) {
   bool is_implemented = false;
   if (base::FeatureList::IsEnabled(features::kInstalledAppProvider)) {

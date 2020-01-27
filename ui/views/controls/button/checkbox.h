@@ -48,6 +48,9 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  protected:
+  // Bitmask constants for GetIconImageColor.
+  enum IconState { CHECKED = 0b1, ENABLED = 0b10 };
+
   // LabelButton:
   void OnThemeChanged() override;
   std::unique_ptr<InkDrop> CreateInkDrop() override;
@@ -57,20 +60,17 @@ class VIEWS_EXPORT Checkbox : public LabelButton {
   gfx::ImageSkia GetImage(ButtonState for_state) const override;
   std::unique_ptr<LabelButtonBorder> CreateDefaultBorder() const override;
 
-  // Gets the vector icon to use based on the current state of |checked_|.
-  virtual const gfx::VectorIcon& GetVectorIcon() const;
-
   // Returns the path to draw the focus ring around for this Checkbox.
   virtual SkPath GetFocusRingPath() const;
 
+  // |icon_state| is a bitmask using the IconState enum.
+  virtual SkColor GetIconImageColor(int icon_state) const;
+
+  // Gets the vector icon to use based on the current state of |checked_|.
+  virtual const gfx::VectorIcon& GetVectorIcon() const;
+
  private:
   class FocusRingHighlightPathGenerator;
-
-  // Bitmask constants for GetIconImageColor.
-  enum IconState { CHECKED = 0b1, ENABLED = 0b10 };
-
-  // |icon_state| is a bitmask using the IconState enum.
-  SkColor GetIconImageColor(int icon_state) const;
 
   // Button:
   void NotifyClick(const ui::Event& event) override;

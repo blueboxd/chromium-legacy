@@ -64,7 +64,6 @@ CheckNativeFileSystemWriteRequest::CheckNativeFileSystemWriteRequest(
                                      item->target_file_path,
                                      item->full_path,
                                      TabUrlsFromWebContents(item->web_contents),
-                                     item->size,
                                      "application/octet-stream",
                                      item->sha256_hash,
                                      item->browser_context,

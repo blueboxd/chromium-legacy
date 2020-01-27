@@ -207,8 +207,10 @@ void SyncConsentScreen::RecordConsent(
     int consent_confirmation) {
   consent_auditor::ConsentAuditor* consent_auditor =
       ConsentAuditorFactory::GetForProfile(profile_);
+  // The user might not consent to browser sync, so use the "unconsented" ID.
   const CoreAccountId& google_account_id =
-      IdentityManagerFactory::GetForProfile(profile_)->GetPrimaryAccountId();
+      IdentityManagerFactory::GetForProfile(profile_)
+          ->GetUnconsentedPrimaryAccountId();
   // TODO(alemate): Support unified_consent_enabled
   sync_pb::UserConsentTypes::SyncConsent sync_consent;
   sync_consent.set_confirmation_grd_id(consent_confirmation);

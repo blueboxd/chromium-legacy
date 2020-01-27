@@ -64,7 +64,7 @@ ContentSetting BackgroundFetchPermissionContext::GetPermissionStatusInternal(
 
 void BackgroundFetchPermissionContext::DecidePermission(
     content::WebContents* web_contents,
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_gesture,
@@ -77,7 +77,7 @@ void BackgroundFetchPermissionContext::DecidePermission(
 }
 
 void BackgroundFetchPermissionContext::NotifyPermissionSet(
-    const PermissionRequestID& id,
+    const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     BrowserPermissionCallback callback,

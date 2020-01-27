@@ -14,7 +14,6 @@
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_features.h"
@@ -23,6 +22,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/permission_result.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/test/browser_task_environment.h"
@@ -105,10 +105,11 @@ class PermissionManagerTest : public ChromeRenderViewHostTestHarness {
                             type, url_.GetOrigin(), url_.GetOrigin()));
   }
 
-  void CheckPermissionResult(ContentSettingsType type,
-                             ContentSetting expected_status,
-                             PermissionStatusSource expected_status_source) {
-    PermissionResult result =
+  void CheckPermissionResult(
+      ContentSettingsType type,
+      ContentSetting expected_status,
+      permissions::PermissionStatusSource expected_status_source) {
+    permissions::PermissionResult result =
         GetPermissionControllerDelegate()->GetPermissionStatus(
             type, url_.GetOrigin(), url_.GetOrigin());
     EXPECT_EQ(expected_status, result.content_setting);
@@ -254,38 +255,38 @@ TEST_F(PermissionManagerTest, GetPermissionStatusAfterSet) {
 
 TEST_F(PermissionManagerTest, CheckPermissionResultDefault) {
   CheckPermissionResult(ContentSettingsType::MIDI_SYSEX, CONTENT_SETTING_ASK,
-                        PermissionStatusSource::UNSPECIFIED);
+                        permissions::PermissionStatusSource::UNSPECIFIED);
   CheckPermissionResult(ContentSettingsType::NOTIFICATIONS, CONTENT_SETTING_ASK,
-                        PermissionStatusSource::UNSPECIFIED);
+                        permissions::PermissionStatusSource::UNSPECIFIED);
   CheckPermissionResult(ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ASK,
-                        PermissionStatusSource::UNSPECIFIED);
+                        permissions::PermissionStatusSource::UNSPECIFIED);
 #if defined(OS_ANDROID)
   CheckPermissionResult(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
                         GetDefaultProtectedMediaIdentifierContentSetting(),
-                        PermissionStatusSource::UNSPECIFIED);
+                        permissions::PermissionStatusSource::UNSPECIFIED);
 #endif
 }
 
 TEST_F(PermissionManagerTest, CheckPermissionResultAfterSet) {
   SetPermission(ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ALLOW);
   CheckPermissionResult(ContentSettingsType::GEOLOCATION, CONTENT_SETTING_ALLOW,
-                        PermissionStatusSource::UNSPECIFIED);
+                        permissions::PermissionStatusSource::UNSPECIFIED);
 
   SetPermission(ContentSettingsType::NOTIFICATIONS, CONTENT_SETTING_ALLOW);
   CheckPermissionResult(ContentSettingsType::NOTIFICATIONS,
                         CONTENT_SETTING_ALLOW,
-                        PermissionStatusSource::UNSPECIFIED);
+                        permissions::PermissionStatusSource::UNSPECIFIED);
 
   SetPermission(ContentSettingsType::MIDI_SYSEX, CONTENT_SETTING_ALLOW);
   CheckPermissionResult(ContentSettingsType::MIDI_SYSEX, CONTENT_SETTING_ALLOW,
-                        PermissionStatusSource::UNSPECIFIED);
+                        permissions::PermissionStatusSource::UNSPECIFIED);
 
 #if defined(OS_ANDROID)
   SetPermission(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
                 CONTENT_SETTING_ALLOW);
   CheckPermissionResult(ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
                         CONTENT_SETTING_ALLOW,
-                        PermissionStatusSource::UNSPECIFIED);
+                        permissions::PermissionStatusSource::UNSPECIFIED);
 #endif
 }
 
@@ -590,18 +591,20 @@ TEST_F(PermissionManagerTest, PermissionIgnoredCleanup) {
   EXPECT_TRUE(PendingRequestsEmpty());
 }
 
-// Check PermissionResult shows requests denied due to insecure origins.
+// Check permissions::PermissionResult shows requests denied due to insecure
+// origins.
 TEST_F(PermissionManagerTest, InsecureOrigin) {
   GURL insecure_frame("http://www.example.com/geolocation");
   NavigateAndCommit(insecure_frame);
 
-  PermissionResult result =
+  permissions::PermissionResult result =
       GetPermissionControllerDelegate()->GetPermissionStatusForFrame(
           ContentSettingsType::GEOLOCATION, web_contents()->GetMainFrame(),
           insecure_frame);
 
   EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::INSECURE_ORIGIN, result.source);
+  EXPECT_EQ(permissions::PermissionStatusSource::INSECURE_ORIGIN,
+            result.source);
 
   GURL secure_frame("https://www.example.com/geolocation");
   NavigateAndCommit(secure_frame);
@@ -611,7 +614,7 @@ TEST_F(PermissionManagerTest, InsecureOrigin) {
       secure_frame);
 
   EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
-  EXPECT_EQ(PermissionStatusSource::UNSPECIFIED, result.source);
+  EXPECT_EQ(permissions::PermissionStatusSource::UNSPECIFIED, result.source);
 }
 
 TEST_F(PermissionManagerTest, InsecureOriginIsNotOverridable) {

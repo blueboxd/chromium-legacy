@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "components/viz/common/viz_dawn_context_provider_export.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/GrContextOptions.h"
 #include "third_party/skia/include/gpu/dawn/GrDawnTypes.h"
 
 class GrContext;
@@ -18,7 +19,8 @@ namespace viz {
 
 class VIZ_DAWN_CONTEXT_PROVIDER_EXPORT DawnContextProvider {
  public:
-  static std::unique_ptr<DawnContextProvider> Create();
+  static std::unique_ptr<DawnContextProvider> Create(
+      const GrContextOptions& context_options = GrContextOptions());
   ~DawnContextProvider();
 
   dawn::Device GetDevice() { return device_; }
@@ -26,7 +28,7 @@ class VIZ_DAWN_CONTEXT_PROVIDER_EXPORT DawnContextProvider {
   bool IsValid() { return !!gr_context_; }
 
  private:
-  DawnContextProvider();
+  explicit DawnContextProvider(const GrContextOptions& context_options);
 
   dawn::Device CreateDevice(dawn_native::BackendType type);
 

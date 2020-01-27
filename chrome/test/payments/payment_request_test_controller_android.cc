@@ -14,6 +14,11 @@ PaymentRequestTestController::PaymentRequestTestController() {}
 
 PaymentRequestTestController::~PaymentRequestTestController() = default;
 
+content::WebContents*
+PaymentRequestTestController::GetPaymentHandlerWebContents() {
+  return GetPaymentHandlerWebContentsForTest();
+}
+
 void PaymentRequestTestController::SetUpOnMainThread() {
   ChromeBackgroundTaskFactory::SetAsDefault();
 

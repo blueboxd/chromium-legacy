@@ -18,12 +18,12 @@ struct PaintPreviewBeginCompositeRequest {
   mojo_base.mojom.ReadOnlySharedMemoryRegion proto;
 
   // A mapping between frame GUIDs and file handles.
-  map<uint64, mojo_base.mojom.File> file_map;
+  map<mojo_base.mojom.UnguessableToken, mojo_base.mojom.File> file_map;
 };
 
 // A struct representing the clip rect of a subframe within its parent.
 struct SubframeClipRect {
-  uint64 frame_guid;
+  mojo_base.mojom.UnguessableToken frame_guid;
   gfx.mojom.Rect clip_rect;
 };
 
@@ -41,8 +41,8 @@ struct FrameData {
 // ID of the root frame (used for the primary UI) and the map can be used for
 // looking up the data associated with each frame.
 struct PaintPreviewBeginCompositeResponse {
-  uint64 root_frame_guid;
-  map<uint64, FrameData> frames;
+  mojo_base.mojom.UnguessableToken root_frame_guid;
+  map<mojo_base.mojom.UnguessableToken, FrameData> frames;
 };
 
 // A compositor that converts a single paint preview into bitmaps.
@@ -73,8 +73,10 @@ interface PaintPreviewCompositor {
   // location of the bitmap will match |clip_rect| at scale |scale_factor|.
   // Returns |bitmap| on success and will indicate failure via a non-zero
   // |status|.
-  BitmapForFrame(uint64 frame_guid, gfx.mojom.Rect clip_rect,
-    float scale_factor) => (Status status, skia.mojom.Bitmap? bitmap);
+  BitmapForFrame(mojo_base.mojom.UnguessableToken frame_guid,
+                 gfx.mojom.Rect clip_rect,
+                 float scale_factor) =>
+                 (Status status, skia.mojom.Bitmap? bitmap);
 
   // Sets the root frame of the compositor. Used for tracing and diagnostics.
   SetRootFrameUrl(url.mojom.Url url);

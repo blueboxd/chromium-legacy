@@ -80,12 +80,6 @@ class MockPaintPreviewRecorder : public mojom::PaintPreviewRecorder {
   MockPaintPreviewRecorder& operator=(const MockPaintPreviewRecorder&) = delete;
 };
 
-// Returns the GUID corresponding to |rfh|.
-uint64_t FrameGuid(content::RenderFrameHost* rfh) {
-  return static_cast<uint64_t>(rfh->GetProcess()->GetID()) << 32 |
-         rfh->GetRoutingID();
-}
-
 // Convert |params| to the mojo::PaintPreviewServiceParams format. NOTE: this
 // does not set the file parameter as the file is created in the client
 // internals and should be treated as an opaque file (with an unknown path) in
@@ -140,31 +134,40 @@ TEST_F(PaintPreviewClientRenderViewHostTest, CaptureMainFrameMock) {
   params.is_main_frame = true;
 
   content::RenderFrameHost* rfh = main_rfh();
-  uint64_t frame_guid = FrameGuid(rfh);
   GURL expected_url = rfh->GetLastCommittedURL();
 
   auto response = mojom::PaintPreviewCaptureResponse::New();
-  response->id = rfh->GetRoutingID();
+  response->embedding_token = base::nullopt;
 
   PaintPreviewProto expected_proto;
   expected_proto.mutable_metadata()->set_url(expected_url.spec());
   PaintPreviewFrameProto* main_frame = expected_proto.mutable_root_frame();
   main_frame->set_is_main_frame(true);
-  main_frame->set_id(frame_guid);
-  main_frame->set_file_path(
-      temp_dir_.GetPath()
-          .AppendASCII(
-              base::StrCat({base::NumberToString(main_frame->id()), ".skp"}))
-          .AsUTF8Unsafe());
 
   base::RunLoop loop;
   auto callback = base::BindOnce(
       [](base::RepeatingClosure quit, base::UnguessableToken expected_guid,
-         PaintPreviewProto expected_proto, base::UnguessableToken returned_guid,
-         mojom::PaintPreviewStatus status,
+         base::FilePath temp_dir, PaintPreviewProto expected_proto,
+         base::UnguessableToken returned_guid, mojom::PaintPreviewStatus status,
          std::unique_ptr<PaintPreviewProto> proto) {
         EXPECT_EQ(returned_guid, expected_guid);
         EXPECT_EQ(status, mojom::PaintPreviewStatus::kOk);
+
+        auto token = base::UnguessableToken::Deserialize(
+            proto->root_frame().embedding_token_high(),
+            proto->root_frame().embedding_token_low());
+        EXPECT_NE(token, base::UnguessableToken::Null());
+
+        // The token for the main frame is set internally since the render frame
+        // host won't have one. To simplify the proto comparison using
+        // EqualsProto copy the generated one into |expected_proto|.
+        PaintPreviewFrameProto* main_frame =
+            expected_proto.mutable_root_frame();
+        main_frame->set_embedding_token_low(token.GetLowForSerialization());
+        main_frame->set_embedding_token_high(token.GetHighForSerialization());
+        main_frame->set_file_path(
+            temp_dir.AppendASCII(base::StrCat({token.ToString(), ".skp"}))
+                .AsUTF8Unsafe());
 
         EXPECT_THAT(*proto, EqualsProto(expected_proto));
         {
@@ -179,7 +182,8 @@ TEST_F(PaintPreviewClientRenderViewHostTest, CaptureMainFrameMock) {
         }
         quit.Run();
       },
-      loop.QuitClosure(), params.document_guid, expected_proto);
+      loop.QuitClosure(), params.document_guid, temp_dir_.GetPath(),
+      expected_proto);
   MockPaintPreviewRecorder service;
   service.SetExpectedParams(ToMojoParams(params));
   service.SetResponse(mojom::PaintPreviewStatus::kOk, std::move(response));
@@ -239,7 +243,7 @@ TEST_F(PaintPreviewClientRenderViewHostTest, RenderFrameDeletedDuringCapture) {
   content::RenderFrameHost* rfh = main_rfh();
 
   auto response = mojom::PaintPreviewCaptureResponse::New();
-  response->id = rfh->GetRoutingID();
+  response->embedding_token = base::nullopt;
 
   base::RunLoop loop;
   auto callback = base::BindOnce(

@@ -66,7 +66,9 @@
 namespace blink {
 
 PaintLayerCompositor::PaintLayerCompositor(LayoutView& layout_view)
-    : layout_view_(layout_view) {}
+    : layout_view_(layout_view) {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+}
 
 PaintLayerCompositor::~PaintLayerCompositor() {
   DCHECK_EQ(root_layer_attachment_, kRootLayerUnattached);
@@ -152,12 +154,6 @@ void PaintLayerCompositor::UpdateAcceleratedCompositingSettings() {
   root_should_always_composite_dirty_ = true;
   if (root_layer_attachment_ != kRootLayerUnattached)
     RootLayer()->SetNeedsCompositingInputsUpdate();
-}
-
-bool PaintLayerCompositor::PreferCompositingToLCDTextEnabled() const {
-  return layout_view_.GetDocument()
-      .GetSettings()
-      ->GetPreferCompositingToLCDTextEnabled();
 }
 
 static LayoutVideo* FindFullscreenVideoLayoutObject(Document& document) {

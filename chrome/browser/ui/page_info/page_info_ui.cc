@@ -14,11 +14,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/permissions/permission_result.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/security_interstitials/core/common_string_util.h"
 #include "components/strings/grit/components_chromium_strings.h"
@@ -463,14 +463,14 @@ base::string16 PageInfoUI::PermissionDecisionReasonToUIString(
 
   if (permission.setting == CONTENT_SETTING_BLOCK &&
       PermissionUtil::IsPermission(permission.type)) {
-    PermissionResult permission_result =
+    permissions::PermissionResult permission_result =
         PermissionManager::Get(profile)->GetPermissionStatus(permission.type,
                                                              url, url);
     switch (permission_result.source) {
-      case PermissionStatusSource::MULTIPLE_DISMISSALS:
+      case permissions::PermissionStatusSource::MULTIPLE_DISMISSALS:
         message_id = IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED;
         break;
-      case PermissionStatusSource::MULTIPLE_IGNORES:
+      case permissions::PermissionStatusSource::MULTIPLE_IGNORES:
         message_id = IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED;
         break;
       default:

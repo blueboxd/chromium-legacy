@@ -23,13 +23,17 @@ namespace first_run {
 AppListStep::AppListStep(FirstRunController* controller, FirstRunActor* actor)
     : Step(kAppListStep, controller, actor) {}
 
-void AppListStep::DoShow() {
+bool AppListStep::DoShow() {
   // FirstRunController owns this object, so use Unretained.
   gfx::Rect screen_bounds =
       first_run_controller()->first_run_helper()->GetAppListButtonBounds();
+  if (screen_bounds.IsEmpty())
+    return false;
+
   gfx::Point center = screen_bounds.CenterPoint();
   actor()->AddRoundHole(center.x(), center.y(), kCircleRadius);
   actor()->ShowStepPointingTo(name(), center.x(), center.y(), kCircleRadius);
+  return true;
 }
 
 }  // namespace first_run

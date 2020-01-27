@@ -74,6 +74,11 @@ class DrmThreadProxy {
       const std::vector<OverlaySurfaceCandidate>& candidates,
       DrmThread::OverlayCapabilitiesCallback callback);
 
+  // Similar to CheckOverlayCapabilities() but returns the result synchronously.
+  std::vector<OverlayStatus> CheckOverlayCapabilitiesSync(
+      gfx::AcceleratedWidget widget,
+      const std::vector<OverlaySurfaceCandidate>& candidates);
+
   void AddDrmDeviceReceiver(
       mojo::PendingReceiver<ozone::mojom::DrmDevice> receiver);
 

@@ -77,6 +77,8 @@ class PRINTING_EXPORT CupsPrinter : public CupsOptionProvider {
 
   std::string GetMakeAndModel() const;
 
+  std::string GetUri() const;
+
   // Lazily initialize dest info as it can require a network call
   bool EnsureDestInfo() const;
 

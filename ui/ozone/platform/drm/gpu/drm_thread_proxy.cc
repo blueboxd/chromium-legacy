@@ -164,6 +164,22 @@ void DrmThreadProxy::CheckOverlayCapabilities(
                                 std::move(task), nullptr));
 }
 
+std::vector<OverlayStatus> DrmThreadProxy::CheckOverlayCapabilitiesSync(
+    gfx::AcceleratedWidget widget,
+    const std::vector<OverlaySurfaceCandidate>& candidates) {
+  TRACE_EVENT0("drm", "DrmThreadProxy::CheckOverlayCapabilitiesSync");
+  DCHECK(drm_thread_.task_runner());
+  std::vector<OverlayStatus> result;
+  base::OnceClosure task = base::BindOnce(
+      &DrmThread::CheckOverlayCapabilitiesSync, base::Unretained(&drm_thread_),
+      widget, candidates, &result);
+  PostSyncTask(
+      drm_thread_.task_runner(),
+      base::BindOnce(&DrmThread::RunTaskAfterWindowReady,
+                     base::Unretained(&drm_thread_), widget, std::move(task)));
+  return result;
+}
+
 void DrmThreadProxy::AddDrmDeviceReceiver(
     mojo::PendingReceiver<ozone::mojom::DrmDevice> receiver) {
   DCHECK(drm_thread_.task_runner()) << "DrmThreadProxy::AddDrmDeviceReceiver "

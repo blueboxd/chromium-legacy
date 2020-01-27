@@ -82,6 +82,9 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
     kFinished
   };
 
+  // https://drafts.csswg.org/web-animations/#animation-replace-state
+  enum ReplaceState { kActive, kRemoved, kPersisted };
+
   // Priority for sorting getAnimation by Animation class, arranged from lowest
   // priority to highest priority as per spec:
   // https://drafts.csswg.org/web-animations/#dom-document-getanimations
@@ -249,6 +252,16 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   bool CompositorPendingForTesting() const { return compositor_pending_; }
 
+  // Methods for handling removal and persistence of animations.
+  bool IsReplaceable();
+  void RemoveReplacedAnimation();
+  void persist();
+  String replaceState();
+  bool ReplaceStateRemoved() const override {
+    return replace_state_ == kRemoved;
+  }
+  bool ReplaceStateActive() const { return replace_state_ == kActive; }
+
  protected:
   DispatchEventResult DispatchEventInternal(Event&) override;
   void AddedEventListener(const AtomicString& event_type,
@@ -348,6 +361,8 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   Member<Document> document_;
   Member<AnimationTimeline> timeline_;
 
+  ReplaceState replace_state_;
+
   // Testing flags.
   bool is_paused_for_testing_;
   bool is_composited_animation_disabled_for_testing_;
@@ -371,6 +386,8 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   Member<Event> pending_finished_event_;
 
   Member<Event> pending_cancelled_event_;
+
+  Member<Event> pending_remove_event_;
 
   // TODO(crbug.com/960944): Consider reintroducing kPause and cleanup use of
   // mutually exclusive pending_play_ and pending_pause_ flags.

@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguratio
 import org.chromium.chrome.browser.feed.library.common.ui.LayoutUtils;
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.LoggingListener;
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.VisibilityMonitor;
+import org.chromium.chrome.feed.R;
 
 /** {@link android.support.v7.widget.RecyclerView.ViewHolder} for the more button. */
 public class ContinuationViewHolder extends FeedViewHolder {

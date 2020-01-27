@@ -75,7 +75,10 @@ class RenderViewTest : public testing::Test {
         blink_platform_impl_;
   };
 
-  RenderViewTest();
+  // If |hook_render_frame_creation| is true then the RenderViewTest will hook
+  // the RenderFrame creation so a TestRenderFrame is always created. If it is
+  // false the subclass is responsible for hooking the create function.
+  explicit RenderViewTest(bool hook_render_frame_creation = true);
   ~RenderViewTest() override;
 
  protected:

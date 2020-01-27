@@ -17,7 +17,6 @@
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/browser/permissions/permission_context_base.h"
-#include "chrome/browser/permissions/permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,6 +27,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/permission_request.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/render_frame_host.h"
@@ -694,12 +694,14 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest, ContentSettings) {
                    base::Unretained(this)));
 
     ASSERT_LE(prompt_factory()->TotalRequestCount(), 2);
-    ASSERT_EQ(test.ExpectMicInfobar(),
-              prompt_factory()->RequestTypeSeen(
-                  PermissionRequestType::PERMISSION_MEDIASTREAM_MIC));
-    ASSERT_EQ(test.ExpectCamInfobar(),
-              prompt_factory()->RequestTypeSeen(
-                  PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA));
+    ASSERT_EQ(
+        test.ExpectMicInfobar(),
+        prompt_factory()->RequestTypeSeen(
+            permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC));
+    ASSERT_EQ(
+        test.ExpectCamInfobar(),
+        prompt_factory()->RequestTypeSeen(
+            permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA));
 
     // Check the media stream result is expected and the devices returned are
     // expected;
@@ -745,9 +747,9 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
                  base::Unretained(this)));
   ASSERT_EQ(2, prompt_factory()->TotalRequestCount());
   ASSERT_TRUE(prompt_factory()->RequestTypeSeen(
-      PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA));
+      permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA));
   ASSERT_TRUE(prompt_factory()->RequestTypeSeen(
-      PermissionRequestType::PERMISSION_MEDIASTREAM_MIC));
+      permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC));
 
   // Accept the prompt.
   ASSERT_EQ(blink::mojom::MediaStreamRequestResult::OK, media_stream_result());

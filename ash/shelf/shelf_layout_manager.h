@@ -187,6 +187,7 @@ class ASH_EXPORT ShelfLayoutManager
   void OnShelfAutoHideBehaviorChanged(aura::Window* root_window) override;
   void OnUserWorkAreaInsetsChanged(aura::Window* root_window) override;
   void OnPinnedStateChanged(aura::Window* pinned_window) override;
+  void OnShellDestroying() override;
 
   // SplitViewObserver:
   void OnSplitViewStateChanged(SplitViewController::State previous_state,
@@ -464,6 +465,9 @@ class ASH_EXPORT ShelfLayoutManager
   // tray.
   ShelfAutoHideState CalculateAutoHideState(
       ShelfVisibilityState visibility_state) const;
+
+  base::Optional<ShelfAutoHideState>
+  CalculateAutoHideStateBasedOnCursorLocation() const;
 
   // Returns true if |window| is a descendant of the shelf.
   bool IsShelfWindow(aura::Window* window);

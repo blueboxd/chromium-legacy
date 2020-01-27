@@ -298,8 +298,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) override;
   void PrintPagesForTesting(cc::PaintCanvas*, const WebSize&) override;
   WebRect GetSelectionBoundsRectForTesting() const override;
-  void PerformMediaPlayerAction(const gfx::Point&,
-                                const MediaPlayerAction&) override;
   void SetLifecycleState(mojom::FrameLifecycleState state) override;
   void WasHidden() override;
   void WasShown() override;

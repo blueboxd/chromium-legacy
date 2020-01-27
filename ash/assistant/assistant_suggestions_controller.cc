@@ -14,8 +14,6 @@
 #include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "base/feature_list.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/rand_util.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -27,36 +25,6 @@ namespace ash {
 namespace {
 
 // Conversation starters -------------------------------------------------------
-
-const base::Feature kConversationStartersFeature{
-    "ChromeOSAssistantConversationStarters", base::FEATURE_ENABLED_BY_DEFAULT};
-
-constexpr base::FeatureParam<bool> kImBoredChipEnabled{
-    &kConversationStartersFeature, "im-bored-chip-enabled", true};
-
-constexpr base::FeatureParam<bool> kOpenFilesChipEnabled{
-    &kConversationStartersFeature, "open-files-chip-enabled", true};
-
-constexpr base::FeatureParam<bool> kPlayMusicChipEnabled{
-    &kConversationStartersFeature, "play-music-chip-enabled", true};
-
-constexpr base::FeatureParam<bool> kSendAnEmailChipEnabled{
-    &kConversationStartersFeature, "send-an-email-chip-enabled", true};
-
-constexpr base::FeatureParam<bool> kSetAReminderChipEnabled{
-    &kConversationStartersFeature, "set-a-reminder-chip-enabled", true};
-
-constexpr base::FeatureParam<bool> kWhatCanYouDoChipEnabled{
-    &kConversationStartersFeature, "what-can-you-do-chip-enabled", true};
-
-constexpr base::FeatureParam<bool> kWhatsOnMyCalendarChipEnabled{
-    &kConversationStartersFeature, "whats-on-my-calendar-chip-enabled", true};
-
-constexpr base::FeatureParam<bool> kWhatsOnMyScreenChipEnabled{
-    &kConversationStartersFeature, "whats-on-my-screen-chip-enabled", true};
-
-constexpr base::FeatureParam<bool> kWhatsTheWeatherChipEnabled{
-    &kConversationStartersFeature, "whats-the-weather-chip-enabled", true};
 
 constexpr int kMaxNumOfConversationStarters = 3;
 
@@ -124,9 +92,6 @@ void AssistantSuggestionsController::OnAssistantContextEnabled(bool enabled) {
 // TODO(dmblack): The conversation starter cache should receive its contents
 // from the server. Hard-coding for the time being.
 void AssistantSuggestionsController::UpdateConversationStarters() {
-  if (!base::FeatureList::IsEnabled(kConversationStartersFeature))
-    return;
-
   using chromeos::assistant::mojom::AssistantSuggestion;
   using chromeos::assistant::mojom::AssistantSuggestionPtr;
   using chromeos::assistant::mojom::AssistantSuggestionType;
@@ -142,13 +107,11 @@ void AssistantSuggestionsController::UpdateConversationStarters() {
     conversation_starters.push_back(std::move(starter));
   };
 
-  // If enabled, always show the "What can you do?" conversation starter.
-  if (kWhatCanYouDoChipEnabled.Get())
-    AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHAT_CAN_YOU_DO);
+  // Always show the "What can you do?" conversation starter.
+  AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHAT_CAN_YOU_DO);
 
   // If enabled, always show the "What's on my screen?" conversation starter.
-  if (kWhatsOnMyScreenChipEnabled.Get() &&
-      AssistantState::Get()->context_enabled().value_or(false)) {
+  if (AssistantState::Get()->context_enabled().value_or(false)) {
     AddConversationStarter(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_SCREEN,
                            assistant::util::CreateWhatsOnMyScreenDeepLink());
   }
@@ -156,26 +119,13 @@ void AssistantSuggestionsController::UpdateConversationStarters() {
   // The rest of the conversation starters will be shuffled...
   std::vector<int> shuffled_message_ids;
 
-  if (kImBoredChipEnabled.Get())
-    shuffled_message_ids.push_back(IDS_ASH_ASSISTANT_CHIP_IM_BORED);
-
-  if (kOpenFilesChipEnabled.Get())
-    shuffled_message_ids.push_back(IDS_ASH_ASSISTANT_CHIP_OPEN_FILES);
-
-  if (kPlayMusicChipEnabled.Get())
-    shuffled_message_ids.push_back(IDS_ASH_ASSISTANT_CHIP_PLAY_MUSIC);
-
-  if (kSendAnEmailChipEnabled.Get())
-    shuffled_message_ids.push_back(IDS_ASH_ASSISTANT_CHIP_SEND_AN_EMAIL);
-
-  if (kSetAReminderChipEnabled.Get())
-    shuffled_message_ids.push_back(IDS_ASH_ASSISTANT_CHIP_SET_A_REMINDER);
-
-  if (kWhatsOnMyCalendarChipEnabled.Get())
-    shuffled_message_ids.push_back(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_CALENDAR);
-
-  if (kWhatsTheWeatherChipEnabled.Get())
-    shuffled_message_ids.push_back(IDS_ASH_ASSISTANT_CHIP_WHATS_THE_WEATHER);
+  shuffled_message_ids.push_back(IDS_ASH_ASSISTANT_CHIP_IM_BORED);
+  shuffled_message_ids.push_back(IDS_ASH_ASSISTANT_CHIP_OPEN_FILES);
+  shuffled_message_ids.push_back(IDS_ASH_ASSISTANT_CHIP_PLAY_MUSIC);
+  shuffled_message_ids.push_back(IDS_ASH_ASSISTANT_CHIP_SEND_AN_EMAIL);
+  shuffled_message_ids.push_back(IDS_ASH_ASSISTANT_CHIP_SET_A_REMINDER);
+  shuffled_message_ids.push_back(IDS_ASH_ASSISTANT_CHIP_WHATS_ON_MY_CALENDAR);
+  shuffled_message_ids.push_back(IDS_ASH_ASSISTANT_CHIP_WHATS_THE_WEATHER);
 
   base::RandomShuffle(shuffled_message_ids.begin(), shuffled_message_ids.end());
 

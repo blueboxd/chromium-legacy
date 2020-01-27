@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/embedder_support/switches.h"
+#include "components/safe_browsing/core/features.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
 #include "components/version_info/version_info.h"
@@ -342,6 +343,15 @@ ContentBrowserClientImpl::CreateThrottlesForNavigation(
   throttles.push_back(std::make_unique<SSLErrorNavigationThrottle>(
       handle, std::make_unique<SSLCertReporterImpl>(),
       base::BindOnce(&HandleSSLError), base::BindOnce(&IsInHostedApp)));
+
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
+      base::FeatureList::IsEnabled(safe_browsing::kCommittedSBInterstitials) &&
+      IsSafebrowsingSupported()) {
+    throttles.push_back(
+        GetSafeBrowsingService()->CreateSafeBrowsingNavigationThrottle(handle));
+  }
+#endif
   return throttles;
 }
 

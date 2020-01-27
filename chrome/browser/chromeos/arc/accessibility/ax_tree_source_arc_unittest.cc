@@ -1106,9 +1106,9 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
       "id=100 window (0, 0)-(0, 0) child_ids=10\n"
       "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
       "modal=true child_ids=1\n"
-      "    id=1 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
-      "child_ids=2\n"
-      "      id=2 genericContainer INVISIBLE (0, 0)-(0, 0) "
+      "    id=1 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
+      "restriction=disabled child_ids=2\n"
+      "      id=2 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
       "restriction=disabled child_ids=3\n"
       "        id=3 genericContainer INVISIBLE (0, 0)-(0, 0) "
       "restriction=disabled name=some text\n");

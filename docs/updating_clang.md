@@ -18,7 +18,7 @@ An archive of all packages built so far is at https://is.gd/chromeclang
     bucket to the production one. For example:
 
     ```shell
-    $ export rev=123456-abcd1234-1
+    $ export rev=n123456-abcd1234-1
     $ for x in Linux_x64 Mac Win ; do \
         gsutil.py cp -n -a public-read gs://chromium-browser-clang-staging/$x/clang-$rev.tgz \
             gs://chromium-browser-clang/$x/clang-$rev.tgz ; \

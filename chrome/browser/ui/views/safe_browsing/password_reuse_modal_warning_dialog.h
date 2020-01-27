@@ -66,6 +66,9 @@ class PasswordReuseModalWarningDialog
   const GURL url_;
   const ReusedPasswordAccountType password_type_;
 
+  // Records the start time when modal warning is constructed.
+  base::TimeTicks modal_construction_start_time_;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordReuseModalWarningDialog);
 };
 

@@ -81,16 +81,18 @@ const CGFloat kEditIconLength = 18;
   } else {
     if (self.hasValidText) {
       cell.textField.textColor = UIColor.cr_secondaryLabelColor;
+    } else {
+      cell.textField.textColor = [UIColor colorNamed:kRedColor];
     }
-    if (cell.textField.editing && cell.textField.text.length > 0) {
+
+    if (!self.hasValidText) {
+      cell.iconView.accessibilityIdentifier =
+          [NSString stringWithFormat:@"%@_errorIcon", self.textFieldName];
+      [cell setIcon:TableViewTextEditItemIconTypeError];
+    } else if (cell.textField.editing && cell.textField.text.length > 0) {
       cell.iconView.accessibilityIdentifier =
           [NSString stringWithFormat:@"%@_noIcon", self.textFieldName];
       [cell setIcon:TableViewTextEditItemIconTypeNone];
-    } else if (!self.hasValidText) {
-      cell.iconView.accessibilityIdentifier =
-          [NSString stringWithFormat:@"%@_errorIcon", self.textFieldName];
-      cell.textField.textColor = [UIColor colorNamed:kRedColor];
-      [cell setIcon:TableViewTextEditItemIconTypeError];
     } else {
       cell.iconView.accessibilityIdentifier =
           [NSString stringWithFormat:@"%@_editIcon", self.textFieldName];

@@ -90,7 +90,7 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine() {
 
 }  // namespace
 
-IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
+IOSChromeSyncClient::IOSChromeSyncClient(ChromeBrowserState* browser_state)
     : browser_state_(browser_state) {
   profile_web_data_service_ =
       ios::WebDataServiceFactory::GetAutofillWebDataForBrowserState(

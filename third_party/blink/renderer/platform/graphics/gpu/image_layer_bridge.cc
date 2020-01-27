@@ -62,7 +62,6 @@ ImageLayerBridge::ImageLayerBridge(OpacityMode opacity_mode)
     layer_->SetContentsOpaque(true);
     layer_->SetBlendBackgroundColor(false);
   }
-  GraphicsLayer::RegisterContentsLayer(layer_.get());
 }
 
 ImageLayerBridge::~ImageLayerBridge() {
@@ -113,7 +112,6 @@ void ImageLayerBridge::SetUV(const FloatPoint& left_top,
 
 void ImageLayerBridge::Dispose() {
   if (layer_) {
-    GraphicsLayer::UnregisterContentsLayer(layer_.get());
     layer_->ClearClient();
     layer_ = nullptr;
   }

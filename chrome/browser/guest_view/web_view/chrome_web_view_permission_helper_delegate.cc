@@ -11,11 +11,11 @@
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_request_id.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -189,9 +189,8 @@ void ChromeWebViewPermissionHelperDelegate::OnGeolocationPermissionResponse(
   int render_process_id = web_contents->GetMainFrame()->GetProcess()->GetID();
   int render_frame_id = web_contents->GetMainFrame()->GetRoutingID();
 
-  const PermissionRequestID request_id(
-      render_process_id,
-      render_frame_id,
+  const permissions::PermissionRequestID request_id(
+      render_process_id, render_frame_id,
       // The geolocation permission request here is not initiated
       // through WebGeolocationPermissionRequest. We are only interested
       // in the fact whether the embedder/app has geolocation

@@ -109,6 +109,13 @@ cc_component("paint") {
     "//ui/gfx/animation",
     "//ui/gfx/ipc/color",
   ]
+
+  if (!is_android) {
+    sources += [
+      "skottie_transfer_cache_entry.cc",
+      "skottie_transfer_cache_entry.h",
+    ]
+  }
 }
 
 fuzzer_test("paint_op_buffer_fuzzer") {

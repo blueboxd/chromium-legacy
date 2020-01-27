@@ -903,7 +903,6 @@ class PLATFORM_EXPORT LargeObjectPage final : public BasePage {
 
   // Remembers the page as containing inter-generational pointers.
   void SetRemembered(bool remembered) {
-    DCHECK_NE(remembered, is_remembered_);
     is_remembered_ = remembered;
   }
   bool IsRemembered() const { return is_remembered_; }

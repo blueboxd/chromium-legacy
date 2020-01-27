@@ -150,7 +150,7 @@ class GaiaAuthFetcherIOSNSURLSessionBridgeTest : public ChromeWebTest {
   // be enabled.
   base::test::ScopedFeatureList scoped_feature_list;
   // Browser state for the tests.
-  std::unique_ptr<ios::ChromeBrowserState> browser_state_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   // Instance used for the tests.
   std::unique_ptr<TestGaiaAuthFetcherIOSNSURLSessionBridge>
       ns_url_session_bridge_;

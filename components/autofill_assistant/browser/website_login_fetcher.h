@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/autofill/core/common/signatures_util.h"
 #include "url/gurl.h"
 
 namespace autofill_assistant {
@@ -42,6 +43,13 @@ class WebsiteLoginFetcher {
   virtual void GetPasswordForLogin(
       const Login& login,
       base::OnceCallback<void(bool, std::string)> callback) = 0;
+
+  // Generates new strong password. |form/field_signature| are used to fetch
+  // password requirements. |max_length| is the "max_length" attribute of input
+  // field that limits the length of value.
+  virtual std::string GeneratePassword(autofill::FormSignature form_signature,
+                                       autofill::FieldSignature field_signature,
+                                       uint64_t max_length) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WebsiteLoginFetcher);
 };

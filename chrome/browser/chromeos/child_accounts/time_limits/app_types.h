@@ -40,6 +40,20 @@ enum class AppState {
   kUninstalled,
 };
 
+// Type of notification to show the child user.
+enum class AppNotification {
+  kUnknown,
+
+  // Five minutes left before the application's time limit is reached.
+  kFiveMinutes,
+
+  // One minjute left before the application's time limit is reached.
+  kOneMinute,
+
+  // Application's time limit reached.
+  kTimeLimitReached,
+};
+
 // Identifies an app for app time limits.
 // Different types of use different identifier format. ARC++ apps are identified
 // by Android package name. Other types of apps use 32 character long Chrome
@@ -85,6 +99,7 @@ class AppLimit {
   ~AppLimit();
 
   AppRestriction restriction() const { return restriction_; }
+  base::Time last_updated() const { return last_updated_; }
   const base::Optional<base::TimeDelta>& daily_limit() const {
     return daily_limit_;
   }
@@ -144,9 +159,11 @@ class AppActivity {
   void SetAppActive(base::Time timestamp);
   void SetAppInactive(base::Time timestamp);
 
-  void ResetRunningActiveTime() {
-    running_active_time_ = base::TimeDelta::FromSeconds(0);
-  }
+  // Called when reset time has been reached.
+  // Resets |running_active_time_|.
+  // If the application is currently running, uses |timestamp| as current time
+  // to log activity.
+  void ResetRunningActiveTime(base::Time timestamp);
 
   base::TimeDelta RunningActiveTime() const;
 
@@ -156,10 +173,17 @@ class AppActivity {
   bool is_active() const { return is_active_; }
   AppState app_state() const { return app_state_; }
   const std::list<ActiveTime>& active_times() const { return active_times_; }
+  AppNotification last_notification() const { return last_notification_; }
+
+  void set_last_notification(AppNotification notification) {
+    last_notification_ = notification;
+  }
 
  private:
   // boolean to specify if the application is active.
   bool is_active_ = false;
+
+  AppNotification last_notification_ = AppNotification::kUnknown;
 
   // Current state of the app.
   // There might be relevant activity recoded for app that was uninstalled

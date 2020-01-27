@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "components/find_in_page/find_result_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_controls_state.h"
@@ -48,7 +49,8 @@ class TopControlsContainerView;
 
 class TabImpl : public Tab,
                 public content::WebContentsDelegate,
-                public content::WebContentsObserver {
+                public content::WebContentsObserver,
+                public find_in_page::FindResultObserver {
  public:
   // TODO(sky): investigate a better way to not have so many ifdefs.
 #if defined(OS_ANDROID)
@@ -169,11 +171,26 @@ class TabImpl : public Tab,
                       bool user_gesture,
                       bool* was_blocked) override;
   void CloseContents(content::WebContents* source) override;
+  void FindReply(content::WebContents* web_contents,
+                 int request_id,
+                 int number_of_matches,
+                 const gfx::Rect& selection_rect,
+                 int active_match_ordinal,
+                 bool final_update) override;
+#if defined(OS_ANDROID)
+  void FindMatchRectsReply(content::WebContents* web_contents,
+                           int version,
+                           const std::vector<gfx::RectF>& rects,
+                           const gfx::RectF& active_rect) override;
+#endif
 
   // content::WebContentsObserver:
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void RenderProcessGone(base::TerminationStatus status) override;
+
+  // find_in_page::FindResultObserver:
+  void OnFindResultAvailable(content::WebContents* web_contents) override;
 
   // Called from closure supplied to delegate to exit fullscreen.
   void OnExitFullscreen();
@@ -181,6 +198,9 @@ class TabImpl : public Tab,
   void UpdateRendererPrefs(bool should_sync_prefs);
 
   void InitializeAutofill();
+
+  // Returns the FindTabHelper for the page, or null if none exists.
+  find_in_page::FindTabHelper* GetFindTabHelper();
 
   sessions::SessionTabHelperDelegate* GetSessionServiceTabHelperDelegate(
       content::WebContents* web_contents);

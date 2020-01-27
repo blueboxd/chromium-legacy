@@ -171,9 +171,12 @@ void Screen::Trace(blink::Visitor* visitor) {
   Supplementable<Screen>::Trace(visitor);
 }
 
-Screen::Screen(display::mojom::blink::DisplayPtr display, bool primary)
+Screen::Screen(display::mojom::blink::DisplayPtr display,
+               bool internal,
+               bool primary)
     : DOMWindowClient(static_cast<LocalFrame*>(nullptr)),
       display_(std::move(display)),
+      internal_(internal),
       primary_(primary) {}
 
 int Screen::left() const {
@@ -211,7 +214,11 @@ int Screen::top() const {
 }
 
 bool Screen::internal() const {
-  // TODO(http://crbug.com/994889): Implement this.
+  if (display_) {
+    DCHECK(RuntimeEnabledFeatures::ScreenEnumerationEnabled());
+    return internal_.has_value() && internal_.value();
+  }
+  // TODO(http://crbug.com/994889): Implement this for |window.screen|?
   NOTIMPLEMENTED_LOG_ONCE();
   return false;
 }

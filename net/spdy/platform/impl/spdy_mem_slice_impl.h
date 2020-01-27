@@ -7,13 +7,13 @@
 
 #include "base/memory/ref_counted.h"
 #include "net/base/io_buffer.h"
-#include "net/third_party/quiche/src/spdy/platform/api/spdy_export.h"
+#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
 
 namespace spdy {
 
 // SpdyMemSliceImpl wraps a reference counted MemSlice and only provides partial
 // interfaces of MemSlice.
-class SPDY_EXPORT_PRIVATE SpdyMemSliceImpl {
+class QUICHE_EXPORT_PRIVATE SpdyMemSliceImpl {
  public:
   // Constructs an empty SpdyMemSliceImpl that contains an empty MemSlice.
   SpdyMemSliceImpl();

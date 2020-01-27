@@ -26,10 +26,10 @@ class IncognitoWebStateObserver : public TabModelListObserver,
   // TabModelListObserver:
   void TabModelRegisteredWithBrowserState(
       TabModel* tab_model,
-      ios::ChromeBrowserState* browser_state) override;
+      ChromeBrowserState* browser_state) override;
   void TabModelUnregisteredFromBrowserState(
       TabModel* tab_model,
-      ios::ChromeBrowserState* browser_state) override;
+      ChromeBrowserState* browser_state) override;
 
   // WebStateListObserver:
   void WebStateInsertedAt(WebStateList* web_state_list,

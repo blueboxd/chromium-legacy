@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "base/bind.h"
+#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -19,17 +20,31 @@
 
 namespace {
 
+// Keep the JSON conversion in one function to prevent LOG and DVLOG calls
+// from unnecessarily converting it.
+std::string ToJSON(const media::MediaLogRecord* event) {
+  std::string params_json;
+  base::JSONWriter::Write(event->params, &params_json);
+  return params_json;
+}
+
 // Print an event to the chromium log.
+// TODO(tmathmeyer) replace this with a log-only EventHandler.
 void Log(media::MediaLogRecord* event) {
-  if (event->type == media::MediaLogRecord::PIPELINE_ERROR ||
-      event->type == media::MediaLogRecord::MEDIA_ERROR_LOG_ENTRY) {
-    LOG(ERROR) << "MediaEvent: "
-               << media::MediaLog::MediaEventToLogString(*event);
-  } else if (event->type != media::MediaLogRecord::PROPERTY_CHANGE) {
-    DVLOG(1) << "MediaEvent: "
-             << media::MediaLog::MediaEventToLogString(*event);
+  if (event->type == media::MediaLogRecord::Type::kMediaError) {
+    LOG(ERROR) << "MediaEvent: " << ToJSON(event);
+  } else if (event->type == media::MediaLogRecord::Type::kMessage &&
+             event->params.HasKey("error")) {
+    LOG(ERROR) << "MediaEvent: " << ToJSON(event);
+  } else if (event->type != media::MediaLogRecord::Type::kMediaPropertyChange) {
+    DVLOG(1) << "MediaEvent: " << ToJSON(event);
   }
 }
+
+// This string comes from the TypeName template specialization
+// in media_log_type_enforcement.h, it's not encoded anywhere, so it's
+// just typed out here.
+constexpr char duration_changed_message[] = "kDurationChanged";
 
 }  // namespace
 
@@ -76,26 +91,34 @@ void BatchingMediaLog::AddLogRecordLocked(
   // For enforcing delay until it's been a second since the last ipc message was
   // sent.
   base::TimeDelta delay_for_next_ipc_send;
-
   {
     base::AutoLock auto_lock(lock_);
     switch (event->type) {
-      case media::MediaLogRecord::DURATION_SET:
-        // Similar to the extents changed message, this may fire many times for
-        // badly muxed media. Suppress within our rate limits here.
-        last_duration_changed_event_.swap(event);
-        break;
-
       // Hold onto the most recent PIPELINE_ERROR and the first, if any,
       // MEDIA_LOG_ERROR_ENTRY for use in GetErrorMessage().
-      case media::MediaLogRecord::PIPELINE_ERROR:
+      case media::MediaLogRecord::Type::kMediaError:
         queued_media_events_.push_back(*event);
         last_pipeline_error_.swap(event);
         break;
-      case media::MediaLogRecord::MEDIA_ERROR_LOG_ENTRY:
+
+      case media::MediaLogRecord::Type::kMediaEventTriggered:
+        DCHECK(event->params.HasKey(MediaLog::kEventKey));
+        if (*event->params.FindStringKey(MediaLog::kEventKey) ==
+            duration_changed_message) {
+          // Similar to the extents changed message, this may fire many times
+          // for badly muxed media. Suppress within our rate limits here.
+          last_duration_changed_event_.swap(event);
+        } else {
+          queued_media_events_.push_back(*std::move(event));
+        }
+        break;
+
+      case media::MediaLogRecord::Type::kMessage:
         queued_media_events_.push_back(*event);
-        if (!cached_media_error_for_message_)
+        if (event->params.HasKey(media::MediaLogMessageLevelToString(
+                media::MediaLogMessageLevel::kERROR))) {
           cached_media_error_for_message_ = std::move(event);
+        }
         break;
 
       // Just enqueue all other event types for throttled transmission.
@@ -146,6 +169,31 @@ std::string BatchingMediaLog::GetErrorMessageLocked() {
   }
 
   return result.str();
+}
+
+std::string BatchingMediaLog::MediaEventToMessageString(
+    const media::MediaLogRecord& event) {
+  switch (event.type) {
+    case media::MediaLogRecord::Type::kMediaError: {
+      int error_code = 0;
+      event.params.GetInteger(media::MediaLog::kMediaErrorText, &error_code);
+      DCHECK_NE(error_code, 0);
+      return PipelineStatusToString(
+          static_cast<media::PipelineStatus>(error_code));
+    }
+    case media::MediaLogRecord::Type::kMessage: {
+      std::string result = "";
+      if (event.params.GetString(
+              MediaLogMessageLevelToString(media::MediaLogMessageLevel::kERROR),
+              &result)) {
+        base::ReplaceChars(result, "\n", " ", &result);
+      }
+      return result;
+    }
+    default:
+      NOTREACHED();
+      return "";
+  }
 }
 
 void BatchingMediaLog::SendQueuedMediaEvents() {

@@ -167,4 +167,27 @@ TEST_F(DrmThreadTest, RunTaskAfterWindowReady) {
   drm_thread_.FlushForTesting();
 }
 
+// Verifies that we gracefully handle the case where CheckOverlayCapabilities()
+// is called on a destroyed window.
+TEST_F(DrmThreadTest, CheckOverlayCapabilitiesDestroyedWindow) {
+  gfx::AcceleratedWidget widget = 5;
+  constexpr gfx::Rect bounds(10, 10);
+  constexpr size_t candidates_size = 9;
+  std::vector<OverlaySurfaceCandidate> candidates(candidates_size);
+  std::vector<OverlayStatus> result;
+  AddGraphicsDevice();
+  drm_device_->CreateWindow(widget, bounds);
+  drm_device_->DestroyWindow(widget);
+  drm_device_.FlushForTesting();
+  drm_thread_.task_runner()->PostTask(
+      FROM_HERE, base::BindOnce(&DrmThread::CheckOverlayCapabilitiesSync,
+                                base::Unretained(&drm_thread_), widget,
+                                candidates, &result));
+  drm_thread_.FlushForTesting();
+  EXPECT_EQ(candidates_size, result.size());
+  for (const auto& status : result) {
+    EXPECT_EQ(OVERLAY_STATUS_NOT, status);
+  }
+}
+
 }  // namespace ui

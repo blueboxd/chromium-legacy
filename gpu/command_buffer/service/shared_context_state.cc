@@ -90,8 +90,6 @@ SharedContextState::SharedContextState(
       context_(context),
       real_context_(std::move(context)),
       surface_(std::move(surface)) {
-  DetermineGrCacheLimitsFromAvailableMemory(&max_resource_cache_bytes_,
-                                            &glyph_cache_max_texture_bytes_);
   if (GrContextIsVulkan()) {
 #if BUILDFLAG(ENABLE_VULKAN)
     gr_context_ = vk_context_provider_->GetGrContext();
@@ -174,6 +172,11 @@ void SharedContextState::InitializeGrContext(
     metal_context_provider_->SetProgressReporter(progress_reporter);
 #endif
 
+  size_t max_resource_cache_bytes;
+  size_t glyph_cache_max_texture_bytes;
+  DetermineGrCacheLimitsFromAvailableMemory(&max_resource_cache_bytes,
+                                            &glyph_cache_max_texture_bytes);
+
   if (GrContextIsGL()) {
     DCHECK(context_->IsCurrent(nullptr));
     sk_sp<GrGLInterface> interface(gl::init::CreateGrGLInterface(
@@ -207,7 +210,7 @@ void SharedContextState::InitializeGrContext(
     options.fDriverBugWorkarounds =
         GrDriverBugWorkarounds(workarounds.ToIntSet());
     options.fDisableCoverageCountingPaths = true;
-    options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes_;
+    options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes;
     options.fPersistentCache = cache;
     options.fAvoidStencilBuffers = workarounds.avoid_stencil_buffers;
     if (workarounds.disable_program_disk_cache) {
@@ -226,7 +229,7 @@ void SharedContextState::InitializeGrContext(
     LOG(ERROR) << "OOP raster support disabled: GrContext creation "
                   "failed.";
   } else {
-    gr_context_->setResourceCacheLimit(max_resource_cache_bytes_);
+    gr_context_->setResourceCacheLimit(max_resource_cache_bytes);
   }
   transfer_cache_ = std::make_unique<ServiceTransferCache>(gpu_preferences);
 }

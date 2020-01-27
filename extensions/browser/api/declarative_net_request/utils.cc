@@ -42,7 +42,7 @@ constexpr int kIndexedRulesetFormatVersion = 15;
 // This static assert is meant to catch cases where
 // url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
 // updating kIndexedRulesetFormatVersion.
-static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 5,
+static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 6,
               "kUrlPatternIndexFormatVersion has changed, make sure you've "
               "also updated kIndexedRulesetFormatVersion above.");
 

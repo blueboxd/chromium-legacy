@@ -5,11 +5,13 @@
 package org.chromium.weblayer.test;
 
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.test.filters.SmallTest;
 import android.support.v4.app.FragmentManager;
 
 import androidx.annotation.NonNull;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,6 +70,41 @@ public class BrowserFragmentLifecycleTest {
                 }
             });
             navigationController.navigate(Uri.parse("data:text,foo"));
+        });
+        latch.await();
+    }
+
+    @Test
+    @SmallTest
+    public void restoresPreviousSession() throws InterruptedException {
+        Bundle extras = new Bundle();
+        extras.putString(InstrumentationActivity.EXTRA_PERSISTENCE_ID, "x");
+        final String url = mActivityTestRule.getTestDataURL("simple_page.html");
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url, extras);
+
+        mActivityTestRule.recreateActivity();
+
+        InstrumentationActivity newActivity = mActivityTestRule.getActivity();
+        Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(() -> newActivity.getTab());
+        Assert.assertNotNull(tab);
+        CountDownLatch latch = new CountDownLatch(1);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            // It's possible the NavigationController hasn't loaded yet, handle either scenario.
+            NavigationController navigationController = tab.getNavigationController();
+            if (navigationController.getNavigationListSize() == 1
+                    && navigationController.getNavigationEntryDisplayUri(0).equals(
+                            Uri.parse(url))) {
+                latch.countDown();
+                return;
+            }
+            navigationController.registerNavigationCallback(new NavigationCallback() {
+                @Override
+                public void onNavigationCompleted(@NonNull Navigation navigation) {
+                    if (navigation.getUri().equals(Uri.parse(url))) {
+                        latch.countDown();
+                    }
+                }
+            });
         });
         latch.await();
     }

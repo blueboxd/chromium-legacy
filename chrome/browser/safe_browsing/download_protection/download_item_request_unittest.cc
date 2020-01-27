@@ -5,7 +5,9 @@
 #include "chrome/browser/safe_browsing/download_protection/download_item_request.h"
 
 #include "base/bind_helpers.h"
+#include "base/callback_forward.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/run_loop.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -37,10 +39,11 @@ class DownloadItemRequestTest : public ::testing::Test {
     file.Write(0, download_contents_.c_str(), download_contents_.size());
     file.Close();
 
-    ON_CALL(item_, GetTotalBytes())
-        .WillByDefault(Return(download_contents_.size()));
-    ON_CALL(item_, GetTargetFilePath())
-        .WillByDefault(ReturnRef(download_path_));
+    EXPECT_CALL(item_, GetTotalBytes())
+        .WillRepeatedly(Return(download_contents_.size()));
+    EXPECT_CALL(item_, GetTargetFilePath())
+        .WillRepeatedly(ReturnRef(download_path_));
+    EXPECT_CALL(item_, GetFullPath()).WillRepeatedly(ReturnRef(download_path_));
   }
 
  protected:

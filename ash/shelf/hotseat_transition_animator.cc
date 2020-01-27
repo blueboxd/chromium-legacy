@@ -105,6 +105,15 @@ void HotseatTransitionAnimator::OnTabletModeEnded() {
   tablet_mode_transitioning_ = false;
 }
 
+void HotseatTransitionAnimator::SetAnimationsEnabledInSessionState(
+    bool enabled) {
+  animations_enabled_for_current_session_state_ = enabled;
+
+  ui::Layer* animating_background = shelf_widget_->GetAnimatingBackground();
+  if (!enabled && animating_background->GetAnimator()->is_animating())
+    animating_background->GetAnimator()->StopAnimating();
+}
+
 void HotseatTransitionAnimator::SetTestObserver(TestObserver* test_observer) {
   test_observer_ = test_observer;
 }
@@ -146,6 +155,9 @@ void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
   shelf_widget_->GetAnimatingBackground()->SetTransform(transform);
   animation_metrics_reporter_->set_new_state(new_state);
 
+  for (auto& observer : observers_)
+    observer.OnHotseatTransitionAnimationStarted(old_state, new_state);
+
   {
     ui::ScopedLayerAnimationSettings shelf_bg_animation_setter(
         shelf_widget_->GetAnimatingBackground()->GetAnimator());
@@ -163,9 +175,6 @@ void HotseatTransitionAnimator::DoAnimation(HotseatState old_state,
 
     shelf_widget_->GetAnimatingBackground()->SetTransform(gfx::Transform());
   }
-
-  for (auto& observer : observers_)
-    observer.OnHotseatTransitionAnimationStarted(old_state, new_state);
 }
 
 bool HotseatTransitionAnimator::ShouldDoAnimation(HotseatState old_state,
@@ -173,6 +182,9 @@ bool HotseatTransitionAnimator::ShouldDoAnimation(HotseatState old_state,
   // The first HotseatState change when going to tablet mode should not be
   // animated.
   if (tablet_mode_transitioning_)
+    return false;
+
+  if (!animations_enabled_for_current_session_state_)
     return false;
 
   return (new_state == HotseatState::kShown ||

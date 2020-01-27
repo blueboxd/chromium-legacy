@@ -180,12 +180,14 @@ interface Animation : EventTarget
     getter playState
     getter playbackRate
     getter ready
+    getter replaceState
     getter startTime
     getter timeline
     method cancel
     method constructor
     method finish
     method pause
+    method persist
     method play
     method reverse
     method updatePlaybackRate
@@ -8681,6 +8683,15 @@ interface VideoTrackList : EventTarget
     setter onaddtrack
     setter onchange
     setter onremovetrack
+interface VideoTrackReader
+    attribute @@toStringTag
+    getter readable
+    method constructor
+interface VideoTrackWriter
+    attribute @@toStringTag
+    getter track
+    getter writable
+    method constructor
 interface VisualViewport : EventTarget
     attribute @@toStringTag
     getter height

@@ -269,7 +269,7 @@ class SplitViewController::DividerSnapAnimation
     DCHECK_EQ(ending_position_, split_view_controller_->divider_position_);
 
     split_view_controller_->EndResizeImpl();
-    split_view_controller_->EndSplitViewAfterResizingIfAppropriate();
+    split_view_controller_->EndTabletSplitViewAfterResizingIfAppropriate();
   }
 
   void AnimationProgressed(const gfx::Animation* animation) override {
@@ -754,7 +754,7 @@ void SplitViewController::EndResize(const gfx::Point& location_in_screen) {
   const int target_divider_position = GetClosestFixedDividerPosition();
   if (divider_position_ == target_divider_position) {
     EndResizeImpl();
-    EndSplitViewAfterResizingIfAppropriate();
+    EndTabletSplitViewAfterResizingIfAppropriate();
   } else {
     divider_snap_animation_ = std::make_unique<DividerSnapAnimation>(
         this, divider_position_, target_divider_position);
@@ -1172,7 +1172,7 @@ void SplitViewController::OnDisplayMetricsChanged(
 
   // Before adjusting the divider position for the new display metrics, if the
   // divider is animating to a snap position, then stop it and shove it there.
-  // Postpone EndSplitViewAfterResizingIfAppropriate() until after the
+  // Postpone EndTabletSplitViewAfterResizingIfAppropriate() until after the
   // adjustment, because the new display metrics will be used to compare the
   // divider position against the edges of the screen.
   if (IsDividerAnimating()) {
@@ -1199,7 +1199,7 @@ void SplitViewController::OnDisplayMetricsChanged(
   if (!is_resizing_)
     divider_position_ = GetClosestFixedDividerPosition();
 
-  EndSplitViewAfterResizingIfAppropriate();
+  EndTabletSplitViewAfterResizingIfAppropriate();
   if (!InSplitViewMode())
     return;
 
@@ -1501,7 +1501,7 @@ bool SplitViewController::ShouldEndTabletSplitViewAfterResizing() {
   return divider_position_ == 0 || divider_position_ == GetDividerEndPosition();
 }
 
-void SplitViewController::EndSplitViewAfterResizingIfAppropriate() {
+void SplitViewController::EndTabletSplitViewAfterResizingIfAppropriate() {
   if (!ShouldEndTabletSplitViewAfterResizing())
     return;
 
@@ -1519,8 +1519,7 @@ void SplitViewController::EndSplitViewAfterResizingIfAppropriate() {
   } else if (insert_overview_window) {
     // The dimensions of |window| will be very slim because of dragging the
     // divider to the edge. Change the window dimensions to its tablet mode
-    // dimensions. Note: if split view is no longer constrained to tablet mode
-    // this will be need to updated.
+    // dimensions.
     TabletModeWindowState::UpdateWindowPosition(
         WindowState::Get(insert_overview_window), /*animate=*/false);
     InsertWindowToOverview(insert_overview_window, /*animate=*/false);

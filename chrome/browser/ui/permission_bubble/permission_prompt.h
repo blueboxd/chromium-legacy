@@ -11,7 +11,9 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 
+namespace permissions {
 class PermissionRequest;
+}
 
 namespace content {
 class WebContents;
@@ -52,7 +54,7 @@ class PermissionPrompt {
 
     // These pointers should not be stored as the actual request objects may be
     // deleted upon navigation and so on.
-    virtual const std::vector<PermissionRequest*>& Requests() = 0;
+    virtual const std::vector<permissions::PermissionRequest*>& Requests() = 0;
 
     // Returns the origin to be displayed in the permission prompt. May return
     // a non-origin, e.g. extension URLs use the name of the extension.

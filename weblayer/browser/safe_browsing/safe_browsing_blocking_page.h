@@ -1,0 +1,45 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef WEBLAYER_BROWSER_SAFE_BROWSING_SAFE_BROWSING_BLOCKING_PAGE_H_
+#define WEBLAYER_BROWSER_SAFE_BROWSING_SAFE_BROWSING_BLOCKING_PAGE_H_
+
+#include <memory>
+
+#include "components/safe_browsing/content/base_blocking_page.h"
+#include "components/security_interstitials/content/unsafe_resource.h"
+#include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
+
+namespace content {
+class WebContents;
+}  // namespace content
+
+namespace weblayer {
+class SafeBrowsingUIManager;
+
+class SafeBrowsingBlockingPage : public safe_browsing::BaseBlockingPage {
+ public:
+  typedef security_interstitials::UnsafeResource UnsafeResource;
+
+  static SafeBrowsingBlockingPage* CreateBlockingPage(
+      SafeBrowsingUIManager* ui_manager,
+      content::WebContents* web_contents,
+      const GURL& main_frame_url,
+      const UnsafeResource& unsafe_resource);
+
+ private:
+  SafeBrowsingBlockingPage(
+      SafeBrowsingUIManager* ui_manager,
+      content::WebContents* web_contents,
+      const GURL& main_frame_url,
+      const UnsafeResourceList& unsafe_resources,
+      std::unique_ptr<
+          security_interstitials::SecurityInterstitialControllerClient>
+          controller_client,
+      const BaseSafeBrowsingErrorUI::SBErrorDisplayOptions& display_options);
+};
+
+}  // namespace weblayer
+
+#endif  // WEBLAYER_BROWSER_SAFE_BROWSING_SAFE_BROWSING_BLOCKING_PAGE_H_

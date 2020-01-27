@@ -10,6 +10,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/ozone/platform/drm/gpu/drm_overlay_candidates.h"
 #include "ui/ozone/public/overlay_surface_candidate.h"
@@ -76,6 +77,19 @@ void DrmOverlayManager::CheckOverlaySupport(
     result_candidates.push_back(can_handle ? candidate
                                            : OverlaySurfaceCandidate());
     result_candidates.back().overlay_handled = can_handle;
+  }
+
+  if (features::IsSynchronousPageFlipTestingEnabled()) {
+    std::vector<OverlayStatus> status =
+        SendOverlayValidationRequestSync(result_candidates, widget);
+    size_t size = candidates->size();
+    DCHECK_EQ(size, status.size());
+    for (size_t i = 0; i < size; i++) {
+      DCHECK(status[i] == OVERLAY_STATUS_ABLE ||
+             status[i] == OVERLAY_STATUS_NOT);
+      candidates->at(i).overlay_handled = status[i] == OVERLAY_STATUS_ABLE;
+    }
+    return;
   }
 
   auto widget_cache_map_it = widget_cache_map_.find(widget);

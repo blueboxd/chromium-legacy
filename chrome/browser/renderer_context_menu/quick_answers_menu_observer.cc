@@ -8,11 +8,13 @@
 
 #include "ash/public/cpp/assistant/assistant_interface_binder.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "build/branding_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/components/quick_answers/quick_answers_model.h"
+#include "chromeos/components/quick_answers/utils/quick_answers_metrics.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "content/public/browser/storage_partition.h"
@@ -96,8 +98,18 @@ bool QuickAnswersMenuObserver::IsCommandIdEnabled(int command_id) {
 }
 
 void QuickAnswersMenuObserver::ExecuteCommand(int command_id) {
-  if (command_id == IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY)
+  if (command_id == IDC_CONTENT_CONTEXT_QUICK_ANSWERS_INLINE_QUERY) {
     SendAssistantQuery(query_);
+
+    if (quick_answer_) {
+      base::TimeDelta duration =
+          base::TimeTicks::Now() - quick_answer_received_time_;
+      RecordClick(quick_answer_->result_type, duration);
+    }
+
+    // TODO(llin): Consider adding logging for clicks before quick answer
+    // received.
+  }
 }
 
 void QuickAnswersMenuObserver::OnQuickAnswerReceived(
@@ -125,6 +137,9 @@ void QuickAnswersMenuObserver::OnQuickAnswerReceived(
                            /*hidden=*/false,
                            /*title=*/base::UTF8ToUTF16(kNoResult));
   }
+
+  quick_answer_received_time_ = base::TimeTicks::Now();
+  quick_answer_ = std::move(quick_answer);
 }
 
 void QuickAnswersMenuObserver::OnEligibilityChanged(bool eligible) {

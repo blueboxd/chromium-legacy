@@ -138,6 +138,12 @@ class ScriptExecutor : public ActionDelegate,
       const base::string16& cvc,
       const Selector& selector,
       base::OnceCallback<void(const ClientStatus&)> callback) override;
+  void RetrieveElementFormAndFieldData(
+      const Selector& selector,
+      base::OnceCallback<void(const ClientStatus&,
+                              const autofill::FormData& form_data,
+                              const autofill::FormFieldData& field_data)>
+          callback) override;
   void SelectOption(
       const Selector& selector,
       const std::string& selected_option,

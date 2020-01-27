@@ -31,7 +31,7 @@ public class SignOutDialogFragment extends DialogFragment implements
     private static final String SHOW_GAIA_SERVICE_TYPE_EXTRA = "ShowGAIAServiceType";
 
     /**
-     * Receives updates when the user clicks "Sign out" or dismisses the dialog.
+     * Receives updates when the user clicks "Sign out".
      */
     public interface SignOutDialogListener {
         /**
@@ -40,17 +40,8 @@ public class SignOutDialogFragment extends DialogFragment implements
          * @param forceWipeUserData Whether the user selected to wipe local device data.
          */
         void onSignOutClicked(boolean forceWipeUserData);
-
-        /**
-         * Called when the dialog is dismissed.
-         *
-         * @param signOutClicked Whether the user clicked the "sign out" button before the dialog
-         *                       was dismissed.
-         */
-        void onSignOutDialogDismissed(boolean signOutClicked);
     }
 
-    private boolean mSignOutClicked;
     private CheckBox mWipeUserData;
 
     /**
@@ -108,8 +99,6 @@ public class SignOutDialogFragment extends DialogFragment implements
     public void onClick(DialogInterface dialog, int which) {
         if (which == AlertDialog.BUTTON_POSITIVE) {
             SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_SIGNOUT, mGaiaServiceType);
-
-            mSignOutClicked = true;
             if (IdentityServicesProvider.get().getSigninManager().getManagementDomain() == null) {
                 RecordHistogram.recordBooleanHistogram(
                         "Signin.UserRequestedWipeDataOnSignout", mWipeUserData.isChecked());
@@ -123,8 +112,5 @@ public class SignOutDialogFragment extends DialogFragment implements
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
         SigninUtils.logEvent(ProfileAccountManagementMetrics.SIGNOUT_CANCEL, mGaiaServiceType);
-
-        SignOutDialogListener targetFragment = (SignOutDialogListener) getTargetFragment();
-        targetFragment.onSignOutDialogDismissed(mSignOutClicked);
     }
 }

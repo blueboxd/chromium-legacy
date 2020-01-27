@@ -38,6 +38,7 @@ import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration.ConfigKey;
 import org.chromium.chrome.browser.feed.library.api.host.logging.BasicLoggingApi;
@@ -53,7 +54,6 @@ import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.Model
 import org.chromium.chrome.browser.feed.library.api.internal.modelprovider.TokenCompleted;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.drivers.ContinuationDriver.CursorChangedListener;
 import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.ContinuationViewHolder;
-import org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.R;
 import org.chromium.chrome.browser.feed.library.common.time.Clock;
 import org.chromium.chrome.browser.feed.library.common.time.testing.FakeClock;
 import org.chromium.chrome.browser.feed.library.sharedstream.logging.LoggingListener;
@@ -473,7 +473,8 @@ public class ContinuationDriverTest {
 
         clickWithTokenCompleted(EMPTY_TOKEN_COMPLETED);
 
-        verify(mSnackbarApi).show(mContext.getString(R.string.snackbar_fetch_no_new_suggestions));
+        verify(mSnackbarApi)
+                .show(mContext.getString(R.string.ntp_suggestions_fetch_no_new_suggestions));
         verify(mCursorChangedListener)
                 .onNewChildren(mModelChild, ImmutableList.of(), /* wasSynthetic= */ false);
     }
@@ -485,7 +486,8 @@ public class ContinuationDriverTest {
         FakeModelCursor cursor = FakeModelCursor.newBuilder().addToken().build();
         clickWithTokenCompleted(new TokenCompleted(cursor));
 
-        verify(mSnackbarApi).show(mContext.getString(R.string.snackbar_fetch_no_new_suggestions));
+        verify(mSnackbarApi)
+                .show(mContext.getString(R.string.ntp_suggestions_fetch_no_new_suggestions));
         verify(mCursorChangedListener)
                 .onNewChildren(mModelChild, cursor.getModelChildren(), /* wasSynthetic= */ false);
     }
@@ -518,7 +520,7 @@ public class ContinuationDriverTest {
         clickWithError();
 
         verify(mContinuationViewHolder).setShowSpinner(false);
-        verify(mSnackbarApi).show(mContext.getString(R.string.snackbar_fetch_failed));
+        verify(mSnackbarApi).show(mContext.getString(R.string.ntp_suggestions_fetch_failed));
     }
 
     @Test
@@ -594,7 +596,7 @@ public class ContinuationDriverTest {
 
         verify(mBasicLoggingApi).onInternalError(InternalFeedError.UNHANDLED_TOKEN);
         verify(mContinuationViewHolder).setShowSpinner(false);
-        verify(mSnackbarApi).show(mContext.getString(R.string.snackbar_fetch_failed));
+        verify(mSnackbarApi).show(mContext.getString(R.string.ntp_suggestions_fetch_failed));
     }
 
     @Test

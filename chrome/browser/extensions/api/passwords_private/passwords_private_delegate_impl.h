@@ -18,13 +18,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_utils.h"
-#include "chrome/browser/password_manager/reauth_purpose.h"
-#include "chrome/browser/ui/passwords/settings/password_access_authenticator.h"
 #include "chrome/browser/ui/passwords/settings/password_manager_porter.h"
 #include "chrome/browser/ui/passwords/settings/password_manager_presenter.h"
 #include "chrome/browser/ui/passwords/settings/password_ui_view.h"
 #include "chrome/common/extensions/api/passwords_private.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/password_manager/core/browser/password_access_authenticator.h"
+#include "components/password_manager/core/browser/reauth_purpose.h"
 #include "components/password_manager/core/browser/ui/export_progress_status.h"
 #include "extensions/browser/extension_function.h"
 
@@ -82,10 +82,15 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
 
   SortKeyIdGenerator& GetPasswordIdGeneratorForTesting();
 
+#if defined(UNIT_TEST)
   // Use this in tests to mock the OS-level reauthentication.
-  void SetOsReauthCallForTesting(
-      base::RepeatingCallback<bool(password_manager::ReauthPurpose)>
-          os_reauth_call);
+  void set_os_reauth_call(
+      password_manager::PasswordAccessAuthenticator::ReauthCallback
+          os_reauth_call) {
+    password_access_authenticator_.set_os_reauth_call(
+        std::move(os_reauth_call));
+  }
+#endif  // defined(UNIT_TEST)
 
  private:
   // Called after the lists are fetched. Once both lists have been set, the
@@ -117,7 +122,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // Used to control the export and import flows.
   std::unique_ptr<PasswordManagerPorter> password_manager_porter_;
 
-  PasswordAccessAuthenticator password_access_authenticator_;
+  password_manager::PasswordAccessAuthenticator password_access_authenticator_;
 
   // The current list of entries/exceptions. Cached here so that when new
   // observers are added, this delegate can send the current lists without

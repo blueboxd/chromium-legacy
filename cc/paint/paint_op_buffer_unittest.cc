@@ -5,6 +5,7 @@
 #include "cc/paint/paint_op_buffer.h"
 
 #include "base/bind.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "cc/paint/decoded_draw_image.h"
@@ -16,6 +17,8 @@
 #include "cc/paint/paint_op_reader.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/shader_transfer_cache_entry.h"
+#include "cc/paint/skottie_wrapper.h"
+#include "cc/paint/transfer_cache_entry.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/paint_op_helper.h"
 #include "cc/test/skia_common.h"
@@ -41,6 +44,40 @@ namespace {
 // unit test.  This can also be used for deserialized op size safely in this
 // unit test suite as generally deserialized ops are smaller.
 static constexpr size_t kBufferBytesPerOp = 1000 + sizeof(LargestPaintOp);
+
+#ifndef OS_ANDROID
+// A skottie animation with solid green color for the first 2.5 seconds and then
+// a solid blue color for the next 2.5 seconds.
+constexpr char kSkottieData[] =
+    "{"
+    "  \"v\" : \"4.12.0\","
+    "  \"fr\": 30,"
+    "  \"w\" : 400,"
+    "  \"h\" : 200,"
+    "  \"ip\": 0,"
+    "  \"op\": 150,"
+    "  \"assets\": [],"
+
+    "  \"layers\": ["
+    "    {"
+    "      \"ty\": 1,"
+    "      \"sw\": 400,"
+    "      \"sh\": 200,"
+    "      \"sc\": \"#00ff00\","
+    "      \"ip\": 0,"
+    "      \"op\": 75"
+    "    },"
+    "    {"
+    "      \"ty\": 1,"
+    "      \"sw\": 400,"
+    "      \"sh\": 200,"
+    "      \"sc\": \"#0000ff\","
+    "      \"ip\": 76,"
+    "      \"op\": 150"
+    "    }"
+    "  ]"
+    "}";
+#endif  // OS_ANDROID
 
 template <typename T>
 void ValidateOps(PaintOpBuffer* buffer) {
@@ -3279,6 +3316,105 @@ TEST(PaintOpBufferTest, PaintRecordShaderSerialization) {
   EXPECT_TRUE(*rect_op->flags.getShader() == *flags.getShader());
   EXPECT_TRUE(!!rect_op->flags.getShader()->GetSkShader());
 }
+
+#ifndef OS_ANDROID
+TEST(PaintOpBufferTest, DrawSkottieOpSerialization) {
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+  std::vector<uint8_t> data(std::strlen(kSkottieData));
+  data.assign(reinterpret_cast<const uint8_t*>(kSkottieData),
+              reinterpret_cast<const uint8_t*>(kSkottieData) +
+                  std::strlen(kSkottieData));
+
+  scoped_refptr<SkottieWrapper> skottie =
+      SkottieWrapper::CreateSerializable(std::move(data));
+
+  ASSERT_TRUE(skottie->is_valid());
+  const SkRect input_rect = SkRect::MakeIWH(400, 300);
+  const float input_t = 0.4f;
+
+  PaintOpBuffer buffer;
+  buffer.push<DrawSkottieOp>(skottie, input_rect, input_t);
+
+  // Serialize
+  TestOptionsProvider options_provider;
+  SimpleBufferSerializer serializer(
+      memory.get(), PaintOpBuffer::kInitialBufferSize,
+      options_provider.image_provider(),
+      options_provider.transfer_cache_helper(),
+      options_provider.client_paint_cache(), options_provider.strike_server(),
+      options_provider.color_space(), options_provider.can_use_lcd_text(),
+      options_provider.context_supports_distance_field_text(),
+      options_provider.max_texture_size());
+  serializer.Serialize(&buffer);
+  ASSERT_TRUE(serializer.valid());
+  ASSERT_GT(serializer.written(), 0u);
+
+  // De-Serialize
+  auto deserialized_buffer =
+      PaintOpBuffer::MakeFromMemory(memory.get(), serializer.written(),
+                                    options_provider.deserialize_options());
+  ASSERT_TRUE(deserialized_buffer);
+  PaintOpBuffer::Iterator it(deserialized_buffer.get());
+  ASSERT_TRUE(it);
+  auto* op = *it;
+  ASSERT_TRUE(op->GetType() == PaintOpType::DrawSkottie);
+  auto* skottie_op = static_cast<DrawSkottieOp*>(op);
+  EXPECT_FLOAT_RECT_EQ(skottie_op->dst, input_rect);
+  EXPECT_FLOAT_EQ(skottie_op->t, input_t);
+  EXPECT_EQ(skottie_op->skottie->id(), skottie->id());
+  EXPECT_TRUE(skottie_op->skottie->is_valid());
+
+  // Check that an entry in transfer cache is present for the skottie data.
+  EXPECT_TRUE(options_provider.transfer_cache_helper()->GetEntryInternal(
+      TransferCacheEntryType::kSkottie, skottie->id()));
+}
+
+TEST(PaintOpBufferTest, DrawSkottieOpSerializationFailure) {
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+
+  std::vector<uint8_t> data(std::strlen(kSkottieData));
+  data.assign(reinterpret_cast<const uint8_t*>(kSkottieData),
+              reinterpret_cast<const uint8_t*>(kSkottieData) +
+                  std::strlen(kSkottieData));
+
+  scoped_refptr<SkottieWrapper> skottie =
+      SkottieWrapper::CreateSerializable(std::move(data));
+  ASSERT_TRUE(skottie->is_valid());
+  const SkRect input_rect = SkRect::MakeIWH(400, 300);
+  const float input_t = 0.4f;
+
+  PaintOpBuffer buffer;
+  buffer.push<DrawSkottieOp>(skottie, input_rect, input_t);
+
+  // Serialize
+  TestOptionsProvider options_provider;
+  SimpleBufferSerializer serializer(
+      memory.get(), PaintOpBuffer::kInitialBufferSize,
+      options_provider.image_provider(),
+      options_provider.transfer_cache_helper(),
+      options_provider.client_paint_cache(), options_provider.strike_server(),
+      options_provider.color_space(), options_provider.can_use_lcd_text(),
+      options_provider.context_supports_distance_field_text(),
+      options_provider.max_texture_size());
+  serializer.Serialize(&buffer);
+  ASSERT_TRUE(serializer.valid());
+  ASSERT_GT(serializer.written(), 0u);
+
+  // De-Serialize
+  PaintOp::DeserializeOptions d_options(options_provider.deserialize_options());
+
+  // Deserialization should fail on a non privileged process.
+  d_options.is_privileged = false;
+
+  auto deserialized_buffer = PaintOpBuffer::MakeFromMemory(
+      memory.get(), serializer.written(), d_options);
+  ASSERT_FALSE(deserialized_buffer);
+}
+#endif  // OS_ANDROID
 
 TEST(PaintOpBufferTest, CustomData) {
   // Basic tests: size, move, comparison.

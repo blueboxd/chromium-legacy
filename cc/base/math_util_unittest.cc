@@ -46,12 +46,12 @@ TEST(MathUtilTest, ProjectionOfAlmostPerpendicularPlane) {
   //   +16331238407143424.0000 +0.0000 -0.0000 +51346917453137000267776.0000
   //   +0.0000 +0.0000 +0.0000 +1.0000 ]
   transform.MakeIdentity();
-  transform.matrix().set(0, 2, static_cast<SkMScalar>(-1));
-  transform.matrix().set(0, 3, static_cast<SkMScalar>(3144132.0));
-  transform.matrix().set(2, 0, static_cast<SkMScalar>(16331238407143424.0));
-  transform.matrix().set(2, 2, static_cast<SkMScalar>(-1e-33));
+  transform.matrix().set(0, 2, static_cast<SkScalar>(-1));
+  transform.matrix().set(0, 3, static_cast<SkScalar>(3144132.0));
+  transform.matrix().set(2, 0, static_cast<SkScalar>(16331238407143424.0));
+  transform.matrix().set(2, 2, static_cast<SkScalar>(-1e-33));
   transform.matrix().set(2, 3,
-                         static_cast<SkMScalar>(51346917453137000267776.0));
+                         static_cast<SkScalar>(51346917453137000267776.0));
 
   gfx::RectF rect = gfx::RectF(0, 0, 1, 1);
   gfx::RectF projected_rect = MathUtil::ProjectClippedRect(transform, rect);
@@ -296,13 +296,13 @@ TEST(MathUtilTest, MapEnclosingRectWithLargeTransforms) {
   gfx::Rect output;
 
   gfx::Transform large_x_scale;
-  large_x_scale.Scale(SkDoubleToMScalar(1e37), 1.0);
+  large_x_scale.Scale(SkDoubleToScalar(1e37), 1.0);
 
   gfx::Transform infinite_x_scale;
   infinite_x_scale = large_x_scale * large_x_scale;
 
   gfx::Transform large_y_scale;
-  large_y_scale.Scale(1.0, SkDoubleToMScalar(1e37));
+  large_y_scale.Scale(1.0, SkDoubleToScalar(1e37));
 
   gfx::Transform infinite_y_scale;
   infinite_y_scale = large_y_scale * large_y_scale;
@@ -344,13 +344,13 @@ TEST(MathUtilTest, ProjectEnclosingRectWithLargeTransforms) {
   gfx::Rect output;
 
   gfx::Transform large_x_scale;
-  large_x_scale.Scale(SkDoubleToMScalar(1e37), 1.0);
+  large_x_scale.Scale(SkDoubleToScalar(1e37), 1.0);
 
   gfx::Transform infinite_x_scale;
   infinite_x_scale = large_x_scale * large_x_scale;
 
   gfx::Transform large_y_scale;
-  large_y_scale.Scale(1.0, SkDoubleToMScalar(1e37));
+  large_y_scale.Scale(1.0, SkDoubleToScalar(1e37));
 
   gfx::Transform infinite_y_scale;
   infinite_y_scale = large_y_scale * large_y_scale;

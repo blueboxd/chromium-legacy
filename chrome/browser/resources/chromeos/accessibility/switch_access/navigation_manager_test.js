@@ -221,7 +221,8 @@ TEST_F('SwitchAccessNavigationManagerTest', 'EnterGroup', function() {
   });
 });
 
-TEST_F('SwitchAccessNavigationManagerTest', 'MoveForward', function() {
+// TODO(crbug.com/1045075): Test is flaky.
+TEST_F('SwitchAccessNavigationManagerTest', 'DISABLED_MoveForward', function() {
   const website = `<div>
                      <button id="button1"></button>
                      <button id="button2"></button>

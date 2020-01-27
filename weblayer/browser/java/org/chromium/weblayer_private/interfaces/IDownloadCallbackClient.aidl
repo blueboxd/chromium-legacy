@@ -4,6 +4,7 @@
 
 package org.chromium.weblayer_private.interfaces;
 
+import android.content.Intent;
 import org.chromium.weblayer_private.interfaces.IClientDownload;
 import org.chromium.weblayer_private.interfaces.IDownload;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
@@ -19,4 +20,5 @@ interface IDownloadCallbackClient {
   void downloadProgressChanged(IClientDownload download) = 4;
   void downloadCompleted(IClientDownload download) = 5;
   void downloadFailed(IClientDownload download) = 6;
+  Intent createIntent() = 7;
 }

@@ -8,14 +8,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/permissions/permission_request.h"
+#include "components/permissions/permission_request.h"
 #include "url/origin.h"
 
 // A permission request that presents the user with a choice to allow or deny
 // multiple downloads from the same site. This confirmation step protects
 // against "carpet-bombing", where a malicious site forces multiple downloads on
 // an unsuspecting user.
-class DownloadPermissionRequest : public PermissionRequest {
+class DownloadPermissionRequest : public permissions::PermissionRequest {
  public:
   DownloadPermissionRequest(
       base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host,
@@ -23,7 +23,7 @@ class DownloadPermissionRequest : public PermissionRequest {
   ~DownloadPermissionRequest() override;
 
  private:
-  // PermissionRequest:
+  // permissions::PermissionRequest:
   IconId GetIconId() const override;
 #if defined(OS_ANDROID)
   base::string16 GetTitleText() const override;
@@ -35,7 +35,7 @@ class DownloadPermissionRequest : public PermissionRequest {
   void PermissionDenied() override;
   void Cancelled() override;
   void RequestFinished() override;
-  PermissionRequestType GetPermissionRequestType() const override;
+  permissions::PermissionRequestType GetPermissionRequestType() const override;
 
   base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host_;
   url::Origin request_origin_;

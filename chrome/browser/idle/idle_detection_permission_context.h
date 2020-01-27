@@ -15,7 +15,7 @@ class IdleDetectionPermissionContext : public PermissionContextBase {
 
  private:
   // PermissionContextBase:
-  void UpdateTabContext(const PermissionRequestID& id,
+  void UpdateTabContext(const permissions::PermissionRequestID& id,
                         const GURL& requesting_frame,
                         bool allowed) override;
   ContentSetting GetPermissionStatusInternal(

@@ -1593,8 +1593,6 @@ jumbo_source_set("browser") {
     "scheduler/responsiveness/native_event_observer_mac.mm",
     "scheduler/responsiveness/watcher.cc",
     "scheduler/responsiveness/watcher.h",
-    "scheduler/scoped_do_not_use_ui_default_queue_from_io.cc",
-    "scheduler/scoped_do_not_use_ui_default_queue_from_io.h",
     "scoped_active_url.cc",
     "scoped_active_url.h",
     "screen_enumeration/screen_enumeration_impl.cc",

@@ -8,6 +8,10 @@ assert(is_android)
 
 source_set("safe_browsing") {
   sources = [
+    "safe_browsing_blocking_page.cc",
+    "safe_browsing_blocking_page.h",
+    "safe_browsing_navigation_throttle.cc",
+    "safe_browsing_navigation_throttle.h",
     "safe_browsing_service.cc",
     "safe_browsing_service.h",
     "safe_browsing_ui_manager.cc",
@@ -25,6 +29,7 @@ source_set("safe_browsing") {
     "//components/safe_browsing/core/browser:network_context",
     "//components/safe_browsing/core/common",
     "//components/safe_browsing/core/db:database_manager",
+    "//components/security_interstitials/core/",
     "//content/public/browser",
     "//skia",
     "//third_party/blink/public/common",

@@ -44,17 +44,36 @@ class ExpandablePaymentHandlerBrowserTest : public PlatformBrowserTest {
     return chrome_test_utils::GetActiveWebContents(this);
   }
 
- private:
   PaymentRequestTestController test_controller_;
+
+ private:
   net::EmbeddedTestServer https_server_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, Launch) {
+IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, ConfirmPayment) {
   std::string expected = "success";
   EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
-  EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "launch()"));
+  EXPECT_EQ("app_is_ready", content::EvalJs(GetActiveWebContents(),
+                                            "launchAndWaitUntilReady()"));
+
+  DCHECK(test_controller_.GetPaymentHandlerWebContents());
+  EXPECT_EQ("confirmed",
+            content::EvalJs(test_controller_.GetPaymentHandlerWebContents(),
+                            "confirm()"));
+  EXPECT_EQ("success", content::EvalJs(GetActiveWebContents(), "getResult()"));
 }
 
+IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, CancelPayment) {
+  std::string expected = "success";
+  EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
+  EXPECT_EQ("app_is_ready", content::EvalJs(GetActiveWebContents(),
+                                            "launchAndWaitUntilReady()"));
+
+  DCHECK(test_controller_.GetPaymentHandlerWebContents());
+  EXPECT_EQ("canceled",
+            content::EvalJs(test_controller_.GetPaymentHandlerWebContents(),
+                            "cancel()"));
+}
 }  // namespace
 }  // namespace payments

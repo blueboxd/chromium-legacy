@@ -525,7 +525,8 @@ void KeyframeEffect::UpdateChildrenAndEffects() const {
   if (!model_->HasFrames())
     return;
   DCHECK(owner_);
-  if (IsInEffect() && !owner_->EffectSuppressed())
+  if (IsInEffect() && !owner_->EffectSuppressed() &&
+      !owner_->ReplaceStateRemoved())
     const_cast<KeyframeEffect*>(this)->ApplyEffects();
   else
     const_cast<KeyframeEffect*>(this)->ClearEffects();

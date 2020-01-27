@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -43,6 +44,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/frame_load_waiter.h"
+#include "content/public/test/local_frame_host_interceptor.h"
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
@@ -66,6 +68,7 @@
 #include "net/dns/public/resolve_error_info.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
@@ -232,7 +235,11 @@ mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
 
 class RenderViewImplTest : public RenderViewTest {
  public:
-  RenderViewImplTest() {
+  explicit RenderViewImplTest(
+      RenderFrameImpl::CreateRenderFrameImplFunction hook_function = nullptr)
+      : RenderViewTest(/*hook_render_frame_creation=*/!hook_function) {
+    if (hook_function)
+      RenderFrameImpl::InstallCreateHook(hook_function);
     // Attach a pseudo keyboard device to this object.
     mock_keyboard_.reset(new MockKeyboard());
   }
@@ -1399,7 +1406,7 @@ TEST_F(RenderViewImplTest, ShouldSuppressKeyboardIsPropagated) {
 }
 
 TEST_F(RenderViewImplTest, EditContextGetLayoutBoundsAndInputPanelPolicy) {
-  // Load an HTML page consisting of one input fields.
+  // Load an HTML page.
   LoadHTML(
       "<html>"
       "<head>"
@@ -1426,6 +1433,35 @@ TEST_F(RenderViewImplTest, EditContextGetLayoutBoundsAndInputPanelPolicy) {
             std::get<0>(params).edit_context_control_bounds.value());
   EXPECT_EQ(edit_context_selection_bounds_expected,
             std::get<0>(params).edit_context_selection_bounds.value());
+}
+
+TEST_F(RenderViewImplTest, ActiveElementGetLayoutBounds) {
+  // Load an HTML page consisting of one input fields.
+  LoadHTML(
+      "<html>"
+      "<head>"
+      "</head>"
+      "<body>"
+      "<input id=\"test\" type=\"text\"></input>"
+      "</body>"
+      "</html>");
+  render_thread_->sink().ClearMessages();
+  // Create an EditContext with control and selection bounds and set input
+  // panel policy to auto.
+  ExecuteJavaScriptForTests("document.getElementById('test').focus();");
+  base::RunLoop().RunUntilIdle();
+  // Update the IME status and verify if our IME backend sends an IPC message
+  // to notify layout bounds of the EditContext.
+  main_widget()->UpdateTextInputState();
+  auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
+  blink::WebInputMethodController* controller =
+      frame()->GetWebFrame()->GetInputMethodController();
+  blink::WebRect expected_control_bounds;
+  blink::WebRect temp_selection_bounds;
+  controller->GetLayoutBounds(&expected_control_bounds, &temp_selection_bounds);
+  blink::WebRect actual_active_element_control_bounds(
+      std::get<0>(params).edit_context_control_bounds.value());
+  EXPECT_EQ(actual_active_element_control_bounds, expected_control_bounds);
 }
 
 // Test that our IME backend can compose CJK words.
@@ -2551,52 +2587,72 @@ TEST_F(RenderViewImplTest, DispatchBeforeUnloadCanDetachFrame) {
   ASSERT_TRUE(was_callback_run);
 }
 
-// IPC Listener that runs a callback when a javascript modal dialog is
-// triggered.
-class AlertCallbackFilter : public IPC::Listener {
+namespace {
+class AlertDialogMockLocalFrameHost : public LocalFrameHostInterceptor {
  public:
-  explicit AlertCallbackFilter(
-      base::RepeatingCallback<void(const base::string16&)> callback)
-      : callback_(std::move(callback)) {}
+  explicit AlertDialogMockLocalFrameHost(
+      blink::AssociatedInterfaceProvider* provider)
+      : LocalFrameHostInterceptor(provider) {}
 
-  bool OnMessageReceived(const IPC::Message& msg) override {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(AlertCallbackFilter, msg)
-      IPC_MESSAGE_HANDLER(FrameHostMsg_RunJavaScriptDialog,
-                          OnRunJavaScriptDialog)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
+  MOCK_METHOD2(RunModalAlertDialog,
+               void(const base::string16& alert_message,
+                    RunModalAlertDialogCallback callback));
+};
+
+class AlertDialogTestRenderFrame : public TestRenderFrame {
+ public:
+  static RenderFrameImpl* CreateTestRenderFrame(
+      RenderFrameImpl::CreateParams params) {
+    return new AlertDialogTestRenderFrame(std::move(params));
   }
 
-  // Not really part of IPC::Listener but required to intercept a sync msg.
-  void Send(const IPC::Message* msg) { delete msg; }
+  ~AlertDialogTestRenderFrame() override = default;
 
-  void OnRunJavaScriptDialog(const base::string16& message,
-                             const base::string16&,
-                             JavaScriptDialogType,
-                             bool*,
-                             base::string16*) {
-    callback_.Run(message);
+  blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override {
+    blink::AssociatedInterfaceProvider* associated_interface_provider =
+        RenderFrameImpl::GetRemoteAssociatedInterfaces();
+
+    // Attach our fake local frame host at the very first call to
+    // GetRemoteAssociatedInterfaces.
+    if (!local_frame_host_) {
+      local_frame_host_ = std::make_unique<AlertDialogMockLocalFrameHost>(
+          associated_interface_provider);
+    }
+    return associated_interface_provider;
+  }
+
+  AlertDialogMockLocalFrameHost* alert_mock_frame_host() {
+    return local_frame_host_.get();
   }
 
  private:
-  base::RepeatingCallback<void(const base::string16&)> callback_;
+  explicit AlertDialogTestRenderFrame(RenderFrameImpl::CreateParams params)
+      : TestRenderFrame(std::move(params)) {}
+
+  std::unique_ptr<AlertDialogMockLocalFrameHost> local_frame_host_;
+};
+}  // namespace
+
+class RenderViewImplModalDialogTest : public RenderViewImplTest {
+ public:
+  RenderViewImplModalDialogTest()
+      : RenderViewImplTest(&AlertDialogTestRenderFrame::CreateTestRenderFrame) {
+  }
+
+  AlertDialogMockLocalFrameHost* alert_mock_frame_host() {
+    return static_cast<AlertDialogTestRenderFrame*>(frame())
+        ->alert_mock_frame_host();
+  }
 };
 
 // Test that invoking one of the modal dialogs doesn't crash.
-TEST_F(RenderViewImplTest, ModalDialogs) {
+TEST_F(RenderViewImplModalDialogTest, ModalDialogs) {
   LoadHTML("<body></body>");
-
-  std::unique_ptr<AlertCallbackFilter> callback_filter(new AlertCallbackFilter(
-      base::BindRepeating([](const base::string16& msg) {
-        EXPECT_EQ(base::UTF8ToUTF16("Please don't crash"), msg);
-      })));
-  render_thread_->sink().AddFilter(callback_filter.get());
-
-  frame()->GetWebFrame()->Alert(WebString::FromUTF8("Please don't crash"));
-
-  render_thread_->sink().RemoveFilter(callback_filter.get());
+  base::string16 alert_message = base::UTF8ToUTF16("Please don't crash");
+  EXPECT_CALL(*alert_mock_frame_host(),
+              RunModalAlertDialog(alert_message, testing::_))
+      .WillOnce(base::test::RunOnceCallback<1>());
+  frame()->GetWebFrame()->Alert(WebString::FromUTF16(alert_message));
 }
 
 TEST_F(RenderViewImplBlinkSettingsTest, Default) {

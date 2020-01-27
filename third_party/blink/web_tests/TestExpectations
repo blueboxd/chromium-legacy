@@ -1328,7 +1328,6 @@ crbug.com/845235 virtual/layout_ng_flex_box/css3/flexbox/relpos-with-percentage-
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/flex-aspect-ratio-img-column-004.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/hittest-overlapping-margin.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/hittest-overlapping-order.html [ Failure ]
-crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/percentage-heights-010.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/quirks-auto-block-size-with-percentage-item.html [ Pass Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003.html [ Failure ]
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-004.html [ Failure ]
@@ -2785,6 +2784,7 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-004.html [ Fail
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win7 ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-animation.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-animation.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-canvas-parent.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/compositing/mix-blend-mode/mix-blend-mode-canvas-sibling.html [ Failure ]
@@ -4564,7 +4564,9 @@ crbug.com/678346 [ Win7 Debug ] storage/indexeddb/index-cursor.html [ Pass Timeo
 crbug.com/678493 http/tests/permissions/chromium/test-request-window.html [ Timeout Pass ]
 crbug.com/678499 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 
-crbug.com/747751 [ Win ] http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
+# Also crbug.com/1044496
+crbug.com/747751 [ Win ] http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass Timeout ]
+
 crbug.com/747751 http/tests/devtools/application-panel/storage-view-reports-quota.js [ Pass Timeout ]
 
 crbug.com/689781 external/wpt/media-source/mediasource-duration.html [ Failure Pass ]
@@ -5379,7 +5381,6 @@ crbug.com/911515 [ Mac ] transforms/shadows.html [ Pass Failure ]
 crbug.com/911782 [ Mac ] paint/invalidation/forms/submit-focus-by-mouse-then-keydown.html [ Pass Failure ]
 
 # Sheriff 2018-12-06
-crbug.com/912793 http/tests/devtools/sources/debugger-breakpoints/restore-locations-for-breakpoint-with-broken-source-map.js [ Pass Failure ]
 crbug.com/912793 crbug.com/899087 virtual/android/fullscreen/full-screen-iframe-allowed-video.html [ Crash Pass Failure Timeout ]
 
 # Sheriff 2018-12-07
@@ -5544,12 +5545,15 @@ crbug.com/915352 [ Mac10.11 ] virtual/threaded/external/wpt/animation-worklet/wo
 
 # Sheriff 2019-03-01
 crbug.com/937416 http/tests/devtools/resource-tree/resource-tree-htmlimports.js [ Pass Failure ]
-crbug.com/937416 http/tests/devtools/resource-tree/resource-tree-frame-navigate.js [ Pass Failure ]
+
+# Also crbug.com/1044535
+crbug.com/937416 http/tests/devtools/resource-tree/resource-tree-frame-navigate.js [ Pass Failure Timeout ]
 
 # Sheriff 2019-03-04
-crbug.com/937811 [ Linux Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Failure ]
+# Also crbug.com/1044418
+crbug.com/937811 [ Linux Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Failure Timeout ]
 crbug.com/937811 [ Linux Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-3.js [ Pass Failure ]
-crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Failure ]
+crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Failure Timeout ]
 crbug.com/935689 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/symbols-function.html [ Failure Pass ]
 
 # Sheriff 2019-03-05
@@ -6291,10 +6295,6 @@ crbug.com/963183 http/tests/devtools/jump-to-previous-editing-location.js [ Pass
 crbug.com/webrtc/11228 external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
 crbug.com/webrtc/11228 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
 
-# Failures that appeared while fuzzy-diff was on. TODO(jonross) triage these and
-# update baselines as needed, or file more direct bugs.
-crbug.com/1039401 [ Linux ] virtual/form-controls-refresh-disabled/fast/forms/select/input-select-after-resize.html [ Failure ]
-
 # Sheriff 2020-01-09
 crbug.com/1040270 http/tests/devtools/elements/styles-1/disable-property-workingcopy-update.js [ Pass Timeout ]
 
@@ -6323,6 +6323,9 @@ crbug.com/1030746 http/tests/devtools/network/load-resource-for-frontend.js [ Pa
 
 # Disable for landing devtools changes
 crbug.com/1006759 http/tests/devtools/console/argument-hints.js [ Pass Failure ]
+
+# Disable for landing devtools changes
+crbug.com/1010534 http/tests/devtools/profiler/agents-disabled-check.js [ Pass Failure ]
 
 # Failing origin trial for css proeprties test
 crbug.com/1041993 http/tests/origin_trials/sample-api-script-added-after-css-declaration.html [ Failure ]
@@ -6381,3 +6384,122 @@ crbug.com/1043675 [ Linux ] virtual/threaded-no-composited-antialiasing/animatio
 # The transformed region bleeds into the foreground with SkiaRenderer enabled.
 crbug.com/1044032 [ Linux ] css3/filters/backdrop-filter-transform.html [ Failure ]
 crbug.com/1044032 [ Linux ] virtual/scalefactor200/css3/filters/backdrop-filter-transform.html [ Failure ]
+
+# Required to land DevTools change
+crbug.com/106759 http/tests/devtools/command-line-api-inspect.js [ Pass Failure ]
+crbug.com/106759 http/tests/devtools/sources/debugger-breakpoints/restore-locations-for-breakpoint-with-broken-source-map.js [ Pass Failure ]
+crbug.com/106759 http/tests/devtools/sources/debugger-console/debugger-command-line-api.js [ Pass Failure ]
+
+# Sheriff 2020-01-23
+crbug.com/1043396 http/tests/devtools/network/network-eventsource.js [ Pass Timeout ]
+crbug.com/1043381 [ Release Win ] http/tests/devtools/elements/highlight/highlight-node-scroll.js [ Pass Timeout ]
+crbug.com/1043381 [ Release Mac ] http/tests/devtools/elements/highlight/highlight-node-scroll.js [ Pass Timeout ]
+crbug.com/1043356 [ Release ] http/tests/devtools/elements/styles-4/keyframes-source-offsets.js [ Pass Timeout ]
+crbug.com/1043354 [ Release ] http/tests/devtools/service-workers/service-worker-pause.js [ Pass Timeout ]
+crbug.com/1043350 [ Release ] http/tests/devtools/elements/edit/set-attribute.js [ Pass Timeout ]
+crbug.com/1043310 [ Release Win ] external/wpt/css/cssom-view/idlharness.html [ Pass Timeout ]
+crbug.com/1043310 [ Release Mac ] external/wpt/css/cssom-view/idlharness.html [ Pass Timeout ]
+crbug.com/1043285 [ Release ] http/tests/devtools/elements/styles/selector-line.js [ Pass Timeout ]
+crbug.com/1043398 [ Release Win ] http/tests/devtools/tracing-browser-thread.js [ Pass Timeout ]
+crbug.com/1043398 [ Release Mac ] http/tests/devtools/tracing-browser-thread.js [ Pass Timeout ]
+crbug.com/1043434 [ Release ] http/tests/devtools/animation/animation-transition-setTiming-crash.js [ Pass Timeout ]
+crbug.com/1043449 [ Release ] http/tests/devtools/elements/edit/edit-dom-actions-3.js [ Pass Timeout ]
+crbug.com/1043453 [ Release Win ] virtual/threaded/external/wpt/css/css-animations/idlharness.html [ Pass Timeout ]
+crbug.com/1043453 [ Release Mac ] virtual/threaded/external/wpt/css/css-animations/idlharness.html [ Pass Timeout ]
+crbug.com/1043454 [ Release ] http/tests/devtools/console-xhr-logging-async.js [ Pass Timeout ]
+crbug.com/1043463 [ Release ] external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.serviceworker.html [ Pass Timeout ]
+crbug.com/1043488 [ Release ] fast/forms/date/date-appearance-basic.html [ Pass Failure ]
+crbug.com/1043785 [ Release ] http/tests/devtools/elements/edit/switch-panels-while-editing-as-html.js [ Pass Timeout ]
+crbug.com/1043792 [ Release Win ] http/tests/devtools/template-content-inspect-crash.js [ Pass Timeout ]
+crbug.com/1043792 [ Release Mac ] http/tests/devtools/template-content-inspect-crash.js [ Pass Timeout ]
+crbug.com/1043796 [ Release ] http/tests/devtools/coverage/gutter-html.js [ Pass Timeout ]
+crbug.com/1043893 [ Debug Mac10.13 ] webexposed/global-interface-listing-dedicated-worker.html [ Pass Timeout ]
+crbug.com/1043893 [ Release ] webexposed/global-interface-listing-dedicated-worker.html [ Pass Timeout ]
+crbug.com/1043920 [ Release Win ] http/tests/devtools/stylesheet-source-mapping.js [ Pass Timeout ]
+crbug.com/1043920 [ Release Mac ] http/tests/devtools/stylesheet-source-mapping.js [ Pass Timeout ]
+crbug.com/1044350 [ Release ] http/tests/devtools/network/network-xhr-replay.js [ Pass Timeout ]
+crbug.com/1044414 [ Release ] http/tests/devtools/elements/styles/selector-line-sourcemap-header.js [ Pass Timeout ]
+crbug.com/1044415 [ Release ] http/tests/devtools/runtime/evaluate-without-side-effects.js [ Pass Timeout ]
+crbug.com/1044424 [ Release ] http/tests/devtools/elements/css-rule-hover-highlights-selectors.js [ Pass Timeout ]
+crbug.com/1044425 [ Release ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-1.js [ Pass Timeout ]
+crbug.com/1044429 [ Release ] http/tests/devtools/oopif/oopif-navigator.js [ Pass Timeout ]
+crbug.com/1044430 [ Release ] http/tests/devtools/elements/elements-panel-styles.js [ Pass Timeout ]
+crbug.com/1044433 [ Release ] http/tests/devtools/editor/text-editor-search-replace.js [ Pass Timeout ]
+crbug.com/1044454 [ Release ] http/tests/devtools/changes/changes-highlighter.js [ Pass Timeout ]
+crbug.com/1044459 [ Release ] http/tests/devtools/elements/edit/set-outer-html-for-xhtml.js [ Pass Timeout ]
+crbug.com/1044505 [ Release ] http/tests/devtools/tracing-session-id.js [ Pass Timeout ]
+crbug.com/1044506 [ Release Win ] http/tests/devtools/tracing-model-storage.js [ Pass Timeout ]
+crbug.com/1044506 [ Release Mac ] http/tests/devtools/tracing-model-storage.js [ Pass Timeout ]
+crbug.com/1044516 [ Release ] http/tests/devtools/elements/edit/undo-set-outer-html-2.js [ Pass Timeout ]
+crbug.com/1044518 [ Release Win ] http/tests/devtools/bindings/suspendtarget-navigator.js [ Pass Timeout ]
+crbug.com/1044518 [ Release Mac ] http/tests/devtools/bindings/suspendtarget-navigator.js [ Pass Timeout ]
+crbug.com/1044534 [ Release ] http/tests/devtools/editor/text-editor-line-breaks.js [ Pass Timeout ]
+crbug.com/1044538 [ Release ] http/tests/devtools/coverage/gutter-js.js [ Pass Timeout ]
+crbug.com/1044544 [ Release ] http/tests/devtools/network/network-disable-cache-preloads-twice.js [ Pass Timeout ]
+crbug.com/1044545 [ Release ] http/tests/devtools/service-workers/service-workers-bypass-for-network-cors.js [ Pass Timeout ]
+crbug.com/1044546 [ Release Win ] http/tests/devtools/user-metrics.js [ Pass Timeout ]
+crbug.com/1044546 [ Release Mac ] http/tests/devtools/user-metrics.js [ Pass Timeout ]
+crbug.com/1044561 [ Release ] http/tests/devtools/elements/styles/show-all-properties.js [ Pass Timeout ]
+crbug.com/1044562 [ Release Win ] http/tests/devtools/modify-cross-domain-rule.js [ Pass Timeout ]
+crbug.com/1044562 [ Release Mac ] http/tests/devtools/modify-cross-domain-rule.js [ Pass Timeout ]
+crbug.com/1044563 [ Release ] http/tests/devtools/background-services/background-services-panel.js [ Pass Timeout ]
+crbug.com/1044805 [ Release ] http/tests/devtools/elements/styles-2/inject-stylesheet.js [ Pass Timeout ]
+crbug.com/1044822 [ Release ] http/tests/devtools/cache-storage/cache-entry-deletion.js [ Pass Timeout ]
+crbug.com/1044823 [ Release ] http/tests/devtools/extensions/extensions-timeline-api.js [ Pass Timeout ]
+crbug.com/1044825 [ Release ] http/tests/devtools/network/resource-priority.js [ Pass Timeout ]
+crbug.com/1044829 [ Release Win ] http/tests/devtools/cache-storage/cache-deletion.js [ Pass Timeout ]
+crbug.com/1044829 [ Release Mac ] http/tests/devtools/cache-storage/cache-deletion.js [ Pass Timeout ]
+crbug.com/1044830 [ Release Win ] external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.html [ Pass Timeout ]
+crbug.com/1043847 [ Release Win ] virtual/threaded/fast/scroll-snap/snaps-for-different-key-granularity.html [ Pass Timeout ]
+crbug.com/1043901 [ Release Win ] external/wpt/preload/preload-with-type.html [ Pass Timeout ]
+crbug.com/1044569 [ Release Linux ] virtual/audio-service/media/controls/doubletap-to-jump-backwards.html [ Pass Failure ]
+crbug.com/1044496 [ Release Mac ] http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Pass Timeout ]
+crbug.com/1044496 [ Release Linux ] http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Pass Timeout ]
+crbug.com/1044418 [ Release Mac ] http/tests/devtools/elements/shadow/elements-panel-shadow-selection-on-refresh-2.js [ Pass Timeout ]
+
+# FIXME(michaelludwig) - Temporary suppression for Skia change + rebaseline
+crbug.com/1045050 [ Linux ] animations/rotate-transform-equivalent.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/3d-corners.html  [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/3d-cube.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/direct-image-compositing.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/lots-of-img-layers-with-opacity.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/lots-of-img-layers.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/perpendicular-layer-sorting.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/perspective-interest-rect.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/color-matching/image-color-matching.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/geometry/fixed-position-transform-composited-page-scale.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/geometry/layer-due-to-layer-children-deep.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/geometry/layer-due-to-layer-children.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/geometry/vertical-scroll-composited.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/overflow/mask-with-filter.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/overflow/nested-render-surfaces-with-rotation.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/overflow/rotate-then-clip-effect-interleave.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/reflections/nested-reflection-animated.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] css3/blending/background-blend-mode-overlapping-accelerated-elements.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] fast/clip/overflow-border-radius-composited-parent.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] fast/clip/overflow-border-radius-composited.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] images/yuv-decode-eligible/color-profile-layer.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] media/video-layer-crash.html [ Pass Failure ]
+crbug.com/1045050 [ Mac ] media/video-layer-crash.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] media/video-zoom-controls.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] overflow/overflow-transform-perspective.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] transforms/3d/point-mapping/3d-point-mapping-2.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] transforms/3d/point-mapping/3d-point-mapping-coplanar.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] transforms/3d/point-mapping/3d-point-mapping-origins.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] transforms/3d/point-mapping/3d-point-mapping.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] virtual/audio-service/media/video-layer-crash.html [ Pass Failure ]
+crbug.com/1045050 [ Mac ] virtual/audio-service/media/video-layer-crash.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] virtual/audio-service/media/video-zoom-controls.html [ Pass Failure ]
+crbug.com/1045050 [ Mac ] virtual/audio-service/media/video-zoom-controls.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] virtual/exotic-color-space/images/yuv-decode-eligible/color-profile-layer.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
+crbug.com/1045050 [ Mac ] virtual/gpu-rasterization/images/color-profile-background-image-space.html [ Pass Failure ]
+crbug.com/1045050 [ Mac ] virtual/gpu-rasterization/images/feature-policy-oversized-images-styles.html [ Pass Failure ]
+crbug.com/1045050 [ Mac ]  virtual/gpu-rasterization/images/image-map-anchor-children.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] virtual/gpu-rasterization/images/sprite-no-bleed.html [ Pass Failure ]
+crbug.com/1045050 [ Mac ] virtual/gpu-rasterization/images/sprite-no-bleed.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/mask-with-filter.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-render-surfaces-with-rotation.html [ Pass Failure ]
+crbug.com/1045050 [ Linux ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/rotate-then-clip-effect-interleave.html [ Pass Failure ]

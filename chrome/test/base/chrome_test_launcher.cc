@@ -120,11 +120,9 @@ int ChromeTestLauncherDelegate::RunTestSuite(int argc, char** argv) {
   return runner_->RunTestSuite(argc, argv);
 }
 
-bool ChromeTestLauncherDelegate::AdjustChildProcessCommandLine(
-    base::CommandLine* command_line,
-    const base::FilePath& temp_data_dir) {
-  command_line->AppendSwitchPath(switches::kUserDataDir, temp_data_dir);
-  return true;
+std::string
+ChromeTestLauncherDelegate::GetUserDataDirectoryCommandLineSwitch() {
+  return switches::kUserDataDir;
 }
 
 #if !defined(OS_ANDROID)

@@ -26,6 +26,11 @@ class DrmOverlayManagerGpu : public DrmOverlayManager {
   void SendOverlayValidationRequest(
       const std::vector<OverlaySurfaceCandidate>& candidates,
       gfx::AcceleratedWidget widget) override;
+  std::vector<OverlayStatus> SendOverlayValidationRequestSync(
+      const std::vector<OverlaySurfaceCandidate>& candidates,
+      gfx::AcceleratedWidget widget) override;
+
+  void SetClearCacheCallbackIfNecessary();
 
   void ReceiveOverlayValidationResponse(
       gfx::AcceleratedWidget widget,

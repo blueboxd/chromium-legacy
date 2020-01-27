@@ -97,6 +97,7 @@ void GLOutputSurface::Reshape(const gfx::Size& size,
                               bool use_stencil) {
   size_ = size;
   has_set_draw_rectangle_since_last_resize_ = false;
+  set_draw_rectangle_for_frame_ = false;
   context_provider()->ContextGL()->ResizeCHROMIUM(
       size.width(), size.height(), device_scale_factor,
       color_space.AsGLColorSpace(), has_alpha);

@@ -43,10 +43,9 @@ void D3D11VideoDecoderImpl::Initialize(
   if (!helper_ || !helper_->MakeContextCurrent()) {
     const char* reason = "Failed to make context current.";
     DLOG(ERROR) << reason;
-    if (media_log_) {
-      media_log_->AddLogRecord(media_log_->CreateStringEvent(
-          MediaLogRecord::MEDIA_ERROR_LOG_ENTRY, "error", reason));
-    }
+    if (media_log_)
+      MEDIA_LOG(ERROR, media_log_) << reason;
+
     std::move(init_cb).Run(false);
     return;
   }

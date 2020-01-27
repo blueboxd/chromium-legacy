@@ -1498,19 +1498,18 @@ bool RenderWidgetHostViewAura::SetCompositionFromExistingText(
 #endif
 
 #if defined(OS_WIN)
-bool RenderWidgetHostViewAura::GetEditContextLayoutBounds(
-    gfx::Rect* control_bounds,
-    gfx::Rect* selection_bounds) {
+void RenderWidgetHostViewAura::GetActiveTextInputControlLayoutBounds(
+    base::Optional<gfx::Rect>* control_bounds,
+    base::Optional<gfx::Rect>* selection_bounds) {
   if (text_input_manager_) {
     const TextInputState* state = text_input_manager_->GetTextInputState();
-    if (state && state->edit_context_control_bounds &&
-        state->edit_context_selection_bounds) {
-      *control_bounds = state->edit_context_control_bounds.value();
-      *selection_bounds = state->edit_context_selection_bounds.value();
-      return true;
+    if (state) {
+      *control_bounds = state->edit_context_control_bounds;
+      // Selection bounds are currently populated only for EditContext.
+      // For editable elements we use GetCompositionCharacterBounds.
+      *selection_bounds = state->edit_context_selection_bounds;
     }
   }
-  return false;
 }
 
 void RenderWidgetHostViewAura::SetActiveCompositionForAccessibility(

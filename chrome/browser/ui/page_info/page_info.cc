@@ -36,7 +36,6 @@
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -58,6 +57,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/permissions/permission_result.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
@@ -975,16 +975,16 @@ void PageInfo::PresentSitePermissions() {
       // TODO(raymes): Use GetPermissionStatus() to retrieve information
       // about *all* permissions once it has default behaviour implemented for
       // ContentSettingTypes that aren't permissions.
-      PermissionResult permission_result =
+      permissions::PermissionResult permission_result =
           PermissionManager::Get(profile_)->GetPermissionStatus(
               permission_info.type, site_url_, site_url_);
 
       // If under embargo, update |permission_info| to reflect that.
       if (permission_result.content_setting == CONTENT_SETTING_BLOCK &&
           (permission_result.source ==
-               PermissionStatusSource::MULTIPLE_DISMISSALS ||
+               permissions::PermissionStatusSource::MULTIPLE_DISMISSALS ||
            permission_result.source ==
-               PermissionStatusSource::MULTIPLE_IGNORES)) {
+               permissions::PermissionStatusSource::MULTIPLE_IGNORES)) {
         permission_info.setting = permission_result.content_setting;
       }
     }

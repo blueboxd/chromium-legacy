@@ -25,9 +25,12 @@ ScreenEnumerationImpl::~ScreenEnumerationImpl() = default;
 void ScreenEnumerationImpl::GetDisplays(GetDisplaysCallback callback) {
   display::Screen* screen = display::Screen::GetScreen();
   const std::vector<display::Display> displays = screen->GetAllDisplays();
+  const int64_t internal_id = display::Display::HasInternalDisplay()
+                                  ? display::Display::InternalDisplayId()
+                                  : display::kInvalidDisplayId;
   const int64_t primary_id = screen->GetPrimaryDisplay().id();
   // TODO(msw): Return no data and |false| if a permission check fails.
-  std::move(callback).Run(std::move(displays), primary_id, true);
+  std::move(callback).Run(std::move(displays), internal_id, primary_id, true);
 }
 
 }  // namespace content

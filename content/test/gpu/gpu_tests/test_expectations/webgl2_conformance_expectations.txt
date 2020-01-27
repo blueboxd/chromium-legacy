@@ -431,6 +431,8 @@ crbug.com/870856 [ mac amd no-passthrough ] conformance2/textures/misc/tex-mipma
 
 crbug.com/angleproject/3701 [ mac amd ] conformance2/textures/canvas/tex-2d-rg8-rg-unsigned_byte.html [ RetryOnFailure ]
 
+crbug.com/1044638 [ mac amd ] conformance2/rendering/framebuffer-texture-level1.html [ RetryOnFailure ]
+
 crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/array_interleaved_lines.html [ Failure ]
 crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/array_interleaved_points.html [ Failure ]
 crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/array_interleaved_triangles.html [ Failure ]

@@ -37,12 +37,8 @@ ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
   set_id(kAppShortcutSearchPrefix + GetAppId() + "/" + data_->shortcut_id);
   SetAccessibleName(ComputeAccessibleName());
   SetResultType(ash::AppListSearchResultType::kArcAppShortcut);
-
-  if (is_recommendation) {
-    SetDisplayType(ash::SearchResultDisplayType::kRecommendation);
-  } else {
-    SetDisplayType(ash::SearchResultDisplayType::kTile);
-  }
+  SetDisplayType(ash::SearchResultDisplayType::kTile);
+  SetIsRecommendation(is_recommendation);
 
   const int icon_dimension =
       ash::AppListConfig::instance().search_tile_icon_dimension();

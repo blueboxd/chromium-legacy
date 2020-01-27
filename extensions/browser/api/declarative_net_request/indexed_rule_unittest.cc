@@ -134,7 +134,9 @@ TEST_F(IndexedRuleTest, PriorityParsing) {
 
     EXPECT_EQ(cases[i].expected_result, result);
     if (result == ParseResult::SUCCESS)
-      EXPECT_EQ(cases[i].expected_priority, indexed_rule.priority);
+      EXPECT_EQ(ComputeIndexedRulePriority(cases[i].expected_priority,
+                                           cases[i].action_type),
+                indexed_rule.priority);
   }
 
   // Ensure priority is ignored for non-before-request rules.

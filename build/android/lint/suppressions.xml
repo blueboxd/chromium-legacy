@@ -51,6 +51,12 @@ Still reading?
   </issue>
   <issue id="ContentDescription" severity="Error">
     <ignore regexp="chromecast/internal"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/layout/contacts_list_item_view.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/layout/photo_picker_dialog.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/layout/video_player.xml"/>
   </issue>
   <issue id="DefaultLocale">
     <ignore regexp="clank"/>
@@ -190,12 +196,18 @@ Still reading?
   </issue>
   <issue id="LogConditional" severity="ignore"/>
   <issue id="LongLogTag" severity="ignore"/>
+  <issue id="MergeRootFrame" severity="Error">
+    <!-- TODO(crbug.com/1039415): Remove suppression after fixing bug. -->
+    <ignore regexp="chrome/android/feed/core/java/res/layout/feed_more_button.xml"/>
+  </issue>
   <issue id="MissingApplicationIcon" severity="ignore"/>
   <issue id="MissingDefaultResource">
     <!-- Only used by ToolbarControlContainer guarded by tablet form-factor. -->
     <ignore regexp="toolbar_background.9.png"/>
     <!-- Only used by FirstRunFlowSequencer guarded by tablet form-factor. -->
     <ignore regexp="window_background.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/layout-sw360dp/preference_spinner_single_line.xml"/>
   </issue>
   <issue id="MissingPermission" severity="ignore"/>
   <!-- TODO(yolandyan) remove this once all tests are converted to junit4 -->
@@ -240,6 +252,36 @@ Still reading?
     <!-- 1 This is for testonly target android_support_chromium_java in android_sdk. -->
     <ignore regexp="third_party/android_sdk/public/extras/chromium/support/src/org/chromium/android/support/PackageManagerWrapper.java"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/drawable/address.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/drawable/email.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/drawable/face.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/drawable/ic_infobar_nfc.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/drawable/ic_logo_googleg_20dp.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/drawable/ic_pause_circle_outline_white_24dp.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/drawable/ic_speed_24dp.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/drawable/ic_volume_off_white_24dp.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/drawable/ic_volume_on_white_24dp.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/drawable/logo_partly_cloudy.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/drawable/names.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/values/styles.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/drawable/telephone.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/drawable/zoom_in.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/drawable/zoom_out.xml"/>
   </issue>
   <!-- This warning just adds a lot of false positives. -->
   <issue id="ObsoleteSdkInt" severity="ignore"/>
@@ -370,8 +412,6 @@ Still reading?
     <!-- 2 resource sets used by clank widgets for each channel -->
     <ignore regexp="The resource `R.string.bookmark_widget_title.*` appears to be unused"/>
     <ignore regexp="The resource `R.string.search_widget_title.*` appears to be unused"/>
-    <!-- crbug.com/1017492 remove this line and the following line after the bug is resolved -->
-    <ignore regexp="The resource `R.string.tab_grid_dialog_toolbar_share_group` appears to be unused"/>
     <!-- crbug.com/1004570 remove this line and the following seven lines after the bug resolved -->
     <ignore regexp="The resource `R.string.accessibility_tab_suggestion_review_button` appears to be unused"/>
     <ignore regexp="The resource `R.string.accessibility_tab_suggestion_close_stale_message` appears to be unused"/>
@@ -400,6 +440,16 @@ Still reading?
     <!-- 1 string used by Android's policies system, pulled from app directly -->
     <ignore regexp="restriction_values.xml"/>
     <!-- Endnote: Please specify number of suppressions when adding more -->
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="../obj/components/strings/components_strings_grd.resources.zip/values/components_strings.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/values/dimens.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/layout-sw360dp/preference_spinner_single_line.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/values/styles.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/layout/tab_switcher_action_menu_layout.xml"/>
   </issue>
   <issue id="UseCompoundDrawables">
     <!-- Upscaling 24dp to 48dp doesn't work as expected with a TextView compound drawable. -->
@@ -442,5 +492,17 @@ Still reading?
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/instantapps/InstantAppsHandler.java"/>
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/widget/prefeditor/EditorDialog.java"/>
     <ignore regexp="third_party/android_data_chart/java/src/org/chromium/third_party/android/datausagechart/ChartDataUsageView.java"/>
+  </issue>
+  <issue id="DuplicateIds" severity="Fatal">
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/menu/main_menu.xml"/>
+  </issue>
+  <issue id="IncludeLayoutParam" severity="Error">
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/layout/start_top_toolbar.xml"/>
+  </issue>
+  <issue id="RtlHardcoded" severity="Error">
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="chrome/android/java/res/layout/sheet_tab_toolbar.xml"/>
   </issue>
 </lint>

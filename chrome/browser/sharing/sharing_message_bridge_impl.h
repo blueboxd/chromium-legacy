@@ -25,7 +25,8 @@ class SharingMessageBridgeImpl : public SharingMessageBridge,
 
   // SharingMessageBridge implementation.
   void SendSharingMessage(
-      std::unique_ptr<sync_pb::SharingMessageSpecifics> specifics) override;
+      std::unique_ptr<sync_pb::SharingMessageSpecifics> specifics,
+      CommitFinishedCallback on_commit_callback) override;
   base::WeakPtr<syncer::ModelTypeControllerDelegate> GetControllerDelegate()
       override;
 
@@ -42,6 +43,21 @@ class SharingMessageBridgeImpl : public SharingMessageBridge,
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
+  void OnCommitAttemptErrors(
+      const syncer::FailedCommitResponseDataList& error_response_list) override;
+
+  size_t GetCallbacksCountForTesting() const {
+    return commit_callbacks_.size();
+  }
+
+ private:
+  // Sends commit outcome via callback for |client_tag_hash| and removes it from
+  // callbacks mapping.
+  void ProcessCommitResponse(
+      const syncer::ClientTagHash& client_tag_hash,
+      const sync_pb::SharingMessageCommitError& commit_error);
+
+  std::map<syncer::ClientTagHash, CommitFinishedCallback> commit_callbacks_;
 };
 
 #endif  // CHROME_BROWSER_SHARING_SHARING_MESSAGE_BRIDGE_IMPL_H_

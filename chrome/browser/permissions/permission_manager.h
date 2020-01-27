@@ -18,8 +18,11 @@
 #include "content/public/browser/permission_type.h"
 #include "url/origin.h"
 
-class PermissionContextBase;
+namespace permissions {
 struct PermissionResult;
+}
+
+class PermissionContextBase;
 class Profile;
 
 class PermissionManager : public KeyedService,
@@ -63,9 +66,10 @@ class PermissionManager : public KeyedService,
       bool user_gesture,
       base::OnceCallback<void(const std::vector<ContentSetting>&)> callback);
 
-  PermissionResult GetPermissionStatus(ContentSettingsType permission,
-                                       const GURL& requesting_origin,
-                                       const GURL& embedding_origin);
+  permissions::PermissionResult GetPermissionStatus(
+      ContentSettingsType permission,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin);
 
   // Returns the permission status for a given frame. This should be preferred
   // over GetPermissionStatus as additional checks can be performed when we know
@@ -73,7 +77,7 @@ class PermissionManager : public KeyedService,
   // TODO(raymes): Currently we still pass the |requesting_origin| as a separate
   // parameter because we can't yet guarantee that it matches the last committed
   // origin of the RenderFrameHost. See crbug.com/698985.
-  PermissionResult GetPermissionStatusForFrame(
+  permissions::PermissionResult GetPermissionStatusForFrame(
       ContentSettingsType permission,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin);
@@ -160,7 +164,7 @@ class PermissionManager : public KeyedService,
                                ContentSettingsType content_type,
                                const std::string& resource_identifier) override;
 
-  PermissionResult GetPermissionStatusHelper(
+  permissions::PermissionResult GetPermissionStatusHelper(
       ContentSettingsType permission,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,

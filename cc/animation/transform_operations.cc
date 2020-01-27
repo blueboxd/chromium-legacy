@@ -46,7 +46,7 @@ gfx::Transform TransformOperations::ApplyRemaining(size_t start) const {
 // TODO(crbug.com/914397): Consolidate blink and cc implementations of transform
 // interpolation.
 TransformOperations TransformOperations::Blend(const TransformOperations& from,
-                                               SkMScalar progress) const {
+                                               SkScalar progress) const {
   TransformOperations to_return;
   if (!BlendInternal(from, progress, &to_return)) {
     // If the matrices cannot be blended, fallback to discrete animation logic.
@@ -58,8 +58,8 @@ TransformOperations TransformOperations::Blend(const TransformOperations& from,
 
 bool TransformOperations::BlendedBoundsForBox(const gfx::BoxF& box,
                                               const TransformOperations& from,
-                                              SkMScalar min_progress,
-                                              SkMScalar max_progress,
+                                              SkScalar min_progress,
+                                              SkScalar max_progress,
                                               gfx::BoxF* bounds) const {
   *bounds = box;
 
@@ -136,12 +136,12 @@ bool TransformOperations::IsTranslation() const {
   return true;
 }
 
-static SkMScalar TanDegrees(double degrees) {
-  return SkDoubleToMScalar(std::tan(gfx::DegToRad(degrees)));
+static SkScalar TanDegrees(double degrees) {
+  return SkDoubleToScalar(std::tan(gfx::DegToRad(degrees)));
 }
 
-bool TransformOperations::ScaleComponent(SkMScalar* scale) const {
-  SkMScalar operations_scale = 1.f;
+bool TransformOperations::ScaleComponent(SkScalar* scale) const {
+  SkScalar operations_scale = 1.f;
   for (auto& operation : operations_) {
     switch (operation.type) {
       case TransformOperation::TRANSFORM_OPERATION_IDENTITY:
@@ -158,10 +158,10 @@ bool TransformOperations::ScaleComponent(SkMScalar* scale) const {
         break;
       }
       case TransformOperation::TRANSFORM_OPERATION_SKEW: {
-        SkMScalar x_component = TanDegrees(operation.skew.x);
-        SkMScalar y_component = TanDegrees(operation.skew.y);
-        SkMScalar x_scale = std::sqrt(x_component * x_component + 1);
-        SkMScalar y_scale = std::sqrt(y_component * y_component + 1);
+        SkScalar x_component = TanDegrees(operation.skew.x);
+        SkScalar y_component = TanDegrees(operation.skew.y);
+        SkScalar x_scale = std::sqrt(x_component * x_component + 1);
+        SkScalar y_scale = std::sqrt(y_component * y_component + 1);
         operations_scale *= std::max(x_scale, y_scale);
         break;
       }
@@ -215,9 +215,7 @@ bool TransformOperations::CanBlendWith(
   return BlendInternal(other, 0.5, &dummy);
 }
 
-void TransformOperations::AppendTranslate(SkMScalar x,
-                                          SkMScalar y,
-                                          SkMScalar z) {
+void TransformOperations::AppendTranslate(SkScalar x, SkScalar y, SkScalar z) {
   TransformOperation to_add;
   to_add.matrix.Translate3d(x, y, z);
   to_add.type = TransformOperation::TRANSFORM_OPERATION_TRANSLATE;
@@ -228,10 +226,10 @@ void TransformOperations::AppendTranslate(SkMScalar x,
   decomposed_transforms_.clear();
 }
 
-void TransformOperations::AppendRotate(SkMScalar x,
-                                       SkMScalar y,
-                                       SkMScalar z,
-                                       SkMScalar degrees) {
+void TransformOperations::AppendRotate(SkScalar x,
+                                       SkScalar y,
+                                       SkScalar z,
+                                       SkScalar degrees) {
   TransformOperation to_add;
   to_add.type = TransformOperation::TRANSFORM_OPERATION_ROTATE;
   to_add.rotate.axis.x = x;
@@ -243,7 +241,7 @@ void TransformOperations::AppendRotate(SkMScalar x,
   decomposed_transforms_.clear();
 }
 
-void TransformOperations::AppendScale(SkMScalar x, SkMScalar y, SkMScalar z) {
+void TransformOperations::AppendScale(SkScalar x, SkScalar y, SkScalar z) {
   TransformOperation to_add;
   to_add.type = TransformOperation::TRANSFORM_OPERATION_SCALE;
   to_add.scale.x = x;
@@ -254,7 +252,7 @@ void TransformOperations::AppendScale(SkMScalar x, SkMScalar y, SkMScalar z) {
   decomposed_transforms_.clear();
 }
 
-void TransformOperations::AppendSkew(SkMScalar x, SkMScalar y) {
+void TransformOperations::AppendSkew(SkScalar x, SkScalar y) {
   TransformOperation to_add;
   to_add.type = TransformOperation::TRANSFORM_OPERATION_SKEW;
   to_add.skew.x = x;
@@ -264,7 +262,7 @@ void TransformOperations::AppendSkew(SkMScalar x, SkMScalar y) {
   decomposed_transforms_.clear();
 }
 
-void TransformOperations::AppendPerspective(SkMScalar depth) {
+void TransformOperations::AppendPerspective(SkScalar depth) {
   TransformOperation to_add;
   to_add.type = TransformOperation::TRANSFORM_OPERATION_PERSPECTIVE;
   to_add.perspective_depth = depth;
@@ -299,7 +297,7 @@ bool TransformOperations::IsIdentity() const {
 }
 
 bool TransformOperations::ApproximatelyEqual(const TransformOperations& other,
-                                             SkMScalar tolerance) const {
+                                             SkScalar tolerance) const {
   if (size() != other.size())
     return false;
   for (size_t i = 0; i < operations_.size(); ++i) {
@@ -310,7 +308,7 @@ bool TransformOperations::ApproximatelyEqual(const TransformOperations& other,
 }
 
 bool TransformOperations::BlendInternal(const TransformOperations& from,
-                                        SkMScalar progress,
+                                        SkScalar progress,
                                         TransformOperations* result) const {
   bool from_identity = from.IsIdentity();
   bool to_identity = IsIdentity();

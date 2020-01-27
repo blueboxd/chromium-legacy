@@ -36,6 +36,7 @@ import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feed.library.api.client.stream.Stream.ContentChangedListener;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
 import org.chromium.chrome.browser.feed.library.api.host.config.Configuration;
@@ -1011,9 +1012,9 @@ public class StreamDriverTest {
         verify(mContentlistener).notifyContentRemoved(0);
         verify(mSnackbarApi)
                 .show(eq(undoAction.getConfirmationLabel()),
-                        undoAction.hasUndoLabel() ? eq(undoAction.getUndoLabel())
-                                                  : eq(mContext.getResources().getString(
-                                                          R.string.snackbar_default_action)),
+                        undoAction.hasUndoLabel()
+                                ? eq(undoAction.getUndoLabel())
+                                : eq(mContext.getResources().getString(R.string.undo)),
                         snackbarCallbackApi.capture());
 
         return snackbarCallbackApi.getValue();

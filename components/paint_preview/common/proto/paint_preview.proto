@@ -24,24 +24,33 @@ message LinkDataProto {
   required string url = 2;
 }
 
+// A mapping from a content ID to the serialized embedding token.
+// NEXT_TAG = 4
+message ContentIdEmbeddingTokenPairProto {
+  required uint32 content_id = 1;
+  required uint64 embedding_token_low = 2;
+  required uint64 embedding_token_high = 3;
+}
+
 // A paint preview of a single frame.
-// NEXT_TAG = 6
+// NEXT_TAG = 7
 message PaintPreviewFrameProto {
-  // Originates in renderer as Routing ID.
-  // Converted to (Process ID || Routing ID) once processed in browser.
-  required uint64 id = 1;
+  // The embedding token for this frame to its parent. Every frame other than
+  // the main frame should have a non-zero value here.
+  required uint64 embedding_token_low = 1;
+  required uint64 embedding_token_high = 2;
 
   // Boolean indicating if the frame is the main frame.
-  required bool is_main_frame = 2;
+  required bool is_main_frame = 3;
 
   // The file path to the serialized Skia Picture.
-  optional string file_path = 3;
+  optional string file_path = 4;
 
   // A list of links within the frame.
-  repeated LinkDataProto links = 4;
+  repeated LinkDataProto links = 5;
 
-  // A map between the content IDs of subframes and the |id| field.
-  map<uint32, int64> content_id_proxy_id_map = 5;
+  // A mapping between the content IDs of subframes and the |id| field.
+  repeated ContentIdEmbeddingTokenPairProto content_id_to_embedding_tokens = 6;
 }
 
 // Metadata for the capture.

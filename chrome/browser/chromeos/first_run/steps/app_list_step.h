@@ -17,7 +17,7 @@ class AppListStep : public Step {
 
  private:
   // Step:
-  void DoShow() override;
+  bool DoShow() override;
 
   DISALLOW_COPY_AND_ASSIGN(AppListStep);
 };

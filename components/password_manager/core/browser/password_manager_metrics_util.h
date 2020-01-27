@@ -253,12 +253,15 @@ enum AccessPasswordInSettingsEvent {
   ACCESS_PASSWORD_COUNT
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Needs to stay in sync with
+// "PasswordManager.ReauthResult" in enums.xml.
 // Metrics: PasswordManager.ReauthToAccessPasswordInSettings
-enum ReauthToAccessPasswordInSettingsEvent {
-  REAUTH_SUCCESS = 0,
-  REAUTH_FAILURE = 1,
-  REAUTH_SKIPPED = 2,
-  REAUTH_COUNT
+enum class ReauthResult {
+  kSuccess = 0,
+  kFailure = 1,
+  kSkipped = 2,
+  kMaxValue = kSkipped,
 };
 
 // Specifies the type of PasswordFormManagers and derived classes to distinguish
@@ -552,6 +555,9 @@ void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
 
 // Log a frame of a submitted password form.
 void LogSubmittedFormFrame(SubmittedFormFrame frame);
+
+// Logs the result of a re-auth challenge in the password settings.
+void LogPasswordSettingsReauthResult(ReauthResult result);
 
 // Log a return value of LoginDatabase::DeleteUndecryptableLogins method.
 void LogDeleteUndecryptableLoginsReturnValue(

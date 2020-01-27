@@ -53,9 +53,6 @@ class BreadcrumbManagerTabHelper
   void DidChangeBackForwardState(web::WebState* web_state) override;
   void TitleWasSet(web::WebState* web_state) override;
   void DidChangeVisibleSecurityState(web::WebState* web_state) override;
-  void FaviconUrlUpdated(
-      web::WebState* web_state,
-      const std::vector<web::FaviconURL>& candidates) override;
   void RenderProcessGone(web::WebState* web_state) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 

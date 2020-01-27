@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state_forward.h"
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -18,6 +17,7 @@ class PrefRegistrySyncable;
 
 class AuthenticationService;
 class AuthenticationServiceDelegate;
+class ChromeBrowserState;
 
 // Singleton that owns all |AuthenticationServices| and associates them with
 // browser states. Listens for the |BrowserState|'s destruction notification and
@@ -25,14 +25,14 @@ class AuthenticationServiceDelegate;
 class AuthenticationServiceFactory : public BrowserStateKeyedServiceFactory {
  public:
   static AuthenticationService* GetForBrowserState(
-      ios::ChromeBrowserState* browser_state);
+      ChromeBrowserState* browser_state);
   static AuthenticationServiceFactory* GetInstance();
 
   // Force the instantiation of AuthenticationService and initialize it with
   // the given delegate. Must be called before GetForBrowserState (not doing
   // so is a security issue and the app will terminate).
   static void CreateAndInitializeForBrowserState(
-      ios::ChromeBrowserState* browser_state,
+      ChromeBrowserState* browser_state,
       std::unique_ptr<AuthenticationServiceDelegate> delegate);
 
   // Returns the default factory used to build AuthenticationServices. Can be

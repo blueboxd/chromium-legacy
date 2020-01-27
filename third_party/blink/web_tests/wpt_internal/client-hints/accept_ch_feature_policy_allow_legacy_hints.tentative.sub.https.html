@@ -16,7 +16,7 @@
 // of client hints it receives in the request headers.
 
 promise_test(t => {
-  return fetch(get_host_info()["HTTPS_ORIGIN"] + "/client-hints/echo_client_hints_received.py").then(r => {
+  return fetch(get_host_info()["HTTPS_ORIGIN"] + "/client-hints/resources/echo-client-hints-received.py").then(r => {
     assert_equals(r.status, 200)
     // Verify that the browser includes client hints in the headers for a
     // same-origin fetch which not specifically excluded via Feature-Policy.
@@ -42,7 +42,7 @@ promise_test(t => {
 }, "Accept-CH header test");
 
 promise_test(t => {
-  return fetch(get_host_info()["HTTPS_REMOTE_ORIGIN"] + "/client-hints/echo_client_hints_received.py").then(r => {
+  return fetch(get_host_info()["HTTPS_REMOTE_ORIGIN"] + "/client-hints/resources/echo-client-hints-received.py").then(r => {
     assert_equals(r.status, 200)
     // Verify that the browser includes client hints in the headers for a
     // cross-origin fetch which are specifically requested via Feature-Policy.

@@ -63,7 +63,7 @@ if (is_linux || is_android) {
       "//third_party/blink/public/common",
     ]
 
-    data = [ "named_message_port_connector.js" ]
+    data_deps = [ ":named_message_port_connector_resources" ]
 
     public_deps = [ ":bindings_manager" ]
   }

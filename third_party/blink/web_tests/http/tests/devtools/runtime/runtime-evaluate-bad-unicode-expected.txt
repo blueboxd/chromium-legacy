@@ -85,4 +85,5 @@ Tests TestRunner.RuntimeAgent.evaluate can handle invalid Unicode code points an
 "'􏿿' === '\u{10FFFF}'" -> true
 "'􏿿'.codePointAt(0).toString(16)" -> 10ffff
 "String.fromCodePoint(0x10FFFF)" -> 􏿿
+"String.fromCodePoint(0xFFFF)" -> ￿
 

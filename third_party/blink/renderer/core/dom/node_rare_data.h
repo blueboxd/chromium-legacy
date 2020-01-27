@@ -63,7 +63,41 @@ class NodeMutationObserverData final
   DISALLOW_COPY_AND_ASSIGN(NodeMutationObserverData);
 };
 
-class NodeRenderingData final : public GarbageCollected<NodeRenderingData> {
+class GC_PLUGIN_IGNORE(
+    "GC plugin reports that TraceAfterDispatch is not called but it is called "
+    "by both NodeRareDate::TraceAfterDispatch and "
+    "NodeRenderingData::TraceAfterDispatch.") NodeData
+    : public GarbageCollected<NodeData> {
+ public:
+  NodeData(bool is_rare_data)
+      : connected_frame_count_(0),
+        element_flags_(0),
+        restyle_flags_(0),
+        is_element_rare_data_(false),
+        is_rare_data_(is_rare_data) {}
+  void Trace(Visitor*);
+  void TraceAfterDispatch(blink::Visitor*) {}
+
+  enum {
+    kConnectedFrameCountBits = 10,  // Must fit Page::maxNumberOfFrames.
+    kNumberOfElementFlags = 6,
+    kNumberOfDynamicRestyleFlags = 14
+  };
+
+ protected:
+  // The top 4 fields belong to NodeRareData. They are located here to conserve
+  // space and avoid increase in size of NodeRareData (without locating the
+  // fields here, is_rare_data_ will be padded thus increasing the size of
+  // NodeRareData by 8 bytes).
+  unsigned connected_frame_count_ : kConnectedFrameCountBits;
+  unsigned element_flags_ : kNumberOfElementFlags;
+  unsigned restyle_flags_ : kNumberOfDynamicRestyleFlags;
+  unsigned is_element_rare_data_ : 1;
+  unsigned is_rare_data_ : 1;
+};
+
+class GC_PLUGIN_IGNORE("Manual dispatch implemented in NodeData.")
+    NodeRenderingData final : public NodeData {
  public:
   NodeRenderingData(LayoutObject*,
                     scoped_refptr<const ComputedStyle> computed_style);
@@ -82,7 +116,9 @@ class NodeRenderingData final : public GarbageCollected<NodeRenderingData> {
   static NodeRenderingData& SharedEmptyData();
   bool IsSharedEmptyData() { return this == &SharedEmptyData(); }
 
-  void Trace(Visitor*) {}
+  void TraceAfterDispatch(Visitor* visitor) {
+    NodeData::TraceAfterDispatch(visitor);
+  }
 
  private:
   LayoutObject* layout_object_;
@@ -90,14 +126,11 @@ class NodeRenderingData final : public GarbageCollected<NodeRenderingData> {
   DISALLOW_COPY_AND_ASSIGN(NodeRenderingData);
 };
 
-class NodeRareData : public GarbageCollected<NodeRareData> {
+class GC_PLUGIN_IGNORE("Manual dispatch implemented in NodeData.") NodeRareData
+    : public NodeData {
  public:
   explicit NodeRareData(NodeRenderingData* node_layout_data)
-      : node_layout_data_(node_layout_data),
-        connected_frame_count_(0),
-        element_flags_(0),
-        restyle_flags_(0),
-        is_element_rare_data_(false) {
+      : NodeData(true), node_layout_data_(node_layout_data) {
     CHECK_NE(node_layout_data, nullptr);
   }
 
@@ -161,13 +194,6 @@ class NodeRareData : public GarbageCollected<NodeRareData> {
   bool HasRestyleFlags() const { return restyle_flags_; }
   void ClearRestyleFlags() { restyle_flags_ = 0; }
 
-  enum {
-    kConnectedFrameCountBits = 10,  // Must fit Page::maxNumberOfFrames.
-    kNumberOfElementFlags = 6,
-    kNumberOfDynamicRestyleFlags = 14
-  };
-
-  void Trace(Visitor*);
   void TraceAfterDispatch(blink::Visitor*);
   void FinalizeGarbageCollectedObject();
 
@@ -181,12 +207,6 @@ class NodeRareData : public GarbageCollected<NodeRareData> {
   Member<NodeMutationObserverData> mutation_observer_data_;
   Member<FlatTreeNodeData> flat_tree_node_data_;
 
-  unsigned connected_frame_count_ : kConnectedFrameCountBits;
-  unsigned element_flags_ : kNumberOfElementFlags;
-  unsigned restyle_flags_ : kNumberOfDynamicRestyleFlags;
-
- protected:
-  unsigned is_element_rare_data_ : 1;
   DISALLOW_COPY_AND_ASSIGN(NodeRareData);
 };
 

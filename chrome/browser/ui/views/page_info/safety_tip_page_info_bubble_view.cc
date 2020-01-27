@@ -19,6 +19,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -31,40 +32,23 @@
 
 namespace {
 
-int GetSafetyTipBannerId(security_state::SafetyTipStatus safety_tip_status) {
-  const ui::NativeTheme* native_theme =
-      ui::NativeTheme::GetInstanceForNativeUi();
-  bool is_dark = native_theme && native_theme->ShouldUseDarkColors();
-
-  if (is_dark) {
-    switch (safety_tip_status) {
-      case security_state::SafetyTipStatus::kBadReputation:
-        return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_DARK;
-      case security_state::SafetyTipStatus::kLookalike:
-        return IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_DARK;
-      case security_state::SafetyTipStatus::kBadReputationIgnored:
-      case security_state::SafetyTipStatus::kLookalikeIgnored:
-      case security_state::SafetyTipStatus::kBadKeyword:
-      case security_state::SafetyTipStatus::kUnknown:
-      case security_state::SafetyTipStatus::kNone:
-        NOTREACHED();
-    }
-  } else {
-    switch (safety_tip_status) {
-      case security_state::SafetyTipStatus::kBadReputation:
-        return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_LIGHT;
-      case security_state::SafetyTipStatus::kLookalike:
-        return IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_LIGHT;
-      case security_state::SafetyTipStatus::kBadReputationIgnored:
-      case security_state::SafetyTipStatus::kLookalikeIgnored:
-      case security_state::SafetyTipStatus::kBadKeyword:
-      case security_state::SafetyTipStatus::kUnknown:
-      case security_state::SafetyTipStatus::kNone:
-        NOTREACHED();
-    }
+int GetSafetyTipBannerId(security_state::SafetyTipStatus safety_tip_status,
+                         bool is_dark) {
+  switch (safety_tip_status) {
+    case security_state::SafetyTipStatus::kBadReputation:
+      return is_dark ? IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_DARK
+                     : IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_LIGHT;
+    case security_state::SafetyTipStatus::kLookalike:
+      return is_dark ? IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_DARK
+                     : IDR_SAFETY_TIP_LOOKALIKE_ILLUSTRATION_LIGHT;
+    case security_state::SafetyTipStatus::kBadReputationIgnored:
+    case security_state::SafetyTipStatus::kLookalikeIgnored:
+    case security_state::SafetyTipStatus::kBadKeyword:
+    case security_state::SafetyTipStatus::kUnknown:
+    case security_state::SafetyTipStatus::kNone:
+      NOTREACHED();
+      return 0;
   }
-  NOTREACHED();
-  return IDR_SAFETY_TIP_SUSPICIOUS_ILLUSTRATION_LIGHT;
 }
 
 }  // namespace
@@ -129,8 +113,10 @@ SafetyTipPageInfoBubbleView::SafetyTipPageInfoBubbleView(
                             1.0, views::GridLayout::USE_PREF, 0, 0);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  const bool use_dark =
+      color_utils::IsDark(GetBubbleFrameView()->GetBackgroundColor());
   const gfx::ImageSkia* image =
-      rb.GetNativeImageNamed(GetSafetyTipBannerId(safety_tip_status))
+      rb.GetNativeImageNamed(GetSafetyTipBannerId(safety_tip_status, use_dark))
           .ToImageSkia();
   auto image_view = std::make_unique<NonAccessibleImageView>();
   image_view->SetImage(*image);

@@ -681,8 +681,8 @@ class CORE_EXPORT Node : public EventTarget {
   // have one as well.
   LayoutObject* GetLayoutObject() const {
     return HasRareData()
-               ? data_.rare_data_->GetNodeRenderingData()->GetLayoutObject()
-               : data_.node_layout_data_->GetLayoutObject();
+               ? DataAsNodeRareData()->GetNodeRenderingData()->GetLayoutObject()
+               : DataAsNodeRenderingData()->GetLayoutObject();
   }
   void SetLayoutObject(LayoutObject*);
   // Use these two methods with caution.
@@ -1038,7 +1038,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   NodeRareData* RareData() const {
     SECURITY_DCHECK(HasRareData());
-    return data_.rare_data_;
+    return DataAsNodeRareData();
   }
   NodeRareData& EnsureRareData() {
     if (HasRareData())
@@ -1092,19 +1092,22 @@ class CORE_EXPORT Node : public EventTarget {
   const HeapHashSet<Member<MutationObserverRegistration>>*
   TransientMutationObserverRegistry();
 
+  NodeRareData* DataAsNodeRareData() const {
+    DCHECK(HasRareData());
+    return reinterpret_cast<NodeRareData*>(data_.Get());
+  }
+  NodeRenderingData* DataAsNodeRenderingData() const {
+    DCHECK(!HasRareData());
+    return reinterpret_cast<NodeRenderingData*>(data_.Get());
+  }
+
   uint32_t node_flags_;
   Member<Node> parent_or_shadow_host_node_;
   Member<TreeScope> tree_scope_;
   Member<Node> previous_;
   Member<Node> next_;
   // When a node has rare data we move the layoutObject into the rare data.
-  union DataUnion {
-    DataUnion() : node_layout_data_(&NodeRenderingData::SharedEmptyData()) {}
-    // LayoutObjects are fully owned by their DOM node. See LayoutObject's
-    // LIFETIME documentation section.
-    NodeRenderingData* node_layout_data_;
-    NodeRareData* rare_data_;
-  } data_;
+  Member<NodeData> data_;
 };
 
 inline void Node::SetParentOrShadowHostNode(ContainerNode* parent) {

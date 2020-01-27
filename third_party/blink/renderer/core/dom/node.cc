@@ -173,7 +173,11 @@ using ReattachHook = LayoutShiftTracker::ReattachHook;
 struct SameSizeAsNode : EventTarget {
   uint32_t node_flags_;
   Member<void*> willbe_member_[4];
-  void* pointer_;
+  Member<NodeData> member_;
+#if !DCHECK_IS_ON()
+  static_assert(sizeof(Member<NodeData>) == sizeof(void*),
+                "Increasing size of Member increases size of Node");
+#endif  // !DCHECK_IS_ON()
 };
 
 static_assert(sizeof(Node) <= sizeof(SameSizeAsNode), "Node should stay small");
@@ -326,7 +330,8 @@ Node::Node(TreeScope* tree_scope, ConstructionType type)
       parent_or_shadow_host_node_(nullptr),
       tree_scope_(tree_scope),
       previous_(nullptr),
-      next_(nullptr) {
+      next_(nullptr),
+      data_(&NodeRenderingData::SharedEmptyData()) {
   DCHECK(tree_scope_ || type == kCreateDocument || type == kCreateShadowRoot);
 #if !defined(NDEBUG) || (defined(DUMP_NODE_STATISTICS) && DUMP_NODE_STATISTICS)
   TrackForDebugging();
@@ -343,16 +348,13 @@ Node::~Node() {
 
 NodeRareData& Node::CreateRareData() {
   if (IsElementNode()) {
-    data_.rare_data_ =
-        MakeGarbageCollected<ElementRareData>(data_.node_layout_data_);
+    data_ = MakeGarbageCollected<ElementRareData>(DataAsNodeRenderingData());
   } else {
-    data_.rare_data_ =
-        MakeGarbageCollected<NodeRareData>(data_.node_layout_data_);
+    data_ = MakeGarbageCollected<NodeRareData>(DataAsNodeRenderingData());
   }
 
-  DCHECK(data_.rare_data_);
+  DCHECK(data_);
   SetFlag(kHasRareDataFlag);
-  MarkingVisitor::WriteBarrier(&data_.rare_data_);
   return *RareData();
 }
 
@@ -1012,8 +1014,8 @@ LayoutBox* Node::GetLayoutBox() const {
 
 void Node::SetLayoutObject(LayoutObject* layout_object) {
   NodeRenderingData* node_layout_data =
-      HasRareData() ? data_.rare_data_->GetNodeRenderingData()
-                    : data_.node_layout_data_;
+      HasRareData() ? DataAsNodeRareData()->GetNodeRenderingData()
+                    : DataAsNodeRenderingData();
 
   // Already pointing to a non empty NodeRenderingData so just set the pointer
   // to the new LayoutObject.
@@ -1031,11 +1033,9 @@ void Node::SetLayoutObject(LayoutObject* layout_object) {
   node_layout_data =
       MakeGarbageCollected<NodeRenderingData>(layout_object, nullptr);
   if (HasRareData()) {
-    data_.rare_data_->SetNodeRenderingData(node_layout_data);
+    DataAsNodeRareData()->SetNodeRenderingData(node_layout_data);
   } else {
-    data_.node_layout_data_ = node_layout_data;
-    // We need the following line since data_.node_layout_data_ is not a Member.
-    MarkingVisitor::WriteBarrier(&data_.node_layout_data_);
+    data_ = node_layout_data;
   }
 }
 
@@ -1044,8 +1044,8 @@ void Node::SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style) {
   DCHECK(IsElementNode());
 
   NodeRenderingData* node_layout_data =
-      HasRareData() ? data_.rare_data_->GetNodeRenderingData()
-                    : data_.node_layout_data_;
+      HasRareData() ? DataAsNodeRareData()->GetNodeRenderingData()
+                    : DataAsNodeRenderingData();
 
   // Already pointing to a non empty NodeRenderingData so just set the pointer
   // to the new LayoutObject.
@@ -1068,11 +1068,9 @@ void Node::SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style) {
   node_layout_data =
       MakeGarbageCollected<NodeRenderingData>(nullptr, computed_style);
   if (HasRareData()) {
-    data_.rare_data_->SetNodeRenderingData(node_layout_data);
+    DataAsNodeRareData()->SetNodeRenderingData(node_layout_data);
   } else {
-    data_.node_layout_data_ = node_layout_data;
-    // We need the following line since data_.node_layout_data_ is not a Member.
-    MarkingVisitor::WriteBarrier(&data_.node_layout_data_);
+    data_ = node_layout_data;
   }
 }
 
@@ -3336,10 +3334,7 @@ void Node::Trace(Visitor* visitor) {
   visitor->Trace(parent_or_shadow_host_node_);
   visitor->Trace(previous_);
   visitor->Trace(next_);
-  if (HasRareData())
-    visitor->Trace(RareData());
-  else
-    visitor->Trace(data_.node_layout_data_);
+  visitor->Trace(data_);
   visitor->Trace(tree_scope_);
   EventTarget::Trace(visitor);
 }

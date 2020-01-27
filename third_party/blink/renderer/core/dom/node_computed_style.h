@@ -39,9 +39,10 @@ inline ComputedStyle* Node::MutableComputedStyleForEditingDeprecated() const {
 
 inline const ComputedStyle* Node::GetComputedStyle() const {
   if (IsElementNode()) {
-    return HasRareData()
-               ? data_.rare_data_->GetNodeRenderingData()->GetComputedStyle()
-               : data_.node_layout_data_->GetComputedStyle();
+    return HasRareData() ? DataAsNodeRareData()
+                               ->GetNodeRenderingData()
+                               ->GetComputedStyle()
+                         : DataAsNodeRenderingData()->GetComputedStyle();
   }
   // Text nodes and Document.
   if (LayoutObject* layout_object = GetLayoutObject())

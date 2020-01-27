@@ -35,6 +35,10 @@ class SessionCrashedBubbleView : public SessionCrashedBubble,
   static void Show(std::unique_ptr<BrowserRemovalObserver> browser_observer,
                    bool uma_opted_in_already);
 
+ protected:
+  // views::BubbleDialogDelegateView:
+  ax::mojom::Role GetAccessibleWindowRole() override;
+
  private:
   friend class SessionCrashedBubbleViewTest;
 

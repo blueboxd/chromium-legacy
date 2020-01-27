@@ -168,6 +168,10 @@ void SessionCrashedBubbleView::Show(
     RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_ALREADY_UMA_OPTIN);
 }
 
+ax::mojom::Role SessionCrashedBubbleView::GetAccessibleWindowRole() {
+  return ax::mojom::Role::kAlert;
+}
+
 SessionCrashedBubbleView::SessionCrashedBubbleView(views::View* anchor_view,
                                                    const gfx::Rect& anchor_rect,
                                                    Browser* browser,

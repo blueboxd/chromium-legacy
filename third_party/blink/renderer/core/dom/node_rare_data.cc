@@ -77,10 +77,23 @@ void NodeMutationObserverData::RemoveRegistration(
   registry_.EraseAt(registry_.Find(registration));
 }
 
+void NodeData::Trace(Visitor* visitor) {
+  if (is_rare_data_) {
+    if (is_element_rare_data_)
+      static_cast<ElementRareData*>(this)->TraceAfterDispatch(visitor);
+    else
+      static_cast<NodeRareData*>(this)->TraceAfterDispatch(visitor);
+  } else {
+    static_cast<NodeRenderingData*>(this)->TraceAfterDispatch(visitor);
+  }
+}
+
 NodeRenderingData::NodeRenderingData(
     LayoutObject* layout_object,
     scoped_refptr<const ComputedStyle> computed_style)
-    : layout_object_(layout_object), computed_style_(computed_style) {}
+    : NodeData(false),
+      layout_object_(layout_object),
+      computed_style_(computed_style) {}
 
 void NodeRenderingData::SetComputedStyle(
     scoped_refptr<const ComputedStyle> computed_style) {
@@ -104,13 +117,7 @@ void NodeRareData::TraceAfterDispatch(blink::Visitor* visitor) {
     node_lists_.Clear();
   else
     visitor->Trace(node_lists_);
-}
-
-void NodeRareData::Trace(Visitor* visitor) {
-  if (is_element_rare_data_)
-    static_cast<ElementRareData*>(this)->TraceAfterDispatch(visitor);
-  else
-    TraceAfterDispatch(visitor);
+  NodeData::TraceAfterDispatch(visitor);
 }
 
 void NodeRareData::FinalizeGarbageCollectedObject() {
